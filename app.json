@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "tikblue-app",
-    "slug": "tikblue-app",
+    "name": "spark-social-app",
+    "slug": "spark-social-app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
