@@ -81,6 +81,8 @@ export default function VideoScreen({
 
   useEffect(() => {
     if (videoData.isActive) {
+      // Reset the video to the beginning before playing
+      player.currentTime = 0;
       player.play();
     } else {
       player.pause();

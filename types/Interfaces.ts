@@ -1,4 +1,5 @@
 export interface UserProps {
+    id?: string;
     image: string;
     name: string;
     handler: string;

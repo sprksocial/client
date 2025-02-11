@@ -12,7 +12,7 @@ import PlaceholderVideoDisplay from '@/components/Profile/PlaceholderVideoDispla
 import { USER_DATA, VIDEO_DATA } from '@/constants/MockData';
 import { VideoProps } from '@/types/Interfaces';
 import { useRouter } from 'expo-router';
-import profilefeed from '../ProfileFeed';
+import profilefeed from '../../components/Profile/ProfileFeed';
 
 function padVideosWithPlaceholders(videos: VideoProps[]): (VideoProps & { isPlaceholder?: boolean })[] {
   const remainder = videos.length % 3;
@@ -31,15 +31,13 @@ export default function ProfileScreen() {
   const paddedVideoData = padVideosWithPlaceholders(VIDEO_DATA);
 
   function handleOpenProfileFeed(videoClicked: VideoProps) {
-    // Identifica em qual posição (index) do array está o vídeo clicado
     const index = VIDEO_DATA.findIndex((video) => video.id === videoClicked.id);
 
-    // Envia o array de vídeos como string e o index do vídeo clicado
     route.push({
-      pathname: "/ProfileFeed",
+      pathname: "../ProfileFeed",
       params: {
         videoData: JSON.stringify(VIDEO_DATA),
-        initialIndex: index.toString(), // precisamos enviar como string
+        initialIndex: index.toString(),
       },
     });
   }
