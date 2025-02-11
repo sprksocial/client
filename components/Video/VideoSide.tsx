@@ -9,6 +9,13 @@ import { VideoSideProps } from '@/types/Interfaces';
 
 const VideoSide: React.FC<VideoSideProps> = ({ videoData, onComments }) => {
       const colorScheme = useColorScheme();
+      const formatNumber = (num?: number) => {
+        if (!num) return '0';
+        if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1) + 'B';
+        if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M';
+        if (num >= 1_000) return (num / 1_000).toFixed(1) + 'K';
+        return num.toString();
+      };
 
     const styles = StyleSheet.create({
         container: {
@@ -83,7 +90,7 @@ const VideoSide: React.FC<VideoSideProps> = ({ videoData, onComments }) => {
                         lightColor={Colors.dark.text}
                         darkColor={Colors.dark.text}
                     >
-                        {videoData.likes?.amount ?? 0}
+                        {formatNumber(videoData.likes?.amount ?? 0)}
                     </ThemedText>
                 </TouchableOpacity>
 
@@ -95,7 +102,8 @@ const VideoSide: React.FC<VideoSideProps> = ({ videoData, onComments }) => {
                         lightColor={Colors.dark.text}
                         darkColor={Colors.dark.text}
                     >
-                        {videoData.comments?.length ?? 0}
+                        {formatNumber(videoData.comments?.length ?? 0)}
+                        
                     </ThemedText>
                 </TouchableOpacity>
 
@@ -107,7 +115,7 @@ const VideoSide: React.FC<VideoSideProps> = ({ videoData, onComments }) => {
                         lightColor={Colors.dark.text}
                         darkColor={Colors.dark.text}
                     >
-                        {videoData.shares}
+                        {formatNumber(videoData.shares ?? 0)}
                     </ThemedText>
                 </TouchableOpacity>
             </View>
