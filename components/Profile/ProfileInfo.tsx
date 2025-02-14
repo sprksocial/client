@@ -71,17 +71,17 @@ const ProfileInfo: React.FC<{ userData: UserProps }> = ({ userData }) => {
   return (
     <View style={styles.container}>
       <View style={styles.nameContainer}>
-      <ThemedText type="defaultBold" style={styles.name}>{userData.name}</ThemedText>
-      <ThemedText type="username" style={styles.handler}>@{userData.handler}</ThemedText>
+      <ThemedText type="defaultBold" style={styles.name}>{userData.displayName}</ThemedText>
+      <ThemedText type="username" style={styles.handler}>@{userData.handle}</ThemedText>
       </View>
 
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
-          <ThemedText type="defaultBold" style={styles.statNumber}>{formatNumber(userData.following ?? 0)}</ThemedText>
+          <ThemedText type="defaultBold" style={styles.statNumber}>{formatNumber(userData.followsCount ?? 0)}</ThemedText>
           <ThemedText type="default" style={styles.statLabel}>Following</ThemedText>
         </View>
         <View style={styles.statItem}>
-          <ThemedText type="defaultBold" style={styles.statNumber}>{formatNumber(userData.followers ?? 0)}</ThemedText>
+          <ThemedText type="defaultBold" style={styles.statNumber}>{formatNumber(userData.followersCount ?? 0)}</ThemedText>
           <ThemedText type="default" style={styles.statLabel}>Followers</ThemedText>
         </View>
         <View style={styles.statItem}>
@@ -90,7 +90,7 @@ const ProfileInfo: React.FC<{ userData: UserProps }> = ({ userData }) => {
         </View>
       </View>
       <View style={styles.bioContainer}>
-        <ThemedText type="default" style={styles.bio}>{userData.bio}</ThemedText>
+        <ThemedText type="default" style={styles.bio}>{userData.description}</ThemedText>
       </View>
     </View>
   );

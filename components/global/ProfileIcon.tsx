@@ -1,14 +1,10 @@
 import { Colors } from '@/constants/Colors';
+import { UserProps } from '@/types/Interfaces';
 import React from 'react';
 import { View, Image, StyleSheet, useColorScheme } from 'react-native';
 
-interface ProfileIconProps {
-    imageUrl: string;
-    isSelected: boolean;
-    size: number;
-}
 
-const ProfileIcon: React.FC<ProfileIconProps> = ({ imageUrl, isSelected, size }) => {
+const ProfileIcon: React.FC<{ userData: UserProps, isSelected: boolean, size: number }> = ({ userData, isSelected, size }) => {
   const colorScheme = useColorScheme();
 
   const styles = StyleSheet.create({
@@ -36,7 +32,7 @@ const ProfileIcon: React.FC<ProfileIconProps> = ({ imageUrl, isSelected, size })
       { width: size, height: size, borderRadius: size / 2 },
       isSelected && styles.selectedBorder
     ]}>
-      <Image source={{ uri: imageUrl }} style={styles.image} />
+      <Image source={{ uri: userData.avatar }} style={styles.image} />
     </View>
   );
 };
