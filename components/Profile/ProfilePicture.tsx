@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
 
   return (
     <View style={styles.container}>
-      <Image source={{ uri: userData.image }} style={styles.image} />
+      <Image source={{ uri: userData.avatar }} style={styles.image} />
     </View>
   );
 };

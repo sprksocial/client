@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
@@ -9,10 +9,10 @@ import ProfileInfo from '@/components/Profile/ProfileInfo';
 import ActionButton from '@/components/global/ActionButton';
 import VideoDisplay from '@/components/Profile/VideoDisplay';
 import PlaceholderVideoDisplay from '@/components/Profile/PlaceholderVideoDisplay';
-import { USER_DATA, VIDEO_DATA } from '@/constants/MockData';
-import { VideoProps } from '@/types/Interfaces';
+import { did, VIDEO_DATA } from '@/constants/MockData';
+import { UserProps, VideoProps } from '@/types/Interfaces';
 import { useRouter } from 'expo-router';
-import profilefeed from '../../components/Profile/ProfileFeed';
+import { getProfile } from '@/api/profileServices';
 
 function padVideosWithPlaceholders(videos: VideoProps[]): (VideoProps & { isPlaceholder?: boolean })[] {
   const remainder = videos.length % 3;
@@ -27,6 +27,45 @@ function padVideosWithPlaceholders(videos: VideoProps[]): (VideoProps & { isPlac
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const route = useRouter();
+
+  const [userData, setUserData] = useState<UserProps | null>(null);
+
+  useEffect(() => {
+    const loadProfileData = async () => {
+      try {
+        const profileData = await getProfile(did);
+        if (profileData) {
+          setUserData({
+            id: profileData.did,
+            did: profileData.did,
+            displayName: profileData.displayName,
+            handle: profileData.handle,
+            description: profileData.description,
+            avatar: profileData.avatar || '',
+            banner: profileData.banner || '',
+            followersCount: profileData.followersCount,
+            followsCount: profileData.followsCount,
+            likes: 0,
+            views: 0,
+            videos: profileData.videos || [],
+            postsCount: profileData.postsCount,
+            associated: profileData.associated,
+            joinedViaStarterPack: profileData.joinedViaStarterPack,
+            indexedAt: profileData.indexedAt,
+            createdAt: profileData.createdAt,
+            viewer: profileData.viewer,
+            labels: profileData.labels,
+            pinnedPost: profileData.pinnedPost,
+          });
+        }
+      } catch (error) {
+        console.error("Error loading profile:", error);
+      }
+    };
+
+  
+    loadProfileData();
+  }, []);
 
   const paddedVideoData = padVideosWithPlaceholders(VIDEO_DATA);
 
@@ -95,14 +134,18 @@ export default function ProfileScreen() {
             <TouchableOpacity onPress={() => { }}>
               <Ionicons name="arrow-back" size={24} color={Colors[colorScheme ?? 'light'].text} />
             </TouchableOpacity>
-            <ThemedText style={styles.profileTopText}>{USER_DATA[0].name}</ThemedText>
+            <ThemedText style={styles.profileTopText}>{userData?.displayName}</ThemedText>
             <TouchableOpacity onPress={() => { }}>
               <Ionicons name="ellipsis-horizontal" size={24} color={Colors[colorScheme ?? 'light'].text} />
             </TouchableOpacity>
           </View>
           <View style={styles.profileHeader}>
-            <ProfilePicture userData={USER_DATA[0]} />
-            <ProfileInfo userData={USER_DATA[0]} />
+            {userData && (
+              <ProfilePicture userData={userData ?? {}} />
+            )}
+            {userData && (
+              <ProfileInfo userData={userData ?? {}} />
+            )}
             <ActionButton title="Follow" onPress={() => { }} width={250} />
           </View>
           <View style={styles.profileContent}>

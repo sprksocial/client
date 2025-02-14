@@ -1,16 +1,25 @@
 export interface UserProps {
     id?: string;
-    image: string;
-    name: string;
-    handler: string;
-    bio?: string;
     did: string;
+    displayName: string;
+    handle: string;
+    description?: string;
+    avatar: string;
+    banner?: string;
+    followersCount?: number;
+    followsCount?: number;
     videos?: VideoProps[];
-    followers?: number;
-    following?: number;
     likes?: number;
     views?: number;
-}
+    postsCount?: number;
+    associated?: object;
+    joinedViaStarterPack?: object;
+    indexedAt?: string;
+    createdAt?: string;
+    viewer?: object;
+    labels?: object[];
+    pinnedPost?: object;
+  }
 
 export interface VideoCommentProps {
     id: number;
@@ -39,6 +48,84 @@ export interface VideoProps {
     shares?: number;
     description?: VideoDescriptionProps;
 }
+
+export interface PostProps {
+    uri: string;
+    cid: string;
+    author: UserProps;
+    record: PostRecordProps;
+    embed?: PostEmbedProps;
+    replyCount: number;
+    repostCount: number;
+    likeCount: number;
+    quoteCount: number;
+    indexedAt: string;
+    labels: any[];
+  }
+  
+  export interface PostRecordProps {
+    $type: string;
+    createdAt: string;
+    embed?: VideoEmbedProps | ImagesEmbedProps;
+    langs: string[];
+    text: string;
+  }
+  
+  export interface VideoEmbedProps {
+    $type: 'app.bsky.embed.video';
+    aspectRatio: {
+      height: number;
+      width: number;
+    };
+    video: {
+      $type: string;
+      ref: {
+        $link: string;
+      };
+      mimeType: string;
+      size: number;
+    };
+  }
+  
+  export interface ImagesEmbedProps {
+    $type: 'app.bsky.embed.images';
+    images: {
+      alt: string;
+      aspectRatio: {
+        height: number;
+        width: number;
+      };
+      image: {
+        $type: string;
+        ref: {
+          $link: string;
+        };
+        mimeType: string;
+        size: number;
+      };
+    }[];
+  }
+  
+  export interface PostEmbedProps {
+    $type: string;
+    cid: string;
+    playlist?: string;
+    thumbnail?: string;
+    aspectRatio?: {
+      height: number;
+      width: number;
+    };
+    images?: {
+      thumb: string;
+      fullsize: string;
+      alt: string;
+      aspectRatio: {
+        height: number;
+        width: number;
+      };
+    }[];
+  }
+
 
 export interface SharesProps {
     amount: number;

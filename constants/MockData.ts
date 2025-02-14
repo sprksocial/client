@@ -4,18 +4,16 @@ import { UserProps, VideoCommentProps, VideoProps } from "@/types/Interfaces";
 export const USER_DATA: UserProps[] = [
     {
         did: 'did:plc:ypynu36vspziz6xdrta3b42c',
-        image: 'https://cdn.bsky.app/img/avatar/plain/did:plc:ypynu36vspziz6xdrta3b42c/bafkreifjqb5hn7dqk4pv7c5pwpf4pha5j5uyj3vumcbzx3kf7ft44c4ghy@jpeg',
-        name: 'C3B',
-        handler: 'ctresb.com',
-        bio: 'I do some stuffs…\n22y\nCTO at @reelo.app 🟦\n\n🇧🇷 pt-BR | 🇺🇸 en-US',
-        followers: 792,
-        following: 119,
+        avatar: 'https://cdn.bsky.app/img/avatar/plain/did:plc:bhexdu6auzdyyn7o7lx3gxjf/bafkreih2zj5re3ik5h37ufhtst3aoapp6pmyxmhoa45gjcjalxk6ncl6hy@jpeg',
+        displayName: 'João Davi',
+        handle: 'joaodavisn.com',
+        description: 'CTO at @reelo.app\nBuilding the future of social networks on ATmosphere, one network at a time.',
+        followersCount: 792,
+        followsCount: 119,
         likes: 5000,
         views: 1500,
     },
-
-    // bio max 120 characters
-]
+];
 
 export const COMMENT_DATA: VideoCommentProps[] = [];
 
@@ -71,3 +69,26 @@ export const VIDEO_DATA: VideoProps[] = [
   },
   
 ];
+
+export const did = 'did:plc:cveom2iroj3mt747sd4qqnr2';
+
+const getUserData = (id: string) => {
+  return new Promise<UserProps>((resolve) => {
+    setTimeout(() => {
+      resolve(USER_DATA[0]);
+    }, 1000);
+  });
+}
+
+const getVideoData = (id: string) => {
+  return new Promise<VideoProps>((resolve) => {
+    setTimeout(() => {
+      resolve(VIDEO_DATA[0]);
+    }, 1000);
+  });
+}
+
+export const MOCK_DATA = {
+  getUserData,
+  getVideoData,
+};
