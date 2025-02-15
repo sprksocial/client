@@ -9,12 +9,12 @@ import {
 import { ThemedView } from '@/components/ThemedView';
 import VideoScreen from '@/components/Video/VideoScreen';
 import VideoTop from '@/components/Video/VideoTop';
-import { VideoProps } from '@/types/Interfaces';
-import { fetchTrendingVideos } from '@/api/videoServices';
+import { PostProps } from '@/types/Interfaces';
+import { fetchTrendingPosts } from '@/api/videoServices';
 
 export default function HomeScreen() {
   const flatListRef = useRef<FlatList>(null);
-  const [videoData, setVideoData] = useState<VideoProps[]>([]);
+  const [postData, setPostData] = useState<PostProps[]>([]);
   const [currentVisibleIndex, setCurrentVisibleIndex] = useState(0);
 
   const onViewRef = useRef(({ viewableItems }: any) => {
@@ -42,8 +42,8 @@ export default function HomeScreen() {
 
   useEffect(() => {
     const loadVideos = async () => {
-      const videos = await fetchTrendingVideos();
-      setVideoData(videos);
+      const videos = await fetchTrendingPosts('video');
+      setPostData(videos);
     };
     loadVideos();
   }, []);
@@ -53,7 +53,7 @@ export default function HomeScreen() {
       <VideoTop />
       <FlatList
         ref={flatListRef}
-        data={videoData}
+        data={postData}
         keyExtractor={(item, index) => `${item.id}-${index}`}
         renderItem={({ item, index }) => {
           const isActive = index === currentVisibleIndex;

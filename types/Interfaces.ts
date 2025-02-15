@@ -31,6 +31,17 @@ export interface VideoCommentProps {
     onReply?: () => void;
 }
 
+export interface PostThread {
+  thread: ThreadViewPost;
+}
+
+export interface ThreadViewPost {
+  $type: string;
+  post: PostProps;
+  replies?: ThreadViewPost[];
+  threadContext?: Record<string, unknown>;
+}
+
 export interface VideoLikeProps {
     amount: number;
     onLike?: () => void;
@@ -61,6 +72,7 @@ export interface PostProps {
     quoteCount: number;
     indexedAt: string;
     labels: any[];
+    isActive?: boolean;
   }
   
   export interface PostRecordProps {
@@ -108,7 +120,7 @@ export interface PostProps {
   
   export interface PostEmbedProps {
     $type: string;
-    cid: string;
+    cid?: string;
     playlist?: string;
     thumbnail?: string;
     aspectRatio?: {
@@ -124,9 +136,15 @@ export interface PostProps {
         width: number;
       };
     }[];
+    video?: {
+      $type: string;
+      ref: {
+        $link: string;
+      };
+      mimeType: string;
+      size: number;
+    };
   }
-
-
 export interface SharesProps {
     amount: number;
 }
@@ -141,26 +159,26 @@ export interface HashtagsProps {
 }
 
 export interface VideoScreenProps {
-    videoData: VideoProps;
+    videoData: PostProps;
 }
 
 export interface VideoSideProps {
-    videoData: VideoProps;
+    videoData: PostProps;
     onComments?: () => void;
 }
 
 export interface CommentsTrayProps {
     visible: boolean;
-    comments: VideoCommentProps[];
+    comments: PostThread;
     onClose: () => void;
 }
 
 export interface VideoInfoOverlayProps {
-    videoData: VideoProps;
+    videoData: PostProps;
 }
 
 export interface VideoBottomProps {
-    videoData: VideoProps;
+    videoData: PostProps;
 }
 
 export interface PlayPauseButtonProps {

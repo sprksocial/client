@@ -7,6 +7,15 @@ import { VideoBottomProps } from '@/types/Interfaces';
 const VideoBottom: React.FC<VideoBottomProps> = ({ videoData }) => {
   const colorScheme = useColorScheme();
 
+  // extract hashtags from the text
+  const hashtagExtractor = (text: string) => {
+    const regex = /#[a-zA-Z0-9_]+/g;
+    const hashtags = text.match(regex);
+    return hashtags || [];
+  };
+
+  const hashtags = hashtagExtractor(videoData.record?.text || ''); // extract hashtags from the text
+  
   const styles = StyleSheet.create({
     container: {
       backgroundColor: '#00000020',
@@ -62,14 +71,14 @@ const VideoBottom: React.FC<VideoBottomProps> = ({ videoData }) => {
   return (
     <View style={styles.container}>
       <ThemedText lightColor={Colors.dark.text} darkColor={Colors.dark.text} style={styles.userInfo}>
-        {videoData.creator?.name || 'Unknown'} • @{videoData.creator?.handler || 'unknown'}
+        {videoData.author?.displayName || 'Unknown'} • @{videoData.author?.handle || 'unknown'}
         <TouchableOpacity style={styles.followButton}>
           <ThemedText type='subtitle' style={{color: "#fff"}}>Follow</ThemedText>
         </TouchableOpacity>
       </ThemedText>
-      <ThemedText type="description" lightColor={Colors.dark.text} darkColor={Colors.dark.text}>{videoData.description?.content || ''}</ThemedText>
+      <ThemedText type="description" lightColor={Colors.dark.text} darkColor={Colors.dark.text}>{videoData.record?.text || ''}</ThemedText>
       <View style={styles.hashtags}>
-        {videoData.description?.hashtags.content.map((hashtag, index) => (
+        {hashtags.map((hashtag, index) => (
           <ThemedText type="description" key={index} style={styles.hashtagText}>#{hashtag} </ThemedText>
         ))}
       </View>

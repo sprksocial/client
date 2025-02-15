@@ -72,7 +72,7 @@ const VideoSide: React.FC<VideoSideProps> = ({ videoData, onComments }) => {
                 <TouchableOpacity style={styles.iconContainer}>
                     <View style={styles.profilePicWrapper}>
                         <Image
-                            source={{ uri: videoData.creator?.image || '' }}
+                            source={{ uri: videoData.author?.avatar || '' }}
                             style={styles.profilePic}
                         />
                     </View>
@@ -90,7 +90,7 @@ const VideoSide: React.FC<VideoSideProps> = ({ videoData, onComments }) => {
                         lightColor={Colors.dark.text}
                         darkColor={Colors.dark.text}
                     >
-                        {formatNumber(videoData.likes?.amount ?? 0)}
+                        {formatNumber(videoData.likeCount ?? 0)}
                     </ThemedText>
                 </TouchableOpacity>
 
@@ -102,7 +102,7 @@ const VideoSide: React.FC<VideoSideProps> = ({ videoData, onComments }) => {
                         lightColor={Colors.dark.text}
                         darkColor={Colors.dark.text}
                     >
-                        {formatNumber(videoData.comments?.length ?? 0)}
+                        {formatNumber(videoData.replyCount ?? 0)}
                         
                     </ThemedText>
                 </TouchableOpacity>
@@ -115,7 +115,7 @@ const VideoSide: React.FC<VideoSideProps> = ({ videoData, onComments }) => {
                         lightColor={Colors.dark.text}
                         darkColor={Colors.dark.text}
                     >
-                        {formatNumber(videoData.shares ?? 0)}
+                        {formatNumber(videoData.repostCount ?? 0)}
                     </ThemedText>
                 </TouchableOpacity>
             </View>

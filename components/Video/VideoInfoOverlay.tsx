@@ -5,14 +5,24 @@ import VideoSide from './VideoSide';
 import VideoBottom from './VideoBottom';
 import CommentsTray from './CommentsTray';
 import { VideoInfoOverlayProps } from '@/types/Interfaces';
-import VideoTop from './VideoTop';
+import { fetchPostThread } from '@/api/videoServices';
 
 const VideoInfoOverlay: React.FC<VideoInfoOverlayProps> = ({ videoData }) => {
   const [isCommentsVisible, setIsCommentsVisible] = useState(false);
 
+  const getVideoPostId = (uri: string) => {
+    // "uri": "at://did:plc:rje4snbb7obj6twr4gji7ssm/app.bsky.feed.post/3li53nf2y7k2i",
+    const parts = uri.split('/');
+    return parts[parts.length - 1];
+  };
+
   const handleComments = () => {
+    const postId = getVideoPostId(videoData.uri);
+    fetchPostThread(videoData.author.did, postId);
     setIsCommentsVisible(true);
   };
+
+  const comments = fetchPostThread(videoData.author.did, getVideoPostId(videoData.uri));
 
   const handleCloseComments = () => {
     setIsCommentsVisible(false);
@@ -30,7 +40,7 @@ const VideoInfoOverlay: React.FC<VideoInfoOverlayProps> = ({ videoData }) => {
         // onUserClick={...}
         // onHashTagClick={...}
       />
-      <CommentsTray visible={isCommentsVisible} onClose={handleCloseComments} comments={videoData.comments ?? []} />
+      {/* <CommentsTray visible={isCommentsVisible} onClose={handleCloseComments} comments={ comments?? []} /> */}
     </View>
   );
 };
