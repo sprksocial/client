@@ -1,11 +1,22 @@
 import React from 'react';
-import { TouchableOpacity, Image, StyleSheet, View, useColorScheme } from 'react-native';
+import {
+  TouchableOpacity,
+  Image,
+  StyleSheet,
+  View,
+  useColorScheme,
+} from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
-import { VideoProps } from '@/types/Interfaces';
+import { PostProps } from '@/types/Interfaces';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 
-const VideoDisplay: React.FC<{ videoSource: VideoProps; onVideoPress: (video: VideoProps) => void }> = ({
+interface VideoDisplayProps {
+  videoSource: PostProps;
+  onVideoPress: (post: PostProps) => void;
+}
+
+const VideoDisplay: React.FC<VideoDisplayProps> = ({
   videoSource,
   onVideoPress,
 }) => {
@@ -54,14 +65,18 @@ const VideoDisplay: React.FC<{ videoSource: VideoProps; onVideoPress: (video: Vi
     },
   });
 
+  const thumbnailUri = videoSource.embed?.thumbnail || '';
+
   return (
     <TouchableOpacity style={styles.container} onPress={handleVideoPress}>
-      {videoSource && <Image source={{ uri: videoSource.thumbnail }} style={styles.thumbnail} />}
+      {thumbnailUri ? (
+        <Image source={{ uri: thumbnailUri }} style={styles.thumbnail} />
+      ) : null}
       <View style={styles.overlay}>
         <View style={styles.viewCount}>
-          <Ionicons style={styles.icon} name='eye' size={16} color='white' />
-          <ThemedText style={styles.viewCountText} type='comment'>
-            {videoSource.views}
+          <Ionicons style={styles.icon} name="eye" size={16} color="white" />
+          <ThemedText style={styles.viewCountText} type="comment">
+            {videoSource.likeCount}
           </ThemedText>
         </View>
       </View>

@@ -91,8 +91,8 @@ useEffect(() => {
             alignItems: 'center',
             flexDirection: 'row',
           },
-          tabBarIcon: ({ color }) => <Ionicons name="film"
-          size={30}
+          tabBarIcon: ({ color }) => <Ionicons name="albums"
+          size={29}
           color={color} />,
         }}
       />

@@ -17,7 +17,8 @@ import { ThemedText } from '../ThemedText';
 export default function VideoScreen({
   videoData,
 }: VideoScreenProps) {
-  const player = useVideoPlayer(videoData.videoSource as VideoSource, (playerInstance) => {
+
+  const player = useVideoPlayer(videoData.embed?.playlist as VideoSource, (playerInstance) => {
     playerInstance.loop = true;
     playerInstance.timeUpdateEventInterval = 500;
     if (videoData.isActive) {

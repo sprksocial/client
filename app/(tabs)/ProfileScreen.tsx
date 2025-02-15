@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, useColorScheme, View } from 'react-native';
+import {
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  useColorScheme,
+  View,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
 import ContentWrapper from '@/components/global/ContentWrapper';
@@ -7,28 +14,58 @@ import { Colors } from '@/constants/Colors';
 import ProfilePicture from '@/components/Profile/ProfilePicture';
 import ProfileInfo from '@/components/Profile/ProfileInfo';
 import ActionButton from '@/components/global/ActionButton';
-import VideoDisplay from '@/components/Profile/VideoDisplay';
+import VideoDisplay from '@/components/global/VideoDisplay';
 import PlaceholderVideoDisplay from '@/components/Profile/PlaceholderVideoDisplay';
-import { did, VIDEO_DATA } from '@/constants/MockData';
-import { UserProps, VideoProps } from '@/types/Interfaces';
+import { did } from '@/constants/MockData';
+import { UserProps, PostProps } from '@/types/Interfaces';
 import { useRouter } from 'expo-router';
-import { getProfile } from '@/api/profileServices';
+import { getProfile, getProfileMedia } from '@/api/profileServices';
 
-function padVideosWithPlaceholders(videos: VideoProps[]): (VideoProps & { isPlaceholder?: boolean })[] {
+function padVideosWithPlaceholders(
+  videos: (PostProps & { isPlaceholder?: boolean })[]
+): (PostProps & { isPlaceholder?: boolean })[] {
   const remainder = videos.length % 3;
   const placeholdersNeeded = remainder === 0 ? 0 : 3 - remainder;
-  const placeholders = Array(placeholdersNeeded).fill(null).map((_, i) => ({
-    id: `placeholder-${i}`,
-    isPlaceholder: true,
-  }));
+
+  const placeholders: (PostProps & { isPlaceholder?: boolean })[] = Array(
+    placeholdersNeeded
+  )
+    .fill(null)
+    .map((_, i) => ({
+      uri: `placeholder-${i}`,
+      cid: '',
+      author: {
+        did: '',
+        handle: '',
+        displayName: '',
+        avatar: '',
+        banner: '',
+      },
+      record: {
+        $type: 'app.bsky.feed.post',
+        createdAt: '',
+        text: '',
+        langs: [],
+      },
+      replyCount: 0,
+      repostCount: 0,
+      likeCount: 0,
+      quoteCount: 0,
+      indexedAt: '',
+      labels: [],
+      isPlaceholder: true,
+    }));
+
   return [...videos, ...placeholders];
 }
+
 
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const route = useRouter();
 
   const [userData, setUserData] = useState<UserProps | null>(null);
+  const [videoPosts, setVideoPosts] = useState<PostProps[]>([]);
 
   useEffect(() => {
     const loadProfileData = async () => {
@@ -45,9 +82,6 @@ export default function ProfileScreen() {
             banner: profileData.banner || '',
             followersCount: profileData.followersCount,
             followsCount: profileData.followsCount,
-            likes: 0,
-            views: 0,
-            videos: profileData.videos || [],
             postsCount: profileData.postsCount,
             associated: profileData.associated,
             joinedViaStarterPack: profileData.joinedViaStarterPack,
@@ -59,23 +93,33 @@ export default function ProfileScreen() {
           });
         }
       } catch (error) {
-        console.error("Error loading profile:", error);
+        console.error('Error loading profile:', error);
       }
     };
 
-  
+    const loadVideoPosts = async () => {
+      try {
+        const mediaPosts = await getProfileMedia(did, 'video');
+        const posts = mediaPosts.map((item: { post: PostProps }) => item.post as PostProps);
+        setVideoPosts(posts);
+      } catch (error) {
+        console.error('Error loading video posts:', error);
+      }
+    };
+    
+
     loadProfileData();
+    loadVideoPosts();
   }, []);
 
-  const paddedVideoData = padVideosWithPlaceholders(VIDEO_DATA);
+  const paddedVideoData = padVideosWithPlaceholders(videoPosts);
 
-  function handleOpenProfileFeed(videoClicked: VideoProps) {
-    const index = VIDEO_DATA.findIndex((video) => video.id === videoClicked.id);
-
+  function handleOpenProfileFeed(post: PostProps) {
+    const index = videoPosts.findIndex((video) => video.uri === post.uri);
     route.push({
-      pathname: "../ProfileFeed",
+      pathname: '../ProfileFeed',
       params: {
-        videoData: JSON.stringify(VIDEO_DATA),
+        videoData: JSON.stringify(videoPosts),
         initialIndex: index.toString(),
       },
     });
@@ -129,44 +173,60 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ContentWrapper>
-        <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollViewContent}
+          showsVerticalScrollIndicator={false}>
           <View style={styles.profileNavbar}>
             <TouchableOpacity onPress={() => { }}>
-              <Ionicons name="arrow-back" size={24} color={Colors[colorScheme ?? 'light'].text} />
+              <Ionicons
+                name="arrow-back"
+                size={24}
+                color={Colors[colorScheme ?? 'light'].text}
+              />
             </TouchableOpacity>
-            <ThemedText style={styles.profileTopText}>{userData?.displayName}</ThemedText>
+            <ThemedText style={styles.profileTopText}>
+              {userData?.displayName}
+            </ThemedText>
             <TouchableOpacity onPress={() => { }}>
-              <Ionicons name="ellipsis-horizontal" size={24} color={Colors[colorScheme ?? 'light'].text} />
+              <Ionicons
+                name="ellipsis-horizontal"
+                size={24}
+                color={Colors[colorScheme ?? 'light'].text}
+              />
             </TouchableOpacity>
           </View>
           <View style={styles.profileHeader}>
-            {userData && (
-              <ProfilePicture userData={userData ?? {}} />
-            )}
-            {userData && (
-              <ProfileInfo userData={userData ?? {}} />
-            )}
+            {userData && <ProfilePicture userData={userData} />}
+            {userData && <ProfileInfo userData={userData} />}
             <ActionButton title="Follow" onPress={() => { }} width={250} />
           </View>
           <View style={styles.profileContent}>
             <View style={styles.tabButton}>
-              <Ionicons name="albums" size={24} color={Colors[colorScheme ?? 'light'].selectedIcon} />
-              <ThemedText style={{ color: Colors[colorScheme ?? 'light'].selectedIcon, marginLeft: 5 }}>
+              <Ionicons
+                name="albums"
+                size={24}
+                color={Colors[colorScheme ?? 'light'].selectedIcon}
+              />
+              <ThemedText
+                style={{
+                  color: Colors[colorScheme ?? 'light'].selectedIcon,
+                  marginLeft: 5,
+                }}>
                 Videos
               </ThemedText>
             </View>
             <View style={styles.videoGrid}>
-              {paddedVideoData.map((video) => {
-                if (video.isPlaceholder) {
-                  return <PlaceholderVideoDisplay key={video.id} />;
+              {paddedVideoData.map((item, index) => {
+                const key = item.uri ? item.uri : `fallback-${index}`;
+
+                if (item.isPlaceholder) {
+                  return <PlaceholderVideoDisplay key={key} />;
                 }
                 return (
                   <VideoDisplay
-                    key={video.id}
-                    videoSource={video}
-                    onVideoPress={(video) => {
-                      handleOpenProfileFeed(video);
-                    }}
+                    key={key}
+                    videoSource={item}
+                    onVideoPress={handleOpenProfileFeed}
                   />
                 );
               })}

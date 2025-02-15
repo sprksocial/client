@@ -1,4 +1,3 @@
-// CommentsTray.tsx
 import React from 'react';
 import {
     StyleSheet,
@@ -12,13 +11,18 @@ import {
 import { ThemedText } from '@/components/ThemedText';
 import { Colors } from '@/constants/Colors';
 import VideoComment from './VideoComment';
-import { VideoCommentProps, CommentsTrayProps } from '@/types/Interfaces';
+import { PostThread, ThreadViewPost } from '@/types/Interfaces';
 
 const { height: screenHeight } = Dimensions.get('window');
 
-const CommentsTray: React.FC<CommentsTrayProps> = ({ visible, onClose, comments }) => {
-    const translateY = React.useRef(new Animated.Value(screenHeight)).current;
+interface CommentsTrayProps {
+    visible: boolean;
+    onClose: () => void;
+    thread: PostThread;
+}
 
+const CommentsTray: React.FC<CommentsTrayProps> = ({ visible, onClose, thread }) => {
+    const translateY = React.useRef(new Animated.Value(screenHeight)).current;
     const colorScheme = useColorScheme();
 
     React.useEffect(() => {
@@ -31,48 +35,51 @@ const CommentsTray: React.FC<CommentsTrayProps> = ({ visible, onClose, comments 
 
     if (!visible) return null;
 
-    
-const styles = StyleSheet.create({
-    overlay: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    },
-    tray: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: screenHeight * 0.7,
-        backgroundColor: '#fafafa',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        overflow: 'hidden',
-    },
-    trayContent: {
-        flex: 1,
-        zIndex: 10,
-    },
-    trayHeader: {
-        fontSize: 18,
-        padding: 16,
-        fontWeight: 'bold',
-        marginBottom: 5,
-        textAlign: 'center',
-        borderBottomColor: '#ccc',
-        borderBottomWidth: 1,
-    },
-    commentsList: {
-        flex: 1,
-    },
-    noCommentsText: {
-        textAlign: 'center',
-        marginTop: 16,
-    },
-});
+    // Extracting comments from the thread
+    const rootPost = thread.thread;
+    const comments = rootPost.replies || [];
+
+    const styles = StyleSheet.create({
+        overlay: {
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        },
+        tray: {
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: screenHeight * 0.7,
+            backgroundColor: '#fafafa',
+            borderTopLeftRadius: 20,
+            borderTopRightRadius: 20,
+            overflow: 'hidden',
+        },
+        trayContent: {
+            flex: 1,
+            zIndex: 10,
+        },
+        trayHeader: {
+            fontSize: 18,
+            padding: 16,
+            fontWeight: 'bold',
+            marginBottom: 5,
+            textAlign: 'center',
+            borderBottomColor: '#ccc',
+            borderBottomWidth: 1,
+        },
+        commentsList: {
+            flex: 1,
+        },
+        noCommentsText: {
+            textAlign: 'center',
+            marginTop: 16,
+        },
+    });
 
     return (
         <>
@@ -92,17 +99,21 @@ const styles = StyleSheet.create({
                         Comments
                     </ThemedText>
                     <ScrollView style={styles.commentsList} showsVerticalScrollIndicator={false}>
-                        {(comments || []).length > 0 ? (
-                            (comments || []).map((comment) => (
+                        {comments.length > 0 ? (
+                            comments.map((comment: ThreadViewPost) => (
                                 <VideoComment
-                                    id={comment.id}
-                                    author={comment.author}
-                                    key={comment.id}
-                                    content={comment.content}
-                                    likes={comment.likes}
-                                    commentReplies={comment.commentReplies || []}
+                                    key={comment.post.cid}
+                                    id={comment.post.cid}
+                                    author={{
+                                        name: comment.post.author.displayName,
+                                        avatar: comment.post.author.avatar,
+                                        handle: comment.post.author.handle,
+                                    }}
+                                    content={comment.post.record.text || ''}
+                                    likes={comment.post.likeCount}
+                                    commentReplies={comment.replies || []}
                                     onLike={() => {
-                                        console.log(`Liked comment ${comment.id}`);
+                                        console.log(`Liked comment ${comment.post.cid}`);
                                     }}
                                 />
                             ))
@@ -117,11 +128,9 @@ const styles = StyleSheet.create({
                         )}
                     </ScrollView>
                 </View>
-
             </Animated.View>
         </>
     );
 };
-
 
 export default CommentsTray;

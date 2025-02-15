@@ -3,32 +3,59 @@ import { SafeAreaView, ScrollView, StyleSheet, useColorScheme, View } from 'reac
 import ContentWrapper from '@/components/global/ContentWrapper';
 import SearchBar from '@/components/Search/SearchBar';
 import FeaturedProfile from '@/components/Search/FeaturedProfile';
-import VideoDisplay from '@/components/Profile/VideoDisplay';
+import VideoDisplay from '@/components/global/VideoDisplay';
 import PlaceholderVideoDisplay from '@/components/Profile/PlaceholderVideoDisplay';
 import { Colors } from '@/constants/Colors';
-import { UserProps, VideoProps } from '@/types/Interfaces';
-import { fetchTrendingVideos } from '@/api/videoServices';
+import { UserProps, PostProps } from '@/types/Interfaces';
+import { fetchTrendingPosts } from '@/api/videoServices';
 import { getProfile } from '@/api/profileServices';
 import { useRouter } from 'expo-router';
 
-function padVideosWithPlaceholders(videos: VideoProps[]): (VideoProps & { isPlaceholder?: boolean })[] {
-  const remainder = videos.length % 3;
+// Pad posts so that the grid always has complete rows
+function padPostsWithPlaceholders(
+  posts: PostProps[]
+): (PostProps & { isPlaceholder?: boolean })[] {
+  const remainder = posts.length % 3;
   const placeholdersNeeded = remainder === 0 ? 0 : 3 - remainder;
-  const placeholders = Array(placeholdersNeeded).fill(null).map((_, i) => ({
-    id: `placeholder-${i}`,
-    isPlaceholder: true,
-  }));
-  return [...videos, ...placeholders];
+
+  // Create placeholder objects with minimal valid PostProps values
+  const placeholders: (PostProps & { isPlaceholder?: boolean })[] = Array(placeholdersNeeded)
+    .fill(null)
+    .map((_, i) => ({
+      uri: `placeholder-${i}`,
+      cid: '',
+      author: {
+        did: '',
+        handle: '',
+        displayName: '',
+        avatar: '',
+        banner: '',
+      },
+      record: {
+        $type: 'app.bsky.feed.post',
+        createdAt: '',
+        text: '',
+        langs: [],
+      },
+      replyCount: 0,
+      repostCount: 0,
+      likeCount: 0,
+      quoteCount: 0,
+      indexedAt: '',
+      labels: [],
+      isPlaceholder: true,
+    }));
+  return [...posts, ...placeholders];
 }
 
 export default function SearchScreen() {
   const colorScheme = useColorScheme();
   const router = useRouter();
-  const [videoData, setVideoData] = useState<VideoProps[]>([]);
+  const [videoData, setVideoData] = useState<PostProps[]>([]);
   const [featuredUser, setFeaturedUser] = useState<UserProps | null>(null);
 
-  function handleOpenProfileFeed(videoClicked: VideoProps) {
-    const index = videoData.findIndex((video) => video.id === videoClicked.id);
+  function handleOpenProfileFeed(postClicked: PostProps) {
+    const index = videoData.findIndex((post) => post.uri === postClicked.uri);
     router.push({
       pathname: '../ProfileFeed',
       params: {
@@ -41,10 +68,12 @@ export default function SearchScreen() {
   useEffect(() => {
     const loadTrendingData = async () => {
       try {
-        const videos = await fetchTrendingVideos();
-        setVideoData(videos);
-        if (videos.length > 0) {
-          const did = videos[0]?.creator?.did;
+        // fetchTrendingVideos now returns posts (with embed type video)
+        const posts = await fetchTrendingPosts('video');
+        setVideoData(posts);
+        if (posts.length > 0) {
+          // Use author.did instead of creator.did
+          const did = posts[0]?.author?.did;
           if (did) {
             const profileData = await getProfile(did);
             if (profileData) {
@@ -60,7 +89,7 @@ export default function SearchScreen() {
                 followsCount: profileData.followsCount,
                 likes: 0,
                 views: 0,
-                videos,
+                // Pass the posts as the user's videos
                 postsCount: profileData.postsCount,
                 associated: profileData.associated,
                 joinedViaStarterPack: profileData.joinedViaStarterPack,
@@ -80,7 +109,7 @@ export default function SearchScreen() {
     loadTrendingData();
   }, []);
 
-  const paddedVideoData = padVideosWithPlaceholders(videoData);
+  const paddedVideoData = padPostsWithPlaceholders(videoData);
 
   const styles = StyleSheet.create({
     container: {
@@ -103,15 +132,26 @@ export default function SearchScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ContentWrapper>
-        <ScrollView contentContainerStyle={styles.scrollViewContent} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          contentContainerStyle={styles.scrollViewContent}
+          showsVerticalScrollIndicator={false}>
           <SearchBar onSearch={() => {}} />
-          {featuredUser && <FeaturedProfile user={featuredUser} isFollowing={false} onFollow={() => {}} />}
+          {featuredUser && (
+            <FeaturedProfile user={featuredUser} isFollowing={false} onFollow={() => {}} />
+          )}
           <View style={styles.videoGrid}>
-            {paddedVideoData.map((video) => {
-              if (video.isPlaceholder) {
-                return <PlaceholderVideoDisplay key={video.id} />;
+            {paddedVideoData.map((post, index) => {
+              const key = post.uri || `fallback-${index}`;
+              if (post.isPlaceholder) {
+                return <PlaceholderVideoDisplay key={key} />;
               }
-              return <VideoDisplay key={video.id} videoSource={video} onVideoPress={handleOpenProfileFeed} />;
+              return (
+                <VideoDisplay
+                  key={key}
+                  videoSource={post}
+                  onVideoPress={handleOpenProfileFeed}
+                />
+              );
             })}
           </View>
         </ScrollView>

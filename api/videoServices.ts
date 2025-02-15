@@ -1,5 +1,5 @@
 // src/api/videoService.ts
-import { VideoProps } from '@/types/Interfaces';
+import { PostProps, VideoProps } from '@/types/Interfaces';
 
 const extractHashtags = (text: string): string[] => {
   if (!text) return [];
@@ -7,7 +7,9 @@ const extractHashtags = (text: string): string[] => {
   return match ? match.map(tag => tag.replace('#', '')) : [];
 };
 
-export const fetchTrendingVideos = async (): Promise<VideoProps[]> => {
+export const fetchTrendingPosts = async (
+  mediaType: "video" | "image"
+): Promise<PostProps[]> => {
   try {
     const res = await fetch(
       'https://public.api.bsky.app/xrpc/app.bsky.feed.getFeed?feed=at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/whats-hot&limit=100'
@@ -15,63 +17,51 @@ export const fetchTrendingVideos = async (): Promise<VideoProps[]> => {
     const data = await res.json();
     if (!data || !data.feed) return [];
 
-    const mappedVideos: VideoProps[] = data.feed
-      .map((item: any, idx: number) => {
-        const post = item?.post;
-        const record = post?.record;
-        const author = post?.author;
-        const embed = post?.embed;
-
-        if (!post || !record || !author) {
-          return null;
+    const posts: PostProps[] = data.feed
+      .map((item: any) => item?.post)
+      .filter((post: PostProps | undefined): post is PostProps => !!post)
+      .filter((post: PostProps) => {
+        const embed = post.embed;
+        if (!embed) return false;
+        if (mediaType === "video") {
+          return (
+            embed.$type === "app.bsky.embed.video#view" ||
+            embed.$type === "app.bsky.embed.video"
+          );
+        } else if (mediaType === "image") {
+          return (
+            embed.$type === "app.bsky.embed.images#view" ||
+            embed.$type === "app.bsky.embed.images"
+          );
         }
+        return false;
+      });
 
-        if (!embed || embed.$type !== 'app.bsky.embed.video#view') {
-          return null;
-        }
-
-        const likeCount = post.likeCount || 0;
-        const shareCount = post.repostCount || 0;
-        const textContent = record.text || '';
-
-        const videoSource = embed.playlist || '';
-        const thumbnail   = embed.thumbnail || '';
-
-        const sparkVideo: VideoProps = {
-          id: post.cid || `bluesky-video-${idx}`,
-          videoSource,
-          thumbnail,
-          creator: {
-            id: author.did,
-            name: author.displayName || author.handle,
-            image: author.avatar,
-            handler: author.handle,
-            bio: author.bio,
-            did: author.did,
-          },
-          likes: {
-            amount: likeCount,
-            onLike: () => console.log(`Liked video ${post.cid}`),
-          },
-          views: 0,
-          shares: shareCount,
-          description: {
-            content: textContent,
-            hashtags: {
-              content: extractHashtags(textContent),
-            },
-          },
-          comments: [],
-          isActive: false,
-        };
-
-        return sparkVideo;
-      })
-      .filter((v: VideoProps | null): v is VideoProps => v !== null);
-
-    return mappedVideos;
+    return posts;
   } catch (error) {
-    console.log('Error fetching Bluesky feed:', error);
+    console.error("Error fetching trending posts:", error);
+    return [];
+  }
+};
+
+export const fetchPostThread = async (
+  author: string,
+  postId: string
+): Promise<PostProps[]> => {
+  try {
+    const res = await fetch(
+      `https://public.api.bsky.app/xrpc/app.bsky.feed.getPostThread?uri=at://did:plc:${author}/app.bsky.feed.post/${postId}&depth=10`
+    );
+    const data = await res.json();
+    if (!data || !data.thread) return [];
+
+    const posts: PostProps[] = data.thread
+      .map((item: any) => item?.post)
+      .filter((post: PostProps | undefined): post is PostProps => !!post);
+
+    return posts;
+  } catch (error) {
+    console.error("Error fetching post thread:", error);
     return [];
   }
 };
