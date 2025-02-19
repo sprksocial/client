@@ -162,6 +162,10 @@ export interface VideoScreenProps {
     videoData: PostProps;
 }
 
+export interface ImageScreenProps {
+    imageData: PostProps;
+}
+
 export interface VideoSideProps {
     videoData: PostProps;
     onComments?: () => void;

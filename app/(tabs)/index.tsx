@@ -1,4 +1,3 @@
-// HomeScreen.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import {
   StyleSheet,
@@ -9,11 +8,12 @@ import {
 import { ThemedView } from '@/components/ThemedView';
 import VideoScreen from '@/components/Video/VideoScreen';
 import VideoTop from '@/components/Video/VideoTop';
+import ImageScreen from '@/components/Image/ImageScreen';
 import { PostProps } from '@/types/Interfaces';
 import { fetchTrendingPosts } from '@/api/videoServices';
 
 export default function HomeScreen() {
-  const flatListRef = useRef<FlatList>(null);
+  const flatListRef = useRef<FlatList<PostProps>>(null);
   const [postData, setPostData] = useState<PostProps[]>([]);
   const [currentVisibleIndex, setCurrentVisibleIndex] = useState(0);
 
@@ -31,7 +31,7 @@ export default function HomeScreen() {
   });
 
   const { height: windowHeight } = Dimensions.get('window');
-  const TAB_BAR_HEIGHT = windowHeight * 0.1;
+  const TAB_BAR_HEIGHT = windowHeight * 0.10017;
   const availableHeight = windowHeight - TAB_BAR_HEIGHT;
 
   const getItemLayout = (_: any, index: number) => ({
@@ -40,12 +40,23 @@ export default function HomeScreen() {
     index,
   });
 
+  const shuffleArray = (array: any[]) => {
+    return array.sort(() => Math.random() - 0.5);
+  };
+
   useEffect(() => {
-    const loadVideos = async () => {
-      const videos = await fetchTrendingPosts('video');
-      setPostData(videos);
+    const loadContent = async () => {
+      try {
+        const videoPosts = await fetchTrendingPosts('video');
+        const imagePosts = await fetchTrendingPosts('image');
+        const mergedData = shuffleArray([...videoPosts, ...imagePosts]);
+        setPostData(mergedData);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      }
     };
-    loadVideos();
+
+    loadContent();
   }, []);
 
   return (
@@ -54,12 +65,20 @@ export default function HomeScreen() {
       <FlatList
         ref={flatListRef}
         data={postData}
-        keyExtractor={(item, index) => `${item.id}-${index}`}
+        keyExtractor={(item, index) => `${item.cid}-${index}`}
         renderItem={({ item, index }) => {
           const isActive = index === currentVisibleIndex;
+          const embedType = item.embed?.$type || '';
+
           return (
-            <View style={[styles.videoContainer, { height: availableHeight }]}>
-              <VideoScreen videoData={{ ...item, isActive }} />
+            <View style={[styles.container, { height: availableHeight }]}>
+              {embedType === 'app.bsky.embed.video' ||
+              embedType === 'app.bsky.embed.video#view' ? (
+                <VideoScreen videoData={{ ...item, isActive }} />
+              ) : embedType === 'app.bsky.embed.images' ||
+                embedType === 'app.bsky.embed.images#view' ? (
+                <ImageScreen imageData={item} />
+              ) : null}
             </View>
           );
         }}
@@ -73,7 +92,7 @@ export default function HomeScreen() {
         windowSize={3}
         removeClippedSubviews
         scrollEventThrottle={16}
-        style={styles.flatList}
+        style={[styles.flatList, { height: availableHeight }]}
         contentContainerStyle={styles.flatListContent}
         getItemLayout={getItemLayout}
       />
@@ -87,12 +106,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
   },
   flatList: {
-    flex: 1,
   },
   flatListContent: {
     paddingBottom: 0,
   },
-  videoContainer: {
+  container: {
     width: '100%',
     backgroundColor: '#000',
     justifyContent: 'center',
