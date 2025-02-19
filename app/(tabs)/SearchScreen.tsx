@@ -18,7 +18,6 @@ function padPostsWithPlaceholders(
   const remainder = posts.length % 3;
   const placeholdersNeeded = remainder === 0 ? 0 : 3 - remainder;
 
-  // Create placeholder objects with minimal valid PostProps values
   const placeholders: (PostProps & { isPlaceholder?: boolean })[] = Array(placeholdersNeeded)
     .fill(null)
     .map((_, i) => ({
@@ -68,12 +67,10 @@ export default function SearchScreen() {
   useEffect(() => {
     const loadTrendingData = async () => {
       try {
-        // fetchTrendingVideos now returns posts (with embed type video)
         const posts = await fetchTrendingPosts('video');
         setVideoData(posts);
         if (posts.length > 0) {
-          // Use author.did instead of creator.did
-          const did = posts[0]?.author?.did;
+          const did = posts[2]?.author?.did;
           if (did) {
             const profileData = await getProfile(did);
             if (profileData) {
@@ -89,7 +86,6 @@ export default function SearchScreen() {
                 followsCount: profileData.followsCount,
                 likes: 0,
                 views: 0,
-                // Pass the posts as the user's videos
                 postsCount: profileData.postsCount,
                 associated: profileData.associated,
                 joinedViaStarterPack: profileData.joinedViaStarterPack,

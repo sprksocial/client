@@ -18,7 +18,6 @@ const VideoBottom: React.FC<VideoBottomProps> = ({ videoData }) => {
   
   const styles = StyleSheet.create({
     container: {
-      backgroundColor: '#00000020',
       padding: 10,
       borderRadius: 10,
       display: 'flex',

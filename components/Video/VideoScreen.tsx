@@ -13,6 +13,7 @@ import ControlsOverlay from './ControlsOverlay';
 import VideoInfoOverlay from './VideoInfoOverlay';
 import { VideoScreenProps } from '@/types/Interfaces';
 import { ThemedText } from '../ThemedText';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function VideoScreen({
   videoData,
@@ -119,11 +120,14 @@ export default function VideoScreen({
           nativeControls={false}
           allowsVideoFrameAnalysis={false}
         />
+             <LinearGradient
+        colors={['transparent', 'rgba(0,0,0,0.8)']}
+        style={styles.background}
+      />
         <View style={styles.progressContainer}>
           <View style={[styles.progressBar, { width: `${progressPercentage}%` }]} />
           <View style={[styles.progressIndicator, { left: `${progressPercentage}%` }]} />
         </View>
-
 
         {showControls && (
           <>
@@ -178,6 +182,13 @@ const styles = StyleSheet.create({
   progressBar: {
     height: '100%',
     backgroundColor: 'rgba(255, 255, 255, 0.5)',
+  },
+  background: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: 230,
   },
   progressIndicator: {
     position: 'absolute',

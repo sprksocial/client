@@ -73,7 +73,7 @@ useEffect(() => {
         },
         default: {
           backgroundColor: Colors[colorScheme ?? 'light'].background,
-          height: 60,
+          height: '10%',
           alignItems: 'center',
           justifyContent: 'space-between',
           display: 'flex',

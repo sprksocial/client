@@ -154,14 +154,19 @@ export default function ProfileScreen() {
     profileContent: {
       marginTop: 20,
     },
+    profileTabs: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      marginBottom: 10,
+      width: '100%',
+      borderBottomWidth: 1,
+      borderBottomColor: Colors[colorScheme ?? 'light'].underlineColor,
+    },
     tabButton: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
       padding: 10,
-      borderBottomWidth: 1,
-      borderBottomColor: Colors[colorScheme ?? 'light'].underlineColor,
-      marginBottom: 5,
     },
     videoGrid: {
       flexDirection: 'row',
@@ -201,19 +206,35 @@ export default function ProfileScreen() {
             <ActionButton title="Follow" onPress={() => { }} width={250} />
           </View>
           <View style={styles.profileContent}>
-            <View style={styles.tabButton}>
-              <Ionicons
-                name="albums"
-                size={24}
-                color={Colors[colorScheme ?? 'light'].selectedIcon}
-              />
-              <ThemedText
-                style={{
-                  color: Colors[colorScheme ?? 'light'].selectedIcon,
-                  marginLeft: 5,
-                }}>
-                Videos
-              </ThemedText>
+            <View style={styles.profileTabs}>
+              <View style={styles.tabButton}>
+                <Ionicons
+                  name="film"
+                  size={24}
+                  color={Colors[colorScheme ?? 'light'].selectedIcon}
+                />
+                <ThemedText
+                  style={{
+                    color: Colors[colorScheme ?? 'light'].selectedIcon,
+                    marginLeft: 5,
+                  }}>
+                  Videos
+                </ThemedText>
+              </View>
+              <View style={styles.tabButton}>
+                <Ionicons
+                  name="image"
+                  size={24}
+                  color={Colors[colorScheme ?? 'light'].notSelectedIcon}
+                />
+                <ThemedText
+                  style={{
+                    color: Colors[colorScheme ?? 'light'].notSelectedIcon,
+                    marginLeft: 5,
+                  }}>
+                  Photos
+                </ThemedText>
+              </View>
             </View>
             <View style={styles.videoGrid}>
               {paddedVideoData.map((item, index) => {
