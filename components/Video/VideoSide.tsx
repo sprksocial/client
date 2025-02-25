@@ -1,5 +1,3 @@
-// src/components/Video/VideoSide.tsx
-
 import React from 'react';
 import { View, Image, TouchableOpacity, StyleSheet, useColorScheme } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -83,7 +81,7 @@ const VideoSide: React.FC<VideoSideProps> = ({ videoData, onComments }) => {
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.iconContainer} onPress={() => console.log('Liked video')}>
-                    <Ionicons style={styles.icon} color="white" name="heart-outline" size={30} />
+                    <Ionicons style={styles.icon} color="white" name="heart-outline" size={25} />
                     <ThemedText
                         type="defaultBold"
                         style={styles.text}
@@ -95,7 +93,7 @@ const VideoSide: React.FC<VideoSideProps> = ({ videoData, onComments }) => {
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.iconContainer} onPress={onComments}>
-                    <Ionicons style={styles.icon} color="white" name="chatbubble-outline" size={30} />
+                    <Ionicons style={styles.icon} color="white" name="chatbubble-outline" size={25} />
                     <ThemedText
                         type="defaultBold"
                         style={styles.text}
@@ -108,7 +106,7 @@ const VideoSide: React.FC<VideoSideProps> = ({ videoData, onComments }) => {
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.iconContainer} onPress={() => console.log('Shared video')}>
-                    <Ionicons style={styles.icon} color="white" name="share-social-outline" size={30} />
+                    <Ionicons style={styles.icon} color="white" name="share-social-outline" size={25} />
                     <ThemedText
                         type="defaultBold"
                         style={styles.text}

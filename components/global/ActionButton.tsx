@@ -1,13 +1,15 @@
 import { Colors } from '@/constants/Colors';
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, useColorScheme } from 'react-native';
 
 interface ActionButtonProps {
   title: string;
   onPress: () => void;
-  type?: 'primary' | 'secondary' | 'outline' | 'disabled'; // Different button styles
-  isLoading?: boolean; // Optional loading state
-  width?: number; // Optional full-width button
+  type?: 'primary' | 'secondary' | 'outline' | 'disabled';
+  icon?: string;
+  isLoading?: boolean;
+  width?: number;
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({
@@ -16,6 +18,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   type = 'primary',
   isLoading = false,
   width,
+  icon,
 }) => {
 
   const colorScheme = useColorScheme();
@@ -27,6 +30,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
       borderRadius: 8,
       alignItems: 'center',
       justifyContent: 'center',
+      flexDirection: 'row',
     },
     primary: {
       backgroundColor: Colors[colorScheme ?? 'light'].tint,
@@ -45,7 +49,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
     buttonText: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: '#ffffff',
+      color: Colors.dark.text,
     },
     outlineText: {
       color: Colors[colorScheme ?? 'light'].tint,
@@ -62,6 +66,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
       onPress={onPress}
       disabled={type === 'disabled' || isLoading}
     >
+      {icon && <Ionicons name={icon as any} size={25} color={Colors.dark.text} />}
       {isLoading ? (
         <ActivityIndicator color={type === 'outline' ? '#000' : '#fff'} />
       ) : (

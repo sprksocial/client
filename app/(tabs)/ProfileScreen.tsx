@@ -107,7 +107,6 @@ export default function ProfileScreen() {
       }
     };
     
-
     loadProfileData();
     loadVideoPosts();
   }, []);
@@ -124,6 +123,8 @@ export default function ProfileScreen() {
       },
     });
   }
+
+  const isMine = true;
 
   const styles = StyleSheet.create({
     container: {
@@ -173,6 +174,12 @@ export default function ProfileScreen() {
       flexWrap: 'wrap',
       justifyContent: 'center',
     },
+    profileActionButtons: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: 10,
+      width: '100%',
+    },
   });
 
   return (
@@ -203,7 +210,17 @@ export default function ProfileScreen() {
           <View style={styles.profileHeader}>
             {userData && <ProfilePicture userData={userData} />}
             {userData && <ProfileInfo userData={userData} />}
-            <ActionButton title="Follow" onPress={() => { }} width={250} />
+            {!isMine && (
+              <ActionButton title="Follow" onPress={() => { }} width={250} />
+            )}
+            {
+              isMine && (
+                <View style={styles.profileActionButtons}>
+                <ActionButton type={'secondary'} title="Edit Profile" onPress={() => { }} width={140} icon='create' />
+                <ActionButton type={'secondary'} title="" onPress={() => { }} width={70} icon='share-social' />
+                </View>
+              )
+            }
           </View>
           <View style={styles.profileContent}>
             <View style={styles.profileTabs}>

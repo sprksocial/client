@@ -17,10 +17,10 @@ const NOTIFICATIONS_DATA: NotificationProps[] = [
       timestamp: new Date(Date.now() - 1 * 3600 * 1000).toISOString(), // 1 hour ago
       users: [
         {
-          image: 'https://picsum.photos/200/300?random=12',
-          name: 'Alice Johnson',
+          avatar: 'https://picsum.photos/200/300?random=12',
+          displayName: 'Alice Johnson',
           did: 'did:plc:alice001',
-          handler: 'alice.j',
+          handle: 'alice.j',
         },
       ],
     },
@@ -35,10 +35,10 @@ const NOTIFICATIONS_DATA: NotificationProps[] = [
       timestamp: new Date(Date.now() - 2 * 3600 * 1000).toISOString(), // 2 hours ago
       users: [
         {
-          image: 'https://picsum.photos/200/300?random=13',
-          name: 'Bob Smith',
+          avatar: 'https://picsum.photos/200/300?random=13',
+          displayName: 'Bob Smith',
           did: 'did:plc:bob002',
-          handler: 'bob.s',
+          handle: 'bob.s',
         },
       ],
     },
@@ -53,10 +53,10 @@ const NOTIFICATIONS_DATA: NotificationProps[] = [
       timestamp: new Date(Date.now() - 3 * 3600 * 1000).toISOString(), // 3 hours ago
       users: [
         {
-          image: 'https://picsum.photos/200/300?random=14',
-          name: 'Charlie Davis',
+          avatar: 'https://picsum.photos/200/300?random=14',
+          displayName: 'Charlie Davis',
           did: 'did:plc:charlie003',
-          handler: 'charlie.d',
+          handle: 'charlie.d',
         },
       ],
     },
@@ -71,28 +71,28 @@ const NOTIFICATIONS_DATA: NotificationProps[] = [
       timestamp: new Date(Date.now() - 4 * 3600 * 1000).toISOString(), // 4 hours ago
       users: [
         {
-          image: 'https://picsum.photos/200/300?random=15',
-          name: 'Diana Prince',
+          avatar: 'https://picsum.photos/200/300?random=15',
+          displayName: 'Diana Prince',
           did: 'did:plc:diana004',
-          handler: 'diana.p',
+          handle: 'diana.p',
         },
         {
-          image: 'https://picsum.photos/200/300?random=16',
-          name: 'Edward Norton',
+          avatar: 'https://picsum.photos/200/300?random=16',
+          displayName: 'Edward Norton',
           did: 'did:plc:edward005',
-          handler: 'edward.n',
+          handle: 'edward.n',
         },
         {
-          image: 'https://picsum.photos/200/300?random=17',
-          name: 'Fiona Gallagher',
+          avatar: 'https://picsum.photos/200/300?random=17',
+          displayName: 'Fiona Gallagher',
           did: 'did:plc:fiona006',
-          handler: 'fiona.g',
+          handle: 'fiona.g',
         },
         {
-          image: 'https://picsum.photos/200/300?random=18',
-          name: 'George Michael',
+          avatar: 'https://picsum.photos/200/300?random=18',
+          displayName: 'George Michael',
           did: 'did:plc:george007',
-          handler: 'george.m',
+          handle: 'george.m',
         },
       ],
     },
@@ -107,22 +107,22 @@ const NOTIFICATIONS_DATA: NotificationProps[] = [
       timestamp: new Date(Date.now() - 5 * 3600 * 1000).toISOString(), // 5 hours ago
       users: [
         {
-          image: 'https://picsum.photos/200/300?random=19',
-          name: 'Hannah Lee',
+          avatar: 'https://picsum.photos/200/300?random=19',
+          displayName: 'Hannah Lee',
           did: 'did:plc:hannah008',
-          handler: 'hannah.l',
+          handle: 'hannah.l',
         },
         {
-          image: 'https://picsum.photos/200/300?random=20',
-          name: 'Ian Somerhalder',
+          avatar: 'https://picsum.photos/200/300?random=20',
+          displayName: 'Ian Somerhalder',
           did: 'did:plc:ian009',
-          handler: 'ian.s',
+          handle: 'ian.s',
         },
         {
-          image: 'https://picsum.photos/200/300?random=21',
-          name: 'Jackie Chan',
+          avatar: 'https://picsum.photos/200/300?random=21',
+          displayName: 'Jackie Chan',
           did: 'did:plc:jackie010',
-          handler: 'jackie.c',
+          handle: 'jackie.c',
         },
       ],
     },
@@ -137,10 +137,10 @@ const NOTIFICATIONS_DATA: NotificationProps[] = [
       timestamp: new Date(Date.now() - 6 * 3600 * 1000).toISOString(), // 6 hours ago
       users: [
         {
-          image: 'https://picsum.photos/200/300?random=22',
-          name: 'Karen Williams',
+          avatar: 'https://picsum.photos/200/300?random=22',
+          displayName: 'Karen Williams',
           did: 'did:plc:karen011',
-          handler: 'karen.w',
+          handle: 'karen.w',
         },
       ],
     },
@@ -155,22 +155,22 @@ const NOTIFICATIONS_DATA: NotificationProps[] = [
       timestamp: new Date(Date.now() - 7 * 3600 * 1000).toISOString(), // 7 hours ago
       users: [
         {
-          image: 'https://picsum.photos/200/300?random=23',
-          name: 'Leo Messi',
+          avatar: 'https://picsum.photos/200/300?random=23',
+          displayName: 'Leo Messi',
           did: 'did:plc:leo012',
-          handler: 'leo.m',
+          handle: 'leo.m',
         },
         {
-          image: 'https://picsum.photos/200/300?random=24',
-          name: 'Mia Khalifa',
+          avatar: 'https://picsum.photos/200/300?random=24',
+          displayName: 'Mia Khalifa',
           did: 'did:plc:mia013',
-          handler: 'mia.k',
+          handle: 'mia.k',
         },
         {
-          image: 'https://picsum.photos/200/300?random=25',
-          name: 'Nina Dobrev',
+          avatar: 'https://picsum.photos/200/300?random=25',
+          displayName: 'Nina Dobrev',
           did: 'did:plc:nina014',
-          handler: 'nina.d',
+          handle: 'nina.d',
         },
       ],
     },
@@ -185,10 +185,10 @@ const NOTIFICATIONS_DATA: NotificationProps[] = [
       timestamp: new Date(Date.now() - 8 * 3600 * 1000).toISOString(), // 8 hours ago
       users: [
         {
-          image: 'https://picsum.photos/200/300?random=26',
-          name: 'Olivia Brown',
+          avatar: 'https://picsum.photos/200/300?random=26',
+          displayName: 'Olivia Brown',
           did: 'did:plc:olivia015',
-          handler: 'olivia.b',
+          handle: 'olivia.b',
         },
       ],
     },
@@ -203,10 +203,10 @@ const NOTIFICATIONS_DATA: NotificationProps[] = [
       timestamp: new Date(Date.now() - 9 * 3600 * 1000).toISOString(), // 9 hours ago
       users: [
         {
-          image: 'https://picsum.photos/200/300?random=27',
-          name: 'Peter Parker',
+          avatar: 'https://picsum.photos/200/300?random=27',
+          displayName: 'Peter Parker',
           did: 'did:plc:peter016',
-          handler: 'peter.p',
+          handle: 'peter.p',
         },
       ],
     },
@@ -221,34 +221,34 @@ const NOTIFICATIONS_DATA: NotificationProps[] = [
       timestamp: new Date(Date.now() - 10 * 3600 * 1000).toISOString(), // 10 hours ago
       users: [
         {
-          image: 'https://picsum.photos/200/300?random=28',
-          name: 'Quincy Adams',
+          avatar: 'https://picsum.photos/200/300?random=28',
+          displayName: 'Quincy Adams',
           did: 'did:plc:quincy017',
-          handler: 'quincy.a',
+          handle: 'quincy.a',
         },
         {
-          image: 'https://picsum.photos/200/300?random=29',
-          name: 'Rachel Green',
+          avatar: 'https://picsum.photos/200/300?random=29',
+          displayName: 'Rachel Green',
           did: 'did:plc:rachel018',
-          handler: 'rachel.g',
+          handle: 'rachel.g',
         },
         {
-          image: 'https://picsum.photos/200/300?random=30',
-          name: 'Steve Rogers',
+          avatar: 'https://picsum.photos/200/300?random=30',
+          displayName: 'Steve Rogers',
           did: 'did:plc:steve019',
-          handler: 'steve.r',
+          handle: 'steve.r',
         },
         {
-          image: 'https://picsum.photos/200/300?random=31',
-          name: 'Tony Stark',
+          avatar: 'https://picsum.photos/200/300?random=31',
+          displayName: 'Tony Stark',
           did: 'did:plc:tony020',
-          handler: 'tony.s',
+          handle: 'tony.s',
         },
         {
-          image: 'https://picsum.photos/200/300?random=32',
-          name: 'Ursula K. Le Guin',
+          avatar: 'https://picsum.photos/200/300?random=32',
+          displayName: 'Ursula K. Le Guin',
           did: 'did:plc:ursula021',
-          handler: 'ursula.k',
+          handle: 'ursula.k',
         },
       ],
     },
