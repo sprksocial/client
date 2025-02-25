@@ -11,6 +11,7 @@ import VideoTop from '@/components/Video/VideoTop';
 import ImageScreen from '@/components/Image/ImageScreen';
 import { PostProps } from '@/types/Interfaces';
 import { fetchTrendingPosts } from '@/api/videoServices';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 export default function HomeScreen() {
   const flatListRef = useRef<FlatList<PostProps>>(null);
@@ -30,19 +31,14 @@ export default function HomeScreen() {
     viewAreaCoveragePercentThreshold: 95,
   });
 
-  const { height: windowHeight } = Dimensions.get('window');
-  const TAB_BAR_HEIGHT = windowHeight * 0.10017;
+  const { height: windowHeight } = Dimensions.get('screen');
+  const TAB_BAR_HEIGHT = useBottomTabBarHeight();
   const availableHeight = windowHeight - TAB_BAR_HEIGHT;
-
-  const getItemLayout = (_: any, index: number) => ({
-    length: availableHeight,
-    offset: availableHeight * index,
-    index,
-  });
 
   const shuffleArray = (array: any[]) => {
     return array.sort(() => Math.random() - 0.5);
   };
+
 
   useEffect(() => {
     const loadContent = async () => {
@@ -60,7 +56,7 @@ export default function HomeScreen() {
   }, []);
 
   return (
-    <ThemedView style={styles.root}>
+    <ThemedView >
       <VideoTop />
       <FlatList
         ref={flatListRef}
@@ -71,7 +67,7 @@ export default function HomeScreen() {
           const embedType = item.embed?.$type || '';
 
           return (
-            <View style={[styles.container, { height: availableHeight }]}>
+            <View style={ { height: availableHeight }}>
               {embedType === 'app.bsky.embed.video' ||
               embedType === 'app.bsky.embed.video#view' ? (
                 <VideoScreen videoData={{ ...item, isActive }} />
@@ -89,31 +85,10 @@ export default function HomeScreen() {
         decelerationRate="fast"
         initialNumToRender={3}
         maxToRenderPerBatch={2}
-        windowSize={3}
         removeClippedSubviews
         scrollEventThrottle={16}
-        style={[styles.flatList, { height: availableHeight }]}
-        contentContainerStyle={styles.flatListContent}
-        getItemLayout={getItemLayout}
+        style={{ height: availableHeight }}
       />
     </ThemedView>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    flex: 1,
-    backgroundColor: '#000',
-  },
-  flatList: {
-  },
-  flatListContent: {
-    paddingBottom: 0,
-  },
-  container: {
-    width: '100%',
-    backgroundColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-});

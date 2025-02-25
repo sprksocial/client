@@ -51,7 +51,7 @@ export default function ProfileFeed() {
     viewAreaCoveragePercentThreshold: 95,
   });
 
-  const { height: windowHeight } = Dimensions.get('window');
+  const { height: windowHeight } = Dimensions.get('screen');
   const TAB_BAR_HEIGHT = 0;
   const availableHeight = windowHeight - TAB_BAR_HEIGHT;
 

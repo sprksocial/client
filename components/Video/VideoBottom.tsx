@@ -1,26 +1,29 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, TouchableOpacity, useColorScheme } from 'react-native';
 import { ThemedText } from '../ThemedText';
 import { Colors } from '@/constants/Colors';
 import { VideoBottomProps } from '@/types/Interfaces';
 
 const VideoBottom: React.FC<VideoBottomProps> = ({ videoData }) => {
   const colorScheme = useColorScheme();
+  const [expanded, setExpanded] = useState(false);
 
-  // extract hashtags from the text
+  // Hashtag extractor: supports one or more '#' characters.
   const hashtagExtractor = (text: string) => {
-    const regex = /#[a-zA-Z0-9_]+/g;
+    const regex = /#+[a-zA-Z0-9_]+/g;
     const hashtags = text.match(regex);
     return hashtags || [];
   };
 
-  const hashtags = hashtagExtractor(videoData.record?.text || ''); // extract hashtags from the text
-  
+  const textContent = videoData.record?.text || '';
+  // Remove hashtags from the text so they don't appear twice.
+  const cleanedText = textContent.replace(/(#+[a-zA-Z0-9_]+\s*)/g, '').trim();
+  const hashtags = hashtagExtractor(textContent);
+  const MAX_HASHTAGS_COLLAPSED = 3;
+
   const styles = StyleSheet.create({
     container: {
-      padding: 10,
       borderRadius: 10,
-      display: 'flex',
       flexDirection: 'column',
       justifyContent: 'flex-start',
       alignItems: 'flex-start',
@@ -41,11 +44,18 @@ const VideoBottom: React.FC<VideoBottomProps> = ({ videoData }) => {
       fontSize: 14,
       marginBottom: 4,
     },
+    readMoreText: {
+      color: '#888',
+      fontSize: 12,
+      marginTop: 4,
+    },
+    hashtagsContainer: {
+      marginTop: 6,
+    },
     hashtags: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: 4,
-      marginTop: 6,
     },
     hashtagText: {
       color: '#fff',
@@ -53,10 +63,8 @@ const VideoBottom: React.FC<VideoBottomProps> = ({ videoData }) => {
       paddingVertical: 1,
       paddingHorizontal: 8,
       borderRadius: 50,
-      display: 'flex',
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
+      marginRight: 4,
+      marginBottom: 4,
     },
     followButton: {
       backgroundColor: '#ffffff40',
@@ -67,24 +75,56 @@ const VideoBottom: React.FC<VideoBottomProps> = ({ videoData }) => {
       display: 'none',
     },
   });
+
   return (
     <View style={styles.container}>
-      <ThemedText lightColor={Colors.dark.text} darkColor={Colors.dark.text} style={styles.userInfo}>
-        {videoData.author?.displayName || 'Unknown'} • @{videoData.author?.handle || 'unknown'}
+      <ThemedText
+        lightColor={Colors.dark.text}
+        darkColor={Colors.dark.text}
+        style={styles.userInfo}
+      >
+        @{videoData.author?.handle || 'unknown'}
         <TouchableOpacity style={styles.followButton}>
-          <ThemedText type='subtitle' style={{color: "#fff"}}>Follow</ThemedText>
+          <ThemedText type="subtitle" style={{ color: "#fff" }}>
+            Follow
+          </ThemedText>
         </TouchableOpacity>
       </ThemedText>
-      <ThemedText type="description" lightColor={Colors.dark.text} darkColor={Colors.dark.text}>{videoData.record?.text || ''}</ThemedText>
-      <View style={styles.hashtags}>
-        {hashtags.map((hashtag, index) => (
-          <ThemedText type="description" key={index} style={styles.hashtagText}>#{hashtag} </ThemedText>
-        ))}
-      </View>
+      <TouchableOpacity onPress={() => setExpanded(!expanded)}>
+        <ThemedText
+          type="description"
+          lightColor={Colors.dark.text}
+          darkColor={Colors.dark.text}
+          style={styles.description}
+          numberOfLines={!expanded ? 3 : undefined}
+        >
+          {cleanedText}
+        </ThemedText>
+        {hashtags.length > 0 && (
+          <View style={styles.hashtagsContainer}>
+            <View style={styles.hashtags}>
+              {(expanded || hashtags.length <= MAX_HASHTAGS_COLLAPSED
+                ? hashtags
+                : hashtags.slice(0, MAX_HASHTAGS_COLLAPSED)
+              ).map((hashtag, index) => (
+                <ThemedText key={index} type="description" style={styles.hashtagText}>
+                  {hashtag}
+                </ThemedText>
+              ))}
+            </View>
+          </View>
+        )}
+        <ThemedText
+          type="description"
+          lightColor={Colors.dark.text}
+          darkColor={Colors.dark.text}
+          style={styles.readMoreText}
+        >
+          {!expanded ? 'Read More' : 'Read Less'}
+        </ThemedText>
+      </TouchableOpacity>
     </View>
   );
 };
-
-
 
 export default VideoBottom;

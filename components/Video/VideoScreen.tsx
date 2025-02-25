@@ -6,6 +6,7 @@ import {
   TouchableWithoutFeedback,
   Animated,
   PanResponder,
+  Image,
 } from 'react-native';
 import { useEvent } from 'expo';
 import { useVideoPlayer, VideoView, VideoSource } from 'expo-video';
@@ -14,6 +15,7 @@ import VideoInfoOverlay from './VideoInfoOverlay';
 import { VideoScreenProps } from '@/types/Interfaces';
 import { ThemedText } from '../ThemedText';
 import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
 
 export default function VideoScreen({
   videoData,
@@ -120,6 +122,12 @@ export default function VideoScreen({
           nativeControls={false}
           allowsVideoFrameAnalysis={false}
         />
+                    <BlurView intensity={50} style={styles.blurOverlay} tint="dark" />
+        
+        <Image
+          style={styles.videoBackground}
+          source={{ uri: videoData.embed?.thumbnail }}
+        />
              <LinearGradient
         colors={['transparent', 'rgba(0,0,0,0.8)']}
         style={styles.background}
@@ -151,18 +159,34 @@ export default function VideoScreen({
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    height: '100%',
+    
   },
   video: {
-    flex: 1,
     width: '100%',
     height: '100%',
-    backgroundColor: '#000',
+    backgroundColor: 'transparent',
+  },
+  videoBackground: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '100%',
+    width: '100%',
+    zIndex: -2,
+  },
+  blurOverlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: -1,
   },
   progressContainer: {
     position: 'absolute',

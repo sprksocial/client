@@ -24,6 +24,7 @@
     },
     "plugins": [
       "expo-router",
+      "react-native-imglysdk",
       [
         "expo-splash-screen",
         {
