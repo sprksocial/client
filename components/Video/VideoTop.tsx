@@ -1,40 +1,76 @@
-import React, { useCallback, useRef } from 'react';
-import { View, StyleSheet, useColorScheme, TouchableOpacity, Button, Dimensions } from 'react-native';
+import React, { useCallback, useRef, useState } from 'react';
+import { View, StyleSheet, useColorScheme, TouchableOpacity, Button, Dimensions, SafeAreaView, ScrollView } from 'react-native';
 import { ThemedText } from '../ThemedText';
 import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
+import Slider from '@react-native-community/slider';
 
-import {
-  BottomSheetModal,
-  BottomSheetView,
-  BottomSheetModalProvider,
-} from '@gorhom/bottom-sheet';
-import { GestureHandlerRootView, Switch } from 'react-native-gesture-handler';
+import { Switch } from 'react-native-gesture-handler';
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 
 const VideoTop: React.FC = () => {
-  const colorScheme = useColorScheme();
+  const height = Dimensions.get('screen').height;
 
-  // ref
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
+  const colorScheme: 'light' | 'dark' = useColorScheme() as 'light' | 'dark';
+  const [optionsHeight, setOptionsHeight] = useState(0);
 
-  const height = Dimensions.get('window').height;
-  // callbacks
-  const handlePresentModalPress = useCallback(() => {
-    bottomSheetModalRef.current?.present();
-  }, []);
-  const handleSheetChanges = useCallback((index: number) => {
-    console.log('handleSheetChanges', index);
-  }, []);
-  
-const styles = StyleSheet.create({
+  const [customForYou, setCustomForYou] = useState(false);
+  const [suggestiveContent, setSuggestiveContent] = useState(false);
+  const [nudity, setNudity] = useState(false);
+  const [violence, setViolence] = useState(false);
+
+  const handleCloseOptions = () => {
+    let startTime: number | undefined;
+    const duration = 150;
+    const initialHeight = 0;
+    const finalHeight = height;
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const currentHeight = finalHeight - (finalHeight - initialHeight) * progress;
+
+      setOptionsHeight(currentHeight);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }
+
+  const handleOpenOptions = () => {
+    let startTime: number | undefined;
+    const duration = 150;
+    const initialHeight = 0;
+    const finalHeight = height;
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const currentHeight = initialHeight + (finalHeight - initialHeight) * progress;
+
+      setOptionsHeight(currentHeight);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  };
+
+  const styles = StyleSheet.create({
     container: {
       alignItems: 'center',
       justifyContent: 'center',
       position: 'absolute',
       width: '100%',
-        top: '9%',
-        zIndex: 1,
-        flexDirection: 'row',
+      zIndex: 1,
+      flexDirection: 'row',
     },
     text: {
       fontWeight: 'bold',
@@ -57,27 +93,27 @@ const styles = StyleSheet.create({
       flex: 1,
       alignItems: 'center',
     },
-    containerb: {
-      backgroundColor: 'transparent',
-      width: '100%',
-      height: height-150,
+    optionsContainer: {
+      backgroundColor: Colors[colorScheme ?? 'light'].background,
       position: 'absolute',
-      top: 0,
+      top: height - optionsHeight,
       left: 0,
       right: 0,
       bottom: 0,
-      justifyContent: 'center',
+      width: '100%',
+      height: height,
+      justifyContent: 'flex-start',
       alignItems: 'center',
+      zIndex: 10,
+      display: 'flex',
     },
     feedOptions: {
       flexDirection: 'column',
       alignItems: 'flex-start',
       justifyContent: 'center',
-      marginTop: 10,
       gap: 10,
       width: '100%',
-      paddingHorizontal: 10,
-
+      marginBottom: 20,
     },
     feedOption: {
       flexDirection: 'row',
@@ -90,62 +126,192 @@ const styles = StyleSheet.create({
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      marginHorizontal: 10,
       gap: 10,
+      backgroundColor: Colors[colorScheme ?? 'light'].tint,
+      width: '100%',
+      padding: 10,
+      borderRadius: 10,
     },
+    feedWeight: {
+      width: '100%',
+      paddingHorizontal: 10,
+      flexDirection: 'column',
+      alignItems: 'center',
+      marginVertical: 10,
+    },
+    topNav: {
+      top: height * 0.09,
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      position: 'absolute',
+      zIndex: 1,
+    },
+    optionsContent: {
+      width: '100%',
+      height: '100%',
+      padding: 10,
+      marginBottom: useBottomTabBarHeight(),
+    },
+    contentHeader: {
+      width: '100%',
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 10,
+      paddingTop: 10,
+    },
+    closeButton: {
+      padding: 5,
+      borderRadius: 50,
+    }
   });
+
+
+  const handleAddCustomFeed = () => {
+    console.log('Add custom feed');
+  };
+
+
+  const [customFeeds, setCustomFeeds] = useState([
+    {
+      name: 'For You',
+      enabled: true,
+      weights: {
+        comedy: 50,
+        news: 50,
+        trending: 50,
+        following: 50,
+      }
+    },
+    {
+      name: 'Sports',
+      enabled: true,
+      weights: {
+        football: 50,
+        basketball: 50,
+        baseball: 50,
+        soccer: 50,
+      }
+    },
+    {
+      name: 'Cute Cats',
+      enabled: true,
+      weights: {
+        kittens: 50,
+        cats: 50,
+        cute: 50,
+        funny: 50,
+      }
+    }
+  ]);
+
+  const generateSwitch = (
+    color: string,
+    title: string,
+    value: boolean,
+    onValueChange: () => void) => {
+    return (
+      <View style={styles.feedOption}>
+        <Switch value={value}
+          onValueChange={onValueChange}
+          trackColor={{ false: Colors[colorScheme ?? 'light'].underlineColor, true: color }}
+        />
+        <ThemedText>{title}</ThemedText>
+      </View>
+    );
+  };
+
+  const generateSlider = (
+    color: string,
+    title: string,
+    value: number,
+    min: number,
+    max: number,
+    step: number,
+    onValueChange: (value: number) => void,
+
+  ) => {
+    return (
+      <View style={styles.feedWeight}>
+        <ThemedText>{title}</ThemedText>
+        <Slider
+          style={{ width: '100%', height: 40 }}
+          minimumValue={min}
+          maximumValue={max}
+          step={step}
+          value={value}
+          onValueChange={onValueChange}
+          minimumTrackTintColor={Colors[colorScheme ?? 'light'].selectedIcon}
+          maximumTrackTintColor={Colors[colorScheme ?? 'light'].underlineColor}
+        />
+      </View>
+    );
+  };
 
 
   return (
     <View style={styles.container}>
-      <View style={styles.containerb}>
-        <BottomSheetModalProvider>
-          <BottomSheetModal
-            ref={bottomSheetModalRef}
-            onChange={handleSheetChanges}
-          >
-            <BottomSheetView style={styles.contentContainer}>
-              <View style={styles.feedOptions}>
-              <ThemedText>Feed options</ThemedText>
+      <SafeAreaView style={styles.optionsContainer}>
+        <View style={styles.contentHeader}>
+          <ThemedText type='title'>Content Settings</ThemedText>
+          <TouchableOpacity style={styles.closeButton} onPress={handleCloseOptions}>
+            <Ionicons name="close" size={24} color={Colors[colorScheme ?? 'light'].text} />
+          </TouchableOpacity>
+        </View>
+        <ScrollView style={styles.optionsContent}>
 
-                <View style={styles.feedOption}>
-                <Switch />
-                <ThemedText>Images</ThemedText>
-                </View>
-                <View style={styles.feedOption}>
-                  <Switch />
-                  <ThemedText>Videos</ThemedText>
-                </View>
-                <View style={styles.feedOption}>
-                  <Switch />
-                  <ThemedText>Suggestive Content</ThemedText>
-                  </View>
-              </View>
-              <View style={styles.feedOptions}>
-              <ThemedText>Custom Feeds</ThemedText>
+          <View style={styles.feedOptions}>
+            <ThemedText type='subtitle' lightColor={Colors.dark.underlineColor} darkColor={Colors.light.underlineColor}>Content Origin</ThemedText>
 
-                <View style={styles.feedOption}>
-                  <Switch value={true}/>
-                  <ThemedText>For You</ThemedText>
-                </View>
-                <View style={styles.addFeedOption}>
-                  <Ionicons name="add" size={24} color={Colors.dark.text} lightColor={Colors.dark.text} />
-                  <ThemedText>Add Custom Feed</ThemedText>
-                </View>
-                </View>
+            <View style={styles.feedOption}>
+              <Switch value={true}
+                trackColor={{ false: Colors[colorScheme ?? 'light'].underlineColor, true: Colors.light.selectedIcon }}
+              />
+              <ThemedText>Spark</ThemedText>
+            </View>
 
-              <Button title="Close" onPress={() => bottomSheetModalRef.current?.close()} />
+            <View style={styles.feedOption}>
+              <Switch value={true}
+                trackColor={{ false: Colors[colorScheme ?? 'light'].underlineColor, true: "#0085FF" }}
+              />
+              <ThemedText>BlueSky</ThemedText>
+            </View>
+          </View>
 
-            </BottomSheetView>
-        </BottomSheetModal>
-        </BottomSheetModalProvider>
+          <View style={styles.feedOptions}>
+            <ThemedText type='subtitle' lightColor={Colors.dark.underlineColor} darkColor={Colors.light.underlineColor}>Filters</ThemedText>
+            {generateSwitch("#0085FF", "Suggestive Content", suggestiveContent, () => setSuggestiveContent(!suggestiveContent))}
+            {generateSwitch("#0085FF", "Nudity", nudity, () => setNudity(!nudity))}
+            {generateSwitch("#0085FF", "Violence", violence, () => setViolence(!violence))}
+          </View>
+          <View style={styles.feedOptions}>
+            <ThemedText type='subtitle' lightColor={Colors.dark.underlineColor} darkColor={Colors.light.underlineColor}>Custom Feeds</ThemedText>
+            { }
+            {generateSwitch("#0085FF", "For You", customForYou, () => setCustomForYou(!customForYou))}
+            <>
+              {generateSlider("#0085FF", "Comedy", 50, 0, 100, 1, (value) => console.log(value))}
+              {generateSlider("#0085FF", "News", 50, 0, 100, 1, (value) => console.log(value))}
+              {generateSlider("#0085FF", "Trending", 50, 0, 100, 1, (value) => console.log(value))}
+              {generateSlider("#0085FF", "Following", 50, 0, 100, 1, (value) => console.log(value))}
+            </>
+            <TouchableOpacity style={styles.addFeedOption} onPress={handleAddCustomFeed}>
+              <Ionicons name="add" size={24} color={Colors.dark.text} />
+              <ThemedText style={{ color: Colors.dark.text }}>Add Custom Feed</ThemedText>
+            </TouchableOpacity>
+          </View>
+
+        </ScrollView>
+      </SafeAreaView>
+      <View style={styles.topNav}>
+        <TouchableOpacity>
+          <ThemedText type='defaultBold' darkColor={Colors.dark.text} lightColor={Colors.dark.text} style={styles.text}>For You</ThemedText>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.filtersButton} onPress={handleOpenOptions}>
+          <Ionicons name="filter" size={24} color={Colors.dark.text} lightColor={Colors.dark.text} />
+        </TouchableOpacity>
       </View>
-      <TouchableOpacity>
-        <ThemedText type='defaultBold' darkColor={Colors.dark.text} lightColor={Colors.dark.text} style={styles.text}>For You</ThemedText>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.filtersButton} onPress={handlePresentModalPress}>
-        <Ionicons name="filter" size={24} color={Colors.dark.text} lightColor={Colors.dark.text} />
-      </TouchableOpacity>
     </View>
   );
 };

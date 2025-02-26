@@ -93,7 +93,7 @@ const VideoComment: React.FC<VideoCommentProps> = ({
                 <View style={styles.commentHeader}>
                     <View style={styles.profilePicture}>
                         <Image
-                            source={{ uri: author.image }}
+                            source={{ uri: author.avatar }}
                             style={styles.profilePictureImage}
                         />
                     </View>
@@ -105,7 +105,7 @@ const VideoComment: React.FC<VideoCommentProps> = ({
                         numberOfLines={1}
                         ellipsizeMode='tail'
                     >
-                        {author.name}
+                        {author.displayName}
                     </ThemedText>
                     <ThemedText
                         type='username'
@@ -124,7 +124,7 @@ const VideoComment: React.FC<VideoCommentProps> = ({
                         numberOfLines={1}
                         ellipsizeMode='tail'
                     >
-                        @{author.handler}
+                        @{author.handle}
                     </ThemedText>
                 </View>
                 <View style={styles.commentContent}>
@@ -161,7 +161,7 @@ const VideoComment: React.FC<VideoCommentProps> = ({
                             <ThemedText
                                 type='subtitle'
                                 lightColor={Colors.dark.text}
-                                darkColor={Colors.light.text}
+                                darkColor={Colors.light.followColor}
                                 style={styles.commentTime}
                             >
                                 {commentReplies.length} replies <Ionicons name="chevron-down" size={12} />

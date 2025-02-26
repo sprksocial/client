@@ -87,7 +87,7 @@ export default function HomeScreen() {
         maxToRenderPerBatch={2}
         removeClippedSubviews
         scrollEventThrottle={16}
-        style={{ height: availableHeight }}
+        style={{ height: availableHeight, backgroundColor: 'black' }}
       />
     </ThemedView>
   );
