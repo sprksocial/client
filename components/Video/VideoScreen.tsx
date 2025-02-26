@@ -122,16 +122,16 @@ export default function VideoScreen({
           nativeControls={false}
           allowsVideoFrameAnalysis={false}
         />
-                    <BlurView intensity={50} style={styles.blurOverlay} tint="dark" />
-        
+        <BlurView intensity={50} style={styles.blurOverlay} tint="dark" />
+
         <Image
           style={styles.videoBackground}
           source={{ uri: videoData.embed?.thumbnail }}
         />
-             <LinearGradient
-        colors={['transparent', 'rgba(0,0,0,0.8)']}
-        style={styles.background}
-      />
+        <LinearGradient
+          colors={['transparent', 'rgba(0,0,0,0.8)']}
+          style={styles.background}
+        />
         <View style={styles.progressContainer}>
           <View style={[styles.progressBar, { width: `${progressPercentage}%` }]} />
           <View style={[styles.progressIndicator, { left: `${progressPercentage}%` }]} />
@@ -162,7 +162,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     width: '100%',
-    
   },
   video: {
     width: '100%',
