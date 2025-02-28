@@ -7,6 +7,7 @@ import Slider from '@react-native-community/slider';
 
 import { Switch } from 'react-native-gesture-handler';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
+import ActionButton from '../global/ActionButton';
 
 const VideoTop: React.FC = () => {
   const height = Dimensions.get('screen').height;
@@ -14,7 +15,6 @@ const VideoTop: React.FC = () => {
   const colorScheme: 'light' | 'dark' = useColorScheme() as 'light' | 'dark';
   const [optionsHeight, setOptionsHeight] = useState(0);
 
-  const [customForYou, setCustomForYou] = useState(false);
   const [suggestiveContent, setSuggestiveContent] = useState(false);
   const [nudity, setNudity] = useState(false);
   const [violence, setViolence] = useState(false);
@@ -137,7 +137,6 @@ const VideoTop: React.FC = () => {
       paddingHorizontal: 10,
       flexDirection: 'column',
       alignItems: 'center',
-      marginVertical: 10,
     },
     topNav: {
       top: height * 0.09,
@@ -147,6 +146,7 @@ const VideoTop: React.FC = () => {
       alignItems: 'center',
       position: 'absolute',
       zIndex: 1,
+      gap: 10,
     },
     optionsContent: {
       width: '100%',
@@ -174,10 +174,20 @@ const VideoTop: React.FC = () => {
   };
 
 
-  const [customFeeds, setCustomFeeds] = useState([
+  type FeedWeights = {
+    [key: string]: number;
+  };
+  
+  const [customFeeds, setCustomFeeds] = useState<Array<{
+    name: string;
+    enabled: boolean;
+    origin: string;
+    weights: FeedWeights;
+  }>>([
     {
       name: 'For You',
       enabled: true,
+      origin: 'spark',
       weights: {
         comedy: 50,
         news: 50,
@@ -187,7 +197,8 @@ const VideoTop: React.FC = () => {
     },
     {
       name: 'Sports',
-      enabled: true,
+      enabled: false,
+      origin: 'spark',
       weights: {
         football: 50,
         basketball: 50,
@@ -197,7 +208,8 @@ const VideoTop: React.FC = () => {
     },
     {
       name: 'Cute Cats',
-      enabled: true,
+      enabled: false,
+      origin: 'spark',
       weights: {
         kittens: 50,
         cats: 50,
@@ -211,9 +223,11 @@ const VideoTop: React.FC = () => {
     color: string,
     title: string,
     value: boolean,
-    onValueChange: () => void) => {
+    onValueChange: () => void,
+    key: string,
+  ) => {
     return (
-      <View style={styles.feedOption}>
+      <View style={styles.feedOption} key={key}>
         <Switch value={value}
           onValueChange={onValueChange}
           trackColor={{ false: Colors[colorScheme ?? 'light'].underlineColor, true: color }}
@@ -231,10 +245,10 @@ const VideoTop: React.FC = () => {
     max: number,
     step: number,
     onValueChange: (value: number) => void,
-
+    sliderKey: string
   ) => {
     return (
-      <View style={styles.feedWeight}>
+      <View style={styles.feedWeight} key={sliderKey}>
         <ThemedText>{title}</ThemedText>
         <Slider
           style={{ width: '100%', height: 40 }}
@@ -250,6 +264,15 @@ const VideoTop: React.FC = () => {
     );
   };
 
+  const generateFeedTab = (
+    title: string
+  ) => {
+    return (
+      <TouchableOpacity>
+        <ThemedText type='defaultBold' darkColor={Colors.dark.text} lightColor={Colors.dark.text} style={styles.text}>{title}</ThemedText>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -282,32 +305,64 @@ const VideoTop: React.FC = () => {
 
           <View style={styles.feedOptions}>
             <ThemedText type='subtitle' lightColor={Colors.dark.underlineColor} darkColor={Colors.light.underlineColor}>Filters</ThemedText>
-            {generateSwitch("#0085FF", "Suggestive Content", suggestiveContent, () => setSuggestiveContent(!suggestiveContent))}
-            {generateSwitch("#0085FF", "Nudity", nudity, () => setNudity(!nudity))}
-            {generateSwitch("#0085FF", "Violence", violence, () => setViolence(!violence))}
+            {generateSwitch("#0085FF", "Suggestive Content", suggestiveContent, () => setSuggestiveContent(!suggestiveContent), "suggestiveContent")}
+            {generateSwitch("#0085FF", "Nudity", nudity, () => setNudity(!nudity), "nudity")}
+            {generateSwitch("#0085FF", "Violence", violence, () => setViolence(!violence), "violence")}
           </View>
+          
           <View style={styles.feedOptions}>
             <ThemedText type='subtitle' lightColor={Colors.dark.underlineColor} darkColor={Colors.light.underlineColor}>Custom Feeds</ThemedText>
-            { }
-            {generateSwitch("#0085FF", "For You", customForYou, () => setCustomForYou(!customForYou))}
-            <>
-              {generateSlider("#0085FF", "Comedy", 50, 0, 100, 1, (value) => console.log(value))}
-              {generateSlider("#0085FF", "News", 50, 0, 100, 1, (value) => console.log(value))}
-              {generateSlider("#0085FF", "Trending", 50, 0, 100, 1, (value) => console.log(value))}
-              {generateSlider("#0085FF", "Following", 50, 0, 100, 1, (value) => console.log(value))}
-            </>
-            <TouchableOpacity style={styles.addFeedOption} onPress={handleAddCustomFeed}>
-              <Ionicons name="add" size={24} color={Colors.dark.text} />
-              <ThemedText style={{ color: Colors.dark.text }}>Add Custom Feed</ThemedText>
-            </TouchableOpacity>
+            {
+              customFeeds.map((feed, index) => (
+                <>
+                  {generateSwitch("#0085FF", feed.name, feed.enabled, () => {
+                    const newFeeds = customFeeds.slice();
+                    newFeeds[index].enabled = !newFeeds[index].enabled;
+                    setCustomFeeds(newFeeds);
+                  }, `customFeedSwitch_${index}`)}
+                  {
+                    feed.enabled &&
+                    Object.keys(feed.weights).map((weightKey, weightIndex) => (
+                      generateSlider(
+                        "#0085FF",
+                        weightKey,
+                        feed.weights[weightKey],
+                        0,
+                        100,
+                        1,
+                        (value) => {
+                          const newFeeds = customFeeds.slice();
+                          newFeeds[index].weights[weightKey] = value;
+                          setCustomFeeds(newFeeds);
+                        },
+                        `customFeedSlider_${index}_${weightKey}`
+                      )
+                    ))
+                  }
+                  </>
+              ))
+            }
+
+            <ActionButton title='Add Custom Feed' onPress={handleAddCustomFeed} icon='add' width={'100%'}/>
           </View>
+          <View style={styles.feedOptions}>
+            <ThemedText type='subtitle' lightColor={Colors.dark.underlineColor} darkColor={Colors.light.underlineColor}>Content Types</ThemedText>
+            {generateSwitch("#0085FF", "Videos", true, () => {}, "videos")}
+            {generateSwitch("#0085FF", "More Videos", true, () => {}, "moreVideos")}
+            {generateSwitch("#0085FF", "Photos", true, () => {}, "photos")}
+            {generateSwitch("#0085FF", "More Photos", true, () => {}, "morePhotos")}
+            </View>
 
         </ScrollView>
       </SafeAreaView>
       <View style={styles.topNav}>
-        <TouchableOpacity>
-          <ThemedText type='defaultBold' darkColor={Colors.dark.text} lightColor={Colors.dark.text} style={styles.text}>For You</ThemedText>
-        </TouchableOpacity>
+        {
+          customFeeds.map((feed, index) => (
+            feed.enabled &&
+            generateFeedTab(feed.name)
+          ))
+        }
+       
         <TouchableOpacity style={styles.filtersButton} onPress={handleOpenOptions}>
           <Ionicons name="filter" size={24} color={Colors.dark.text} lightColor={Colors.dark.text} />
         </TouchableOpacity>
