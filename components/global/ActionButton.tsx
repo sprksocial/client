@@ -1,7 +1,7 @@
 import { Colors } from '@/constants/Colors';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, useColorScheme } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, useColorScheme, DimensionValue } from 'react-native';
 
 interface ActionButtonProps {
   title: string;
@@ -9,7 +9,7 @@ interface ActionButtonProps {
   type?: 'primary' | 'secondary' | 'outline' | 'disabled';
   icon?: string;
   isLoading?: boolean;
-  width?: number;
+  width?: string | number;
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({
@@ -61,7 +61,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
       style={[
         styles.button,
         styles[type],
-         { width: width },
+         { width: width as DimensionValue },
       ]}
       onPress={onPress}
       disabled={type === 'disabled' || isLoading}
