@@ -20,13 +20,10 @@ export default function ProfileFeed() {
   const [currentVisibleIndex, setCurrentVisibleIndex] = useState(0);
 
   const route = useRoute();
-  // Expect videoData as a JSON string and initialIndex as a string.
   const params = route.params as { videoData?: string; initialIndex?: string };
 
-  // Parse initial index from params
   const initialIndex = parseInt(params.initialIndex ?? "0", 10) || 0;
 
-  // Use the passed videoData from the router parameter instead of fetching trending posts.
   useEffect(() => {
     if (params.videoData) {
       try {

@@ -18,7 +18,7 @@ import VideoDisplay from '@/components/global/VideoDisplay';
 import PlaceholderVideoDisplay from '@/components/Profile/PlaceholderVideoDisplay';
 import { did } from '@/constants/MockData';
 import { UserProps, PostProps } from '@/types/Interfaces';
-import { useRouter } from 'expo-router';
+import { router, useRouter } from 'expo-router';
 import { getProfile, getProfileMedia } from '@/api/profileServices';
 
 function padVideosWithPlaceholders(
@@ -59,57 +59,80 @@ function padVideosWithPlaceholders(
   return [...videos, ...placeholders];
 }
 
-
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const route = useRouter();
+
+  // Ajuste aqui para os cenários que você quer simular:
+  // - isLoggedIn = true/false
+  // - isMine = true/false
+  const isLoggedIn = true;    // Se está logado ou não
+  const isMine = true;        // Se a conta do perfil atual é minha
 
   const [userData, setUserData] = useState<UserProps | null>(null);
   const [videoPosts, setVideoPosts] = useState<PostProps[]>([]);
 
   useEffect(() => {
-    const loadProfileData = async () => {
-      try {
-        const profileData = await getProfile(did);
-        if (profileData) {
-          setUserData({
-            id: profileData.did,
-            did: profileData.did,
-            displayName: profileData.displayName,
-            handle: profileData.handle,
-            description: profileData.description,
-            avatar: profileData.avatar || '',
-            banner: profileData.banner || '',
-            followersCount: profileData.followersCount,
-            followsCount: profileData.followsCount,
-            postsCount: profileData.postsCount,
-            associated: profileData.associated,
-            joinedViaStarterPack: profileData.joinedViaStarterPack,
-            indexedAt: profileData.indexedAt,
-            createdAt: profileData.createdAt,
-            viewer: profileData.viewer,
-            labels: profileData.labels,
-            pinnedPost: profileData.pinnedPost,
-          });
+    if (isLoggedIn) {
+      // Carrega dados de um perfil "real"
+      const loadProfileData = async () => {
+        try {
+          const profileData = await getProfile(did);
+          if (profileData) {
+            setUserData({
+              id: profileData.did,
+              did: profileData.did,
+              displayName: profileData.displayName,
+              handle: profileData.handle,
+              description: profileData.description,
+              avatar: profileData.avatar || '',
+              banner: profileData.banner || '',
+              followersCount: profileData.followersCount,
+              followsCount: profileData.followsCount,
+              postsCount: profileData.postsCount,
+              associated: profileData.associated,
+              joinedViaStarterPack: profileData.joinedViaStarterPack,
+              indexedAt: profileData.indexedAt,
+              createdAt: profileData.createdAt,
+              viewer: profileData.viewer,
+              labels: profileData.labels,
+              pinnedPost: profileData.pinnedPost,
+            });
+          }
+        } catch (error) {
+          console.error('Error loading profile:', error);
         }
-      } catch (error) {
-        console.error('Error loading profile:', error);
-      }
-    };
-
-    const loadVideoPosts = async () => {
-      try {
-        const mediaPosts = await getProfileMedia(did, 'video');
-        const posts = mediaPosts.map((item: { post: PostProps }) => item.post as PostProps);
-        setVideoPosts(posts);
-      } catch (error) {
-        console.error('Error loading video posts:', error);
-      }
-    };
-    
-    loadProfileData();
-    loadVideoPosts();
-  }, []);
+      };
+      const loadVideoPosts = async () => {
+        try {
+          const mediaPosts = await getProfileMedia(did, 'video');
+          const posts = mediaPosts.map((item: PostProps) => item as PostProps);
+          setVideoPosts(posts);
+        } catch (error) {
+          console.error('Error loading video posts:', error);
+        }
+      };
+      loadProfileData();
+      loadVideoPosts();
+    } else {
+      // Se não está logado, crie um "stub" de userData
+      setUserData({
+        id: '',
+        did: '',
+        displayName: 'Login ou Registrar',
+        handle: 'null',
+        description: '',
+        avatar: 'https://static.sprk.so/branding/default-profile.png?d',
+        banner: '',
+        followersCount: 0,
+        followsCount: 0,
+        postsCount: 0,
+        indexedAt: '',
+        createdAt: '',
+        labels: [],
+      });
+    }
+  }, [isLoggedIn]);
 
   const paddedVideoData = padVideosWithPlaceholders(videoPosts);
 
@@ -124,7 +147,14 @@ export default function ProfileScreen() {
     });
   }
 
-  const isMine = true;
+  function goTo(route: string) {
+    route = route.toLowerCase();
+    if (route === 'register') {
+      router.push('/(auth)/Register', { relativeToDirectory: true });
+    } else {
+      router.push('/(auth)/Login', { relativeToDirectory: true });
+    }
+  }
 
   const styles = StyleSheet.create({
     container: {
@@ -151,6 +181,12 @@ export default function ProfileScreen() {
     profileHeader: {
       alignItems: 'center',
       width: '100%',
+    },
+    profileHeaderNull: {
+      alignItems: 'center',
+      width: '100%',
+      justifyContent: 'center',
+      height: '70%',
     },
     profileContent: {
       marginTop: 20,
@@ -180,6 +216,13 @@ export default function ProfileScreen() {
       gap: 10,
       width: '100%',
     },
+    profileActionButtonsVertical: {
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: 10,
+      width: '100%',
+    },
   });
 
   return (
@@ -187,19 +230,24 @@ export default function ProfileScreen() {
       <ContentWrapper>
         <ScrollView
           contentContainerStyle={styles.scrollViewContent}
-          showsVerticalScrollIndicator={false}>
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Navbar Superior */}
           <View style={styles.profileNavbar}>
-            <TouchableOpacity onPress={() => { }}>
+            <TouchableOpacity onPress={() => {}}>
               <Ionicons
-                name="arrow-back"
+                name="chevron-back"
                 size={24}
                 color={Colors[colorScheme ?? 'light'].text}
               />
             </TouchableOpacity>
+
             <ThemedText style={styles.profileTopText}>
-              {userData?.displayName}
+              {userData?.displayName ?? ''}
             </ThemedText>
-            <TouchableOpacity onPress={() => { }}>
+
+            <TouchableOpacity onPress={() => {}}>
+              {/* No seu caso, pode ser "ellipsis-horizontal" ou vazio */}
               <Ionicons
                 name="ellipsis-horizontal"
                 size={24}
@@ -207,21 +255,92 @@ export default function ProfileScreen() {
               />
             </TouchableOpacity>
           </View>
+
+          {/* Cabeçalho e foto do perfil */}
           <View style={styles.profileHeader}>
             {userData && <ProfilePicture userData={userData} />}
             {userData && <ProfileInfo userData={userData} />}
-            {!isMine && (
-              <ActionButton title="Follow" onPress={() => { }} width={250} />
-            )}
+
+            {/* 
+              4 CASOS (botões de ação):
+              
+              1) [logado && minha conta]: Editar / Compartilhar
+              2) [logado && não é minha conta]: Seguir
+              3) [não logado && não é minha conta]: Perfil + Botão "Seguir" (redireciona para login)
+              4) [não logado && é minha conta]: Botões de "Login" / "Registrar"
+            */}
             {
-              isMine && (
+              !isLoggedIn && isMine && (
+                // Não logado, mas é minha conta => mostrar Login / Register
+                <View style={styles.profileActionButtonsVertical}>
+                  <ActionButton
+                    type="primary"
+                    title="Registrar"
+                    onPress={() => goTo('register')}
+                    width="60%"
+                  />
+                  <ActionButton
+                    type="outline"
+                    title="Login"
+                    onPress={() => goTo('login')}
+                    width="60%"
+                  />
+                </View>
+              )
+            }
+            {
+              !isLoggedIn && !isMine && (
+                // Não logado e não é minha conta => mostrar "Seguir" (redireciona pra login)
+                <ActionButton
+                  type="primary"
+                  title="Follow"
+                  onPress={() => goTo('login')}
+                  width={250}
+                />
+              )
+            }
+            {
+              isLoggedIn && !isMine && (
+                // Logado, mas não é minha conta => mostrar "Seguir"
+                <ActionButton
+                  type="primary"
+                  title="Follow"
+                  onPress={() => {
+                    // Lógica real de seguir aqui
+                    console.log("Seguiu este perfil");
+                  }}
+                  width={250}
+                />
+              )
+            }
+            {
+              isLoggedIn && isMine && (
+                // Logado e é minha conta => mostrar editar e compartilhar
                 <View style={styles.profileActionButtons}>
-                <ActionButton type={'secondary'} title="Edit Profile" onPress={() => { }} width={140} icon='create' />
-                <ActionButton type={'secondary'} title="" onPress={() => { }} width={70} icon='share-social' />
+                  <ActionButton
+                    type="secondary"
+                    title="Edit Profile"
+                    onPress={() => {
+                      console.log("Editar perfil");
+                    }}
+                    width={140}
+                    icon="create"
+                  />
+                  <ActionButton
+                    type="secondary"
+                    title=""
+                    onPress={() => {
+                      console.log("Compartilhar perfil");
+                    }}
+                    width={70}
+                    icon="share-social"
+                  />
                 </View>
               )
             }
           </View>
+
+          {/* Tabs (Ex: Videos e Fotos) */}
           <View style={styles.profileContent}>
             <View style={styles.profileTabs}>
               <View style={styles.tabButton}>
@@ -253,6 +372,8 @@ export default function ProfileScreen() {
                 </ThemedText>
               </View>
             </View>
+
+            {/* Grid de vídeos */}
             <View style={styles.videoGrid}>
               {paddedVideoData.map((item, index) => {
                 const key = item.uri ? item.uri : `fallback-${index}`;

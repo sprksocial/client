@@ -181,12 +181,14 @@ const VideoTop: React.FC = () => {
   const [customFeeds, setCustomFeeds] = useState<Array<{
     name: string;
     enabled: boolean;
+    selected: boolean;
     origin: string;
     weights: FeedWeights;
   }>>([
     {
       name: 'For You',
       enabled: true,
+      selected: true,
       origin: 'spark',
       weights: {
         comedy: 50,
@@ -198,6 +200,7 @@ const VideoTop: React.FC = () => {
     {
       name: 'Sports',
       enabled: false,
+      selected: false,
       origin: 'spark',
       weights: {
         football: 50,
@@ -209,6 +212,7 @@ const VideoTop: React.FC = () => {
     {
       name: 'Cute Cats',
       enabled: false,
+      selected: false,
       origin: 'spark',
       weights: {
         kittens: 50,
@@ -265,11 +269,13 @@ const VideoTop: React.FC = () => {
   };
 
   const generateFeedTab = (
-    title: string
+    title: string,
+    selected: boolean,
+    key: string,
   ) => {
     return (
       <TouchableOpacity>
-        <ThemedText type='defaultBold' darkColor={Colors.dark.text} lightColor={Colors.dark.text} style={styles.text}>{title}</ThemedText>
+        <ThemedText type='defaultBold' darkColor={Colors.dark.text} lightColor={Colors.dark.text} style={[styles.text, selected ? { color: Colors.light.background } : {}]}>{title}</ThemedText>
       </TouchableOpacity>
     );
   };
@@ -284,7 +290,11 @@ const VideoTop: React.FC = () => {
           </TouchableOpacity>
         </View>
         <ScrollView style={styles.optionsContent}>
-
+        <View style={styles.feedOptions}>
+            <ThemedText type='subtitle' lightColor={Colors.dark.underlineColor} darkColor={Colors.light.underlineColor}>Content Types</ThemedText>
+            {generateSwitch("#0085FF", "Videos", true, () => {}, "videos")}
+            {generateSwitch("#0085FF", "Photos", true, () => {}, "photos")}
+            </View>
           <View style={styles.feedOptions}>
             <ThemedText type='subtitle' lightColor={Colors.dark.underlineColor} darkColor={Colors.light.underlineColor}>Content Origin</ThemedText>
 
@@ -345,13 +355,7 @@ const VideoTop: React.FC = () => {
 
             <ActionButton title='Add Custom Feed' onPress={handleAddCustomFeed} icon='add' width={'100%'}/>
           </View>
-          <View style={styles.feedOptions}>
-            <ThemedText type='subtitle' lightColor={Colors.dark.underlineColor} darkColor={Colors.light.underlineColor}>Content Types</ThemedText>
-            {generateSwitch("#0085FF", "Videos", true, () => {}, "videos")}
-            {generateSwitch("#0085FF", "More Videos", true, () => {}, "moreVideos")}
-            {generateSwitch("#0085FF", "Photos", true, () => {}, "photos")}
-            {generateSwitch("#0085FF", "More Photos", true, () => {}, "morePhotos")}
-            </View>
+
 
         </ScrollView>
       </SafeAreaView>
@@ -359,7 +363,7 @@ const VideoTop: React.FC = () => {
         {
           customFeeds.map((feed, index) => (
             feed.enabled &&
-            generateFeedTab(feed.name)
+            generateFeedTab(feed.name, feed.selected, `feedTab_${index}`)
           ))
         }
        
