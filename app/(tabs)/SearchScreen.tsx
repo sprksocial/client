@@ -7,7 +7,7 @@ import VideoDisplay from '@/components/global/VideoDisplay';
 import PlaceholderVideoDisplay from '@/components/Profile/PlaceholderVideoDisplay';
 import { Colors } from '@/constants/Colors';
 import { UserProps, PostProps } from '@/types/Interfaces';
-import { fetchTrendingPosts } from '@/api/videoServices';
+import { fetchTrendingPosts } from '@/api/feedServices';
 import { getProfile } from '@/api/profileServices';
 import { useRouter } from 'expo-router';
 

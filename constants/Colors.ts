@@ -16,6 +16,7 @@ export const Colors = {
     heartColor: '#E60A41',
     followColor: '#75D400',
     commentColor: '#0D7EE1',
+    error: '#FF0000',
   },
   dark: {
     tint: tintColorDark,
@@ -31,5 +32,6 @@ export const Colors = {
     heartColor: '#FF1E1E',
     followColor: '#3AE866',
     commentColor: '#13CCFF',
+    error: '#FF0000',
   },
 };

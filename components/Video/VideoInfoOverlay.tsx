@@ -5,7 +5,7 @@ import VideoSide from './VideoSide';
 import VideoBottom from './VideoBottom';
 import CommentsTray from './CommentsTray';
 import { VideoInfoOverlayProps } from '@/types/Interfaces';
-import { fetchPostThread } from '@/api/videoServices';
+import { fetchPostThread } from '@/api/feedServices';
 
 const VideoInfoOverlay: React.FC<VideoInfoOverlayProps> = ({ videoData }) => {
   const [isCommentsVisible, setIsCommentsVisible] = useState(false);

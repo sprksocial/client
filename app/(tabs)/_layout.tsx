@@ -15,8 +15,11 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   const [userData, setUserData] = useState<UserProps | null>(null);
+  const isLoggedIn = false;
+
 
 useEffect(() => {
+  if (isLoggedIn) {
     const loadProfileData = async () => {
       try {
         const profileData = await getProfile(did);
@@ -50,6 +53,23 @@ useEffect(() => {
     };
   
     loadProfileData();
+  } else {
+    setUserData({
+            id: '',
+            did: '',
+            displayName: 'Login or Register',
+            handle: 'null',
+            description: '',
+            avatar: 'https://static.sprk.so/branding/default-profile.png?d',
+            banner: '',
+            followersCount: 0,
+            followsCount: 0,
+            postsCount: 0,
+            indexedAt: '',
+            createdAt: '',
+            labels: [],
+          });
+  }
   }, []);
 
   return (

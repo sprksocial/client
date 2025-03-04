@@ -10,7 +10,7 @@ import VideoScreen from '@/components/Video/VideoScreen';
 import VideoTop from '@/components/Video/VideoTop';
 import ImageScreen from '@/components/Image/ImageScreen';
 import { PostProps } from '@/types/Interfaces';
-import { fetchTrendingPosts } from '@/api/videoServices';
+import { fetchTrendingPosts } from '@/api/feedServices';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
 import { router } from 'expo-router';
 

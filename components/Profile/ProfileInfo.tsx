@@ -72,9 +72,11 @@ const ProfileInfo: React.FC<{ userData: UserProps }> = ({ userData }) => {
     <View style={styles.container}>
       <View style={styles.nameContainer}>
       <ThemedText type="defaultBold" style={styles.name}>{userData.displayName}</ThemedText>
-      <ThemedText type="username" style={styles.handler}>@{userData.handle}</ThemedText>
+      {userData.handle === 'null' ? null :
+        <ThemedText type="username" style={styles.handler}>@{userData.handle}</ThemedText>
+      }
       </View>
-
+      {userData.handle === 'null' ? null :
       <View style={styles.statsContainer}>
         <View style={styles.statItem}>
           <ThemedText type="defaultBold" style={styles.statNumber}>{formatNumber(userData.followsCount ?? 0)}</ThemedText>
@@ -89,6 +91,7 @@ const ProfileInfo: React.FC<{ userData: UserProps }> = ({ userData }) => {
           <ThemedText type="default" style={styles.statLabel}>Likes</ThemedText>
         </View>
       </View>
+}
       <View style={styles.bioContainer}>
         <ThemedText type="default" style={styles.bio}>{userData.description}</ThemedText>
       </View>

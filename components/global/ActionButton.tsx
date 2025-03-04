@@ -52,7 +52,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
       color: Colors.dark.text,
     },
     outlineText: {
-      color: Colors[colorScheme ?? 'light'].tint,
+      color: Colors[colorScheme ?? 'light'].text,
     },
   });
   
