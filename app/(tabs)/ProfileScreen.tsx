@@ -63,18 +63,25 @@ export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const route = useRouter();
 
-  // Ajuste aqui para os cenários que você quer simular:
-  // - isLoggedIn = true/false
-  // - isMine = true/false
-  const isLoggedIn = true;    // Se está logado ou não
-  const isMine = true;        // Se a conta do perfil atual é minha
+  const isLoggedIn = true;
+  const isMine = !true;
 
   const [userData, setUserData] = useState<UserProps | null>(null);
   const [videoPosts, setVideoPosts] = useState<PostProps[]>([]);
+  
+  const loadVideoPosts = async () => {
+    try {
+      const mediaPosts = await getProfileMedia(did, 'video');
+      const posts = mediaPosts.map((item: any) => item.post);
+      setVideoPosts(posts);
+    } catch (error) {
+      console.error('Error loading video posts:', error);
+    }
+  };
 
   useEffect(() => {
-    if (isLoggedIn) {
-      // Carrega dados de um perfil "real"
+    // When user is logged in OR (user is not logged in but viewing someone else's profile)
+    if (isLoggedIn || (!isLoggedIn && !isMine)) {
       const loadProfileData = async () => {
         try {
           const profileData = await getProfile(did);
@@ -103,19 +110,11 @@ export default function ProfileScreen() {
           console.error('Error loading profile:', error);
         }
       };
-      const loadVideoPosts = async () => {
-        try {
-          const mediaPosts = await getProfileMedia(did, 'video');
-          const posts = mediaPosts.map((item: PostProps) => item as PostProps);
-          setVideoPosts(posts);
-        } catch (error) {
-          console.error('Error loading video posts:', error);
-        }
-      };
+      
       loadProfileData();
       loadVideoPosts();
-    } else {
-      // Se não está logado, crie um "stub" de userData
+    } else if (!isLoggedIn && isMine) {
+      // When user is not logged in and viewing their own profile
       setUserData({
         id: '',
         did: '',
@@ -132,7 +131,7 @@ export default function ProfileScreen() {
         labels: [],
       });
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, isMine]);
 
   const paddedVideoData = padVideosWithPlaceholders(videoPosts);
 
@@ -261,17 +260,10 @@ export default function ProfileScreen() {
             {userData && <ProfilePicture userData={userData} />}
             {userData && <ProfileInfo userData={userData} />}
 
-            {/* 
-              4 CASOS (botões de ação):
-              
-              1) [logado && minha conta]: Editar / Compartilhar
-              2) [logado && não é minha conta]: Seguir
-              3) [não logado && não é minha conta]: Perfil + Botão "Seguir" (redireciona para login)
-              4) [não logado && é minha conta]: Botões de "Login" / "Registrar"
-            */}
+           
             {
               !isLoggedIn && isMine && (
-                // Não logado, mas é minha conta => mostrar Login / Register
+                // Not logged in and viewing own profile => show Login / Register buttons
                 <View style={styles.profileActionButtonsVertical}>
                   <ActionButton
                     type="primary"
@@ -290,7 +282,7 @@ export default function ProfileScreen() {
             }
             {
               !isLoggedIn && !isMine && (
-                // Não logado e não é minha conta => mostrar "Seguir" (redireciona pra login)
+                // Not logged in and viewing someone else's profile => show "Follow" (redirects to login)
                 <ActionButton
                   type="primary"
                   title="Follow"
@@ -301,13 +293,13 @@ export default function ProfileScreen() {
             }
             {
               isLoggedIn && !isMine && (
-                // Logado, mas não é minha conta => mostrar "Seguir"
+                // Logged in and viewing someone else's profile => show "Follow" with function
                 <ActionButton
                   type="primary"
                   title="Follow"
                   onPress={() => {
-                    // Lógica real de seguir aqui
-                    console.log("Seguiu este perfil");
+                    // Follow logic here
+                    console.log("followed " + userData?.did);
                   }}
                   width={250}
                 />
@@ -315,7 +307,7 @@ export default function ProfileScreen() {
             }
             {
               isLoggedIn && isMine && (
-                // Logado e é minha conta => mostrar editar e compartilhar
+                // Logged in and viewing own profile => show edit and share buttons
                 <View style={styles.profileActionButtons}>
                   <ActionButton
                     type="secondary"
@@ -342,6 +334,8 @@ export default function ProfileScreen() {
 
           {/* Tabs (Ex: Videos e Fotos) */}
           <View style={styles.profileContent}>
+          {/* Show tabs for everyone except when not logged in and viewing own profile */}
+          { (isLoggedIn || (!isLoggedIn && !isMine)) &&
             <View style={styles.profileTabs}>
               <View style={styles.tabButton}>
                 <Ionicons
@@ -372,24 +366,26 @@ export default function ProfileScreen() {
                 </ThemedText>
               </View>
             </View>
+          }
+            {/* Grid de vídeos - Only show when logged in or viewing someone else's profile */}
+            { (isLoggedIn || (!isLoggedIn && !isMine)) &&
+              <View style={styles.videoGrid}>
+                {paddedVideoData.map((item, index) => {
+                  const key = item.uri ? item.uri : `fallback-${index}`;
 
-            {/* Grid de vídeos */}
-            <View style={styles.videoGrid}>
-              {paddedVideoData.map((item, index) => {
-                const key = item.uri ? item.uri : `fallback-${index}`;
-
-                if (item.isPlaceholder) {
-                  return <PlaceholderVideoDisplay key={key} />;
-                }
-                return (
-                  <VideoDisplay
-                    key={key}
-                    videoSource={item}
-                    onVideoPress={handleOpenProfileFeed}
-                  />
-                );
-              })}
-            </View>
+                  if (item.isPlaceholder) {
+                    return <PlaceholderVideoDisplay key={key} />;
+                  }
+                  return (
+                    <VideoDisplay
+                      key={key}
+                      videoSource={item}
+                      onVideoPress={handleOpenProfileFeed}
+                    />
+                  );
+                })}
+              </View>
+            }
           </View>
         </ScrollView>
       </ContentWrapper>
