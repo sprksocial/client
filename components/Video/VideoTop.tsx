@@ -274,7 +274,7 @@ const VideoTop: React.FC = () => {
     key: string,
   ) => {
     return (
-      <TouchableOpacity>
+      <TouchableOpacity key={key}>
         <ThemedText type='defaultBold' darkColor={Colors.dark.text} lightColor={Colors.dark.text} style={[styles.text, selected ? { color: Colors.light.background } : {}]}>{title}</ThemedText>
       </TouchableOpacity>
     );
@@ -324,7 +324,7 @@ const VideoTop: React.FC = () => {
             <ThemedText type='subtitle' lightColor={Colors.dark.underlineColor} darkColor={Colors.light.underlineColor}>Custom Feeds</ThemedText>
             {
               customFeeds.map((feed, index) => (
-                <>
+                <React.Fragment key={`customFeed_${index}`}>
                   {generateSwitch("#0085FF", feed.name, feed.enabled, () => {
                     const newFeeds = customFeeds.slice();
                     newFeeds[index].enabled = !newFeeds[index].enabled;
@@ -349,7 +349,7 @@ const VideoTop: React.FC = () => {
                       )
                     ))
                   }
-                  </>
+                </React.Fragment>
               ))
             }
 
