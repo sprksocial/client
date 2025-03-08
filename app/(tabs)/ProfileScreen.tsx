@@ -64,13 +64,10 @@ export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const route = useRouter();
 
-  // Get actual login status and user data from useAtProto hook
   const { isLoggedIn, session, agent, logout } = useAtProto();
 
-  // This is the user's own profile if logged in
   const isMine = !true;
 
-  // User's DID comes from session when logged in, otherwise use mock DID
   const userDid = isLoggedIn && session ? session.did : did;
 
   const [userData, setUserData] = useState<UserProps | null>(null);
@@ -78,7 +75,6 @@ export default function ProfileScreen() {
 
   const loadVideoPosts = async () => {
     try {
-      // Use the actual user DID when logged in
       const mediaPosts = await getProfileMedia(userDid, 'video');
       const posts = mediaPosts.map((item: any) => item.post);
       setVideoPosts(posts);
@@ -91,7 +87,6 @@ export default function ProfileScreen() {
     if (isLoggedIn || (!isLoggedIn && !isMine)) {
       const loadProfileData = async () => {
         try {
-          // Use the actual user DID when logged in
           const profileData = await getProfile(userDid);
           if (profileData) {
             setUserData({
@@ -117,8 +112,6 @@ export default function ProfileScreen() {
         } catch (error) {
           console.error('Error loading profile:', error);
 
-          // If there's an error loading the profile but we're logged in,
-          // at least display some basic info from the session
           if (isLoggedIn && session) {
             setUserData({
               id: session.did,
@@ -182,11 +175,9 @@ export default function ProfileScreen() {
     }
   }
 
-  // Handle logout
   const handleLogout = async () => {
     try {
       await logout();
-      // You might want to navigate to a different screen or refresh the UI
       console.log('User logged out');
     } catch (error) {
       console.error('Error logging out:', error);
@@ -255,26 +246,11 @@ export default function ProfileScreen() {
       width: '100%',
     },
     profileActionButtonsVertical: {
+      display: 'flex',
       flexDirection: 'column',
-      justifyContent: 'center',
       alignItems: 'center',
       gap: 10,
       width: '100%',
-    },
-    loginStatusContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      marginTop: 10,
-    },
-    loginStatusIndicator: {
-      width: 10,
-      height: 10,
-      borderRadius: 5,
-      backgroundColor: Colors[colorScheme ?? 'light'].selectedIcon,
-      marginRight: 5,
-    },
-    loginStatusText: {
-      color: Colors[colorScheme ?? 'light'].text,
     },
   });
 
@@ -319,14 +295,6 @@ export default function ProfileScreen() {
             {userData && <ProfilePicture userData={userData} />}
             {userData && <ProfileInfo userData={userData} />}
 
-            {/* Login status indicator */}
-            {isLoggedIn && (
-              <View style={styles.loginStatusContainer}>
-                <View style={styles.loginStatusIndicator} />
-                <ThemedText style={styles.loginStatusText}>Logged in as {session?.handle}</ThemedText>
-              </View>
-            )}
-
             {
               !isLoggedIn && isMine && (
                 <View style={styles.profileActionButtonsVertical}>
@@ -369,7 +337,6 @@ export default function ProfileScreen() {
             }
             {
               isLoggedIn && isMine && (
-                // Logged in and viewing own profile => Show logout button
                 <View style={styles.profileActionButtons}>
                   <ActionButton
                     type="outline"
