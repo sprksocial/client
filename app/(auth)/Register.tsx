@@ -6,21 +6,38 @@ import { Colors } from '@/constants/Colors';
 import { pdsRegister } from '@/api/pdsAuth';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useCallback, useRef, useState, useMemo } from 'react';
 import { View, StyleSheet, useColorScheme, TouchableOpacity, SafeAreaView, Dimensions, ActivityIndicator } from 'react-native';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { format } from 'date-fns';
 
 export default function Register() {
-
-  useColorScheme();
   const colorScheme = useColorScheme();
 
   const styles = StyleSheet.create({
     container: {
-      height: Dimensions.get('screen').height,
+      flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: Colors[colorScheme ?? 'light'].background,
       width: '100%',
+      position: 'relative',
+    },
+    formContainer: {
+      width: '100%',
+      alignItems: 'center',
+      flex: 1,
+      justifyContent: 'center',
+    },
+    backButton: {
+      position: 'absolute',
+      top: 80,
+      left: 20,
+      zIndex: 1,
+    },
+    logo: {
+      marginTop: 80,
     },
     text: {
       fontSize: 18,
@@ -31,17 +48,117 @@ export default function Register() {
       marginBottom: 10,
       textAlign: 'center',
     },
+    datePickerButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: Colors[colorScheme ?? 'light'].underlineColor,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      backgroundColor: Colors[colorScheme ?? 'light'].background,
+      height: 50,
+      width: '90%',
+      marginBottom: 25,
+    },
+    datePickerIcon: {
+      marginRight: 10,
+    },
+    datePickerText: {
+      flex: 1,
+      fontSize: 16,
+      color: Colors[colorScheme ?? 'light'].text,
+    },
+    datePickerPlaceholder: {
+      flex: 1,
+      fontSize: 16,
+      color: Colors[colorScheme ?? 'light'].textGray,
+    },
+    bottomSheetContent: {
+      padding: 20,
+      alignItems: 'center',
+      backgroundColor: Colors[colorScheme ?? 'light'].background,
+      paddingBottom: 40,
+    },
+    bottomSheetButton: {
+      padding: 15,
+      backgroundColor: Colors[colorScheme ?? 'light'].tint,
+      borderRadius: 8,
+      alignItems: 'center',
+      marginTop: 30,
+      marginBottom: 30,
+      width: '80%',
+    },
+    bottomSheetButtonText: {
+      color: '#fff',
+      fontWeight: 'bold',
+      fontSize: 16,
+    },
+    bottomSheetBackground: {
+      backgroundColor: Colors[colorScheme ?? 'light'].background,
+    },
+    bottomSheetHandle: {
+      backgroundColor: Colors[colorScheme ?? 'light'].underlineColor,
+      width: 40,
+    },
+    dateLabelText: {
+      alignSelf: 'flex-start',
+      marginLeft: '5%',
+      marginBottom: 6,
+    },
+    datePickerTitle: {
+      fontSize: 18,
+      fontWeight: 'bold',
+      marginBottom: 20,
+    },
+    chevronIcon: {
+      marginLeft: 5,
+    },
+    inputStyle: {
+      width: '90%',
+    },
+    passwordInputStyle: {
+      width: '90%',
+      marginBottom: 25,
+    },
   });
+
+  const bottomSheetRef = useRef<BottomSheet>(null);
+
+  // Use fixed height for bottom sheet
+  const snapPoints = useMemo(() => ['60%'], []);
+
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log('handleSheetChanges', index);
+  }, []);
+
+  const openBottomSheet = useCallback(() => {
+    bottomSheetRef.current?.expand();
+  }, []);
+
+  const closeBottomSheet = useCallback(() => {
+    bottomSheetRef.current?.close();
+  }, []);
 
   const [email, setEmail] = useState('');
   const [handle, setHandle] = useState('');
   const [password, setPassword] = useState('');
   const [inviteCode, setInviteCode] = useState('');
+  const [birthDate, setBirthDate] = useState<Date>(new Date());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const handleDateChange = (event: DateTimePickerEvent, selectedDate: Date | undefined) => {
+    if (selectedDate) {
+      setBirthDate(selectedDate);
+    }
+  };
+
+  const confirmDateSelection = () => {
+    closeBottomSheet();
+  };
+
   const handleRegister = async () => {
-    if (!email || !handle || !password) {
+    if (!email || !handle || !password || !birthDate) {
       setError('Please fill in all required fields');
       return;
     }
@@ -55,7 +172,7 @@ export default function Register() {
 
     // Simple handle validation
     if (!handle.includes('.')) {
-      setError('Handle must be in format username.bsky.social');
+      setError('Handle must be in format username.sprk.so');
       return;
     }
 
@@ -86,13 +203,15 @@ export default function Register() {
     <SafeAreaView style={styles.container}>
       <TouchableOpacity
         onPress={() => router.back()}
-        style={{ position: 'absolute', top: 80, left: 20, zIndex: 1 }}>
+        style={styles.backButton}>
         <Ionicons name="chevron-back" size={24} color={Colors[colorScheme ?? 'light'].text} />
       </TouchableOpacity>
-      <Logo size={14} color={Colors[colorScheme ?? 'light'].selectedIcon} style={{ marginBottom: 50 }} />
-      <View style={{ width: '100%', alignItems: 'center' }}>
+      
+      <Logo size={14} color={Colors[colorScheme ?? 'light'].selectedIcon} style={styles.logo} />
+      
+      <View style={styles.formContainer}>
         {error ? <ThemedText style={styles.errorText}>{error}</ThemedText> : null}
-
+      
         <InputArea
           label='Email'
           placeholder='Enter your email'
@@ -101,9 +220,9 @@ export default function Register() {
           inputStyle={{ width: '100%' }}
           value={email}
           onChangeText={setEmail}
-          style={{ width: "90%" }}
+          style={styles.inputStyle}
         />
-
+        
         <InputArea
           label='Handle'
           placeholder='username.sprk.so'
@@ -112,9 +231,9 @@ export default function Register() {
           inputStyle={{ width: '100%' }}
           value={handle}
           onChangeText={setHandle}
-          style={{ width: "90%" }}
+          style={styles.inputStyle}
         />
-
+        
         <InputArea
           label='Password'
           placeholder='Enter your password'
@@ -123,9 +242,9 @@ export default function Register() {
           inputStyle={{ width: '90%' }}
           value={password}
           onChangeText={setPassword}
-          style={{ width: "90%", marginBottom: 15 }}
+          style={styles.passwordInputStyle}
         />
-
+        
         <InputArea
           label='Invite Code (Optional)'
           placeholder='Enter invite code if you have one'
@@ -134,9 +253,38 @@ export default function Register() {
           inputStyle={{ width: '90%' }}
           value={inviteCode}
           onChangeText={setInviteCode}
-          style={{ width: "90%", marginBottom: 30 }}
+          style={styles.inputStyle}
         />
-
+        
+        {/* Birth Date Picker Button */}
+        <ThemedText type='description' style={styles.dateLabelText}>Birth Date</ThemedText>
+        <TouchableOpacity 
+          style={styles.datePickerButton}
+          onPress={openBottomSheet}
+        >
+          <Ionicons
+            name="calendar-outline"
+            size={20}
+            color={Colors[colorScheme ?? 'light'].icon}
+            style={styles.datePickerIcon}
+          />
+          {birthDate ? (
+            <ThemedText style={styles.datePickerText}>
+              {format(birthDate, 'MMMM dd, yyyy')}
+            </ThemedText>
+          ) : (
+            <ThemedText style={styles.datePickerPlaceholder}>
+              Select your birth date
+            </ThemedText>
+          )}
+          <Ionicons
+            name="chevron-down"
+            size={20}
+            color={Colors[colorScheme ?? 'light'].icon}
+            style={styles.chevronIcon}
+          />
+        </TouchableOpacity>
+        
         <ActionButton
           title={loading ? "Registering..." : "Register"}
           onPress={handleRegister}
@@ -153,6 +301,36 @@ export default function Register() {
           <ThemedText>Already have an account? Login</ThemedText>
         </TouchableOpacity>
       </View>
+      
+      {/* Bottom Sheet for Date Picker - outside of the form container */}
+      <BottomSheet
+        ref={bottomSheetRef}
+        index={-1}
+        snapPoints={snapPoints}
+        onChange={handleSheetChanges}
+        enablePanDownToClose
+        backgroundStyle={styles.bottomSheetBackground}
+        handleIndicatorStyle={styles.bottomSheetHandle}
+      >
+        <BottomSheetView style={styles.bottomSheetContent}>
+          <ThemedText style={styles.datePickerTitle}>
+            Select Your Birth Date
+          </ThemedText>
+          <DateTimePicker
+            value={birthDate}
+            mode="date"
+            display="spinner"
+            onChange={handleDateChange}
+            maximumDate={new Date()}
+          />
+          <TouchableOpacity 
+            style={styles.bottomSheetButton}
+            onPress={confirmDateSelection}
+          >
+            <ThemedText style={styles.bottomSheetButtonText}>Done</ThemedText>
+          </TouchableOpacity>
+        </BottomSheetView>
+      </BottomSheet>
     </SafeAreaView>
   );
 }
