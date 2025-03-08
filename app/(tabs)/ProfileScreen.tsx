@@ -68,7 +68,7 @@ export default function ProfileScreen() {
   const { isLoggedIn, session, agent, logout } = useAtProto();
 
   // This is the user's own profile if logged in
-  const isMine = true;
+  const isMine = !true;
 
   // User's DID comes from session when logged in, otherwise use mock DID
   const userDid = isLoggedIn && session ? session.did : did;
@@ -88,7 +88,6 @@ export default function ProfileScreen() {
   };
 
   useEffect(() => {
-    // When user is logged in OR (user is not logged in but viewing someone else's profile)
     if (isLoggedIn || (!isLoggedIn && !isMine)) {
       const loadProfileData = async () => {
         try {
@@ -143,7 +142,6 @@ export default function ProfileScreen() {
       loadProfileData();
       loadVideoPosts();
     } else if (!isLoggedIn && isMine) {
-      // When user is not logged in and viewing their own profile
       setUserData({
         id: '',
         did: '',
@@ -227,8 +225,9 @@ export default function ProfileScreen() {
       justifyContent: 'center',
       height: '70%',
     },
-    profileContent: {
+    profileContent: { 
       marginTop: 20,
+      height: '100%',
     },
     profileTabs: {
       flexDirection: 'row',
@@ -286,7 +285,6 @@ export default function ProfileScreen() {
           contentContainerStyle={styles.scrollViewContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Navbar Superior */}
           <View style={styles.profileNavbar}>
             <TouchableOpacity onPress={() => {}}>
               <Ionicons
@@ -317,8 +315,7 @@ export default function ProfileScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Cabeçalho e foto do perfil */}
-          <View style={styles.profileHeader}>
+          <View style={!isLoggedIn && isMine ? styles.profileHeaderNull : styles.profileHeader}>
             {userData && <ProfilePicture userData={userData} />}
             {userData && <ProfileInfo userData={userData} />}
 
@@ -332,7 +329,6 @@ export default function ProfileScreen() {
 
             {
               !isLoggedIn && isMine && (
-                // Not logged in and viewing own profile => show Login / Register buttons
                 <View style={styles.profileActionButtonsVertical}>
                   <ActionButton
                     type="primary"
@@ -351,7 +347,6 @@ export default function ProfileScreen() {
             }
             {
               !isLoggedIn && !isMine && (
-                // Not logged in and viewing someone else's profile => show "Follow" (redirects to login)
                 <ActionButton
                   type="primary"
                   title="Follow"
@@ -362,12 +357,10 @@ export default function ProfileScreen() {
             }
             {
               isLoggedIn && !isMine && (
-                // Logged in and viewing someone else's profile => show "Follow" with function
                 <ActionButton
                   type="primary"
                   title="Follow"
                   onPress={() => {
-                    // Follow logic here
                     console.log("followed " + userData?.did);
                   }}
                   width={250}
@@ -377,7 +370,7 @@ export default function ProfileScreen() {
             {
               isLoggedIn && isMine && (
                 // Logged in and viewing own profile => Show logout button
-                <View style={styles.profileActionButtonsVertical}>
+                <View style={styles.profileActionButtons}>
                   <ActionButton
                     type="outline"
                     title="Logout"
@@ -389,9 +382,7 @@ export default function ProfileScreen() {
             }
           </View>
 
-          {/* Tabs (Ex: Videos e Fotos) */}
           <View style={styles.profileContent}>
-          {/* Show tabs for everyone except when not logged in and viewing own profile */}
           { (isLoggedIn || (!isLoggedIn && !isMine)) &&
             <View style={styles.profileTabs}>
               <View style={styles.tabButton}>
@@ -424,7 +415,6 @@ export default function ProfileScreen() {
               </View>
             </View>
           }
-            {/* Grid de vídeos - Only show when logged in or viewing someone else's profile */}
             { (isLoggedIn || (!isLoggedIn && !isMine)) &&
               <View style={styles.videoGrid}>
                 {paddedVideoData.map((item, index) => {
