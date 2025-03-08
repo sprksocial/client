@@ -3,13 +3,14 @@ import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, ActivityIndicator, useColorScheme, DimensionValue } from 'react-native';
 
-interface ActionButtonProps {
+export interface ActionButtonProps {
   title: string;
   onPress: () => void;
   type?: 'primary' | 'secondary' | 'outline' | 'disabled';
   icon?: string;
   isLoading?: boolean;
   width?: string | number;
+  disabled?: boolean;
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({
@@ -19,6 +20,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   isLoading = false,
   width,
   icon,
+  disabled = false,
 }) => {
 
   const colorScheme = useColorScheme();
@@ -55,16 +57,18 @@ const ActionButton: React.FC<ActionButtonProps> = ({
       color: Colors[colorScheme ?? 'light'].text,
     },
   });
-  
+
+  const buttonType = disabled ? 'disabled' : type;
+
   return (
     <TouchableOpacity
       style={[
         styles.button,
-        styles[type],
-         { width: width as DimensionValue },
+        styles[buttonType],
+        { width: width as DimensionValue },
       ]}
       onPress={onPress}
-      disabled={type === 'disabled' || isLoading}
+      disabled={disabled || type === 'disabled' || isLoading}
     >
       {icon && <Ionicons name={icon as any} size={25} color={Colors.dark.text} />}
       {isLoading ? (
