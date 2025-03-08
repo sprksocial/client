@@ -73,9 +73,13 @@ export const useAtProto = () => {
   }, [])
 
   // Logout
-  const logout = useCallback(() => {
-    pdsLogout()
-  }, [])
+  const logout = useCallback(async () => {
+    try {
+      await pdsLogout();
+    } catch (err) {
+      console.error('Logout failed:', err);
+    }
+  }, []);
 
   return {
     // State

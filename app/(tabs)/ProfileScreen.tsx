@@ -185,10 +185,14 @@ export default function ProfileScreen() {
   }
 
   // Handle logout
-  const handleLogout = () => {
-    logout();
-    // You might want to navigate to a different screen or refresh the UI
-    console.log('User logged out');
+  const handleLogout = async () => {
+    try {
+      await logout();
+      // You might want to navigate to a different screen or refresh the UI
+      console.log('User logged out');
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
   };
 
   const styles = StyleSheet.create({
