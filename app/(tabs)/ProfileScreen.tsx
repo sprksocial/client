@@ -20,6 +20,7 @@ import { did } from '@/constants/MockData';
 import { UserProps, PostProps } from '@/types/Interfaces';
 import { router, useRouter } from 'expo-router';
 import { getProfile, getProfileMedia } from '@/api/profileServices';
+import useAtProto from '@/hooks/useAtProto';
 
 function padVideosWithPlaceholders(
   videos: (PostProps & { isPlaceholder?: boolean })[]
@@ -63,15 +64,22 @@ export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const route = useRouter();
 
-  const isLoggedIn = true;
-  const isMine = !true;
+  // Get actual login status and user data from useAtProto hook
+  const { isLoggedIn, session, agent, logout } = useAtProto();
+
+  // This is the user's own profile if logged in
+  const isMine = true;
+
+  // User's DID comes from session when logged in, otherwise use mock DID
+  const userDid = isLoggedIn && session ? session.did : did;
 
   const [userData, setUserData] = useState<UserProps | null>(null);
   const [videoPosts, setVideoPosts] = useState<PostProps[]>([]);
-  
+
   const loadVideoPosts = async () => {
     try {
-      const mediaPosts = await getProfileMedia(did, 'video');
+      // Use the actual user DID when logged in
+      const mediaPosts = await getProfileMedia(userDid, 'video');
       const posts = mediaPosts.map((item: any) => item.post);
       setVideoPosts(posts);
     } catch (error) {
@@ -84,33 +92,54 @@ export default function ProfileScreen() {
     if (isLoggedIn || (!isLoggedIn && !isMine)) {
       const loadProfileData = async () => {
         try {
-          const profileData = await getProfile(did);
+          // Use the actual user DID when logged in
+          const profileData = await getProfile(userDid);
           if (profileData) {
             setUserData({
               id: profileData.did,
               did: profileData.did,
-              displayName: profileData.displayName,
-              handle: profileData.handle,
-              description: profileData.description,
+              displayName: profileData.displayName || (session?.handle || ''),
+              handle: profileData.handle || (session?.handle || ''),
+              description: profileData.description || '',
               avatar: profileData.avatar || '',
               banner: profileData.banner || '',
-              followersCount: profileData.followersCount,
-              followsCount: profileData.followsCount,
-              postsCount: profileData.postsCount,
+              followersCount: profileData.followersCount || 0,
+              followsCount: profileData.followsCount || 0,
+              postsCount: profileData.postsCount || 0,
               associated: profileData.associated,
               joinedViaStarterPack: profileData.joinedViaStarterPack,
-              indexedAt: profileData.indexedAt,
-              createdAt: profileData.createdAt,
+              indexedAt: profileData.indexedAt || '',
+              createdAt: profileData.createdAt || '',
               viewer: profileData.viewer,
-              labels: profileData.labels,
+              labels: profileData.labels || [],
               pinnedPost: profileData.pinnedPost,
             });
           }
         } catch (error) {
           console.error('Error loading profile:', error);
+
+          // If there's an error loading the profile but we're logged in,
+          // at least display some basic info from the session
+          if (isLoggedIn && session) {
+            setUserData({
+              id: session.did,
+              did: session.did,
+              displayName: session.handle || 'My Profile',
+              handle: session.handle || '',
+              description: '',
+              avatar: '',
+              banner: '',
+              followersCount: 0,
+              followsCount: 0,
+              postsCount: 0,
+              indexedAt: '',
+              createdAt: '',
+              labels: [],
+            });
+          }
         }
       };
-      
+
       loadProfileData();
       loadVideoPosts();
     } else if (!isLoggedIn && isMine) {
@@ -131,7 +160,7 @@ export default function ProfileScreen() {
         labels: [],
       });
     }
-  }, [isLoggedIn, isMine]);
+  }, [isLoggedIn, isMine, session, userDid]);
 
   const paddedVideoData = padVideosWithPlaceholders(videoPosts);
 
@@ -154,6 +183,13 @@ export default function ProfileScreen() {
       router.push('/(auth)/Login', { relativeToDirectory: true });
     }
   }
+
+  // Handle logout
+  const handleLogout = () => {
+    logout();
+    // You might want to navigate to a different screen or refresh the UI
+    console.log('User logged out');
+  };
 
   const styles = StyleSheet.create({
     container: {
@@ -222,6 +258,21 @@ export default function ProfileScreen() {
       gap: 10,
       width: '100%',
     },
+    loginStatusContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 10,
+    },
+    loginStatusIndicator: {
+      width: 10,
+      height: 10,
+      borderRadius: 5,
+      backgroundColor: Colors[colorScheme ?? 'light'].selectedIcon,
+      marginRight: 5,
+    },
+    loginStatusText: {
+      color: Colors[colorScheme ?? 'light'].text,
+    },
   });
 
   return (
@@ -242,16 +293,23 @@ export default function ProfileScreen() {
             </TouchableOpacity>
 
             <ThemedText style={styles.profileTopText}>
-              {userData?.displayName ?? ''}
+              {isLoggedIn ? 'My Profile' : userData?.displayName ?? ''}
             </ThemedText>
 
             <TouchableOpacity onPress={() => {}}>
-              {/* No seu caso, pode ser "ellipsis-horizontal" ou vazio */}
-              <Ionicons
-                name="ellipsis-horizontal"
-                size={24}
-                color={Colors[colorScheme ?? 'light'].text}
-              />
+              {isLoggedIn ? (
+                <Ionicons
+                  name="settings-outline"
+                  size={24}
+                  color={Colors[colorScheme ?? 'light'].text}
+                />
+              ) : (
+                <Ionicons
+                  name="ellipsis-horizontal"
+                  size={24}
+                  color={Colors[colorScheme ?? 'light'].text}
+                />
+              )}
             </TouchableOpacity>
           </View>
 
@@ -260,7 +318,14 @@ export default function ProfileScreen() {
             {userData && <ProfilePicture userData={userData} />}
             {userData && <ProfileInfo userData={userData} />}
 
-           
+            {/* Login status indicator */}
+            {isLoggedIn && (
+              <View style={styles.loginStatusContainer}>
+                <View style={styles.loginStatusIndicator} />
+                <ThemedText style={styles.loginStatusText}>Logged in as {session?.handle}</ThemedText>
+              </View>
+            )}
+
             {
               !isLoggedIn && isMine && (
                 // Not logged in and viewing own profile => show Login / Register buttons
@@ -307,25 +372,13 @@ export default function ProfileScreen() {
             }
             {
               isLoggedIn && isMine && (
-                // Logged in and viewing own profile => show edit and share buttons
-                <View style={styles.profileActionButtons}>
+                // Logged in and viewing own profile => Show logout button
+                <View style={styles.profileActionButtonsVertical}>
                   <ActionButton
-                    type="secondary"
-                    title="Edit Profile"
-                    onPress={() => {
-                      console.log("Editar perfil");
-                    }}
-                    width={140}
-                    icon="create"
-                  />
-                  <ActionButton
-                    type="secondary"
-                    title=""
-                    onPress={() => {
-                      console.log("Compartilhar perfil");
-                    }}
-                    width={70}
-                    icon="share-social"
+                    type="outline"
+                    title="Logout"
+                    onPress={handleLogout}
+                    width="60%"
                   />
                 </View>
               )
