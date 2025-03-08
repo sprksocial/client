@@ -1,46 +1,42 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, Image, ScrollView, Dimensions, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
-import { BlurView } from 'expo-blur';
-import { ThemedText } from '@/components/ThemedText';
-import { ImageScreenProps } from '@/types/Interfaces';
-import ImageIndex from './ImageIndex';
-import VideoInfoOverlay from '../Video/VideoInfoOverlay';
-import { LinearGradient } from 'expo-linear-gradient';
+import React, { useState } from 'react'
+import { View, StyleSheet, Image, ScrollView, Dimensions, NativeScrollEvent, NativeSyntheticEvent } from 'react-native'
+import { BlurView } from 'expo-blur'
+import { ThemedText } from '@/components/ThemedText'
+import { ImageScreenProps } from '@/types/Interfaces'
+import ImageIndex from './ImageIndex'
+import VideoInfoOverlay from '../Video/VideoInfoOverlay'
+import { LinearGradient } from 'expo-linear-gradient'
 
 export default function ImageScreen({ imageData }: ImageScreenProps) {
-  const images = imageData?.embed?.images || [];
-  const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
-  const TAB_BAR_HEIGHT = screenHeight * 0.1;
-  const availableHeight = screenHeight - TAB_BAR_HEIGHT;
+  const images = imageData?.embed?.images || []
+  const { width: screenWidth, height: screenHeight } = Dimensions.get('window')
+  const TAB_BAR_HEIGHT = screenHeight * 0.1
+  const availableHeight = screenHeight - TAB_BAR_HEIGHT
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0)
 
   if (!images || images.length === 0) {
     return (
       <View style={styles.noImageContainer}>
         <ThemedText>No image available</ThemedText>
       </View>
-    );
+    )
   }
 
   const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const newIndex = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
-    setCurrentIndex(newIndex);
-  };
+    const newIndex = Math.round(event.nativeEvent.contentOffset.x / screenWidth)
+    setCurrentIndex(newIndex)
+  }
 
   return (
     <View style={{ ...styles.root, height: screenHeight - TAB_BAR_HEIGHT }}>
-
       <VideoInfoOverlay videoData={imageData} />
       {images.length > 1 && (
-
         <View style={styles.pageIndexContainer}>
           {images.map((_, index) => (
             <ImageIndex key={index} index={index} currentIndex={currentIndex} />
           ))}
-
         </View>
-
       )}
 
       <ScrollView
@@ -56,18 +52,15 @@ export default function ImageScreen({ imageData }: ImageScreenProps) {
         {images.map((img, index) => (
           <View key={index} style={[styles.pageContainer, { width: screenWidth }]}>
             <Image source={{ uri: img.fullsize || '' }} style={styles.imageBg} resizeMode="cover" />
-            <BlurView intensity={50} style={styles.blurOverlay} tint="dark" />
+            <BlurView intensity={50} style={styles.blurOverlay} tint="dark" experimentalBlurMethod="dimezisBlurView" />
             <Image source={{ uri: img.fullsize || '' }} style={styles.image} resizeMode="contain" />
           </View>
         ))}
 
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.8)']}
-          style={styles.background}
-        />
+        <LinearGradient colors={['transparent', 'rgba(0,0,0,0.8)']} style={styles.background} />
       </ScrollView>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -129,4 +122,4 @@ const styles = StyleSheet.create({
     bottom: 0,
     height: 230,
   },
-});
+})

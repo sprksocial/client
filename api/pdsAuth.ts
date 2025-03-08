@@ -52,7 +52,7 @@ export const pdsLogin = async (handle: string, password: string) => {
       active: data.active ?? false,
     };
 
-    sessionManager.setSession(agent, session);
+    await sessionManager.setSession(agent, session);
 
     return data;
   } catch (error) {
@@ -88,7 +88,7 @@ export const pdsRegister = async (
       active: true,
     };
 
-    sessionManager.setSession(agent, session);
+    await sessionManager.setSession(agent, session);
   } catch (error) {
     console.error("Register failed:", error);
     throw error;
@@ -98,8 +98,8 @@ export const pdsRegister = async (
 /**
  * Logout the current user
  */
-export const pdsLogout = () => {
-  sessionManager.clearSession();
+export const pdsLogout = async () => {
+  await sessionManager.clearSession();
 };
 
 /**

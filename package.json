@@ -54,7 +54,8 @@
     "react-native-video": "^6.10.0",
     "react-native-videoeditorsdk": "^3.3.0",
     "react-native-web": "~0.19.13",
-    "react-native-webview": "13.12.5"
+    "react-native-webview": "13.12.5",
+    "expo-secure-store": "~14.0.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

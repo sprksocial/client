@@ -1,5 +1,6 @@
 import EventEmitter from "events";
 import { Agent, AtpSessionData, CredentialSession } from "@atproto/api";
+import * as SecureStore from 'expo-secure-store';
 
 export enum SessionEventType {
   CREATE = "session:create",
@@ -21,7 +22,12 @@ class SessionManager extends EventEmitter {
 
   constructor() {
     super();
-    this.loadSession();
+    // Immediately invoke an async function to handle async initialization
+    (async () => {
+      await this.loadSession();
+    })().catch(error => {
+      console.error('Failed to load session during initialization:', error);
+    });
   }
 
   /**
@@ -41,7 +47,7 @@ class SessionManager extends EventEmitter {
   /**
    * Store a new session
    */
-  setSession(agent: Agent, session: AtpSessionData): void {
+  async setSession(agent: Agent, session: AtpSessionData): Promise<void> {
     this.agent = agent;
     this.sessionData = session;
     this.pdsUrl = session.accessJwt
@@ -50,7 +56,7 @@ class SessionManager extends EventEmitter {
           ""
         )
       : "";
-    this.persistSession();
+    await this.persistSession();
     // this.scheduleRefresh();
     this.emit(SessionEventType.CREATE, session);
   }
@@ -96,7 +102,7 @@ class SessionManager extends EventEmitter {
   /**
    * Clear the current session (logout)
    */
-  clearSession(): void {
+  async clearSession(): Promise<void> {
     if (this.refreshTimeout) {
       clearTimeout(this.refreshTimeout);
       this.refreshTimeout = null;
@@ -105,7 +111,7 @@ class SessionManager extends EventEmitter {
     this.agent = null;
     this.sessionData = null;
     this.pdsUrl = "";
-    this.removePersistedSession();
+    await this.removePersistedSession();
     this.emit(SessionEventType.DELETE);
   }
 
@@ -140,53 +146,69 @@ class SessionManager extends EventEmitter {
   // }
 
   /**
-   * Persist session to storage
+   * Persist session to storage using SecureStore
    */
-  private persistSession(): void {
-    if (typeof localStorage !== "undefined" && this.sessionData) {
-      localStorage.setItem(this.persistKey, JSON.stringify(this.sessionData));
-    }
-  }
-
-  /**
-   * Remove persisted session from storage
-   */
-  private removePersistedSession(): void {
-    if (typeof localStorage !== "undefined") {
-      localStorage.removeItem(this.persistKey);
-    }
-  }
-
-  /**
-   * Load session from storage on startup
-   */
-  private loadSession(): void {
-    if (typeof localStorage !== "undefined") {
+  private async persistSession(): Promise<void> {
+    if (this.sessionData) {
       try {
-        const savedSession = localStorage.getItem(this.persistKey);
-        if (savedSession) {
-          this.sessionData = JSON.parse(savedSession);
-
-          // Create a new agent with the saved data
-          if (this.sessionData && this.sessionData.did) {
-            if (!this.pdsUrl) {
-              throw new Error("Could not find PDS URL for this account");
-            }
-            const cred = new CredentialSession(new URL(this.pdsUrl));
-
-            cred.resumeSession(this.sessionData);
-
-            const agent = new Agent(cred);
-
-            // Restore the session
-            this.agent = agent;
-            // this.scheduleRefresh();
-          }
-        }
+        await SecureStore.setItemAsync(
+          this.persistKey,
+          JSON.stringify(this.sessionData)
+        );
       } catch (error) {
-        console.error("Failed to load persisted session:", error);
-        this.removePersistedSession();
+        console.error('Error saving session to SecureStore:', error);
       }
+    }
+  }
+
+  /**
+   * Remove persisted session from SecureStore
+   */
+  private async removePersistedSession(): Promise<void> {
+    try {
+      await SecureStore.deleteItemAsync(this.persistKey);
+    } catch (error) {
+      console.error('Error removing session from SecureStore:', error);
+    }
+  }
+
+  /**
+   * Load session from SecureStore on startup
+   */
+  private async loadSession(): Promise<void> {
+    try {
+      const savedSession = await SecureStore.getItemAsync(this.persistKey);
+
+      if (savedSession) {
+        this.sessionData = JSON.parse(savedSession);
+
+        // Create a new agent with the saved data
+        if (this.sessionData && this.sessionData.did) {
+          // Extract the PDS URL from the access token
+          this.pdsUrl = this.sessionData.accessJwt
+            ? JSON.parse(atob(this.sessionData.accessJwt.split(".")[1])).aud.replace(
+                "did:web:",
+                ""
+              )
+            : "";
+
+          if (!this.pdsUrl) {
+            throw new Error("Could not find PDS URL for this account");
+          }
+          const cred = new CredentialSession(new URL(`https://${this.pdsUrl}`));
+          cred.resumeSession(this.sessionData);
+
+          const agent = new Agent(cred);
+
+          // Restore the session
+          this.agent = agent;
+          // this.scheduleRefresh();
+        }
+      }
+    } catch (error) {
+      console.error('Error loading session from SecureStore:', error);
+      // Clear any invalid or corrupted session data
+      this.removePersistedSession();
     }
   }
 }
