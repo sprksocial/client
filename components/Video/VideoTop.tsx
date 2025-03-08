@@ -272,10 +272,32 @@ const VideoTop: React.FC = () => {
     title: string,
     selected: boolean,
     key: string,
+    index: number,
   ) => {
     return (
-      <TouchableOpacity key={key}>
-        <ThemedText type='defaultBold' darkColor={Colors.dark.text} lightColor={Colors.dark.text} style={[styles.text, selected ? { color: Colors.light.background } : {}]}>{title}</ThemedText>
+      <TouchableOpacity 
+        key={key}
+        onPress={() => {
+          const newFeeds = [...customFeeds];
+          newFeeds.forEach(feed => feed.selected = false);
+          newFeeds[index].selected = true;
+          setCustomFeeds(newFeeds);
+        }}
+      >
+        <ThemedText 
+          type='defaultBold' 
+          darkColor={Colors.dark.text} 
+          lightColor={Colors.dark.text} 
+          style={[
+            styles.text, 
+            { 
+              color: Colors.light.background,
+              opacity: selected ? 1 : 0.5 
+            }
+          ]}
+        >
+          {title}
+        </ThemedText>
       </TouchableOpacity>
     );
   };
@@ -363,7 +385,7 @@ const VideoTop: React.FC = () => {
         {
           customFeeds.map((feed, index) => (
             feed.enabled &&
-            generateFeedTab(feed.name, feed.selected, `feedTab_${index}`)
+            generateFeedTab(feed.name, feed.selected, `feedTab_${index}`, index)
           ))
         }
        
