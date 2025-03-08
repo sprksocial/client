@@ -12,7 +12,6 @@ import ImageScreen from '@/components/Image/ImageScreen';
 import { PostProps } from '@/types/Interfaces';
 import { fetchTrendingPosts } from '@/api/feedServices';
 import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs';
-import { router } from 'expo-router';
 
 export default function HomeScreen() {
   const flatListRef = useRef<FlatList<PostProps>>(null);
