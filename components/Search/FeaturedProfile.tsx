@@ -4,6 +4,7 @@ import { View, Text, Image, TouchableOpacity, StyleSheet, useColorScheme } from 
 import { ThemedText } from "../ThemedText";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
+import { navigateToProfile } from "@/app/(tabs)/ProfileScreen";
 
 const formatNumber = (num?: number) => {
     if (!num) return '0';
@@ -73,7 +74,7 @@ const FeaturedProfile: React.FC<FeaturedProfileProps> = ({
     });
 
     return (
-        <TouchableOpacity style={styles.container}>
+        <TouchableOpacity style={styles.container} onPress={() => navigateToProfile(user.did)}>
             <Image source={{ uri: user.avatar }} style={styles.profilePicture} />
             <View style={styles.infoContainer}>
                 <View style={styles.nameContainer}>
@@ -96,7 +97,13 @@ const FeaturedProfile: React.FC<FeaturedProfileProps> = ({
                     <ThemedText style={styles.stat}>{formatNumber(user.followsCount)} Following</ThemedText>
                 </View>
             </View>
-            <TouchableOpacity style={styles.followButton} onPress={onFollow}>
+            <TouchableOpacity 
+                style={styles.followButton} 
+                onPress={(e) => {
+                    e.stopPropagation(); // Prevent triggering parent's onPress
+                    onFollow();
+                }}
+            >
                 <ThemedText style={styles.followButtonText}>{isFollowing ? <Ionicons name="person-remove" size={16} color="#fff" /> : <Ionicons name="person-add" size={16} color="#fff" />}</ThemedText>
             </TouchableOpacity>
         </TouchableOpacity>

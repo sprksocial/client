@@ -4,6 +4,8 @@ import {
   FlatList,
   View,
   Dimensions,
+  Platform,
+  SafeAreaView,
 } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import VideoScreen from '@/components/Video/VideoScreen';
@@ -31,14 +33,14 @@ export default function HomeScreen() {
     viewAreaCoveragePercentThreshold: 95,
   });
 
-  const { height: windowHeight } = Dimensions.get('screen');
+  const { height: windowHeight } = Dimensions.get('window');
   const TAB_BAR_HEIGHT = useBottomTabBarHeight();
+  // Calculate available height properly for both platforms
   const availableHeight = windowHeight - TAB_BAR_HEIGHT;
 
   const shuffleArray = (array: any[]) => {
     return array.sort(() => Math.random() - 0.5);
   };
-
 
   useEffect(() => {
     const loadContent = async () => {
@@ -55,9 +57,8 @@ export default function HomeScreen() {
     loadContent();
   }, []);
 
-
   return (
-    <ThemedView >
+    <ThemedView style={styles.container}>
       <VideoTop />
       <FlatList
         ref={flatListRef}
@@ -68,7 +69,7 @@ export default function HomeScreen() {
           const embedType = item.embed?.$type || '';
 
           return (
-            <View style={ { height: availableHeight }}>
+            <View style={[styles.itemContainer, { height: availableHeight }]}>
               {embedType === 'app.bsky.embed.video' ||
               embedType === 'app.bsky.embed.video#view' ? (
                 <VideoScreen videoData={{ ...item, isActive }} />
@@ -88,8 +89,21 @@ export default function HomeScreen() {
         maxToRenderPerBatch={2}
         removeClippedSubviews
         scrollEventThrottle={16}
-        style={{ height: availableHeight, backgroundColor: 'black' }}
+        contentContainerStyle={Platform.OS === 'android' ? { paddingBottom: TAB_BAR_HEIGHT } : undefined}
+        style={styles.flatList}
       />
     </ThemedView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  flatList: {
+    backgroundColor: 'black',
+  },
+  itemContainer: {
+    width: '100%',
+  }
+});

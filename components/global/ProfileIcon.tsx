@@ -4,7 +4,7 @@ import React from 'react';
 import { View, Image, StyleSheet, useColorScheme } from 'react-native';
 
 
-const ProfileIcon: React.FC<{ userData: UserProps, isSelected: boolean, size: number }> = ({ userData, isSelected, size }) => {
+const ProfileIcon: React.FC<{ uri: string, isSelected: boolean, size: number }> = ({ uri, isSelected, size }) => {
   const colorScheme = useColorScheme();
 
   const styles = StyleSheet.create({
@@ -32,7 +32,7 @@ const ProfileIcon: React.FC<{ userData: UserProps, isSelected: boolean, size: nu
       { width: size, height: size, borderRadius: size / 2 },
       isSelected && styles.selectedBorder
     ]}>
-      <Image source={{ uri: userData.avatar }} style={styles.image} />
+      <Image source={{ uri }} style={styles.image} />
     </View>
   );
 };

@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '../ThemedText';
 import { Colors } from '@/constants/Colors';
 import { VideoSideProps } from '@/types/Interfaces';
+import { navigateToProfile } from '@/app/(tabs)/ProfileScreen';
 
 const VideoSide: React.FC<VideoSideProps> = ({ videoData, onComments }) => {
       const colorScheme = useColorScheme();
@@ -68,12 +69,19 @@ const VideoSide: React.FC<VideoSideProps> = ({ videoData, onComments }) => {
         <View style={styles.container} pointerEvents="box-none">
             <View style={styles.buttonsList}>
                 <TouchableOpacity style={styles.iconContainer}>
-                    <View style={styles.profilePicWrapper}>
+                    <TouchableOpacity 
+                        style={styles.profilePicWrapper} 
+                        onPress={() => {
+                            if (videoData.author?.did) {
+                                navigateToProfile(videoData.author.did);
+                            }
+                        }}
+                    >
                         <Image
                             source={{ uri: videoData.author?.avatar || '' }}
                             style={styles.profilePic}
                         />
-                    </View>
+                    </TouchableOpacity>
                     <TouchableOpacity onPress={() => console.log('followed')} style={styles.addIcon}>
                         <Ionicons color={Colors[colorScheme ?? 'light'].tint} name="add-circle-sharp" size={30} style={{ position: 'absolute', bottom: 0, left: 0 }} />
                         <Ionicons color="#FFFFFF" name="add-circle-outline" size={30} style={{ position: 'absolute', bottom: 0, left: 0 }} />
