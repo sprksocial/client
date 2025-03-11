@@ -1,104 +1,60 @@
 import React from 'react';
-import { View, StyleSheet, useColorScheme } from 'react-native';
-import { ThemedText } from '@/components/ThemedText';
+import { View, StyleSheet } from 'react-native';
 import { UserProps } from '@/types/Interfaces';
-import { Colors } from '@/constants/Colors';
-
-const formatNumber = (num?: number) => {
-    if (!num) return '0';
-    if (num >= 1_000_000_000) return (num / 1_000_000_000).toFixed(1) + 'B';
-    if (num >= 1_000_000) return (num / 1_000_000).toFixed(1) + 'M';
-    if (num >= 1_000) return (num / 1_000).toFixed(1) + 'K';
-    return num.toString();
-  };
+import ProfileNumbers from './profileNumbers';
+import ProfileName from './ProfileName';
+import ProfileHandler from './ProfileHandler';
+import ProfilePicture from './ProfilePicture';
+import ProfileDescription from './ProfileDescription';
 
 const ProfileInfo: React.FC<{ userData: UserProps }> = ({ userData }) => {
-  const colorScheme = useColorScheme();
-
   const styles = StyleSheet.create({
     container: {
-      alignItems: 'center',
-      padding: 10,
+      flexDirection: 'column',
+      justifyContent: 'center',
       width: '100%',
+      padding: 10,
     },
-    nameContainer: {
-      alignItems: 'center',
-      width: '80%',
-      marginBottom: 4,
-    },
-    name: {
-      fontSize: 18,
-      fontWeight: 'bold',
-    },
-    handler: {
-      fontSize: 14,
-      color: Colors[colorScheme ?? 'light'].textGray,
-      borderRadius: 4,
-      paddingVertical: 2,
-      paddingHorizontal: 8,
-    },
-    statsContainer: {
-      marginTop: 5,
+    topContainer: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
-      width: '70%',
-    },
-    statItem: {
+      width: '100%',
       alignItems: 'center',
-      width: '33%',
-      gap: 0,
+      justifyContent: 'center',
+      marginBottom: 10,
     },
-    statNumber: {
-      fontSize: 16,
-      fontWeight: 'bold',
-      color: Colors[colorScheme ?? 'light'].text,
+    rightContainer: {
+      flexDirection: 'column',
+      justifyContent: 'center',
+      width: 250,
     },
-    statLabel: {
-      fontSize: 12,
-      color: Colors[colorScheme ?? 'light'].textGray,
-    },
-    bioContainer: {
-      marginVertical: 4,
-      width: '80%',
-    },
-    bio: {
-      fontSize: 14,
-      color: '#888',
-      textAlign: 'center',
-    },
+    bottomContainer: {
+      width: '100%',
+      paddingHorizontal: 20,
+    }
   });
 
   return (
     <View style={styles.container}>
-      <View style={styles.nameContainer}>
-      <ThemedText type="defaultBold" style={styles.name}>{userData.displayName}</ThemedText>
-      {userData.handle === 'null' ? null :
-        <ThemedText type="username" style={styles.handler}>@{userData.handle}</ThemedText>
-      }
+    <View style={styles.topContainer}>
+      {userData && <ProfilePicture userData={userData} />}
+      <View style={styles.rightContainer}>
+        <ProfileName displayName={userData.displayName} />
+        {userData.handle === 'null' ? null :
+          <ProfileNumbers
+            followsCount={userData.followsCount}
+            followersCount={userData.followersCount}
+            likes={userData.likes}
+          />
+        }
       </View>
-      {userData.handle === 'null' ? null :
-      <View style={styles.statsContainer}>
-        <View style={styles.statItem}>
-          <ThemedText type="defaultBold" style={styles.statNumber}>{formatNumber(userData.followsCount ?? 0)}</ThemedText>
-          <ThemedText type="default" style={styles.statLabel}>Following</ThemedText>
-        </View>
-        <View style={styles.statItem}>
-          <ThemedText type="defaultBold" style={styles.statNumber}>{formatNumber(userData.followersCount ?? 0)}</ThemedText>
-          <ThemedText type="default" style={styles.statLabel}>Followers</ThemedText>
-        </View>
-        <View style={styles.statItem}>
-          <ThemedText type="defaultBold" style={styles.statNumber}>{formatNumber(userData.likes ?? 0)}</ThemedText>
-          <ThemedText type="default" style={styles.statLabel}>Likes</ThemedText>
-        </View>
-      </View>
-}
-      <View style={styles.bioContainer}>
-        <ThemedText type="default" style={styles.bio}>{userData.description}</ThemedText>
-      </View>
+
+    </View>
+    <View style={styles.bottomContainer}>
+    <ProfileHandler handle={userData.handle} />
+            <ProfileDescription description={userData?.description} />
+    </View>
     </View>
   );
 };
-
-
 
 export default ProfileInfo;

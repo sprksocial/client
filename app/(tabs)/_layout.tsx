@@ -91,6 +91,7 @@ useEffect(() => {
           display: 'flex',
           flexDirection: 'row',
           borderWidth: 0,
+          safeAreaInsets: { bottom: 30 },
         },
         android: {
           backgroundColor: Colors[colorScheme ?? 'light'].background,
@@ -112,7 +113,6 @@ useEffect(() => {
         },
       }),
       }}
-      safeAreaInsets={{ bottom: 0 }}
     >
       <Tabs.Screen
         name="index"
