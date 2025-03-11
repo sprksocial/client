@@ -6,11 +6,15 @@ import { Colors } from '@/constants/Colors';
 import { pdsRegister } from '@/api/pdsAuth';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
-import React, { useCallback, useRef, useState, useMemo } from 'react';
-import { View, StyleSheet, useColorScheme, TouchableOpacity, SafeAreaView, Dimensions, ActivityIndicator } from 'react-native';
+import React, { useCallback, useRef, useState, useMemo, useEffect } from 'react';
+import { View, StyleSheet, useColorScheme, TouchableOpacity, SafeAreaView, Dimensions, ActivityIndicator, Animated } from 'react-native';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { format } from 'date-fns';
+import Reanimated, { withTiming, useAnimatedStyle, useSharedValue, withSequence, SlideInUp, SlideOutDown } from 'react-native-reanimated';
+
+// Define the domain constant
+const DOMAIN = '.sprk.so';
 
 export default function Register() {
   const colorScheme = useColorScheme();
@@ -120,6 +124,33 @@ export default function Register() {
       width: '90%',
       marginBottom: 25,
     },
+    handleInputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      width: '90%',
+      marginBottom: 25,
+    },
+    handleDomain: {
+      fontSize: 16,
+      color: Colors[colorScheme ?? 'light'].textGray,
+      paddingRight: 12,
+      marginLeft: 5,
+    },
+    toastContainer: {
+      position: 'absolute',
+      top: 100,
+      left: 20,
+      right: 20,
+      backgroundColor: 'rgba(255, 0, 0, 0.8)',
+      padding: 15,
+      borderRadius: 8,
+      alignItems: 'center',
+      zIndex: 1000,
+    },
+    toastText: {
+      color: 'white',
+      fontWeight: 'bold',
+    },
   });
 
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -140,12 +171,24 @@ export default function Register() {
   }, []);
 
   const [email, setEmail] = useState('');
-  const [handle, setHandle] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [inviteCode, setInviteCode] = useState('');
   const [birthDate, setBirthDate] = useState<Date>(new Date());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showToast, setShowToast] = useState(false);
+
+  // Error toast timing effect
+  useEffect(() => {
+    if (error) {
+      setShowToast(true);
+      const timer = setTimeout(() => {
+        setShowToast(false);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
 
   const handleDateChange = (event: DateTimePickerEvent, selectedDate: Date | undefined) => {
     if (selectedDate) {
@@ -157,22 +200,31 @@ export default function Register() {
     closeBottomSheet();
   };
 
+  // Function to get the full handle with domain
+  const getFullHandle = () => {
+    return `${username}${DOMAIN}`;
+  };
+
   const handleRegister = async () => {
-    if (!email || !handle || !password || !birthDate) {
+    const trimmedEmail = email.trim();
+    const trimmedUsername = username.trim();
+
+    if (!trimmedEmail || !trimmedUsername || !password || !birthDate) {
       setError('Please fill in all required fields');
       return;
     }
 
-    // Simple email validation
+    // Improved email validation with proper trimming
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(trimmedEmail)) {
       setError('Please enter a valid email address');
       return;
     }
 
-    // Simple handle validation
-    if (!handle.includes('.')) {
-      setError('Handle must be in format username.sprk.so');
+    // Username validation (no dots, no spaces, alphanumeric only)
+    const usernameRegex = /^[a-zA-Z0-9_-]+$/;
+    if (!usernameRegex.test(trimmedUsername)) {
+      setError('Username can only contain letters, numbers, underscores, and hyphens');
       return;
     }
 
@@ -186,8 +238,11 @@ export default function Register() {
       setLoading(true);
       setError('');
 
+      // Get the full handle with domain and use it for registration
+      const fullHandle = getFullHandle();
+      
       // Call the pdsRegister function from our API
-      await pdsRegister(email, handle, password, inviteCode || undefined);
+      await pdsRegister(trimmedEmail, fullHandle, password, inviteCode || undefined);
 
       // If successful, navigate to the app's main screen
       router.replace('/(tabs)');
@@ -209,9 +264,18 @@ export default function Register() {
       
       <Logo size={14} color={Colors[colorScheme ?? 'light'].selectedIcon} style={styles.logo} />
       
-      <View style={styles.formContainer}>
-        {error ? <ThemedText style={styles.errorText}>{error}</ThemedText> : null}
+      {/* Animated Toast for Errors */}
+      {showToast && (
+        <Reanimated.View 
+          style={styles.toastContainer}
+          entering={SlideInUp}
+          exiting={SlideOutDown}
+        >
+          <ThemedText style={styles.toastText}>{error}</ThemedText>
+        </Reanimated.View>
+      )}
       
+      <View style={styles.formContainer}>
         <InputArea
           label='Email'
           placeholder='Enter your email'
@@ -223,16 +287,20 @@ export default function Register() {
           style={styles.inputStyle}
         />
         
-        <InputArea
-          label='Handle'
-          placeholder='username.sprk.so'
-          icon='at'
-          type='text'
-          inputStyle={{ width: '100%' }}
-          value={handle}
-          onChangeText={setHandle}
-          style={styles.inputStyle}
-        />
+        {/* Custom username input with domain appended */}
+        <View style={styles.handleInputContainer}>
+          <InputArea
+            label='Username'
+            placeholder='Choose your username'
+            icon='at'
+            type='text'
+            inputStyle={{ flex: 1, paddingRight: 0 }}
+            value={username}
+            onChangeText={setUsername}
+            style={{ flex: 1 }}
+          />
+          <ThemedText style={styles.handleDomain}>{DOMAIN}</ThemedText>
+        </View>
         
         <InputArea
           label='Password'

@@ -122,7 +122,7 @@ export default function VideoScreen({
           nativeControls={false}
           allowsVideoFrameAnalysis={false}
         />
-        <BlurView intensity={50} style={styles.blurOverlay} tint="dark" />
+        <BlurView intensity={50} style={styles.blurOverlay} tint="dark" experimentalBlurMethod="dimezisBlurView" />
 
         <Image
           style={styles.videoBackground}

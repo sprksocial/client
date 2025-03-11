@@ -10,19 +10,21 @@ import ProfileIcon from '@/components/global/ProfileIcon';
 import { UserProps } from '@/types/Interfaces';
 import { getProfile } from '@/api/profileServices';
 import { did } from '@/constants/MockData';
+import useAtProto from '@/hooks/useAtProto';
+import { router } from 'expo-router';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   const [userData, setUserData] = useState<UserProps | null>(null);
-  const isLoggedIn = false;
+  const { isLoggedIn, session } = useAtProto();
 
 
 useEffect(() => {
   if (isLoggedIn) {
     const loadProfileData = async () => {
       try {
-        const profileData = await getProfile(did);
+        const profileData = await getProfile(session.did);
         if (profileData) {
           setUserData({
             id: profileData.did,
@@ -90,6 +92,16 @@ useEffect(() => {
           flexDirection: 'row',
           borderWidth: 0,
         },
+        android: {
+          backgroundColor: Colors[colorScheme ?? 'light'].background,
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          display: 'flex',
+          flexDirection: 'row',
+          borderWidth: 0,
+          borderTopWidth: 0,
+          elevation: 8,
+        },
         default: {
           backgroundColor: Colors[colorScheme ?? 'light'].background,
           alignItems: 'center',
@@ -99,7 +111,9 @@ useEffect(() => {
           borderWidth: 0,
         },
       }),
-      }}>
+      }}
+      safeAreaInsets={{ bottom: 0 }}
+    >
       <Tabs.Screen
         name="index"
         options={{
@@ -165,8 +179,13 @@ useEffect(() => {
             alignItems: 'center',
             flexDirection: 'row',
           },
-          tabBarIcon: ({ focused }) => userData ? <ProfileIcon userData={userData} isSelected={focused} size={28} /> : null,
+          tabBarIcon: ({ focused }) => userData ? <ProfileIcon uri={userData.avatar} isSelected={focused} size={28} /> : null,
         }}
+        listeners={({ navigation }) => ({
+          tabPress: () => {
+            router.replace('/(tabs)/ProfileScreen');
+          },
+        })}
       />
     </Tabs>
   );

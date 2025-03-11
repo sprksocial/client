@@ -1,11 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {
+  Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   useColorScheme,
   View,
+  Image,
+  FlatList,
+  RefreshControl,
+  Alert,
+  ActivityIndicator
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@/components/ThemedText';
@@ -18,9 +24,10 @@ import VideoDisplay from '@/components/global/VideoDisplay';
 import PlaceholderVideoDisplay from '@/components/Profile/PlaceholderVideoDisplay';
 import { did } from '@/constants/MockData';
 import { UserProps, PostProps } from '@/types/Interfaces';
-import { router, useRouter } from 'expo-router';
+import { router, useRouter, useLocalSearchParams } from 'expo-router';
 import { getProfile, getProfileMedia } from '@/api/profileServices';
 import useAtProto from '@/hooks/useAtProto';
+import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 
 function padVideosWithPlaceholders(
   videos: (PostProps & { isPlaceholder?: boolean })[]
@@ -63,19 +70,37 @@ function padVideosWithPlaceholders(
 export default function ProfileScreen() {
   const colorScheme = useColorScheme();
   const route = useRouter();
-
+  const params = useLocalSearchParams();
+  
   const { isLoggedIn, session, agent, logout } = useAtProto();
-
-  const isMine = !true;
-
-  const userDid = isLoggedIn && session ? session.did : did;
+  
+  const profileDid = typeof params.did === 'string' && params.did ? 
+    params.did : 
+    (isLoggedIn && session ? session.did : did);
+  
+  const isMine = isLoggedIn && session && profileDid === session.did;
 
   const [userData, setUserData] = useState<UserProps | null>(null);
   const [videoPosts, setVideoPosts] = useState<PostProps[]>([]);
+  
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ['25%'], []);
+
+  const handleSheetChanges = useCallback((index: number) => {
+    console.log('handleSheetChanges', index);
+  }, []);
+
+  const openBottomSheet = useCallback(() => {
+    bottomSheetRef.current?.expand();
+  }, []);
+
+  const closeBottomSheet = useCallback(() => {
+    bottomSheetRef.current?.close();
+  }, []);
 
   const loadVideoPosts = async () => {
     try {
-      const mediaPosts = await getProfileMedia(userDid, 'video');
+      const mediaPosts = await getProfileMedia(profileDid, 'video');
       const posts = mediaPosts.map((item: any) => item.post);
       setVideoPosts(posts);
     } catch (error) {
@@ -87,13 +112,13 @@ export default function ProfileScreen() {
     if (isLoggedIn || (!isLoggedIn && !isMine)) {
       const loadProfileData = async () => {
         try {
-          const profileData = await getProfile(userDid);
+          const profileData = await getProfile(profileDid);
           if (profileData) {
             setUserData({
               id: profileData.did,
               did: profileData.did,
-              displayName: profileData.displayName || (session?.handle || ''),
-              handle: profileData.handle || (session?.handle || ''),
+              displayName: profileData.displayName || (isMine && session?.handle ? session.handle : ''),
+              handle: profileData.handle || (isMine && session?.handle ? session.handle : ''),
               description: profileData.description || '',
               avatar: profileData.avatar || '',
               banner: profileData.banner || '',
@@ -112,7 +137,7 @@ export default function ProfileScreen() {
         } catch (error) {
           console.error('Error loading profile:', error);
 
-          if (isLoggedIn && session) {
+          if (isLoggedIn && session && isMine) {
             setUserData({
               id: session.did,
               did: session.did,
@@ -151,7 +176,7 @@ export default function ProfileScreen() {
         labels: [],
       });
     }
-  }, [isLoggedIn, isMine, session, userDid]);
+  }, [isLoggedIn, isMine, session, profileDid]);
 
   const paddedVideoData = padVideosWithPlaceholders(videoPosts);
 
@@ -162,6 +187,7 @@ export default function ProfileScreen() {
       params: {
         videoData: JSON.stringify(videoPosts),
         initialIndex: index.toString(),
+        animation: Platform.OS === 'android' ? 'fade' : 'none'
       },
     });
   }
@@ -175,8 +201,14 @@ export default function ProfileScreen() {
     }
   }
 
+  const handleProfileSettings = () => {
+    closeBottomSheet();
+    console.log('Navigate to profile settings');
+  };
+
   const handleLogout = async () => {
     try {
+      closeBottomSheet();
       await logout();
       console.log('User logged out');
     } catch (error) {
@@ -252,6 +284,33 @@ export default function ProfileScreen() {
       gap: 10,
       width: '100%',
     },
+    bottomSheetContent: {
+      padding: 20,
+      backgroundColor: Colors[colorScheme ?? 'light'].background,
+    },
+    bottomSheetOption: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingVertical: 15,
+      borderBottomWidth: 1,
+      borderBottomColor: Colors[colorScheme ?? 'light'].underlineColor,
+    },
+    bottomSheetOptionText: {
+      marginLeft: 15,
+      fontSize: 16,
+      color: Colors[colorScheme ?? 'light'].text,
+    },
+    bottomSheetOptionTextDanger: {
+      marginLeft: 15,
+      fontSize: 16,
+      color: '#FF3B30',
+    },
+    bottomSheetBackground: {
+      backgroundColor: Colors[colorScheme ?? 'light'].background,
+    },
+    bottomSheetHandle: {
+      backgroundColor: Colors[colorScheme ?? 'light'].underlineColor,
+    },
   });
 
   return (
@@ -262,20 +321,25 @@ export default function ProfileScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.profileNavbar}>
-            <TouchableOpacity onPress={() => {}}>
+            <TouchableOpacity onPress={() => {
+              if (params.did) {
+                router.back();
+              }
+            }}>
               <Ionicons
                 name="chevron-back"
                 size={24}
                 color={Colors[colorScheme ?? 'light'].text}
+                style={{ opacity: params.did ? 1 : 0 }}
               />
             </TouchableOpacity>
 
             <ThemedText style={styles.profileTopText}>
-              {isLoggedIn ? 'My Profile' : userData?.displayName ?? ''}
+              {isMine ? 'My Profile' : userData?.displayName ?? ''}
             </ThemedText>
 
-            <TouchableOpacity onPress={() => {}}>
-              {isLoggedIn ? (
+            <TouchableOpacity onPress={openBottomSheet}>
+              {isLoggedIn && isMine ? (
                 <Ionicons
                   name="settings-outline"
                   size={24}
@@ -403,6 +467,56 @@ export default function ProfileScreen() {
           </View>
         </ScrollView>
       </ContentWrapper>
+
+      <BottomSheet
+        ref={bottomSheetRef}
+        index={-1}
+        snapPoints={snapPoints}
+        onChange={handleSheetChanges}
+        enablePanDownToClose
+        backgroundStyle={styles.bottomSheetBackground}
+        handleIndicatorStyle={styles.bottomSheetHandle}
+      >
+        <BottomSheetView style={styles.bottomSheetContent}>
+          <TouchableOpacity 
+            style={styles.bottomSheetOption}
+            onPress={handleProfileSettings}
+          >
+            <Ionicons
+              name="person-circle-outline"
+              size={24}
+              color={Colors[colorScheme ?? 'light'].text}
+            />
+            <ThemedText style={styles.bottomSheetOptionText}>
+              Profile Settings
+            </ThemedText>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.bottomSheetOption}
+            onPress={handleLogout}
+          >
+            <Ionicons
+              name="log-out-outline"
+              size={24}
+              color="#FF3B30"
+            />
+            <ThemedText style={styles.bottomSheetOptionTextDanger}>
+              Logout
+            </ThemedText>
+          </TouchableOpacity>
+        </BottomSheetView>
+      </BottomSheet>
     </SafeAreaView>
   );
+}
+
+// Utility function to navigate to a profile
+export function navigateToProfile(did: string) {
+  // If navigating to a profile, always include the DID parameter
+  // This allows the correct handling when coming from different contexts
+  router.push({
+    pathname: "/(tabs)/ProfileScreen",
+    params: { did }
+  });
 }
