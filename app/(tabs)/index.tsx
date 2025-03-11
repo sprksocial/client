@@ -5,7 +5,6 @@ import {
   View,
   Dimensions,
   Platform,
-  SafeAreaView,
 } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import VideoScreen from '@/components/Video/VideoScreen';

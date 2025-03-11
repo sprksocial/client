@@ -6,6 +6,7 @@ import {
   View,
   Dimensions,
   TouchableOpacity,
+  Platform,
 } from 'react-native';
 import { ThemedView } from '@/components/ThemedView';
 import VideoScreen from '@/components/Video/VideoScreen';
@@ -48,7 +49,7 @@ export default function ProfileFeed() {
     viewAreaCoveragePercentThreshold: 95,
   });
 
-  const { height: windowHeight } = Dimensions.get('screen');
+  const { height: windowHeight } = Dimensions.get('window');
   const TAB_BAR_HEIGHT = 0;
   const availableHeight = windowHeight - TAB_BAR_HEIGHT;
 
@@ -60,7 +61,7 @@ export default function ProfileFeed() {
 
   return (
     <>
-      <Stack.Screen options={{ headerShown: false }} />
+      <Stack.Screen options={{ headerShown: false, animation: 'slide_from_right' }} />
       <ThemedView style={styles.root}>
         <TouchableOpacity
           onPress={() => router.back()}
@@ -90,7 +91,7 @@ export default function ProfileFeed() {
           removeClippedSubviews
           scrollEventThrottle={16}
           style={styles.flatList}
-          contentContainerStyle={styles.flatListContent}
+          contentContainerStyle={Platform.OS === 'android' ? { paddingBottom: TAB_BAR_HEIGHT } : undefined}
           getItemLayout={getItemLayout}
           initialScrollIndex={initialIndex}
         />
