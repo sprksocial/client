@@ -1,3 +1,4 @@
+import { openVideoFromLocalPathExample } from '@/components/Creation/ShowVideoEditor';
 import { Ionicons } from '@expo/vector-icons';
 import { CameraView, CameraType, useCameraPermissions } from 'expo-camera';
 import { useState } from 'react';
@@ -31,7 +32,7 @@ export default function CreateScreen() {
           <TouchableOpacity style={styles.button} onPress={toggleCameraFacing}>
             <Ionicons name="camera-reverse" size={32} color="white" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.button} onPress={() => {}}>
+          <TouchableOpacity style={styles.button} onPress={() => {openVideoFromLocalPathExample()}}>
             <Ionicons name="ellipse" size={64} color="white" />
           </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={() => {}}>
