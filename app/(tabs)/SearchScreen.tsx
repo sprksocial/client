@@ -10,6 +10,10 @@ import { UserProps, PostProps } from '@/types/Interfaces';
 import { fetchTrendingPosts } from '@/api/feedServices';
 import { getProfile } from '@/api/profileServices';
 import { useRouter } from 'expo-router';
+import VideoRowCategory from '@/components/Search/VideoRowCategory';
+import SoundRowsCategory, { SoundProps } from '@/components/Search/SoundRowsCategory';
+import { trendingSounds } from '@/components/Search/mockSoundsData';
+import { Ionicons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 
 // Pad posts so that the grid always has complete rows
 function padPostsWithPlaceholders(
@@ -62,6 +66,11 @@ export default function SearchScreen() {
         initialIndex: index.toString(),
       },
     });
+  }
+
+  function handleSoundPress(sound: SoundProps) {
+    console.log('Sound pressed:', sound.title);
+    // Future implementation: play sound or navigate to sound details
   }
 
   useEffect(() => {
@@ -135,6 +144,18 @@ export default function SearchScreen() {
           {featuredUser && (
             <FeaturedProfile user={featuredUser} isFollowing={false} onFollow={() => {}} />
           )}
+          <VideoRowCategory
+            icon={<Ionicons name="flame" size={24} color={Colors[colorScheme ?? 'light'].text} />}
+            title="Trending"
+            videos={videoData}
+            onVideoPress={handleOpenProfileFeed}
+          />
+          <SoundRowsCategory
+            icon={<MaterialCommunityIcons name="music-circle" size={24} color={Colors[colorScheme ?? 'light'].text} />}
+            title="Sounds"
+            sounds={trendingSounds}
+            onSoundPress={handleSoundPress}
+          />
           <View style={styles.videoGrid}>
             {paddedVideoData.map((post, index) => {
               const key = post.uri || `fallback-${index}`;

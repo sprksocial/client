@@ -5,20 +5,25 @@ import {
   StyleSheet,
   View,
   useColorScheme,
+  StyleProp,
+  ViewStyle,
 } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import { PostProps } from '@/types/Interfaces';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface VideoDisplayProps {
   videoSource: PostProps;
   onVideoPress: (post: PostProps) => void;
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
 const VideoDisplay: React.FC<VideoDisplayProps> = ({
   videoSource,
   onVideoPress,
+  containerStyle,
 }) => {
   const colorScheme = useColorScheme();
 
@@ -46,7 +51,7 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({
       bottom: 0,
       width: '100%',
       padding: 8,
-      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+      zIndex: 2,
     },
     viewCount: {
       fontSize: 16,
@@ -63,15 +68,29 @@ const VideoDisplay: React.FC<VideoDisplayProps> = ({
     icon: {
       marginHorizontal: 5,
     },
+    gradient: {
+      position: 'absolute',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      height: 40,
+      zIndex: 1,
+    },
   });
 
   const thumbnailUri = videoSource.embed?.thumbnail || '';
 
   return (
-    <TouchableOpacity style={styles.container} onPress={handleVideoPress}>
+    <TouchableOpacity style={[styles.container, containerStyle]} onPress={handleVideoPress}>
       {thumbnailUri ? (
         <Image source={{ uri: thumbnailUri }} style={styles.thumbnail} />
       ) : null}
+      
+      <LinearGradient
+        colors={['rgba(0, 0, 0, 0)', 'rgba(0, 0, 0, 0.7)']}
+        style={styles.gradient}
+      />
+      
       <View style={styles.overlay}>
         <View style={styles.viewCount}>
           <Ionicons style={styles.icon} name="eye" size={16} color="white" />
