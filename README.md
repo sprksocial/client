@@ -10,7 +10,7 @@ Share videos freely while maintaining complete control over your data. Break fre
 
 ## About Spark
 
-Spark Social PBC is building a decentralized social network on the AT Protocol, empowering users to share content without compromising privacy or control. With Spark, you own your data and decide how it's used.
+We are building a decentralized social network on the AT Protocol, empowering users to share content without compromising privacy or control. With Spark, you own your data and decide how it's used.
 
 ## Core Principles
 
@@ -48,15 +48,15 @@ Spark Social PBC is building a decentralized social network on the AT Protocol, 
 
 ### Prerequisites
 
-- Flutter SDK (3.7.2 or higher)
-- Dart SDK (3.0.0 or higher)
+- Flutter SDK
+- Dart SDK
 - iOS/Android development environment
 
 ### Installation
 
 1. Clone this repository
 ```bash
-git clone https://github.com/yourusername/spark-social.git
+git clone https://github.com/sprksocial/spark-front-end.git
 ```
 
 2. Navigate to the project directory
