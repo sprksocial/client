@@ -13,6 +13,7 @@ import 'utils/app_theme.dart';
 import 'screens/login_screen.dart';
 import 'screens/auth_prompt_screen.dart';
 import 'services/auth_service.dart';
+import 'services/profile_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,6 +36,11 @@ class MyApp extends StatelessWidget {
         providers: [
           ChangeNotifierProvider(create: (_) => NavigationProvider()),
           ChangeNotifierProvider(create: (_) => AuthService()),
+          ChangeNotifierProxyProvider<AuthService, ProfileService>(
+            create: (context) => ProfileService(context.read<AuthService>()),
+            update: (_, authService, previousProfileService) =>
+              previousProfileService ?? ProfileService(authService),
+          ),
         ],
         child: CupertinoApp(
           title: 'Spark',
@@ -68,6 +74,7 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final navigationProvider = Provider.of<NavigationProvider>(context);
+    final authService = Provider.of<AuthService>(context);
     final bool isHomePage = navigationProvider.currentIndex == 0;
 
     // Creating the list of screens for navigation
@@ -76,7 +83,7 @@ class MainScreen extends StatelessWidget {
       const SearchScreen(),
       const SizedBox.shrink(), // Placeholder for create button
       const MessagesScreen(),
-      const ProfileScreen(),
+      ProfileScreen(did: authService.session?.did),
     ];
 
     return CupertinoPageScaffold(
@@ -112,25 +119,25 @@ class MainScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _buildNavItem(
-                        context, 
-                        0, 
-                        'Home', 
-                        Ionicons.home_outline, 
+                        context,
+                        0,
+                        'Home',
+                        Ionicons.home_outline,
                         Ionicons.home,
                       ),
                       _buildNavItem(
-                        context, 
-                        1, 
-                        'Discover', 
-                        Ionicons.compass_outline, 
+                        context,
+                        1,
+                        'Discover',
+                        Ionicons.compass_outline,
                         Ionicons.compass,
                       ),
                       _buildCreateButton(context),
                       _buildNavItem(
-                        context, 
-                        3, 
-                        'Messages', 
-                        Ionicons.chatbubble_outline, 
+                        context,
+                        3,
+                        'Messages',
+                        Ionicons.chatbubble_outline,
                         Ionicons.chatbubble,
                       ),
                       _buildNavItem(

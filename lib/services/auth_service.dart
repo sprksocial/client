@@ -171,11 +171,8 @@ class AuthService extends ChangeNotifier {
     if (_atProto == null) return null;
 
     try {
-      // final response = await _atProto!.repo.getProfile(
-      //   actor: _session.did,
-      // );
-      return <String, dynamic>{};
-      // return response.data.toJson();
+      final response = await _atProto!.repo.getRecord(uri: AtUri.parse('at://${_session!.did}/app.bsky.actor.profile/self'));
+      return response.data.toJson();
     } catch (e) {
       _error = e.toString();
       notifyListeners();
