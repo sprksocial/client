@@ -89,7 +89,7 @@ class VideoItem extends StatelessWidget {
     // Sample data for the video item
     final String username = 'username';
     final String description = 'Video caption goes here';
-    final List<String> hashtags = ['tiktok', 'viral', 'trending'];
+    final List<String> hashtags = ['spark', 'viral', 'trending'];
 
     return Container(
       // Use constraints to ensure the video fits within available space
