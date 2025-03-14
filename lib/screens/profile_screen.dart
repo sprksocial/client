@@ -10,10 +10,14 @@ import '../widgets/profile/profile_action_button.dart';
 import '../widgets/profile/videos_grid.dart';
 import '../widgets/profile/early_supporter_sheet.dart';
 import '../services/auth_service.dart';
+import '../services/profile_service.dart';
 import 'auth_prompt_screen.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  final String? did; // DID of the profile to show, null means current user
+
+  const ProfileScreen({this.did, super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -25,6 +29,34 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   // Flags for special badges
   final bool _isEarlySupporter = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final profileService = Provider.of<ProfileService>(context, listen: false);
+      final authService = Provider.of<AuthService>(context, listen: false);
+
+      // If no DID is provided, use the current user's DID
+      final targetDid = widget.did ?? authService.session?.did;
+
+      if (targetDid == null) {
+        profileService.clearError(); // Clear any existing errors
+        return;
+      }
+
+      await profileService.getProfile(targetDid);
+
+      // No need to setState here as we'll be listening to profileService changes
+    } catch (e) {
+      // Log any unexpected errors that might occur
+      print('Unexpected error in _loadProfile: $e');
+    }
+  }
 
   void _showEarlySupporterInfo(BuildContext context) {
     showCupertinoModalPopup(
@@ -53,12 +85,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  bool _isCurrentUser(Map<String, dynamic>? profileData) {
+    if (profileData == null) return false;
+    final authService = Provider.of<AuthService>(context, listen: false);
+    return authService.isAuthenticated &&
+           authService.session?.did == profileData['did'];
+  }
+
   @override
   Widget build(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
     final authService = Provider.of<AuthService>(context);
+    final profileService = Provider.of<ProfileService>(context); // Listen to changes
     final isAuthenticated = authService.isAuthenticated;
+
+    // Get profile data from service
+    final profileData = profileService.profile;
 
     // Show auth prompt if needed
     if (_showAuthPrompt) {
@@ -71,12 +114,122 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
+    // Show loading indicator
+    if (profileService.isLoading) {
+      return CupertinoPageScaffold(
+        backgroundColor: AppTheme.getBackgroundColor(context, false),
+        navigationBar: CupertinoNavigationBar(
+          middle: const Text(
+            'Profile',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
+        ),
+        child: const Center(
+          child: CupertinoActivityIndicator(),
+        ),
+      );
+    }
+
+    // Show error message
+    if (profileService.error != null) {
+      return CupertinoPageScaffold(
+        backgroundColor: AppTheme.getBackgroundColor(context, false),
+        navigationBar: CupertinoNavigationBar(
+          middle: const Text(
+            'Profile',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Error loading profile',
+                style: TextStyle(
+                  color: AppTheme.getTextColor(context),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                profileService.error!,
+                style: TextStyle(
+                  color: AppTheme.getSecondaryTextColor(context),
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              CupertinoButton(
+                onPressed: _loadProfile,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // If profile data is null but no error, show a message
+    if (profileData == null) {
+      return CupertinoPageScaffold(
+        backgroundColor: AppTheme.getBackgroundColor(context, false),
+        navigationBar: CupertinoNavigationBar(
+          middle: const Text(
+            'Profile',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Profile not found',
+                style: TextStyle(
+                  color: AppTheme.getTextColor(context),
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              CupertinoButton(
+                onPressed: _loadProfile,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Extract profile data
+    final displayName = profileData['displayName'] ?? '';
+    final handle = profileData['handle'] ?? '';
+    final description = profileData['description'] ?? '';
+    final avatar = profileData['avatar'];
+    final isCurrentUser = _isCurrentUser(profileData);
+
     return CupertinoPageScaffold(
       backgroundColor: AppTheme.getBackgroundColor(context, false),
       navigationBar: CupertinoNavigationBar(
-        middle: const Text(
-          'Profile',
-          style: TextStyle(
+        middle: Text(
+          isCurrentUser ? 'My Profile' : 'Profile',
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
           ),
@@ -112,36 +265,52 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                             ),
                             child: Center(
-                              child: Icon(
-                                Ionicons.person_outline,
-                                size: 40,
-                                color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
-                              ),
+                              child: avatar != null && avatar.isNotEmpty
+                                ? ClipOval(
+                                    child: CachedNetworkImage(
+                                      imageUrl: avatar,
+                                      width: 90,
+                                      height: 90,
+                                      fit: BoxFit.cover,
+                                      placeholder: (context, url) => const CupertinoActivityIndicator(),
+                                      errorWidget: (context, url, error) => Icon(
+                                        Ionicons.person_outline,
+                                        size: 40,
+                                        color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
+                                      ),
+                                    ),
+                                  )
+                                : Icon(
+                                    Ionicons.person_outline,
+                                    size: 40,
+                                    color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
+                                  ),
                             ),
                           ),
-                          Positioned(
-                            right: 0,
-                            bottom: 0,
-                            child: Container(
-                              width: 30,
-                              height: 30,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: AppColors.primary,
-                                border: Border.all(
-                                  color: isDarkMode ? AppColors.deepPurple : AppColors.white,
-                                  width: 2,
+                          if (isCurrentUser)
+                            Positioned(
+                              right: 0,
+                              bottom: 0,
+                              child: Container(
+                                width: 30,
+                                height: 30,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.primary,
+                                  border: Border.all(
+                                    color: isDarkMode ? AppColors.deepPurple : AppColors.white,
+                                    width: 2,
+                                  ),
                                 ),
-                              ),
-                              child: const Center(
-                                child: Icon(
-                                  CupertinoIcons.plus,
-                                  size: 18,
-                                  color: AppColors.white,
+                                child: const Center(
+                                  child: Icon(
+                                    CupertinoIcons.plus,
+                                    size: 18,
+                                    color: AppColors.white,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
                         ],
                       ),
 
@@ -167,7 +336,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Row(
                     children: [
                       Text(
-                        'Joe Basser',
+                        displayName.isNotEmpty ? displayName : handle,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
@@ -198,43 +367,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                   // Username in the format seen in the screenshot
                   Text(
-                    '@joebasser.sprk.so',
+                    '@$handle',
                     style: TextStyle(
                       color: AppTheme.getSecondaryTextColor(context),
                       fontSize: 14,
                     ),
                   ),
 
-                  const SizedBox(height: 4),
-
-                  // Website
-                  Text(
-                    'www.website.com',
-                    style: TextStyle(
-                      color: AppColors.blue,
-                      fontSize: 14,
+                  if (description.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        color: AppTheme.getTextColor(context),
+                        fontSize: 14,
+                      ),
                     ),
-                  ),
+                  ],
 
                   const SizedBox(height: 16),
 
                   // Action buttons in a row
                   Row(
                     children: [
-                      // Edit button
-                      Expanded(
-                        flex: 1,
-                        child: ProfileActionButton(
-                          label: 'Edit',
-                          onPressed: () => _checkAuthAndProceed(() {
-                            // Edit profile logic here
-                          }),
-                          isPrimary: true,
-                          isOutlined: false,
+                      // Edit button - only for current user
+                      if (isCurrentUser) ...[
+                        Expanded(
+                          flex: 1,
+                          child: ProfileActionButton(
+                            label: 'Edit',
+                            onPressed: () => _checkAuthAndProceed(() {
+                              // Edit profile logic here
+                            }),
+                            isPrimary: true,
+                            isOutlined: false,
+                          ),
                         ),
-                      ),
-
-                      const SizedBox(width: 8),
+                        const SizedBox(width: 8),
+                      ],
 
                       // Share Profile button
                       Expanded(
@@ -252,13 +422,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                       const SizedBox(width: 8),
 
-                      // Friends + button
+                      // Follow button for non-current user, Friends+ for current user
                       Expanded(
                         flex: 1,
                         child: ProfileActionButton(
-                          label: 'Friends +',
+                          label: isCurrentUser ? 'Friends +' : 'Follow',
                           onPressed: () => _checkAuthAndProceed(() {
-                            // Friends management logic here
+                            // Follow or friends management logic here
                           }),
                         ),
                       ),
