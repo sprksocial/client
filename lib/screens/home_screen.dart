@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors;
+import 'package:flutter/material.dart' show Colors, BackdropFilter;
+import 'dart:ui'; // For ImageFilter
 import 'package:ionicons/ionicons.dart';
 import '../widgets/video_side_action_bar.dart';
 import '../widgets/video_info/video_info_bar.dart';
@@ -184,6 +185,10 @@ class _VideoItemState extends State<VideoItem> {
         child: Stack(
           fit: StackFit.expand,
           children: [
+            // Blurred video background (only if video is initialized)
+            if (widget.videoUrl != null && _controller != null && _isInitialized)
+              _buildBlurredBackground(),
+            
             // Video content
             Center(
               child: _buildVideoContent(),
@@ -266,6 +271,31 @@ class _VideoItemState extends State<VideoItem> {
           ],
         ),
       ),
+    );
+  }
+
+  // New method to build the blurred background
+  Widget _buildBlurredBackground() {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Scaled version of the video that fills the entire background
+        FittedBox(
+          fit: BoxFit.cover,
+          child: SizedBox(
+            width: _controller!.value.size.width,
+            height: _controller!.value.size.height,
+            child: VideoPlayer(_controller!),
+          ),
+        ),
+        // Blur filter overlay
+        BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
+          child: Container(
+            color: CupertinoColors.black.withOpacity(0.3), // Darkens the blur slightly
+          ),
+        ),
+      ],
     );
   }
 
