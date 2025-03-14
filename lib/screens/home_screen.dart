@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:ionicons/ionicons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../widgets/video_side_action_bar.dart';
+import '../widgets/video_info/video_info_bar.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -84,6 +86,11 @@ class VideoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Sample data for the video item
+    final String username = 'username';
+    final String description = 'Video caption goes here';
+    final List<String> hashtags = ['tiktok', 'viral', 'trending'];
+
     return Container(
       // Use constraints to ensure the video fits within available space
       constraints: BoxConstraints(
@@ -107,59 +114,21 @@ class VideoItem extends StatelessWidget {
             ),
           ),
           
-          // Video info
+          // Video info - now using the modular component
           Positioned(
             bottom: 20,
             left: 10,
-            right: 70,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    ClipOval(
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        color: CupertinoColors.systemGrey,
-                        child: const Center(
-                          child: Icon(Ionicons.person_outline, color: CupertinoColors.white),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    const Text(
-                      '@username',
-                      style: TextStyle(
-                        color: CupertinoColors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        border: Border.all(color: CupertinoColors.white),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Text(
-                        'Follow',
-                        style: TextStyle(
-                          color: CupertinoColors.white,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                const Text(
-                  'Video caption goes here #tiktok #viral #trending',
-                  style: TextStyle(color: CupertinoColors.white),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+            right: 70, // Give space for the side action bar
+            child: VideoInfoBar(
+              username: username,
+              description: description,
+              hashtags: hashtags,
+              onUsernameTap: () {
+                // Handle username tap
+              },
+              onHashtagTap: () {
+                // Handle hashtag tap
+              },
             ),
           ),
           
@@ -167,65 +136,27 @@ class VideoItem extends StatelessWidget {
           Positioned(
             right: 10,
             bottom: 100,
-            child: Column(
-              children: [
-                // Like button
-                Column(
-                  children: [
-                    const Icon(
-                      Ionicons.heart_outline,
-                      color: CupertinoColors.white,
-                      size: 30,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${(index + 1) * 1000}',
-                      style: const TextStyle(
-                        color: CupertinoColors.white,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                // Comment button
-                Column(
-                  children: [
-                    const Icon(
-                      Ionicons.chatbubble_outline,
-                      color: CupertinoColors.white,
-                      size: 30,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${(index + 1) * 100}',
-                      style: const TextStyle(
-                        color: CupertinoColors.white,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-                // Share button
-                Column(
-                  children: [
-                    const Icon(
-                      Ionicons.arrow_redo_outline,
-                      color: CupertinoColors.white,
-                      size: 30,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${(index + 1) * 10}',
-                      style: const TextStyle(
-                        color: CupertinoColors.white,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+            child: VideoSideActionBar(
+              likeCount: '250,5K',
+              commentCount: '100K',
+              bookmarkCount: '89K',
+              shareCount: '132,5K',
+              // Add any callbacks as needed
+              onLikePressed: () {
+                // Handle like action
+              },
+              onCommentPressed: () {
+                // Handle comment action
+              },
+              onBookmarkPressed: () {
+                // Handle bookmark action
+              },
+              onSharePressed: () {
+                // Handle share action
+              },
+              onProfilePressed: () {
+                // Handle profile action
+              },
             ),
           ),
         ],
