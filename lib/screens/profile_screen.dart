@@ -13,6 +13,7 @@ import '../services/auth_service.dart';
 import '../services/profile_service.dart';
 import 'auth_prompt_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../widgets/profile/video_thumbnail.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String? did; // DID of the profile to show, null means current user
@@ -237,240 +238,246 @@ class _ProfileScreenState extends State<ProfileScreen> {
         backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
       ),
       child: SafeArea(
-        bottom: false, // Don't add padding at the bottom for the tab bar
-        child: Column(
-          children: [
+        bottom: false, // Don't add padding at the bottom
+        child: CustomScrollView(
+          slivers: [
             // Profile info - horizontal layout
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Profile image and stats in a row
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Profile image with + button
-                      Stack(
-                        children: [
-                          Container(
-                            width: 90,
-                            height: 90,
-                            decoration: BoxDecoration(
-                              color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
-                              shape: BoxShape.circle,
-                              border: Border.all(
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Profile image and stats in a row
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Profile image with + button
+                        Stack(
+                          children: [
+                            Container(
+                              width: 90,
+                              height: 90,
+                              decoration: BoxDecoration(
                                 color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
-                                width: 2,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
+                                  width: 2,
+                                ),
                               ),
-                            ),
-                            child: Center(
-                              child: avatar != null && avatar.isNotEmpty
-                                ? ClipOval(
-                                    child: CachedNetworkImage(
-                                      imageUrl: avatar,
-                                      width: 90,
-                                      height: 90,
-                                      fit: BoxFit.cover,
-                                      placeholder: (context, url) => const CupertinoActivityIndicator(),
-                                      errorWidget: (context, url, error) => Icon(
-                                        Ionicons.person_outline,
-                                        size: 40,
-                                        color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
+                              child: Center(
+                                child: avatar != null && avatar.isNotEmpty
+                                  ? ClipOval(
+                                      child: CachedNetworkImage(
+                                        imageUrl: avatar,
+                                        width: 90,
+                                        height: 90,
+                                        fit: BoxFit.cover,
+                                        placeholder: (context, url) => const CupertinoActivityIndicator(),
+                                        errorWidget: (context, url, error) => Icon(
+                                          Ionicons.person_outline,
+                                          size: 40,
+                                          color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
+                                        ),
                                       ),
+                                    )
+                                  : Icon(
+                                      Ionicons.person_outline,
+                                      size: 40,
+                                      color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
                                     ),
-                                  )
-                                : Icon(
-                                    Ionicons.person_outline,
-                                    size: 40,
-                                    color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
-                                  ),
+                              ),
                             ),
-                          ),
-                          if (isCurrentUser)
-                            Positioned(
-                              right: 0,
-                              bottom: 0,
-                              child: Container(
-                                width: 30,
-                                height: 30,
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: AppColors.primary,
-                                  border: Border.all(
-                                    color: isDarkMode ? AppColors.deepPurple : AppColors.white,
-                                    width: 2,
+                            if (isCurrentUser)
+                              Positioned(
+                                right: 0,
+                                bottom: 0,
+                                child: Container(
+                                  width: 30,
+                                  height: 30,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: AppColors.primary,
+                                    border: Border.all(
+                                      color: isDarkMode ? AppColors.deepPurple : AppColors.white,
+                                      width: 2,
+                                    ),
                                   ),
-                                ),
-                                child: const Center(
-                                  child: Icon(
-                                    CupertinoIcons.plus,
-                                    size: 18,
-                                    color: AppColors.white,
+                                  child: const Center(
+                                    child: Icon(
+                                      CupertinoIcons.plus,
+                                      size: 18,
+                                      color: AppColors.white,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                        ],
-                      ),
-
-                      const SizedBox(width: 20),
-
-                      // Stats row
-                      Expanded(
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: const [
-                            ProfileStatItem(count: '129', label: 'Posts'),
-                            ProfileStatItem(count: '3680', label: 'Followers'),
-                            ProfileStatItem(count: '230', label: 'Following'),
                           ],
                         ),
-                      ),
-                    ],
-                  ),
 
-                  const SizedBox(height: 16),
+                        const SizedBox(width: 20),
 
-                  // Username and verified badge
-                  Row(
-                    children: [
-                      Text(
-                        displayName.isNotEmpty ? displayName : handle,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: AppTheme.getTextColor(context),
-                        ),
-                      ),
-
-                      // Early Supporter badge
-                      if (_isEarlySupporter) ...[
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () => _showEarlySupporterInfo(context),
-                          child: SvgPicture.asset(
-                            'assets/images/match.svg',
-                            height: 20,
-                            width: 20,
-                            colorFilter: const ColorFilter.mode(
-                              AppColors.primary,
-                              BlendMode.srcIn
-                            ),
+                        // Stats row
+                        Expanded(
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: const [
+                              ProfileStatItem(count: '129', label: 'Posts'),
+                              ProfileStatItem(count: '3680', label: 'Followers'),
+                              ProfileStatItem(count: '230', label: 'Following'),
+                            ],
                           ),
                         ),
                       ],
-                    ],
-                  ),
-
-                  const SizedBox(height: 4),
-
-                  // Username in the format seen in the screenshot
-                  Text(
-                    '@$handle',
-                    style: TextStyle(
-                      color: AppTheme.getSecondaryTextColor(context),
-                      fontSize: 14,
                     ),
-                  ),
 
-                  if (description.isNotEmpty) ...[
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 16),
+
+                    // Username and verified badge
+                    Row(
+                      children: [
+                        Text(
+                          displayName.isNotEmpty ? displayName : handle,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                            color: AppTheme.getTextColor(context),
+                          ),
+                        ),
+
+                        // Early Supporter badge
+                        if (_isEarlySupporter) ...[
+                          const SizedBox(width: 8),
+                          GestureDetector(
+                            onTap: () => _showEarlySupporterInfo(context),
+                            child: SvgPicture.asset(
+                              'assets/images/match.svg',
+                              height: 20,
+                              width: 20,
+                              colorFilter: const ColorFilter.mode(
+                                AppColors.primary,
+                                BlendMode.srcIn
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+
+                    const SizedBox(height: 4),
+
+                    // Username in the format seen in the screenshot
                     Text(
-                      description,
+                      '@$handle',
                       style: TextStyle(
-                        color: AppTheme.getTextColor(context),
+                        color: AppTheme.getSecondaryTextColor(context),
                         fontSize: 14,
                       ),
                     ),
-                  ],
 
-                  const SizedBox(height: 16),
-
-                  // Action buttons in a row
-                  Row(
-                    children: [
-                      // Edit button - only for current user
-                      if (isCurrentUser) ...[
-                        Expanded(
-                          flex: 1,
-                          child: ProfileActionButton(
-                            label: 'Edit',
-                            onPressed: () => _checkAuthAndProceed(() {
-                              // Edit profile logic here
-                            }),
-                            isPrimary: true,
-                            isOutlined: false,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                      ],
-
-                      // Share Profile button
-                      Expanded(
-                        flex: 1,
-                        child: Container(
-                          constraints: const BoxConstraints(minHeight: 36),
-                          child: ProfileActionButton(
-                            label: 'Share Profile',
-                            onPressed: () {
-                              // Share profile doesn't require authentication
-                            },
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(width: 8),
-
-                      // Follow button for non-current user, Friends+ for current user
-                      Expanded(
-                        flex: 1,
-                        child: ProfileActionButton(
-                          label: isCurrentUser ? 'Friends +' : 'Follow',
-                          onPressed: () => _checkAuthAndProceed(() {
-                            // Follow or friends management logic here
-                          }),
+                    if (description.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        description,
+                        style: TextStyle(
+                          color: AppTheme.getTextColor(context),
+                          fontSize: 14,
                         ),
                       ),
                     ],
-                  ),
-                ],
-              ),
-            ),
 
-            // Tab bar at the bottom of content
-            Container(
-              decoration: BoxDecoration(
-                border: Border(
-                  top: BorderSide(
-                    color: AppColors.border,
-                    width: 0.5,
-                  ),
-                  bottom: BorderSide(
-                    color: AppColors.border,
-                    width: 0.5,
-                  ),
-                ),
-              ),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildTabItem(context, 0, CupertinoIcons.film),
-                    _buildTabItem(context, 1, CupertinoIcons.heart),
-                    _buildTabItem(context, 2, CupertinoIcons.arrow_2_squarepath),
-                    if (isAuthenticated) _buildTabItem(context, 3, CupertinoIcons.bookmark),
-                    if (isAuthenticated) _buildTabItem(context, 4, CupertinoIcons.lock),
+                    const SizedBox(height: 16),
+
+                    // Action buttons in a row
+                    Row(
+                      children: [
+                        // Edit button - only for current user
+                        if (isCurrentUser) ...[
+                          Expanded(
+                            flex: 1,
+                            child: ProfileActionButton(
+                              label: 'Edit',
+                              onPressed: () => _checkAuthAndProceed(() {
+                                // Edit profile logic here
+                              }),
+                              isPrimary: true,
+                              isOutlined: false,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+
+                        // Share Profile button
+                        Expanded(
+                          flex: 1,
+                          child: Container(
+                            constraints: const BoxConstraints(minHeight: 36),
+                            child: ProfileActionButton(
+                              label: 'Share Profile',
+                              onPressed: () {
+                                // Share profile doesn't require authentication
+                              },
+                            ),
+                          ),
+                        ),
+
+                        const SizedBox(width: 8),
+
+                        // Follow button for non-current user, Friends+ for current user
+                        Expanded(
+                          flex: 1,
+                          child: ProfileActionButton(
+                            label: isCurrentUser ? 'Friends +' : 'Follow',
+                            onPressed: () => _checkAuthAndProceed(() {
+                              // Follow or friends management logic here
+                            }),
+                          ),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
             ),
 
-            // Tab content - with fixed height to prevent scrolling of the entire screen
-            Expanded(
-              child: _buildTabContent(),
+            // Tab bar - Sticky when scrolling
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _StickyTabBarDelegate(
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: AppTheme.getBackgroundColor(context, false),
+                    border: Border(
+                      top: BorderSide(
+                        color: AppColors.border,
+                        width: 0.5,
+                      ),
+                      bottom: BorderSide(
+                        color: AppColors.border,
+                        width: 0.5,
+                      ),
+                    ),
+                  ),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildTabItem(context, 0, CupertinoIcons.film),
+                        _buildTabItem(context, 1, CupertinoIcons.heart),
+                        _buildTabItem(context, 2, CupertinoIcons.arrow_2_squarepath),
+                        if (isAuthenticated) _buildTabItem(context, 3, CupertinoIcons.bookmark),
+                        if (isAuthenticated) _buildTabItem(context, 4, CupertinoIcons.lock),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
             ),
+
+            // Tab content - now integrated directly as slivers
+            ..._buildTabContent(),
           ],
         ),
       ),
@@ -529,186 +536,296 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildTabContent() {
+  List<Widget> _buildTabContent() {
     final authService = Provider.of<AuthService>(context);
 
     // For tabs that require authentication, show auth prompt if not authenticated
     if ((_selectedTabIndex == 3 || _selectedTabIndex == 4) && !authService.isAuthenticated) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              _selectedTabIndex == 3 ? CupertinoIcons.bookmark : CupertinoIcons.lock,
-              size: 60,
-              color: AppTheme.getSecondaryTextColor(context),
+      return [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  _selectedTabIndex == 3 ? CupertinoIcons.bookmark : CupertinoIcons.lock,
+                  size: 60,
+                  color: AppTheme.getSecondaryTextColor(context),
+                ),
+                const SizedBox(height: 20),
+                Text(
+                  _selectedTabIndex == 3 ? 'Saved videos' : 'Private videos',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: AppTheme.getTextColor(context),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Login to view your saved content',
+                  style: TextStyle(
+                    color: AppTheme.getSecondaryTextColor(context),
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                CupertinoButton(
+                  color: CupertinoColors.systemPink,
+                  onPressed: () {
+                    setState(() {
+                      _showAuthPrompt = true;
+                    });
+                  },
+                  child: const Text('Login'),
+                ),
+              ],
             ),
-            const SizedBox(height: 20),
-            Text(
-              _selectedTabIndex == 3 ? 'Saved videos' : 'Private videos',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: AppTheme.getTextColor(context),
-              ),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'Login to view your saved content',
-              style: TextStyle(
-                color: AppTheme.getSecondaryTextColor(context),
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 24),
-            CupertinoButton(
-              color: CupertinoColors.systemPink,
-              onPressed: () {
-                setState(() {
-                  _showAuthPrompt = true;
-                });
-              },
-              child: const Text('Login'),
-            ),
-          ],
+          ),
         ),
-      );
+      ];
     }
 
     switch (_selectedTabIndex) {
       case 0:
-        return _buildPostsGrid();
+        return _buildPostsGridSlivers();
       case 1:
-        return const VideosGrid(
-          itemCount: 15,
-          iconType: Ionicons.heart_outline,
-        );
+        return [
+          SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              childAspectRatio: 2/3,
+              crossAxisSpacing: 1,
+              mainAxisSpacing: 1,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                // Create different color patterns based on the icon type
+                Color backgroundColor = index % 3 == 0
+                    ? AppColors.orange.withOpacity(0.7)
+                    : index % 3 == 1
+                      ? AppColors.primary.withOpacity(0.7)
+                      : AppColors.red.withOpacity(0.7);
+
+                return VideoThumbnail(
+                  index: index,
+                  backgroundColor: backgroundColor,
+                  icon: Ionicons.heart_outline,
+                  viewCount: '${(index + 1) * 1000}',
+                );
+              },
+              childCount: 30,
+            ),
+          ),
+        ];
       case 2:
-        return const VideosGrid(
-          itemCount: 8,
-          iconType: CupertinoIcons.arrow_2_squarepath,
-        );
+        return [
+          SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              childAspectRatio: 2/3,
+              crossAxisSpacing: 1,
+              mainAxisSpacing: 1,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                // Create different color patterns based on the icon type
+                Color backgroundColor = index % 3 == 0
+                    ? AppColors.green.withOpacity(0.7)
+                    : index % 3 == 1
+                      ? AppColors.blue.withOpacity(0.7)
+                      : AppColors.primary.withOpacity(0.7);
+
+                return VideoThumbnail(
+                  index: index,
+                  backgroundColor: backgroundColor,
+                  icon: CupertinoIcons.arrow_2_squarepath,
+                  viewCount: '${(index + 1) * 1000}',
+                );
+              },
+              childCount: 25,
+            ),
+          ),
+        ];
       case 3:
-        return const VideosGrid(
-          itemCount: 12,
-          iconType: Ionicons.bookmark_outline,
-        );
+        return [
+          SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              childAspectRatio: 2/3,
+              crossAxisSpacing: 1,
+              mainAxisSpacing: 1,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                // Create different color patterns based on the icon type
+                Color backgroundColor = index % 3 == 0
+                    ? AppColors.teal.withOpacity(0.7)
+                    : index % 3 == 1
+                      ? AppColors.blue.withOpacity(0.7)
+                      : AppColors.lightBlue.withOpacity(0.7);
+
+                return VideoThumbnail(
+                  index: index,
+                  backgroundColor: backgroundColor,
+                  icon: Ionicons.bookmark_outline,
+                  viewCount: '${(index + 1) * 1000}',
+                );
+              },
+              childCount: 28,
+            ),
+          ),
+        ];
       case 4:
-        return _buildPrivateTab();
+        return _buildPrivateTabSlivers();
       default:
-        return const SizedBox.shrink();
+        return [const SliverToBoxAdapter(child: SizedBox.shrink())];
     }
   }
 
-  Widget _buildPostsGrid() {
-    return GridView.builder(
-      physics: const NeverScrollableScrollPhysics(), // Prevents scrolling within the grid
-      padding: const EdgeInsets.all(1),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        childAspectRatio: 2/3,
-        crossAxisSpacing: 1,
-        mainAxisSpacing: 1,
-      ),
-      itemCount: 12,
-      itemBuilder: (context, index) {
-        // Alternate between video and image posts
-        final bool isVideo = index % 2 == 0;
+  List<Widget> _buildPostsGridSlivers() {
+    return [
+      SliverPadding(
+        padding: const EdgeInsets.all(1),
+        sliver: SliverGrid(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 2/3,
+            crossAxisSpacing: 1,
+            mainAxisSpacing: 1,
+          ),
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              // Alternate between video and image posts
+              final bool isVideo = index % 2 == 0;
 
-        return GestureDetector(
-          onTap: () {
-            debugPrint('Post clicked: ${isVideo ? "Video" : "Image"} at index $index');
-          },
-          child: Container(
-            color: isVideo
-                ? AppColors.richPurple.withOpacity(0.7)
-                : AppColors.orange.withOpacity(0.7),
-            child: Stack(
-              children: [
-                Center(
-                  child: Icon(
-                    isVideo ? CupertinoIcons.film : CupertinoIcons.photo,
-                    color: AppColors.white.withOpacity(0.8),
-                    size: 24,
-                  ),
-                ),
-                Positioned(
-                  bottom: 5,
-                  left: 5,
-                  child: Row(
+              return GestureDetector(
+                onTap: () {
+                  debugPrint('Post clicked: ${isVideo ? "Video" : "Image"} at index $index');
+                },
+                child: Container(
+                  color: isVideo
+                      ? AppColors.richPurple.withOpacity(0.7)
+                      : AppColors.orange.withOpacity(0.7),
+                  child: Stack(
                     children: [
-                      Icon(
-                        isVideo ? CupertinoIcons.eye : CupertinoIcons.heart,
-                        color: AppColors.white,
-                        size: 12,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${(index + 1) * 1000}',
-                        style: const TextStyle(
-                          color: AppColors.white,
-                          fontSize: 12,
+                      Center(
+                        child: Icon(
+                          isVideo ? CupertinoIcons.film : CupertinoIcons.photo,
+                          color: AppColors.white.withOpacity(0.8),
+                          size: 24,
                         ),
                       ),
+                      Positioned(
+                        bottom: 5,
+                        left: 5,
+                        child: Row(
+                          children: [
+                            Icon(
+                              isVideo ? CupertinoIcons.eye : CupertinoIcons.heart,
+                              color: AppColors.white,
+                              size: 12,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${(index + 1) * 1000}',
+                              style: const TextStyle(
+                                color: AppColors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (isVideo)
+                        Positioned(
+                          top: 5,
+                          right: 5,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppColors.black.withOpacity(0.5),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: const Text(
+                              '0:30',
+                              style: TextStyle(
+                                color: AppColors.white,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                 ),
-                if (isVideo)
-                  Positioned(
-                    top: 5,
-                    right: 5,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: AppColors.black.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: const Text(
-                        '0:30',
-                        style: TextStyle(
-                          color: AppColors.white,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
+              );
+            },
+            childCount: 24,
           ),
-        );
-      },
-    );
+        ),
+      ),
+    ];
   }
 
-  Widget _buildPrivateTab() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            CupertinoIcons.lock,
-            size: 60,
-            color: AppTheme.getSecondaryTextColor(context),
+  List<Widget> _buildPrivateTabSlivers() {
+    return [
+      SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                CupertinoIcons.lock,
+                size: 60,
+                color: AppTheme.getSecondaryTextColor(context),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                'Private videos',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: AppTheme.getTextColor(context),
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Videos you\'ve saved to private will appear here',
+                style: TextStyle(
+                  color: AppTheme.getSecondaryTextColor(context),
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
-          const SizedBox(height: 20),
-          Text(
-            'Private videos',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-              color: AppTheme.getTextColor(context),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Videos you\'ve saved to private will appear here',
-            style: TextStyle(
-              color: AppTheme.getSecondaryTextColor(context),
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
+        ),
       ),
-    );
+    ];
+  }
+}
+
+// Add a StickyTabBarDelegate class for the persistent header
+class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
+  final Widget child;
+
+  _StickyTabBarDelegate({required this.child});
+
+  @override
+  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return child;
+  }
+
+  @override
+  double get maxExtent => 50.0; // Adjust this value based on your tab bar height
+
+  @override
+  double get minExtent => 50.0; // Same as maxExtent to maintain height
+
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
+    return true;
   }
 }

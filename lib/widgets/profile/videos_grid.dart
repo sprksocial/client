@@ -6,7 +6,7 @@ import 'video_thumbnail.dart';
 class VideosGrid extends StatelessWidget {
   final int itemCount;
   final IconData iconType;
-  
+
   const VideosGrid({
     super.key,
     required this.itemCount,
@@ -16,7 +16,7 @@ class VideosGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GridView.builder(
-      physics: const NeverScrollableScrollPhysics(),
+      physics: const BouncingScrollPhysics(),
       padding: const EdgeInsets.all(1),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 3,
@@ -29,31 +29,31 @@ class VideosGrid extends StatelessWidget {
         // Create different color patterns based on the icon type
         Color backgroundColor;
         if (iconType == Ionicons.heart_outline || iconType == CupertinoIcons.heart) {
-          backgroundColor = index % 3 == 0 
+          backgroundColor = index % 3 == 0
               ? AppColors.orange.withOpacity(0.7)
-              : index % 3 == 1 
+              : index % 3 == 1
                 ? AppColors.primary.withOpacity(0.7)
                 : AppColors.red.withOpacity(0.7);
         } else if (iconType == Ionicons.bookmark_outline || iconType == CupertinoIcons.bookmark) {
-          backgroundColor = index % 3 == 0 
+          backgroundColor = index % 3 == 0
               ? AppColors.teal.withOpacity(0.7)
-              : index % 3 == 1 
+              : index % 3 == 1
                 ? AppColors.blue.withOpacity(0.7)
                 : AppColors.lightBlue.withOpacity(0.7);
         } else if (iconType == CupertinoIcons.arrow_2_squarepath) {
-          backgroundColor = index % 3 == 0 
+          backgroundColor = index % 3 == 0
               ? AppColors.green.withOpacity(0.7)
-              : index % 3 == 1 
+              : index % 3 == 1
                 ? AppColors.blue.withOpacity(0.7)
                 : AppColors.primary.withOpacity(0.7);
         } else {
-          backgroundColor = index % 3 == 0 
+          backgroundColor = index % 3 == 0
               ? AppColors.richPurple.withOpacity(0.7)
-              : index % 3 == 1 
+              : index % 3 == 1
                 ? AppColors.brightPurple.withOpacity(0.7)
                 : AppColors.primary.withOpacity(0.7);
         }
-        
+
         return VideoThumbnail(
           index: index,
           backgroundColor: backgroundColor,
@@ -63,4 +63,4 @@ class VideosGrid extends StatelessWidget {
       },
     );
   }
-} 
+}
