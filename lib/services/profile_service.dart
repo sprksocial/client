@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:atproto/core.dart';
+import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 
 class ProfileService extends ChangeNotifier {
@@ -42,12 +45,20 @@ class ProfileService extends ChangeNotifier {
 
       // Try to resolve the handle using the DID
       try {
-        final handleResponse = await atProto.identity.resolveHandle(
-          handle: did,
+        final didDocResponse = await http.get(
+          Uri.parse('https://plc.directory/$did/data'),
         );
-        if (handleResponse.data != null && handleResponse.data.did == did) {
-          profileData['handle'] = did;
+
+        if (didDocResponse.statusCode != 200) {
+          throw Exception(
+            'Failed to fetch DID document: ${didDocResponse.statusCode}',
+          );
         }
+
+        final didDoc = json.decode(didDocResponse.body);
+
+        final handle = didDoc['alsoKnownAs'].first.replaceFirst('at://', '');
+        profileData['handle'] = handle;
       } catch (e) {
         // If handle lookup fails, use DID as fallback
         profileData['handle'] = did;
@@ -61,21 +72,15 @@ class ProfileService extends ChangeNotifier {
       final recordData = response.data.toJson();
 
       if (recordData.containsKey('value')) {
-        final value = recordData['value'];
-        if (value is Map<String, dynamic>) {
-          profileData['displayName'] = value['displayName'] ?? '';
-          profileData['description'] = value['description'] ?? '';
+        final value = recordData['value'] as Map<String, dynamic>;
+        profileData['displayName'] = value['displayName'] ?? profileData['handle'];
+        profileData['description'] = value['description'] ?? '';
 
-          if (value['avatar'] != null &&
-              value['avatar']['ref'] != null &&
-              value['avatar']['ref']['\$link'] != null) {
-            final avatarLink = value['avatar']['ref']['\$link'];
-            profileData['avatar'] =
-                'https://cdn.bsky.app/img/feed_fullsize/plain/$did/$avatarLink@jpeg';
-          }
+        final avatarRef = value['avatar']?['ref']?['\$link'];
+        if (avatarRef != null) {
+          profileData['avatar'] = 'https://cdn.bsky.app/img/feed_fullsize/plain/$did/$avatarRef@jpeg';
         }
       }
-
       _profile = profileData;
       _isLoading = false;
       notifyListeners();
