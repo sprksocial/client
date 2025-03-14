@@ -15,7 +15,7 @@ class MessagesScreen extends StatefulWidget {
 
 class _MessagesScreenState extends State<MessagesScreen> {
   int _selectedTabIndex = 0;
-  
+
   // Mock data for messages
   final List<MessageData> _messages = List.generate(
     15,
@@ -35,14 +35,14 @@ class _MessagesScreenState extends State<MessagesScreen> {
       unreadCount: index % 3 == 0 ? 1 : null,
     ),
   );
-  
+
   // Mock data for activities
   final List<ActivityData> _activities = List.generate(
     15,
     (index) {
       final ActivityType type = ActivityType.values[index % ActivityType.values.length];
       String? additionalInfo;
-      
+
       if (type == ActivityType.comment) {
         additionalInfo = 'Wow, this looks amazing! 🔥';
       } else if (type == ActivityType.like) {
@@ -50,7 +50,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
       } else {
         additionalInfo = null;
       }
-      
+
       return ActivityData(
         id: 'act_$index',
         username: 'user${index + 1}',
@@ -72,7 +72,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Widget build(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
-    
+
     return CupertinoPageScaffold(
       backgroundColor: AppTheme.getBackgroundColor(context, false),
       navigationBar: CupertinoNavigationBar(
@@ -108,7 +108,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 borderColor: AppColors.primary,
               ),
             ),
-            
+
             // Search bar
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -130,10 +130,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.white,
               ),
             ),
-            
+
             // Content based on selected tab
             Expanded(
-              child: _selectedTabIndex == 0 
+              child: _selectedTabIndex == 0
                 ? _buildMessagesTab()
                 : _buildActivitiesTab(),
             ),
@@ -142,7 +142,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
       ),
     );
   }
-  
+
   Widget _buildMessagesTab() {
     return MessageList(
       messages: _messages,
@@ -152,7 +152,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
       },
     );
   }
-  
+
   Widget _buildActivitiesTab() {
     return ActivityList(
       activities: _activities,
@@ -162,4 +162,4 @@ class _MessagesScreenState extends State<MessagesScreen> {
       },
     );
   }
-} 
+}

@@ -2,12 +2,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Colors;
 import 'package:ionicons/ionicons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
 import '../widgets/profile/profile_stat_item.dart';
 import '../widgets/profile/profile_action_button.dart';
 import '../widgets/profile/videos_grid.dart';
 import '../widgets/profile/early_supporter_sheet.dart';
+import '../services/auth_service.dart';
+import 'auth_prompt_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -18,13 +21,11 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   int _selectedTabIndex = 0;
-  
-  // This flag would normally come from user auth
-  final bool _isOwnProfile = true;
-  
+  bool _showAuthPrompt = false;
+
   // Flags for special badges
   final bool _isEarlySupporter = true;
-  
+
   void _showEarlySupporterInfo(BuildContext context) {
     showCupertinoModalPopup(
       context: context,
@@ -40,15 +41,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-  
+
+  void _checkAuthAndProceed(VoidCallback action) {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    if (!authService.isAuthenticated) {
+      setState(() {
+        _showAuthPrompt = true;
+      });
+    } else {
+      action();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
-    
-    // Get screen dimensions to ensure no overflow
-    final screenHeight = MediaQuery.of(context).size.height;
-    
+    final authService = Provider.of<AuthService>(context);
+    final isAuthenticated = authService.isAuthenticated;
+
+    // Show auth prompt if needed
+    if (_showAuthPrompt) {
+      return AuthPromptScreen(
+        onClose: () {
+          setState(() {
+            _showAuthPrompt = false;
+          });
+        },
+      );
+    }
+
     return CupertinoPageScaffold(
       backgroundColor: AppTheme.getBackgroundColor(context, false),
       navigationBar: CupertinoNavigationBar(
@@ -122,9 +144,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                         ],
                       ),
-                      
+
                       const SizedBox(width: 20),
-                      
+
                       // Stats row
                       Expanded(
                         child: Row(
@@ -138,9 +160,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Username and verified badge
                   Row(
                     children: [
@@ -152,7 +174,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           color: AppTheme.getTextColor(context),
                         ),
                       ),
-                      
+
                       // Early Supporter badge
                       if (_isEarlySupporter) ...[
                         const SizedBox(width: 8),
@@ -163,7 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             height: 20,
                             width: 20,
                             colorFilter: const ColorFilter.mode(
-                              AppColors.primary, 
+                              AppColors.primary,
                               BlendMode.srcIn
                             ),
                           ),
@@ -171,9 +193,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ],
                     ],
                   ),
-                  
+
                   const SizedBox(height: 4),
-                  
+
                   // Username in the format seen in the screenshot
                   Text(
                     '@joebasser.sprk.so',
@@ -182,9 +204,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fontSize: 14,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 4),
-                  
+
                   // Website
                   Text(
                     'www.website.com',
@@ -193,9 +215,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fontSize: 14,
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Action buttons in a row
                   Row(
                     children: [
@@ -204,14 +226,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         flex: 1,
                         child: ProfileActionButton(
                           label: 'Edit',
-                          onPressed: () {},
+                          onPressed: () => _checkAuthAndProceed(() {
+                            // Edit profile logic here
+                          }),
                           isPrimary: true,
                           isOutlined: false,
                         ),
                       ),
-                      
+
                       const SizedBox(width: 8),
-                      
+
                       // Share Profile button
                       Expanded(
                         flex: 1,
@@ -219,19 +243,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           constraints: const BoxConstraints(minHeight: 36),
                           child: ProfileActionButton(
                             label: 'Share Profile',
-                            onPressed: () {},
+                            onPressed: () {
+                              // Share profile doesn't require authentication
+                            },
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(width: 8),
-                      
+
                       // Friends + button
                       Expanded(
                         flex: 1,
                         child: ProfileActionButton(
                           label: 'Friends +',
-                          onPressed: () {},
+                          onPressed: () => _checkAuthAndProceed(() {
+                            // Friends management logic here
+                          }),
                         ),
                       ),
                     ],
@@ -239,7 +267,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
             ),
-            
+
             // Tab bar at the bottom of content
             Container(
               decoration: BoxDecoration(
@@ -262,13 +290,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     _buildTabItem(context, 0, CupertinoIcons.film),
                     _buildTabItem(context, 1, CupertinoIcons.heart),
                     _buildTabItem(context, 2, CupertinoIcons.arrow_2_squarepath),
-                    if (_isOwnProfile) _buildTabItem(context, 3, CupertinoIcons.bookmark),
-                    if (_isOwnProfile) _buildTabItem(context, 4, CupertinoIcons.lock),
+                    if (isAuthenticated) _buildTabItem(context, 3, CupertinoIcons.bookmark),
+                    if (isAuthenticated) _buildTabItem(context, 4, CupertinoIcons.lock),
                   ],
                 ),
               ),
             ),
-            
+
             // Tab content - with fixed height to prevent scrolling of the entire screen
             Expanded(
               child: _buildTabContent(),
@@ -278,12 +306,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-  
+
   Widget _buildTabItem(BuildContext context, int index, IconData icon) {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
     final isSelected = _selectedTabIndex == index;
-    
+
     // Get filled icon variants based on the outline icon
     IconData getFilledIcon(IconData outlineIcon) {
       if (outlineIcon == CupertinoIcons.film) {
@@ -300,7 +328,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return outlineIcon;
       }
     }
-    
+
     return CupertinoButton(
       padding: EdgeInsets.zero,
       onPressed: () {
@@ -313,7 +341,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: isSelected 
+              color: isSelected
                   ? AppColors.primary
                   : Colors.transparent,
               width: 2,
@@ -322,7 +350,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ),
         child: Icon(
           isSelected ? getFilledIcon(icon) : icon,
-          color: isSelected 
+          color: isSelected
               ? AppColors.primary
               : (isDarkMode ? AppColors.textLight : AppColors.textSecondary),
           size: 26,
@@ -330,8 +358,53 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-  
+
   Widget _buildTabContent() {
+    final authService = Provider.of<AuthService>(context);
+
+    // For tabs that require authentication, show auth prompt if not authenticated
+    if ((_selectedTabIndex == 3 || _selectedTabIndex == 4) && !authService.isAuthenticated) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              _selectedTabIndex == 3 ? CupertinoIcons.bookmark : CupertinoIcons.lock,
+              size: 60,
+              color: AppTheme.getSecondaryTextColor(context),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              _selectedTabIndex == 3 ? 'Saved videos' : 'Private videos',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+                color: AppTheme.getTextColor(context),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              'Login to view your saved content',
+              style: TextStyle(
+                color: AppTheme.getSecondaryTextColor(context),
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            CupertinoButton(
+              color: CupertinoColors.systemPink,
+              onPressed: () {
+                setState(() {
+                  _showAuthPrompt = true;
+                });
+              },
+              child: const Text('Login'),
+            ),
+          ],
+        ),
+      );
+    }
+
     switch (_selectedTabIndex) {
       case 0:
         return _buildPostsGrid();
@@ -356,7 +429,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return const SizedBox.shrink();
     }
   }
-  
+
   Widget _buildPostsGrid() {
     return GridView.builder(
       physics: const NeverScrollableScrollPhysics(), // Prevents scrolling within the grid
@@ -371,13 +444,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
       itemBuilder: (context, index) {
         // Alternate between video and image posts
         final bool isVideo = index % 2 == 0;
-        
+
         return GestureDetector(
           onTap: () {
             debugPrint('Post clicked: ${isVideo ? "Video" : "Image"} at index $index');
           },
           child: Container(
-            color: isVideo 
+            color: isVideo
                 ? AppColors.richPurple.withOpacity(0.7)
                 : AppColors.orange.withOpacity(0.7),
             child: Stack(
@@ -436,7 +509,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       },
     );
   }
-  
+
   Widget _buildPrivateTab() {
     return Center(
       child: Column(
@@ -468,4 +541,4 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
     );
   }
-} 
+}

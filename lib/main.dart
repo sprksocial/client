@@ -10,6 +10,9 @@ import 'screens/profile_screen.dart';
 import 'screens/splash_screen.dart';
 import 'utils/app_colors.dart';
 import 'utils/app_theme.dart';
+import 'screens/login_screen.dart';
+import 'screens/auth_prompt_screen.dart';
+import 'services/auth_service.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,14 +31,19 @@ class MyApp extends StatelessWidget {
     // We'll use a builder to get access to the platform brightness
     return CupertinoTheme(
       data: AppTheme.theme,
-      child: ChangeNotifierProvider(
-        create: (_) => NavigationProvider(),
+      child: MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => NavigationProvider()),
+          ChangeNotifierProvider(create: (_) => AuthService()),
+        ],
         child: CupertinoApp(
           title: 'Spark',
           theme: AppTheme.theme,
           home: const SplashScreen(),
           routes: {
             '/home': (context) => const MainScreen(),
+            '/login': (context) => const LoginScreen(),
+            '/auth': (context) => const AuthPromptScreen(),
           },
         ),
       ),
@@ -80,7 +88,7 @@ class MainScreen extends StatelessWidget {
             index: navigationProvider.currentIndex,
             children: screens,
           ),
-          
+
           // Bottom navigation
           Positioned(
             left: 0,
@@ -104,32 +112,34 @@ class MainScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
                       _buildNavItem(
-                        context, 
-                        0, 
-                        'Home', 
-                        Ionicons.heart_outline, 
+                        context,
+                        0,
+                        'Home',
+                        Ionicons.heart_outline,
                         Ionicons.heart,
                       ),
                       _buildNavItem(
-                        context, 
-                        1, 
-                        'Discover', 
-                        Ionicons.bookmark_outline, 
-                        Ionicons.bookmark,
+                        context,
+                        1,
+                        'Discover',
+                        Ionicons.search_outline,
+                        Ionicons.search,
+
                       ),
                       _buildCreateButton(context),
                       _buildNavItem(
-                        context, 
-                        3, 
-                        'Inbox', 
-                        Ionicons.image_outline, 
-                        Ionicons.image,
+                        context,
+                        3,
+                        'Inbox',
+                        Ionicons.chatbubble_outline,
+                        Ionicons.chatbubble,
+
                       ),
                       _buildNavItem(
-                        context, 
-                        4, 
-                        'Profile', 
-                        Ionicons.person_outline, 
+                        context,
+                        4,
+                        'Profile',
+                        Ionicons.person_outline,
                         Ionicons.person,
                       ),
                     ],
@@ -146,8 +156,9 @@ class MainScreen extends StatelessWidget {
   Widget _buildNavItem(BuildContext context, int index, String label, IconData iconOutline, IconData iconFilled) {
     final navigationProvider = Provider.of<NavigationProvider>(context);
     final bool isSelected = navigationProvider.currentIndex == index;
+
     final bool isHomePage = navigationProvider.currentIndex == 0;
-    
+
     return CupertinoButton(
       padding: EdgeInsets.zero,
       onPressed: () {
@@ -155,7 +166,7 @@ class MainScreen extends StatelessWidget {
       },
       child: Icon(
         isSelected ? iconFilled : iconOutline,
-        color: isSelected 
+        color: isSelected
             ? AppTheme.getSelectedIconColor(context, isHomePage)
             : AppTheme.getUnselectedIconColor(context, isHomePage),
         size: 26,

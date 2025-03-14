@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:ionicons/ionicons.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../widgets/video_side_action_bar.dart';
 import '../widgets/video_info/video_info_bar.dart';
 
@@ -57,7 +56,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            
+
             // Video Feed (main content)
             Expanded(
               child: Padding(
@@ -81,7 +80,7 @@ class HomeScreen extends StatelessWidget {
 
 class VideoItem extends StatelessWidget {
   final int index;
-  
+
   const VideoItem({super.key, required this.index});
 
   @override
@@ -94,8 +93,8 @@ class VideoItem extends StatelessWidget {
     return Container(
       // Use constraints to ensure the video fits within available space
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height - 
-                  MediaQuery.of(context).padding.top - 
+        maxHeight: MediaQuery.of(context).size.height -
+                  MediaQuery.of(context).padding.top -
                   50 - // Top navigation height
                   (MediaQuery.of(context).padding.bottom + 50), // Bottom nav height + safe area
       ),
@@ -113,7 +112,7 @@ class VideoItem extends StatelessWidget {
               ),
             ),
           ),
-          
+
           // Video info - now using the modular component
           Positioned(
             bottom: 20,
@@ -131,7 +130,7 @@ class VideoItem extends StatelessWidget {
               },
             ),
           ),
-          
+
           // Right side actions
           Positioned(
             right: 10,
@@ -163,4 +162,4 @@ class VideoItem extends StatelessWidget {
       ),
     );
   }
-} 
+}

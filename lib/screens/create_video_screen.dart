@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show LinearProgressIndicator, AlwaysStoppedAnimation;
 import 'package:ionicons/ionicons.dart';
+import 'package:provider/provider.dart';
+import '../services/auth_service.dart';
+import 'auth_prompt_screen.dart';
 
 class CreateVideoScreen extends StatefulWidget {
   const CreateVideoScreen({super.key});
@@ -13,13 +16,39 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
   int _selectedEffectIndex = 0;
   double _zoomLevel = 1.0;
   bool _isRecording = false;
-  
+  bool _showAuthPrompt = false;
+
   final List<String> _effects = [
     'None', 'Beauty', 'Filters', 'Green Screen', 'Slow Motion'
   ];
 
+  void _attemptRecording() {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    if (!authService.isAuthenticated) {
+      setState(() {
+        _showAuthPrompt = true;
+      });
+    } else {
+      setState(() {
+        _isRecording = !_isRecording;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+
+    if (!authService.isAuthenticated && _showAuthPrompt) {
+      return AuthPromptScreen(
+        onClose: () {
+          setState(() {
+            _showAuthPrompt = false;
+          });
+        },
+      );
+    }
+
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.black,
       child: Stack(
@@ -37,7 +66,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
               ),
             ),
           ),
-          
+
           // Top controls
           Positioned(
             top: 50,
@@ -81,7 +110,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
               ),
             ),
           ),
-          
+
           // Zoom control
           Positioned(
             top: 100,
@@ -149,7 +178,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
               ],
             ),
           ),
-          
+
           // Bottom controls
           Positioned(
             bottom: 0,
@@ -187,8 +216,8 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                             margin: const EdgeInsets.only(right: 8),
                             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                             decoration: BoxDecoration(
-                              color: _selectedEffectIndex == index 
-                                  ? CupertinoColors.systemPink 
+                              color: _selectedEffectIndex == index
+                                  ? CupertinoColors.systemPink
                                   : CupertinoColors.black.withOpacity(0.5),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
@@ -210,9 +239,9 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                       },
                     ),
                   ),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // Recording controls
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -223,11 +252,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                         size: 30,
                       ),
                       GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _isRecording = !_isRecording;
-                          });
-                        },
+                        onTap: _attemptRecording,
                         child: Container(
                           width: 80,
                           height: 80,
@@ -257,9 +282,9 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                       ),
                     ],
                   ),
-                  
+
                   const SizedBox(height: 20),
-                  
+
                   // Duration indicator
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 40),
@@ -273,7 +298,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 10),
                   const Text(
                     '00:15 / 03:00',
@@ -290,4 +315,4 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
       ),
     );
   }
-} 
+}
