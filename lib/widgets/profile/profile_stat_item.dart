@@ -1,11 +1,10 @@
 import 'package:flutter/cupertino.dart';
-import '../../utils/app_colors.dart';
 import '../../utils/app_theme.dart';
 
 class ProfileStatItem extends StatelessWidget {
   final String count;
   final String label;
-  
+
   const ProfileStatItem({
     super.key,
     required this.count,
@@ -37,4 +36,4 @@ class ProfileStatItem extends StatelessWidget {
       ],
     );
   }
-} 
+}

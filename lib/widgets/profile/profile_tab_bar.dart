@@ -1,13 +1,10 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors;
-import 'package:ionicons/ionicons.dart';
 import '../../utils/app_colors.dart';
-import '../../utils/app_theme.dart';
 
 class ProfileTabBar extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onTabSelected;
-  
+
   const ProfileTabBar({
     super.key,
     required this.selectedIndex,
@@ -37,12 +34,12 @@ class ProfileTabBar extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildTabItem(BuildContext context, int index, IconData icon) {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
     final isSelected = selectedIndex == index;
-    
+
     return CupertinoButton(
       padding: EdgeInsets.zero,
       onPressed: () => onTabSelected(index),
@@ -50,7 +47,7 @@ class ProfileTabBar extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 12),
         child: Icon(
           icon,
-          color: isSelected 
+          color: isSelected
               ? AppColors.primary
               : (isDarkMode ? AppColors.textLight : AppColors.textSecondary),
           size: 26,
@@ -58,4 +55,4 @@ class ProfileTabBar extends StatelessWidget {
       ),
     );
   }
-} 
+}

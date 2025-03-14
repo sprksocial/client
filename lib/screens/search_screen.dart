@@ -12,7 +12,7 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
-  
+
   @override
   void dispose() {
     _searchController.dispose();
@@ -23,7 +23,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Widget build(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
-    
+
     return CupertinoPageScaffold(
       backgroundColor: AppTheme.getBackgroundColor(context, false),
       navigationBar: CupertinoNavigationBar(
@@ -57,7 +57,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 },
               ),
             ),
-            
+
             // Trending hashtags
             Padding(
               padding: const EdgeInsets.all(12.0),
@@ -74,7 +74,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 ],
               ),
             ),
-            
+
             // Trending hashtags horizontal scroll
             SizedBox(
               height: 40,
@@ -103,9 +103,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 },
               ),
             ),
-            
+
             const SizedBox(height: 12),
-            
+
             // Content grid
             Expanded(
               child: GridView.builder(
@@ -119,9 +119,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 itemCount: 30,
                 itemBuilder: (context, index) {
                   return Container(
-                    color: index % 3 == 0 
+                    color: index % 3 == 0
                         ? AppColors.brightPurple.withOpacity(0.7)
-                        : index % 3 == 1 
+                        : index % 3 == 1
                           ? AppColors.richPurple.withOpacity(0.7)
                           : AppColors.primary.withOpacity(0.7),
                     child: Stack(
@@ -165,4 +165,4 @@ class _SearchScreenState extends State<SearchScreen> {
       ),
     );
   }
-} 
+}
