@@ -1,4 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Add Internet permission for video streaming -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    
     <application
         android:label="Spark"
         android:name="${applicationName}"

@@ -1,7 +1,10 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart' show Colors;
 import 'package:ionicons/ionicons.dart';
 import '../widgets/video_side_action_bar.dart';
 import '../widgets/video_info/video_info_bar.dart';
+import 'package:video_player/video_player.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -13,61 +16,250 @@ class HomeScreen extends StatelessWidget {
 
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.black,
-      child: SafeArea(
-        bottom: false,
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
-            // Top navigation bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const SizedBox(width: 30), // For balance
-                  Expanded(
-                    child: Center(
-                      child: CupertinoSegmentedControl<int>(
-                        children: const {
-                          0: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 20),
-                            child: Text('Following'),
-                          ),
-                          1: Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 20),
-                            child: Text('For You'),
-                          ),
-                        },
-                        onValueChanged: (value) {},
-                        groupValue: 1, // Default to "For You"
-                        borderColor: CupertinoColors.systemGrey,
-                        selectedColor: CupertinoColors.white,
-                        unselectedColor: CupertinoColors.black,
-                        padding: const EdgeInsets.all(4),
+      child: Stack(
+        children: [
+          // Main content
+          Column(
+            children: [
+              // Top navigation bar - add padding to account for status bar
+              Padding(
+                padding: EdgeInsets.only(
+                  top: MediaQuery.of(context).padding.top + 10,
+                  left: 16.0,
+                  right: 16.0,
+                  bottom: 10.0,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const SizedBox(width: 30), // For balance
+                    Expanded(
+                      child: Center(
+                        child: CupertinoSegmentedControl<int>(
+                          children: const {
+                            0: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 20),
+                              child: Text('Following'),
+                            ),
+                            1: Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 20),
+                              child: Text('For You'),
+                            ),
+                          },
+                          onValueChanged: (value) {},
+                          groupValue: 1, // Default to "For You"
+                          borderColor: CupertinoColors.systemGrey,
+                          selectedColor: CupertinoColors.white,
+                          unselectedColor: CupertinoColors.black,
+                          padding: const EdgeInsets.all(4),
+                        ),
                       ),
                     ),
+                    const Icon(
+                      Ionicons.search_outline,
+                      color: CupertinoColors.white,
+                      size: 30,
+                    ),
+                  ],
+                ),
+              ),
+
+              // Video Feed (main content)
+              Expanded(
+                child: Padding(
+                  // Dynamically calculate bottom padding based on device
+                  padding: EdgeInsets.only(bottom: bottomPadding),
+                  child: PageView.builder(
+                    scrollDirection: Axis.vertical,
+                    itemCount: 5, // Sample videos
+                    itemBuilder: (context, index) {
+                      // Sample videos with different aspect ratios to demonstrate proper sizing
+                      final videoUrls = [
+                        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', // Horizontal 16:9
+                        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', // Horizontal 16:9
+                        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', // Horizontal 16:9
+                        null, // Custom colored container
+                        null, // Custom colored container
+                      ];
+                      
+                      return VideoItem(
+                        index: index,
+                        videoUrl: index < videoUrls.length ? videoUrls[index] : null,
+                      );
+                    },
                   ),
-                  const Icon(
-                    Ionicons.search_outline,
-                    color: CupertinoColors.white,
-                    size: 30,
-                  ),
-                ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class VideoItem extends StatefulWidget {
+  final int index;
+  final String? videoUrl;
+
+  const VideoItem({super.key, required this.index, this.videoUrl});
+
+  @override
+  State<VideoItem> createState() => _VideoItemState();
+}
+
+class _VideoItemState extends State<VideoItem> {
+  VideoPlayerController? _controller;
+  bool _isInitialized = false;
+  bool _isVisible = false;
+  final String _videoKey = UniqueKey().toString();
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeVideoPlayer();
+  }
+  
+  void _initializeVideoPlayer() {
+    if (widget.videoUrl != null) {
+      _controller = VideoPlayerController.network(widget.videoUrl!)
+        ..initialize().then((_) {
+          setState(() {
+            _isInitialized = true;
+            // If video is visible when initialized, play it
+            if (_isVisible) {
+              _controller?.play();
+            }
+          });
+        });
+      
+      // Add listener for video completion
+      _controller?.addListener(() {
+        if (_controller!.value.position >= _controller!.value.duration) {
+          // Loop video
+          _controller?.seekTo(Duration.zero);
+          _controller?.play();
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Sample data for the video item
+    final String username = 'username${widget.index + 1}';
+    final String description = widget.videoUrl != null 
+        ? 'Sample video ${widget.index + 1}: This is a horizontally shot video that demonstrates proper fitting on the screen without cutting off content.'
+        : 'This is a placeholder for video ${widget.index + 1}';
+    final List<String> hashtags = ['spark', 'sample', 'video${widget.index + 1}'];
+
+    return Container(
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width,
+      color: CupertinoColors.black,
+      child: VisibilityDetector(
+        key: Key(_videoKey),
+        onVisibilityChanged: (visibilityInfo) {
+          final isVisible = visibilityInfo.visibleFraction > 0.8;
+          
+          // Only take action if visibility state changed
+          if (isVisible != _isVisible) {
+            _isVisible = isVisible;
+            
+            if (_controller != null && _isInitialized) {
+              if (isVisible) {
+                _controller?.play();
+              } else {
+                _controller?.pause();
+              }
+            }
+          }
+        },
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Video content
+            Center(
+              child: _buildVideoContent(),
+            ),
+
+            // Video info - now using the modular component
+            Positioned(
+              bottom: 20,
+              left: 10,
+              right: 70, // Give space for the side action bar
+              child: VideoInfoBar(
+                username: username,
+                description: description,
+                hashtags: hashtags,
+                onUsernameTap: () {
+                  // Handle username tap
+                },
+                onHashtagTap: () {
+                  // Handle hashtag tap
+                },
               ),
             ),
-            const SizedBox(height: 10),
 
-            // Video Feed (main content)
-            Expanded(
-              child: Padding(
-                // Dynamically calculate bottom padding based on device
-                padding: EdgeInsets.only(bottom: bottomPadding),
-                child: PageView.builder(
-                  scrollDirection: Axis.vertical,
-                  itemCount: 10, // Sample videos
-                  itemBuilder: (context, index) {
-                    return VideoItem(index: index);
-                  },
+            // Right side actions
+            Positioned(
+              right: 10,
+              bottom: 100,
+              child: VideoSideActionBar(
+                likeCount: '${(widget.index + 1) * 35}K',
+                commentCount: '${(widget.index + 1) * 12}K',
+                bookmarkCount: '${(widget.index + 1) * 8}K',
+                shareCount: '${(widget.index + 1) * 20}K',
+                onLikePressed: () {
+                  // Handle like action
+                },
+                onCommentPressed: () {
+                  // Handle comment action
+                },
+                onBookmarkPressed: () {
+                  // Handle bookmark action
+                },
+                onSharePressed: () {
+                  // Handle share action
+                },
+                onProfilePressed: () {
+                  // Handle profile action
+                },
+              ),
+            ),
+            
+            // Loading indicator
+            if (widget.videoUrl != null && !_isInitialized)
+              const Center(
+                child: CupertinoActivityIndicator(
+                  color: CupertinoColors.white,
+                  radius: 20,
+                ),
+              ),
+              
+            // Tap to play/pause overlay
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () {
+                  if (_controller != null && _isInitialized) {
+                    setState(() {
+                      if (_controller!.value.isPlaying) {
+                        _controller!.pause();
+                      } else {
+                        _controller!.play();
+                      }
+                    });
+                  }
+                },
+                // Make the entire area tappable but transparent
+                child: Container(
+                  color: Colors.transparent,
                 ),
               ),
             ),
@@ -76,90 +268,66 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-}
 
-class VideoItem extends StatelessWidget {
-  final int index;
-
-  const VideoItem({super.key, required this.index});
-
-  @override
-  Widget build(BuildContext context) {
-    // Sample data for the video item
-    final String username = 'username';
-    final String description = 'Video caption goes here';
-    final List<String> hashtags = ['spark', 'viral', 'trending'];
-
-    return Container(
-      // Use constraints to ensure the video fits within available space
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height -
-                  MediaQuery.of(context).padding.top -
-                  50 - // Top navigation height
-                  (MediaQuery.of(context).padding.bottom + 50), // Bottom nav height + safe area
-      ),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          // Video placeholder
-          Container(
-            color: index % 2 == 0 ? CupertinoColors.systemIndigo : CupertinoColors.systemPurple,
-            child: Center(
-              child: Icon(
+  Widget _buildVideoContent() {
+    if (widget.videoUrl != null && _controller != null && _isInitialized) {
+      // Calculate the appropriate size for the video while maintaining aspect ratio
+      final videoSize = _controller!.value.size;
+      
+      double videoWidth = videoSize.width;
+      double videoHeight = videoSize.height;
+      
+      // Calculate the scaling factor to fit the video properly
+      double aspectRatio = videoWidth / videoHeight;
+      
+      Widget videoWidget;
+      
+      if (aspectRatio > 1) {
+        // Horizontal video - use FittedBox with BoxFit.contain
+        // This ensures the entire video is visible and centered
+        videoWidget = FittedBox(
+          fit: BoxFit.contain,
+          child: SizedBox(
+            width: videoWidth,
+            height: videoHeight,
+            child: VideoPlayer(_controller!),
+          ),
+        );
+      } else {
+        // Vertical video - fit height to screen
+        videoWidget = AspectRatio(
+          aspectRatio: aspectRatio,
+          child: VideoPlayer(_controller!),
+        );
+      }
+      
+      return videoWidget;
+    } else {
+      // Placeholder for videos without a URL or while loading
+      return Container(
+        color: widget.index % 2 == 0 ? CupertinoColors.systemIndigo : CupertinoColors.systemPurple,
+        child: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
                 Ionicons.play_circle_outline,
                 size: 80,
                 color: CupertinoColors.white.withOpacity(0.7),
               ),
-            ),
+              const SizedBox(height: 16),
+              Text(
+                'Video ${widget.index + 1}',
+                style: const TextStyle(
+                  color: CupertinoColors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
           ),
-
-          // Video info - now using the modular component
-          Positioned(
-            bottom: 20,
-            left: 10,
-            right: 70, // Give space for the side action bar
-            child: VideoInfoBar(
-              username: username,
-              description: description,
-              hashtags: hashtags,
-              onUsernameTap: () {
-                // Handle username tap
-              },
-              onHashtagTap: () {
-                // Handle hashtag tap
-              },
-            ),
-          ),
-
-          // Right side actions
-          Positioned(
-            right: 10,
-            bottom: 100,
-            child: VideoSideActionBar(
-              likeCount: '250,5K',
-              commentCount: '100K',
-              bookmarkCount: '89K',
-              shareCount: '132,5K',
-              // Add any callbacks as needed
-              onLikePressed: () {
-                // Handle like action
-              },
-              onCommentPressed: () {
-                // Handle comment action
-              },
-              onBookmarkPressed: () {
-                // Handle bookmark action
-              },
-              onSharePressed: () {
-                // Handle share action
-              },
-              onProfilePressed: () {
-                // Handle profile action
-              },
-            ),
-          ),
-        ],
-      ),
-    );
+        ),
+      );
+    }
   }
 }
