@@ -43,6 +43,7 @@ export default function VideoScreen({
         setVideoProgress(player.currentTime ?? 0);
       }
     }, 500);
+    
 
     return () => clearInterval(interval);
   }, [player]);
