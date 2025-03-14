@@ -151,26 +151,12 @@ class MainScreen extends StatelessWidget {
       onPressed: () {
         navigationProvider.updateIndex(index);
       },
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            isSelected ? iconFilled : iconOutline,
-            color: isSelected 
-                ? (isDarkMode ? CupertinoColors.white : CupertinoColors.activeBlue)
-                : (isDarkMode ? CupertinoColors.systemGrey : CupertinoColors.systemGrey),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              color: isSelected 
-                  ? (isDarkMode ? CupertinoColors.white : CupertinoColors.activeBlue)
-                  : (isDarkMode ? CupertinoColors.systemGrey : CupertinoColors.systemGrey),
-            ),
-          ),
-        ],
+      child: Icon(
+        isSelected ? iconFilled : iconOutline,
+        color: isSelected 
+            ? (isDarkMode ? CupertinoColors.white : CupertinoColors.activeBlue)
+            : (isDarkMode ? CupertinoColors.systemGrey : CupertinoColors.systemGrey),
+        size: 26, // Slightly larger icon since we removed the text
       ),
     );
   }
