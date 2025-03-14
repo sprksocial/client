@@ -4,6 +4,7 @@ import 'dart:ui'; // For ImageFilter
 import 'package:ionicons/ionicons.dart';
 import '../widgets/video_side_action_bar.dart';
 import '../widgets/video_info/video_info_bar.dart';
+import '../widgets/video_controls/video_controller_overlay.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -12,23 +13,68 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Calculate proper bottom padding based on screen size and safe area
-    final bottomPadding = MediaQuery.of(context).padding.bottom + 50;
+    // Calculate proper padding based on screen size and safe area
+    final bottomNavHeight = 50.0; // Standard height for bottom navigation bar
+    final bottomSafeArea = MediaQuery.of(context).padding.bottom;
+    final totalBottomPadding = bottomNavHeight + bottomSafeArea;
+    final topPadding = MediaQuery.of(context).padding.top;
 
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.black,
       child: Stack(
         children: [
-          // Main content
-          Column(
-            children: [
-              // Top navigation bar - add padding to account for status bar
-              Padding(
+          // Full-screen video feed
+          SizedBox(
+            height: MediaQuery.of(context).size.height,
+            width: MediaQuery.of(context).size.width,
+            child: PageView.builder(
+              scrollDirection: Axis.vertical,
+              itemCount: 5, // Sample videos
+              itemBuilder: (context, index) {
+                // Sample videos with different aspect ratios to demonstrate proper sizing
+                final videoUrls = [
+                  'https://cdn.justdavi.dev/vid_9_16.mp4', // Vertical 9:16
+                  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', // Horizontal 16:9
+                  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', // Horizontal 16:9
+                  null, // Custom colored container
+                  null, // Custom colored container
+                ];
+                
+                return Padding(
+                  // Add padding at bottom to prevent content from being hidden behind bottom nav
+                  padding: EdgeInsets.only(bottom: totalBottomPadding),
+                  child: VideoItem(
+                    index: index,
+                    videoUrl: index < videoUrls.length ? videoUrls[index] : null,
+                  ),
+                );
+              },
+            ),
+          ),
+          
+          // Overlay for top navigation
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              // Add gradient background to ensure readability of the top navigation
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    CupertinoColors.black.withOpacity(0.7),
+                    CupertinoColors.black.withOpacity(0.0),
+                  ],
+                ),
+              ),
+              child: Padding(
                 padding: EdgeInsets.only(
-                  top: MediaQuery.of(context).padding.top + 10,
+                  top: topPadding + 10,
                   left: 16.0,
                   right: 16.0,
-                  bottom: 10.0,
+                  bottom: 20.0,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -64,37 +110,58 @@ class HomeScreen extends StatelessWidget {
                   ],
                 ),
               ),
-
-              // Video Feed (main content)
-              Expanded(
+            ),
+          ),
+          
+          // Bottom navigation bar (simulated)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: totalBottomPadding,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [
+                    CupertinoColors.black.withOpacity(0.9),
+                    CupertinoColors.black.withOpacity(0.0),
+                  ],
+                  stops: const [0.4, 1.0],
+                ),
+              ),
+              child: Align(
+                alignment: Alignment.topCenter,
                 child: Padding(
-                  // Dynamically calculate bottom padding based on device
-                  padding: EdgeInsets.only(bottom: bottomPadding),
-                  child: PageView.builder(
-                    scrollDirection: Axis.vertical,
-                    itemCount: 5, // Sample videos
-                    itemBuilder: (context, index) {
-                      // Sample videos with different aspect ratios to demonstrate proper sizing
-                      final videoUrls = [
-                        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', // Horizontal 16:9
-                        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', // Horizontal 16:9
-                        'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', // Horizontal 16:9
-                        null, // Custom colored container
-                        null, // Custom colored container
-                      ];
-                      
-                      return VideoItem(
-                        index: index,
-                        videoUrl: index < videoUrls.length ? videoUrls[index] : null,
-                      );
-                    },
+                  padding: EdgeInsets.only(bottom: bottomSafeArea),
+                  child: SizedBox(
+                    height: bottomNavHeight,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildNavItem(Ionicons.home, true),
+                        _buildNavItem(Ionicons.search_outline, false),
+                        _buildNavItem(Ionicons.add_circle_outline, false),
+                        _buildNavItem(Ionicons.chatbubble_outline, false),
+                        _buildNavItem(Ionicons.person_outline, false),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ],
+            ),
           ),
         ],
       ),
+    );
+  }
+  
+  Widget _buildNavItem(IconData icon, bool isSelected) {
+    return Icon(
+      icon,
+      color: isSelected ? CupertinoColors.white : CupertinoColors.systemGrey,
+      size: 26,
     );
   }
 }
@@ -156,14 +223,11 @@ class _VideoItemState extends State<VideoItem> {
     // Sample data for the video item
     final String username = 'username${widget.index + 1}';
     final String description = widget.videoUrl != null 
-        ? 'Sample video ${widget.index + 1}: This is a horizontally shot video that demonstrates proper fitting on the screen without cutting off content.'
+        ? 'Sample video ${widget.index + 1}: This is a video that demonstrates proper fitting on the screen without cutting off content.'
         : 'This is a placeholder for video ${widget.index + 1}';
     final List<String> hashtags = ['spark', 'sample', 'video${widget.index + 1}'];
 
-    return Container(
-      height: MediaQuery.of(context).size.height,
-      width: MediaQuery.of(context).size.width,
-      color: CupertinoColors.black,
+    return SizedBox.expand(
       child: VisibilityDetector(
         key: Key(_videoKey),
         onVisibilityChanged: (visibilityInfo) {
@@ -185,16 +249,46 @@ class _VideoItemState extends State<VideoItem> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Blurred video background (only if video is initialized)
+            // Blurred video background
             if (widget.videoUrl != null && _controller != null && _isInitialized)
               _buildBlurredBackground(),
             
-            // Video content
+            // Video content - main focus
             Center(
               child: _buildVideoContent(),
             ),
+            
+            // Gradient overlay for better text readability
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.transparent,
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.0),
+                      Colors.black.withOpacity(0.3),
+                      Colors.black.withOpacity(0.3),
+                    ],
+                    stops: const [0.0, 0.5, 0.65, 0.75, 0.85, 0.95],
+                  ),
+                ),
+              ),
+            ),
+            
+            // Video controller overlay - new addition
+            if (widget.videoUrl != null && _controller != null && _isInitialized)
+              VideoControllerOverlay(
+                controller: _controller!,
+                onTap: () {
+                  // This is handled internally by the controller
+                },
+              ),
 
-            // Video info - now using the modular component
+            // Video info
             Positioned(
               bottom: 20,
               left: 10,
@@ -247,34 +341,13 @@ class _VideoItemState extends State<VideoItem> {
                   radius: 20,
                 ),
               ),
-              
-            // Tap to play/pause overlay
-            Positioned.fill(
-              child: GestureDetector(
-                onTap: () {
-                  if (_controller != null && _isInitialized) {
-                    setState(() {
-                      if (_controller!.value.isPlaying) {
-                        _controller!.pause();
-                      } else {
-                        _controller!.play();
-                      }
-                    });
-                  }
-                },
-                // Make the entire area tappable but transparent
-                child: Container(
-                  color: Colors.transparent,
-                ),
-              ),
-            ),
           ],
         ),
       ),
     );
   }
 
-  // New method to build the blurred background
+  // Build the blurred background
   Widget _buildBlurredBackground() {
     return Stack(
       fit: StackFit.expand,
