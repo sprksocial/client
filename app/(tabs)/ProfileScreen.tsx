@@ -6,6 +6,7 @@ import {
   StyleSheet,
   useColorScheme,
   View,
+  Share,
 } from 'react-native';
 import { ThemedText } from '@/components/ThemedText';
 import ContentWrapper from '@/components/global/ContentWrapper';
@@ -178,6 +179,32 @@ export default function ProfileScreen() {
     console.log("followed " + userData?.did);
   };
 
+  // New handlers for profile actions
+  const handleEdit = () => {
+    console.log("Edit profile functionality would be implemented here");
+    // TODO: Implement profile editing screen
+  };
+
+  const handleShareProfile = async () => {
+    try {
+      if (userData) {
+        const profileUrl = `https://sprk.so/${userData.handle}`;
+        await Share.share({
+          message: `Check out ${userData.displayName}'s profile on Spark: ${profileUrl}`,
+          url: profileUrl,
+        });
+        console.log("Shared profile");
+      }
+    } catch (error) {
+      console.error('Error sharing profile:', error);
+    }
+  };
+
+  const handleFriends = () => {
+    console.log("Friends functionality would be implemented here");
+    // TODO: Implement friends screen
+  };
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -232,6 +259,9 @@ export default function ProfileScreen() {
               onLogin={() => goTo('login')}
               onFollow={handleFollow}
               onLogout={handleLogout}
+              onEdit={handleEdit}
+              onShareProfile={handleShareProfile}
+              onFriends={handleFriends}
             />
           </View>
 
