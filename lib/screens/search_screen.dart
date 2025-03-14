@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:ionicons/ionicons.dart';
+import '../utils/app_colors.dart';
+import '../utils/app_theme.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -19,11 +21,17 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = MediaQuery.of(context).platformBrightness;
+    final isDarkMode = brightness == Brightness.dark;
+    
     return CupertinoPageScaffold(
-      backgroundColor: CupertinoColors.systemBackground,
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('Discover'),
-        backgroundColor: CupertinoColors.systemBackground,
+      backgroundColor: AppTheme.getBackgroundColor(context, false),
+      navigationBar: CupertinoNavigationBar(
+        middle: Text(
+          'Discover',
+          style: TextStyle(color: AppTheme.getTextColor(context)),
+        ),
+        backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
       ),
       child: SafeArea(
         child: Column(
@@ -33,8 +41,17 @@ class _SearchScreenState extends State<SearchScreen> {
               child: CupertinoSearchTextField(
                 controller: _searchController,
                 placeholder: 'Search videos, users, music',
-                prefixIcon: const Icon(Ionicons.search_outline),
-                suffixIcon: const Icon(Ionicons.scan_outline),
+                prefixIcon: Icon(
+                  Ionicons.search_outline,
+                  color: AppTheme.getSecondaryTextColor(context),
+                ),
+                suffixIcon: Icon(
+                  Ionicons.scan_outline,
+                  color: AppTheme.getSecondaryTextColor(context),
+                ),
+                style: TextStyle(color: AppTheme.getTextColor(context)),
+                placeholderStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
+                backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.white,
                 onChanged: (value) {
                   // Handle search
                 },
@@ -42,8 +59,8 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             
             // Trending hashtags
-            const Padding(
-              padding: EdgeInsets.all(12.0),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
               child: Row(
                 children: [
                   Text(
@@ -51,6 +68,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
+                      color: AppTheme.getTextColor(context),
                     ),
                   ),
                 ],
@@ -69,14 +87,15 @@ class _SearchScreenState extends State<SearchScreen> {
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     decoration: BoxDecoration(
-                      color: CupertinoColors.systemGrey5,
+                      color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: Center(
                       child: Text(
                         '#trending${index + 1}',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w500,
+                          color: AppTheme.getTextColor(context),
                         ),
                       ),
                     ),
@@ -101,17 +120,17 @@ class _SearchScreenState extends State<SearchScreen> {
                 itemBuilder: (context, index) {
                   return Container(
                     color: index % 3 == 0 
-                        ? CupertinoColors.systemPurple.withOpacity(0.7)
+                        ? AppColors.brightPurple.withOpacity(0.7)
                         : index % 3 == 1 
-                          ? CupertinoColors.systemIndigo.withOpacity(0.7)
-                          : CupertinoColors.systemBlue.withOpacity(0.7),
+                          ? AppColors.richPurple.withOpacity(0.7)
+                          : AppColors.primary.withOpacity(0.7),
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
                         Center(
                           child: Icon(
                             Ionicons.play_outline,
-                            color: CupertinoColors.white.withOpacity(0.7),
+                            color: AppColors.white.withOpacity(0.7),
                           ),
                         ),
                         Positioned(
@@ -121,14 +140,14 @@ class _SearchScreenState extends State<SearchScreen> {
                             children: [
                               const Icon(
                                 Ionicons.play_outline,
-                                color: CupertinoColors.white,
+                                color: AppColors.white,
                                 size: 12,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 '${(index + 1) * 10}K',
                                 style: const TextStyle(
-                                  color: CupertinoColors.white,
+                                  color: AppColors.white,
                                   fontSize: 12,
                                 ),
                               ),

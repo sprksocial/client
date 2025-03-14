@@ -8,6 +8,8 @@ import 'screens/create_video_screen.dart';
 import 'screens/messages_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/splash_screen.dart';
+import 'utils/app_colors.dart';
+import 'utils/app_theme.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,18 +25,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => NavigationProvider(),
-      child: CupertinoApp(
-        title: 'TikTok Clone',
-        theme: const CupertinoThemeData(
-          brightness: Brightness.light,
-          primaryColor: CupertinoColors.systemPink,
+    // We'll use a builder to get access to the platform brightness
+    return CupertinoTheme(
+      data: AppTheme.theme,
+      child: ChangeNotifierProvider(
+        create: (_) => NavigationProvider(),
+        child: CupertinoApp(
+          title: 'Spark',
+          theme: AppTheme.theme,
+          home: const SplashScreen(),
+          routes: {
+            '/home': (context) => const MainScreen(),
+          },
         ),
-        home: const SplashScreen(),
-        routes: {
-          '/home': (context) => const MainScreen(),
-        },
       ),
     );
   }
@@ -57,6 +60,7 @@ class MainScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final navigationProvider = Provider.of<NavigationProvider>(context);
+    final bool isHomePage = navigationProvider.currentIndex == 0;
 
     // Creating the list of screens for navigation
     final List<Widget> screens = [
@@ -68,7 +72,7 @@ class MainScreen extends StatelessWidget {
     ];
 
     return CupertinoPageScaffold(
-      backgroundColor: CupertinoColors.black,
+      backgroundColor: AppTheme.getBackgroundColor(context, isHomePage),
       child: Stack(
         children: [
           // Main content
@@ -84,12 +88,10 @@ class MainScreen extends StatelessWidget {
             bottom: 0,
             child: Container(
               decoration: BoxDecoration(
-                color: navigationProvider.currentIndex == 0 
-                    ? CupertinoColors.black 
-                    : CupertinoColors.systemBackground,
-                border: const Border(
+                color: AppTheme.getNavBackgroundColor(context, isHomePage),
+                border: Border(
                   top: BorderSide(
-                    color: CupertinoColors.systemGrey5,
+                    color: AppColors.border,
                     width: 0.5,
                   ),
                 ),
@@ -144,7 +146,7 @@ class MainScreen extends StatelessWidget {
   Widget _buildNavItem(BuildContext context, int index, String label, IconData iconOutline, IconData iconFilled) {
     final navigationProvider = Provider.of<NavigationProvider>(context);
     final bool isSelected = navigationProvider.currentIndex == index;
-    final bool isDarkMode = navigationProvider.currentIndex == 0;
+    final bool isHomePage = navigationProvider.currentIndex == 0;
     
     return CupertinoButton(
       padding: EdgeInsets.zero,
@@ -154,17 +156,14 @@ class MainScreen extends StatelessWidget {
       child: Icon(
         isSelected ? iconFilled : iconOutline,
         color: isSelected 
-            ? (isDarkMode ? CupertinoColors.white : CupertinoColors.activeBlue)
-            : (isDarkMode ? CupertinoColors.systemGrey : CupertinoColors.systemGrey),
-        size: 26, // Slightly larger icon since we removed the text
+            ? AppTheme.getSelectedIconColor(context, isHomePage)
+            : AppTheme.getUnselectedIconColor(context, isHomePage),
+        size: 26,
       ),
     );
   }
 
   Widget _buildCreateButton(BuildContext context) {
-    final navigationProvider = Provider.of<NavigationProvider>(context);
-    final bool isDarkMode = navigationProvider.currentIndex == 0;
-
     return CupertinoButton(
       padding: EdgeInsets.zero,
       onPressed: () {
@@ -179,20 +178,13 @@ class MainScreen extends StatelessWidget {
         width: 48,
         height: 36,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [
-              CupertinoColors.systemPink,
-              CupertinoColors.systemBlue,
-            ],
-            begin: Alignment.bottomLeft,
-            end: Alignment.topRight,
-          ),
+          color: AppColors.primary,
           borderRadius: BorderRadius.circular(10),
         ),
         child: const Center(
           child: Icon(
             Ionicons.add,
-            color: CupertinoColors.white,
+            color: AppColors.white,
             size: 24,
           ),
         ),

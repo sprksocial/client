@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
+import '../utils/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -54,19 +55,19 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [
-                      CupertinoColors.systemPink,
-                      CupertinoColors.systemBlue,
-                    ],
-                    begin: Alignment.bottomLeft,
-                    end: Alignment.topRight,
-                  ),
+                  color: AppColors.primary,
                   borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.brightPurple.withOpacity(0.5),
+                      blurRadius: 15,
+                      spreadRadius: 5,
+                    ),
+                  ],
                 ),
                 child: const Center(
                   child: Text(
-                    'TT',
+                    'S',
                     style: TextStyle(
                       color: CupertinoColors.white,
                       fontSize: 40,
@@ -77,7 +78,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               ),
               const SizedBox(height: 30),
               const Text(
-                'TikTok Clone',
+                'Spark',
                 style: TextStyle(
                   color: CupertinoColors.white,
                   fontSize: 24,
