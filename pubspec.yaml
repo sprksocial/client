@@ -11,7 +11,7 @@ dependencies:
     sdk: flutter
   ionicons: ^0.2.2
   cupertino_icons: ^1.0.6
-  video_player: ^2.8.2
+  video_player: ^2.9.3
   cached_network_image: ^3.3.1
   camera: ^0.10.5+9
   path_provider: ^2.1.2
@@ -22,6 +22,7 @@ dependencies:
   bluesky: ^0.18.10
   http: ^1.1.0
   shared_preferences: ^2.5.2
+  visibility_detector: ^0.4.0+2
 
 dev_dependencies:
   flutter_test:
