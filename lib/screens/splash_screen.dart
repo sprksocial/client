@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
+import '../services/auth_service.dart';
 import '../utils/app_colors.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -30,12 +32,36 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _animationController.forward();
 
-    // Simply go to the main screen after a delay
-    Timer(const Duration(seconds: 3), () {
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
-      }
-    });
+    // Check if user is already authenticated
+    _checkAuthentication();
+  }
+
+  Future<void> _checkAuthentication() async {
+    // Wait for animations to complete
+    await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+
+    final authService = Provider.of<AuthService>(context, listen: false);
+
+    // Wait for auth service to finish loading saved session
+    while (authService.isLoading) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return;
+    }
+
+    // Check if session is valid
+    final bool isSessionValid = await authService.validateSession();
+
+    if (!mounted) return;
+
+    if (isSessionValid) {
+      // User is authenticated, go to home
+      Navigator.of(context).pushReplacementNamed('/home');
+    } else {
+      // User is not authenticated, go to login
+      Navigator.of(context).pushReplacementNamed('/auth');
+    }
   }
 
   @override
