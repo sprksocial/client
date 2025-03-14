@@ -1,20 +1,48 @@
-# TikTok Clone with Flutter
+# Spark Social
 
-A clean, beautiful and functional TikTok clone built with Flutter using Apple Cupertino design principles.
+A decentralized social network for video sharing built on the AT Protocol, putting users in control of their digital presence and data.
+
+![Spark Logo](https://static.sprk.so/branding/logo-horizontal-t6.png)
+
+## Spark Your Creativity
+
+Share videos freely while maintaining complete control over your data. Break free from corporate control and gain digital autonomy.
+
+## About Spark
+
+Spark Social PBC is building a decentralized social network on the AT Protocol, empowering users to share content without compromising privacy or control. With Spark, you own your data and decide how it's used.
+
+## Core Principles
+
+- **Decentralized Network**: Built on the AT Protocol, giving you full control over your digital presence
+- **User-First Approach**: Your data belongs to you, share content freely without compromising privacy
+- **Digital Autonomy**: Break free from corporate control and take charge of your online experience
 
 ## Features
 
-- **Home Feed:** Vertical scrolling video feed similar to TikTok
-- **Search & Discover:** Explore content with trending hashtags and a discovery grid
-- **Video Creation:** Record and publish videos with effects and filters
-- **Messages:** Chat with other users
-- **Profile:** View your own content, liked videos, and manage your profile
-- **Clean UI:** Uses Cupertino design for a clean, iOS-like experience
-- **Ionicons:** Beautiful icons throughout the app
+- **Content Filters**: Customize your feed with advanced content filters
+- **Moderation Lists**: Create and subscribe to moderation lists for a healthier online environment
+- **Custom Feeds**: Build personalized feeds based on your interests and favorite creators
+- **Music & Audio Gallery**: Platform for musicians to reach wider audiences and listeners to discover new talent
+- **Built-in Video Editor**: Create and edit professional-quality videos directly in the app
+- **Creative Effects**: Share your creativity with Spark effects or design your own
+- **Full Content Control**: You decide what to share and with whom
+- **Social Media Detox**: Tools to reduce social media addiction and improve focus
+- **Community Building**: Connect with like-minded individuals and build genuine communities
+- **Human-first Discovery**: Find real creators and build genuine connections
+
+## What Makes Spark Different?
+
+- **Authenticity**: Rediscover genuine connections with real creators
+- **Decentralization**: Break free from corporate control and gain digital autonomy
+- **Custom Lexicon**: Our own lexicon provides more flexibility for content creators
+- **Higher Content Limits**: Increased limits for video length and image quality
+- **User Control**: You own your data and decide how it's used
+- **Community Focus**: Build meaningful relationships in a supportive environment
 
 ## Screenshots
 
-(Screenshots would be here)
+(Screenshots coming soon)
 
 ## Getting Started
 
@@ -28,12 +56,12 @@ A clean, beautiful and functional TikTok clone built with Flutter using Apple Cu
 
 1. Clone this repository
 ```bash
-git clone https://github.com/yourusername/tiktok-clone.git
+git clone https://github.com/yourusername/spark-social.git
 ```
 
 2. Navigate to the project directory
 ```bash
-cd tiktok-clone
+cd spark-social
 ```
 
 3. Install dependencies
@@ -49,6 +77,7 @@ flutter run
 ## Technologies Used
 
 - Flutter
+- AT Protocol for decentralized social networking
 - Cupertino (iOS-style) widgets
 - Provider for state management
 - Ionicons for beautiful icons
@@ -66,12 +95,12 @@ flutter run
 
 ## Future Enhancements
 
-- User authentication
-- Real-time video streaming
-- Comments and direct messaging
-- Content recommendation algorithm
-- Filters and effects
-- Sound library
+- Enhanced data portability
+- Custom server hosting options
+- Advanced content creation tools
+- Cross-platform federation
+- Community moderation tools
+- Expanded creative effects library
 
 ## Contributing
 
@@ -81,7 +110,7 @@ Contributions are welcome! Feel free to submit a Pull Request.
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgments
+## Connect With Us
 
-- Inspired by TikTok's excellent user experience
-- Built with Flutter, the beautiful UI framework
+- [Subscribe to Newsletter](https://spark-social-link-to-newsletter.com)
+- [Learn More](https://spark-social-learn-more.com)
