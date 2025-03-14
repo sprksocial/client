@@ -459,9 +459,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
                   ),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
+                  child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         _buildTabItem(context, 0, CupertinoIcons.film),
@@ -471,7 +469,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         if (isAuthenticated) _buildTabItem(context, 4, CupertinoIcons.lock),
                       ],
                     ),
-                  ),
                 ),
               ),
             ),
