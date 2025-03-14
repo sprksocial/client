@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'activity_icon.dart';
-import '../../utils/app_colors.dart';
 import '../../utils/app_theme.dart';
 
 class ActivityContent extends StatelessWidget {
@@ -41,7 +40,7 @@ class ActivityContent extends StatelessWidget {
             ),
           ],
         ),
-        
+
         // Optional additional info
         if (additionalInfo != null) ...[
           const SizedBox(height: 4),
@@ -70,7 +69,7 @@ class ActivityDescription extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final String actionText = _getActionText(type);
-    
+
     return RichText(
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
@@ -93,7 +92,7 @@ class ActivityDescription extends StatelessWidget {
       ),
     );
   }
-  
+
   String _getActionText(ActivityType type) {
     switch (type) {
       case ActivityType.like:
@@ -150,4 +149,4 @@ class AdditionalInfoText extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
     );
   }
-} 
+}

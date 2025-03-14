@@ -20,18 +20,21 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       vsync: this,
       duration: const Duration(seconds: 2),
     );
-    
+
     _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: Curves.easeInOut,
       ),
     );
-    
+
     _animationController.forward();
-    
+
+    // Simply go to the main screen after a delay
     Timer(const Duration(seconds: 3), () {
-      Navigator.of(context).pushReplacementNamed('/home');
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/home');
+      }
     });
   }
 
@@ -95,4 +98,4 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
       ),
     );
   }
-} 
+}
