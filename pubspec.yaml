@@ -17,6 +17,7 @@ dependencies:
   path_provider: ^2.1.2
   provider: ^6.1.1
   flutter_launcher_icons: ^0.14.3
+  flutter_svg: ^2.0.7
 
 dev_dependencies:
   flutter_test:

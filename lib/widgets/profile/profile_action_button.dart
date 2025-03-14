@@ -1,0 +1,74 @@
+import 'package:flutter/cupertino.dart';
+import '../../utils/app_colors.dart';
+import '../../utils/app_theme.dart';
+
+class ProfileActionButton extends StatelessWidget {
+  final String label;
+  final IconData? icon;
+  final VoidCallback onPressed;
+  final bool isPrimary;
+  final bool isOutlined;
+  
+  const ProfileActionButton({
+    super.key,
+    required this.label,
+    this.icon,
+    required this.onPressed,
+    this.isPrimary = false,
+    this.isOutlined = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final brightness = MediaQuery.of(context).platformBrightness;
+    final isDarkMode = brightness == Brightness.dark;
+    
+    return CupertinoButton(
+      padding: EdgeInsets.zero,
+      minSize: 0,
+      onPressed: onPressed,
+      child: Container(
+        width: double.infinity,
+        height: 36,
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+        decoration: BoxDecoration(
+          color: isPrimary ? AppColors.primary : CupertinoColors.transparent,
+          border: isOutlined ? Border.all(
+            color: isDarkMode ? AppColors.lightLavender : AppColors.deepPurple,
+            width: 1,
+          ) : null,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        child: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (icon != null) ...[
+                Icon(
+                  icon,
+                  size: 14,
+                  color: isPrimary ? AppColors.white : AppTheme.getTextColor(context),
+                ),
+                const SizedBox(width: 2),
+              ],
+              Flexible(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13,
+                    color: isPrimary ? AppColors.white : AppTheme.getTextColor(context),
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+} 
