@@ -23,6 +23,7 @@ dependencies:
   http: ^1.1.0
   shared_preferences: ^2.5.2
   visibility_detector: ^0.4.0+2
+  fvp: ^0.30.0
 
 dev_dependencies:
   flutter_test:

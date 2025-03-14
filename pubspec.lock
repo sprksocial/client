@@ -352,6 +352,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.4.4"
+  fvp:
+    dependency: "direct main"
+    description:
+      name: fvp
+      sha256: f5012756985f7c8c19caaea2d65baf8a6cf5fee9fe520e1fabb8bc61e1d5f468
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.30.0"
   hex:
     dependency: transitive
     description:
@@ -456,6 +464,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.1.1"
+  logging:
+    dependency: transitive
+    description:
+      name: logging
+      sha256: c8245ada5f1717ed44271ed1c26b8ce85ca3228fd2ffdb75468ab01979309d61
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.0"
   matcher:
     dependency: transitive
     description:

@@ -14,6 +14,7 @@ import 'screens/login_screen.dart';
 import 'screens/auth_prompt_screen.dart';
 import 'services/auth_service.dart';
 import 'services/profile_service.dart';
+import 'package:fvp/fvp.dart' as fvp;
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +22,7 @@ void main() {
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  fvp.registerWith();
   runApp(const MyApp());
 }
 
