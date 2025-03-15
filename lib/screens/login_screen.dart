@@ -2,7 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../services/auth_service.dart';
+import '../utils/app_colors.dart';
+import '../utils/app_theme.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,8 +23,6 @@ class _LoginScreenState extends State<LoginScreen> {
   // Add focus nodes for autofill
   final _handleFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
-
-  // For autofill
 
   @override
   void initState() {
@@ -60,9 +61,11 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
+    final brightness = MediaQuery.of(context).platformBrightness;
+    final isDarkMode = brightness == Brightness.dark;
 
     return CupertinoPageScaffold(
-      backgroundColor: CupertinoColors.black,
+      backgroundColor: AppTheme.getBackgroundColor(context, false),
       child: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -80,33 +83,22 @@ class _LoginScreenState extends State<LoginScreen> {
                     height: 100,
                     margin: const EdgeInsets.only(bottom: 40),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [
-                          CupertinoColors.systemPink,
-                          CupertinoColors.systemBlue,
-                        ],
-                        begin: Alignment.bottomLeft,
-                        end: Alignment.topRight,
-                      ),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Center(
-                      child: Text(
-                        'TT',
-                        style: TextStyle(
-                          color: CupertinoColors.white,
-                          fontSize: 40,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                    child: SvgPicture.asset(
+                      isDarkMode 
+                          ? 'assets/images/logo_dark_mode.svg'
+                          : 'assets/images/logo_light_mode.svg',
+                      width: 100,
+                      height: 100,
                     ),
                   ),
 
                   // Title
-                  const Text(
+                  Text(
                     'Login to your account',
                     style: TextStyle(
-                      color: CupertinoColors.white,
+                      color: AppTheme.getTextColor(context),
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -124,17 +116,22 @@ class _LoginScreenState extends State<LoginScreen> {
                           placeholder: 'Handle',
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: CupertinoColors.systemGrey6,
+                            color: isDarkMode
+                                ? AppColors.deepPurple
+                                : CupertinoColors.systemGrey6,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           prefix: const Padding(
                             padding: EdgeInsets.only(left: 16),
                             child: Icon(
                               FluentIcons.person_24_regular,
-                              color: CupertinoColors.systemGrey,
+                              color: AppColors.primary,
                             ),
                           ),
-                          style: const TextStyle(color: CupertinoColors.black),
+                          style: TextStyle(color: AppTheme.getTextColor(context)),
+                          placeholderStyle: TextStyle(
+                            color: AppTheme.getSecondaryTextColor(context),
+                          ),
                           textInputAction: TextInputAction.next,
                           keyboardType: TextInputType.emailAddress,
                           autofillHints: const [AutofillHints.username, AutofillHints.email],
@@ -150,14 +147,16 @@ class _LoginScreenState extends State<LoginScreen> {
                           padding: const EdgeInsets.all(16),
                           obscureText: _obscurePassword,
                           decoration: BoxDecoration(
-                            color: CupertinoColors.systemGrey6,
+                            color: isDarkMode
+                                ? AppColors.deepPurple
+                                : CupertinoColors.systemGrey6,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           prefix: const Padding(
                             padding: EdgeInsets.only(left: 16),
                             child: Icon(
                               FluentIcons.lock_closed_24_regular,
-                              color: CupertinoColors.systemGrey,
+                              color: AppColors.primary,
                             ),
                           ),
                           suffix: Padding(
@@ -172,11 +171,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                 _obscurePassword
                                     ? FluentIcons.eye_24_regular
                                     : FluentIcons.eye_off_24_regular,
-                                color: CupertinoColors.systemGrey,
+                                color: AppColors.primary,
                               ),
                             ),
                           ),
-                          style: const TextStyle(color: CupertinoColors.black),
+                          style: TextStyle(color: AppTheme.getTextColor(context)),
+                          placeholderStyle: TextStyle(
+                            color: AppTheme.getSecondaryTextColor(context),
+                          ),
                           textInputAction: TextInputAction.done,
                           keyboardType: TextInputType.visiblePassword,
                           autofillHints: const [AutofillHints.password],
@@ -197,7 +199,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       child: Text(
                         authService.error!,
                         style: const TextStyle(
-                          color: CupertinoColors.systemRed,
+                          color: AppColors.error,
                           fontSize: 14,
                         ),
                         textAlign: TextAlign.center,
@@ -208,11 +210,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   CupertinoButton(
                     onPressed: authService.isLoading ? null : _login,
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    color: CupertinoColors.activeBlue,
+                    color: AppColors.primary,
                     borderRadius: BorderRadius.circular(12),
                     child: authService.isLoading
-                        ? const CupertinoActivityIndicator(color: CupertinoColors.white)
-                        : const Text('Login'),
+                        ? const CupertinoActivityIndicator(color: AppColors.white)
+                        : const Text(
+                            'Login',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                   ),
                 ],
               ),
