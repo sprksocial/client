@@ -5,6 +5,7 @@ import 'package:ionicons/ionicons.dart';
 import '../widgets/video_side_action_bar.dart';
 import '../widgets/video_info/video_info_bar.dart';
 import '../widgets/video_controls/video_controller_overlay.dart';
+import '../widgets/comments_tray.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
@@ -181,6 +182,7 @@ class _VideoItemState extends State<VideoItem> {
   bool _isInitialized = false;
   bool _isVisible = false;
   final String _videoKey = UniqueKey().toString();
+  bool _showComments = false;
 
   @override
   void initState() {
@@ -217,6 +219,34 @@ class _VideoItemState extends State<VideoItem> {
     _controller?.dispose();
     super.dispose();
   }
+  
+  void _toggleComments() {
+    // Pause video when showing comments
+    if (!_showComments && _controller != null && _isInitialized) {
+      _controller?.pause();
+      
+      // Show comments using the proper bottom sheet
+      showCommentsTray(
+        context: context,
+        videoId: 'video_${widget.index + 1}',
+        commentCount: (widget.index + 1) * 12 * 1000, // Format as 12K
+        onClose: () {
+          setState(() {
+            _showComments = false;
+            // Resume video playback if the view is still visible
+            if (_isVisible) {
+              _controller?.play();
+            }
+          });
+        },
+        isDarkMode: true, // Always use dark mode for comments on videos
+      );
+      
+      setState(() {
+        _showComments = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -226,6 +256,9 @@ class _VideoItemState extends State<VideoItem> {
         ? 'Sample video ${widget.index + 1}: This is a video that demonstrates proper fitting on the screen without cutting off content.'
         : 'This is a placeholder for video ${widget.index + 1}';
     final List<String> hashtags = ['spark', 'sample', 'video${widget.index + 1}'];
+    
+    // Calculate the comment count based on the video index
+    final int commentCount = (widget.index + 1) * 12;
 
     return SizedBox.expand(
       child: VisibilityDetector(
@@ -238,7 +271,7 @@ class _VideoItemState extends State<VideoItem> {
             _isVisible = isVisible;
             
             if (_controller != null && _isInitialized) {
-              if (isVisible) {
+              if (isVisible && !_showComments) {
                 _controller?.play();
               } else {
                 _controller?.pause();
@@ -312,15 +345,13 @@ class _VideoItemState extends State<VideoItem> {
               bottom: 100,
               child: VideoSideActionBar(
                 likeCount: '${(widget.index + 1) * 35}K',
-                commentCount: '${(widget.index + 1) * 12}K',
+                commentCount: '${commentCount}K',
                 bookmarkCount: '${(widget.index + 1) * 8}K',
                 shareCount: '${(widget.index + 1) * 20}K',
                 onLikePressed: () {
                   // Handle like action
                 },
-                onCommentPressed: () {
-                  // Handle comment action
-                },
+                onCommentPressed: _toggleComments,
                 onBookmarkPressed: () {
                   // Handle bookmark action
                 },
