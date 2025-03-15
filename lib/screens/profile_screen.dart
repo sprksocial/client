@@ -27,6 +27,7 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   int _selectedTabIndex = 0;
   bool _showAuthPrompt = false;
+  bool _expandDescription = false;
 
   // Flags for special badges
   final bool _isEarlySupporter = true;
@@ -91,6 +92,72 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final authService = Provider.of<AuthService>(context, listen: false);
     return authService.isAuthenticated &&
            authService.session?.did == profileData['did'];
+  }
+  
+  // Function to style URLs in text
+  Widget _buildRichText(String text) {
+    // Regular expression to match URLs
+    final RegExp urlRegex = RegExp(
+      r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})',
+      caseSensitive: false,
+    );
+
+    // Remove URLs from text
+    final String textWithoutUrls = text.replaceAll(urlRegex, '').replaceAll(RegExp(r'\s+'), ' ').trim();
+
+    return Text(
+      textWithoutUrls,
+      style: TextStyle(
+        color: AppTheme.getTextColor(context),
+        fontSize: 14,
+      ),
+      maxLines: _expandDescription ? null : 2,
+      overflow: _expandDescription ? TextOverflow.visible : TextOverflow.ellipsis,
+    );
+  }
+
+  // Extract URLs from text
+  List<String> _extractUrls(String text) {
+    final RegExp urlRegex = RegExp(
+      r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})',
+      caseSensitive: false,
+    );
+
+    final List<String> urls = [];
+    for (final Match match in urlRegex.allMatches(text)) {
+      urls.add(match.group(0)!);
+    }
+
+    return urls;
+  }
+
+  // Build individual URL item with chain icon
+  Widget _buildUrlItem(String url) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            CupertinoIcons.link,
+            size: 14,
+            color: AppColors.blue,
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              url,
+              style: const TextStyle(
+                color: AppColors.blue,
+                fontWeight: FontWeight.bold,
+                fontSize: 14,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -378,13 +445,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                     if (description.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      Text(
-                        description,
-                        style: TextStyle(
-                          color: AppTheme.getTextColor(context),
-                          fontSize: 14,
-                        ),
+                      GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _expandDescription = !_expandDescription;
+                          });
+                        },
+                        child: _buildRichText(description),
                       ),
+                      
+                      // Extract and display URLs below the description
+                      ..._extractUrls(description).map((url) => _buildUrlItem(url)),
                     ],
 
                     const SizedBox(height: 16),
@@ -463,10 +534,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         _buildTabItem(context, 0, CupertinoIcons.film),
-                        _buildTabItem(context, 1, CupertinoIcons.heart),
-                        _buildTabItem(context, 2, CupertinoIcons.arrow_2_squarepath),
-                        if (isAuthenticated) _buildTabItem(context, 3, CupertinoIcons.bookmark),
-                        if (isAuthenticated) _buildTabItem(context, 4, CupertinoIcons.lock),
+                        _buildTabItem(context, 1, CupertinoIcons.photo),
+                        _buildTabItem(context, 2, CupertinoIcons.heart),
+                        _buildTabItem(context, 3, CupertinoIcons.arrow_2_squarepath),
+                        if (isAuthenticated) _buildTabItem(context, 4, CupertinoIcons.bookmark),
                       ],
                     ),
                 ),
@@ -490,14 +561,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     IconData getFilledIcon(IconData outlineIcon) {
       if (outlineIcon == CupertinoIcons.film) {
         return CupertinoIcons.film_fill;
+      } else if (outlineIcon == CupertinoIcons.photo) {
+        return CupertinoIcons.photo_fill;
       } else if (outlineIcon == CupertinoIcons.heart) {
         return CupertinoIcons.heart_fill;
       } else if (outlineIcon == CupertinoIcons.arrow_2_squarepath) {
         return CupertinoIcons.arrow_2_squarepath;
       } else if (outlineIcon == CupertinoIcons.bookmark) {
         return CupertinoIcons.bookmark_fill;
-      } else if (outlineIcon == CupertinoIcons.lock) {
-        return CupertinoIcons.lock_fill;
       } else {
         return outlineIcon;
       }
@@ -537,7 +608,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final authService = Provider.of<AuthService>(context);
 
     // For tabs that require authentication, show auth prompt if not authenticated
-    if ((_selectedTabIndex == 3 || _selectedTabIndex == 4) && !authService.isAuthenticated) {
+    if ((_selectedTabIndex == 4) && !authService.isAuthenticated) {
       return [
         SliverFillRemaining(
           hasScrollBody: false,
@@ -546,13 +617,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  _selectedTabIndex == 3 ? CupertinoIcons.bookmark : CupertinoIcons.lock,
+                  CupertinoIcons.bookmark,
                   size: 60,
                   color: AppTheme.getSecondaryTextColor(context),
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  _selectedTabIndex == 3 ? 'Saved videos' : 'Private videos',
+                  'Saved videos',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 18,
@@ -586,8 +657,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     switch (_selectedTabIndex) {
       case 0:
-        return _buildPostsGridSlivers();
+        return _buildVideosGridSlivers();
       case 1:
+        return _buildPhotosGridSlivers();
+      case 2:
         return [
           SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -616,7 +689,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ];
-      case 2:
+      case 3:
         return [
           SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -645,7 +718,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ];
-      case 3:
+      case 4:
         return [
           SliverGrid(
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -674,14 +747,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ];
-      case 4:
-        return _buildPrivateTabSlivers();
       default:
         return [const SliverToBoxAdapter(child: SizedBox.shrink())];
     }
   }
 
-  List<Widget> _buildPostsGridSlivers() {
+  List<Widget> _buildVideosGridSlivers() {
     return [
       SliverPadding(
         padding: const EdgeInsets.all(1),
@@ -694,22 +765,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           delegate: SliverChildBuilderDelegate(
             (context, index) {
-              // Alternate between video and image posts
-              final bool isVideo = index % 2 == 0;
-
               return GestureDetector(
                 onTap: () {
-                  debugPrint('Post clicked: ${isVideo ? "Video" : "Image"} at index $index');
+                  debugPrint('Video post clicked at index $index');
                 },
                 child: Container(
-                  color: isVideo
-                      ? AppColors.richPurple.withOpacity(0.7)
-                      : AppColors.orange.withOpacity(0.7),
+                  color: AppColors.richPurple.withOpacity(0.7),
                   child: Stack(
                     children: [
                       Center(
                         child: Icon(
-                          isVideo ? CupertinoIcons.film : CupertinoIcons.photo,
+                          CupertinoIcons.film,
                           color: AppColors.white.withOpacity(0.8),
                           size: 24,
                         ),
@@ -719,8 +785,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         left: 5,
                         child: Row(
                           children: [
-                            Icon(
-                              isVideo ? CupertinoIcons.eye : CupertinoIcons.heart,
+                            const Icon(
+                              CupertinoIcons.eye,
                               color: AppColors.white,
                               size: 12,
                             ),
@@ -735,25 +801,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ],
                         ),
                       ),
-                      if (isVideo)
-                        Positioned(
-                          top: 5,
-                          right: 5,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppColors.black.withOpacity(0.5),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: const Text(
-                              '0:30',
-                              style: TextStyle(
-                                color: AppColors.white,
-                                fontSize: 10,
-                              ),
+                      Positioned(
+                        top: 5,
+                        right: 5,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: const Text(
+                            '0:30',
+                            style: TextStyle(
+                              color: AppColors.white,
+                              fontSize: 10,
                             ),
                           ),
                         ),
+                      ),
                     ],
                   ),
                 ),
@@ -766,37 +831,61 @@ class _ProfileScreenState extends State<ProfileScreen> {
     ];
   }
 
-  List<Widget> _buildPrivateTabSlivers() {
+  List<Widget> _buildPhotosGridSlivers() {
     return [
-      SliverFillRemaining(
-        hasScrollBody: false,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                CupertinoIcons.lock,
-                size: 60,
-                color: AppTheme.getSecondaryTextColor(context),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'Private videos',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: AppTheme.getTextColor(context),
+      SliverPadding(
+        padding: const EdgeInsets.all(1),
+        sliver: SliverGrid(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            childAspectRatio: 2/3,
+            crossAxisSpacing: 1,
+            mainAxisSpacing: 1,
+          ),
+          delegate: SliverChildBuilderDelegate(
+            (context, index) {
+              return GestureDetector(
+                onTap: () {
+                  debugPrint('Photo post clicked at index $index');
+                },
+                child: Container(
+                  color: AppColors.orange.withOpacity(0.7),
+                  child: Stack(
+                    children: [
+                      Center(
+                        child: Icon(
+                          CupertinoIcons.photo,
+                          color: AppColors.white.withOpacity(0.8),
+                          size: 24,
+                        ),
+                      ),
+                      Positioned(
+                        bottom: 5,
+                        left: 5,
+                        child: Row(
+                          children: [
+                            const Icon(
+                              CupertinoIcons.heart,
+                              color: AppColors.white,
+                              size: 12,
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              '${(index + 1) * 1000}',
+                              style: const TextStyle(
+                                color: AppColors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Videos you\'ve saved to private will appear here',
-                style: TextStyle(
-                  color: AppTheme.getSecondaryTextColor(context),
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ],
+              );
+            },
+            childCount: 30,
           ),
         ),
       ),
