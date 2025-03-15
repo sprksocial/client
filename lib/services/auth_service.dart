@@ -104,7 +104,10 @@ class AuthService extends ChangeNotifier {
         throw Exception('PDS endpoint not found in DID document');
       }
 
-      String pdsDomain = pdsUrl.replaceFirst('http://', '').replaceFirst('https://', '').replaceFirst('/', '');
+      String pdsDomain = pdsUrl
+          .replaceFirst('http://', '')
+          .replaceFirst('https://', '')
+          .replaceFirst('/', '');
       final session = await createSession(
         identifier: handle,
         password: password,
@@ -112,6 +115,60 @@ class AuthService extends ChangeNotifier {
       );
 
       _session = session.data;
+      if (_session == null) {
+        throw Exception('Failed to create session');
+      }
+
+      _atProto = ATProto.fromSession(_session!);
+
+      // Save session to persistent storage
+      await _saveSession(_session!);
+
+      _isLoading = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _error = e.toString();
+      _isLoading = false;
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> register(
+    String handle,
+    String email,
+    String password,
+    String? inviteCode,
+  ) async {
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      ATProto at = ATProto.anonymous(service: 'pds.sprk.so');
+      final createResponse = await at.server.createAccount(
+        handle: handle,
+        email: email,
+        password: password,
+        inviteCode: inviteCode,
+      );
+      if (createResponse.status != HttpStatus.ok) {
+        throw Exception('Failed to create account: ${createResponse.status}');
+      }
+
+      Session session = Session.fromJson({
+        'did': createResponse.data.did,
+        'handle': handle,
+        'email': email,
+        'emailConfirmed': false,
+        'accessJwt': createResponse.data.accessJwt,
+        'refreshJwt': createResponse.data.refreshJwt,
+        'didDoc': createResponse.data.didDoc,
+        'active': true,
+      });
+
+      _session = session;
       if (_session == null) {
         throw Exception('Failed to create session');
       }
@@ -171,7 +228,9 @@ class AuthService extends ChangeNotifier {
     if (_atProto == null) return null;
 
     try {
-      final response = await _atProto!.repo.getRecord(uri: AtUri.parse('at://${_session!.did}/app.bsky.actor.profile/self'));
+      final response = await _atProto!.repo.getRecord(
+        uri: AtUri.parse('at://${_session!.did}/app.bsky.actor.profile/self'),
+      );
       return response.data.toJson();
     } catch (e) {
       _error = e.toString();
