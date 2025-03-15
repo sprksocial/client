@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'package:flutter/cupertino.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'action_button.dart';
@@ -23,58 +22,35 @@ class LikeActionButton extends StatefulWidget {
 class _LikeActionButtonState extends State<LikeActionButton> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
   bool _isLiked = false;
-  bool _showSparkles = false;
 
   @override
   void initState() {
     super.initState();
     _isLiked = widget.isLiked;
     
-    // Set up animation controller
+    // Initialize animation controller with proper duration
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 400),
       vsync: this,
     );
     
-    // Create a curved animation for the pulse effect
-    _scaleAnimation = TweenSequence<double>([
+    // Simpler scale animation that just goes up and down
+    _scaleAnimation = TweenSequence([
       TweenSequenceItem(
         tween: Tween<double>(begin: 1.0, end: 1.4),
-        weight: 40,
+        weight: 50,
       ),
       TweenSequenceItem(
         tween: Tween<double>(begin: 1.4, end: 1.0),
-        weight: 60,
+        weight: 50,
       ),
-    ]).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.elasticOut,
-    ));
-    
-    // Animation for sparkle opacity
-    _opacityAnimation = TweenSequence<double>([
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 0.0, end: 1.0),
-        weight: 20,
+    ]).animate(
+      CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
       ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 0.0),
-        weight: 80,
-      ),
-    ]).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-    
-    _animationController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        setState(() {
-          _showSparkles = false;
-        });
-      }
-    });
+    );
   }
   
   @override
@@ -93,17 +69,16 @@ class _LikeActionButtonState extends State<LikeActionButton> with SingleTickerPr
 
   void _handleTap() {
     if (widget.onPressed != null) {
-      // Start the animation only when transitioning to liked state
-      if (!_isLiked) {
-        setState(() {
-          _showSparkles = true;
-        });
-        _animationController.forward(from: 0.0);
-      }
-      
+      // Toggle liked state first
       setState(() {
         _isLiked = !_isLiked;
       });
+      
+      // Only animate when liking, not when unliking
+      if (_isLiked) {
+        _animationController.reset();
+        _animationController.forward();
+      }
       
       widget.onPressed!();
     }
@@ -116,58 +91,25 @@ class _LikeActionButtonState extends State<LikeActionButton> with SingleTickerPr
         SizedBox(
           height: 40,
           width: 40,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              // Heart icon with pulse animation
-              GestureDetector(
-                onTap: _handleTap,
-                child: AnimatedBuilder(
-                  animation: _animationController,
-                  builder: (context, child) {
-                    return Transform.scale(
-                      scale: _isLiked ? _scaleAnimation.value : 1.0,
-                      child: Icon(
-                        _isLiked ? FluentIcons.heart_24_filled : FluentIcons.heart_24_regular,
-                        color: _isLiked ? AppColors.red : CupertinoColors.white,
-                        size: 30,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              
-              // Sparkle effects
-              if (_showSparkles)
-                AnimatedBuilder(
-                  animation: _animationController,
-                  builder: (context, child) {
-                    return Opacity(
-                      opacity: _opacityAnimation.value,
-                      child: Stack(
-                        alignment: Alignment.center,
-                        children: List.generate(6, (index) {
-                          final angle = (index * (math.pi / 3));
-                          final distance = 22.0 * _scaleAnimation.value;
-                          
-                          return Positioned(
-                            left: 20 + (math.cos(angle) * distance),
-                            top: 20 + (math.sin(angle) * distance),
-                            child: Transform.rotate(
-                              angle: angle,
-                              child: Icon(
-                                FluentIcons.sparkle_24_filled,
-                                color: AppColors.primary,
-                                size: 10 * _opacityAnimation.value,
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                    );
-                  },
-                ),
-            ],
+          child: GestureDetector(
+            onTap: _handleTap,
+            child: AnimatedBuilder(
+              animation: _animationController,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _isLiked ? 
+                    (_animationController.isAnimating ? _scaleAnimation.value : 1.0) : 
+                    1.0,
+                  child: Icon(
+                    _isLiked ? 
+                      FluentIcons.heart_24_filled : 
+                      FluentIcons.heart_24_regular,
+                    color: _isLiked ? AppColors.red : CupertinoColors.white,
+                    size: 30,
+                  ),
+                );
+              },
+            ),
           ),
         ),
         const SizedBox(height: 4),

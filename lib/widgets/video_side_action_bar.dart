@@ -5,7 +5,7 @@ import 'action_buttons/comment_action_button.dart';
 import 'action_buttons/bookmark_action_button.dart';
 import 'action_buttons/share_action_button.dart';
 
-class VideoSideActionBar extends StatelessWidget {
+class VideoSideActionBar extends StatefulWidget {
   // Callback functions for each action
   final VoidCallback? onProfilePressed;
   final VoidCallback? onLikePressed;
@@ -42,40 +42,93 @@ class VideoSideActionBar extends StatelessWidget {
   });
 
   @override
+  State<VideoSideActionBar> createState() => _VideoSideActionBarState();
+}
+
+class _VideoSideActionBarState extends State<VideoSideActionBar> {
+  late bool _isLiked;
+  late bool _isBookmarked;
+  
+  @override
+  void initState() {
+    super.initState();
+    _isLiked = widget.isLiked;
+    _isBookmarked = widget.isBookmarked;
+  }
+  
+  @override
+  void didUpdateWidget(VideoSideActionBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isLiked != widget.isLiked) {
+      setState(() {
+        _isLiked = widget.isLiked;
+      });
+    }
+    if (oldWidget.isBookmarked != widget.isBookmarked) {
+      setState(() {
+        _isBookmarked = widget.isBookmarked;
+      });
+    }
+  }
+  
+  void _handleLike() {
+    setState(() {
+      _isLiked = !_isLiked;
+    });
+    
+    if (widget.onLikePressed != null) {
+      widget.onLikePressed!();
+    }
+  }
+  
+  void _handleBookmark() {
+    setState(() {
+      _isBookmarked = !_isBookmarked;
+    });
+    
+    if (widget.onBookmarkPressed != null) {
+      widget.onBookmarkPressed!();
+    }
+    
+    // For debugging
+    debugPrint('Bookmark toggled in VideoSideActionBar. New state: $_isBookmarked');
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         // Profile with plus button
-        ProfileActionButton(onPressed: onProfilePressed),
+        ProfileActionButton(onPressed: widget.onProfilePressed),
         const SizedBox(height: 20),
         
         // Like button
         LikeActionButton(
-          count: likeCount,
-          isLiked: isLiked,
-          onPressed: onLikePressed,
+          count: widget.likeCount,
+          isLiked: _isLiked,
+          onPressed: _handleLike,
         ),
         const SizedBox(height: 20),
         
         // Comment button
         CommentActionButton(
-          count: commentCount,
-          onPressed: onCommentPressed,
+          count: widget.commentCount,
+          onPressed: widget.onCommentPressed,
         ),
         const SizedBox(height: 20),
         
         // Bookmark button
         BookmarkActionButton(
-          count: bookmarkCount,
-          isBookmarked: isBookmarked,
-          onPressed: onBookmarkPressed,
+          count: widget.bookmarkCount,
+          isBookmarked: _isBookmarked,
+          onPressed: _handleBookmark,
         ),
         const SizedBox(height: 20),
         
         // Share button
         ShareActionButton(
-          count: shareCount,
-          onPressed: onSharePressed,
+          count: widget.shareCount,
+          onPressed: widget.onSharePressed,
         ),
       ],
     );
