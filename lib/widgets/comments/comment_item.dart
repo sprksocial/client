@@ -3,6 +3,7 @@ import 'package:flutter/material.dart' show Colors;
 import 'package:video_player/video_player.dart';
 import '../../utils/app_colors.dart';
 import 'comment_reply_item.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 class CommentItem extends StatefulWidget {
   final String id;
@@ -205,8 +206,8 @@ class _CommentItemState extends State<CommentItem> {
                             children: [
                               Icon(
                                 _isLiked 
-                                    ? CupertinoIcons.heart_fill 
-                                    : CupertinoIcons.heart,
+                                    ? FluentIcons.heart_24_filled
+                                    : FluentIcons.heart_24_regular,
                                 size: 16,
                                 color: _isLiked ? AppColors.red : secondaryTextColor,
                               ),
@@ -247,11 +248,11 @@ class _CommentItemState extends State<CommentItem> {
                             child: Row(
                               children: [
                                 Icon(
-                                  _showReplies
-                                      ? CupertinoIcons.chevron_up
-                                      : CupertinoIcons.chevron_down,
+                                  _showReplies 
+                                      ? FluentIcons.chevron_up_24_regular
+                                      : FluentIcons.chevron_down_24_regular,
                                   size: 16,
-                                  color: AppColors.blue,
+                                  color: secondaryTextColor,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
@@ -353,8 +354,9 @@ class _CommentItemState extends State<CommentItem> {
               color: AppColors.darkPurple.withAlpha(26),
               child: Center(
                 child: Icon(
-                  CupertinoIcons.photo,
-                  color: widget.isDarkMode ? AppColors.white : AppColors.deepPurple,
+                  FluentIcons.image_24_regular,
+                  size: 24,
+                  color: Colors.white,
                 ),
               ),
             );
@@ -400,9 +402,9 @@ class _CommentItemState extends State<CommentItem> {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
-                    CupertinoIcons.play_fill,
-                    color: AppColors.white,
-                    size: 30,
+                    FluentIcons.play_24_filled,
+                    size: 24,
+                    color: Colors.white,
                   ),
                 ),
             ],

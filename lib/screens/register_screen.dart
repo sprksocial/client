@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 
@@ -79,7 +79,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => Navigator.of(context).pop(),
-          child: const Icon(Ionicons.chevron_back),
+          child: const Icon(FluentIcons.chevron_left_24_regular),
         ),
         middle: const Text('Create Account'),
       ),
@@ -107,7 +107,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                     prefix: const Padding(
                       padding: EdgeInsets.only(left: 16),
-                      child: Icon(Ionicons.mail_outline, color: CupertinoColors.systemGrey),
+                      child: Icon(FluentIcons.mail_24_regular, color: CupertinoColors.systemGrey),
                     ),
                     onChanged: (_) => setState(() {}),
                   ),
@@ -126,7 +126,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       children: [
                         const Padding(
                           padding: EdgeInsets.only(left: 16),
-                          child: Icon(Ionicons.at_outline, color: CupertinoColors.systemGrey),
+                          child: Icon(FluentIcons.mention_24_regular, color: CupertinoColors.systemGrey),
                         ),
                         Expanded(
                           child: CupertinoTextField(
@@ -168,9 +168,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       color: CupertinoColors.systemGrey6,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    prefix: const Padding(
-                      padding: EdgeInsets.only(left: 16),
-                      child: Icon(Ionicons.lock_closed_outline, color: CupertinoColors.systemGrey),
+                    prefix: Padding(
+                      padding: const EdgeInsets.only(left: 16),
+                      child: Icon(FluentIcons.key_24_regular, color: CupertinoColors.systemGrey),
                     ),
                     suffix: CupertinoButton(
                       padding: const EdgeInsets.only(right: 8),
@@ -181,8 +181,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       },
                       child: Icon(
                         _isPasswordVisible
-                            ? Ionicons.eye_off_outline
-                            : Ionicons.eye_outline,
+                            ? FluentIcons.eye_off_24_regular
+                            : FluentIcons.eye_24_regular,
                         color: CupertinoColors.systemGrey,
                       ),
                     ),
@@ -202,9 +202,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       color: CupertinoColors.systemGrey6,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    prefix: const Padding(
-                      padding: EdgeInsets.only(left: 16),
-                      child: Icon(Ionicons.ticket_outline, color: CupertinoColors.systemGrey),
+                    prefix: Padding(
+                      padding: const EdgeInsets.only(left: 16),
+                      child: Icon(FluentIcons.tag_24_regular, color: CupertinoColors.systemGrey),
                     ),
                   ),
 
@@ -219,7 +219,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       child: Row(
                         children: [
                           const Icon(
-                            Ionicons.alert_circle_outline,
+                            FluentIcons.warning_24_regular,
                             color: CupertinoColors.systemRed,
                           ),
                           const SizedBox(width: 8),

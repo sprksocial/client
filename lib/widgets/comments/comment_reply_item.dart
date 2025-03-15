@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../../utils/app_colors.dart';
 
 class CommentReplyItem extends StatefulWidget {
@@ -126,10 +127,10 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
                       child: Row(
                         children: [
                           Icon(
-                            _isLiked 
-                                ? CupertinoIcons.heart_fill 
-                                : CupertinoIcons.heart,
-                            size: 14,
+                            _isLiked
+                                ? FluentIcons.heart_24_filled
+                                : FluentIcons.heart_24_regular,
+                            size: 12,
                             color: _isLiked ? AppColors.red : secondaryTextColor,
                           ),
                           const SizedBox(width: 4),

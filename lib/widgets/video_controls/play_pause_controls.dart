@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:video_player/video_player.dart';
 
 class PlayPauseControls extends StatelessWidget {
@@ -25,7 +25,7 @@ class PlayPauseControls extends StatelessWidget {
       children: [
         // Rewind 5 seconds
         IconButton(
-          icon: const Icon(Ionicons.play_back_outline, color: CupertinoColors.white, size: 36),
+          icon: const Icon(FluentIcons.previous_24_regular, color: CupertinoColors.white, size: 36),
           onPressed: onRewind,
           padding: const EdgeInsets.all(16),
         ),
@@ -44,8 +44,8 @@ class PlayPauseControls extends StatelessWidget {
             child: Center(
               child: Icon(
                 controller.value.isPlaying
-                    ? Ionicons.pause
-                    : Ionicons.play,
+                    ? FluentIcons.pause_24_filled
+                    : FluentIcons.play_24_filled,
                 color: CupertinoColors.white,
                 size: 46,
               ),
@@ -56,7 +56,7 @@ class PlayPauseControls extends StatelessWidget {
         
         // Fast forward 5 seconds
         IconButton(
-          icon: const Icon(Ionicons.play_forward_outline, color: CupertinoColors.white, size: 36),
+          icon: const Icon(FluentIcons.next_24_regular, color: CupertinoColors.white, size: 36),
           onPressed: onFastForward,
           padding: const EdgeInsets.all(16),
         ),
