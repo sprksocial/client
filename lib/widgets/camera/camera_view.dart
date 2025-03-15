@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart' show CircularProgressIndicator;
+import 'package:flutter/foundation.dart' show debugPrint;
 
 class CameraView extends StatefulWidget {
   final CameraController? cameraController;
@@ -19,29 +20,59 @@ class CameraView extends StatefulWidget {
 class _CameraViewState extends State<CameraView> {
   @override
   Widget build(BuildContext context) {
-    if (!widget.isInitialized || widget.cameraController == null) {
+    // Show loading indicator if not initialized or controller is null
+    if (!widget.isInitialized || 
+        widget.cameraController == null || 
+        !widget.cameraController!.value.isInitialized) {
       return Container(
         color: CupertinoColors.black,
         child: const Center(
-          child: CircularProgressIndicator(
-            color: CupertinoColors.systemPink,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                color: CupertinoColors.systemPink,
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Initializing camera...',
+                style: TextStyle(
+                  color: CupertinoColors.systemGrey,
+                  fontSize: 16,
+                ),
+              ),
+            ],
           ),
         ),
       );
     }
 
-    // Make sure the controller is initialized and has a value
-    // Default to 3/4 aspect ratio if there's an issue
-    final aspectRatio = widget.cameraController!.value.isInitialized 
-        ? widget.cameraController!.value.aspectRatio 
-        : 4.0 / 3.0;
+    try {
+      // Get the aspect ratio, defaulting to 4:3 if there's an issue
+      final aspectRatio = widget.cameraController!.value.aspectRatio;
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: AspectRatio(
-        aspectRatio: aspectRatio,
-        child: CameraPreview(widget.cameraController!),
-      ),
-    );
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: AspectRatio(
+          aspectRatio: aspectRatio,
+          child: CameraPreview(widget.cameraController!),
+        ),
+      );
+    } catch (e) {
+      // Fallback in case of unexpected error
+      debugPrint('Error building camera view: $e');
+      return Container(
+        color: CupertinoColors.black,
+        child: const Center(
+          child: Text(
+            'Camera preview unavailable',
+            style: TextStyle(
+              color: CupertinoColors.systemRed,
+              fontSize: 16,
+            ),
+          ),
+        ),
+      );
+    }
   }
 } 

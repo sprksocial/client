@@ -20,14 +20,16 @@ class CameraService {
       // Get available cameras
       _cameras = await availableCameras();
       if (_cameras == null || _cameras!.isEmpty) {
+        debugPrint('No cameras found');
         throw Exception('No cameras found');
       }
       
       // Initialize controller with the first camera
       await _initCameraController(_cameras![_selectedCameraIndex]);
     } catch (e) {
+      _isInitialized = false;
       debugPrint('Error initializing camera: $e');
-      rethrow;
+      // Don't rethrow here to allow graceful failure
     }
   }
   
@@ -40,32 +42,34 @@ class CameraService {
       _isInitialized = false;
     }
     
-    // Create new controller
-    _controller = CameraController(
-      camera,
-      ResolutionPreset.high,
-      enableAudio: true,
-      imageFormatGroup: ImageFormatGroup.jpeg,
-    );
-    
-    // Initialize controller
     try {
-      await _controller!.initialize();
-      // Add a small delay to ensure camera is fully initialized
-      await Future.delayed(const Duration(milliseconds: 100));
+      // Create new controller
+      _controller = CameraController(
+        camera,
+        ResolutionPreset.high,
+        enableAudio: true,
+        imageFormatGroup: ImageFormatGroup.jpeg,
+      );
       
-      // Additional verification
-      if (_controller!.value.isInitialized) {
-        _isInitialized = true;
-        debugPrint('Camera successfully initialized');
-      } else {
-        _isInitialized = false;
-        debugPrint('Camera initialization incomplete');
+      // Initialize controller
+      if (_controller != null) {
+        await _controller!.initialize();
+        // Add a small delay to ensure camera is fully initialized
+        await Future.delayed(const Duration(milliseconds: 200));
+        
+        // Additional verification
+        if (_controller != null && _controller!.value.isInitialized) {
+          _isInitialized = true;
+          debugPrint('Camera successfully initialized');
+        } else {
+          _isInitialized = false;
+          debugPrint('Camera initialization incomplete');
+        }
       }
     } catch (e) {
       _isInitialized = false;
       debugPrint('Error initializing camera controller: $e');
-      rethrow;
+      // Don't rethrow here to allow graceful failure
     }
   }
   
@@ -75,9 +79,13 @@ class CameraService {
       return;
     }
     
-    // Toggle between front and back camera
-    _selectedCameraIndex = (_selectedCameraIndex + 1) % _cameras!.length;
-    await _initCameraController(_cameras![_selectedCameraIndex]);
+    try {
+      // Toggle between front and back camera
+      _selectedCameraIndex = (_selectedCameraIndex + 1) % _cameras!.length;
+      await _initCameraController(_cameras![_selectedCameraIndex]);
+    } catch (e) {
+      debugPrint('Error flipping camera: $e');
+    }
   }
   
   // Take photo
@@ -130,13 +138,17 @@ class CameraService {
   
   // Clean up resources
   Future<void> dispose() async {
-    if (_controller != null) {
-      if (_isRecording) {
-        await stopVideoRecording();
+    try {
+      if (_controller != null) {
+        if (_isRecording) {
+          await stopVideoRecording();
+        }
+        await _controller!.dispose();
+        _controller = null;
       }
-      await _controller!.dispose();
-      _controller = null;
+      _isInitialized = false;
+    } catch (e) {
+      debugPrint('Error disposing camera: $e');
     }
-    _isInitialized = false;
   }
 } 

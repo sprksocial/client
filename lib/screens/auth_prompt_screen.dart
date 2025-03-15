@@ -86,6 +86,7 @@ class AuthPromptScreen extends StatelessWidget {
                       'Login',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
+                        color: AppColors.white,
                       ),
                     ),
                   ),
@@ -96,9 +97,7 @@ class AuthPromptScreen extends StatelessWidget {
                   child: CupertinoButton(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     borderRadius: BorderRadius.circular(12),
-                    color: isDarkMode 
-                        ? AppColors.deepPurple
-                        : CupertinoColors.systemGrey6,
+                    color: AppColors.primary,
                     onPressed: () {
                       Navigator.of(context).push(
                         CupertinoPageRoute(
@@ -109,7 +108,7 @@ class AuthPromptScreen extends StatelessWidget {
                     child: const Text(
                       'Register',
                       style: TextStyle(
-                        color: AppColors.primary,
+                        color: AppColors.white,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
