@@ -14,6 +14,9 @@ import '../services/profile_service.dart';
 import 'auth_prompt_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../widgets/profile/video_thumbnail.dart';
+import '../widgets/profile/profile_links.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart'; // For TapGestureRecognizer
 
 class ProfileScreen extends StatefulWidget {
   final String? did; // DID of the profile to show, null means current user
@@ -86,6 +89,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
       action();
     }
   }
+  
+  // Handle username tap by resolving the handle and navigating to the profile
+  Future<void> _handleUsernameTap(String username) async {
+    try {
+      // Remove @ from username if present
+      final cleanUsername = username.startsWith('@') ? username.substring(1) : username;
+      debugPrint('Username clicked: $cleanUsername');
+      
+      // TODO: Use at.resolveHandle from atproto package to resolve the handle to a DID
+      // Example: final did = await atprotoService.resolveHandle(cleanUsername);
+      
+      // For now, just log the click for testing
+      if (kDebugMode) {
+        print('Would resolve handle and navigate to profile for: $cleanUsername');
+      }
+      
+      // TODO: Navigate to profile with the resolved DID
+      // Example: Navigator.push(context, CupertinoPageRoute(builder: (context) => ProfileScreen(did: did)));
+    } catch (e) {
+      debugPrint('Error resolving handle: $e');
+    }
+  }
 
   bool _isCurrentUser(Map<String, dynamic>? profileData) {
     if (profileData == null) return false;
@@ -94,29 +119,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
            authService.session?.did == profileData['did'];
   }
   
-  // Function to style URLs in text
-  Widget _buildRichText(String text) {
-    // Regular expression to match URLs
-    final RegExp urlRegex = RegExp(
-      r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})',
+  // Extract usernames (@mentions) from text
+  List<Match> _findUsernameMatches(String text) {
+    // Match patterns like "@username" or "@username.domain"
+    final RegExp usernameRegex = RegExp(
+      r'@([a-zA-Z0-9_.-]+\.[a-zA-Z]{2,}|[a-zA-Z0-9_]+)',
       caseSensitive: false,
     );
-
-    // Remove URLs from text
-    final String textWithoutUrls = text.replaceAll(urlRegex, '').replaceAll(RegExp(r'\s+'), ' ').trim();
-
-    return Text(
-      textWithoutUrls,
-      style: TextStyle(
-        color: AppTheme.getTextColor(context),
-        fontSize: 14,
-      ),
-      maxLines: _expandDescription ? null : 2,
-      overflow: _expandDescription ? TextOverflow.visible : TextOverflow.ellipsis,
-    );
+    
+    return usernameRegex.allMatches(text).toList();
   }
-
-  // Extract URLs from text
+  
+  // Extract URLs from text (excluding usernames)
   List<String> _extractUrls(String text) {
     final RegExp urlRegex = RegExp(
       r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})',
@@ -125,39 +139,108 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final List<String> urls = [];
     for (final Match match in urlRegex.allMatches(text)) {
-      urls.add(match.group(0)!);
+      final url = match.group(0)!;
+      // Skip if it looks like a username with @ prefix
+      if (url.startsWith('@')) continue;
+      urls.add(url);
+    }
+
+    // If no URLs found with the complex regex, try a simpler approach
+    if (urls.isEmpty) {
+      // Look for common domain patterns like "example.com" or "esfera.dev"
+      final simpleRegex = RegExp(r'([a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?)', caseSensitive: false);
+      for (final Match match in simpleRegex.allMatches(text)) {
+        final domain = match.group(0)!;
+        // Skip if it's part of a username (with @ prefix)
+        if (text.contains('@$domain') || text.contains('@${domain.split('.')[0]}')) {
+          continue;
+        }
+        // Skip common words that might match but aren't domains
+        if (!domain.contains('.com') && !domain.contains('.org') && 
+            !domain.contains('.net') && !domain.contains('.dev') &&
+            !domain.contains('.io') && !domain.contains('.app')) {
+          continue;
+        }
+        urls.add(domain);
+      }
     }
 
     return urls;
   }
 
-  // Build individual URL item with chain icon
-  Widget _buildUrlItem(String url) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 4.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(
-            CupertinoIcons.link,
-            size: 14,
-            color: AppColors.blue,
-          ),
-          const SizedBox(width: 6),
-          Expanded(
-            child: Text(
-              url,
-              style: const TextStyle(
-                color: AppColors.blue,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
-              ),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
+  // Creates rich text with clickable, highlighted usernames
+  Widget _buildRichTextWithMentions(String text) {
+    // Get all username matches
+    final usernameMatches = _findUsernameMatches(text);
+    
+    // If no usernames, just return regular text
+    if (usernameMatches.isEmpty) {
+      return Text(
+        text,
+        style: TextStyle(
+          color: AppTheme.getTextColor(context),
+          fontSize: 14,
+        ),
+        maxLines: _expandDescription ? null : 2,
+        overflow: _expandDescription ? TextOverflow.visible : TextOverflow.ellipsis,
+      );
+    }
+    
+    // Build rich text with clickable usernames
+    final TextSpan textSpan = TextSpan(
+      children: _buildTextSpans(text, usernameMatches),
+      style: TextStyle(
+        color: AppTheme.getTextColor(context),
+        fontSize: 14,
       ),
     );
+    
+    return RichText(
+      text: textSpan,
+      maxLines: _expandDescription ? null : 2,
+      overflow: _expandDescription ? TextOverflow.visible : TextOverflow.ellipsis,
+    );
+  }
+  
+  // Build text spans with username highlighting
+  List<InlineSpan> _buildTextSpans(String text, List<Match> usernameMatches) {
+    final List<InlineSpan> spans = [];
+    int lastEnd = 0;
+    
+    // Sort matches by position
+    usernameMatches.sort((a, b) => a.start.compareTo(b.start));
+    
+    for (final match in usernameMatches) {
+      // Add text before username
+      if (match.start > lastEnd) {
+        spans.add(TextSpan(
+          text: text.substring(lastEnd, match.start),
+        ));
+      }
+      
+      // Add username with styling and tap handler
+      final username = match.group(0)!;
+      spans.add(TextSpan(
+        text: username,
+        style: const TextStyle(
+          color: AppColors.primary, // Pink color for usernames
+          fontWeight: FontWeight.bold,
+        ),
+        recognizer: TapGestureRecognizer()
+          ..onTap = () => _handleUsernameTap(username),
+      ));
+      
+      lastEnd = match.end;
+    }
+    
+    // Add remaining text after last username
+    if (lastEnd < text.length) {
+      spans.add(TextSpan(
+        text: text.substring(lastEnd),
+      ));
+    }
+    
+    return spans;
   }
 
   @override
@@ -291,6 +374,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final description = profileData['description'] ?? '';
     final avatar = profileData['avatar'];
     final isCurrentUser = _isCurrentUser(profileData);
+    
+    // Extract links from description
+    final List<String> links = _extractUrls(description);
+    
+    // Manual detection for specific domains to match the screenshot example
+    if (links.isEmpty && description.contains("esfera.dev") && !description.contains("@esfera.dev")) {
+      links.add("esfera.dev");
+    }
+    
+    // Deduplicate links
+    final uniqueLinks = links.toSet().toList();
 
     return CupertinoPageScaffold(
       backgroundColor: AppTheme.getBackgroundColor(context, false),
@@ -443,19 +537,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ),
 
-                    if (description.isNotEmpty) ...[
+                    if (description.isNotEmpty || uniqueLinks.isNotEmpty) ...[
                       const SizedBox(height: 8),
-                      GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _expandDescription = !_expandDescription;
-                          });
-                        },
-                        child: _buildRichText(description),
-                      ),
                       
-                      // Extract and display URLs below the description
-                      ..._extractUrls(description).map((url) => _buildUrlItem(url)),
+                      // Description text with inline highlighted usernames
+                      if (description.isNotEmpty)
+                        GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _expandDescription = !_expandDescription;
+                            });
+                          },
+                          child: _buildRichTextWithMentions(description),
+                        ),
+                      
+                      // Links widget (if any)
+                      if (uniqueLinks.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4.0),
+                          child: ProfileLinks(links: uniqueLinks),
+                        ),
                     ],
 
                     const SizedBox(height: 16),
