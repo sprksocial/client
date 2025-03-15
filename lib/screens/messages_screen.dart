@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:flutter/material.dart' show Colors;
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../widgets/messages/message_list.dart';
 import '../widgets/activities/activity_list.dart';
 import '../widgets/activities/activity_icon.dart';
@@ -72,51 +73,57 @@ class _MessagesScreenState extends State<MessagesScreen> {
   Widget build(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
-
+    
     return CupertinoPageScaffold(
       backgroundColor: AppTheme.getBackgroundColor(context, false),
       navigationBar: CupertinoNavigationBar(
-        middle: Text('Messages', style: TextStyle(color: AppTheme.getTextColor(context))),
-        trailing: Icon(Ionicons.create_outline, color: AppTheme.getTextColor(context)),
-        backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
+        middle: Text(
+          'Messages', 
+          style: TextStyle(
+            color: AppTheme.getTextColor(context),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        trailing: CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () {
+            // Action for new message
+          },
+          child: Icon(
+            FluentIcons.edit_24_regular, 
+            color: AppColors.primary,
+            size: 24,
+          ),
+        ),
+        backgroundColor: isDarkMode 
+          ? AppColors.darkBackground.withAlpha(242)
+          : AppColors.background,
+        border: null, // Remove the bottom border
       ),
       child: SafeArea(
         child: Column(
           children: [
-            // Tab selector
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: CupertinoSegmentedControl<int>(
-                children: const {
-                  0: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Text('Messages'),
-                  ),
-                  1: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 30),
-                    child: Text('Activities'),
-                  ),
-                },
-                onValueChanged: (value) {
-                  setState(() {
-                    _selectedTabIndex = value;
-                  });
-                },
-                groupValue: _selectedTabIndex,
-                selectedColor: AppColors.primary,
-                unselectedColor: isDarkMode ? AppColors.deepPurple : AppColors.lightLavender,
-                borderColor: AppColors.primary,
-              ),
+            // Custom tab selector (full width and minimalistic)
+            _buildCustomTabBar(),
+            
+            // Divider below tabs
+            Container(
+              height: 0.5,
+              width: double.infinity,
+              color: isDarkMode 
+                ? AppColors.divider.withAlpha(51)
+                : AppColors.divider.withAlpha(128),
             ),
 
             // Search bar
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
               child: CupertinoSearchTextField(
                 placeholder: 'Search',
                 prefixIcon: Icon(
-                  Ionicons.search_outline,
+                  FluentIcons.search_24_regular,
                   color: AppTheme.getSecondaryTextColor(context),
+                  size: 18,
                 ),
                 onChanged: (value) {
                   // Handle search
@@ -127,7 +134,10 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 placeholderStyle: TextStyle(
                   color: AppTheme.getSecondaryTextColor(context),
                 ),
-                backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.white,
+                backgroundColor: isDarkMode 
+                  ? AppColors.deepPurple.withAlpha(128)
+                  : AppColors.lightLavender.withAlpha(77),
+                borderRadius: BorderRadius.circular(10),
               ),
             ),
 
@@ -138,6 +148,74 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 : _buildActivitiesTab(),
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCustomTabBar() {
+    final brightness = MediaQuery.of(context).platformBrightness;
+    final isDarkMode = brightness == Brightness.dark;
+    
+    return Container(
+      width: double.infinity,
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildTabItem(
+              isSelected: _selectedTabIndex == 0,
+              label: 'Messages',
+              onTap: () => setState(() => _selectedTabIndex = 0),
+              isDarkMode: isDarkMode,
+            ),
+          ),
+          Expanded(
+            child: _buildTabItem(
+              isSelected: _selectedTabIndex == 1,
+              label: 'Activities',
+              onTap: () => setState(() => _selectedTabIndex = 1),
+              isDarkMode: isDarkMode,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTabItem({
+    required bool isSelected,
+    required String label,
+    required VoidCallback onTap,
+    required bool isDarkMode,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: isSelected 
+                ? AppColors.primary 
+                : Colors.transparent,
+              width: 2,
+            ),
+          ),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              color: isSelected 
+                ? AppColors.primary 
+                : isDarkMode 
+                  ? AppColors.textLight.withAlpha(179)
+                  : AppColors.textSecondary,
+            ),
+          ),
         ),
       ),
     );

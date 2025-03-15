@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'user_profile_picture.dart';
 import 'message_preview.dart';
 import '../../utils/app_colors.dart';
@@ -68,7 +68,7 @@ class MessageListItem extends StatelessWidget {
             
             // Right chevron
             Icon(
-              Ionicons.chevron_forward,
+              FluentIcons.chevron_right_16_regular,
               color: AppTheme.getSecondaryTextColor(context),
               size: 16,
             ),
