@@ -114,9 +114,6 @@ class _BookmarkActionButtonState extends State<BookmarkActionButton> with Single
 
   @override
   Widget build(BuildContext context) {
-    // Debug print to verify the color is changing based on isBookmarked
-    debugPrint('Building BookmarkActionButton, isBookmarked: $_isBookmarked');
-    
     return Column(
       children: [
         SizedBox(

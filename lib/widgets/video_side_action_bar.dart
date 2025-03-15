@@ -89,9 +89,6 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
     if (widget.onBookmarkPressed != null) {
       widget.onBookmarkPressed!();
     }
-    
-    // For debugging
-    debugPrint('Bookmark toggled in VideoSideActionBar. New state: $_isBookmarked');
   }
 
   @override
@@ -117,11 +114,12 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
         ),
         const SizedBox(height: 20),
         
-        // Bookmark button
+        // Bookmark button - Use const where possible to prevent unnecessary rebuilds
         BookmarkActionButton(
           count: widget.bookmarkCount,
           isBookmarked: _isBookmarked,
           onPressed: _handleBookmark,
+          key: const ValueKey('bookmark_button'), // Add a stable key
         ),
         const SizedBox(height: 20),
         
