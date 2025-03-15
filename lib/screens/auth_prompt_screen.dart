@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:ionicons/ionicons.dart';
 import 'login_screen.dart';
+import 'register_screen.dart';
 
 class AuthPromptScreen extends StatelessWidget {
   final VoidCallback? onClose;
@@ -74,18 +75,9 @@ class AuthPromptScreen extends StatelessWidget {
                   child: CupertinoButton(
                     color: CupertinoColors.systemGrey6,
                     onPressed: () {
-                      // Register functionality will be implemented later
-                      showCupertinoDialog(
-                        context: context,
-                        builder: (context) => CupertinoAlertDialog(
-                          title: const Text('Coming Soon'),
-                          content: const Text('Registration will be available in a future update.'),
-                          actions: [
-                            CupertinoDialogAction(
-                              child: const Text('OK'),
-                              onPressed: () => Navigator.of(context).pop(),
-                            ),
-                          ],
+                      Navigator.of(context).push(
+                        CupertinoPageRoute(
+                          builder: (context) => const RegisterScreen(),
                         ),
                       );
                     },
