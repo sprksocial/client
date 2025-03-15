@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 import '../services/auth_service.dart';
 import '../utils/app_colors.dart';
 
@@ -11,33 +13,31 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _animationController;
-  late Animation<double> _animation;
+class _SplashScreenState extends State<SplashScreen> {
+  late VideoPlayerController _videoController;
+  bool _isVideoInitialized = false;
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
-
-    _animation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
-    );
-
-    _animationController.forward();
+    
+    // Initialize video player with the intro video
+    _videoController = VideoPlayerController.asset('assets/branding/intro.mp4')
+      ..setVolume(0.0) // Mute the audio
+      ..setLooping(true) // Optional: loop the video if authentication takes time
+      ..initialize().then((_) {
+        setState(() {
+          _isVideoInitialized = true;
+        });
+        _videoController.play();
+      });
 
     // Check if user is already authenticated
     _checkAuthentication();
   }
 
   Future<void> _checkAuthentication() async {
-    // Wait for animations to complete
+    // Wait for video to play for at least 2 seconds
     await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
@@ -66,7 +66,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   void dispose() {
-    _animationController.dispose();
+    _videoController.dispose();
     super.dispose();
   }
 
@@ -74,53 +74,41 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   Widget build(BuildContext context) {
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.black,
-      child: Center(
-        child: FadeTransition(
-          opacity: _animation,
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.brightPurple.withAlpha(128),
-                      blurRadius: 15,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: Text(
-                    'S',
-                    style: TextStyle(
-                      color: CupertinoColors.white,
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 30),
-              const Text(
-                'Spark',
-                style: TextStyle(
-                  color: CupertinoColors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 20),
-              const CupertinoActivityIndicator(
-                color: CupertinoColors.white,
-              ),
-            ],
+      child: _isVideoInitialized 
+        ? _buildVideoPlayer() 
+        : _buildLoadingIndicator(),
+    );
+  }
+
+  Widget _buildVideoPlayer() {
+    // Calculate the screen dimensions
+    final size = MediaQuery.of(context).size;
+    final videoSize = _videoController.value.size;
+    
+    // Calculate scale to cover the whole screen
+    final double scale = size.width / videoSize.width > size.height / videoSize.height
+        ? size.width / videoSize.width
+        : size.height / videoSize.height;
+        
+    return SizedBox.expand(
+      child: FittedBox(
+        fit: BoxFit.cover, // This ensures the video covers the whole screen
+        child: SizedBox(
+          width: videoSize.width,
+          height: videoSize.height,
+          child: AspectRatio(
+            aspectRatio: _videoController.value.aspectRatio,
+            child: VideoPlayer(_videoController),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingIndicator() {
+    return const Center(
+      child: CupertinoActivityIndicator(
+        color: CupertinoColors.white,
       ),
     );
   }

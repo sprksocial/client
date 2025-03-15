@@ -218,6 +218,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             'Login',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
+                              color: AppColors.white,
                             ),
                           ),
                   ),

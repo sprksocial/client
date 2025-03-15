@@ -33,7 +33,12 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _initializeCamera();
+    // Delay camera initialization slightly to ensure the widget is fully built
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted) {
+        _initializeCamera();
+      }
+    });
   }
 
   @override
@@ -47,9 +52,15 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Handle app lifecycle changes
-    if (state == AppLifecycleState.inactive) {
+    if (_cameraService.controller == null) {
+      return;
+    }
+    
+    if (state == AppLifecycleState.inactive || state == AppLifecycleState.paused) {
+      // Safely dispose camera when app is inactive
       _cameraService.dispose();
     } else if (state == AppLifecycleState.resumed) {
+      // Reinitialize when app is resumed
       _initializeCamera();
     }
   }
@@ -62,6 +73,32 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       }
     } catch (e) {
       debugPrint('Error initializing camera: $e');
+      // Show error to user
+      if (mounted) {
+        showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              title: const Text('Camera Error'),
+              content: Text('Could not initialize camera: ${e.toString()}'),
+              actions: [
+                CupertinoDialogAction(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    // Try again after error
+                    Future.delayed(const Duration(seconds: 1), () {
+                      if (mounted) {
+                        _initializeCamera();
+                      }
+                    });
+                  },
+                  child: const Text('Try Again'),
+                ),
+              ],
+            );
+          },
+        );
+      }
     }
   }
 

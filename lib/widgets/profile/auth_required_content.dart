@@ -61,6 +61,7 @@ class AuthRequiredContent extends StatelessWidget {
                   'Login',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
+                    color: AppColors.white,
                   ),
                 ),
               ),
