@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
 
@@ -42,11 +42,11 @@ class _SearchScreenState extends State<SearchScreen> {
                 controller: _searchController,
                 placeholder: 'Search videos, users, music',
                 prefixIcon: Icon(
-                  Ionicons.search_outline,
+                  FluentIcons.search_24_regular,
                   color: AppTheme.getSecondaryTextColor(context),
                 ),
                 suffixIcon: Icon(
-                  Ionicons.scan_outline,
+                  FluentIcons.scan_24_regular,
                   color: AppTheme.getSecondaryTextColor(context),
                 ),
                 style: TextStyle(color: AppTheme.getTextColor(context)),
@@ -129,7 +129,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       children: [
                         Center(
                           child: Icon(
-                            Ionicons.play_outline,
+                            FluentIcons.play_24_regular,
                             color: AppColors.white.withAlpha(179),
                           ),
                         ),
@@ -139,7 +139,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           child: Row(
                             children: [
                               const Icon(
-                                Ionicons.play_outline,
+                                FluentIcons.play_24_regular,
                                 color: AppColors.white,
                                 size: 12,
                               ),

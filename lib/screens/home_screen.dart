@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Colors, BackdropFilter;
 import 'dart:ui'; // For ImageFilter
-import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../widgets/video_side_action_bar.dart';
 import '../widgets/video_info/video_info_bar.dart';
 import '../widgets/video_controls/video_controller_overlay.dart';
@@ -104,7 +104,7 @@ class HomeScreen extends StatelessWidget {
                       ),
                     ),
                     const Icon(
-                      Ionicons.search_outline,
+                      FluentIcons.search_24_regular,
                       color: CupertinoColors.white,
                       size: 30,
                     ),
@@ -141,11 +141,11 @@ class HomeScreen extends StatelessWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        _buildNavItem(Ionicons.home, true),
-                        _buildNavItem(Ionicons.search_outline, false),
-                        _buildNavItem(Ionicons.add_circle_outline, false),
-                        _buildNavItem(Ionicons.chatbubble_outline, false),
-                        _buildNavItem(Ionicons.person_outline, false),
+                        _buildNavItem(FluentIcons.home_24_filled, true),
+                        _buildNavItem(FluentIcons.search_24_regular, false),
+                        _buildNavItem(FluentIcons.add_circle_24_regular, false),
+                        _buildNavItem(FluentIcons.chat_24_regular, false),
+                        _buildNavItem(FluentIcons.person_24_regular, false),
                       ],
                     ),
                   ),
@@ -445,7 +445,7 @@ class _VideoItemState extends State<VideoItem> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                Ionicons.play_circle_outline,
+                FluentIcons.play_circle_24_regular,
                 size: 80,
                 color: CupertinoColors.white.withAlpha(179),
               ),

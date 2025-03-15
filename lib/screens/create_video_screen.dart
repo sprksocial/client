@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show LinearProgressIndicator, AlwaysStoppedAnimation;
-import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import 'auth_prompt_screen.dart';
@@ -60,7 +60,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
             height: double.infinity,
             child: Center(
               child: Icon(
-                Ionicons.camera_outline,
+                FluentIcons.camera_24_regular,
                 size: 100,
                 color: CupertinoColors.white.withAlpha(77),
               ),
@@ -80,7 +80,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                   GestureDetector(
                     onTap: () => Navigator.of(context).pop(),
                     child: const Icon(
-                      Ionicons.close_outline,
+                      FluentIcons.dismiss_24_regular,
                       color: CupertinoColors.white,
                       size: 30,
                     ),
@@ -88,19 +88,19 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                   Row(
                     children: [
                       const Icon(
-                        Ionicons.flash_outline,
+                        FluentIcons.flash_24_regular,
                         color: CupertinoColors.white,
                         size: 30,
                       ),
                       const SizedBox(width: 20),
                       const Icon(
-                        Ionicons.time_outline,
+                        FluentIcons.timer_24_regular,
                         color: CupertinoColors.white,
                         size: 30,
                       ),
                       const SizedBox(width: 20),
                       const Icon(
-                        Ionicons.options_outline,
+                        FluentIcons.options_24_regular,
                         color: CupertinoColors.white,
                         size: 30,
                       ),
@@ -132,7 +132,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                     ),
                     child: const Center(
                       child: Icon(
-                        Ionicons.add_outline,
+                        FluentIcons.add_24_regular,
                         color: CupertinoColors.white,
                       ),
                     ),
@@ -169,7 +169,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                     ),
                     child: const Center(
                       child: Icon(
-                        Ionicons.remove_outline,
+                        FluentIcons.subtract_24_regular,
                         color: CupertinoColors.white,
                       ),
                     ),
@@ -247,7 +247,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
                       const Icon(
-                        Ionicons.image_outline,
+                        FluentIcons.image_24_regular,
                         color: CupertinoColors.white,
                         size: 30,
                       ),
@@ -276,7 +276,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                         ),
                       ),
                       const Icon(
-                        Ionicons.checkmark_circle_outline,
+                        FluentIcons.checkmark_circle_24_regular,
                         color: CupertinoColors.white,
                         size: 30,
                       ),

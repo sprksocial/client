@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
 
@@ -19,7 +19,7 @@ class AuthPromptScreen extends StatelessWidget {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: onClose,
-          child: const Icon(Ionicons.close_outline),
+          child: const Icon(FluentIcons.dismiss_24_regular),
         ),
         backgroundColor: CupertinoColors.systemBackground,
         border: null,
@@ -32,7 +32,7 @@ class AuthPromptScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(
-                  Ionicons.sparkles_outline,
+                  FluentIcons.sparkle_24_regular,
                   size: 80,
                   color: CupertinoColors.systemPink,
                 ),

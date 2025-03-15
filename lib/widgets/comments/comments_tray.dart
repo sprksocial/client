@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Colors;
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_theme.dart';
 import 'comment_item.dart';
@@ -209,7 +210,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
                           padding: EdgeInsets.zero,
                           onPressed: _closeComments,
                           child: Icon(
-                            CupertinoIcons.xmark,
+                            FluentIcons.dismiss_24_regular,
                             color: textColor,
                           ),
                         ),

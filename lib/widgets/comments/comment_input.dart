@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Colors;
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../../utils/app_colors.dart';
 
 class CommentInput extends StatefulWidget {
@@ -123,7 +124,7 @@ class _CommentInputState extends State<CommentInput> {
                     minSize: 0,
                     onPressed: widget.onCancelReply,
                     child: Icon(
-                      CupertinoIcons.xmark,
+                      FluentIcons.dismiss_24_regular,
                       size: 16,
                       color: textColor,
                     ),
@@ -191,7 +192,7 @@ class _CommentInputState extends State<CommentInput> {
                     minSize: 0,
                     onPressed: _canSubmit ? _submitComment : null,
                     child: Icon(
-                      CupertinoIcons.paperplane_fill,
+                      FluentIcons.send_24_filled,
                       size: 20,
                       color: _canSubmit ? AppColors.primary : placeholderColor,
                     ),
@@ -217,7 +218,7 @@ class _CommentInputState extends State<CommentInput> {
                     border: Border.all(color: borderColor, width: 0.5),
                   ),
                   child: Icon(
-                    CupertinoIcons.plus,
+                    FluentIcons.add_24_regular,
                     size: 18,
                     color: textColor,
                   ),

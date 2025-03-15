@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 
@@ -129,7 +130,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           prefix: const Padding(
                             padding: EdgeInsets.only(left: 16),
                             child: Icon(
-                              CupertinoIcons.person,
+                              FluentIcons.person_24_regular,
                               color: CupertinoColors.systemGrey,
                             ),
                           ),
@@ -155,7 +156,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           prefix: const Padding(
                             padding: EdgeInsets.only(left: 16),
                             child: Icon(
-                              CupertinoIcons.lock,
+                              FluentIcons.lock_closed_24_regular,
                               color: CupertinoColors.systemGrey,
                             ),
                           ),
@@ -169,8 +170,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               },
                               child: Icon(
                                 _obscurePassword
-                                    ? CupertinoIcons.eye
-                                    : CupertinoIcons.eye_slash,
+                                    ? FluentIcons.eye_24_regular
+                                    : FluentIcons.eye_off_24_regular,
                                 color: CupertinoColors.systemGrey,
                               ),
                             ),
