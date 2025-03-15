@@ -13,6 +13,7 @@ import 'utils/app_colors.dart';
 import 'utils/app_theme.dart';
 import 'screens/login_screen.dart';
 import 'screens/auth_prompt_screen.dart';
+import 'screens/test_actions_screen.dart';
 import 'services/auth_service.dart';
 import 'services/profile_service.dart';
 import 'package:fvp/fvp.dart' as fvp;
@@ -53,6 +54,7 @@ class MyApp extends StatelessWidget {
             '/home': (context) => const MainScreen(),
             '/login': (context) => const LoginScreen(),
             '/auth': (context) => const AuthPromptScreen(),
+            '/test': (context) => const TestActionsScreen(),
           },
         ),
       ),
