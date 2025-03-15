@@ -73,11 +73,11 @@ class _CommentInputState extends State<CommentInput> {
     final borderColor = widget.isDarkMode ? AppColors.darkPurple : AppColors.lightLavender;
     final textColor = widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary;
     final placeholderColor = widget.isDarkMode 
-        ? AppColors.textLight.withOpacity(0.5) 
-        : AppColors.textSecondary.withOpacity(0.7);
+        ? AppColors.textLight.withAlpha(128) 
+        : AppColors.textSecondary.withAlpha(179);
     final inputBackgroundColor = widget.isDarkMode 
-        ? AppColors.deepPurple.withOpacity(0.5) 
-        : AppColors.lightLavender.withOpacity(0.3);
+        ? AppColors.deepPurple.withAlpha(128) 
+        : AppColors.lightLavender.withAlpha(77);
 
     return Container(
       padding: EdgeInsets.only(

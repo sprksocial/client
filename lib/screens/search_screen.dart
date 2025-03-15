@@ -31,7 +31,7 @@ class _SearchScreenState extends State<SearchScreen> {
           'Discover',
           style: TextStyle(color: AppTheme.getTextColor(context)),
         ),
-        backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
+        backgroundColor: isDarkMode ? AppColors.nearBlack : AppColors.background,
       ),
       child: SafeArea(
         child: Column(
@@ -120,17 +120,17 @@ class _SearchScreenState extends State<SearchScreen> {
                 itemBuilder: (context, index) {
                   return Container(
                     color: index % 3 == 0
-                        ? AppColors.brightPurple.withOpacity(0.7)
+                        ? AppColors.brightPurple.withAlpha(179)
                         : index % 3 == 1
-                          ? AppColors.richPurple.withOpacity(0.7)
-                          : AppColors.primary.withOpacity(0.7),
+                          ? AppColors.richPurple.withAlpha(179)
+                          : AppColors.primary.withAlpha(179),
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
                         Center(
                           child: Icon(
                             Ionicons.play_outline,
-                            color: AppColors.white.withOpacity(0.7),
+                            color: AppColors.white.withAlpha(179),
                           ),
                         ),
                         Positioned(

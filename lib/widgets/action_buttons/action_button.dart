@@ -19,8 +19,11 @@ class ActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        GestureDetector(
-          onTap: onPressed,
+        CupertinoButton(
+          padding: const EdgeInsets.all(12),
+          minSize: 0,
+          borderRadius: BorderRadius.circular(30),
+          onPressed: onPressed,
           child: Icon(
             icon,
             color: color ?? CupertinoColors.white,

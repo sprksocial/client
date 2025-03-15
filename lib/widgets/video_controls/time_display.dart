@@ -22,7 +22,7 @@ class TimeDisplay extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
-        color: CupertinoColors.black.withOpacity(0.5),
+        color: CupertinoColors.black.withAlpha(128),
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(

@@ -179,7 +179,7 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
               opacity: _controlsVisible ? 1.0 : 0.0,
               duration: const Duration(milliseconds: 200),
               child: Container(
-                color: CupertinoColors.black.withOpacity(0.5),
+                color: CupertinoColors.black.withAlpha(128),
                 child: Stack(
                   children: [
                     // Timestamp indicator (centered below controls)

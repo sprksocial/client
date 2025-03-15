@@ -213,7 +213,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: CupertinoColors.systemRed.withOpacity(0.1),
+                        color: CupertinoColors.systemRed.withAlpha(26),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(

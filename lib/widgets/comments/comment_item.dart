@@ -95,10 +95,10 @@ class _CommentItemState extends State<CommentItem> {
   Widget build(BuildContext context) {
     final textColor = widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary;
     final secondaryTextColor = widget.isDarkMode 
-        ? AppColors.textLight.withOpacity(0.7) 
+        ? AppColors.textLight.withAlpha(179) 
         : AppColors.textSecondary;
     final dividerColor = widget.isDarkMode 
-        ? AppColors.deepPurple.withOpacity(0.5) 
+        ? AppColors.deepPurple.withAlpha(128) 
         : AppColors.lightLavender;
 
     // Mock replies data
@@ -350,7 +350,7 @@ class _CommentItemState extends State<CommentItem> {
           },
           errorBuilder: (context, error, stackTrace) {
             return Container(
-              color: AppColors.darkPurple.withOpacity(0.1),
+              color: AppColors.darkPurple.withAlpha(26),
               child: Center(
                 child: Icon(
                   CupertinoIcons.photo,
@@ -396,7 +396,7 @@ class _CommentItemState extends State<CommentItem> {
                   width: 60,
                   height: 60,
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withAlpha(128),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
