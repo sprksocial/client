@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../../utils/app_colors.dart';
 
 class UserProfilePicture extends StatelessWidget {
@@ -36,7 +36,7 @@ class UserProfilePicture extends StatelessWidget {
             ),
             child: Center(
               child: Icon(
-                Ionicons.person_outline,
+                FluentIcons.person_24_regular,
                 color: colorIndex % 2 == 0
                     ? AppColors.brightPurple
                     : AppColors.richPurple,

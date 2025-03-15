@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'activity_icon.dart';
 import 'activity_content.dart';
 import '../../utils/app_colors.dart';
@@ -61,7 +61,7 @@ class ActivityListItem extends StatelessWidget {
             
             // Chevron
             Icon(
-              Ionicons.chevron_forward,
+              FluentIcons.chevron_right_16_regular,
               color: AppTheme.getSecondaryTextColor(context),
               size: 16,
             ),

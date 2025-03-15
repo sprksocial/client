@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../../utils/app_colors.dart';
 
 enum ActivityType {
@@ -27,17 +27,17 @@ class ActivityIcon extends StatelessWidget {
 
     switch (type) {
       case ActivityType.like:
-        iconData = Ionicons.heart;
+        iconData = FluentIcons.heart_24_filled;
         backgroundColor = AppColors.likeColor.withAlpha(51);
         iconColor = AppColors.likeColor;
         break;
       case ActivityType.comment:
-        iconData = Ionicons.chatbubble;
+        iconData = FluentIcons.chat_24_filled;
         backgroundColor = AppColors.commentColor.withAlpha(51);
         iconColor = AppColors.commentColor;
         break;
       case ActivityType.follow:
-        iconData = Ionicons.person_add;
+        iconData = FluentIcons.person_add_24_filled;
         backgroundColor = AppColors.followColor.withAlpha(51);
         iconColor = AppColors.followColor;
         break;
