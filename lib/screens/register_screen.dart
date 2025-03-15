@@ -2,7 +2,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../services/auth_service.dart';
+import '../utils/app_colors.dart';
+import '../utils/app_theme.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -71,17 +74,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = MediaQuery.of(context).platformBrightness;
+    final isDarkMode = brightness == Brightness.dark;
+
     return CupertinoPageScaffold(
-      backgroundColor: CupertinoColors.systemBackground,
+      backgroundColor: AppTheme.getBackgroundColor(context, false),
       navigationBar: CupertinoNavigationBar(
-        backgroundColor: CupertinoColors.systemBackground,
+        backgroundColor: isDarkMode 
+            ? AppColors.darkBackground.withAlpha(242)
+            : AppColors.background,
         border: null,
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => Navigator.of(context).pop(),
-          child: const Icon(FluentIcons.chevron_left_24_regular),
+          child: Icon(
+            FluentIcons.chevron_left_24_regular, 
+            color: AppTheme.getTextColor(context),
+          ),
         ),
-        middle: const Text('Create Account'),
+        middle: Text(
+          'Create Account',
+          style: TextStyle(
+            color: AppTheme.getTextColor(context),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
       child: SafeArea(
         child: GestureDetector(
@@ -92,7 +109,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 20),
+                  // Logo at the top
+                  Center(
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      margin: const EdgeInsets.only(bottom: 30, top: 10),
+                      child: SvgPicture.asset(
+                        isDarkMode 
+                            ? 'assets/images/logo_dark_mode.svg'
+                            : 'assets/images/logo_light_mode.svg',
+                      ),
+                    ),
+                  ),
+
                   // Email Field
                   _buildLabel('Email'),
                   const SizedBox(height: 8),
@@ -102,12 +132,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     keyboardType: TextInputType.emailAddress,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: CupertinoColors.systemGrey6,
+                      color: isDarkMode
+                          ? AppColors.deepPurple
+                          : CupertinoColors.systemGrey6,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     prefix: const Padding(
                       padding: EdgeInsets.only(left: 16),
-                      child: Icon(FluentIcons.mail_24_regular, color: CupertinoColors.systemGrey),
+                      child: Icon(
+                        FluentIcons.mail_24_regular, 
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    style: TextStyle(
+                      color: AppTheme.getTextColor(context),
+                    ),
+                    placeholderStyle: TextStyle(
+                      color: AppTheme.getSecondaryTextColor(context),
                     ),
                     onChanged: (_) => setState(() {}),
                   ),
@@ -119,34 +160,45 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   const SizedBox(height: 8),
                   Container(
                     decoration: BoxDecoration(
-                      color: CupertinoColors.systemGrey6,
+                      color: isDarkMode
+                          ? AppColors.deepPurple
+                          : CupertinoColors.systemGrey6,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
                       children: [
                         const Padding(
                           padding: EdgeInsets.only(left: 16),
-                          child: Icon(FluentIcons.mention_24_regular, color: CupertinoColors.systemGrey),
+                          child: Icon(
+                            FluentIcons.mention_24_regular, 
+                            color: AppColors.primary,
+                          ),
                         ),
                         Expanded(
                           child: CupertinoTextField(
                             controller: _handleController,
                             placeholder: 'username',
                             padding: const EdgeInsets.all(16),
-                            decoration: const BoxDecoration(
-                              color: CupertinoColors.systemGrey6,
-                              borderRadius: BorderRadius.zero,
+                            decoration: BoxDecoration(
+                              color: Colors.transparent,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            style: TextStyle(
+                              color: AppTheme.getTextColor(context),
+                            ),
+                            placeholderStyle: TextStyle(
+                              color: AppTheme.getSecondaryTextColor(context),
                             ),
                             onChanged: (_) => setState(() {}),
                           ),
                         ),
-                        Container(
+                        Padding(
                           padding: const EdgeInsets.only(right: 16),
                           child: Text(
                             '.sprk.so',
                             style: TextStyle(
                               fontSize: 16,
-                              color: CupertinoColors.systemGrey.resolveFrom(context),
+                              color: AppTheme.getSecondaryTextColor(context),
                             ),
                           ),
                         ),
@@ -165,12 +217,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     obscureText: !_isPasswordVisible,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: CupertinoColors.systemGrey6,
+                      color: isDarkMode
+                          ? AppColors.deepPurple
+                          : CupertinoColors.systemGrey6,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    prefix: Padding(
-                      padding: const EdgeInsets.only(left: 16),
-                      child: Icon(FluentIcons.key_24_regular, color: CupertinoColors.systemGrey),
+                    prefix: const Padding(
+                      padding: EdgeInsets.only(left: 16),
+                      child: Icon(
+                        FluentIcons.key_24_regular, 
+                        color: AppColors.primary,
+                      ),
                     ),
                     suffix: CupertinoButton(
                       padding: const EdgeInsets.only(right: 8),
@@ -183,8 +240,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         _isPasswordVisible
                             ? FluentIcons.eye_off_24_regular
                             : FluentIcons.eye_24_regular,
-                        color: CupertinoColors.systemGrey,
+                        color: AppColors.primary,
                       ),
+                    ),
+                    style: TextStyle(
+                      color: AppTheme.getTextColor(context),
+                    ),
+                    placeholderStyle: TextStyle(
+                      color: AppTheme.getSecondaryTextColor(context),
                     ),
                     onChanged: (_) => setState(() {}),
                   ),
@@ -199,12 +262,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     placeholder: 'Enter invite code if you have one',
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: CupertinoColors.systemGrey6,
+                      color: isDarkMode
+                          ? AppColors.deepPurple
+                          : CupertinoColors.systemGrey6,
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    prefix: Padding(
-                      padding: const EdgeInsets.only(left: 16),
-                      child: Icon(FluentIcons.tag_24_regular, color: CupertinoColors.systemGrey),
+                    prefix: const Padding(
+                      padding: EdgeInsets.only(left: 16),
+                      child: Icon(
+                        FluentIcons.tag_24_regular, 
+                        color: AppColors.primary,
+                      ),
+                    ),
+                    style: TextStyle(
+                      color: AppTheme.getTextColor(context),
+                    ),
+                    placeholderStyle: TextStyle(
+                      color: AppTheme.getSecondaryTextColor(context),
                     ),
                   ),
 
@@ -213,21 +287,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: CupertinoColors.systemRed.withAlpha(26),
+                        color: AppColors.error.withAlpha(26),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(
                         children: [
                           const Icon(
                             FluentIcons.warning_24_regular,
-                            color: CupertinoColors.systemRed,
+                            color: AppColors.error,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               _errorMessage!,
                               style: const TextStyle(
-                                color: CupertinoColors.systemRed,
+                                color: AppColors.error,
                               ),
                             ),
                           ),
@@ -243,13 +317,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     width: double.infinity,
                     child: CupertinoButton(
                       padding: const EdgeInsets.symmetric(vertical: 16),
-                      color: CupertinoColors.systemPink,
+                      color: AppColors.primary,
                       borderRadius: BorderRadius.circular(12),
                       onPressed: _isFormValid() && !_isRegistering
                           ? _register
                           : null,
                       child: _isRegistering
-                          ? const CupertinoActivityIndicator(color: CupertinoColors.white)
+                          ? const CupertinoActivityIndicator(color: AppColors.white)
                           : const Text(
                               'Create Account',
                               style: TextStyle(
@@ -265,14 +339,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
+                      Text(
                         'Already have an account?',
-                        style: TextStyle(color: CupertinoColors.systemGrey),
+                        style: TextStyle(
+                          color: AppTheme.getSecondaryTextColor(context),
+                        ),
                       ),
                       CupertinoButton(
                         padding: const EdgeInsets.only(left: 8),
                         onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Sign in'),
+                        child: const Text(
+                          'Sign in',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -288,9 +370,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget _buildLabel(String text) {
     return Text(
       text,
-      style: const TextStyle(
+      style: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w500,
+        color: AppTheme.getTextColor(context),
       ),
     );
   }

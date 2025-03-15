@@ -1,5 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import '../utils/app_colors.dart';
+import '../utils/app_theme.dart';
 import 'login_screen.dart';
 import 'register_screen.dart';
 
@@ -13,15 +16,23 @@ class AuthPromptScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brightness = MediaQuery.of(context).platformBrightness;
+    final isDarkMode = brightness == Brightness.dark;
+
     return CupertinoPageScaffold(
-      backgroundColor: CupertinoColors.systemBackground,
+      backgroundColor: AppTheme.getBackgroundColor(context, false),
       navigationBar: onClose != null ? CupertinoNavigationBar(
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: onClose,
-          child: const Icon(FluentIcons.dismiss_24_regular),
+          child: Icon(
+            FluentIcons.dismiss_24_regular,
+            color: AppTheme.getTextColor(context),
+          ),
         ),
-        backgroundColor: CupertinoColors.systemBackground,
+        backgroundColor: isDarkMode 
+            ? AppColors.darkBackground.withAlpha(242)
+            : AppColors.background,
         border: null,
       ) : null,
       child: SafeArea(
@@ -31,26 +42,29 @@ class AuthPromptScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(
-                  FluentIcons.sparkle_24_regular,
-                  size: 80,
-                  color: CupertinoColors.systemPink,
+                SvgPicture.asset(
+                  isDarkMode 
+                      ? 'assets/images/logo_dark_mode.svg'
+                      : 'assets/images/logo_light_mode.svg',
+                  height: 80,
+                  width: 80,
                 ),
                 const SizedBox(height: 24),
-                const Text(
+                Text(
                   'Welcome to Spark',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
+                    color: AppTheme.getTextColor(context),
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   'Add an account to create videos, connect with friends, and more',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    color: CupertinoColors.systemGrey,
+                    color: AppTheme.getSecondaryTextColor(context),
                     fontSize: 16,
                   ),
                 ),
@@ -58,7 +72,9 @@ class AuthPromptScreen extends StatelessWidget {
                 SizedBox(
                   width: double.infinity,
                   child: CupertinoButton(
-                    color: CupertinoColors.systemPink,
+                    color: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    borderRadius: BorderRadius.circular(12),
                     onPressed: () {
                       Navigator.of(context).push(
                         CupertinoPageRoute(
@@ -66,14 +82,23 @@ class AuthPromptScreen extends StatelessWidget {
                         ),
                       );
                     },
-                    child: const Text('Login'),
+                    child: const Text(
+                      'Login',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
                 SizedBox(
                   width: double.infinity,
                   child: CupertinoButton(
-                    color: CupertinoColors.systemGrey6,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    borderRadius: BorderRadius.circular(12),
+                    color: isDarkMode 
+                        ? AppColors.deepPurple
+                        : CupertinoColors.systemGrey6,
                     onPressed: () {
                       Navigator.of(context).push(
                         CupertinoPageRoute(
@@ -84,7 +109,8 @@ class AuthPromptScreen extends StatelessWidget {
                     child: const Text(
                       'Register',
                       style: TextStyle(
-                        color: CupertinoColors.systemPink,
+                        color: AppColors.primary,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
@@ -93,10 +119,10 @@ class AuthPromptScreen extends StatelessWidget {
                   const SizedBox(height: 24),
                   CupertinoButton(
                     onPressed: onClose,
-                    child: const Text(
+                    child: Text(
                       'Continue browsing',
                       style: TextStyle(
-                        color: CupertinoColors.systemGrey,
+                        color: AppTheme.getSecondaryTextColor(context),
                       ),
                     ),
                   ),
