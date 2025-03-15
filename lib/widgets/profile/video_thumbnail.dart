@@ -30,7 +30,7 @@ class VideoThumbnail extends StatelessWidget {
             Center(
               child: Icon(
                 icon,
-                color: AppColors.white.withOpacity(0.8),
+                color: AppColors.white.withAlpha(204),
                 size: 24,
               ),
             ),

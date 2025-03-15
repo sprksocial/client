@@ -65,8 +65,8 @@ class HomeScreen extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    CupertinoColors.black.withOpacity(0.7),
-                    CupertinoColors.black.withOpacity(0.0),
+                    CupertinoColors.black.withAlpha(179),
+                    CupertinoColors.black.withAlpha(0),
                   ],
                 ),
               ),
@@ -126,8 +126,8 @@ class HomeScreen extends StatelessWidget {
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
                   colors: [
-                    CupertinoColors.black.withOpacity(0.9),
-                    CupertinoColors.black.withOpacity(0.0),
+                    CupertinoColors.black.withAlpha(230),
+                    CupertinoColors.black.withAlpha(0),
                   ],
                   stops: const [0.4, 1.0],
                 ),
@@ -222,30 +222,30 @@ class _VideoItemState extends State<VideoItem> {
   
   void _toggleComments() {
     // Pause video when showing comments
-    if (!_showComments && _controller != null && _isInitialized) {
+    if (_controller != null && _isInitialized) {
       _controller?.pause();
-      
-      // Show comments using the proper bottom sheet
-      showCommentsTray(
-        context: context,
-        videoId: 'video_${widget.index + 1}',
-        commentCount: (widget.index + 1) * 12 * 1000, // Format as 12K
-        onClose: () {
-          setState(() {
-            _showComments = false;
-            // Resume video playback if the view is still visible
-            if (_isVisible) {
-              _controller?.play();
-            }
-          });
-        },
-        isDarkMode: true, // Always use dark mode for comments on videos
-      );
-      
-      setState(() {
-        _showComments = true;
-      });
     }
+    
+    setState(() {
+      _showComments = true;
+    });
+    
+    // Show comments using the standard Cupertino modal approach
+    showCommentsTray(
+      context: context,
+      videoId: 'video_${widget.index + 1}',
+      commentCount: (widget.index + 1) * 12 * 1000, // Format as 12K
+      onClose: () {
+        setState(() {
+          _showComments = false;
+          // Resume video playback if the view is still visible
+          if (_isVisible && _controller != null && _isInitialized) {
+            _controller?.play();
+          }
+        });
+      },
+      isDarkMode: true, // Always use dark mode for comments on videos
+    );
   }
 
   @override
@@ -302,9 +302,9 @@ class _VideoItemState extends State<VideoItem> {
                       Colors.transparent,
                       Colors.transparent,
                       Colors.transparent,
-                      Colors.black.withOpacity(0.0),
-                      Colors.black.withOpacity(0.3),
-                      Colors.black.withOpacity(0.3),
+                      Colors.black.withAlpha(0),
+                      Colors.black.withAlpha(77),
+                      Colors.black.withAlpha(77),
                     ],
                     stops: const [0.0, 0.5, 0.65, 0.75, 0.85, 0.95],
                   ),
@@ -396,7 +396,7 @@ class _VideoItemState extends State<VideoItem> {
         BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
           child: Container(
-            color: CupertinoColors.black.withOpacity(0.3), // Darkens the blur slightly
+            color: CupertinoColors.black.withAlpha(77), // Darkens the blur slightly
           ),
         ),
       ],
@@ -447,7 +447,7 @@ class _VideoItemState extends State<VideoItem> {
               Icon(
                 Ionicons.play_circle_outline,
                 size: 80,
-                color: CupertinoColors.white.withOpacity(0.7),
+                color: CupertinoColors.white.withAlpha(179),
               ),
               const SizedBox(height: 16),
               Text(

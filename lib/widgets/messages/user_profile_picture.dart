@@ -30,8 +30,8 @@ class UserProfilePicture extends StatelessWidget {
             height: size,
             decoration: BoxDecoration(
               color: colorIndex % 2 == 0
-                  ? AppColors.brightPurple.withOpacity(0.2)
-                  : AppColors.richPurple.withOpacity(0.2),
+                  ? AppColors.brightPurple.withAlpha(51)
+                  : AppColors.richPurple.withAlpha(51),
               shape: BoxShape.circle,
             ),
             child: Center(

@@ -28,17 +28,17 @@ class ActivityIcon extends StatelessWidget {
     switch (type) {
       case ActivityType.like:
         iconData = Ionicons.heart;
-        backgroundColor = AppColors.likeColor.withOpacity(0.2);
+        backgroundColor = AppColors.likeColor.withAlpha(51);
         iconColor = AppColors.likeColor;
         break;
       case ActivityType.comment:
         iconData = Ionicons.chatbubble;
-        backgroundColor = AppColors.commentColor.withOpacity(0.2);
+        backgroundColor = AppColors.commentColor.withAlpha(51);
         iconColor = AppColors.commentColor;
         break;
       case ActivityType.follow:
         iconData = Ionicons.person_add;
-        backgroundColor = AppColors.followColor.withOpacity(0.2);
+        backgroundColor = AppColors.followColor.withAlpha(51);
         iconColor = AppColors.followColor;
         break;
     }

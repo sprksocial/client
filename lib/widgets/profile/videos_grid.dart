@@ -30,28 +30,28 @@ class VideosGrid extends StatelessWidget {
         Color backgroundColor;
         if (iconType == FluentIcons.heart_24_regular || iconType == FluentIcons.heart_24_filled) {
           backgroundColor = index % 3 == 0
-              ? AppColors.orange.withOpacity(0.7)
+              ? AppColors.orange.withAlpha(179)
               : index % 3 == 1
-                ? AppColors.primary.withOpacity(0.7)
-                : AppColors.red.withOpacity(0.7);
+                ? AppColors.primary.withAlpha(179)
+                : AppColors.red.withAlpha(179);
         } else if (iconType == FluentIcons.bookmark_24_regular || iconType == FluentIcons.bookmark_24_filled) {
           backgroundColor = index % 3 == 0
-              ? AppColors.teal.withOpacity(0.7)
+              ? AppColors.teal.withAlpha(179)
               : index % 3 == 1
-                ? AppColors.blue.withOpacity(0.7)
-                : AppColors.lightBlue.withOpacity(0.7);
+                ? AppColors.blue.withAlpha(179)
+                : AppColors.lightBlue.withAlpha(179);
         } else if (iconType == FluentIcons.arrow_repeat_all_24_regular || iconType == FluentIcons.arrow_repeat_all_24_filled) {
           backgroundColor = index % 3 == 0
-              ? AppColors.green.withOpacity(0.7)
+              ? AppColors.green.withAlpha(179)
               : index % 3 == 1
-                ? AppColors.blue.withOpacity(0.7)
-                : AppColors.primary.withOpacity(0.7);
+                ? AppColors.blue.withAlpha(179)
+                : AppColors.primary.withAlpha(179);
         } else {
           backgroundColor = index % 3 == 0
-              ? AppColors.richPurple.withOpacity(0.7)
+              ? AppColors.richPurple.withAlpha(179)
               : index % 3 == 1
-                ? AppColors.brightPurple.withOpacity(0.7)
-                : AppColors.primary.withOpacity(0.7);
+                ? AppColors.brightPurple.withAlpha(179)
+                : AppColors.primary.withAlpha(179);
         }
 
         return VideoThumbnail(

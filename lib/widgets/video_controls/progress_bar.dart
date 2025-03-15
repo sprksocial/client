@@ -129,7 +129,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
                 Container(
                   height: progressBarHeight,
                   width: double.infinity, // Full width of the parent container
-                  color: CupertinoColors.systemGrey.withOpacity(0.5),
+                  color: CupertinoColors.systemGrey.withAlpha(128),
                 ),
                 
                 // Filled progress - now white
@@ -179,7 +179,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: CupertinoColors.black.withOpacity(0.3),
+                            color: CupertinoColors.black.withAlpha(77),
                             blurRadius: 4,
                             offset: const Offset(0, 2),
                           ),
@@ -199,7 +199,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: CupertinoColors.black.withOpacity(0.7),
+                          color: CupertinoColors.black.withAlpha(179),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(

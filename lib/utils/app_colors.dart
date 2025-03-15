@@ -26,10 +26,10 @@ class AppColors {
   static const Color accent = richPurple;
 
   // Background colors
-  static const Color background = lightLavender;
+  static const Color background = white;
   static const Color lightBackground = white;
   static const Color cardBackground = white;
-  static const Color darkBackground = deepPurple;
+  static const Color darkBackground = nearBlack;
   static const Color modalBackground = nearBlack;
 
   // Text colors

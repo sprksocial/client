@@ -19,7 +19,7 @@ class AppTheme {
     }
     
     return brightness == Brightness.dark 
-        ? AppColors.deepPurple 
+        ? AppColors.nearBlack 
         : AppColors.lightBackground;
   }
   
@@ -61,7 +61,7 @@ class AppTheme {
   static Color getSecondaryTextColor(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
     return brightness == Brightness.dark 
-        ? AppColors.textLight.withOpacity(0.7) 
+        ? AppColors.textLight.withAlpha(179) 
         : AppColors.textSecondary;
   }
 } 

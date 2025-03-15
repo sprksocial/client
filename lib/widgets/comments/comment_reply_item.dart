@@ -40,7 +40,7 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
   Widget build(BuildContext context) {
     final textColor = widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary;
     final secondaryTextColor = widget.isDarkMode 
-        ? AppColors.textLight.withOpacity(0.7) 
+        ? AppColors.textLight.withAlpha(179) 
         : AppColors.textSecondary;
 
     return Padding(
@@ -54,7 +54,7 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
             width: 28,
             height: 28,
             decoration: BoxDecoration(
-              color: AppColors.accent.withOpacity(0.8),
+              color: AppColors.accent.withAlpha(204),
               shape: BoxShape.circle,
               border: Border.all(
                 color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender,

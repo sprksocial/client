@@ -38,7 +38,7 @@ class PlayPauseControls extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: CupertinoColors.white.withOpacity(0.3),
+              color: CupertinoColors.white.withAlpha(77),
               shape: BoxShape.circle,
             ),
             child: Center(

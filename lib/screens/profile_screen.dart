@@ -83,23 +83,43 @@ class _ProfileScreenState extends State<ProfileScreen> {
     showCupertinoModalPopup(
       context: context,
       barrierDismissible: true,
-      builder: (context) => CupertinoActionSheet(
-        title: const Text('Profile Options'),
-        actions: [
-          CupertinoActionSheetAction(
-            onPressed: () {
-              Navigator.pop(context); // Close the action sheet
-              _handleLogout();
-            },
-            isDestructiveAction: true,
-            child: const Text('Logout'),
+      builder: (context) => SizedBox(
+        width: double.infinity,
+        child: SafeArea(
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.white,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Profile Options', 
+                  style: TextStyle(
+                    fontSize: 16, 
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.black
+                  )
+                ),
+                const SizedBox(height: 16),
+                CupertinoButton(
+                  onPressed: () {
+                    Navigator.pop(context); // Close the modal
+                    _handleLogout();
+                  },
+                  child: const Text('Logout', style: TextStyle(color: Colors.red)),
+                ),
+                CupertinoButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  child: const Text('Cancel', style: TextStyle(color: AppColors.white)),
+                ),
+              ],
+            ),
           ),
-        ],
-        cancelButton: CupertinoActionSheetAction(
-          onPressed: () {
-            Navigator.pop(context);
-          },
-          child: const Text('Cancel'),
         ),
       ),
     );
@@ -878,10 +898,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               (context, index) {
                 // Create different color patterns based on the icon type
                 Color backgroundColor = index % 3 == 0
-                    ? AppColors.orange.withOpacity(0.7)
+                    ? AppColors.orange.withAlpha(120)
                     : index % 3 == 1
-                      ? AppColors.primary.withOpacity(0.7)
-                      : AppColors.red.withOpacity(0.7);
+                      ? AppColors.primary.withAlpha(120)
+                      : AppColors.red.withAlpha(120);
 
                 return VideoThumbnail(
                   index: index,
@@ -907,10 +927,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               (context, index) {
                 // Create different color patterns based on the icon type
                 Color backgroundColor = index % 3 == 0
-                    ? AppColors.green.withOpacity(0.7)
+                    ? AppColors.green.withAlpha(120)
                     : index % 3 == 1
-                      ? AppColors.blue.withOpacity(0.7)
-                      : AppColors.primary.withOpacity(0.7);
+                      ? AppColors.blue.withAlpha(120)
+                      : AppColors.primary.withAlpha(120);
 
                 return VideoThumbnail(
                   index: index,
@@ -936,10 +956,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               (context, index) {
                 // Create different color patterns based on the icon type
                 Color backgroundColor = index % 3 == 0
-                    ? AppColors.teal.withOpacity(0.7)
+                    ? AppColors.teal.withAlpha(120)
                     : index % 3 == 1
-                      ? AppColors.blue.withOpacity(0.7)
-                      : AppColors.lightBlue.withOpacity(0.7);
+                      ? AppColors.blue.withAlpha(120)
+                      : AppColors.lightBlue.withAlpha(120);
 
                 return VideoThumbnail(
                   index: index,
@@ -975,13 +995,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   debugPrint('Video post clicked at index $index');
                 },
                 child: Container(
-                  color: AppColors.richPurple.withOpacity(0.7),
+                  color: AppColors.richPurple.withAlpha(120),
                   child: Stack(
                     children: [
                       Center(
                         child: Icon(
                           FluentIcons.video_24_regular,
-                          color: AppColors.white.withOpacity(0.8),
+                          color: AppColors.white.withAlpha(204),
                           size: 24,
                         ),
                       ),
@@ -1012,7 +1032,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                           decoration: BoxDecoration(
-                            color: AppColors.black.withOpacity(0.5),
+                            color: AppColors.black.withAlpha(128),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: const Text(
@@ -1054,13 +1074,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   debugPrint('Photo post clicked at index $index');
                 },
                 child: Container(
-                  color: AppColors.orange.withOpacity(0.7),
+                  color: AppColors.orange.withAlpha(120),
                   child: Stack(
                     children: [
                       Center(
                         child: Icon(
                           FluentIcons.image_24_regular,
-                          color: AppColors.white.withOpacity(0.8),
+                          color: AppColors.white.withAlpha(204),
                           size: 24,
                         ),
                       ),

@@ -62,7 +62,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
               child: Icon(
                 Ionicons.camera_outline,
                 size: 100,
-                color: CupertinoColors.white.withOpacity(0.3),
+                color: CupertinoColors.white.withAlpha(77),
               ),
             ),
           ),
@@ -127,7 +127,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: CupertinoColors.black.withOpacity(0.5),
+                      color: CupertinoColors.black.withAlpha(128),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Center(
@@ -142,7 +142,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
                   decoration: BoxDecoration(
-                    color: CupertinoColors.black.withOpacity(0.5),
+                    color: CupertinoColors.black.withAlpha(128),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
@@ -164,7 +164,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                     width: 40,
                     height: 40,
                     decoration: BoxDecoration(
-                      color: CupertinoColors.black.withOpacity(0.5),
+                      color: CupertinoColors.black.withAlpha(128),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Center(
@@ -192,7 +192,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                   end: Alignment.topCenter,
                   colors: [
                     CupertinoColors.black,
-                    CupertinoColors.black.withOpacity(0.0),
+                    CupertinoColors.black.withAlpha(0),
                   ],
                 ),
               ),
@@ -218,10 +218,10 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                             decoration: BoxDecoration(
                               color: _selectedEffectIndex == index
                                   ? CupertinoColors.systemPink
-                                  : CupertinoColors.black.withOpacity(0.5),
+                                  : CupertinoColors.black.withAlpha(128),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: CupertinoColors.white.withOpacity(0.5),
+                                color: CupertinoColors.white.withAlpha(128),
                                 width: 1,
                               ),
                             ),
@@ -293,7 +293,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
                       borderRadius: BorderRadius.circular(2.5),
                       child: LinearProgressIndicator(
                         value: _isRecording ? 0.3 : 0,
-                        backgroundColor: CupertinoColors.white.withOpacity(0.3),
+                        backgroundColor: CupertinoColors.white.withAlpha(77),
                         valueColor: const AlwaysStoppedAnimation<Color>(CupertinoColors.systemPink),
                       ),
                     ),
