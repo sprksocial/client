@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'action_button.dart';
 
 class CommentActionButton extends StatelessWidget {
@@ -15,7 +15,7 @@ class CommentActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ActionButton(
-      icon: Ionicons.chatbubble_outline,
+      icon: FluentIcons.chat_24_regular,
       label: count,
       onPressed: onPressed,
     );

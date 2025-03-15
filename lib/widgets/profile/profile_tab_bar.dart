@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import '../../utils/app_colors.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 class ProfileTabBar extends StatelessWidget {
   final int selectedIndex;
@@ -25,11 +26,11 @@ class ProfileTabBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildTabItem(context, 0, CupertinoIcons.heart),
-          _buildTabItem(context, 1, CupertinoIcons.bookmark),
-          _buildTabItem(context, 2, CupertinoIcons.refresh),
-          _buildTabItem(context, 3, CupertinoIcons.photo),
-          _buildTabItem(context, 4, CupertinoIcons.person_2),
+          _buildTabItem(context, 0, FluentIcons.heart_24_regular),
+          _buildTabItem(context, 1, FluentIcons.bookmark_24_regular),
+          _buildTabItem(context, 2, FluentIcons.arrow_repeat_all_24_regular),
+          _buildTabItem(context, 3, FluentIcons.image_24_regular),
+          _buildTabItem(context, 4, FluentIcons.people_24_regular),
         ],
       ),
     );

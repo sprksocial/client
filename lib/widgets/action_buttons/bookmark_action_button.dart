@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'action_button.dart';
+import '../../utils/app_colors.dart';
 
 class BookmarkActionButton extends StatelessWidget {
   final String count;
@@ -17,9 +18,10 @@ class BookmarkActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ActionButton(
-      icon: isBookmarked ? Ionicons.bookmark : Ionicons.bookmark_outline,
+      icon: isBookmarked ? FluentIcons.bookmark_24_filled : FluentIcons.bookmark_24_regular,
       label: count,
       onPressed: onPressed,
+      color: isBookmarked ? AppColors.blue : CupertinoColors.white,
     );
   }
 } 

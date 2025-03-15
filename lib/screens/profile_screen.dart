@@ -1,6 +1,5 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart' show Colors;
-import 'package:ionicons/ionicons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../utils/app_colors.dart';
@@ -15,6 +14,7 @@ import 'auth_prompt_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../widgets/profile/video_thumbnail.dart';
 import '../widgets/profile/profile_links.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart'; // For TapGestureRecognizer
 
@@ -79,6 +79,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  void _showProfileMenu(BuildContext context) {
+    showCupertinoModalPopup(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => CupertinoActionSheet(
+        title: const Text('Profile Options'),
+        actions: [
+          CupertinoActionSheetAction(
+            onPressed: () {
+              Navigator.pop(context); // Close the action sheet
+              _handleLogout();
+            },
+            isDestructiveAction: true,
+            child: const Text('Logout'),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          child: const Text('Cancel'),
+        ),
+      ),
+    );
+  }
+  
+  void _handleLogout() {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    authService.logout();
+    debugPrint('User logged out');
+  }
+  
+  void _handleSettingsTap() {
+    debugPrint('Settings button clicked, will open settings screen in the future');
+  }
+
   void _checkAuthAndProceed(VoidCallback action) {
     final authService = Provider.of<AuthService>(context, listen: false);
     if (!authService.isAuthenticated) {
@@ -117,6 +153,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final authService = Provider.of<AuthService>(context, listen: false);
     return authService.isAuthenticated &&
            authService.session?.did == profileData['did'];
+  }
+  
+  // Format count numbers for better readability
+  String _formatCount(dynamic count) {
+    if (count == null) return '0';
+    
+    int numCount;
+    if (count is String) {
+      numCount = int.tryParse(count) ?? 0;
+    } else if (count is int) {
+      numCount = count;
+    } else {
+      return '0';
+    }
+    
+    if (numCount >= 1000000) {
+      return '${(numCount / 1000000).toStringAsFixed(1)}M';
+    } else if (numCount >= 10000) {
+      return '${(numCount / 1000).toStringAsFixed(0)}K';
+    } else if (numCount >= 1000) {
+      return '${(numCount / 1000).toStringAsFixed(1)}K';
+    } else {
+      return numCount.toString();
+    }
   }
   
   // Extract usernames (@mentions) from text
@@ -375,6 +435,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final avatar = profileData['avatar'];
     final isCurrentUser = _isCurrentUser(profileData);
     
+    // Get profile stats (with fallbacks for missing fields)
+    final postsCount = profileData['postsCount'] ?? profileData['posts_count'] ?? profileData['postCount'] ?? 0;
+    final followersCount = profileData['followersCount'] ?? profileData['followers_count'] ?? profileData['followerCount'] ?? 0;
+    final followingCount = profileData['followingCount'] ?? profileData['following_count'] ?? profileData['followsCount'] ?? 0;
+    
     // Extract links from description
     final List<String> links = _extractUrls(description);
     
@@ -397,6 +462,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
+        trailing: isCurrentUser ? CupertinoButton(
+          padding: EdgeInsets.zero,
+          onPressed: () => _showProfileMenu(context),
+          child: Icon(
+            FluentIcons.more_horizontal_24_regular,
+            color: AppTheme.getTextColor(context),
+          ),
+        ) : null,
       ),
       child: SafeArea(
         bottom: false, // Don't add padding at the bottom
@@ -437,14 +510,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         fit: BoxFit.cover,
                                         placeholder: (context, url) => const CupertinoActivityIndicator(),
                                         errorWidget: (context, url, error) => Icon(
-                                          Ionicons.person_outline,
+                                          FluentIcons.person_24_regular,
                                           size: 40,
                                           color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
                                         ),
                                       ),
                                     )
                                   : Icon(
-                                      Ionicons.person_outline,
+                                      FluentIcons.person_24_regular,
                                       size: 40,
                                       color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
                                     ),
@@ -467,7 +540,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   ),
                                   child: const Center(
                                     child: Icon(
-                                      CupertinoIcons.plus,
+                                      FluentIcons.add_24_filled,
                                       size: 18,
                                       color: AppColors.white,
                                     ),
@@ -483,10 +556,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Expanded(
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: const [
-                              ProfileStatItem(count: '129', label: 'Posts'),
-                              ProfileStatItem(count: '3680', label: 'Followers'),
-                              ProfileStatItem(count: '230', label: 'Following'),
+                            children: [
+                              ProfileStatItem(
+                                count: _formatCount(postsCount), 
+                                label: 'Posts'
+                              ),
+                              ProfileStatItem(
+                                count: _formatCount(followersCount), 
+                                label: 'Followers'
+                              ),
+                              ProfileStatItem(
+                                count: _formatCount(followingCount), 
+                                label: 'Following'
+                              ),
                             ],
                           ),
                         ),
@@ -596,15 +678,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                         const SizedBox(width: 8),
 
-                        // Follow button for non-current user, Friends+ for current user
+                        // Settings button for current user or Follow button for others
                         Expanded(
                           flex: 1,
-                          child: ProfileActionButton(
-                            label: isCurrentUser ? 'Friends +' : 'Follow',
-                            onPressed: () => _checkAuthAndProceed(() {
-                              // Follow or friends management logic here
-                            }),
-                          ),
+                          child: isCurrentUser
+                            ? CupertinoButton(
+                                padding: EdgeInsets.zero,
+                                onPressed: _handleSettingsTap,
+                                child: Container(
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(
+                                      color: AppColors.border,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      FluentIcons.settings_24_regular,
+                                      color: AppTheme.getTextColor(context),
+                                      size: 20,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : ProfileActionButton(
+                                label: 'Follow',
+                                onPressed: () => _checkAuthAndProceed(() {
+                                  // Follow logic here
+                                }),
+                              ),
                         ),
                       ],
                     ),
@@ -632,15 +736,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        _buildTabItem(context, 0, CupertinoIcons.film),
-                        _buildTabItem(context, 1, CupertinoIcons.photo),
-                        _buildTabItem(context, 2, CupertinoIcons.heart),
-                        _buildTabItem(context, 3, CupertinoIcons.arrow_2_squarepath),
-                        if (isAuthenticated) _buildTabItem(context, 4, CupertinoIcons.bookmark),
-                      ],
-                    ),
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildTabItem(context, 0, FluentIcons.video_24_regular),
+                      _buildTabItem(context, 1, FluentIcons.image_24_regular),
+                      _buildTabItem(context, 2, FluentIcons.heart_24_regular),
+                      _buildTabItem(context, 3, FluentIcons.arrow_repeat_all_24_regular),
+                      if (isAuthenticated) _buildTabItem(context, 4, FluentIcons.bookmark_24_regular),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -660,16 +764,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     // Get filled icon variants based on the outline icon
     IconData getFilledIcon(IconData outlineIcon) {
-      if (outlineIcon == CupertinoIcons.film) {
-        return CupertinoIcons.film_fill;
-      } else if (outlineIcon == CupertinoIcons.photo) {
-        return CupertinoIcons.photo_fill;
-      } else if (outlineIcon == CupertinoIcons.heart) {
-        return CupertinoIcons.heart_fill;
-      } else if (outlineIcon == CupertinoIcons.arrow_2_squarepath) {
-        return CupertinoIcons.arrow_2_squarepath;
-      } else if (outlineIcon == CupertinoIcons.bookmark) {
-        return CupertinoIcons.bookmark_fill;
+      if (outlineIcon == FluentIcons.video_24_regular) {
+        return FluentIcons.video_24_filled;
+      } else if (outlineIcon == FluentIcons.image_24_regular) {
+        return FluentIcons.image_24_filled;
+      } else if (outlineIcon == FluentIcons.heart_24_regular) {
+        return FluentIcons.heart_24_filled;
+      } else if (outlineIcon == FluentIcons.arrow_repeat_all_24_regular) {
+        return FluentIcons.arrow_repeat_all_24_filled;
+      } else if (outlineIcon == FluentIcons.bookmark_24_regular) {
+        return FluentIcons.bookmark_24_filled;
       } else {
         return outlineIcon;
       }
@@ -718,7 +822,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  CupertinoIcons.bookmark,
+                  FluentIcons.bookmark_24_regular,
                   size: 60,
                   color: AppTheme.getSecondaryTextColor(context),
                 ),
@@ -782,7 +886,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 return VideoThumbnail(
                   index: index,
                   backgroundColor: backgroundColor,
-                  icon: Ionicons.heart_outline,
+                  icon: FluentIcons.heart_24_regular,
                   viewCount: '${(index + 1) * 1000}',
                 );
               },
@@ -811,7 +915,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 return VideoThumbnail(
                   index: index,
                   backgroundColor: backgroundColor,
-                  icon: CupertinoIcons.arrow_2_squarepath,
+                  icon: FluentIcons.arrow_repeat_all_24_regular,
                   viewCount: '${(index + 1) * 1000}',
                 );
               },
@@ -840,7 +944,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 return VideoThumbnail(
                   index: index,
                   backgroundColor: backgroundColor,
-                  icon: Ionicons.bookmark_outline,
+                  icon: FluentIcons.bookmark_24_regular,
                   viewCount: '${(index + 1) * 1000}',
                 );
               },
@@ -876,7 +980,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Center(
                         child: Icon(
-                          CupertinoIcons.film,
+                          FluentIcons.video_24_regular,
                           color: AppColors.white.withOpacity(0.8),
                           size: 24,
                         ),
@@ -887,7 +991,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Row(
                           children: [
                             const Icon(
-                              CupertinoIcons.eye,
+                              FluentIcons.eye_24_regular,
                               color: AppColors.white,
                               size: 12,
                             ),
@@ -955,7 +1059,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Center(
                         child: Icon(
-                          CupertinoIcons.photo,
+                          FluentIcons.image_24_regular,
                           color: AppColors.white.withOpacity(0.8),
                           size: 24,
                         ),
@@ -966,7 +1070,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         child: Row(
                           children: [
                             const Icon(
-                              CupertinoIcons.heart,
+                              FluentIcons.heart_24_regular,
                               color: AppColors.white,
                               size: 12,
                             ),

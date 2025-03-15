@@ -1,6 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/cupertino.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../../utils/app_colors.dart';
 
 class VideoThumbnail extends StatelessWidget {
@@ -13,7 +13,7 @@ class VideoThumbnail extends StatelessWidget {
     super.key,
     required this.index,
     required this.backgroundColor,
-    this.icon = Ionicons.play_outline,
+    this.icon = FluentIcons.play_24_regular,
     required this.viewCount,
   });
 
@@ -40,7 +40,7 @@ class VideoThumbnail extends StatelessWidget {
               child: Row(
                 children: [
                   const Icon(
-                    Ionicons.eye_outline,
+                    FluentIcons.eye_24_regular,
                     color: AppColors.white,
                     size: 12,
                   ),

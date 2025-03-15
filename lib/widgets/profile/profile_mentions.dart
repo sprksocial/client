@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import '../../utils/app_colors.dart';
 import 'package:flutter/foundation.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 class ProfileMentions extends StatelessWidget {
   final List<String> usernames;
@@ -41,7 +42,7 @@ class ProfileMentions extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Icon(
-              CupertinoIcons.at,
+              FluentIcons.mention_24_regular,
               size: 16,
               color: AppColors.primary, // Pink color for username mentions
             ),

@@ -41,6 +41,9 @@ class ProfileService extends ChangeNotifier {
         'displayName': '',
         'description': '',
         'avatar': '',
+        'followersCount': 0,
+        'followingCount': 0,
+        'postsCount': 0,
       };
 
       // Try to resolve the handle using the DID
@@ -75,6 +78,9 @@ class ProfileService extends ChangeNotifier {
         final value = recordData['value'] as Map<String, dynamic>;
         profileData['displayName'] = value['displayName'] ?? profileData['handle'];
         profileData['description'] = value['description'] ?? '';
+        profileData['followersCount'] = value['followersCount'] ?? 0;
+        profileData['followingCount'] = value['followingCount'] ?? 0;
+        profileData['postsCount'] = value['postsCount'] ?? 0;
 
         final avatarRef = value['avatar']?['ref']?['\$link'];
         if (avatarRef != null) {
