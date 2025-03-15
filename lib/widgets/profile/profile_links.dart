@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import '../../utils/app_colors.dart';
 import 'package:flutter/foundation.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 class ProfileLinks extends StatelessWidget {
   final List<String> links;
@@ -37,7 +38,7 @@ class ProfileLinks extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Icon(
-            CupertinoIcons.link,
+            FluentIcons.link_24_regular,
             size: 16,
             color: AppColors.blue,
           ),

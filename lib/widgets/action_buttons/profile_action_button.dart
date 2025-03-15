@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 class ProfileActionButton extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -21,7 +21,7 @@ class ProfileActionButton extends StatelessWidget {
               height: 44,
               color: CupertinoColors.systemGrey,
               child: const Center(
-                child: Icon(Ionicons.person_outline, color: CupertinoColors.white),
+                child: Icon(FluentIcons.person_24_regular, color: CupertinoColors.white),
               ),
             ),
           ),
@@ -36,7 +36,7 @@ class ProfileActionButton extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                CupertinoIcons.add,
+                FluentIcons.add_24_filled,
                 color: CupertinoColors.white,
                 size: 14,
               ),

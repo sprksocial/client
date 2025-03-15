@@ -1,15 +1,18 @@
 import 'package:flutter/cupertino.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 class ActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
   final VoidCallback? onPressed;
+  final Color? color;
 
   const ActionButton({
     super.key,
     required this.icon,
     required this.label,
     this.onPressed,
+    this.color,
   });
 
   @override
@@ -20,7 +23,7 @@ class ActionButton extends StatelessWidget {
           onTap: onPressed,
           child: Icon(
             icon,
-            color: CupertinoColors.white,
+            color: color ?? CupertinoColors.white,
             size: 30,
           ),
         ),

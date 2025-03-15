@@ -1,5 +1,5 @@
 import 'package:flutter/cupertino.dart';
-import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../../utils/app_colors.dart';
 import 'video_thumbnail.dart';
 
@@ -10,7 +10,7 @@ class VideosGrid extends StatelessWidget {
   const VideosGrid({
     super.key,
     required this.itemCount,
-    this.iconType = Ionicons.play_outline,
+    this.iconType = FluentIcons.play_24_regular,
   });
 
   @override
@@ -28,19 +28,19 @@ class VideosGrid extends StatelessWidget {
       itemBuilder: (context, index) {
         // Create different color patterns based on the icon type
         Color backgroundColor;
-        if (iconType == Ionicons.heart_outline || iconType == CupertinoIcons.heart) {
+        if (iconType == FluentIcons.heart_24_regular || iconType == FluentIcons.heart_24_filled) {
           backgroundColor = index % 3 == 0
               ? AppColors.orange.withOpacity(0.7)
               : index % 3 == 1
                 ? AppColors.primary.withOpacity(0.7)
                 : AppColors.red.withOpacity(0.7);
-        } else if (iconType == Ionicons.bookmark_outline || iconType == CupertinoIcons.bookmark) {
+        } else if (iconType == FluentIcons.bookmark_24_regular || iconType == FluentIcons.bookmark_24_filled) {
           backgroundColor = index % 3 == 0
               ? AppColors.teal.withOpacity(0.7)
               : index % 3 == 1
                 ? AppColors.blue.withOpacity(0.7)
                 : AppColors.lightBlue.withOpacity(0.7);
-        } else if (iconType == CupertinoIcons.arrow_2_squarepath) {
+        } else if (iconType == FluentIcons.arrow_repeat_all_24_regular || iconType == FluentIcons.arrow_repeat_all_24_filled) {
           backgroundColor = index % 3 == 0
               ? AppColors.green.withOpacity(0.7)
               : index % 3 == 1

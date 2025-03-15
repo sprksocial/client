@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
 import 'screens/home_screen.dart';
 import 'screens/search_screen.dart';
@@ -124,30 +125,30 @@ class MainScreen extends StatelessWidget {
                         context,
                         0,
                         'Home',
-                        Ionicons.home_outline,
-                        Ionicons.home,
+                        FluentIcons.home_24_regular,
+                        FluentIcons.home_24_filled,
                       ),
                       _buildNavItem(
                         context,
                         1,
                         'Discover',
-                        Ionicons.compass_outline,
-                        Ionicons.compass,
+                        FluentIcons.compass_northwest_24_regular,
+                        FluentIcons.compass_northwest_24_filled,
                       ),
                       _buildCreateButton(context),
                       _buildNavItem(
                         context,
                         3,
                         'Messages',
-                        Ionicons.chatbubble_outline,
-                        Ionicons.chatbubble,
+                        FluentIcons.chat_24_regular,
+                        FluentIcons.chat_24_filled,
                       ),
                       _buildNavItem(
                         context,
                         4,
                         'Profile',
-                        Ionicons.person_outline,
-                        Ionicons.person,
+                        FluentIcons.person_24_regular,
+                        FluentIcons.person_24_filled,
                       ),
                     ],
                   ),
@@ -201,7 +202,7 @@ class MainScreen extends StatelessWidget {
         ),
         child: const Center(
           child: Icon(
-            Ionicons.add,
+            FluentIcons.add_24_filled,
             color: AppColors.white,
             size: 24,
           ),
