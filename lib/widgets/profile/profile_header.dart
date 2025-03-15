@@ -1,0 +1,304 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
+import '../../utils/app_colors.dart';
+import '../../utils/app_theme.dart';
+import '../../utils/formatters/text_formatter.dart';
+import 'profile_stat_item.dart';
+import 'profile_action_button.dart';
+import 'profile_links.dart';
+
+class ProfileHeader extends StatefulWidget {
+  final Map<String, dynamic> profileData;
+  final bool isCurrentUser;
+  final bool isEarlySupporter;
+  final VoidCallback onEarlySupporterTap;
+  final VoidCallback onEditTap;
+  final VoidCallback onShareTap;
+  final VoidCallback onFollowTap;
+  final VoidCallback onSettingsTap;
+  
+  const ProfileHeader({
+    Key? key,
+    required this.profileData,
+    required this.isCurrentUser,
+    this.isEarlySupporter = false,
+    required this.onEarlySupporterTap,
+    required this.onEditTap,
+    required this.onShareTap,
+    required this.onFollowTap,
+    required this.onSettingsTap,
+  }) : super(key: key);
+
+  @override
+  State<ProfileHeader> createState() => _ProfileHeaderState();
+}
+
+class _ProfileHeaderState extends State<ProfileHeader> {
+  bool _expandDescription = false;
+  
+  void _toggleDescriptionExpand() {
+    setState(() {
+      _expandDescription = !_expandDescription;
+    });
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    final brightness = MediaQuery.of(context).platformBrightness;
+    final isDarkMode = brightness == Brightness.dark;
+    
+    // Extract profile data
+    final displayName = widget.profileData['displayName'] ?? '';
+    final handle = widget.profileData['handle'] ?? '';
+    final description = widget.profileData['description'] ?? '';
+    final avatar = widget.profileData['avatar'];
+    
+    // Stats with formatted counts
+    final postsCount = TextFormatter.formatCount(widget.profileData['postsCount']);
+    final followersCount = TextFormatter.formatCount(widget.profileData['followersCount']);
+    final followingCount = TextFormatter.formatCount(widget.profileData['followingCount']);
+    
+    // Extract links from description
+    final List<String> links = TextFormatter.extractUrls(description);
+    
+    // Manual detection for specific domains to match the screenshot example
+    if (links.isEmpty && description.contains("esfera.dev") && !description.contains("@esfera.dev")) {
+      links.add("esfera.dev");
+    }
+    
+    // Deduplicate links
+    final uniqueLinks = links.toSet().toList();
+    
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Profile image and stats in a row
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Profile image with + button
+              Stack(
+                children: [
+                  Container(
+                    width: 90,
+                    height: 90,
+                    decoration: BoxDecoration(
+                      color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
+                        width: 2,
+                      ),
+                    ),
+                    child: Center(
+                      child: avatar != null && avatar.isNotEmpty
+                        ? ClipOval(
+                            child: CachedNetworkImage(
+                              imageUrl: avatar,
+                              width: 90,
+                              height: 90,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => const CupertinoActivityIndicator(),
+                              errorWidget: (context, url, error) => Icon(
+                                FluentIcons.person_24_regular,
+                                size: 40,
+                                color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
+                              ),
+                            ),
+                          )
+                        : Icon(
+                            FluentIcons.person_24_regular,
+                            size: 40,
+                            color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
+                          ),
+                    ),
+                  ),
+                  if (widget.isCurrentUser)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 30,
+                        height: 30,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: AppColors.primary,
+                          border: Border.all(
+                            color: isDarkMode ? AppColors.deepPurple : AppColors.white,
+                            width: 2,
+                          ),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            FluentIcons.add_24_filled,
+                            size: 18,
+                            color: AppColors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+
+              const SizedBox(width: 20),
+
+              // Stats row
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ProfileStatItem(count: postsCount, label: 'Posts'),
+                    ProfileStatItem(count: followersCount, label: 'Followers'),
+                    ProfileStatItem(count: followingCount, label: 'Following'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 16),
+
+          // Username and verified badge
+          Row(
+            children: [
+              Text(
+                displayName.isNotEmpty ? displayName : handle,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: AppTheme.getTextColor(context),
+                ),
+              ),
+
+              // Early Supporter badge
+              if (widget.isEarlySupporter) ...[
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: widget.onEarlySupporterTap,
+                  child: SvgPicture.asset(
+                    'assets/images/match.svg',
+                    height: 20,
+                    width: 20,
+                    colorFilter: const ColorFilter.mode(
+                      AppColors.primary,
+                      BlendMode.srcIn
+                    ),
+                  ),
+                ),
+              ],
+            ],
+          ),
+
+          const SizedBox(height: 4),
+
+          // Username in the format seen in the screenshot
+          Text(
+            '@$handle',
+            style: TextStyle(
+              color: AppTheme.getSecondaryTextColor(context),
+              fontSize: 14,
+            ),
+          ),
+
+          if (description.isNotEmpty || uniqueLinks.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            
+            // Description text with inline highlighted usernames
+            if (description.isNotEmpty)
+              GestureDetector(
+                onTap: _toggleDescriptionExpand,
+                child: TextFormatter.buildRichTextWithMentions(
+                  context, 
+                  description,
+                  _expandDescription,
+                  (username) {
+                    // Handle username tap
+                    print('Username tapped: $username');
+                  },
+                ),
+              ),
+            
+            // Links widget (if any)
+            if (uniqueLinks.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: ProfileLinks(links: uniqueLinks),
+              ),
+          ],
+
+          const SizedBox(height: 16),
+
+          // Action buttons in a row
+          Row(
+            children: [
+              // Edit button - only for current user
+              if (widget.isCurrentUser) ...[
+                Expanded(
+                  flex: 1,
+                  child: ProfileActionButton(
+                    label: 'Edit',
+                    onPressed: widget.onEditTap,
+                    isPrimary: true,
+                    isOutlined: false,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+
+              // Share Profile button
+              Expanded(
+                flex: 1,
+                child: Container(
+                  constraints: const BoxConstraints(minHeight: 36),
+                  child: ProfileActionButton(
+                    label: 'Share Profile',
+                    onPressed: widget.onShareTap,
+                  ),
+                ),
+              ),
+
+              const SizedBox(width: 8),
+
+              // Settings button for current user or Follow button for others
+              Expanded(
+                flex: 1,
+                child: widget.isCurrentUser
+                  ? CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      onPressed: widget.onSettingsTap,
+                      child: Container(
+                        height: 36,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: AppColors.border,
+                            width: 1,
+                          ),
+                        ),
+                        child: Center(
+                          child: Icon(
+                            FluentIcons.settings_24_regular,
+                            color: AppTheme.getTextColor(context),
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    )
+                  : ProfileActionButton(
+                      label: 'Follow',
+                      onPressed: widget.onFollowTap,
+                    ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+} 

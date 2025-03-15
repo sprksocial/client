@@ -8,20 +8,22 @@ class VideoThumbnail extends StatelessWidget {
   final Color backgroundColor;
   final IconData icon;
   final String viewCount;
+  final String? duration;
   
   const VideoThumbnail({
-    super.key,
+    Key? key,
     required this.index,
     required this.backgroundColor,
-    this.icon = FluentIcons.play_24_regular,
+    required this.icon,
     required this.viewCount,
-  });
+    this.duration,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        log('Video thumbnail clicked: index $index');
+        debugPrint('Content clicked at index $index');
       },
       child: Container(
         color: backgroundColor,
@@ -55,6 +57,25 @@ class VideoThumbnail extends StatelessWidget {
                 ],
               ),
             ),
+            if (duration != null)
+              Positioned(
+                top: 5,
+                right: 5,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: AppColors.black.withAlpha(128),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Text(
+                    duration!,
+                    style: const TextStyle(
+                      color: AppColors.white,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
