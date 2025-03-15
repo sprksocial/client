@@ -4,9 +4,10 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
-import '../widgets/profile/profile_stat_item.dart';
-import '../widgets/profile/profile_action_button.dart';
-import '../widgets/profile/videos_grid.dart';
+import '../utils/profile_helper.dart';
+import '../widgets/profile/profile_header.dart';
+import '../widgets/profile/profile_tabs.dart';
+import '../widgets/profile/profile_tab_content.dart';
 import '../widgets/profile/early_supporter_sheet.dart';
 import '../services/auth_service.dart';
 import '../services/profile_service.dart';
@@ -323,6 +324,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return spans;
   }
 
+  void _handleTabChange(int index) {
+    setState(() {
+      _selectedTabIndex = index;
+    });
+  }
+
+  void _handleLogin() {
+    setState(() {
+      _showAuthPrompt = false;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
@@ -449,27 +462,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     // Extract profile data
-    final displayName = profileData['displayName'] ?? '';
-    final handle = profileData['handle'] ?? '';
-    final description = profileData['description'] ?? '';
-    final avatar = profileData['avatar'];
-    final isCurrentUser = _isCurrentUser(profileData);
+    final isCurrentUser = ProfileHelper.isCurrentUser(authService, profileData);
+    final extractedProfileData = ProfileHelper.extractProfileData(profileData);
     
-    // Get profile stats (with fallbacks for missing fields)
-    final postsCount = profileData['postsCount'] ?? profileData['posts_count'] ?? profileData['postCount'] ?? 0;
-    final followersCount = profileData['followersCount'] ?? profileData['followers_count'] ?? profileData['followerCount'] ?? 0;
-    final followingCount = profileData['followingCount'] ?? profileData['following_count'] ?? profileData['followsCount'] ?? 0;
-    
-    // Extract links from description
-    final List<String> links = _extractUrls(description);
-    
-    // Manual detection for specific domains to match the screenshot example
-    if (links.isEmpty && description.contains("esfera.dev") && !description.contains("@esfera.dev")) {
-      links.add("esfera.dev");
-    }
-    
-    // Deduplicate links
-    final uniqueLinks = links.toSet().toList();
+    // Create tab content manager
+    final tabContent = ProfileTabContent(
+      selectedIndex: _selectedTabIndex,
+      isAuthenticated: isAuthenticated,
+      onLoginPressed: _handleLogin,
+    );
 
     return CupertinoPageScaffold(
       backgroundColor: AppTheme.getBackgroundColor(context, false),
@@ -495,634 +496,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
         bottom: false, // Don't add padding at the bottom
         child: CustomScrollView(
           slivers: [
-            // Profile info - horizontal layout
+            // Profile header
             SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Profile image and stats in a row
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        // Profile image with + button
-                        Stack(
-                          children: [
-                            Container(
-                              width: 90,
-                              height: 90,
-                              decoration: BoxDecoration(
-                                color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
-                                  width: 2,
-                                ),
-                              ),
-                              child: Center(
-                                child: avatar != null && avatar.isNotEmpty
-                                  ? ClipOval(
-                                      child: CachedNetworkImage(
-                                        imageUrl: avatar,
-                                        width: 90,
-                                        height: 90,
-                                        fit: BoxFit.cover,
-                                        placeholder: (context, url) => const CupertinoActivityIndicator(),
-                                        errorWidget: (context, url, error) => Icon(
-                                          FluentIcons.person_24_regular,
-                                          size: 40,
-                                          color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
-                                        ),
-                                      ),
-                                    )
-                                  : Icon(
-                                      FluentIcons.person_24_regular,
-                                      size: 40,
-                                      color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
-                                    ),
-                              ),
-                            ),
-                            if (isCurrentUser)
-                              Positioned(
-                                right: 0,
-                                bottom: 0,
-                                child: Container(
-                                  width: 30,
-                                  height: 30,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: AppColors.primary,
-                                    border: Border.all(
-                                      color: isDarkMode ? AppColors.deepPurple : AppColors.white,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  child: const Center(
-                                    child: Icon(
-                                      FluentIcons.add_24_filled,
-                                      size: 18,
-                                      color: AppColors.white,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-
-                        const SizedBox(width: 20),
-
-                        // Stats row
-                        Expanded(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              ProfileStatItem(
-                                count: _formatCount(postsCount), 
-                                label: 'Posts'
-                              ),
-                              ProfileStatItem(
-                                count: _formatCount(followersCount), 
-                                label: 'Followers'
-                              ),
-                              ProfileStatItem(
-                                count: _formatCount(followingCount), 
-                                label: 'Following'
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    // Username and verified badge
-                    Row(
-                      children: [
-                        Text(
-                          displayName.isNotEmpty ? displayName : handle,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                            color: AppTheme.getTextColor(context),
-                          ),
-                        ),
-
-                        // Early Supporter badge
-                        if (_isEarlySupporter) ...[
-                          const SizedBox(width: 8),
-                          GestureDetector(
-                            onTap: () => _showEarlySupporterInfo(context),
-                            child: SvgPicture.asset(
-                              'assets/images/match.svg',
-                              height: 20,
-                              width: 20,
-                              colorFilter: const ColorFilter.mode(
-                                AppColors.primary,
-                                BlendMode.srcIn
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-
-                    const SizedBox(height: 4),
-
-                    // Username in the format seen in the screenshot
-                    Text(
-                      '@$handle',
-                      style: TextStyle(
-                        color: AppTheme.getSecondaryTextColor(context),
-                        fontSize: 14,
-                      ),
-                    ),
-
-                    if (description.isNotEmpty || uniqueLinks.isNotEmpty) ...[
-                      const SizedBox(height: 8),
-                      
-                      // Description text with inline highlighted usernames
-                      if (description.isNotEmpty)
-                        GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _expandDescription = !_expandDescription;
-                            });
-                          },
-                          child: _buildRichTextWithMentions(description),
-                        ),
-                      
-                      // Links widget (if any)
-                      if (uniqueLinks.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 4.0),
-                          child: ProfileLinks(links: uniqueLinks),
-                        ),
-                    ],
-
-                    const SizedBox(height: 16),
-
-                    // Action buttons in a row
-                    Row(
-                      children: [
-                        // Edit button - only for current user
-                        if (isCurrentUser) ...[
-                          Expanded(
-                            flex: 1,
-                            child: ProfileActionButton(
-                              label: 'Edit',
-                              onPressed: () => _checkAuthAndProceed(() {
-                                // Edit profile logic here
-                              }),
-                              isPrimary: true,
-                              isOutlined: false,
-                            ),
-                          ),
-                          const SizedBox(width: 8),
-                        ],
-
-                        // Share Profile button
-                        Expanded(
-                          flex: 1,
-                          child: Container(
-                            constraints: const BoxConstraints(minHeight: 36),
-                            child: ProfileActionButton(
-                              label: 'Share Profile',
-                              onPressed: () {
-                                // Share profile doesn't require authentication
-                              },
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(width: 8),
-
-                        // Settings button for current user or Follow button for others
-                        Expanded(
-                          flex: 1,
-                          child: isCurrentUser
-                            ? CupertinoButton(
-                                padding: EdgeInsets.zero,
-                                onPressed: _handleSettingsTap,
-                                child: Container(
-                                  height: 36,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    border: Border.all(
-                                      color: AppColors.border,
-                                      width: 1,
-                                    ),
-                                  ),
-                                  child: Center(
-                                    child: Icon(
-                                      FluentIcons.settings_24_regular,
-                                      color: AppTheme.getTextColor(context),
-                                      size: 20,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : ProfileActionButton(
-                                label: 'Follow',
-                                onPressed: () => _checkAuthAndProceed(() {
-                                  // Follow logic here
-                                }),
-                              ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              child: ProfileHeader(
+                profileData: extractedProfileData,
+                isCurrentUser: isCurrentUser,
+                isEarlySupporter: _isEarlySupporter,
+                onEarlySupporterTap: () => _showEarlySupporterInfo(context),
+                onEditTap: () => _checkAuthAndProceed(() {
+                  // Edit profile logic here
+                  debugPrint('Edit profile tapped');
+                }),
+                onShareTap: () {
+                  // Share profile logic
+                  debugPrint('Share profile tapped');
+                },
+                onFollowTap: () => _checkAuthAndProceed(() {
+                  // Follow logic here
+                  debugPrint('Follow tapped');
+                }),
+                onSettingsTap: _handleSettingsTap,
               ),
             ),
 
             // Tab bar - Sticky when scrolling
             SliverPersistentHeader(
               pinned: true,
-              delegate: _StickyTabBarDelegate(
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: AppTheme.getBackgroundColor(context, false),
-                    border: Border(
-                      top: BorderSide(
-                        color: AppColors.border,
-                        width: 0.5,
-                      ),
-                      bottom: BorderSide(
-                        color: AppColors.border,
-                        width: 0.5,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildTabItem(context, 0, FluentIcons.video_24_regular),
-                      _buildTabItem(context, 1, FluentIcons.image_24_regular),
-                      _buildTabItem(context, 2, FluentIcons.heart_24_regular),
-                      _buildTabItem(context, 3, FluentIcons.arrow_repeat_all_24_regular),
-                      if (isAuthenticated) _buildTabItem(context, 4, FluentIcons.bookmark_24_regular),
-                    ],
-                  ),
+              delegate: StickyTabBarDelegate(
+                child: ProfileTabs(
+                  selectedIndex: _selectedTabIndex,
+                  onTabSelected: _handleTabChange,
+                  isAuthenticated: isAuthenticated,
                 ),
               ),
             ),
 
-            // Tab content - now integrated directly as slivers
-            ..._buildTabContent(),
+            // Tab content
+            ...tabContent.getTabContent(),
           ],
         ),
       ),
     );
   }
-
-  Widget _buildTabItem(BuildContext context, int index, IconData icon) {
-    final brightness = MediaQuery.of(context).platformBrightness;
-    final isDarkMode = brightness == Brightness.dark;
-    final isSelected = _selectedTabIndex == index;
-
-    // Get filled icon variants based on the outline icon
-    IconData getFilledIcon(IconData outlineIcon) {
-      if (outlineIcon == FluentIcons.video_24_regular) {
-        return FluentIcons.video_24_filled;
-      } else if (outlineIcon == FluentIcons.image_24_regular) {
-        return FluentIcons.image_24_filled;
-      } else if (outlineIcon == FluentIcons.heart_24_regular) {
-        return FluentIcons.heart_24_filled;
-      } else if (outlineIcon == FluentIcons.arrow_repeat_all_24_regular) {
-        return FluentIcons.arrow_repeat_all_24_filled;
-      } else if (outlineIcon == FluentIcons.bookmark_24_regular) {
-        return FluentIcons.bookmark_24_filled;
-      } else {
-        return outlineIcon;
-      }
-    }
-
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      onPressed: () {
-        setState(() {
-          _selectedTabIndex = index;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
-        decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: isSelected
-                  ? AppColors.primary
-                  : Colors.transparent,
-              width: 2,
-            ),
-          ),
-        ),
-        child: Icon(
-          isSelected ? getFilledIcon(icon) : icon,
-          color: isSelected
-              ? AppColors.primary
-              : (isDarkMode ? AppColors.textLight : AppColors.textSecondary),
-          size: 26,
-        ),
-      ),
-    );
-  }
-
-  List<Widget> _buildTabContent() {
-    final authService = Provider.of<AuthService>(context);
-
-    // For tabs that require authentication, show auth prompt if not authenticated
-    if ((_selectedTabIndex == 4) && !authService.isAuthenticated) {
-      return [
-        SliverFillRemaining(
-          hasScrollBody: false,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  FluentIcons.bookmark_24_regular,
-                  size: 60,
-                  color: AppTheme.getSecondaryTextColor(context),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Saved videos',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: AppTheme.getTextColor(context),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  'Login to view your saved content',
-                  style: TextStyle(
-                    color: AppTheme.getSecondaryTextColor(context),
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                CupertinoButton(
-                  color: CupertinoColors.systemPink,
-                  onPressed: () {
-                    setState(() {
-                      _showAuthPrompt = true;
-                    });
-                  },
-                  child: const Text('Login'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ];
-    }
-
-    switch (_selectedTabIndex) {
-      case 0:
-        return _buildVideosGridSlivers();
-      case 1:
-        return _buildPhotosGridSlivers();
-      case 2:
-        return [
-          SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 2/3,
-              crossAxisSpacing: 1,
-              mainAxisSpacing: 1,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                // Create different color patterns based on the icon type
-                Color backgroundColor = index % 3 == 0
-                    ? AppColors.orange.withAlpha(120)
-                    : index % 3 == 1
-                      ? AppColors.primary.withAlpha(120)
-                      : AppColors.red.withAlpha(120);
-
-                return VideoThumbnail(
-                  index: index,
-                  backgroundColor: backgroundColor,
-                  icon: FluentIcons.heart_24_regular,
-                  viewCount: '${(index + 1) * 1000}',
-                );
-              },
-              childCount: 30,
-            ),
-          ),
-        ];
-      case 3:
-        return [
-          SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 2/3,
-              crossAxisSpacing: 1,
-              mainAxisSpacing: 1,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                // Create different color patterns based on the icon type
-                Color backgroundColor = index % 3 == 0
-                    ? AppColors.green.withAlpha(120)
-                    : index % 3 == 1
-                      ? AppColors.blue.withAlpha(120)
-                      : AppColors.primary.withAlpha(120);
-
-                return VideoThumbnail(
-                  index: index,
-                  backgroundColor: backgroundColor,
-                  icon: FluentIcons.arrow_repeat_all_24_regular,
-                  viewCount: '${(index + 1) * 1000}',
-                );
-              },
-              childCount: 25,
-            ),
-          ),
-        ];
-      case 4:
-        return [
-          SliverGrid(
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              childAspectRatio: 2/3,
-              crossAxisSpacing: 1,
-              mainAxisSpacing: 1,
-            ),
-            delegate: SliverChildBuilderDelegate(
-              (context, index) {
-                // Create different color patterns based on the icon type
-                Color backgroundColor = index % 3 == 0
-                    ? AppColors.teal.withAlpha(120)
-                    : index % 3 == 1
-                      ? AppColors.blue.withAlpha(120)
-                      : AppColors.lightBlue.withAlpha(120);
-
-                return VideoThumbnail(
-                  index: index,
-                  backgroundColor: backgroundColor,
-                  icon: FluentIcons.bookmark_24_regular,
-                  viewCount: '${(index + 1) * 1000}',
-                );
-              },
-              childCount: 28,
-            ),
-          ),
-        ];
-      default:
-        return [const SliverToBoxAdapter(child: SizedBox.shrink())];
-    }
-  }
-
-  List<Widget> _buildVideosGridSlivers() {
-    return [
-      SliverPadding(
-        padding: const EdgeInsets.all(1),
-        sliver: SliverGrid(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            childAspectRatio: 2/3,
-            crossAxisSpacing: 1,
-            mainAxisSpacing: 1,
-          ),
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              return GestureDetector(
-                onTap: () {
-                  debugPrint('Video post clicked at index $index');
-                },
-                child: Container(
-                  color: AppColors.richPurple.withAlpha(120),
-                  child: Stack(
-                    children: [
-                      Center(
-                        child: Icon(
-                          FluentIcons.video_24_regular,
-                          color: AppColors.white.withAlpha(204),
-                          size: 24,
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 5,
-                        left: 5,
-                        child: Row(
-                          children: [
-                            const Icon(
-                              FluentIcons.eye_24_regular,
-                              color: AppColors.white,
-                              size: 12,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${(index + 1) * 1000}',
-                              style: const TextStyle(
-                                color: AppColors.white,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Positioned(
-                        top: 5,
-                        right: 5,
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: AppColors.black.withAlpha(128),
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: const Text(
-                            '0:30',
-                            style: TextStyle(
-                              color: AppColors.white,
-                              fontSize: 10,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-            childCount: 24,
-          ),
-        ),
-      ),
-    ];
-  }
-
-  List<Widget> _buildPhotosGridSlivers() {
-    return [
-      SliverPadding(
-        padding: const EdgeInsets.all(1),
-        sliver: SliverGrid(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            childAspectRatio: 2/3,
-            crossAxisSpacing: 1,
-            mainAxisSpacing: 1,
-          ),
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              return GestureDetector(
-                onTap: () {
-                  debugPrint('Photo post clicked at index $index');
-                },
-                child: Container(
-                  color: AppColors.orange.withAlpha(120),
-                  child: Stack(
-                    children: [
-                      Center(
-                        child: Icon(
-                          FluentIcons.image_24_regular,
-                          color: AppColors.white.withAlpha(204),
-                          size: 24,
-                        ),
-                      ),
-                      Positioned(
-                        bottom: 5,
-                        left: 5,
-                        child: Row(
-                          children: [
-                            const Icon(
-                              FluentIcons.heart_24_regular,
-                              color: AppColors.white,
-                              size: 12,
-                            ),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${(index + 1) * 1000}',
-                              style: const TextStyle(
-                                color: AppColors.white,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-            childCount: 30,
-          ),
-        ),
-      ),
-    ];
-  }
 }
 
 // Add a StickyTabBarDelegate class for the persistent header
-class _StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
+class StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
 
-  _StickyTabBarDelegate({required this.child});
+  StickyTabBarDelegate({required this.child});
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
