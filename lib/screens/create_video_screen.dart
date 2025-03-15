@@ -1,8 +1,14 @@
+import 'dart:async';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show LinearProgressIndicator, AlwaysStoppedAnimation;
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:camera/camera.dart';
 import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
+import '../services/camera_service.dart';
+import '../widgets/camera/camera_view.dart';
+import '../widgets/camera/camera_controls.dart';
+import '../widgets/camera/mode_selector.dart';
+import '../widgets/camera/recording_bar.dart';
 import 'auth_prompt_screen.dart';
 
 class CreateVideoScreen extends StatefulWidget {
@@ -12,27 +18,193 @@ class CreateVideoScreen extends StatefulWidget {
   State<CreateVideoScreen> createState() => _CreateVideoScreenState();
 }
 
-class _CreateVideoScreenState extends State<CreateVideoScreen> {
-  int _selectedEffectIndex = 0;
-  double _zoomLevel = 1.0;
+class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindingObserver {
+  final CameraService _cameraService = CameraService();
+  CameraMode _mode = CameraMode.video;
   bool _isRecording = false;
+  double _recordingProgress = 0.0;
+  String _recordingTimeText = '00:00 / 03:00';
   bool _showAuthPrompt = false;
+  Timer? _recordingTimer;
+  int _recordingSeconds = 0;
+  final int _maxRecordingSeconds = 180; // 3 minutes
 
-  final List<String> _effects = [
-    'None', 'Beauty', 'Filters', 'Green Screen', 'Slow Motion'
-  ];
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _initializeCamera();
+  }
 
-  void _attemptRecording() {
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _stopRecordingTimer();
+    _cameraService.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // Handle app lifecycle changes
+    if (state == AppLifecycleState.inactive) {
+      _cameraService.dispose();
+    } else if (state == AppLifecycleState.resumed) {
+      _initializeCamera();
+    }
+  }
+
+  Future<void> _initializeCamera() async {
+    try {
+      await _cameraService.initCamera();
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Error initializing camera: $e');
+    }
+  }
+
+  void _onModeSelected(CameraMode mode) {
+    setState(() {
+      _mode = mode;
+    });
+  }
+
+  void _onFlipCameraPressed() async {
+    try {
+      await _cameraService.flipCamera();
+      if (mounted) {
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Error flipping camera: $e');
+    }
+  }
+
+  void _onGalleryPressed() async {
     final authService = Provider.of<AuthService>(context, listen: false);
     if (!authService.isAuthenticated) {
       setState(() {
         _showAuthPrompt = true;
       });
-    } else {
-      setState(() {
-        _isRecording = !_isRecording;
-      });
+      return;
     }
+
+    // For now, just show a message
+    // In a real implementation, you would integrate with image/video picker
+    debugPrint('Gallery selection not implemented yet');
+    
+    // Show a placeholder message to the user
+    showCupertinoDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoAlertDialog(
+          title: const Text('Gallery Selection'),
+          content: const Text('Gallery selection will be implemented in a future update.'),
+          actions: [
+            CupertinoDialogAction(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _onCapturePressed() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    if (!authService.isAuthenticated) {
+      setState(() {
+        _showAuthPrompt = true;
+      });
+      return;
+    }
+
+    if (_mode == CameraMode.photo) {
+      await _takePhoto();
+    } else {
+      await _toggleVideoRecording();
+    }
+  }
+
+  Future<void> _takePhoto() async {
+    try {
+      final XFile? photo = await _cameraService.takePhoto();
+      if (photo != null) {
+        // Handle the photo (implement this based on your app's flow)
+        debugPrint('Photo taken: ${photo.path}');
+        // Here you would typically navigate to a preview/edit screen
+      }
+    } catch (e) {
+      debugPrint('Error taking photo: $e');
+    }
+  }
+
+  Future<void> _toggleVideoRecording() async {
+    if (_isRecording) {
+      try {
+        final XFile? video = await _cameraService.stopVideoRecording();
+        _stopRecordingTimer();
+        
+        setState(() {
+          _isRecording = false;
+          _recordingProgress = 0.0;
+          _recordingTimeText = '00:00 / 03:00';
+          _recordingSeconds = 0;
+        });
+        
+        if (video != null) {
+          // Handle the video (implement this based on your app's flow)
+          debugPrint('Video recorded: ${video.path}');
+          // Here you would typically navigate to a preview/edit screen
+        }
+      } catch (e) {
+        debugPrint('Error stopping video recording: $e');
+      }
+    } else {
+      try {
+        bool success = await _cameraService.startVideoRecording();
+        if (success) {
+          setState(() {
+            _isRecording = true;
+          });
+          _startRecordingTimer();
+        }
+      } catch (e) {
+        debugPrint('Error starting video recording: $e');
+      }
+    }
+  }
+
+  void _startRecordingTimer() {
+    _recordingTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (timer) {
+        if (_recordingSeconds >= _maxRecordingSeconds) {
+          _toggleVideoRecording();
+          return;
+        }
+        
+        setState(() {
+          _recordingSeconds++;
+          _recordingProgress = _recordingSeconds / _maxRecordingSeconds;
+          
+          final int minutes = _recordingSeconds ~/ 60;
+          final int seconds = _recordingSeconds % 60;
+          final String minutesStr = minutes.toString().padLeft(2, '0');
+          final String secondsStr = seconds.toString().padLeft(2, '0');
+          
+          _recordingTimeText = '$minutesStr:$secondsStr / 03:00';
+        });
+      },
+    );
+  }
+
+  void _stopRecordingTimer() {
+    _recordingTimer?.cancel();
+    _recordingTimer = null;
   }
 
   @override
@@ -51,267 +223,81 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> {
 
     return CupertinoPageScaffold(
       backgroundColor: CupertinoColors.black,
-      child: Stack(
-        children: [
-          // Camera preview (placeholder)
-          Container(
-            color: CupertinoColors.black,
-            width: double.infinity,
-            height: double.infinity,
-            child: Center(
-              child: Icon(
-                FluentIcons.camera_24_regular,
-                size: 100,
-                color: CupertinoColors.white.withAlpha(77),
+      child: SafeArea(
+        child: Stack(
+          children: [
+            // Camera view
+            Positioned.fill(
+              child: CameraView(
+                cameraController: _cameraService.controller,
+                isInitialized: _cameraService.isInitialized,
               ),
             ),
-          ),
 
-          // Top controls
-          Positioned(
-            top: 50,
-            left: 0,
-            right: 0,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  GestureDetector(
-                    onTap: () => Navigator.of(context).pop(),
-                    child: const Icon(
-                      FluentIcons.dismiss_24_regular,
-                      color: CupertinoColors.white,
-                      size: 30,
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      const Icon(
-                        FluentIcons.flash_24_regular,
-                        color: CupertinoColors.white,
-                        size: 30,
-                      ),
-                      const SizedBox(width: 20),
-                      const Icon(
-                        FluentIcons.timer_24_regular,
-                        color: CupertinoColors.white,
-                        size: 30,
-                      ),
-                      const SizedBox(width: 20),
-                      const Icon(
-                        FluentIcons.options_24_regular,
-                        color: CupertinoColors.white,
-                        size: 30,
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // Zoom control
-          Positioned(
-            top: 100,
-            right: 16,
-            child: Column(
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _zoomLevel = (_zoomLevel >= 5.0) ? 5.0 : _zoomLevel + 0.5;
-                    });
-                  },
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: CupertinoColors.black.withAlpha(128),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        FluentIcons.add_24_regular,
-                        color: CupertinoColors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            // Close button
+            Positioned(
+              top: 20,
+              left: 20,
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: CupertinoColors.black.withAlpha(128),
-                    borderRadius: BorderRadius.circular(20),
+                    color: CupertinoColors.black.withAlpha(100),
+                    shape: BoxShape.circle,
                   ),
-                  child: Text(
-                    '${_zoomLevel.toStringAsFixed(1)}x',
-                    style: const TextStyle(
-                      color: CupertinoColors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: const Icon(
+                    FluentIcons.dismiss_24_regular,
+                    color: CupertinoColors.white,
+                    size: 24,
                   ),
-                ),
-                const SizedBox(height: 10),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _zoomLevel = (_zoomLevel <= 1.0) ? 1.0 : _zoomLevel - 0.5;
-                    });
-                  },
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: CupertinoColors.black.withAlpha(128),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Center(
-                      child: Icon(
-                        FluentIcons.subtract_24_regular,
-                        color: CupertinoColors.white,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          // Bottom controls
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    CupertinoColors.black,
-                    CupertinoColors.black.withAlpha(0),
-                  ],
                 ),
               ),
+            ),
+
+            // Mode selector
+            Positioned(
+              top: 20,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: ModeSelector(
+                  selectedMode: _mode,
+                  onModeSelected: _onModeSelected,
+                ),
+              ),
+            ),
+
+            // Bottom controls
+            Positioned(
+              bottom: 30,
+              left: 0,
+              right: 0,
               child: Column(
                 children: [
-                  // Effects scroll
-                  SizedBox(
-                    height: 40,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _effects.length,
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      itemBuilder: (context, index) {
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              _selectedEffectIndex = index;
-                            });
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: _selectedEffectIndex == index
-                                  ? CupertinoColors.systemPink
-                                  : CupertinoColors.black.withAlpha(128),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: CupertinoColors.white.withAlpha(128),
-                                width: 1,
-                              ),
-                            ),
-                            child: Center(
-                              child: Text(
-                                _effects[index],
-                                style: const TextStyle(
-                                  color: CupertinoColors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                        );
-                      },
+                  // Recording progress bar (only visible when recording or in video mode)
+                  if (_mode == CameraMode.video) ...[
+                    RecordingBar(
+                      isRecording: _isRecording,
+                      progress: _recordingProgress,
+                      timeText: _recordingTimeText,
                     ),
-                  ),
+                    const SizedBox(height: 20),
+                  ],
 
-                  const SizedBox(height: 20),
-
-                  // Recording controls
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      const Icon(
-                        FluentIcons.image_24_regular,
-                        color: CupertinoColors.white,
-                        size: 30,
-                      ),
-                      GestureDetector(
-                        onTap: _attemptRecording,
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: CupertinoColors.white,
-                              width: 5,
-                            ),
-                          ),
-                          child: Center(
-                            child: Container(
-                              width: _isRecording ? 40 : 65,
-                              height: _isRecording ? 40 : 65,
-                              decoration: BoxDecoration(
-                                color: CupertinoColors.systemPink,
-                                borderRadius: BorderRadius.circular(_isRecording ? 8 : 65),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const Icon(
-                        FluentIcons.checkmark_circle_24_regular,
-                        color: CupertinoColors.white,
-                        size: 30,
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 20),
-
-                  // Duration indicator
-                  Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 40),
-                    height: 5,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(2.5),
-                      child: LinearProgressIndicator(
-                        value: _isRecording ? 0.3 : 0,
-                        backgroundColor: CupertinoColors.white.withAlpha(77),
-                        valueColor: const AlwaysStoppedAnimation<Color>(CupertinoColors.systemPink),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-                  const Text(
-                    '00:15 / 03:00',
-                    style: TextStyle(
-                      color: CupertinoColors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  // Camera controls
+                  CameraControls(
+                    mode: _mode,
+                    isRecording: _isRecording,
+                    onCapturePressed: _onCapturePressed,
+                    onFlipCameraPressed: _onFlipCameraPressed,
+                    onGalleryPressed: _onGalleryPressed,
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
