@@ -33,18 +33,107 @@ class AuthService extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
       final savedSessionJson = prefs.getString(_sessionKey);
 
-      if (savedSessionJson != null) {
-        Map<String, dynamic> savedSession = json.decode(savedSessionJson);
-        _session = Session.fromJson(savedSession);
-        if (_session != null) {
-          _atProto = ATProto.fromSession(_session!);
-        }
+      if (savedSessionJson == null) {
+        return;
       }
+
+      _session = Session.fromJson(json.decode(savedSessionJson));
+      if (_session == null) {
+        return;
+      }
+
+      if (!_session!.active || _isTokenExpired(_session!.accessTokenJwt)) {
+        await _refreshSession();
+        return;
+      }
+
+      _atProto = ATProto.fromSession(_session!);
+
     } catch (e) {
       _error = 'Failed to load saved session: ${e.toString()}';
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+  }
+
+  bool _isTokenExpired(Jwt token) {
+    try {
+      // Consider token as expired if it's within 5 minutes of expiry
+      return DateTime.now().isAfter(
+        token.exp.subtract(const Duration(minutes: 5)),
+      );
+    } catch (e) {
+      // If there's any error decoding, consider it expired
+      print('Failed to check token expiry: $e');
+      return true;
+    }
+  }
+
+  String? _extractPdsDomain(Map<String, dynamic> doc) {
+    final services = doc['service'] as List<dynamic>?;
+    if (services == null || services.isEmpty) return null;
+
+    final pdsService = services.firstWhere(
+      (s) => s['id'] == '#atproto_pds',
+      orElse: () => {},
+    );
+
+    final String? pdsUrl = pdsService['serviceEndpoint'] as String?;
+    if (pdsUrl == null) return null;
+
+    return pdsUrl
+        .replaceFirst('http://', '')
+        .replaceFirst('https://', '')
+        .replaceFirst('/', '');
+  }
+
+  // Refresh the session using refresh token
+  Future<void> _refreshSession() async {
+    try {
+      if (_session == null) {
+        throw Exception('No refresh token available');
+      }
+
+      // Try getting service from session's DID doc first
+      String? service = _session!.didDoc != null
+          ? _extractPdsDomain(_session!.didDoc!)
+          : null;
+
+      // Fallback to PLC directory if needed
+      if (service == null) {
+        final didDocResponse = await http.get(
+          Uri.parse('https://plc.directory/${_session!.did}'),
+        );
+        if (didDocResponse.statusCode == 200) {
+          service = _extractPdsDomain(json.decode(didDocResponse.body));
+        }
+      }
+
+      if (service == null) {
+        throw Exception('Could not determine service endpoint');
+      }
+
+      final response = await refreshSession(
+        service: service,
+        refreshJwt: _session!.refreshJwt,
+      );
+
+      if (response.status != HttpStatus.ok) {
+        throw Exception('Failed to refresh session: ${response.status}');
+      }
+
+      // Update session with new tokens
+      _session = response.data;
+
+      await _saveSession(_session!);
+      _atProto = ATProto.fromSession(_session!);
+
+    } catch (e) {
+      _error = 'Failed to refresh session: ${e.toString()}';
+      await _clearSavedSession();
+      _session = null;
+      _atProto = null;
     }
   }
 
@@ -86,7 +175,7 @@ class AuthService extends ChangeNotifier {
 
       // Fetch DID document from PLC directory
       final didDocResponse = await http.get(
-        Uri.parse('https://plc.directory/$did/data'),
+        Uri.parse('https://plc.directory/$did'),
       );
 
       if (didDocResponse.statusCode != 200) {
@@ -98,7 +187,12 @@ class AuthService extends ChangeNotifier {
       final didDoc = json.decode(didDocResponse.body);
 
       // Extract PDS endpoint from DID document
-      String? pdsUrl = didDoc['services']['atproto_pds']['endpoint'];
+      String? pdsUrl =
+          (didDoc['service'] as List<dynamic>).firstWhere(
+                (s) => s['id'] == '#atproto_pds',
+                orElse: () => {},
+              )['serviceEndpoint']
+              as String?;
 
       if (pdsUrl == null) {
         throw Exception('PDS endpoint not found in DID document');

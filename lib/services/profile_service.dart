@@ -49,7 +49,7 @@ class ProfileService extends ChangeNotifier {
       // Try to resolve the handle using the DID
       try {
         final didDocResponse = await http.get(
-          Uri.parse('https://plc.directory/$did/data'),
+          Uri.parse('https://plc.directory/$did'),
         );
 
         if (didDocResponse.statusCode != 200) {
@@ -60,7 +60,9 @@ class ProfileService extends ChangeNotifier {
 
         final didDoc = json.decode(didDocResponse.body);
 
-        final handle = didDoc['alsoKnownAs'].first.replaceFirst('at://', '');
+        final handle = (didDoc['alsoKnownAs'] as List<dynamic>)
+            .firstWhere((s) => s.startsWith('at://'), orElse: () => '')
+            .replaceFirst('at://', '');
         profileData['handle'] = handle;
       } catch (e) {
         // If handle lookup fails, use DID as fallback
