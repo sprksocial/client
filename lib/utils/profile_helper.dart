@@ -7,7 +7,7 @@ class ProfileHelper {
     return authService.isAuthenticated &&
            authService.session?.did == profileData['did'];
   }
-  
+
   // Extract profile data with fallbacks for missing fields
   static Map<String, dynamic> extractProfileData(Map<String, dynamic> profileData) {
     return {
@@ -20,23 +20,4 @@ class ProfileHelper {
       'followingCount': profileData['followingCount'] ?? profileData['following_count'] ?? profileData['followsCount'] ?? 0,
     };
   }
-  
-  // Handle username tap by resolving the handle
-  static Future<void> handleUsernameTap(String username) async {
-    try {
-      // Remove @ from username if present
-      final cleanUsername = username.startsWith('@') ? username.substring(1) : username;
-      
-      // TODO: Use at.resolveHandle from atproto package to resolve the handle to a DID
-      // Example: final did = await atprotoService.resolveHandle(cleanUsername);
-      
-      // For now, just log the click for testing
-      print('Would resolve handle and navigate to profile for: $cleanUsername');
-      
-      // TODO: Navigate to profile with the resolved DID
-      // Example: Navigator.push(context, CupertinoPageRoute(builder: (context) => ProfileScreen(did: did)));
-    } catch (e) {
-      print('Error resolving handle: $e');
-    }
-  }
-} 
+}

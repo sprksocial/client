@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:provider/provider.dart';
+import 'package:sparksocial/screens/profile_screen.dart';
+import 'package:sparksocial/services/identity_service.dart';
 
 import '../../utils/app_colors.dart';
 import '../../utils/app_theme.dart';
@@ -20,9 +22,9 @@ class ProfileHeader extends StatefulWidget {
   final VoidCallback onShareTap;
   final VoidCallback onFollowTap;
   final VoidCallback onSettingsTap;
-  
+
   const ProfileHeader({
-    Key? key,
+    super.key,
     required this.profileData,
     required this.isCurrentUser,
     this.isEarlySupporter = false,
@@ -31,7 +33,7 @@ class ProfileHeader extends StatefulWidget {
     required this.onShareTap,
     required this.onFollowTap,
     required this.onSettingsTap,
-  }) : super(key: key);
+  });
 
   @override
   State<ProfileHeader> createState() => _ProfileHeaderState();
@@ -39,40 +41,60 @@ class ProfileHeader extends StatefulWidget {
 
 class _ProfileHeaderState extends State<ProfileHeader> {
   bool _expandDescription = false;
-  
+
   void _toggleDescriptionExpand() {
     setState(() {
       _expandDescription = !_expandDescription;
     });
   }
-  
+
+  Future<void> _handleUsernameTap(String username) async {
+    final identityService = context.read<CachedIdentityService>();
+    try {
+      // Remove @ from username if present
+      final cleanUsername = username.startsWith('@') ? username.substring(1) : username;
+      debugPrint('Username clicked: $cleanUsername');
+
+      final didRes = await identityService.resolveHandleToDid(cleanUsername);
+      if (didRes == null) {
+        debugPrint('Could not resolve handle to DID');
+        return;
+      }
+      if (mounted) {
+        Navigator.push(context, CupertinoPageRoute(builder: (context) => ProfileScreen(did: didRes)));
+      }
+    } catch (e) {
+      debugPrint('Error resolving handle: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
-    
+
     // Extract profile data
     final displayName = widget.profileData['displayName'] ?? '';
     final handle = widget.profileData['handle'] ?? '';
     final description = widget.profileData['description'] ?? '';
     final avatar = widget.profileData['avatar'];
-    
+
     // Stats with formatted counts
     final postsCount = TextFormatter.formatCount(widget.profileData['postsCount']);
     final followersCount = TextFormatter.formatCount(widget.profileData['followersCount']);
     final followingCount = TextFormatter.formatCount(widget.profileData['followingCount']);
-    
+
     // Extract links from description
     final List<String> links = TextFormatter.extractUrls(description);
-    
+
     // Manual detection for specific domains to match the screenshot example
     if (links.isEmpty && description.contains("esfera.dev") && !description.contains("@esfera.dev")) {
       links.add("esfera.dev");
     }
-    
+
     // Deduplicate links
     final uniqueLinks = links.toSet().toList();
-    
+
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -208,22 +230,22 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
           if (description.isNotEmpty || uniqueLinks.isNotEmpty) ...[
             const SizedBox(height: 8),
-            
+
             // Description text with inline highlighted usernames
             if (description.isNotEmpty)
               GestureDetector(
                 onTap: _toggleDescriptionExpand,
                 child: TextFormatter.buildRichTextWithMentions(
-                  context, 
+                  context,
                   description,
                   _expandDescription,
                   (username) {
                     // Handle username tap
-                    print('Username tapped: $username');
+                    _handleUsernameTap(username);
                   },
                 ),
               ),
-            
+
             // Links widget (if any)
             if (uniqueLinks.isNotEmpty)
               Padding(
@@ -301,4 +323,4 @@ class _ProfileHeaderState extends State<ProfileHeader> {
       ),
     );
   }
-} 
+}
