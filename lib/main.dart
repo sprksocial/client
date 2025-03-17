@@ -15,6 +15,7 @@ import 'screens/auth_prompt_screen.dart';
 import 'screens/test_actions_screen.dart';
 import 'services/auth_service.dart';
 import 'services/profile_service.dart';
+import 'services/identity_service.dart';
 import 'package:fvp/fvp.dart' as fvp;
 
 void main() {
@@ -39,6 +40,7 @@ class MyApp extends StatelessWidget {
         providers: [
           ChangeNotifierProvider(create: (_) => NavigationProvider()),
           ChangeNotifierProvider(create: (_) => AuthService()),
+          ChangeNotifierProvider(create: (_) => CachedIdentityService()),
           ChangeNotifierProxyProvider<AuthService, ProfileService>(
             create: (context) => ProfileService(context.read<AuthService>()),
             update: (_, authService, previousProfileService) =>
@@ -87,7 +89,10 @@ class MainScreen extends StatelessWidget {
       const SearchScreen(),
       const SizedBox.shrink(), // Placeholder for create button
       const MessagesScreen(),
-      ProfileScreen(did: authService.session?.did),
+      ProfileScreen(
+        key: Key(authService.session?.did ?? ''),
+        did: authService.session?.did,
+      ),
     ];
 
     return CupertinoPageScaffold(

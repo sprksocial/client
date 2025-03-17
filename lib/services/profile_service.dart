@@ -7,27 +7,14 @@ import 'auth_service.dart';
 
 class ProfileService extends ChangeNotifier {
   final AuthService _authService;
-  bool _isLoading = false;
-  String? _error;
-  Map<String, dynamic>? _profile;
-
-  // Getters
-  bool get isLoading => _isLoading;
-  String? get error => _error;
-  Map<String, dynamic>? get profile => _profile;
 
   ProfileService(this._authService);
 
-  // Get profile by DID
+  // Get profile by DID without updating internal state
   Future<Map<String, dynamic>?> getProfile(String did) async {
     if (!_authService.isAuthenticated) {
       return null;
     }
-
-    _isLoading = true;
-    _error = null;
-    _profile = null;
-    notifyListeners();
 
     try {
       final atProto = _authService.atproto;
@@ -89,15 +76,9 @@ class ProfileService extends ChangeNotifier {
           profileData['avatar'] = 'https://cdn.bsky.app/img/feed_fullsize/plain/$did/$avatarRef@jpeg';
         }
       }
-      _profile = profileData;
-      _isLoading = false;
-      notifyListeners();
       return profileData;
     } catch (e) {
-      _error = e.toString();
-      _isLoading = false;
-      notifyListeners();
-      return null;
+      throw Exception('Failed to fetch profile: $e');
     }
   }
 
@@ -107,11 +88,5 @@ class ProfileService extends ChangeNotifier {
       return null;
     }
     return getProfile(_authService.session!.did);
-  }
-
-  // Clear error
-  void clearError() {
-    _error = null;
-    notifyListeners();
   }
 }
