@@ -34,7 +34,7 @@ class MessageListItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         decoration: BoxDecoration(
           color: isDarkMode ? Colors.black : AppColors.white,
-          border: Border(bottom: BorderSide(color: isDarkMode ? Colors.grey.shade900 : AppColors.divider.withOpacity(0.3), width: 0.5)),
+          border: Border(bottom: BorderSide(color: isDarkMode ? Colors.grey.shade900 : AppColors.divider.withAlpha(30), width: 0.5)),
         ),
         child: Row(
           children: [
@@ -52,27 +52,6 @@ class MessageListItem extends StatelessWidget {
                         )
                       : null,
                 ),
-                if (hasUnread)
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        color: AppColors.pink,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: isDarkMode ? Colors.black : Colors.white, width: 2),
-                      ),
-                      child: Text(
-                        unreadCount.toString(),
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
               ],
             ),
 
