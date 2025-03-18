@@ -14,7 +14,7 @@ class ProfileTabs extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.getBackgroundColor(context, false),
+        color: AppTheme.getBackgroundColor(context),
         border: Border(
           top: BorderSide(color: AppColors.border, width: 0.5),
           bottom: BorderSide(color: AppColors.border, width: 0.5),

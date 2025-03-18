@@ -7,6 +7,8 @@ import '../widgets/video_controls/video_controller_overlay.dart';
 import '../widgets/comments_tray.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+import '../utils/app_theme.dart';
+import '../utils/app_colors.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -14,9 +16,10 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
+    final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: AppTheme.getBackgroundColor(context),
       body: Stack(
         children: [
           // Full-screen video feed
@@ -46,50 +49,44 @@ class HomeScreen extends StatelessWidget {
             top: 0,
             left: 0,
             right: 0,
-            child: Container(
-              // Add gradient background to ensure readability of the top navigation
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.black.withAlpha(179), Colors.black.withAlpha(0)],
-                ),
-              ),
-              child: Padding(
-                padding: EdgeInsets.only(top: topPadding + 10, left: 16.0, right: 16.0, bottom: 20.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const SizedBox(width: 30), // For balance
-                    Expanded(
-                      child: Center(
-                        child: SegmentedButton<int>(
-                          segments: const [
-                            ButtonSegment<int>(value: 0, label: Text('Following')),
-                            ButtonSegment<int>(value: 1, label: Text('For You')),
-                          ],
-                          onSelectionChanged: (Set<int> value) {},
-                          selected: const {1}, // Default to "For You"
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                              (states) => states.contains(WidgetState.selected) ? Colors.white : Colors.black,
-                            ),
-                            foregroundColor: WidgetStateProperty.resolveWith<Color>(
-                              (states) => states.contains(WidgetState.selected) ? Colors.black : Colors.white,
-                            ),
-                            side: WidgetStateProperty.all(BorderSide(color: Colors.grey)),
+            child: Padding(
+              padding: EdgeInsets.only(top: topPadding + 10, left: 16.0, right: 16.0, bottom: 20.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const SizedBox(width: 30), // For balance
+                  Expanded(
+                    child: Center(
+                      child: SegmentedButton<int>(
+                        segments: const [
+                          ButtonSegment<int>(value: 0, label: Text('Following')),
+                          ButtonSegment<int>(value: 1, label: Text('For You')),
+                        ],
+                        onSelectionChanged: (Set<int> value) {},
+                        selected: const {1}, // Default to "For You"
+                        style: ButtonStyle(
+                          backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                            (states) => states.contains(WidgetState.selected) 
+                              ? AppColors.white 
+                              : isDarkMode ? Colors.black : AppColors.darkBackground,
                           ),
+                          foregroundColor: WidgetStateProperty.resolveWith<Color>(
+                            (states) => states.contains(WidgetState.selected) 
+                              ? AppColors.black 
+                              : AppTheme.getTextColor(context),
+                          ),
+                          side: WidgetStateProperty.all(BorderSide(color: isDarkMode ? Colors.grey : AppColors.divider)),
                         ),
                       ),
                     ),
-                    IconButton(
-                      icon: const Icon(FluentIcons.search_24_regular),
-                      color: Colors.white,
-                      iconSize: 30,
-                      onPressed: () {},
-                    ),
-                  ],
-                ),
+                  ),
+                  IconButton(
+                    icon: const Icon(FluentIcons.search_24_regular),
+                    color: AppTheme.getTextColor(context),
+                    iconSize: 30,
+                    onPressed: () {},
+                  ),
+                ],
               ),
             ),
           ),
@@ -162,6 +159,9 @@ class _VideoItemState extends State<VideoItem> {
       _showComments = true;
     });
 
+    // Get the current theme mode
+    final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
+    
     // Show comments using the standard Material modal approach
     showCommentsTray(
       context: context,
@@ -176,12 +176,15 @@ class _VideoItemState extends State<VideoItem> {
           }
         });
       },
-      isDarkMode: true, // Always use dark mode for comments on videos
+      isDarkMode: isDarkMode, // Use system theme preference
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    // Get the theme brightness
+    final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
+  
     // Sample data for the video item
     final String username = 'username${widget.index + 1}';
     final String description =
@@ -216,7 +219,7 @@ class _VideoItemState extends State<VideoItem> {
           fit: StackFit.expand,
           children: [
             // Blurred video background
-            if (widget.videoUrl != null && _controller != null && _isInitialized) _buildBlurredBackground(),
+            if (widget.videoUrl != null && _controller != null && _isInitialized) _buildBlurredBackground(isDarkMode),
 
             // Video content - main focus
             Center(child: _buildVideoContent()),
@@ -232,9 +235,9 @@ class _VideoItemState extends State<VideoItem> {
                       Colors.transparent,
                       Colors.transparent,
                       Colors.transparent,
-                      Colors.black.withAlpha(0),
-                      Colors.black.withAlpha(77),
-                      Colors.black.withAlpha(77),
+                      Colors.transparent,
+                      isDarkMode ? Colors.black.withAlpha(77) : AppColors.darkBackground.withAlpha(42),
+                      isDarkMode ? Colors.black.withAlpha(77) : AppColors.darkBackground.withAlpha(42),
                     ],
                     stops: const [0.0, 0.5, 0.65, 0.75, 0.85, 0.95],
                   ),
@@ -295,7 +298,7 @@ class _VideoItemState extends State<VideoItem> {
             ),
 
             // Loading indicator
-            if (widget.videoUrl != null && !_isInitialized) const Center(child: CircularProgressIndicator(color: Colors.white)),
+            if (widget.videoUrl != null && !_isInitialized) const Center(child: CircularProgressIndicator(color: AppColors.white)),
           ],
         ),
       ),
@@ -303,7 +306,7 @@ class _VideoItemState extends State<VideoItem> {
   }
 
   // Build the blurred background
-  Widget _buildBlurredBackground() {
+  Widget _buildBlurredBackground(bool isDarkMode) {
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -320,7 +323,7 @@ class _VideoItemState extends State<VideoItem> {
         BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
           child: Container(
-            color: Colors.black.withAlpha(77), // Darkens the blur slightly
+            color: isDarkMode ? Colors.black.withAlpha(77) : AppColors.darkBackground.withAlpha(42),
           ),
         ),
       ],
@@ -355,17 +358,21 @@ class _VideoItemState extends State<VideoItem> {
       return videoWidget;
     } else {
       // Placeholder for videos without a URL or while loading
+      final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
+      
       return Container(
-        color: widget.index % 2 == 0 ? Colors.indigo : Colors.purple,
+        color: widget.index % 2 == 0 ? 
+          (isDarkMode ? Colors.indigo.shade900 : Colors.indigo.shade200) : 
+          (isDarkMode ? Colors.purple.shade900 : Colors.purple.shade200),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(FluentIcons.play_circle_24_regular, size: 80, color: Colors.white.withAlpha(179)),
+              Icon(FluentIcons.play_circle_24_regular, size: 80, color: AppTheme.getTextColor(context).withAlpha(179)),
               const SizedBox(height: 16),
               Text(
                 'Video ${widget.index + 1}',
-                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ],
           ),
