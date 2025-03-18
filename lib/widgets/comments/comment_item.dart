@@ -248,20 +248,18 @@ class _CommentItemState extends State<CommentItem> {
                 // Add a slight padding at the top for better visual separation
                 const SizedBox(height: 2),
                 // Use Column instead of ListView to avoid nested scrolling issues
-                ...mockReplies
-                    .map(
-                      (reply) => CommentReplyItem(
-                        id: reply['id'] as String,
-                        userId: reply['userId'] as String,
-                        username: reply['username'] as String,
-                        text: reply['text'] as String,
-                        timeAgo: reply['timeAgo'] as String,
-                        likeCount: reply['likeCount'] as int,
-                        isDarkMode: widget.isDarkMode,
-                        onReply: widget.onReply,
-                      ),
-                    )
-                    ,
+                ...mockReplies.map(
+                  (reply) => CommentReplyItem(
+                    id: reply['id'] as String,
+                    userId: reply['userId'] as String,
+                    username: reply['username'] as String,
+                    text: reply['text'] as String,
+                    timeAgo: reply['timeAgo'] as String,
+                    likeCount: reply['likeCount'] as int,
+                    isDarkMode: widget.isDarkMode,
+                    onReply: widget.onReply,
+                  ),
+                ),
               ],
             ),
           ),
