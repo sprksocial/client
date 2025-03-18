@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../utils/app_colors.dart';
-import '../../utils/app_theme.dart';
 
 class MessageListItem extends StatelessWidget {
   final String username;

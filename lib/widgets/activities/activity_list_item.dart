@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'activity_icon.dart';
-import 'activity_content.dart';
 import '../../utils/app_colors.dart';
-import '../../utils/app_theme.dart';
 
 class ActivityListItem extends StatelessWidget {
   final String username;
