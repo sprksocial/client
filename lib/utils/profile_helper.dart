@@ -4,8 +4,7 @@ class ProfileHelper {
   // Check if the profile belongs to the current user
   static bool isCurrentUser(AuthService authService, Map<String, dynamic>? profileData) {
     if (profileData == null) return false;
-    return authService.isAuthenticated &&
-           authService.session?.did == profileData['did'];
+    return authService.isAuthenticated && authService.session?.did == profileData['did'];
   }
 
   // Extract profile data with fallbacks for missing fields

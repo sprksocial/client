@@ -1,6 +1,5 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'action_button.dart';
 import '../../utils/app_colors.dart';
 
 // Test widget to demonstrate the BookmarkActionButton works correctly
@@ -23,13 +22,7 @@ class _TestBookmarkWidgetState extends State<TestBookmarkWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: BookmarkActionButton(
-        count: '42',
-        isBookmarked: _isBookmarked,
-        onPressed: _toggleBookmark,
-      ),
-    );
+    return Center(child: BookmarkActionButton(count: '42', isBookmarked: _isBookmarked, onPressed: _toggleBookmark));
   }
 }
 
@@ -38,12 +31,7 @@ class BookmarkActionButton extends StatefulWidget {
   final bool isBookmarked;
   final VoidCallback? onPressed;
 
-  const BookmarkActionButton({
-    super.key,
-    required this.count,
-    this.isBookmarked = false,
-    this.onPressed,
-  });
+  const BookmarkActionButton({super.key, required this.count, this.isBookmarked = false, this.onPressed});
 
   @override
   State<BookmarkActionButton> createState() => _BookmarkActionButtonState();
@@ -58,31 +46,17 @@ class _BookmarkActionButtonState extends State<BookmarkActionButton> with Single
   void initState() {
     super.initState();
     _isBookmarked = widget.isBookmarked;
-    
+
     // Initialize animation controller
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 300),
-      vsync: this,
-    );
-    
+    _animationController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+
     // Simple scale animation
     _scaleAnimation = TweenSequence([
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.2),
-        weight: 50,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1.2, end: 1.0),
-        weight: 50,
-      ),
-    ]).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
-    );
+      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.2), weight: 50),
+      TweenSequenceItem(tween: Tween<double>(begin: 1.2, end: 1.0), weight: 50),
+    ]).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
   }
-  
+
   @override
   void didUpdateWidget(BookmarkActionButton oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -92,22 +66,22 @@ class _BookmarkActionButtonState extends State<BookmarkActionButton> with Single
       });
     }
   }
-  
+
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
   }
-  
+
   void _handleTap() {
     if (widget.onPressed != null) {
       setState(() {
         _isBookmarked = !_isBookmarked;
       });
-      
+
       _animationController.reset();
       _animationController.forward();
-      
+
       widget.onPressed!();
     }
   }
@@ -128,7 +102,7 @@ class _BookmarkActionButtonState extends State<BookmarkActionButton> with Single
                   scale: _animationController.isAnimating ? _scaleAnimation.value : 1.0,
                   child: Icon(
                     _isBookmarked ? FluentIcons.bookmark_24_filled : FluentIcons.bookmark_24_regular,
-                    color: _isBookmarked ? AppColors.blue : CupertinoColors.white,
+                    color: _isBookmarked ? AppColors.blue : Colors.white,
                     size: 30,
                   ),
                 );
@@ -137,14 +111,8 @@ class _BookmarkActionButtonState extends State<BookmarkActionButton> with Single
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          widget.count,
-          style: const TextStyle(
-            color: CupertinoColors.white,
-            fontSize: 12,
-          ),
-        ),
+        Text(widget.count, style: const TextStyle(color: Colors.white, fontSize: 12)),
       ],
     );
   }
-} 
+}

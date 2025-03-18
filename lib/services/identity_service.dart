@@ -104,8 +104,7 @@ class CachedIdentityService extends ChangeNotifier {
       final prefs = await SharedPreferences.getInstance();
 
       // Set expiration time (24 hours from now)
-      await prefs.setInt(_cacheTtlKey,
-          DateTime.now().add(_cacheExpiration).millisecondsSinceEpoch);
+      await prefs.setInt(_cacheTtlKey, DateTime.now().add(_cacheExpiration).millisecondsSinceEpoch);
 
       // Save caches
       await prefs.setString(_didToHandleCacheKey, json.encode(_didToHandleCache));
@@ -302,9 +301,11 @@ class CachedIdentityService extends ChangeNotifier {
       }
 
       // Resolve asynchronously
-      futures.add(resolveDidToHandle(did).then((handle) {
-        results[did] = handle;
-      }));
+      futures.add(
+        resolveDidToHandle(did).then((handle) {
+          results[did] = handle;
+        }),
+      );
     }
 
     // Wait for all remaining resolutions to complete
@@ -328,9 +329,11 @@ class CachedIdentityService extends ChangeNotifier {
       }
 
       // Resolve asynchronously
-      futures.add(_resolveHandleToDid(handle).then((did) {
-        results[handle] = did;
-      }));
+      futures.add(
+        _resolveHandleToDid(handle).then((did) {
+          results[handle] = did;
+        }),
+      );
     }
 
     // Wait for all remaining resolutions to complete

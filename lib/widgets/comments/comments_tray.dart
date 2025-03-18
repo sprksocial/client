@@ -1,8 +1,6 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors;
+import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../../utils/app_colors.dart';
-import '../../utils/app_theme.dart';
 import 'comment_item.dart';
 import 'comment_input.dart';
 
@@ -34,14 +32,8 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    _animation = CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    );
+    _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
+    _animation = CurvedAnimation(parent: _animationController, curve: Curves.easeOut);
     _animationController.forward();
   }
 
@@ -144,7 +136,8 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
         'id': '6',
         'userId': 'user6',
         'username': 'WowCrazy',
-        'text': 'I think those are your future sales! Natasha Pang, the top Robotics Industry Sales Director for the India market and global influencer.',
+        'text':
+            'I think those are your future sales! Natasha Pang, the top Robotics Industry Sales Director for the India market and global influencer.',
         'timeAgo': '1d',
         'likeCount': 232,
         'hasMedia': false,
@@ -155,19 +148,13 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, height * (1 - _animation.value)),
-          child: child,
-        );
+        return Transform.translate(offset: Offset(0, height * (1 - _animation.value)), child: child);
       },
       child: Container(
         height: height,
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(12),
-            topRight: Radius.circular(12),
-          ),
+          borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
           border: Border.all(color: borderColor),
         ),
         child: Column(
@@ -175,21 +162,14 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
             // Header with handle and title
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                border: Border(
-                  bottom: BorderSide(color: borderColor, width: 0.5),
-                ),
-              ),
+              decoration: BoxDecoration(border: Border(bottom: BorderSide(color: borderColor, width: 0.5))),
               child: Column(
                 children: [
                   // Handle for dragging
                   Container(
                     width: 40,
                     height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.divider,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
+                    decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)),
                   ),
                   const SizedBox(height: 12),
                   // Title and close button
@@ -200,19 +180,13 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
                       children: [
                         Text(
                           '${widget.commentCount} comments',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: textColor,
-                          ),
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
                         ),
-                        CupertinoButton(
+                        IconButton(
                           padding: EdgeInsets.zero,
+                          constraints: const BoxConstraints(),
                           onPressed: _closeComments,
-                          child: Icon(
-                            FluentIcons.dismiss_24_regular,
-                            color: textColor,
-                          ),
+                          icon: Icon(FluentIcons.dismiss_24_regular, color: textColor),
                         ),
                       ],
                     ),
@@ -260,4 +234,4 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
       ),
     );
   }
-} 
+}

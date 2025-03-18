@@ -1,67 +1,96 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 class AppTheme {
-  // This theme will automatically adapt based on platform brightness
-  static CupertinoThemeData get theme => const CupertinoThemeData(
-    brightness: Brightness.light,  // Default brightness, will be overridden by system
-    primaryColor: AppColors.primary,
-    primaryContrastingColor: AppColors.white,
-    barBackgroundColor: AppColors.background,
-    scaffoldBackgroundColor: AppColors.background,
-  );
-  
+  // Light theme
+  static ThemeData getLightTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      primaryColor: AppColors.primary,
+      scaffoldBackgroundColor: AppColors.background,
+      colorScheme: const ColorScheme.light(
+        primary: AppColors.primary,
+        secondary: AppColors.secondary,
+        surface: AppColors.background,
+        error: AppColors.error,
+      ),
+      appBarTheme: const AppBarTheme(backgroundColor: AppColors.background, foregroundColor: AppColors.textPrimary, elevation: 0),
+      textTheme: const TextTheme(
+        bodyMedium: TextStyle(color: AppColors.textPrimary, fontSize: 16),
+        bodySmall: TextStyle(color: AppColors.textSecondary, fontSize: 14),
+        titleMedium: TextStyle(color: AppColors.textPrimary, fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
+  // Dark theme
+  static ThemeData getDarkTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      primaryColor: AppColors.primary,
+      scaffoldBackgroundColor: AppColors.darkBackground,
+      colorScheme: const ColorScheme.dark(
+        primary: AppColors.primary,
+        secondary: AppColors.secondary,
+        surface: AppColors.deepPurple,
+        error: AppColors.error,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: AppColors.darkBackground,
+        foregroundColor: AppColors.textLight,
+        elevation: 0,
+      ),
+      textTheme: const TextTheme(
+        bodyMedium: TextStyle(color: AppColors.textLight, fontSize: 16),
+        bodySmall: TextStyle(color: AppColors.textLight, fontSize: 14),
+        titleMedium: TextStyle(color: AppColors.textLight, fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+
   // Helper methods to determine colors based on theme brightness
   static Color getNavBackgroundColor(BuildContext context, bool isHomePage) {
     final brightness = MediaQuery.of(context).platformBrightness;
     if (isHomePage) {
       return AppColors.nearBlack;
     }
-    
-    return brightness == Brightness.dark 
-        ? AppColors.nearBlack 
-        : AppColors.lightBackground;
+
+    return brightness == Brightness.dark ? AppColors.nearBlack : AppColors.lightBackground;
   }
-  
+
   static Color getSelectedIconColor(BuildContext context, bool isHomePage) {
     final brightness = MediaQuery.of(context).platformBrightness;
     if (isHomePage) {
       return AppColors.selectedIconDark;
     }
-    
-    return brightness == Brightness.dark 
-        ? AppColors.selectedIconDark 
-        : AppColors.selectedIconLight;
+
+    return brightness == Brightness.dark ? AppColors.selectedIconDark : AppColors.selectedIconLight;
   }
-  
+
   static Color getUnselectedIconColor(BuildContext context, bool isHomePage) {
     return AppColors.unselectedIconDark;
   }
-  
+
   static Color getBackgroundColor(BuildContext context, bool isHomePage) {
     final brightness = MediaQuery.of(context).platformBrightness;
     if (isHomePage) {
       return AppColors.nearBlack;
     }
-    
-    return brightness == Brightness.dark 
-        ? AppColors.darkBackground 
-        : AppColors.background;
+
+    return brightness == Brightness.dark ? AppColors.darkBackground : AppColors.background;
   }
-  
+
   // Get text color based on brightness
   static Color getTextColor(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
-    return brightness == Brightness.dark 
-        ? AppColors.textLight 
-        : AppColors.textPrimary;
+    return brightness == Brightness.dark ? AppColors.textLight : AppColors.textPrimary;
   }
-  
+
   // Get secondary text color based on brightness
   static Color getSecondaryTextColor(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
-    return brightness == Brightness.dark 
-        ? AppColors.textLight.withAlpha(179) 
-        : AppColors.textSecondary;
+    return brightness == Brightness.dark ? AppColors.textLight.withAlpha(179) : AppColors.textSecondary;
   }
-} 
+}

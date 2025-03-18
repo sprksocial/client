@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import '../../utils/app_colors.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -7,11 +7,7 @@ class ProfileMentions extends StatelessWidget {
   final List<String> usernames;
   final Function(String) onUsernameTap;
 
-  const ProfileMentions({
-    required this.usernames,
-    required this.onUsernameTap,
-    Key? key,
-  }) : super(key: key);
+  const ProfileMentions({required this.usernames, required this.onUsernameTap, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,11 +15,11 @@ class ProfileMentions extends StatelessWidget {
     if (kDebugMode) {
       print('Building ProfileMentions with ${usernames.length} usernames: $usernames');
     }
-    
+
     if (usernames.isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
     return Container(
       margin: const EdgeInsets.only(top: 6.0),
       child: Column(
@@ -64,4 +60,4 @@ class ProfileMentions extends StatelessWidget {
       ),
     );
   }
-} 
+}

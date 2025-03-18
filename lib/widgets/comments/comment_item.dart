@@ -1,5 +1,4 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors;
+import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import '../../utils/app_colors.dart';
 import 'comment_reply_item.dart';
@@ -95,12 +94,8 @@ class _CommentItemState extends State<CommentItem> {
   @override
   Widget build(BuildContext context) {
     final textColor = widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary;
-    final secondaryTextColor = widget.isDarkMode 
-        ? AppColors.textLight.withAlpha(179) 
-        : AppColors.textSecondary;
-    final dividerColor = widget.isDarkMode 
-        ? AppColors.deepPurple.withAlpha(128) 
-        : AppColors.lightLavender;
+    final secondaryTextColor = widget.isDarkMode ? AppColors.textLight.withAlpha(179) : AppColors.textSecondary;
+    final dividerColor = widget.isDarkMode ? AppColors.deepPurple.withAlpha(128) : AppColors.lightLavender;
 
     // Mock replies data
     final mockReplies = [
@@ -137,23 +132,17 @@ class _CommentItemState extends State<CommentItem> {
                 decoration: BoxDecoration(
                   color: AppColors.accent,
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender,
-                    width: 1,
-                  ),
+                  border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 1),
                 ),
                 child: Center(
                   child: Text(
                     widget.username.isNotEmpty ? widget.username[0].toUpperCase() : '?',
-                    style: const TextStyle(
-                      color: AppColors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
               const SizedBox(width: 12),
-              
+
               // Comment content
               Expanded(
                 child: Column(
@@ -162,105 +151,77 @@ class _CommentItemState extends State<CommentItem> {
                     // Username and time
                     Row(
                       children: [
-                        Text(
-                          widget.username,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: textColor,
-                          ),
-                        ),
+                        Text(widget.username, style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
                         const SizedBox(width: 8),
-                        Text(
-                          widget.timeAgo,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: secondaryTextColor,
-                          ),
-                        ),
+                        Text(widget.timeAgo, style: TextStyle(fontSize: 12, color: secondaryTextColor)),
                       ],
                     ),
                     const SizedBox(height: 4),
-                    
+
                     // Comment text
-                    Text(
-                      widget.text,
-                      style: TextStyle(color: textColor),
-                    ),
-                    
+                    Text(widget.text, style: TextStyle(color: textColor)),
+
                     // Media content (if any)
-                    if (widget.hasMedia) ...[
-                      const SizedBox(height: 8),
-                      _buildMediaContent(),
-                    ],
-                    
+                    if (widget.hasMedia) ...[const SizedBox(height: 8), _buildMediaContent()],
+
                     // Action buttons
                     const SizedBox(height: 8),
                     Row(
                       children: [
                         // Like button
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          minSize: 0,
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
                           onPressed: _toggleLike,
                           child: Row(
                             children: [
                               Icon(
-                                _isLiked 
-                                    ? FluentIcons.heart_24_filled
-                                    : FluentIcons.heart_24_regular,
+                                _isLiked ? FluentIcons.heart_24_filled : FluentIcons.heart_24_regular,
                                 size: 16,
                                 color: _isLiked ? AppColors.red : secondaryTextColor,
                               ),
                               const SizedBox(width: 4),
-                              Text(
-                                widget.likeCount.toString(),
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: secondaryTextColor,
-                                ),
-                              ),
+                              Text(widget.likeCount.toString(), style: TextStyle(fontSize: 12, color: secondaryTextColor)),
                             ],
                           ),
                         ),
                         const SizedBox(width: 16),
-                        
+
                         // Reply button
-                        CupertinoButton(
-                          padding: EdgeInsets.zero,
-                          minSize: 0,
-                          onPressed: () => widget.onReply(widget.userId, widget.username),
-                          child: Text(
-                            'Reply',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: secondaryTextColor,
-                            ),
+                        TextButton(
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
+                          onPressed: () => widget.onReply(widget.userId, widget.username),
+                          child: Text('Reply', style: TextStyle(fontSize: 12, color: secondaryTextColor)),
                         ),
-                        
+
                         // View replies button (if any)
                         if (widget.replyCount > 0) ...[
                           const SizedBox(width: 16),
-                          CupertinoButton(
-                            padding: EdgeInsets.zero,
-                            minSize: 0,
+                          TextButton(
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
                             onPressed: _toggleReplies,
                             child: Row(
                               children: [
                                 Icon(
-                                  _showReplies 
-                                      ? FluentIcons.chevron_up_24_regular
-                                      : FluentIcons.chevron_down_24_regular,
+                                  _showReplies ? FluentIcons.chevron_up_24_regular : FluentIcons.chevron_down_24_regular,
                                   size: 16,
                                   color: secondaryTextColor,
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
                                   '${widget.replyCount} ${widget.replyCount == 1 ? 'reply' : 'replies'}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: AppColors.blue,
-                                  ),
+                                  style: TextStyle(fontSize: 12, color: AppColors.blue),
                                 ),
                               ],
                             ),
@@ -274,46 +235,40 @@ class _CommentItemState extends State<CommentItem> {
             ],
           ),
         ),
-        
+
         // Replies section
         if (_showReplies && widget.replyCount > 0) ...[
           Container(
             margin: const EdgeInsets.only(left: 64),
             padding: const EdgeInsets.only(top: 4, bottom: 8),
-            decoration: BoxDecoration(
-              border: Border(
-                left: BorderSide(
-                  color: dividerColor,
-                  width: 1,
-                ),
-              ),
-            ),
+            decoration: BoxDecoration(border: Border(left: BorderSide(color: dividerColor, width: 1))),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Add a slight padding at the top for better visual separation
                 const SizedBox(height: 2),
                 // Use Column instead of ListView to avoid nested scrolling issues
-                ...mockReplies.map((reply) => CommentReplyItem(
-                  id: reply['id'] as String,
-                  userId: reply['userId'] as String,
-                  username: reply['username'] as String,
-                  text: reply['text'] as String,
-                  timeAgo: reply['timeAgo'] as String,
-                  likeCount: reply['likeCount'] as int,
-                  isDarkMode: widget.isDarkMode,
-                  onReply: widget.onReply,
-                )).toList(),
+                ...mockReplies
+                    .map(
+                      (reply) => CommentReplyItem(
+                        id: reply['id'] as String,
+                        userId: reply['userId'] as String,
+                        username: reply['username'] as String,
+                        text: reply['text'] as String,
+                        timeAgo: reply['timeAgo'] as String,
+                        likeCount: reply['likeCount'] as int,
+                        isDarkMode: widget.isDarkMode,
+                        onReply: widget.onReply,
+                      ),
+                    )
+                    ,
               ],
             ),
           ),
         ],
-        
+
         // Divider
-        Container(
-          height: 0.5,
-          color: dividerColor,
-        ),
+        Container(height: 0.5, color: dividerColor),
       ],
     );
   }
@@ -324,7 +279,7 @@ class _CommentItemState extends State<CommentItem> {
     }
 
     final borderRadius = BorderRadius.circular(8);
-    
+
     if (widget.mediaType == 'image') {
       // Image content
       return Container(
@@ -332,10 +287,7 @@ class _CommentItemState extends State<CommentItem> {
         height: 200,
         decoration: BoxDecoration(
           borderRadius: borderRadius,
-          border: Border.all(
-            color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender,
-            width: 0.5,
-          ),
+          border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 0.5),
         ),
         clipBehavior: Clip.antiAlias,
         child: Image.network(
@@ -343,22 +295,12 @@ class _CommentItemState extends State<CommentItem> {
           fit: BoxFit.cover,
           loadingBuilder: (context, child, loadingProgress) {
             if (loadingProgress == null) return child;
-            return Center(
-              child: CupertinoActivityIndicator(
-                color: widget.isDarkMode ? AppColors.white : AppColors.deepPurple,
-              ),
-            );
+            return Center(child: CircularProgressIndicator(color: widget.isDarkMode ? AppColors.white : AppColors.deepPurple));
           },
           errorBuilder: (context, error, stackTrace) {
             return Container(
               color: AppColors.darkPurple.withAlpha(26),
-              child: Center(
-                child: Icon(
-                  FluentIcons.image_24_regular,
-                  size: 24,
-                  color: Colors.white,
-                ),
-              ),
+              child: Center(child: Icon(FluentIcons.image_24_regular, size: 24, color: Colors.white)),
             );
           },
         ),
@@ -372,10 +314,7 @@ class _CommentItemState extends State<CommentItem> {
           height: 200,
           decoration: BoxDecoration(
             borderRadius: borderRadius,
-            border: Border.all(
-              color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender,
-              width: 0.5,
-            ),
+            border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 0.5),
             color: Colors.black,
           ),
           clipBehavior: Clip.antiAlias,
@@ -383,36 +322,23 @@ class _CommentItemState extends State<CommentItem> {
             alignment: Alignment.center,
             children: [
               if (_videoController != null && _isVideoInitialized)
-                AspectRatio(
-                  aspectRatio: _videoController!.value.aspectRatio,
-                  child: VideoPlayer(_videoController!),
-                ),
-              
-              if (!_isVideoInitialized)
-                const CupertinoActivityIndicator(
-                  color: AppColors.white,
-                ),
-              
+                AspectRatio(aspectRatio: _videoController!.value.aspectRatio, child: VideoPlayer(_videoController!)),
+
+              if (!_isVideoInitialized) const CircularProgressIndicator(color: AppColors.white),
+
               if (_isVideoInitialized && !_videoController!.value.isPlaying)
                 Container(
                   width: 60,
                   height: 60,
-                  decoration: BoxDecoration(
-                    color: Colors.black.withAlpha(128),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    FluentIcons.play_24_filled,
-                    size: 24,
-                    color: Colors.white,
-                  ),
+                  decoration: BoxDecoration(color: Colors.black.withAlpha(128), shape: BoxShape.circle),
+                  child: const Icon(FluentIcons.play_24_filled, size: 24, color: Colors.white),
                 ),
             ],
           ),
         ),
       );
     }
-    
+
     return const SizedBox.shrink();
   }
-} 
+}

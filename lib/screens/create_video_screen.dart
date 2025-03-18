@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
@@ -78,14 +78,14 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       debugPrint('Error initializing camera: $e');
       // Show error to user
       if (mounted) {
-        showCupertinoDialog(
+        showDialog(
           context: context,
           builder: (BuildContext context) {
-            return CupertinoAlertDialog(
+            return AlertDialog(
               title: const Text('Camera Error'),
               content: Text('Could not initialize camera: ${e.toString()}'),
               actions: [
-                CupertinoDialogAction(
+                TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                     // Try again after error
@@ -133,26 +133,20 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
 
     try {
       final ImagePicker picker = ImagePicker();
-      final XFile? video = await picker.pickVideo(
-        source: ImageSource.gallery,
-        maxDuration: const Duration(seconds: 180),
-      );
+      final XFile? video = await picker.pickVideo(source: ImageSource.gallery, maxDuration: const Duration(seconds: 180));
 
       if (video != null) {
         debugPrint('Video selected from gallery: ${video.path}');
 
         // Show loading dialog
         if (mounted) {
-          showCupertinoDialog(
+          showDialog(
             context: context,
             barrierDismissible: false,
             builder: (BuildContext context) {
-              return const CupertinoAlertDialog(
+              return const AlertDialog(
                 title: Text('Uploading Video'),
-                content: Padding(
-                  padding: EdgeInsets.symmetric(vertical: 12),
-                  child: CupertinoActivityIndicator(),
-                ),
+                content: Padding(padding: EdgeInsets.symmetric(vertical: 12), child: CircularProgressIndicator()),
               );
             },
           );
@@ -162,22 +156,16 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
         final processedVideo = await _videoService.processVideo(video.path);
         final postRef = await _videoService.postVideo(processedVideo?['blobRef']);
 
-
         // Close loading dialog
         if (mounted) {
           Navigator.of(context).pop();
-          showCupertinoDialog(
+          showDialog(
             context: context,
             builder: (BuildContext context) {
-              return CupertinoAlertDialog(
+              return AlertDialog(
                 title: const Text('Success'),
                 content: const Text('Video uploaded successfully'),
-                actions: [
-                  CupertinoDialogAction(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('OK'),
-                  ),
-                ],
+                actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK'))],
               );
             },
           );
@@ -188,18 +176,13 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       // Close loading dialog if it's showing
       if (mounted) {
         Navigator.of(context).pop();
-        showCupertinoDialog(
+        showDialog(
           context: context,
           builder: (BuildContext context) {
-            return CupertinoAlertDialog(
+            return AlertDialog(
               title: const Text('Error'),
               content: Text('Failed to upload video: ${e.toString()}'),
-              actions: [
-                CupertinoDialogAction(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('OK'),
-                ),
-              ],
+              actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK'))],
             );
           },
         );
@@ -273,27 +256,24 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
   }
 
   void _startRecordingTimer() {
-    _recordingTimer = Timer.periodic(
-      const Duration(seconds: 1),
-      (timer) {
-        if (_recordingSeconds >= _maxRecordingSeconds) {
-          _toggleVideoRecording();
-          return;
-        }
+    _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_recordingSeconds >= _maxRecordingSeconds) {
+        _toggleVideoRecording();
+        return;
+      }
 
-        setState(() {
-          _recordingSeconds++;
-          _recordingProgress = _recordingSeconds / _maxRecordingSeconds;
+      setState(() {
+        _recordingSeconds++;
+        _recordingProgress = _recordingSeconds / _maxRecordingSeconds;
 
-          final int minutes = _recordingSeconds ~/ 60;
-          final int seconds = _recordingSeconds % 60;
-          final String minutesStr = minutes.toString().padLeft(2, '0');
-          final String secondsStr = seconds.toString().padLeft(2, '0');
+        final int minutes = _recordingSeconds ~/ 60;
+        final int seconds = _recordingSeconds % 60;
+        final String minutesStr = minutes.toString().padLeft(2, '0');
+        final String secondsStr = seconds.toString().padLeft(2, '0');
 
-          _recordingTimeText = '$minutesStr:$secondsStr / 03:00';
-        });
-      },
-    );
+        _recordingTimeText = '$minutesStr:$secondsStr / 03:00';
+      });
+    });
   }
 
   void _stopRecordingTimer() {
@@ -315,17 +295,14 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       );
     }
 
-    return CupertinoPageScaffold(
-      backgroundColor: CupertinoColors.black,
-      child: SafeArea(
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: SafeArea(
         child: Stack(
           children: [
             // Camera view
             Positioned.fill(
-              child: CameraView(
-                cameraController: _cameraService.controller,
-                isInitialized: _cameraService.isInitialized,
-              ),
+              child: CameraView(cameraController: _cameraService.controller, isInitialized: _cameraService.isInitialized),
             ),
 
             // Close button
@@ -336,15 +313,8 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
                 onTap: () => Navigator.of(context).pop(),
                 child: Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: CupertinoColors.black.withAlpha(100),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    FluentIcons.dismiss_24_regular,
-                    color: CupertinoColors.white,
-                    size: 24,
-                  ),
+                  decoration: BoxDecoration(color: Colors.black.withAlpha(100), shape: BoxShape.circle),
+                  child: const Icon(FluentIcons.dismiss_24_regular, color: Colors.white, size: 24),
                 ),
               ),
             ),
@@ -354,12 +324,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
               top: 20,
               left: 0,
               right: 0,
-              child: Center(
-                child: ModeSelector(
-                  selectedMode: _mode,
-                  onModeSelected: _onModeSelected,
-                ),
-              ),
+              child: Center(child: ModeSelector(selectedMode: _mode, onModeSelected: _onModeSelected)),
             ),
 
             // Bottom controls
@@ -371,11 +336,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
                 children: [
                   // Recording progress bar (only visible when recording or in video mode)
                   if (_mode == CameraMode.video) ...[
-                    RecordingBar(
-                      isRecording: _isRecording,
-                      progress: _recordingProgress,
-                      timeText: _recordingTimeText,
-                    ),
+                    RecordingBar(isRecording: _isRecording, progress: _recordingProgress, timeText: _recordingTimeText),
                     const SizedBox(height: 20),
                   ],
 
