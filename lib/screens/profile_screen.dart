@@ -269,6 +269,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       selectedIndex: _selectedTabIndex,
       isAuthenticated: isAuthenticated,
       onLoginPressed: _handleLogin,
+      did: _profileData!['did'] as String?,
     );
 
     return Scaffold(

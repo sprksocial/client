@@ -9,7 +9,7 @@ import '../widgets/video_review/video_thumbnail.dart';
 
 class VideoReviewScreen extends StatefulWidget {
   final String videoPath;
-  
+
   const VideoReviewScreen({
     super.key,
     required this.videoPath,
@@ -49,14 +49,14 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
 
   Future<void> _uploadVideo() async {
     if (_isPosting) return;
-    
+
     setState(() {
       _isPosting = true;
     });
 
     try {
       final videoService = VideoService(Provider.of<AuthService>(context, listen: false));
-      
+
       // Show loading dialog
       showDialog(
         context: context,
@@ -80,7 +80,7 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
       );
 
       final processedVideo = await videoService.processVideo(widget.videoPath);
-      
+
       // Update the postVideo method to include the description
       final postRef = await videoService.postVideo(
         processedVideo?['blobRef'],
@@ -104,7 +104,7 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
         setState(() {
           _isPosting = false;
         });
-        
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to upload video: ${e.toString()}'),
@@ -163,9 +163,9 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(width: 20),
-                      
+
                       // Video thumbnail on right
                       if (_controller.value.isInitialized)
                         VideoThumbnail(
@@ -190,7 +190,7 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
                 ),
               ),
             ),
-            
+
             // Toggle for Bluesky posting
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -216,7 +216,7 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
                 ],
               ),
             ),
-            
+
             // Bottom buttons
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -242,9 +242,9 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(width: 16),
-                  
+
                   // Post button
                   Expanded(
                     child: InkWell(
@@ -282,4 +282,4 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
       ),
     );
   }
-} 
+}
