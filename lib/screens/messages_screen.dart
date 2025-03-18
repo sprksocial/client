@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../widgets/messages/message_list.dart';
 import '../widgets/activities/activity_list.dart';
 import '../widgets/activities/activity_icon.dart';

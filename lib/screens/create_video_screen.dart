@@ -11,6 +11,7 @@ import '../widgets/camera/camera_controls.dart';
 import '../widgets/camera/mode_selector.dart';
 import '../widgets/camera/recording_bar.dart';
 import 'auth_prompt_screen.dart';
+import 'video_review_screen.dart';
 
 class CreateVideoScreen extends StatefulWidget {
   const CreateVideoScreen({super.key});
@@ -131,47 +132,32 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
 
       if (video != null) {
         debugPrint('Video selected from gallery: ${video.path}');
-
+        
         if (mounted) {
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (BuildContext context) {
-              return const AlertDialog(
-                title: Text('Uploading Video'),
-                content: Padding(padding: EdgeInsets.symmetric(vertical: 12), child: CircularProgressIndicator()),
-              );
-            },
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => VideoReviewScreen(videoPath: video.path),
+            ),
           );
-        }
-
-        final processedVideo = await _videoService.processVideo(video.path);
-        final postRef = await _videoService.postVideo(processedVideo?['blobRef']);
-
-        if (mounted) {
-          Navigator.of(context).pop();
-          showDialog(
-            context: context,
-            builder: (BuildContext context) {
-              return AlertDialog(
-                title: const Text('Success'),
-                content: const Text('Video uploaded successfully'),
-                actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK'))],
-              );
-            },
-          );
+          
+          // If the result is true, the video was posted successfully
+          if (result == true) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Video posted successfully!')),
+            );
+          }
         }
       }
     } catch (e) {
       debugPrint('Error handling video: $e');
       if (mounted) {
-        Navigator.of(context).pop();
         showDialog(
           context: context,
           builder: (BuildContext context) {
             return AlertDialog(
               title: const Text('Error'),
-              content: Text('Failed to upload video: ${e.toString()}'),
+              content: Text('Failed to select video: ${e.toString()}'),
               actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK'))],
             );
           },
@@ -222,6 +208,22 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
 
         if (video != null) {
           debugPrint('Video recorded: ${video.path}');
+          
+          if (mounted) {
+            final result = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => VideoReviewScreen(videoPath: video.path),
+              ),
+            );
+            
+            // If the result is true, the video was posted successfully
+            if (result == true) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Video posted successfully!')),
+              );
+            }
+          }
         }
       } catch (e) {
         debugPrint('Error stopping video recording: $e');

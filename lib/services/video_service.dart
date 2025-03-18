@@ -43,15 +43,21 @@ class VideoService {
     return jsonDecode(response.body);
   }
 
-  Future<StrongRef> postVideo(Map<String, dynamic> videoBlobRef) async {
+  Future<StrongRef> postVideo(Map<String, dynamic>? videoBlobRef, [String description = '']) async {
     final authAtProto = _authService.atproto;
     if (authAtProto == null || authAtProto.session == null) {
       throw Exception('AtProto not initialized');
     }
 
+    if (videoBlobRef == null) {
+      throw Exception('Video blob reference is null');
+    }
+
+    final postText = description.isNotEmpty ? description : 'New video';
+    
     final postRecord = {
       '\$type': 'so.sprk.feed.post',
-      'text': 'Hello, world, again!',
+      'text': postText,
       'embed': {'\$type': 'so.sprk.embed.video', 'video': videoBlobRef},
       'createdAt': DateTime.now().toUtc().toIso8601String(),
     };
