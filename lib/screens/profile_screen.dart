@@ -1,5 +1,4 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors;
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
@@ -99,64 +98,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showEarlySupporterInfo(BuildContext context) {
-    showCupertinoModalPopup(
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: true,
-      builder: (context) => SizedBox(
-        width: double.infinity,
-        child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 20),
-            child: EarlySupporterSheet(),
-          ),
-        ),
-      ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => SafeArea(child: Padding(padding: const EdgeInsets.only(top: 20), child: EarlySupporterSheet())),
     );
   }
 
   void _showProfileMenu(BuildContext context) {
-    showCupertinoModalPopup(
+    showModalBottomSheet(
       context: context,
-      barrierDismissible: true,
-      builder: (context) => SizedBox(
-        width: double.infinity,
-        child: SafeArea(
-          child: Container(
-            decoration: BoxDecoration(
-              color: AppColors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Profile Options',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.black
-                  )
-                ),
-                const SizedBox(height: 16),
-                CupertinoButton(
-                  onPressed: () {
-                    Navigator.pop(context); // Close the modal
-                    _handleLogout();
-                  },
-                  child: const Text('Logout', style: TextStyle(color: Colors.red)),
-                ),
-                CupertinoButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                  child: const Text('Cancel', style: TextStyle(color: AppColors.white)),
-                ),
-              ],
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => SafeArea(
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.white,
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+              ),
+              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Profile Options',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.black),
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Close the modal
+                      _handleLogout();
+                    },
+                    child: const Text('Logout', style: TextStyle(color: Colors.red)),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Cancel', style: TextStyle(color: AppColors.white)),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ),
     );
   }
 
@@ -194,8 +180,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   bool _isCurrentUser() {
     if (_profileData == null) return false;
     final authService = Provider.of<AuthService>(context, listen: false);
-    return authService.isAuthenticated &&
-           authService.session?.did == _profileData!['did'];
+    return authService.isAuthenticated && authService.session?.did == _profileData!['did'];
   }
 
   @override
@@ -204,11 +189,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final isDarkMode = brightness == Brightness.dark;
     final authService = Provider.of<AuthService>(context);
     final isAuthenticated = authService.isAuthenticated;
-
-    // Calculate proper padding for bottom navigation bar
-    final bottomNavHeight = 50.0;
-    final bottomSafeArea = MediaQuery.of(context).padding.bottom;
-    final totalBottomPadding = bottomNavHeight + bottomSafeArea;
 
     // Show auth prompt if needed
     if (_showAuthPrompt) {
@@ -223,64 +203,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     // Show loading indicator
     if (_isLoading) {
-      return CupertinoPageScaffold(
+      return Scaffold(
         backgroundColor: AppTheme.getBackgroundColor(context, false),
-        navigationBar: CupertinoNavigationBar(
-          middle: const Text(
-            'Profile',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
-          ),
+        appBar: AppBar(
+          title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
+          elevation: 0,
         ),
-        child: const Center(
-          child: CupertinoActivityIndicator(),
-        ),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     // Show error message
     if (_error != null) {
-      return CupertinoPageScaffold(
+      return Scaffold(
         backgroundColor: AppTheme.getBackgroundColor(context, false),
-        navigationBar: CupertinoNavigationBar(
-          middle: const Text(
-            'Profile',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
-          ),
+        appBar: AppBar(
+          title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
+          elevation: 0,
         ),
-        child: Center(
+        body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 'Error loading profile',
-                style: TextStyle(
-                  color: AppTheme.getTextColor(context),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
               Text(
                 _error!,
-                style: TextStyle(
-                  color: AppTheme.getSecondaryTextColor(context),
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 14),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              CupertinoButton(
-                onPressed: _loadProfile,
-                child: const Text('Retry'),
-              ),
+              TextButton(onPressed: _loadProfile, child: const Text('Retry')),
             ],
           ),
         ),
@@ -289,35 +247,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     // If profile data is null but no error, show a message
     if (_profileData == null) {
-      return CupertinoPageScaffold(
+      return Scaffold(
         backgroundColor: AppTheme.getBackgroundColor(context, false),
-        navigationBar: CupertinoNavigationBar(
-          middle: const Text(
-            'Profile',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              fontSize: 18,
-            ),
-          ),
+        appBar: AppBar(
+          title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
+          elevation: 0,
         ),
-        child: Center(
+        body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 'Profile not found',
-                style: TextStyle(
-                  color: AppTheme.getTextColor(context),
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 16),
-              CupertinoButton(
-                onPressed: _loadProfile,
-                child: const Text('Retry'),
-              ),
+              TextButton(onPressed: _loadProfile, child: const Text('Retry')),
             ],
           ),
         ),
@@ -335,28 +281,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
       onLoginPressed: _handleLogin,
     );
 
-    return CupertinoPageScaffold(
+    return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context, false),
-      navigationBar: CupertinoNavigationBar(
-        middle: Text(
+      appBar: AppBar(
+        title: Text(
           isCurrentUser ? 'My Profile' : 'Profile',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-            color: AppTheme.getTextColor(context),
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.getTextColor(context)),
         ),
         backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
-        trailing: isCurrentUser ? CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: () => _showProfileMenu(context),
-          child: Icon(
-            FluentIcons.more_horizontal_24_regular,
-            color: AppTheme.getTextColor(context),
-          ),
-        ) : null,
+        elevation: 0,
+        actions:
+            isCurrentUser
+                ? [
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    onPressed: () => _showProfileMenu(context),
+                    icon: Icon(FluentIcons.more_horizontal_24_regular, color: AppTheme.getTextColor(context)),
+                  ),
+                ]
+                : null,
       ),
-      child: SafeArea(
+      body: SafeArea(
         bottom: false, // Don't use SafeArea for bottom padding as we'll handle it manually
         child: CustomScrollView(
           slivers: [
@@ -367,18 +312,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 isCurrentUser: isCurrentUser,
                 isEarlySupporter: _isEarlySupporter,
                 onEarlySupporterTap: () => _showEarlySupporterInfo(context),
-                onEditTap: () => _checkAuthAndProceed(() {
-                  // Edit profile logic here
-                  debugPrint('Edit profile tapped');
-                }),
+                onEditTap:
+                    () => _checkAuthAndProceed(() {
+                      // Edit profile logic here
+                      debugPrint('Edit profile tapped');
+                    }),
                 onShareTap: () {
                   // Share profile logic
                   debugPrint('Share profile tapped');
                 },
-                onFollowTap: () => _checkAuthAndProceed(() {
-                  // Follow logic here
-                  debugPrint('Follow tapped');
-                }),
+                onFollowTap:
+                    () => _checkAuthAndProceed(() {
+                      // Follow logic here
+                      debugPrint('Follow tapped');
+                    }),
                 onSettingsTap: _handleSettingsTap,
               ),
             ),
@@ -399,7 +346,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ...tabContent.getTabContent(),
 
             // Add bottom padding to account for navigation bar
-            SliverPadding(padding: EdgeInsets.only(bottom: totalBottomPadding)),
           ],
         ),
       ),
@@ -415,10 +361,7 @@ class StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(
-      color: AppTheme.getBackgroundColor(context, false),
-      child: child,
-    );
+    return Container(color: AppTheme.getBackgroundColor(context, false), child: child);
   }
 
   @override

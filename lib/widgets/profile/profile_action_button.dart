@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_theme.dart';
 
@@ -8,7 +8,7 @@ class ProfileActionButton extends StatelessWidget {
   final VoidCallback onPressed;
   final bool isPrimary;
   final bool isOutlined;
-  
+
   const ProfileActionButton({
     super.key,
     required this.label,
@@ -22,21 +22,21 @@ class ProfileActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
-    
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      minSize: 0,
+
+    return TextButton(
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
       onPressed: onPressed,
       child: Container(
         width: double.infinity,
         height: 36,
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
         decoration: BoxDecoration(
-          color: isPrimary ? AppColors.primary : CupertinoColors.transparent,
-          border: isOutlined ? Border.all(
-            color: isDarkMode ? AppColors.lightLavender : AppColors.deepPurple,
-            width: 1,
-          ) : null,
+          color: isPrimary ? AppColors.primary : Colors.transparent,
+          border: isOutlined ? Border.all(color: isDarkMode ? AppColors.lightLavender : AppColors.deepPurple, width: 1) : null,
           borderRadius: BorderRadius.circular(4),
         ),
         child: Center(
@@ -45,11 +45,7 @@ class ProfileActionButton extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               if (icon != null) ...[
-                Icon(
-                  icon,
-                  size: 14,
-                  color: isPrimary ? AppColors.white : AppTheme.getTextColor(context),
-                ),
+                Icon(icon, size: 14, color: isPrimary ? AppColors.white : AppTheme.getTextColor(context)),
                 const SizedBox(width: 2),
               ],
               Flexible(
@@ -71,4 +67,4 @@ class ProfileActionButton extends StatelessWidget {
       ),
     );
   }
-} 
+}

@@ -1,6 +1,5 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'action_button.dart';
 import '../../utils/app_colors.dart';
 
 class LikeActionButton extends StatefulWidget {
@@ -8,12 +7,7 @@ class LikeActionButton extends StatefulWidget {
   final bool isLiked;
   final VoidCallback? onPressed;
 
-  const LikeActionButton({
-    super.key,
-    required this.count,
-    this.isLiked = false,
-    this.onPressed,
-  });
+  const LikeActionButton({super.key, required this.count, this.isLiked = false, this.onPressed});
 
   @override
   State<LikeActionButton> createState() => _LikeActionButtonState();
@@ -28,31 +22,17 @@ class _LikeActionButtonState extends State<LikeActionButton> with SingleTickerPr
   void initState() {
     super.initState();
     _isLiked = widget.isLiked;
-    
+
     // Initialize animation controller with proper duration
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 400),
-      vsync: this,
-    );
-    
+    _animationController = AnimationController(duration: const Duration(milliseconds: 400), vsync: this);
+
     // Simpler scale animation that just goes up and down
     _scaleAnimation = TweenSequence([
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1.0, end: 1.4),
-        weight: 50,
-      ),
-      TweenSequenceItem(
-        tween: Tween<double>(begin: 1.4, end: 1.0),
-        weight: 50,
-      ),
-    ]).animate(
-      CurvedAnimation(
-        parent: _animationController,
-        curve: Curves.easeInOut,
-      ),
-    );
+      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.4), weight: 50),
+      TweenSequenceItem(tween: Tween<double>(begin: 1.4, end: 1.0), weight: 50),
+    ]).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
   }
-  
+
   @override
   void didUpdateWidget(LikeActionButton oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -73,13 +53,13 @@ class _LikeActionButtonState extends State<LikeActionButton> with SingleTickerPr
       setState(() {
         _isLiked = !_isLiked;
       });
-      
+
       // Only animate when liking, not when unliking
       if (_isLiked) {
         _animationController.reset();
         _animationController.forward();
       }
-      
+
       widget.onPressed!();
     }
   }
@@ -97,14 +77,10 @@ class _LikeActionButtonState extends State<LikeActionButton> with SingleTickerPr
               animation: _animationController,
               builder: (context, child) {
                 return Transform.scale(
-                  scale: _isLiked ? 
-                    (_animationController.isAnimating ? _scaleAnimation.value : 1.0) : 
-                    1.0,
+                  scale: _isLiked ? (_animationController.isAnimating ? _scaleAnimation.value : 1.0) : 1.0,
                   child: Icon(
-                    _isLiked ? 
-                      FluentIcons.heart_24_filled : 
-                      FluentIcons.heart_24_regular,
-                    color: _isLiked ? AppColors.red : CupertinoColors.white,
+                    _isLiked ? FluentIcons.heart_24_filled : FluentIcons.heart_24_regular,
+                    color: _isLiked ? AppColors.red : Colors.white,
                     size: 30,
                   ),
                 );
@@ -113,14 +89,8 @@ class _LikeActionButtonState extends State<LikeActionButton> with SingleTickerPr
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          widget.count,
-          style: const TextStyle(
-            color: CupertinoColors.white,
-            fontSize: 12,
-          ),
-        ),
+        Text(widget.count, style: const TextStyle(color: Colors.white, fontSize: 12)),
       ],
     );
   }
-} 
+}

@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'user_profile_picture.dart';
 import 'message_preview.dart';
@@ -12,7 +12,7 @@ class MessageListItem extends StatelessWidget {
   final int? unreadCount;
   final int colorIndex;
   final VoidCallback? onTap;
-  
+
   const MessageListItem({
     super.key,
     required this.username,
@@ -22,37 +22,28 @@ class MessageListItem extends StatelessWidget {
     required this.colorIndex,
     this.onTap,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     final bool hasUnread = unreadCount != null && unreadCount! > 0;
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         decoration: BoxDecoration(
           color: isDarkMode ? AppColors.deepPurple : AppColors.white,
-          border: Border(
-            bottom: BorderSide(
-              color: isDarkMode ? AppColors.darkPurple : AppColors.divider,
-              width: 0.5,
-            ),
-          ),
+          border: Border(bottom: BorderSide(color: isDarkMode ? AppColors.darkPurple : AppColors.divider, width: 0.5)),
         ),
         child: Row(
           children: [
             // Profile image with unread indicator
-            UserProfilePicture(
-              colorIndex: colorIndex,
-              unreadCount: unreadCount,
-              onTap: onTap,
-            ),
-            
+            UserProfilePicture(colorIndex: colorIndex, unreadCount: unreadCount, onTap: onTap),
+
             const SizedBox(width: 12),
-            
+
             // Message content
             Expanded(
               child: MessagePreview(
@@ -63,18 +54,14 @@ class MessageListItem extends StatelessWidget {
                 isDarkMode: isDarkMode,
               ),
             ),
-            
+
             const SizedBox(width: 8),
-            
+
             // Right chevron
-            Icon(
-              FluentIcons.chevron_right_16_regular,
-              color: AppTheme.getSecondaryTextColor(context),
-              size: 16,
-            ),
+            Icon(FluentIcons.chevron_right_16_regular, color: AppTheme.getSecondaryTextColor(context), size: 16),
           ],
         ),
       ),
     );
   }
-} 
+}

@@ -1,8 +1,6 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors;
+import 'package:flutter/material.dart';
 import 'dart:ui'; // Import for ImageFilter
 import '../utils/app_colors.dart';
-import '../utils/app_theme.dart';
 import 'comments/comment_item.dart';
 import 'comments/comment_input.dart';
 
@@ -120,7 +118,8 @@ class _CommentsTrayState extends State<CommentsTray> {
         'id': '6',
         'userId': 'user6',
         'username': 'WowCrazy',
-        'text': 'I think those are your future sales! Natasha Pang, the top Robotics Industry Sales Director for the India market and global influencer.',
+        'text':
+            'I think those are your future sales! Natasha Pang, the top Robotics Industry Sales Director for the India market and global influencer.',
         'timeAgo': '1d',
         'likeCount': 232,
         'hasMedia': false,
@@ -131,10 +130,7 @@ class _CommentsTrayState extends State<CommentsTray> {
     return Container(
       decoration: BoxDecoration(
         color: backgroundColor,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(12),
-          topRight: Radius.circular(12),
-        ),
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -142,11 +138,7 @@ class _CommentsTrayState extends State<CommentsTray> {
           // Header with handle
           Container(
             padding: const EdgeInsets.symmetric(vertical: 12),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(color: borderColor, width: 0.5),
-              ),
-            ),
+            decoration: BoxDecoration(border: Border(bottom: BorderSide(color: borderColor, width: 0.5))),
             child: Column(
               children: [
                 // Handle for dragging
@@ -154,20 +146,13 @@ class _CommentsTrayState extends State<CommentsTray> {
                   width: 40,
                   height: 5,
                   margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: AppColors.divider,
-                    borderRadius: BorderRadius.circular(2.5),
-                  ),
+                  decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2.5)),
                 ),
                 // Title
                 Center(
                   child: Text(
                     '${widget.commentCount} comments',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: textColor,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
                   ),
                 ),
               ],
@@ -177,9 +162,7 @@ class _CommentsTrayState extends State<CommentsTray> {
           // Comments list - use Flexible with a limited height
           Flexible(
             child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.6,
-              ),
+              constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.6),
               child: ListView.builder(
                 controller: _scrollController,
                 padding: const EdgeInsets.only(bottom: 8),
@@ -220,7 +203,7 @@ class _CommentsTrayState extends State<CommentsTray> {
   }
 }
 
-/// Static method to show the comments tray as a proper CupertinoModalPopup
+/// Static method to show the comments tray as a proper Material bottom sheet
 void showCommentsTray({
   required BuildContext context,
   required String videoId,
@@ -228,16 +211,16 @@ void showCommentsTray({
   required VoidCallback onClose,
   bool isDarkMode = true,
 }) {
-  showCupertinoModalPopup(
+  showModalBottomSheet(
     context: context,
-    barrierDismissible: true,
-    filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-    semanticsDismissible: true,
-    builder: (context) => CommentsTray(
-      videoId: videoId,
-      commentCount: commentCount,
-      onClose: onClose,
-      isDarkMode: isDarkMode,
-    ),
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black54,
+    enableDrag: true,
+    builder:
+        (context) => BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+          child: CommentsTray(videoId: videoId, commentCount: commentCount, onClose: onClose, isDarkMode: isDarkMode),
+        ),
   );
-} 
+}

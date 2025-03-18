@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'activity_list_item.dart';
 import 'activity_icon.dart';
 
@@ -6,11 +6,7 @@ class ActivityList extends StatelessWidget {
   final List<ActivityData> activities;
   final Function(ActivityData)? onActivityTap;
 
-  const ActivityList({
-    super.key,
-    required this.activities, 
-    this.onActivityTap,
-  });
+  const ActivityList({super.key, required this.activities, this.onActivityTap});
 
   @override
   Widget build(BuildContext context) {
@@ -50,4 +46,4 @@ class ActivityData {
     this.additionalInfo,
     this.targetContentId,
   });
-} 
+}

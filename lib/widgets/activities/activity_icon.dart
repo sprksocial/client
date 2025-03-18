@@ -1,22 +1,14 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../../utils/app_colors.dart';
 
-enum ActivityType {
-  like,
-  comment,
-  follow,
-}
+enum ActivityType { like, comment, follow }
 
 class ActivityIcon extends StatelessWidget {
   final ActivityType type;
   final double size;
 
-  const ActivityIcon({
-    super.key,
-    required this.type,
-    this.size = 40,
-  });
+  const ActivityIcon({super.key, required this.type, this.size = 40});
 
   @override
   Widget build(BuildContext context) {
@@ -46,17 +38,8 @@ class ActivityIcon extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: Icon(
-          iconData,
-          color: iconColor,
-          size: size * 0.5,
-        ),
-      ),
+      decoration: BoxDecoration(color: backgroundColor, shape: BoxShape.circle),
+      child: Center(child: Icon(iconData, color: iconColor, size: size * 0.5)),
     );
   }
-} 
+}

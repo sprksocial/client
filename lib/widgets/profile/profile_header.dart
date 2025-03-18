@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -61,7 +61,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
         return;
       }
       if (mounted) {
-        Navigator.push(context, CupertinoPageRoute(builder: (context) => ProfileScreen(did: didRes)));
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen(did: didRes)));
       }
     } catch (e) {
       debugPrint('Error resolving handle: $e');
@@ -113,32 +113,31 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                     decoration: BoxDecoration(
                       color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
-                        width: 2,
-                      ),
+                      border: Border.all(color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender, width: 2),
                     ),
                     child: Center(
-                      child: avatar != null && avatar.isNotEmpty
-                        ? ClipOval(
-                            child: CachedNetworkImage(
-                              imageUrl: avatar,
-                              width: 90,
-                              height: 90,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => const CupertinoActivityIndicator(),
-                              errorWidget: (context, url, error) => Icon(
+                      child:
+                          avatar != null && avatar.isNotEmpty
+                              ? ClipOval(
+                                child: CachedNetworkImage(
+                                  imageUrl: avatar,
+                                  width: 90,
+                                  height: 90,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => const CircularProgressIndicator(),
+                                  errorWidget:
+                                      (context, url, error) => Icon(
+                                        FluentIcons.person_24_regular,
+                                        size: 40,
+                                        color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
+                                      ),
+                                ),
+                              )
+                              : Icon(
                                 FluentIcons.person_24_regular,
                                 size: 40,
                                 color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
                               ),
-                            ),
-                          )
-                        : Icon(
-                            FluentIcons.person_24_regular,
-                            size: 40,
-                            color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
-                          ),
                     ),
                   ),
                   if (widget.isCurrentUser)
@@ -151,18 +150,9 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           color: AppColors.primary,
-                          border: Border.all(
-                            color: isDarkMode ? AppColors.deepPurple : AppColors.white,
-                            width: 2,
-                          ),
+                          border: Border.all(color: isDarkMode ? AppColors.deepPurple : AppColors.white, width: 2),
                         ),
-                        child: const Center(
-                          child: Icon(
-                            FluentIcons.add_24_filled,
-                            size: 18,
-                            color: AppColors.white,
-                          ),
-                        ),
+                        child: const Center(child: Icon(FluentIcons.add_24_filled, size: 18, color: AppColors.white)),
                       ),
                     ),
                 ],
@@ -191,11 +181,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
             children: [
               Text(
                 displayName.isNotEmpty ? displayName : handle,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: AppTheme.getTextColor(context),
-                ),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.getTextColor(context)),
               ),
 
               // Early Supporter badge
@@ -207,10 +193,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                     'assets/images/match.svg',
                     height: 20,
                     width: 20,
-                    colorFilter: const ColorFilter.mode(
-                      AppColors.primary,
-                      BlendMode.srcIn
-                    ),
+                    colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
                   ),
                 ),
               ],
@@ -220,13 +203,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
           const SizedBox(height: 4),
 
           // Username in the format seen in the screenshot
-          Text(
-            '@$handle',
-            style: TextStyle(
-              color: AppTheme.getSecondaryTextColor(context),
-              fontSize: 14,
-            ),
-          ),
+          Text('@$handle', style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 14)),
 
           if (description.isNotEmpty || uniqueLinks.isNotEmpty) ...[
             const SizedBox(height: 8),
@@ -235,23 +212,15 @@ class _ProfileHeaderState extends State<ProfileHeader> {
             if (description.isNotEmpty)
               GestureDetector(
                 onTap: _toggleDescriptionExpand,
-                child: TextFormatter.buildRichTextWithMentions(
-                  context,
-                  description,
-                  _expandDescription,
-                  (username) {
-                    // Handle username tap
-                    _handleUsernameTap(username);
-                  },
-                ),
+                child: TextFormatter.buildRichTextWithMentions(context, description, _expandDescription, (username) {
+                  // Handle username tap
+                  _handleUsernameTap(username);
+                }),
               ),
 
             // Links widget (if any)
             if (uniqueLinks.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4.0),
-                child: ProfileLinks(links: uniqueLinks),
-              ),
+              Padding(padding: const EdgeInsets.only(top: 4.0), child: ProfileLinks(links: uniqueLinks)),
           ],
 
           const SizedBox(height: 16),
@@ -263,12 +232,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
               if (widget.isCurrentUser) ...[
                 Expanded(
                   flex: 1,
-                  child: ProfileActionButton(
-                    label: 'Edit',
-                    onPressed: widget.onEditTap,
-                    isPrimary: true,
-                    isOutlined: false,
-                  ),
+                  child: ProfileActionButton(label: 'Edit', onPressed: widget.onEditTap, isPrimary: true, isOutlined: false),
                 ),
                 const SizedBox(width: 8),
               ],
@@ -278,10 +242,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 flex: 1,
                 child: Container(
                   constraints: const BoxConstraints(minHeight: 36),
-                  child: ProfileActionButton(
-                    label: 'Share Profile',
-                    onPressed: widget.onShareTap,
-                  ),
+                  child: ProfileActionButton(label: 'Share Profile', onPressed: widget.onShareTap),
                 ),
               ),
 
@@ -290,32 +251,21 @@ class _ProfileHeaderState extends State<ProfileHeader> {
               // Settings button for current user or Follow button for others
               Expanded(
                 flex: 1,
-                child: widget.isCurrentUser
-                  ? CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: widget.onSettingsTap,
-                      child: Container(
-                        height: 36,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: AppColors.border,
-                            width: 1,
+                child:
+                    widget.isCurrentUser
+                        ? IconButton(
+                          style: IconButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: const Size.fromHeight(36),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              side: BorderSide(color: AppColors.border, width: 1),
+                            ),
                           ),
-                        ),
-                        child: Center(
-                          child: Icon(
-                            FluentIcons.settings_24_regular,
-                            color: AppTheme.getTextColor(context),
-                            size: 20,
-                          ),
-                        ),
-                      ),
-                    )
-                  : ProfileActionButton(
-                      label: 'Follow',
-                      onPressed: widget.onFollowTap,
-                    ),
+                          onPressed: widget.onSettingsTap,
+                          icon: Icon(FluentIcons.settings_24_regular, color: AppTheme.getTextColor(context), size: 20),
+                        )
+                        : ProfileActionButton(label: 'Follow', onPressed: widget.onFollowTap),
               ),
             ],
           ),

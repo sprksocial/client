@@ -1,5 +1,4 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart' show Colors, BackdropFilter;
+import 'package:flutter/material.dart';
 import 'dart:ui'; // For ImageFilter
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../widgets/video_side_action_bar.dart';
@@ -14,15 +13,11 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Calculate proper padding based on screen size and safe area
-    final bottomNavHeight = 50.0; // Standard height for bottom navigation bar
-    final bottomSafeArea = MediaQuery.of(context).padding.bottom;
-    final totalBottomPadding = bottomNavHeight + bottomSafeArea;
     final topPadding = MediaQuery.of(context).padding.top;
 
-    return CupertinoPageScaffold(
-      backgroundColor: CupertinoColors.black,
-      child: Stack(
+    return Scaffold(
+      backgroundColor: Colors.black,
+      body: Stack(
         children: [
           // Full-screen video feed
           SizedBox(
@@ -41,11 +36,7 @@ class HomeScreen extends StatelessWidget {
                   null, // Custom colored container
                 ];
 
-                return Padding(
-                  // Add padding at bottom to prevent content from being hidden behind bottom nav
-                  padding: EdgeInsets.only(bottom: totalBottomPadding),
-                  child: VideoItem(index: index, videoUrl: index < videoUrls.length ? videoUrls[index] : null),
-                );
+                return VideoItem(index: index, videoUrl: index < videoUrls.length ? videoUrls[index] : null);
               },
             ),
           ),
@@ -61,7 +52,7 @@ class HomeScreen extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [CupertinoColors.black.withAlpha(179), CupertinoColors.black.withAlpha(0)],
+                  colors: [Colors.black.withAlpha(179), Colors.black.withAlpha(0)],
                 ),
               ),
               child: Padding(
@@ -72,21 +63,31 @@ class HomeScreen extends StatelessWidget {
                     const SizedBox(width: 30), // For balance
                     Expanded(
                       child: Center(
-                        child: CupertinoSegmentedControl<int>(
-                          children: const {
-                            0: Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: Text('Following')),
-                            1: Padding(padding: EdgeInsets.symmetric(horizontal: 20), child: Text('For You')),
-                          },
-                          onValueChanged: (value) {},
-                          groupValue: 1, // Default to "For You"
-                          borderColor: CupertinoColors.systemGrey,
-                          selectedColor: CupertinoColors.white,
-                          unselectedColor: CupertinoColors.black,
-                          padding: const EdgeInsets.all(4),
+                        child: SegmentedButton<int>(
+                          segments: const [
+                            ButtonSegment<int>(value: 0, label: Text('Following')),
+                            ButtonSegment<int>(value: 1, label: Text('For You')),
+                          ],
+                          onSelectionChanged: (Set<int> value) {},
+                          selected: const {1}, // Default to "For You"
+                          style: ButtonStyle(
+                            backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                              (states) => states.contains(WidgetState.selected) ? Colors.white : Colors.black,
+                            ),
+                            foregroundColor: WidgetStateProperty.resolveWith<Color>(
+                              (states) => states.contains(WidgetState.selected) ? Colors.black : Colors.white,
+                            ),
+                            side: WidgetStateProperty.all(BorderSide(color: Colors.grey)),
+                          ),
                         ),
                       ),
                     ),
-                    const Icon(FluentIcons.search_24_regular, color: CupertinoColors.white, size: 30),
+                    IconButton(
+                      icon: const Icon(FluentIcons.search_24_regular),
+                      color: Colors.white,
+                      iconSize: 30,
+                      onPressed: () {},
+                    ),
                   ],
                 ),
               ),
@@ -161,7 +162,7 @@ class _VideoItemState extends State<VideoItem> {
       _showComments = true;
     });
 
-    // Show comments using the standard Cupertino modal approach
+    // Show comments using the standard Material modal approach
     showCommentsTray(
       context: context,
       videoId: 'video_${widget.index + 1}',
@@ -294,8 +295,7 @@ class _VideoItemState extends State<VideoItem> {
             ),
 
             // Loading indicator
-            if (widget.videoUrl != null && !_isInitialized)
-              const Center(child: CupertinoActivityIndicator(color: CupertinoColors.white, radius: 20)),
+            if (widget.videoUrl != null && !_isInitialized) const Center(child: CircularProgressIndicator(color: Colors.white)),
           ],
         ),
       ),
@@ -320,7 +320,7 @@ class _VideoItemState extends State<VideoItem> {
         BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
           child: Container(
-            color: CupertinoColors.black.withAlpha(77), // Darkens the blur slightly
+            color: Colors.black.withAlpha(77), // Darkens the blur slightly
           ),
         ),
       ],
@@ -356,16 +356,16 @@ class _VideoItemState extends State<VideoItem> {
     } else {
       // Placeholder for videos without a URL or while loading
       return Container(
-        color: widget.index % 2 == 0 ? CupertinoColors.systemIndigo : CupertinoColors.systemPurple,
+        color: widget.index % 2 == 0 ? Colors.indigo : Colors.purple,
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(FluentIcons.play_circle_24_regular, size: 80, color: CupertinoColors.white.withAlpha(179)),
+              Icon(FluentIcons.play_circle_24_regular, size: 80, color: Colors.white.withAlpha(179)),
               const SizedBox(height: 16),
               Text(
                 'Video ${widget.index + 1}',
-                style: const TextStyle(color: CupertinoColors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ],
           ),

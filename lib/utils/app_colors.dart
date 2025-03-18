@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 
 class AppColors {
   // Main color palette
@@ -8,16 +8,16 @@ class AppColors {
   static const Color nearBlack = Color(0xFF0D0A0F);
   static const Color richPurple = Color(0xFF330072);
   static const Color brightPurple = Color(0xFFB20AFF);
-  static const Color pink = Color(0xFFFF2696);  // Main app color for buttons and highlights
+  static const Color pink = Color(0xFFFF2696); // Main app color for buttons and highlights
   static const Color white = Color(0xFFFFFFFF);
   static const Color black = Color(0xFF000000);
-  
+
   // New colors
-  static const Color blue = Color(0xFF0073FF);  // For followers
+  static const Color blue = Color(0xFF0073FF); // For followers
   static const Color lightBlue = Color(0xFF40A9FF); // Lighter blue variant
-  static const Color teal = Color(0xFF00C9B8);  // For bookmarks
-  static const Color green = Color(0xFF12DB59);  // For comments
-  static const Color red = Color(0xFFFF3A2C);    // For likes
+  static const Color teal = Color(0xFF00C9B8); // For bookmarks
+  static const Color green = Color(0xFF12DB59); // For comments
+  static const Color red = Color(0xFFFF3A2C); // For likes
   static const Color orange = Color(0xFFFF7B00); // For alerts and danger
 
   // Semantic colors based on our palette
@@ -55,10 +55,10 @@ class AppColors {
 
   // Unread indicator
   static const Color unreadIndicator = pink;
-  
+
   // Navigation
   static const Color selectedIconLight = pink;
   static const Color unselectedIconLight = darkPurple;
   static const Color selectedIconDark = white;
   static const Color unselectedIconDark = darkPurple;
-} 
+}

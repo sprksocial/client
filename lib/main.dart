@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
@@ -22,10 +22,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
   fvp.registerWith();
   runApp(const MyApp());
 }
@@ -35,31 +32,40 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // We'll use a builder to get access to the platform brightness
-    return CupertinoTheme(
-      data: AppTheme.theme,
-      child: MultiProvider(
-        providers: [
-          ChangeNotifierProvider(create: (_) => NavigationProvider()),
-          ChangeNotifierProvider(create: (_) => AuthService()),
-          ChangeNotifierProvider(create: (_) => CachedIdentityService()),
-          ChangeNotifierProxyProvider<AuthService, ProfileService>(
-            create: (context) => ProfileService(context.read<AuthService>()),
-            update: (_, authService, previousProfileService) =>
-              previousProfileService ?? ProfileService(authService),
-          ),
-        ],
-        child: CupertinoApp(
-          title: 'Spark',
-          theme: AppTheme.theme,
-          home: const SplashScreen(),
-          routes: {
-            '/home': (context) => const MainScreen(),
-            '/login': (context) => const LoginScreen(),
-            '/auth': (context) => const AuthPromptScreen(),
-            '/test': (context) => const TestActionsScreen(),
-          },
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => NavigationProvider()),
+        ChangeNotifierProvider(create: (_) => AuthService()),
+        ChangeNotifierProvider(create: (_) => CachedIdentityService()),
+        ChangeNotifierProxyProvider<AuthService, ProfileService>(
+          create: (context) => ProfileService(context.read<AuthService>()),
+          update: (_, authService, previousProfileService) => previousProfileService ?? ProfileService(authService),
         ),
+      ],
+      child: MaterialApp(
+        title: 'Spark',
+        theme: ThemeData(
+          primaryColor: AppColors.primary,
+          scaffoldBackgroundColor: AppColors.background,
+          colorScheme: ColorScheme.light(primary: AppColors.primary, secondary: AppColors.accent),
+          textTheme: Typography.blackMountainView.apply(bodyColor: AppColors.textPrimary, displayColor: AppColors.textPrimary),
+          useMaterial3: true,
+        ),
+        darkTheme: ThemeData(
+          primaryColor: AppColors.primary,
+          scaffoldBackgroundColor: AppColors.darkBackground,
+          colorScheme: ColorScheme.dark(primary: AppColors.primary, secondary: AppColors.accent),
+          textTheme: Typography.whiteMountainView.apply(bodyColor: AppColors.textLight, displayColor: AppColors.textLight),
+          useMaterial3: true,
+        ),
+        themeMode: ThemeMode.system,
+        home: const SplashScreen(),
+        routes: {
+          '/home': (context) => const MainScreen(),
+          '/login': (context) => const LoginScreen(),
+          '/auth': (context) => const AuthPromptScreen(),
+          '/test': (context) => const TestActionsScreen(),
+        },
       ),
     );
   }
@@ -91,129 +97,68 @@ class MainScreen extends StatelessWidget {
       const SearchScreen(),
       const SizedBox.shrink(), // Placeholder for create button
       const MessagesScreen(),
-      ProfileScreen(
-        key: Key(authService.session?.did ?? ''),
-        did: authService.session?.did,
-      ),
+      ProfileScreen(key: Key(authService.session?.did ?? ''), did: authService.session?.did),
     ];
 
-    return CupertinoPageScaffold(
+    return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context, isHomePage),
-      child: Stack(
-        children: [
-          // Main content
-          IndexedStack(
-            index: navigationProvider.currentIndex,
-            children: screens,
-          ),
-
-          // Bottom navigation
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppTheme.getNavBackgroundColor(context, isHomePage),
-                border: Border(
-                  top: BorderSide(
-                    color: AppColors.border,
-                    width: 0.5,
-                  ),
-                ),
-              ),
-              child: SafeArea(
-                top: false,
-                child: SizedBox(
-                  height: 50,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      _buildNavItem(
-                        context,
-                        0,
-                        'Home',
-                        FluentIcons.home_24_regular,
-                        FluentIcons.home_24_filled,
-                      ),
-                      _buildNavItem(
-                        context,
-                        1,
-                        'Discover',
-                        FluentIcons.compass_northwest_24_regular,
-                        FluentIcons.compass_northwest_24_filled,
-                      ),
-                      _buildCreateButton(context),
-                      _buildNavItem(
-                        context,
-                        3,
-                        'Messages',
-                        FluentIcons.chat_24_regular,
-                        FluentIcons.chat_24_filled,
-                      ),
-                      _buildNavItem(
-                        context,
-                        4,
-                        'Profile',
-                        FluentIcons.person_24_regular,
-                        FluentIcons.person_24_filled,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNavItem(BuildContext context, int index, String label, IconData iconOutline, IconData iconFilled) {
-    final navigationProvider = Provider.of<NavigationProvider>(context);
-    final bool isSelected = navigationProvider.currentIndex == index;
-
-    final bool isHomePage = navigationProvider.currentIndex == 0;
-
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      onPressed: () {
-        navigationProvider.updateIndex(index);
-      },
-      child: Icon(
-        isSelected ? iconFilled : iconOutline,
-        color: isSelected
-            ? AppTheme.getSelectedIconColor(context, isHomePage)
-            : AppTheme.getUnselectedIconColor(context, isHomePage),
-        size: 26,
-      ),
-    );
-  }
-
-  Widget _buildCreateButton(BuildContext context) {
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      onPressed: () {
-        Navigator.of(context).push(
-          CupertinoPageRoute(
-            fullscreenDialog: true,
-            builder: (context) => const CreateVideoScreen(),
-          ),
-        );
-      },
-      child: Container(
-        width: 48,
-        height: 36,
-        decoration: BoxDecoration(
-          color: AppColors.primary,
-          borderRadius: BorderRadius.circular(10),
+      body: IndexedStack(index: navigationProvider.currentIndex, children: screens),
+      bottomNavigationBar: NavigationBarTheme(
+        data: NavigationBarThemeData(
+          indicatorColor: Colors.transparent,
+          backgroundColor: AppTheme.getNavBackgroundColor(context, isHomePage),
+          height: 60,
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
+          iconTheme: WidgetStateProperty.resolveWith((states) {
+            if (states.contains(WidgetState.selected)) {
+              return IconThemeData(color: AppTheme.getSelectedIconColor(context, isHomePage), size: 26);
+            }
+            return IconThemeData(color: AppTheme.getUnselectedIconColor(context, isHomePage), size: 26);
+          }),
         ),
-        child: const Center(
-          child: Icon(
-            FluentIcons.add_24_filled,
-            color: AppColors.white,
-            size: 24,
-          ),
+        child: NavigationBar(
+          selectedIndex: navigationProvider.currentIndex == 2 ? 0 : navigationProvider.currentIndex,
+          onDestinationSelected: (index) {
+            // Handle the create button specially
+            if (index == 2) {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(fullscreenDialog: true, builder: (context) => const CreateVideoScreen()));
+            } else {
+              navigationProvider.updateIndex(index);
+            }
+          },
+          destinations: [
+            const NavigationDestination(
+              icon: Icon(FluentIcons.home_24_regular),
+              selectedIcon: Icon(FluentIcons.home_24_filled),
+              label: 'Home',
+            ),
+            const NavigationDestination(
+              icon: Icon(FluentIcons.compass_northwest_24_regular),
+              selectedIcon: Icon(FluentIcons.compass_northwest_24_filled),
+              label: 'Discover',
+            ),
+            NavigationDestination(
+              icon: Container(
+                width: 48,
+                height: 36,
+                decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(10)),
+                child: const Center(child: Icon(FluentIcons.add_24_filled, color: AppColors.white, size: 24)),
+              ),
+              label: 'Create',
+            ),
+            const NavigationDestination(
+              icon: Icon(FluentIcons.chat_24_regular),
+              selectedIcon: Icon(FluentIcons.chat_24_filled),
+              label: 'Messages',
+            ),
+            const NavigationDestination(
+              icon: Icon(FluentIcons.person_24_regular),
+              selectedIcon: Icon(FluentIcons.person_24_filled),
+              label: 'Profile',
+            ),
+          ],
         ),
       ),
     );

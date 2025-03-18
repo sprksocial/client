@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
@@ -45,10 +45,7 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _login() async {
     if (_formKey.currentState?.validate() ?? false) {
       final authService = Provider.of<AuthService>(context, listen: false);
-      final success = await authService.login(
-        _handleController.text.trim(),
-        _passwordController.text,
-      );
+      final success = await authService.login(_handleController.text.trim(), _passwordController.text);
 
       if (success && mounted) {
         // Complete autofill when login is successful
@@ -64,9 +61,9 @@ class _LoginScreenState extends State<LoginScreen> {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
 
-    return CupertinoPageScaffold(
+    return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context, false),
-      child: SafeArea(
+      body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24.0),
@@ -82,13 +79,9 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: 100,
                     height: 100,
                     margin: const EdgeInsets.only(bottom: 40),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
                     child: SvgPicture.asset(
-                      isDarkMode 
-                          ? 'assets/images/logo_dark_mode.svg'
-                          : 'assets/images/logo_light_mode.svg',
+                      isDarkMode ? 'assets/images/logo_dark_mode.svg' : 'assets/images/logo_light_mode.svg',
                       width: 100,
                       height: 100,
                     ),
@@ -97,11 +90,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Title
                   Text(
                     'Login to your account',
-                    style: TextStyle(
-                      color: AppTheme.getTextColor(context),
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 24, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 30),
@@ -110,28 +99,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   AutofillGroup(
                     child: Column(
                       children: [
-                        CupertinoTextField(
+                        TextField(
                           controller: _handleController,
                           focusNode: _handleFocusNode,
-                          placeholder: 'Handle',
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isDarkMode
-                                ? AppColors.deepPurple
-                                : CupertinoColors.systemGrey6,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          prefix: const Padding(
-                            padding: EdgeInsets.only(left: 16),
-                            child: Icon(
-                              FluentIcons.person_24_regular,
-                              color: AppColors.primary,
-                            ),
+                          decoration: InputDecoration(
+                            hintText: 'Handle',
+                            prefixIcon: const Icon(FluentIcons.person_24_regular, color: AppColors.primary),
+                            filled: true,
+                            fillColor: isDarkMode ? AppColors.deepPurple : Colors.grey[200],
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                            contentPadding: const EdgeInsets.all(16),
                           ),
                           style: TextStyle(color: AppTheme.getTextColor(context)),
-                          placeholderStyle: TextStyle(
-                            color: AppTheme.getSecondaryTextColor(context),
-                          ),
                           textInputAction: TextInputAction.next,
                           keyboardType: TextInputType.emailAddress,
                           autofillHints: const [AutofillHints.username, AutofillHints.email],
@@ -140,45 +119,30 @@ class _LoginScreenState extends State<LoginScreen> {
                         const SizedBox(height: 16),
 
                         // Password field
-                        CupertinoTextField(
+                        TextField(
                           controller: _passwordController,
                           focusNode: _passwordFocusNode,
-                          placeholder: 'Password',
-                          padding: const EdgeInsets.all(16),
-                          obscureText: _obscurePassword,
-                          decoration: BoxDecoration(
-                            color: isDarkMode
-                                ? AppColors.deepPurple
-                                : CupertinoColors.systemGrey6,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          prefix: const Padding(
-                            padding: EdgeInsets.only(left: 16),
-                            child: Icon(
-                              FluentIcons.lock_closed_24_regular,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                          suffix: Padding(
-                            padding: const EdgeInsets.only(right: 16),
-                            child: GestureDetector(
-                              onTap: () {
+                          decoration: InputDecoration(
+                            hintText: 'Password',
+                            prefixIcon: const Icon(FluentIcons.lock_closed_24_regular, color: AppColors.primary),
+                            suffixIcon: IconButton(
+                              onPressed: () {
                                 setState(() {
                                   _obscurePassword = !_obscurePassword;
                                 });
                               },
-                              child: Icon(
-                                _obscurePassword
-                                    ? FluentIcons.eye_24_regular
-                                    : FluentIcons.eye_off_24_regular,
+                              icon: Icon(
+                                _obscurePassword ? FluentIcons.eye_24_regular : FluentIcons.eye_off_24_regular,
                                 color: AppColors.primary,
                               ),
                             ),
+                            filled: true,
+                            fillColor: isDarkMode ? AppColors.deepPurple : Colors.grey[200],
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                            contentPadding: const EdgeInsets.all(16),
                           ),
                           style: TextStyle(color: AppTheme.getTextColor(context)),
-                          placeholderStyle: TextStyle(
-                            color: AppTheme.getSecondaryTextColor(context),
-                          ),
+                          obscureText: _obscurePassword,
                           textInputAction: TextInputAction.done,
                           keyboardType: TextInputType.visiblePassword,
                           autofillHints: const [AutofillHints.password],
@@ -198,29 +162,24 @@ class _LoginScreenState extends State<LoginScreen> {
                       padding: const EdgeInsets.only(bottom: 16),
                       child: Text(
                         authService.error!,
-                        style: const TextStyle(
-                          color: AppColors.error,
-                          fontSize: 14,
-                        ),
+                        style: const TextStyle(color: AppColors.error, fontSize: 14),
                         textAlign: TextAlign.center,
                       ),
                     ),
 
                   // Login button
-                  CupertinoButton(
+                  ElevatedButton(
                     onPressed: authService.isLoading ? null : _login,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(12),
-                    child: authService.isLoading
-                        ? const CupertinoActivityIndicator(color: AppColors.white)
-                        : const Text(
-                            'Login',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.white,
-                            ),
-                          ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                    ),
+                    child:
+                        authService.isLoading
+                            ? const CircularProgressIndicator(color: AppColors.white)
+                            : const Text('Login', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.white)),
                   ),
                 ],
               ),

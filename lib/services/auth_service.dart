@@ -48,7 +48,6 @@ class AuthService extends ChangeNotifier {
       }
 
       _atProto = ATProto.fromSession(_session!);
-
     } catch (e) {
       _error = 'Failed to load saved session: ${e.toString()}';
     } finally {
@@ -60,9 +59,7 @@ class AuthService extends ChangeNotifier {
   bool _isTokenExpired(Jwt token) {
     try {
       // Consider token as expired if it's within 5 minutes of expiry
-      return DateTime.now().isAfter(
-        token.exp.subtract(const Duration(minutes: 5)),
-      );
+      return DateTime.now().isAfter(token.exp.subtract(const Duration(minutes: 5)));
     } catch (e) {
       // If there's any error decoding, consider it expired
       print('Failed to check token expiry: $e');
@@ -74,18 +71,12 @@ class AuthService extends ChangeNotifier {
     final services = doc['service'] as List<dynamic>?;
     if (services == null || services.isEmpty) return null;
 
-    final pdsService = services.firstWhere(
-      (s) => s['id'] == '#atproto_pds',
-      orElse: () => {},
-    );
+    final pdsService = services.firstWhere((s) => s['id'] == '#atproto_pds', orElse: () => {});
 
     final String? pdsUrl = pdsService['serviceEndpoint'] as String?;
     if (pdsUrl == null) return null;
 
-    return pdsUrl
-        .replaceFirst('http://', '')
-        .replaceFirst('https://', '')
-        .replaceFirst('/', '');
+    return pdsUrl.replaceFirst('http://', '').replaceFirst('https://', '').replaceFirst('/', '');
   }
 
   // Refresh the session using refresh token
@@ -96,15 +87,11 @@ class AuthService extends ChangeNotifier {
       }
 
       // Try getting service from session's DID doc first
-      String? service = _session!.didDoc != null
-          ? _extractPdsDomain(_session!.didDoc!)
-          : null;
+      String? service = _session!.didDoc != null ? _extractPdsDomain(_session!.didDoc!) : null;
 
       // Fallback to PLC directory if needed
       if (service == null) {
-        final didDocResponse = await http.get(
-          Uri.parse('https://plc.directory/${_session!.did}'),
-        );
+        final didDocResponse = await http.get(Uri.parse('https://plc.directory/${_session!.did}'));
         if (didDocResponse.statusCode == 200) {
           service = _extractPdsDomain(json.decode(didDocResponse.body));
         }
@@ -114,10 +101,7 @@ class AuthService extends ChangeNotifier {
         throw Exception('Could not determine service endpoint');
       }
 
-      final response = await refreshSession(
-        service: service,
-        refreshJwt: _session!.refreshJwt,
-      );
+      final response = await refreshSession(service: service, refreshJwt: _session!.refreshJwt);
 
       if (response.status != HttpStatus.ok) {
         throw Exception('Failed to refresh session: ${response.status}');
@@ -128,7 +112,6 @@ class AuthService extends ChangeNotifier {
 
       await _saveSession(_session!);
       _atProto = ATProto.fromSession(_session!);
-
     } catch (e) {
       _error = 'Failed to refresh session: ${e.toString()}';
       await _clearSavedSession();
@@ -167,46 +150,30 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      ATProto at = ATProto.anonymous(
-        service: 'shimeji.us-east.host.bsky.network',
-      );
+      ATProto at = ATProto.anonymous(service: 'shimeji.us-east.host.bsky.network');
       final didRes = await at.identity.resolveHandle(handle: handle);
       String did = didRes.data.did;
 
       // Fetch DID document from PLC directory
-      final didDocResponse = await http.get(
-        Uri.parse('https://plc.directory/$did'),
-      );
+      final didDocResponse = await http.get(Uri.parse('https://plc.directory/$did'));
 
       if (didDocResponse.statusCode != 200) {
-        throw Exception(
-          'Failed to fetch DID document: ${didDocResponse.statusCode}',
-        );
+        throw Exception('Failed to fetch DID document: ${didDocResponse.statusCode}');
       }
 
       final didDoc = json.decode(didDocResponse.body);
 
       // Extract PDS endpoint from DID document
       String? pdsUrl =
-          (didDoc['service'] as List<dynamic>).firstWhere(
-                (s) => s['id'] == '#atproto_pds',
-                orElse: () => {},
-              )['serviceEndpoint']
+          (didDoc['service'] as List<dynamic>).firstWhere((s) => s['id'] == '#atproto_pds', orElse: () => {})['serviceEndpoint']
               as String?;
 
       if (pdsUrl == null) {
         throw Exception('PDS endpoint not found in DID document');
       }
 
-      String pdsDomain = pdsUrl
-          .replaceFirst('http://', '')
-          .replaceFirst('https://', '')
-          .replaceFirst('/', '');
-      final session = await createSession(
-        identifier: handle,
-        password: password,
-        service: pdsDomain,
-      );
+      String pdsDomain = pdsUrl.replaceFirst('http://', '').replaceFirst('https://', '').replaceFirst('/', '');
+      final session = await createSession(identifier: handle, password: password, service: pdsDomain);
 
       _session = session.data;
       if (_session == null) {
@@ -229,12 +196,7 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  Future<bool> register(
-    String handle,
-    String email,
-    String password,
-    String? inviteCode,
-  ) async {
+  Future<bool> register(String handle, String email, String password, String? inviteCode) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -322,9 +284,7 @@ class AuthService extends ChangeNotifier {
     if (_atProto == null) return null;
 
     try {
-      final response = await _atProto!.repo.getRecord(
-        uri: AtUri.parse('at://${_session!.did}/app.bsky.actor.profile/self'),
-      );
+      final response = await _atProto!.repo.getRecord(uri: AtUri.parse('at://${_session!.did}/app.bsky.actor.profile/self'));
       return response.data.toJson();
     } catch (e) {
       _error = e.toString();

@@ -9,13 +9,9 @@ class ProfileTabContent {
   final int selectedIndex;
   final bool isAuthenticated;
   final VoidCallback onLoginPressed;
-  
-  const ProfileTabContent({
-    required this.selectedIndex,
-    required this.isAuthenticated,
-    required this.onLoginPressed,
-  });
-  
+
+  const ProfileTabContent({required this.selectedIndex, required this.isAuthenticated, required this.onLoginPressed});
+
   List<Widget> getTabContent() {
     // For tabs that require authentication, show auth prompt if not authenticated
     if ((selectedIndex == 4) && !isAuthenticated) {
@@ -35,31 +31,13 @@ class ProfileTabContent {
       case 1:
         return [const PhotosTab()];
       case 2:
-        return [
-          ContentGridTab(
-            icon: FluentIcons.heart_24_regular,
-            type: 'favorites',
-            itemCount: 30,
-          ),
-        ];
+        return [ContentGridTab(icon: FluentIcons.heart_24_regular, type: 'favorites', itemCount: 30)];
       case 3:
-        return [
-          ContentGridTab(
-            icon: FluentIcons.arrow_repeat_all_24_regular,
-            type: 'reposts',
-            itemCount: 25,
-          ),
-        ];
+        return [ContentGridTab(icon: FluentIcons.arrow_repeat_all_24_regular, type: 'reposts', itemCount: 25)];
       case 4:
-        return [
-          ContentGridTab(
-            icon: FluentIcons.bookmark_24_regular,
-            type: 'saved',
-            itemCount: 28,
-          ),
-        ];
+        return [ContentGridTab(icon: FluentIcons.bookmark_24_regular, type: 'saved', itemCount: 28)];
       default:
         return [const SliverToBoxAdapter(child: SizedBox.shrink())];
     }
   }
-} 
+}

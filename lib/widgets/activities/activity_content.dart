@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'activity_icon.dart';
 import '../../utils/app_theme.dart';
 
@@ -27,27 +27,15 @@ class ActivityContent extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
-              child: ActivityDescription(
-                username: username,
-                type: type,
-                isDarkMode: isDarkMode,
-              ),
-            ),
-            ActivityTime(
-              time: time,
-              isDarkMode: isDarkMode,
-            ),
+            Expanded(child: ActivityDescription(username: username, type: type, isDarkMode: isDarkMode)),
+            ActivityTime(time: time, isDarkMode: isDarkMode),
           ],
         ),
 
         // Optional additional info
         if (additionalInfo != null) ...[
           const SizedBox(height: 4),
-          AdditionalInfoText(
-            text: additionalInfo!,
-            isDarkMode: isDarkMode,
-          ),
+          AdditionalInfoText(text: additionalInfo!, isDarkMode: isDarkMode),
         ],
       ],
     );
@@ -59,12 +47,7 @@ class ActivityDescription extends StatelessWidget {
   final ActivityType type;
   final bool isDarkMode;
 
-  const ActivityDescription({
-    super.key,
-    required this.username,
-    required this.type,
-    this.isDarkMode = false,
-  });
+  const ActivityDescription({super.key, required this.username, required this.type, this.isDarkMode = false});
 
   @override
   Widget build(BuildContext context) {
@@ -74,21 +57,8 @@ class ActivityDescription extends StatelessWidget {
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
       text: TextSpan(
-        style: TextStyle(
-          fontSize: 16,
-          color: AppTheme.getTextColor(context),
-        ),
-        children: [
-          TextSpan(
-            text: username,
-            style: const TextStyle(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          TextSpan(
-            text: ' $actionText',
-          ),
-        ],
+        style: TextStyle(fontSize: 16, color: AppTheme.getTextColor(context)),
+        children: [TextSpan(text: username, style: const TextStyle(fontWeight: FontWeight.bold)), TextSpan(text: ' $actionText')],
       ),
     );
   }
@@ -109,21 +79,11 @@ class ActivityTime extends StatelessWidget {
   final String time;
   final bool isDarkMode;
 
-  const ActivityTime({
-    super.key,
-    required this.time,
-    this.isDarkMode = false,
-  });
+  const ActivityTime({super.key, required this.time, this.isDarkMode = false});
 
   @override
   Widget build(BuildContext context) {
-    return Text(
-      time,
-      style: TextStyle(
-        color: AppTheme.getSecondaryTextColor(context),
-        fontSize: 12,
-      ),
-    );
+    return Text(time, style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 12));
   }
 }
 
@@ -131,20 +91,13 @@ class AdditionalInfoText extends StatelessWidget {
   final String text;
   final bool isDarkMode;
 
-  const AdditionalInfoText({
-    super.key,
-    required this.text,
-    this.isDarkMode = false,
-  });
+  const AdditionalInfoText({super.key, required this.text, this.isDarkMode = false});
 
   @override
   Widget build(BuildContext context) {
     return Text(
       text,
-      style: TextStyle(
-        color: AppTheme.getSecondaryTextColor(context),
-        fontSize: 14,
-      ),
+      style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 14),
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );

@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import '../widgets/action_buttons/like_action_button.dart';
 import '../widgets/action_buttons/bookmark_action_button.dart';
 import '../utils/app_colors.dart';
@@ -30,40 +30,23 @@ class _TestActionsScreenState extends State<TestActionsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
+    return Scaffold(
       backgroundColor: AppColors.deepPurple,
-      navigationBar: const CupertinoNavigationBar(
-        middle: Text('Test Actions'),
-        backgroundColor: AppColors.deepPurple,
-      ),
-      child: Center(
+      appBar: AppBar(title: const Text('Test Actions'), backgroundColor: AppColors.deepPurple, elevation: 0),
+      body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text(
-              'Heart Animation Test',
-              style: TextStyle(color: CupertinoColors.white, fontSize: 18),
-            ),
+            const Text('Heart Animation Test', style: TextStyle(color: Colors.white, fontSize: 18)),
             const SizedBox(height: 20),
-            LikeActionButton(
-              count: '1.2K',
-              isLiked: _isLiked,
-              onPressed: _toggleLike,
-            ),
+            LikeActionButton(count: '1.2K', isLiked: _isLiked, onPressed: _toggleLike),
             const SizedBox(height: 40),
-            const Text(
-              'Bookmark Color Test',
-              style: TextStyle(color: CupertinoColors.white, fontSize: 18),
-            ),
+            const Text('Bookmark Color Test', style: TextStyle(color: Colors.white, fontSize: 18)),
             const SizedBox(height: 20),
-            BookmarkActionButton(
-              count: '425',
-              isBookmarked: _isBookmarked,
-              onPressed: _toggleBookmark,
-            ),
+            BookmarkActionButton(count: '425', isBookmarked: _isBookmarked, onPressed: _toggleBookmark),
           ],
         ),
       ),
     );
   }
-} 
+}

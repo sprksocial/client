@@ -35,14 +35,10 @@ class ProfileService extends ChangeNotifier {
 
       // Try to resolve the handle using the DID
       try {
-        final didDocResponse = await http.get(
-          Uri.parse('https://plc.directory/$did'),
-        );
+        final didDocResponse = await http.get(Uri.parse('https://plc.directory/$did'));
 
         if (didDocResponse.statusCode != 200) {
-          throw Exception(
-            'Failed to fetch DID document: ${didDocResponse.statusCode}',
-          );
+          throw Exception('Failed to fetch DID document: ${didDocResponse.statusCode}');
         }
 
         final didDoc = json.decode(didDocResponse.body);
@@ -57,9 +53,7 @@ class ProfileService extends ChangeNotifier {
       }
 
       // Then get the profile record
-      final response = await atProto.repo.getRecord(
-        uri: AtUri.parse('at://$did/app.bsky.actor.profile/self'),
-      );
+      final response = await atProto.repo.getRecord(uri: AtUri.parse('at://$did/app.bsky.actor.profile/self'));
 
       final recordData = response.data.toJson();
 

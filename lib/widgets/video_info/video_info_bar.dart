@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'username_label.dart';
 import 'video_description.dart';
 import 'hashtag_list.dart';
@@ -25,24 +25,18 @@ class VideoInfoBar extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Username
-        GestureDetector(
-          onTap: onUsernameTap,
-          child: UsernameLabel(username: username),
-        ),
-        
+        GestureDetector(onTap: onUsernameTap, child: UsernameLabel(username: username)),
+
         const SizedBox(height: 10),
-        
+
         // Description
         VideoDescription(text: description),
-        
+
         const SizedBox(height: 6),
-        
+
         // Hashtags
-        HashtagList(
-          hashtags: hashtags,
-          onHashtagTap: onHashtagTap,
-        ),
+        HashtagList(hashtags: hashtags, onHashtagTap: onHashtagTap),
       ],
     );
   }
-} 
+}

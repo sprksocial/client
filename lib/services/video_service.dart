@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
@@ -56,7 +55,6 @@ class VideoService {
       'embed': {'\$type': 'so.sprk.embed.video', 'video': videoBlobRef},
       'createdAt': DateTime.now().toUtc().toIso8601String(),
     };
-
 
     final recordRes = await authAtProto.repo.createRecord(collection: NSID.parse('so.sprk.feed.post'), record: postRecord);
 

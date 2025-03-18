@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class VideoProgressBar extends StatefulWidget {
@@ -9,9 +8,9 @@ class VideoProgressBar extends StatefulWidget {
   final Function(double) onDragStart;
   final Function(double) onDragUpdate;
   final VoidCallback onDragEnd;
-  
+
   const VideoProgressBar({
-    Key? key,
+    super.key,
     required this.position,
     required this.duration,
     required this.isDragging,
@@ -19,7 +18,7 @@ class VideoProgressBar extends StatefulWidget {
     required this.onDragStart,
     required this.onDragUpdate,
     required this.onDragEnd,
-  }) : super(key: key);
+  });
 
   @override
   State<VideoProgressBar> createState() => _VideoProgressBarState();
@@ -27,41 +26,35 @@ class VideoProgressBar extends StatefulWidget {
 
 class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerProviderStateMixin {
   bool _knobEnlarged = false;
-  
+
   // Animation controller for the timestamp animation
   late AnimationController _timestampAnimationController;
   late Animation<Offset> _timestampAnimation;
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     // Initialize animation controller for timestamp
-    _timestampAnimationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 200),
-    );
-    
+    _timestampAnimationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 200));
+
     // Create animation for moving timestamp upward
     _timestampAnimation = Tween<Offset>(
       begin: const Offset(0, 0),
       end: const Offset(0, -1.0),
-    ).animate(CurvedAnimation(
-      parent: _timestampAnimationController,
-      curve: Curves.easeOutCubic,
-    ));
+    ).animate(CurvedAnimation(parent: _timestampAnimationController, curve: Curves.easeOutCubic));
   }
-  
+
   @override
   void didUpdateWidget(VideoProgressBar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     // Update knob size based on dragging state
     if (widget.isDragging != oldWidget.isDragging) {
       setState(() {
         _knobEnlarged = widget.isDragging;
       });
-      
+
       if (widget.isDragging) {
         _timestampAnimationController.forward();
       } else {
@@ -69,30 +62,30 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
       }
     }
   }
-  
+
   @override
   void dispose() {
     _timestampAnimationController.dispose();
     super.dispose();
   }
-  
+
   String _formatDuration(Duration duration) {
     final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
     return '$minutes:$seconds';
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    
+
     // Progress bar configuration - easily adjustable
     final progressBarWidthPercentage = 0.7; // 70% of screen width
     final progressBarWidth = screenWidth * progressBarWidthPercentage;
     final progressBarHeight = 4.0;
     final knobSizeNormal = 14.0;
     final knobSizeEnlarged = 20.0;
-    
+
     return Container(
       width: progressBarWidth,
       height: 40, // Taller touch area
@@ -101,7 +94,7 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
         builder: (context, constraints) {
           // Get actual width from constraints for more accurate calculations
           final actualWidth = constraints.maxWidth;
-          
+
           return GestureDetector(
             onHorizontalDragStart: (details) {
               final RenderBox box = context.findRenderObject() as RenderBox;
@@ -129,26 +122,27 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
                 Container(
                   height: progressBarHeight,
                   width: double.infinity, // Full width of the parent container
-                  color: CupertinoColors.systemGrey.withAlpha(128),
+                  color: Colors.grey.withAlpha(128),
                 ),
-                
+
                 // Filled progress - now white
                 FractionallySizedBox(
-                  widthFactor: widget.isDragging
-                      ? widget.dragPosition.clamp(0.0, 1.0)
-                      : (widget.position.inMilliseconds / widget.duration.inMilliseconds)
-                          .clamp(0.0, 1.0),
-                  child: Container(
-                    height: progressBarHeight,
-                    color: CupertinoColors.white,
-                  ),
+                  widthFactor:
+                      widget.isDragging
+                          ? widget.dragPosition.clamp(0.0, 1.0)
+                          : (widget.position.inMilliseconds / widget.duration.inMilliseconds).clamp(0.0, 1.0),
+                  child: Container(height: progressBarHeight, color: Colors.white),
                 ),
-                
+
                 // Draggable knob
                 Positioned(
-                  left: widget.isDragging
-                      ? (widget.dragPosition * actualWidth).clamp(0.0, actualWidth)
-                      : ((widget.position.inMilliseconds / widget.duration.inMilliseconds) * actualWidth).clamp(0.0, actualWidth),
+                  left:
+                      widget.isDragging
+                          ? (widget.dragPosition * actualWidth).clamp(0.0, actualWidth)
+                          : ((widget.position.inMilliseconds / widget.duration.inMilliseconds) * actualWidth).clamp(
+                            0.0,
+                            actualWidth,
+                          ),
                   top: -5,
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
@@ -175,20 +169,14 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
                       width: _knobEnlarged ? knobSizeEnlarged : knobSizeNormal,
                       height: _knobEnlarged ? knobSizeEnlarged : knobSizeNormal,
                       decoration: BoxDecoration(
-                        color: CupertinoColors.white,
+                        color: Colors.white,
                         shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: CupertinoColors.black.withAlpha(77),
-                            blurRadius: 4,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        boxShadow: [BoxShadow(color: Colors.black.withAlpha(77), blurRadius: 4, offset: const Offset(0, 2))],
                       ),
                     ),
                   ),
                 ),
-                
+
                 // Animated timestamp above knob when dragging
                 if (widget.isDragging)
                   Positioned(
@@ -198,17 +186,10 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
                       position: _timestampAnimation,
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: CupertinoColors.black.withAlpha(179),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
+                        decoration: BoxDecoration(color: Colors.black.withAlpha(179), borderRadius: BorderRadius.circular(4)),
                         child: Text(
                           _formatDuration(widget.duration * widget.dragPosition),
-                          style: const TextStyle(
-                            color: CupertinoColors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
@@ -216,8 +197,8 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
               ],
             ),
           );
-        }
+        },
       ),
     );
   }
-} 
+}

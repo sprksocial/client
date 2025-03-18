@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -13,11 +12,7 @@ class VideoControllerOverlay extends StatefulWidget {
   final VideoPlayerController controller;
   final VoidCallback onTap;
 
-  const VideoControllerOverlay({
-    Key? key,
-    required this.controller,
-    required this.onTap,
-  }) : super(key: key);
+  const VideoControllerOverlay({super.key, required this.controller, required this.onTap});
 
   @override
   State<VideoControllerOverlay> createState() => _VideoControllerOverlayState();
@@ -34,7 +29,7 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
   @override
   void initState() {
     super.initState();
-    
+
     // Start periodic timer to update UI with current video position
     _updateTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (mounted && !_isDragging) {
@@ -88,9 +83,7 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
 
   void _rewind() {
     final newPosition = widget.controller.value.position - const Duration(seconds: 5);
-    widget.controller.seekTo(
-      newPosition < Duration.zero ? Duration.zero : newPosition,
-    );
+    widget.controller.seekTo(newPosition < Duration.zero ? Duration.zero : newPosition);
     _startHideTimer();
     setState(() {});
   }
@@ -98,9 +91,7 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
   void _fastForward() {
     final newPosition = widget.controller.value.position + const Duration(seconds: 5);
     final duration = widget.controller.value.duration;
-    widget.controller.seekTo(
-      newPosition > duration ? duration : newPosition,
-    );
+    widget.controller.seekTo(newPosition > duration ? duration : newPosition);
     _startHideTimer();
     setState(() {});
   }
@@ -122,13 +113,13 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
   void _onDragEnd() {
     final duration = widget.controller.value.duration;
     final position = duration * _dragPosition;
-    
+
     widget.controller.seekTo(position);
-    
+
     setState(() {
       _isDragging = false;
     });
-    
+
     _startHideTimer();
   }
 
@@ -145,17 +136,15 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
   @override
   Widget build(BuildContext context) {
     final duration = widget.controller.value.duration;
-    final position = _isDragging
-        ? duration * _dragPosition
-        : widget.controller.value.position;
-    
+    final position = _isDragging ? duration * _dragPosition : widget.controller.value.position;
+
     final screenHeight = MediaQuery.of(context).size.height;
-    
+
     // Calculate bottom safe area for proper slider positioning
     final bottomSafeArea = MediaQuery.of(context).padding.bottom;
     final bottomNavHeight = 50.0; // Match the HomeScreen bottom nav height
     final progressBarBottomPadding = bottomNavHeight + bottomSafeArea + 10;
-    
+
     return GestureDetector(
       onTap: _toggleControls,
       onLongPressStart: (_) => _handleSpeedUp(true),
@@ -165,21 +154,17 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
         children: [
           // Transparent layer for tap detection
           Container(color: Colors.transparent),
-          
+
           // Speed indicator (2x) when long pressing
-          Positioned(
-            left: 10,
-            bottom: 120,
-            child: SpeedIndicator(isVisible: _isSpeedUp),
-          ),
-          
+          Positioned(left: 10, bottom: 120, child: SpeedIndicator(isVisible: _isSpeedUp)),
+
           // Controls overlay
           if (_controlsVisible)
             AnimatedOpacity(
               opacity: _controlsVisible ? 1.0 : 0.0,
               duration: const Duration(milliseconds: 200),
               child: Container(
-                color: CupertinoColors.black.withAlpha(128),
+                color: Colors.black.withAlpha(128),
                 child: Stack(
                   children: [
                     // Timestamp indicator (centered below controls)
@@ -187,15 +172,10 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
                       left: 0,
                       right: 0,
                       top: screenHeight * 0.55, // Position below play controls
-                      child: Center(
-                        child: TimeDisplay(
-                          position: position,
-                          duration: duration,
-                        ),
-                      ),
+                      child: Center(child: TimeDisplay(position: position, duration: duration)),
                     ),
-                    
-                    // Center play/pause and skip buttons - perfectly centered 
+
+                    // Center play/pause and skip buttons - perfectly centered
                     Center(
                       child: PlayPauseControls(
                         controller: widget.controller,
@@ -204,7 +184,7 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
                         onFastForward: _fastForward,
                       ),
                     ),
-                    
+
                     // Bottom progress bar - positioned just above bottom nav
                     Positioned(
                       left: 0,
@@ -230,4 +210,4 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
       ),
     );
   }
-} 
+}

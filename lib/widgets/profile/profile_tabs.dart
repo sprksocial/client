@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_theme.dart';
@@ -7,28 +7,17 @@ class ProfileTabs extends StatelessWidget {
   final int selectedIndex;
   final Function(int) onTabSelected;
   final bool isAuthenticated;
-  
-  const ProfileTabs({
-    Key? key,
-    required this.selectedIndex,
-    required this.onTabSelected,
-    required this.isAuthenticated,
-  }) : super(key: key);
-  
+
+  const ProfileTabs({super.key, required this.selectedIndex, required this.onTabSelected, required this.isAuthenticated});
+
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: AppTheme.getBackgroundColor(context, false),
         border: Border(
-          top: BorderSide(
-            color: AppColors.border,
-            width: 0.5,
-          ),
-          bottom: BorderSide(
-            color: AppColors.border,
-            width: 0.5,
-          ),
+          top: BorderSide(color: AppColors.border, width: 0.5),
+          bottom: BorderSide(color: AppColors.border, width: 0.5),
         ),
       ),
       child: Row(
@@ -43,7 +32,7 @@ class ProfileTabs extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildTabItem(BuildContext context, int index, IconData icon) {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
@@ -66,26 +55,26 @@ class ProfileTabs extends StatelessWidget {
       }
     }
 
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
+    return TextButton(
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
       onPressed: () => onTabSelected(index),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: isSelected
-                  ? AppColors.primary
-                  : Color(0x00000000), // Transparent color
+              color: isSelected ? AppColors.primary : const Color(0x00000000), // Transparent color
               width: 2,
             ),
           ),
         ),
         child: Icon(
           isSelected ? getFilledIcon(icon) : icon,
-          color: isSelected
-              ? AppColors.primary
-              : (isDarkMode ? AppColors.textLight : AppColors.textSecondary),
+          color: isSelected ? AppColors.primary : (isDarkMode ? AppColors.textLight : AppColors.textSecondary),
           size: 26,
         ),
       ),
@@ -115,4 +104,4 @@ class StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
     return true;
   }
-} 
+}

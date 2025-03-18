@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'activity_icon.dart';
 import 'activity_content.dart';
@@ -11,7 +11,7 @@ class ActivityListItem extends StatelessWidget {
   final String time;
   final String? additionalInfo;
   final VoidCallback? onTap;
-  
+
   const ActivityListItem({
     super.key,
     required this.username,
@@ -20,32 +20,27 @@ class ActivityListItem extends StatelessWidget {
     this.additionalInfo,
     this.onTap,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         decoration: BoxDecoration(
           color: isDarkMode ? AppColors.deepPurple : AppColors.white,
-          border: Border(
-            bottom: BorderSide(
-              color: isDarkMode ? AppColors.darkPurple : AppColors.divider,
-              width: 0.5,
-            ),
-          ),
+          border: Border(bottom: BorderSide(color: isDarkMode ? AppColors.darkPurple : AppColors.divider, width: 0.5)),
         ),
         child: Row(
           children: [
             // Activity icon
             ActivityIcon(type: type),
-            
+
             const SizedBox(width: 12),
-            
+
             // Activity content
             Expanded(
               child: ActivityContent(
@@ -56,18 +51,14 @@ class ActivityListItem extends StatelessWidget {
                 isDarkMode: isDarkMode,
               ),
             ),
-            
+
             const SizedBox(width: 8),
-            
+
             // Chevron
-            Icon(
-              FluentIcons.chevron_right_16_regular,
-              color: AppTheme.getSecondaryTextColor(context),
-              size: 16,
-            ),
+            Icon(FluentIcons.chevron_right_16_regular, color: AppTheme.getSecondaryTextColor(context), size: 16),
           ],
         ),
       ),
     );
   }
-} 
+}

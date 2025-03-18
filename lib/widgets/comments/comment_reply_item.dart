@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../../utils/app_colors.dart';
 
@@ -40,9 +40,7 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
   @override
   Widget build(BuildContext context) {
     final textColor = widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary;
-    final secondaryTextColor = widget.isDarkMode 
-        ? AppColors.textLight.withAlpha(179) 
-        : AppColors.textSecondary;
+    final secondaryTextColor = widget.isDarkMode ? AppColors.textLight.withAlpha(179) : AppColors.textSecondary;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 8, 16, 8),
@@ -57,24 +55,17 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
             decoration: BoxDecoration(
               color: AppColors.accent.withAlpha(204),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender,
-                width: 1,
-              ),
+              border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 1),
             ),
             child: Center(
               child: Text(
                 widget.username.isNotEmpty ? widget.username[0].toUpperCase() : '?',
-                style: const TextStyle(
-                  color: AppColors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                ),
+                style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 12),
               ),
             ),
           ),
           const SizedBox(width: 8),
-          
+
           // Reply content
           Expanded(
             child: Column(
@@ -85,79 +76,52 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Text(
-                      widget.username,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: textColor,
-                        fontSize: 13,
-                      ),
-                    ),
+                    Text(widget.username, style: TextStyle(fontWeight: FontWeight.bold, color: textColor, fontSize: 13)),
                     const SizedBox(width: 6),
-                    Text(
-                      widget.timeAgo,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: secondaryTextColor,
-                      ),
-                    ),
+                    Text(widget.timeAgo, style: TextStyle(fontSize: 11, color: secondaryTextColor)),
                   ],
                 ),
                 const SizedBox(height: 2),
-                
+
                 // Reply text
-                Text(
-                  widget.text,
-                  style: TextStyle(
-                    color: textColor,
-                    fontSize: 13,
-                  ),
-                ),
-                
+                Text(widget.text, style: TextStyle(color: textColor, fontSize: 13)),
+
                 // Action buttons
                 const SizedBox(height: 4),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     // Like button
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minSize: 0,
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
                       onPressed: _toggleLike,
                       child: Row(
                         children: [
                           Icon(
-                            _isLiked
-                                ? FluentIcons.heart_24_filled
-                                : FluentIcons.heart_24_regular,
+                            _isLiked ? FluentIcons.heart_24_filled : FluentIcons.heart_24_regular,
                             size: 12,
                             color: _isLiked ? AppColors.red : secondaryTextColor,
                           ),
                           const SizedBox(width: 4),
-                          Text(
-                            widget.likeCount.toString(),
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: secondaryTextColor,
-                            ),
-                          ),
+                          Text(widget.likeCount.toString(), style: TextStyle(fontSize: 11, color: secondaryTextColor)),
                         ],
                       ),
                     ),
                     const SizedBox(width: 16),
-                    
+
                     // Reply button
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minSize: 0,
-                      onPressed: () => widget.onReply(widget.userId, widget.username),
-                      child: Text(
-                        'Reply',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: secondaryTextColor,
-                        ),
+                    TextButton(
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                       ),
+                      onPressed: () => widget.onReply(widget.userId, widget.username),
+                      child: Text('Reply', style: TextStyle(fontSize: 11, color: secondaryTextColor)),
                     ),
                   ],
                 ),
@@ -168,4 +132,4 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
       ),
     );
   }
-} 
+}

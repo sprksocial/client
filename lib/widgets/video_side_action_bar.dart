@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'action_buttons/profile_action_button.dart';
 import 'action_buttons/like_action_button.dart';
 import 'action_buttons/comment_action_button.dart';
@@ -12,7 +12,7 @@ class VideoSideActionBar extends StatefulWidget {
   final VoidCallback? onCommentPressed;
   final VoidCallback? onBookmarkPressed;
   final VoidCallback? onSharePressed;
-  
+
   // Counts and states
   final String likeCount;
   final String commentCount;
@@ -20,7 +20,7 @@ class VideoSideActionBar extends StatefulWidget {
   final String shareCount;
   final bool isLiked;
   final bool isBookmarked;
-  
+
   const VideoSideActionBar({
     super.key,
     // Callbacks
@@ -29,13 +29,13 @@ class VideoSideActionBar extends StatefulWidget {
     this.onCommentPressed,
     this.onBookmarkPressed,
     this.onSharePressed,
-    
+
     // Counts with defaults
     this.likeCount = '0',
     this.commentCount = '0',
     this.bookmarkCount = '0',
     this.shareCount = '0',
-    
+
     // States
     this.isLiked = false,
     this.isBookmarked = false,
@@ -48,14 +48,14 @@ class VideoSideActionBar extends StatefulWidget {
 class _VideoSideActionBarState extends State<VideoSideActionBar> {
   late bool _isLiked;
   late bool _isBookmarked;
-  
+
   @override
   void initState() {
     super.initState();
     _isLiked = widget.isLiked;
     _isBookmarked = widget.isBookmarked;
   }
-  
+
   @override
   void didUpdateWidget(VideoSideActionBar oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -70,22 +70,22 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
       });
     }
   }
-  
+
   void _handleLike() {
     setState(() {
       _isLiked = !_isLiked;
     });
-    
+
     if (widget.onLikePressed != null) {
       widget.onLikePressed!();
     }
   }
-  
+
   void _handleBookmark() {
     setState(() {
       _isBookmarked = !_isBookmarked;
     });
-    
+
     if (widget.onBookmarkPressed != null) {
       widget.onBookmarkPressed!();
     }
@@ -98,22 +98,15 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
         // Profile with plus button
         ProfileActionButton(onPressed: widget.onProfilePressed),
         const SizedBox(height: 20),
-        
+
         // Like button
-        LikeActionButton(
-          count: widget.likeCount,
-          isLiked: _isLiked,
-          onPressed: _handleLike,
-        ),
+        LikeActionButton(count: widget.likeCount, isLiked: _isLiked, onPressed: _handleLike),
         const SizedBox(height: 20),
-        
+
         // Comment button
-        CommentActionButton(
-          count: widget.commentCount,
-          onPressed: widget.onCommentPressed,
-        ),
+        CommentActionButton(count: widget.commentCount, onPressed: widget.onCommentPressed),
         const SizedBox(height: 20),
-        
+
         // Bookmark button - Use const where possible to prevent unnecessary rebuilds
         BookmarkActionButton(
           count: widget.bookmarkCount,
@@ -122,13 +115,10 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
           key: const ValueKey('bookmark_button'), // Add a stable key
         ),
         const SizedBox(height: 20),
-        
+
         // Share button
-        ShareActionButton(
-          count: widget.shareCount,
-          onPressed: widget.onSharePressed,
-        ),
+        ShareActionButton(count: widget.shareCount, onPressed: widget.onSharePressed),
       ],
     );
   }
-} 
+}

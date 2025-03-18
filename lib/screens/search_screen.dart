@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
@@ -24,34 +24,26 @@ class _SearchScreenState extends State<SearchScreen> {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
 
-    return CupertinoPageScaffold(
+    return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context, false),
-      navigationBar: CupertinoNavigationBar(
-        middle: Text(
-          'Discover',
-          style: TextStyle(color: AppTheme.getTextColor(context)),
-        ),
+      appBar: AppBar(
+        title: Text('Discover', style: TextStyle(color: AppTheme.getTextColor(context))),
         backgroundColor: isDarkMode ? AppColors.nearBlack : AppColors.background,
+        elevation: 0,
       ),
-      child: SafeArea(
+      body: SafeArea(
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.all(12.0),
-              child: CupertinoSearchTextField(
+              child: SearchBar(
                 controller: _searchController,
-                placeholder: 'Search videos, users, music',
-                prefixIcon: Icon(
-                  FluentIcons.search_24_regular,
-                  color: AppTheme.getSecondaryTextColor(context),
-                ),
-                suffixIcon: Icon(
-                  FluentIcons.scan_24_regular,
-                  color: AppTheme.getSecondaryTextColor(context),
-                ),
-                style: TextStyle(color: AppTheme.getTextColor(context)),
-                placeholderStyle: TextStyle(color: AppTheme.getSecondaryTextColor(context)),
-                backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.white,
+                hintText: 'Search videos, users, music',
+                leading: Icon(FluentIcons.search_24_regular, color: AppTheme.getSecondaryTextColor(context)),
+                trailing: [Icon(FluentIcons.scan_24_regular, color: AppTheme.getSecondaryTextColor(context))],
+                padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16.0)),
+                elevation: WidgetStateProperty.all(0),
+                backgroundColor: WidgetStateProperty.all(isDarkMode ? AppColors.deepPurple : AppColors.white),
                 onChanged: (value) {
                   // Handle search
                 },
@@ -65,11 +57,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 children: [
                   Text(
                     'Trending Hashtags',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: AppTheme.getTextColor(context),
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.getTextColor(context)),
                   ),
                 ],
               ),
@@ -93,10 +81,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     child: Center(
                       child: Text(
                         '#trending${index + 1}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          color: AppTheme.getTextColor(context),
-                        ),
+                        style: TextStyle(fontWeight: FontWeight.w500, color: AppTheme.getTextColor(context)),
                       ),
                     ),
                   );
@@ -112,45 +97,31 @@ class _SearchScreenState extends State<SearchScreen> {
                 padding: const EdgeInsets.all(2),
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3,
-                  childAspectRatio: 2/3,
+                  childAspectRatio: 2 / 3,
                   crossAxisSpacing: 2,
                   mainAxisSpacing: 2,
                 ),
                 itemCount: 30,
                 itemBuilder: (context, index) {
                   return Container(
-                    color: index % 3 == 0
-                        ? AppColors.brightPurple.withAlpha(179)
-                        : index % 3 == 1
-                          ? AppColors.richPurple.withAlpha(179)
-                          : AppColors.primary.withAlpha(179),
+                    color:
+                        index % 3 == 0
+                            ? AppColors.brightPurple.withAlpha(179)
+                            : index % 3 == 1
+                            ? AppColors.richPurple.withAlpha(179)
+                            : AppColors.primary.withAlpha(179),
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Center(
-                          child: Icon(
-                            FluentIcons.play_24_regular,
-                            color: AppColors.white.withAlpha(179),
-                          ),
-                        ),
+                        Center(child: Icon(FluentIcons.play_24_regular, color: AppColors.white.withAlpha(179))),
                         Positioned(
                           bottom: 8,
                           left: 8,
                           child: Row(
                             children: [
-                              const Icon(
-                                FluentIcons.play_24_regular,
-                                color: AppColors.white,
-                                size: 12,
-                              ),
+                              const Icon(FluentIcons.play_24_regular, color: AppColors.white, size: 12),
                               const SizedBox(width: 4),
-                              Text(
-                                '${(index + 1) * 10}K',
-                                style: const TextStyle(
-                                  color: AppColors.white,
-                                  fontSize: 12,
-                                ),
-                              ),
+                              Text('${(index + 1) * 10}K', style: const TextStyle(color: AppColors.white, fontSize: 12)),
                             ],
                           ),
                         ),

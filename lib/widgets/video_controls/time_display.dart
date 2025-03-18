@@ -1,16 +1,11 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class TimeDisplay extends StatelessWidget {
   final Duration position;
   final Duration duration;
-  
-  const TimeDisplay({
-    Key? key,
-    required this.position,
-    required this.duration,
-  }) : super(key: key);
-  
+
+  const TimeDisplay({super.key, required this.position, required this.duration});
+
   String _formatDuration(Duration duration) {
     final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
     final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
@@ -21,18 +16,11 @@ class TimeDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: BoxDecoration(
-        color: CupertinoColors.black.withAlpha(128),
-        borderRadius: BorderRadius.circular(8),
-      ),
+      decoration: BoxDecoration(color: Colors.black.withAlpha(128), borderRadius: BorderRadius.circular(8)),
       child: Text(
         '${_formatDuration(position)}/${_formatDuration(duration)}',
-        style: const TextStyle(
-          color: CupertinoColors.white,
-          fontWeight: FontWeight.bold,
-          fontSize: 16,
-        ),
+        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
       ),
     );
   }
-} 
+}
