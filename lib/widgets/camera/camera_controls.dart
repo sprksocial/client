@@ -47,7 +47,7 @@ class CameraControls extends StatelessWidget {
         ),
 
         // Flip camera button
-        _buildControlButton(FluentIcons.flip_vertical_24_regular, onFlipCameraPressed),
+        _buildControlButton(FluentIcons.camera_switch_24_regular, onFlipCameraPressed),
       ],
     );
   }

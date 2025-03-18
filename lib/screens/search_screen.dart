@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
+import '../widgets/search/story_circle.dart';
+import '../widgets/search/trending_video_card.dart';
+import '../widgets/search/sound_card.dart';
+import '../widgets/search/category_chip.dart';
+import '../widgets/search/suggested_account_card.dart';
+import '../widgets/search/section_header.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -12,6 +18,60 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
+
+  // Dummy data
+  final List<Map<String, dynamic>> _stories = [
+    {'username': 'Your Story', 'imageUrl': 'https://randomuser.me/api/portraits/men/32.jpg', 'isYourStory': true},
+    {'username': 'Michelle', 'imageUrl': 'https://randomuser.me/api/portraits/women/44.jpg', 'isLive': true},
+    {'username': 'Frank Koo', 'imageUrl': 'https://randomuser.me/api/portraits/men/86.jpg'},
+    {
+      'username': 'itsdoggo',
+      'imageUrl': 'https://images.unsplash.com/photo-1552053831-71594a27632d?q=80&w=162&auto=format&fit=crop',
+    },
+    {
+      'username': 'catmeows',
+      'imageUrl': 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=150&auto=format&fit=crop',
+    },
+  ];
+
+  final List<Map<String, dynamic>> _trendingVideos = [
+    {
+      'thumbnailUrl': 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=200&auto=format&fit=crop',
+      'viewCount': 12000000,
+    },
+    {
+      'thumbnailUrl': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop',
+      'viewCount': 13000000,
+    },
+    {
+      'thumbnailUrl': 'https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?q=80&w=200&auto=format&fit=crop',
+      'viewCount': 5000000,
+    },
+  ];
+
+  final List<Map<String, dynamic>> _sounds = [
+    {'title': 'ANXIETY', 'artist': 'Sleepy Hallow', 'imageUrl': 'https://randomuser.me/api/portraits/men/40.jpg'},
+    {'title': 'Somebody', 'artist': 'feat. Kimbra', 'imageUrl': 'https://i.pravatar.cc/150?img=20'},
+    {'title': 'Good Luck, Babe!', 'artist': 'Chappell Roan', 'imageUrl': 'https://randomuser.me/api/portraits/women/25.jpg'},
+    {'title': 'Dancing Queen', 'artist': 'Sleepy Hallow', 'imageUrl': 'https://i.pravatar.cc/150?img=33'},
+  ];
+
+  final List<String> _categories = ['Sports', 'Video Games', 'Anime', 'HopeCorp', 'CoreCore', 'Fashion', 'BookSpark', 'STEM'];
+
+  final List<Map<String, dynamic>> _suggestedAccounts = [
+    {
+      'username': 'Arlene McCoy',
+      'handle': '@yayformccoy.sprk.so',
+      'avatarUrl': 'https://randomuser.me/api/portraits/women/12.jpg',
+    },
+    {
+      'username': 'Esther Howard',
+      'handle': '@estherhoward.sprk.so',
+      'avatarUrl': 'https://randomuser.me/api/portraits/women/86.jpg',
+    },
+    {'username': 'Savannah Nguyen', 'handle': '@snguyen.sprk.so', 'avatarUrl': 'https://randomuser.me/api/portraits/men/54.jpg'},
+    {'username': 'Floyd Miles', 'handle': '@floydm.sprk.so', 'avatarUrl': 'https://randomuser.me/api/portraits/men/91.jpg'},
+  ];
 
   @override
   void dispose() {
@@ -25,113 +85,144 @@ class _SearchScreenState extends State<SearchScreen> {
     final isDarkMode = brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(context, false),
-      appBar: AppBar(
-        title: Text('Discover', style: TextStyle(color: AppTheme.getTextColor(context))),
-        backgroundColor: isDarkMode ? AppColors.nearBlack : AppColors.background,
-        elevation: 0,
-      ),
+      backgroundColor: isDarkMode ? Colors.black : AppTheme.getBackgroundColor(context, false),
       body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: SearchBar(
-                controller: _searchController,
-                hintText: 'Search videos, users, music',
-                leading: Icon(FluentIcons.search_24_regular, color: AppTheme.getSecondaryTextColor(context)),
-                trailing: [Icon(FluentIcons.scan_24_regular, color: AppTheme.getSecondaryTextColor(context))],
-                padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16.0)),
-                elevation: WidgetStateProperty.all(0),
-                backgroundColor: WidgetStateProperty.all(isDarkMode ? AppColors.deepPurple : AppColors.white),
-                onChanged: (value) {
-                  // Handle search
-                },
-              ),
-            ),
-
-            // Trending hashtags
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: Row(
-                children: [
-                  Text(
-                    'Trending Hashtags',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: AppTheme.getTextColor(context)),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Search bar
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SearchBar(
+                  controller: _searchController,
+                  hintText: 'Explore',
+                  leading: Icon(FluentIcons.search_24_regular, color: AppTheme.getSecondaryTextColor(context)),
+                  padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16.0)),
+                  elevation: WidgetStateProperty.all(0),
+                  backgroundColor: WidgetStateProperty.all(
+                    isDarkMode ? Colors.grey[900] : AppColors.lightLavender.withOpacity(0.5),
                   ),
-                ],
-              ),
-            ),
-
-            // Trending hashtags horizontal scroll
-            SizedBox(
-              height: 40,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: 10,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                itemBuilder: (context, index) {
-                  return Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '#trending${index + 1}',
-                        style: TextStyle(fontWeight: FontWeight.w500, color: AppTheme.getTextColor(context)),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            // Content grid
-            Expanded(
-              child: GridView.builder(
-                padding: const EdgeInsets.all(2),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3,
-                  childAspectRatio: 2 / 3,
-                  crossAxisSpacing: 2,
-                  mainAxisSpacing: 2,
+                  onChanged: (value) {
+                    // Handle search
+                  },
                 ),
-                itemCount: 30,
+              ),
+
+              // Stories
+              SizedBox(
+                height: 105,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _stories.length,
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  itemBuilder: (context, index) {
+                    final story = _stories[index];
+                    return StoryCircle(
+                      username: story['username'],
+                      imageUrl: story['imageUrl'],
+                      isLive: story['isLive'] ?? false,
+                      isYourStory: story['isYourStory'] ?? false,
+                      onTap: () {},
+                    );
+                  },
+                ),
+              ),
+
+              // Trending videos section
+              SectionHeader(title: 'Trending', icon: FluentIcons.data_trending_24_regular, onViewAllTap: () {}),
+
+              // Trending videos grid
+              SizedBox(
+                height: 180,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _trendingVideos.length,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemBuilder: (context, index) {
+                    final video = _trendingVideos[index];
+                    return Container(
+                      width: 160,
+                      margin: const EdgeInsets.only(right: 10),
+                      child: TrendingVideoCard(thumbnailUrl: video['thumbnailUrl'], viewCount: video['viewCount'], onTap: () {}),
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Sounds section
+              SectionHeader(title: 'Sounds', icon: FluentIcons.music_note_2_24_regular, onViewAllTap: () {}),
+
+              // Sounds list - HORIZONTAL instead of vertical
+              SizedBox(
+                height: 85,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _sounds.length,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemBuilder: (context, index) {
+                    final sound = _sounds[index];
+                    return Container(
+                      width: 240,
+                      margin: const EdgeInsets.only(right: 10),
+                      child: SoundCard(title: sound['title'], artist: sound['artist'], imageUrl: sound['imageUrl'], onTap: () {}),
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Recommended feeds section
+              SectionHeader(title: 'Recommended Feeds', icon: FluentIcons.star_24_regular, onViewAllTap: () {}),
+
+              // Category chips
+              SizedBox(
+                height: 40,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _categories.length,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: CategoryChip(label: _categories[index], onTap: () {}),
+                    );
+                  },
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Suggested accounts section
+              SectionHeader(title: 'Suggested Accounts', icon: FluentIcons.person_24_regular, onViewAllTap: () {}),
+
+              // Suggested accounts list
+              ListView.builder(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: _suggestedAccounts.length,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemBuilder: (context, index) {
-                  return Container(
-                    color:
-                        index % 3 == 0
-                            ? AppColors.brightPurple.withAlpha(179)
-                            : index % 3 == 1
-                            ? AppColors.richPurple.withAlpha(179)
-                            : AppColors.primary.withAlpha(179),
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Center(child: Icon(FluentIcons.play_24_regular, color: AppColors.white.withAlpha(179))),
-                        Positioned(
-                          bottom: 8,
-                          left: 8,
-                          child: Row(
-                            children: [
-                              const Icon(FluentIcons.play_24_regular, color: AppColors.white, size: 12),
-                              const SizedBox(width: 4),
-                              Text('${(index + 1) * 10}K', style: const TextStyle(color: AppColors.white, fontSize: 12)),
-                            ],
-                          ),
-                        ),
-                      ],
+                  final account = _suggestedAccounts[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: SuggestedAccountCard(
+                      username: account['username'],
+                      handle: account['handle'],
+                      avatarUrl: account['avatarUrl'],
+                      onTap: () {},
+                      onFollowTap: () {},
                     ),
                   );
                 },
               ),
-            ),
-          ],
+
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
