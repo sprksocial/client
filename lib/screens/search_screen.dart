@@ -19,7 +19,6 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
 
-  // Dummy data
   final List<Map<String, dynamic>> _stories = [
     {'username': 'Your Story', 'imageUrl': 'https://randomuser.me/api/portraits/men/32.jpg', 'isYourStory': true},
     {'username': 'Michelle', 'imageUrl': 'https://randomuser.me/api/portraits/women/44.jpg', 'isLive': true},
@@ -91,7 +90,6 @@ class _SearchScreenState extends State<SearchScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Search bar
               Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: SearchBar(
@@ -104,12 +102,10 @@ class _SearchScreenState extends State<SearchScreen> {
                     isDarkMode ? Colors.grey[900] : AppColors.lightLavender.withOpacity(0.5),
                   ),
                   onChanged: (value) {
-                    // Handle search
                   },
                 ),
               ),
 
-              // Stories
               SizedBox(
                 height: 105,
                 child: ListView.builder(
@@ -129,10 +125,8 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
 
-              // Trending videos section
               SectionHeader(title: 'Trending', icon: FluentIcons.data_trending_24_regular, onViewAllTap: () {}),
 
-              // Trending videos grid
               SizedBox(
                 height: 180,
                 child: ListView.builder(
@@ -152,10 +146,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
               const SizedBox(height: 16),
 
-              // Sounds section
               SectionHeader(title: 'Sounds', icon: FluentIcons.music_note_2_24_regular, onViewAllTap: () {}),
 
-              // Sounds list - HORIZONTAL instead of vertical
               SizedBox(
                 height: 85,
                 child: ListView.builder(
@@ -175,10 +167,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
               const SizedBox(height: 16),
 
-              // Recommended feeds section
               SectionHeader(title: 'Recommended Feeds', icon: FluentIcons.star_24_regular, onViewAllTap: () {}),
 
-              // Category chips
               SizedBox(
                 height: 40,
                 child: ListView.builder(
@@ -196,10 +186,8 @@ class _SearchScreenState extends State<SearchScreen> {
 
               const SizedBox(height: 16),
 
-              // Suggested accounts section
               SectionHeader(title: 'Suggested Accounts', icon: FluentIcons.person_24_regular, onViewAllTap: () {}),
 
-              // Suggested accounts list
               ListView.builder(
                 physics: const NeverScrollableScrollPhysics(),
                 shrinkWrap: true,

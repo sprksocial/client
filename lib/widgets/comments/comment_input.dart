@@ -52,16 +52,13 @@ class _CommentInputState extends State<CommentInput> {
     if (!_canSubmit) return;
 
     final text = _textController.text.trim();
-    // Here you would handle the comment submission
     debugPrint('Submitting comment: $text');
     if (widget.replyingToId != null) {
       debugPrint('Replying to user: ${widget.replyingToUsername} (${widget.replyingToId})');
     }
 
-    // Clear the input field after submission
     _textController.clear();
 
-    // If this was a reply, cancel the reply mode
     if (widget.replyingToId != null) {
       widget.onCancelReply();
     }
@@ -82,7 +79,6 @@ class _CommentInputState extends State<CommentInput> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Reply preview if replying to someone
           if (widget.replyingToUsername != null) ...[
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -111,11 +107,9 @@ class _CommentInputState extends State<CommentInput> {
             ),
           ],
 
-          // Comment input row
           Row(
             crossAxisAlignment: CrossAxisAlignment.end, // Align items to bottom
             children: [
-              // User avatar
               Container(
                 width: 32,
                 height: 32,
@@ -133,7 +127,6 @@ class _CommentInputState extends State<CommentInput> {
               ),
               const SizedBox(width: 12),
 
-              // Text input field
               Expanded(
                 child: TextField(
                   controller: _textController,
@@ -167,13 +160,11 @@ class _CommentInputState extends State<CommentInput> {
                 ),
               ),
 
-              // Attachment button
               const SizedBox(width: 8),
               IconButton(
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
                 onPressed: () {
-                  // Show attachment options (photo/video)
                   debugPrint('Open attachment options');
                 },
                 icon: Container(

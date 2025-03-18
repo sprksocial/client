@@ -22,7 +22,6 @@ class HomeScreen extends StatelessWidget {
       backgroundColor: AppTheme.getBackgroundColor(context),
       body: Stack(
         children: [
-          // Full-screen video feed
           SizedBox(
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
@@ -30,7 +29,6 @@ class HomeScreen extends StatelessWidget {
               scrollDirection: Axis.vertical,
               itemCount: 5, // Sample videos
               itemBuilder: (context, index) {
-                // Sample videos with different aspect ratios to demonstrate proper sizing
                 final videoUrls = [
                   'https://cdn.justdavi.dev/vid_9_16.mp4', // Vertical 9:16
                   'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', // Horizontal 16:9
@@ -44,7 +42,6 @@ class HomeScreen extends StatelessWidget {
             ),
           ),
 
-          // Overlay for top navigation
           Positioned(
             top: 0,
             left: 0,
@@ -125,17 +122,14 @@ class _VideoItemState extends State<VideoItem> {
         ..initialize().then((_) {
           setState(() {
             _isInitialized = true;
-            // If video is visible when initialized, play it
             if (_isVisible) {
               _controller?.play();
             }
           });
         });
 
-      // Add listener for video completion
       _controller?.addListener(() {
         if (_controller!.value.position >= _controller!.value.duration) {
-          // Loop video
           _controller?.seekTo(Duration.zero);
           _controller?.play();
         }
@@ -150,7 +144,6 @@ class _VideoItemState extends State<VideoItem> {
   }
 
   void _toggleComments() {
-    // Pause video when showing comments
     if (_controller != null && _isInitialized) {
       _controller?.pause();
     }
@@ -159,10 +152,8 @@ class _VideoItemState extends State<VideoItem> {
       _showComments = true;
     });
 
-    // Get the current theme mode
     final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
     
-    // Show comments using the standard Material modal approach
     showCommentsTray(
       context: context,
       videoId: 'video_${widget.index + 1}',
@@ -170,7 +161,6 @@ class _VideoItemState extends State<VideoItem> {
       onClose: () {
         setState(() {
           _showComments = false;
-          // Resume video playback if the view is still visible
           if (_isVisible && _controller != null && _isInitialized) {
             _controller?.play();
           }
@@ -182,10 +172,8 @@ class _VideoItemState extends State<VideoItem> {
 
   @override
   Widget build(BuildContext context) {
-    // Get the theme brightness
     final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
   
-    // Sample data for the video item
     final String username = 'username${widget.index + 1}';
     final String description =
         widget.videoUrl != null
@@ -193,7 +181,6 @@ class _VideoItemState extends State<VideoItem> {
             : 'This is a placeholder for video ${widget.index + 1}';
     final List<String> hashtags = ['spark', 'sample', 'video${widget.index + 1}'];
 
-    // Calculate the comment count based on the video index
     final int commentCount = (widget.index + 1) * 12;
 
     return SizedBox.expand(
@@ -202,7 +189,6 @@ class _VideoItemState extends State<VideoItem> {
         onVisibilityChanged: (visibilityInfo) {
           final isVisible = visibilityInfo.visibleFraction > 0.8;
 
-          // Only take action if visibility state changed
           if (isVisible != _isVisible) {
             _isVisible = isVisible;
 
@@ -218,13 +204,10 @@ class _VideoItemState extends State<VideoItem> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Blurred video background
             if (widget.videoUrl != null && _controller != null && _isInitialized) _buildBlurredBackground(isDarkMode),
 
-            // Video content - main focus
             Center(child: _buildVideoContent()),
 
-            // Gradient overlay for better text readability
             Positioned.fill(
               child: Container(
                 decoration: BoxDecoration(
@@ -245,16 +228,13 @@ class _VideoItemState extends State<VideoItem> {
               ),
             ),
 
-            // Video controller overlay - new addition
             if (widget.videoUrl != null && _controller != null && _isInitialized)
               VideoControllerOverlay(
                 controller: _controller!,
                 onTap: () {
-                  // This is handled internally by the controller
                 },
               ),
 
-            // Video info
             Positioned(
               bottom: 20,
               left: 10,
@@ -264,15 +244,12 @@ class _VideoItemState extends State<VideoItem> {
                 description: description,
                 hashtags: hashtags,
                 onUsernameTap: () {
-                  // Handle username tap
                 },
                 onHashtagTap: () {
-                  // Handle hashtag tap
                 },
               ),
             ),
 
-            // Right side actions
             Positioned(
               right: 10,
               bottom: 100,
@@ -282,22 +259,17 @@ class _VideoItemState extends State<VideoItem> {
                 bookmarkCount: '${(widget.index + 1) * 8}K',
                 shareCount: '${(widget.index + 1) * 20}K',
                 onLikePressed: () {
-                  // Handle like action
                 },
                 onCommentPressed: _toggleComments,
                 onBookmarkPressed: () {
-                  // Handle bookmark action
                 },
                 onSharePressed: () {
-                  // Handle share action
                 },
                 onProfilePressed: () {
-                  // Handle profile action
                 },
               ),
             ),
 
-            // Loading indicator
             if (widget.videoUrl != null && !_isInitialized) const Center(child: CircularProgressIndicator(color: AppColors.white)),
           ],
         ),
@@ -305,12 +277,10 @@ class _VideoItemState extends State<VideoItem> {
     );
   }
 
-  // Build the blurred background
   Widget _buildBlurredBackground(bool isDarkMode) {
     return Stack(
       fit: StackFit.expand,
       children: [
-        // Scaled version of the video that fills the entire background
         FittedBox(
           fit: BoxFit.cover,
           child: SizedBox(
@@ -319,7 +289,6 @@ class _VideoItemState extends State<VideoItem> {
             child: VideoPlayer(_controller!),
           ),
         ),
-        // Blur filter overlay
         BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
           child: Container(
@@ -332,32 +301,26 @@ class _VideoItemState extends State<VideoItem> {
 
   Widget _buildVideoContent() {
     if (widget.videoUrl != null && _controller != null && _isInitialized) {
-      // Calculate the appropriate size for the video while maintaining aspect ratio
       final videoSize = _controller!.value.size;
 
       double videoWidth = videoSize.width;
       double videoHeight = videoSize.height;
 
-      // Calculate the scaling factor to fit the video properly
       double aspectRatio = videoWidth / videoHeight;
 
       Widget videoWidget;
 
       if (aspectRatio > 1) {
-        // Horizontal video - use FittedBox with BoxFit.contain
-        // This ensures the entire video is visible and centered
         videoWidget = FittedBox(
           fit: BoxFit.contain,
           child: SizedBox(width: videoWidth, height: videoHeight, child: VideoPlayer(_controller!)),
         );
       } else {
-        // Vertical video - fit height to screen
         videoWidget = AspectRatio(aspectRatio: aspectRatio, child: VideoPlayer(_controller!));
       }
 
       return videoWidget;
     } else {
-      // Placeholder for videos without a URL or while loading
       final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
       
       return Container(

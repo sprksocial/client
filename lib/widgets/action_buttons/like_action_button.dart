@@ -23,10 +23,8 @@ class _LikeActionButtonState extends State<LikeActionButton> with SingleTickerPr
     super.initState();
     _isLiked = widget.isLiked;
 
-    // Initialize animation controller with proper duration
     _animationController = AnimationController(duration: const Duration(milliseconds: 400), vsync: this);
 
-    // Simpler scale animation that just goes up and down
     _scaleAnimation = TweenSequence([
       TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.4), weight: 50),
       TweenSequenceItem(tween: Tween<double>(begin: 1.4, end: 1.0), weight: 50),
@@ -49,12 +47,10 @@ class _LikeActionButtonState extends State<LikeActionButton> with SingleTickerPr
 
   void _handleTap() {
     if (widget.onPressed != null) {
-      // Toggle liked state first
       setState(() {
         _isLiked = !_isLiked;
       });
 
-      // Only animate when liking, not when unliking
       if (_isLiked) {
         _animationController.reset();
         _animationController.forward();

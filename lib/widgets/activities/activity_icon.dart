@@ -12,7 +12,6 @@ class ActivityIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Determine icon and color based on activity type
     IconData iconData;
     Color backgroundColor;
     Color iconColor;

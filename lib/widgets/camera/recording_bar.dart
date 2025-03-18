@@ -12,7 +12,6 @@ class RecordingBar extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Progress bar
         Container(
           margin: const EdgeInsets.symmetric(horizontal: 40),
           height: 5,
@@ -28,7 +27,6 @@ class RecordingBar extends StatelessWidget {
 
         const SizedBox(height: 10),
 
-        // Time text
         Text(timeText, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
       ],
     );

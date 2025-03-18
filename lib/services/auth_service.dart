@@ -12,19 +12,16 @@ class AuthService extends ChangeNotifier {
   ATProto? _atProto;
   static const String _sessionKey = 'user_session';
 
-  // Getters
   bool get isAuthenticated => _session != null;
   bool get isLoading => _isLoading;
   String? get error => _error;
   Session? get session => _session;
   ATProto? get atproto => _atProto;
 
-  // Constructor to initialize and check for saved session
   AuthService() {
     _loadSavedSession();
   }
 
-  // Load saved session from SharedPreferences
   Future<void> _loadSavedSession() async {
     _isLoading = true;
     notifyListeners();
@@ -58,10 +55,8 @@ class AuthService extends ChangeNotifier {
 
   bool _isTokenExpired(Jwt token) {
     try {
-      // Consider token as expired if it's within 5 minutes of expiry
       return DateTime.now().isAfter(token.exp.subtract(const Duration(minutes: 5)));
     } catch (e) {
-      // If there's any error decoding, consider it expired
       print('Failed to check token expiry: $e');
       return true;
     }
@@ -79,17 +74,14 @@ class AuthService extends ChangeNotifier {
     return pdsUrl.replaceFirst('http://', '').replaceFirst('https://', '').replaceFirst('/', '');
   }
 
-  // Refresh the session using refresh token
   Future<void> _refreshSession() async {
     try {
       if (_session == null) {
         throw Exception('No refresh token available');
       }
 
-      // Try getting service from session's DID doc first
       String? service = _session!.didDoc != null ? _extractPdsDomain(_session!.didDoc!) : null;
 
-      // Fallback to PLC directory if needed
       if (service == null) {
         final didDocResponse = await http.get(Uri.parse('https://plc.directory/${_session!.did}'));
         if (didDocResponse.statusCode == 200) {
@@ -107,7 +99,6 @@ class AuthService extends ChangeNotifier {
         throw Exception('Failed to refresh session: ${response.status}');
       }
 
-      // Update session with new tokens
       _session = response.data;
 
       await _saveSession(_session!);
@@ -120,7 +111,6 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  // Save session to SharedPreferences
   Future<void> _saveSession(Session sessionData) async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -132,7 +122,6 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  // Clear saved session from SharedPreferences
   Future<void> _clearSavedSession() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -143,7 +132,6 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  // Login with handle and password
   Future<bool> login(String handle, String password) async {
     _isLoading = true;
     _error = null;
@@ -154,7 +142,6 @@ class AuthService extends ChangeNotifier {
       final didRes = await at.identity.resolveHandle(handle: handle);
       String did = didRes.data.did;
 
-      // Fetch DID document from PLC directory
       final didDocResponse = await http.get(Uri.parse('https://plc.directory/$did'));
 
       if (didDocResponse.statusCode != 200) {
@@ -163,7 +150,6 @@ class AuthService extends ChangeNotifier {
 
       final didDoc = json.decode(didDocResponse.body);
 
-      // Extract PDS endpoint from DID document
       String? pdsUrl =
           (didDoc['service'] as List<dynamic>).firstWhere((s) => s['id'] == '#atproto_pds', orElse: () => {})['serviceEndpoint']
               as String?;
@@ -182,7 +168,6 @@ class AuthService extends ChangeNotifier {
 
       _atProto = ATProto.fromSession(_session!);
 
-      // Save session to persistent storage
       await _saveSession(_session!);
 
       _isLoading = false;
@@ -231,7 +216,6 @@ class AuthService extends ChangeNotifier {
 
       _atProto = ATProto.fromSession(_session!);
 
-      // Save session to persistent storage
       await _saveSession(_session!);
 
       _isLoading = false;
@@ -245,7 +229,6 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  // Logout
   Future<void> logout() async {
     _isLoading = true;
     notifyListeners();
@@ -264,22 +247,18 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  // Check if session is valid
   Future<bool> validateSession() async {
     if (_atProto == null || _session == null) return false;
 
     try {
-      // Perform a lightweight API call to check session validity
       await _atProto!.identity.resolveHandle(handle: _session!.handle);
       return true;
     } catch (e) {
-      // Session is invalid, clear it
       await logout();
       return false;
     }
   }
 
-  // Get current user profile
   Future<Map<String, dynamic>?> getCurrentUserProfile() async {
     if (_atProto == null) return null;
 
@@ -293,7 +272,6 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  // Clear error
   void clearError() {
     _error = null;
     notifyListeners();

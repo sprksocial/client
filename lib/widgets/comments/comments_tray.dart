@@ -71,9 +71,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     final borderColor = widget.isDarkMode ? AppColors.darkPurple : AppColors.lightLavender;
     final textColor = widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary;
 
-    // Sample data for demonstration
     final sampleComments = [
-      // Text only comment
       {
         'id': '1',
         'userId': 'user1',
@@ -84,7 +82,6 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
         'hasMedia': false,
         'replyCount': 0,
       },
-      // Text only comment with replies
       {
         'id': '2',
         'userId': 'user2',
@@ -95,7 +92,6 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
         'hasMedia': false,
         'replyCount': 2,
       },
-      // Comment with image
       {
         'id': '3',
         'userId': 'user3',
@@ -108,7 +104,6 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
         'mediaUrl': 'https://placekitten.com/500/300',
         'replyCount': 5,
       },
-      // Comment with video
       {
         'id': '4',
         'userId': 'user4',
@@ -121,7 +116,6 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
         'mediaUrl': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
         'replyCount': 12,
       },
-      // More text comments
       {
         'id': '5',
         'userId': 'user5',
@@ -159,20 +153,17 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
         ),
         child: Column(
           children: [
-            // Header with handle and title
             Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(border: Border(bottom: BorderSide(color: borderColor, width: 0.5))),
               child: Column(
                 children: [
-                  // Handle for dragging
                   Container(
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)),
                   ),
                   const SizedBox(height: 12),
-                  // Title and close button
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Row(
@@ -195,7 +186,6 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
               ),
             ),
 
-            // Comments list
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
@@ -221,7 +211,6 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
               ),
             ),
 
-            // Input area
             CommentInput(
               videoId: widget.videoId,
               replyingToUsername: _replyingToUsername,

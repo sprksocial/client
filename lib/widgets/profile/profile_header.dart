@@ -51,7 +51,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
   Future<void> _handleUsernameTap(String username) async {
     final identityService = context.read<CachedIdentityService>();
     try {
-      // Remove @ from username if present
       final cleanUsername = username.startsWith('@') ? username.substring(1) : username;
       debugPrint('Username clicked: $cleanUsername');
 
@@ -73,26 +72,21 @@ class _ProfileHeaderState extends State<ProfileHeader> {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
 
-    // Extract profile data
     final displayName = widget.profileData['displayName'] ?? '';
     final handle = widget.profileData['handle'] ?? '';
     final description = widget.profileData['description'] ?? '';
     final avatar = widget.profileData['avatar'];
 
-    // Stats with formatted counts
     final postsCount = TextFormatter.formatCount(widget.profileData['postsCount']);
     final followersCount = TextFormatter.formatCount(widget.profileData['followersCount']);
     final followingCount = TextFormatter.formatCount(widget.profileData['followingCount']);
 
-    // Extract links from description
     final List<String> links = TextFormatter.extractUrls(description);
 
-    // Manual detection for specific domains to match the screenshot example
     if (links.isEmpty && description.contains("esfera.dev") && !description.contains("@esfera.dev")) {
       links.add("esfera.dev");
     }
 
-    // Deduplicate links
     final uniqueLinks = links.toSet().toList();
 
     return Padding(
@@ -100,11 +94,9 @@ class _ProfileHeaderState extends State<ProfileHeader> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Profile image and stats in a row
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              // Profile image with + button
               Stack(
                 children: [
                   Container(
@@ -160,7 +152,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
               const SizedBox(width: 20),
 
-              // Stats row
               Expanded(
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -176,7 +167,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
           const SizedBox(height: 16),
 
-          // Username and verified badge
           Row(
             children: [
               Text(
@@ -184,7 +174,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.getTextColor(context)),
               ),
 
-              // Early Supporter badge
               if (widget.isEarlySupporter) ...[
                 const SizedBox(width: 8),
                 GestureDetector(
@@ -202,33 +191,27 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
           const SizedBox(height: 4),
 
-          // Username in the format seen in the screenshot
           Text('@$handle', style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 14)),
 
           if (description.isNotEmpty || uniqueLinks.isNotEmpty) ...[
             const SizedBox(height: 8),
 
-            // Description text with inline highlighted usernames
             if (description.isNotEmpty)
               GestureDetector(
                 onTap: _toggleDescriptionExpand,
                 child: TextFormatter.buildRichTextWithMentions(context, description, _expandDescription, (username) {
-                  // Handle username tap
                   _handleUsernameTap(username);
                 }),
               ),
 
-            // Links widget (if any)
             if (uniqueLinks.isNotEmpty)
               Padding(padding: const EdgeInsets.only(top: 4.0), child: ProfileLinks(links: uniqueLinks)),
           ],
 
           const SizedBox(height: 16),
 
-          // Action buttons in a row
           Row(
             children: [
-              // Edit button - only for current user
               if (widget.isCurrentUser) ...[
                 Expanded(
                   flex: 1,
@@ -237,7 +220,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 const SizedBox(width: 8),
               ],
 
-              // Share Profile button
               Expanded(
                 flex: 1,
                 child: Container(
@@ -248,7 +230,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
               const SizedBox(width: 8),
 
-              // Settings button for current user or Follow button for others
               Expanded(
                 flex: 1,
                 child:

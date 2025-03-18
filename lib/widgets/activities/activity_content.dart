@@ -23,7 +23,6 @@ class ActivityContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Activity description and time
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -32,7 +31,6 @@ class ActivityContent extends StatelessWidget {
           ],
         ),
 
-        // Optional additional info
         if (additionalInfo != null) ...[
           const SizedBox(height: 4),
           AdditionalInfoText(text: additionalInfo!, isDarkMode: isDarkMode),

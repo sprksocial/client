@@ -28,7 +28,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   String? _error;
   Map<String, dynamic>? _profileData;
 
-  // Flags for special badges
   final bool _isEarlySupporter = true;
 
   @override
@@ -40,7 +39,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void didUpdateWidget(ProfileScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Reload profile if the DID changes
     if (widget.did != oldWidget.did) {
       _loadProfile();
     }
@@ -51,7 +49,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     final authService = Provider.of<AuthService>(context, listen: false);
 
-    // If not authenticated and no DID provided, show auth prompt
     if (!authService.isAuthenticated && widget.did == null) {
       setState(() {
         _showAuthPrompt = true;
@@ -59,7 +56,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       return;
     }
 
-    // If no DID is provided, use the current user's DID
     final targetDid = widget.did ?? authService.session?.did;
 
     if (targetDid == null) {
@@ -190,7 +186,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final authService = Provider.of<AuthService>(context);
     final isAuthenticated = authService.isAuthenticated;
 
-    // Show auth prompt if needed
     if (_showAuthPrompt) {
       return AuthPromptScreen(
         onClose: () {
@@ -201,7 +196,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    // Show loading indicator
     if (_isLoading) {
       return Scaffold(
         backgroundColor: AppTheme.getBackgroundColor(context),
@@ -214,7 +208,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    // Show error message
     if (_error != null) {
       return Scaffold(
         backgroundColor: AppTheme.getBackgroundColor(context),
@@ -245,7 +238,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    // If profile data is null but no error, show a message
     if (_profileData == null) {
       return Scaffold(
         backgroundColor: AppTheme.getBackgroundColor(context),
@@ -270,11 +262,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
     }
 
-    // Extract profile data
     final isCurrentUser = _isCurrentUser();
     final extractedProfileData = ProfileHelper.extractProfileData(_profileData!);
 
-    // Create tab content manager
     final tabContent = ProfileTabContent(
       selectedIndex: _selectedTabIndex,
       isAuthenticated: isAuthenticated,
@@ -305,7 +295,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
         bottom: false, // Don't use SafeArea for bottom padding as we'll handle it manually
         child: CustomScrollView(
           slivers: [
-            // Profile header
             SliverToBoxAdapter(
               child: ProfileHeader(
                 profileData: extractedProfileData,
@@ -314,23 +303,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onEarlySupporterTap: () => _showEarlySupporterInfo(context),
                 onEditTap:
                     () => _checkAuthAndProceed(() {
-                      // Edit profile logic here
                       debugPrint('Edit profile tapped');
                     }),
                 onShareTap: () {
-                  // Share profile logic
                   debugPrint('Share profile tapped');
                 },
                 onFollowTap:
                     () => _checkAuthAndProceed(() {
-                      // Follow logic here
                       debugPrint('Follow tapped');
                     }),
                 onSettingsTap: _handleSettingsTap,
               ),
             ),
 
-            // Tab bar - Sticky when scrolling
             SliverPersistentHeader(
               pinned: true,
               delegate: StickyTabBarDelegate(
@@ -342,10 +327,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
 
-            // Tab content
             ...tabContent.getTabContent(),
 
-            // Add bottom padding to account for navigation bar
           ],
         ),
       ),
@@ -353,7 +336,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-// Add a StickyTabBarDelegate class for the persistent header
 class StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
 

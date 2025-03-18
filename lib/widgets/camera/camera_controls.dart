@@ -23,10 +23,8 @@ class CameraControls extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        // Gallery button
         _buildControlButton(FluentIcons.image_24_regular, onGalleryPressed),
 
-        // Capture/Record button
         GestureDetector(
           onTap: onCapturePressed,
           child: Container(
@@ -46,7 +44,6 @@ class CameraControls extends StatelessWidget {
           ),
         ),
 
-        // Flip camera button
         _buildControlButton(FluentIcons.camera_switch_24_regular, onFlipCameraPressed),
       ],
     );

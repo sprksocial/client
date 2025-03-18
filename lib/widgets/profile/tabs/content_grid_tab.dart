@@ -19,7 +19,6 @@ class ContentGridTab extends StatelessWidget {
         mainAxisSpacing: 1,
       ),
       delegate: SliverChildBuilderDelegate((context, index) {
-        // Create different color patterns based on the content type
         Color backgroundColor;
 
         switch (type) {

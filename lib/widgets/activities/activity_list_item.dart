@@ -41,10 +41,8 @@ class ActivityListItem extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // User avatar with activity indicator
             Stack(
               children: [
-                // User avatar
                 CircleAvatar(
                   radius: 24,
                   backgroundColor: _getAvatarColor(colorIndex),
@@ -56,7 +54,6 @@ class ActivityListItem extends StatelessWidget {
                         )
                       : null,
                 ),
-                // Activity indicator
                 Positioned(
                   right: -2,
                   bottom: -2,
@@ -82,7 +79,6 @@ class ActivityListItem extends StatelessWidget {
 
             const SizedBox(width: 16),
 
-            // Activity content
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -113,7 +109,6 @@ class ActivityListItem extends StatelessWidget {
               ),
             ),
 
-            // Time
             Text(
               time,
               style: TextStyle(

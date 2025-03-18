@@ -38,7 +38,6 @@ class MessageListItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Profile image with unread indicator
             Stack(
               children: [
                 CircleAvatar(
@@ -57,7 +56,6 @@ class MessageListItem extends StatelessWidget {
 
             const SizedBox(width: 12),
 
-            // Message content
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,7 +83,6 @@ class MessageListItem extends StatelessWidget {
               ),
             ),
 
-            // Time and unread count
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [

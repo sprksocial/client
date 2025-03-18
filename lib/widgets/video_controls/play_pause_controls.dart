@@ -22,7 +22,6 @@ class PlayPauseControls extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Rewind 5 seconds
         IconButton(
           icon: const Icon(FluentIcons.previous_24_regular, color: Colors.white, size: 36),
           onPressed: onRewind,
@@ -30,7 +29,6 @@ class PlayPauseControls extends StatelessWidget {
         ),
         const SizedBox(width: 24),
 
-        // Play/Pause
         GestureDetector(
           onTap: onPlayPause,
           child: Container(
@@ -48,7 +46,6 @@ class PlayPauseControls extends StatelessWidget {
         ),
         const SizedBox(width: 24),
 
-        // Fast forward 5 seconds
         IconButton(
           icon: const Icon(FluentIcons.next_24_regular, color: Colors.white, size: 36),
           onPressed: onFastForward,
