@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:atproto/core.dart';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
+import '../config/app_config.dart';
 
 class ProfileService extends ChangeNotifier {
   final AuthService _authService;
@@ -77,5 +78,32 @@ class ProfileService extends ChangeNotifier {
       return null;
     }
     return getProfile(_authService.session!.did);
+  }
+
+  Future<Map<String, dynamic>?> getProfileVideos(String did) async {
+    if (!_authService.isAuthenticated) {
+      return null;
+    }
+
+    try {
+      final pdsUrl = _authService.atproto?.service;
+      if (pdsUrl == null) {
+        return null;
+      }
+
+      final url = '${AppConfig.appViewUrl}/actorFeed/$did';
+      final response = await http.get(Uri.parse(url), headers: {
+        'Authorization': 'Bearer ${_authService.session?.accessJwt}',
+      });
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to fetch profile videos: ${response.statusCode}');
+      }
+
+      final data = json.decode(response.body);
+      return data;
+    } catch (e) {
+      throw Exception('Failed to fetch profile videos: $e');
+    }
   }
 }

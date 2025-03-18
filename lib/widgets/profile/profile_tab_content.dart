@@ -9,8 +9,14 @@ class ProfileTabContent {
   final int selectedIndex;
   final bool isAuthenticated;
   final VoidCallback onLoginPressed;
+  final String? did;
 
-  const ProfileTabContent({required this.selectedIndex, required this.isAuthenticated, required this.onLoginPressed});
+  const ProfileTabContent({
+    required this.selectedIndex,
+    required this.isAuthenticated,
+    required this.onLoginPressed,
+    this.did,
+  });
 
   List<Widget> getTabContent() {
     if ((selectedIndex == 4) && !isAuthenticated) {
@@ -26,7 +32,7 @@ class ProfileTabContent {
 
     switch (selectedIndex) {
       case 0:
-        return [const VideosTab()];
+        return [VideosTab(did: did)];
       case 1:
         return [const PhotosTab()];
       case 2:
