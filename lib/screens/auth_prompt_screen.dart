@@ -17,7 +17,7 @@ class AuthPromptScreen extends StatelessWidget {
     final isDarkMode = brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(context, false),
+      backgroundColor: AppTheme.getBackgroundColor(context),
       appBar:
           onClose != null
               ? AppBar(

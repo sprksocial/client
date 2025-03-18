@@ -75,7 +75,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final isDarkMode = brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(context, false),
+      backgroundColor: AppTheme.getBackgroundColor(context),
       appBar: AppBar(
         backgroundColor: isDarkMode ? AppColors.darkBackground.withAlpha(242) : AppColors.background,
         elevation: 0,

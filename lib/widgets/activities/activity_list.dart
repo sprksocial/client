@@ -12,6 +12,7 @@ class ActivityList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.builder(
       itemCount: activities.length,
+      padding: EdgeInsets.zero,
       itemBuilder: (context, index) {
         final ActivityData activity = activities[index];
         return ActivityListItem(
@@ -19,6 +20,8 @@ class ActivityList extends StatelessWidget {
           type: activity.type,
           time: activity.timeString,
           additionalInfo: activity.additionalInfo,
+          colorIndex: index,
+          avatarUrl: activity.avatarUrl,
           onTap: () {
             if (onActivityTap != null) {
               onActivityTap!(activity);
@@ -37,6 +40,7 @@ class ActivityData {
   final String timeString;
   final String? additionalInfo;
   final String? targetContentId;
+  final String? avatarUrl;
 
   ActivityData({
     required this.id,
@@ -45,5 +49,6 @@ class ActivityData {
     required this.timeString,
     this.additionalInfo,
     this.targetContentId,
+    this.avatarUrl,
   });
 }

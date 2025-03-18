@@ -51,33 +51,25 @@ class AppTheme {
   }
 
   // Helper methods to determine colors based on theme brightness
-  static Color getNavBackgroundColor(BuildContext context, bool isHomePage) {
+  static Color getNavBackgroundColor(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
-    if (isHomePage) {
-      return AppColors.nearBlack;
-    }
+    
 
     return brightness == Brightness.dark ? AppColors.nearBlack : AppColors.lightBackground;
   }
 
-  static Color getSelectedIconColor(BuildContext context, bool isHomePage) {
+  static Color getSelectedIconColor(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
-    if (isHomePage) {
-      return AppColors.selectedIconDark;
-    }
-
     return brightness == Brightness.dark ? AppColors.selectedIconDark : AppColors.selectedIconLight;
   }
 
-  static Color getUnselectedIconColor(BuildContext context, bool isHomePage) {
+  static Color getUnselectedIconColor(BuildContext context) {
     return AppColors.unselectedIconDark;
   }
 
-  static Color getBackgroundColor(BuildContext context, bool isHomePage) {
+  static Color getBackgroundColor(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
-    if (isHomePage) {
-      return AppColors.nearBlack;
-    }
+    
 
     return brightness == Brightness.dark ? AppColors.darkBackground : AppColors.background;
   }

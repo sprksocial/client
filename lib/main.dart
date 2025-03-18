@@ -89,7 +89,6 @@ class MainScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final navigationProvider = Provider.of<NavigationProvider>(context);
     final authService = Provider.of<AuthService>(context);
-    final bool isHomePage = navigationProvider.currentIndex == 0;
 
     // Creating the list of screens for navigation
     final List<Widget> screens = [
@@ -101,19 +100,19 @@ class MainScreen extends StatelessWidget {
     ];
 
     return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(context, isHomePage),
+      backgroundColor: AppTheme.getBackgroundColor(context),
       body: IndexedStack(index: navigationProvider.currentIndex, children: screens),
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(
           indicatorColor: Colors.transparent,
-          backgroundColor: AppTheme.getNavBackgroundColor(context, isHomePage),
+          backgroundColor: AppTheme.getNavBackgroundColor(context),
           height: 60,
           labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
           iconTheme: WidgetStateProperty.resolveWith((states) {
             if (states.contains(WidgetState.selected)) {
-              return IconThemeData(color: AppTheme.getSelectedIconColor(context, isHomePage), size: 26);
+              return IconThemeData(color: AppTheme.getSelectedIconColor(context), size: 26);
             }
-            return IconThemeData(color: AppTheme.getUnselectedIconColor(context, isHomePage), size: 26);
+            return IconThemeData(color: AppTheme.getUnselectedIconColor(context), size: 26);
           }),
         ),
         child: NavigationBar(

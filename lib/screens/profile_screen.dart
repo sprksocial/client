@@ -204,7 +204,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Show loading indicator
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: AppTheme.getBackgroundColor(context, false),
+        backgroundColor: AppTheme.getBackgroundColor(context),
         appBar: AppBar(
           title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
@@ -217,7 +217,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // Show error message
     if (_error != null) {
       return Scaffold(
-        backgroundColor: AppTheme.getBackgroundColor(context, false),
+        backgroundColor: AppTheme.getBackgroundColor(context),
         appBar: AppBar(
           title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
@@ -248,7 +248,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     // If profile data is null but no error, show a message
     if (_profileData == null) {
       return Scaffold(
-        backgroundColor: AppTheme.getBackgroundColor(context, false),
+        backgroundColor: AppTheme.getBackgroundColor(context),
         appBar: AppBar(
           title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
           backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
@@ -282,7 +282,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
 
     return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(context, false),
+      backgroundColor: AppTheme.getBackgroundColor(context),
       appBar: AppBar(
         title: Text(
           isCurrentUser ? 'My Profile' : 'Profile',
@@ -361,7 +361,7 @@ class StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    return Container(color: AppTheme.getBackgroundColor(context, false), child: child);
+    return Container(color: AppTheme.getBackgroundColor(context), child: child);
   }
 
   @override

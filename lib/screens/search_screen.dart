@@ -85,7 +85,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final isDarkMode = brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : AppTheme.getBackgroundColor(context, false),
+      backgroundColor: isDarkMode ? Colors.black : AppTheme.getBackgroundColor(context),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(

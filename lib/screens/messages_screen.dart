@@ -17,53 +17,131 @@ class _MessagesScreenState extends State<MessagesScreen> {
   int _selectedTabIndex = 0;
 
   // Mock data for messages
-  final List<MessageData> _messages = List.generate(
-    15,
-    (index) => MessageData(
-      id: 'msg_$index',
-      username: 'user${index + 1}',
-      messagePreview: index % 2 == 0 ? 'Check out my latest video! 🔥' : 'Hey, how are you doing?',
-      timeString:
-          index % 4 == 0
-              ? 'Just now'
-              : index % 4 == 1
-              ? '5m ago'
-              : index % 4 == 2
-              ? '1h ago'
-              : 'Yesterday',
-      unreadCount: index % 3 == 0 ? 1 : null,
+  final List<MessageData> _messages = [
+    MessageData(
+      id: 'msg_1',
+      username: 'Abstergo and 4 more',
+      messagePreview: 'Ooooh thank you so much! ❤️',
+      timeString: 'Wednesday',
+      unreadCount: 1,
+      avatarUrl: 'https://randomuser.me/api/portraits/men/41.jpg',
     ),
-  );
+    MessageData(
+      id: 'msg_2',
+      username: 'Leslie Alexander',
+      messagePreview: 'Makes to a illustrated on all and let me...',
+      timeString: '17:33',
+      unreadCount: null,
+      avatarUrl: 'https://randomuser.me/api/portraits/women/72.jpg',
+    ),
+    MessageData(
+      id: 'msg_3',
+      username: 'Eleanor Pena',
+      messagePreview: 'For sure! Let\'s hangout on Scheduled da...',
+      timeString: '14:32',
+      unreadCount: null,
+      avatarUrl: 'https://randomuser.me/api/portraits/women/53.jpg',
+    ),
+    MessageData(
+      id: 'msg_4',
+      username: 'Devon Lane',
+      messagePreview: 'Hey, I heard that you wanted...',
+      timeString: '18:42',
+      unreadCount: 3,
+      avatarUrl: 'https://randomuser.me/api/portraits/men/86.jpg',
+    ),
+    MessageData(
+      id: 'msg_5',
+      username: 'Esther Howard',
+      messagePreview: '😴 No 😴 I just went to bed right now, ta...',
+      timeString: 'Yesterday',
+      unreadCount: null,
+      avatarUrl: 'https://randomuser.me/api/portraits/women/33.jpg',
+    ),
+    MessageData(
+      id: 'msg_6',
+      username: 'Arlene McCoy',
+      messagePreview: 'But I\'m not really sure how it is but sure!...',
+      timeString: 'Wednesday',
+      unreadCount: null,
+      avatarUrl: 'https://randomuser.me/api/portraits/women/90.jpg',
+    ),
+    MessageData(
+      id: 'msg_7',
+      username: 'Dianne Russell',
+      messagePreview: 'No problem! See you then.',
+      timeString: 'Tuesday',
+      unreadCount: null,
+      avatarUrl: 'https://randomuser.me/api/portraits/women/25.jpg',
+    ),
+  ];
 
   // Mock data for activities
-  final List<ActivityData> _activities = List.generate(15, (index) {
-    final ActivityType type = ActivityType.values[index % ActivityType.values.length];
-    String? additionalInfo;
-
-    if (type == ActivityType.comment) {
-      additionalInfo = 'Wow, this looks amazing! 🔥';
-    } else if (type == ActivityType.like) {
-      additionalInfo = null;
-    } else {
-      additionalInfo = null;
-    }
-
-    return ActivityData(
-      id: 'act_$index',
-      username: 'user${index + 1}',
-      type: type,
-      timeString:
-          index % 4 == 0
-              ? 'Just now'
-              : index % 4 == 1
-              ? '5m ago'
-              : index % 4 == 2
-              ? '1h ago'
-              : 'Yesterday',
-      additionalInfo: additionalInfo,
-      targetContentId: 'content_$index',
-    );
-  });
+  final List<ActivityData> _activities = [
+    ActivityData(
+      id: 'act_1',
+      username: 'Alex Johnson',
+      type: ActivityType.like,
+      timeString: 'Just now',
+      additionalInfo: null,
+      targetContentId: 'content_1',
+      avatarUrl: 'https://randomuser.me/api/portraits/men/32.jpg',
+    ),
+    ActivityData(
+      id: 'act_2',
+      username: 'Sophia Chen',
+      type: ActivityType.comment,
+      timeString: '5m ago',
+      additionalInfo: 'Wow, this looks amazing! 🔥',
+      targetContentId: 'content_2',
+      avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg',
+    ),
+    ActivityData(
+      id: 'act_3',
+      username: 'Michael Taylor',
+      type: ActivityType.follow,
+      timeString: '10m ago',
+      additionalInfo: null,
+      targetContentId: null,
+      avatarUrl: 'https://randomuser.me/api/portraits/men/28.jpg',
+    ),
+    ActivityData(
+      id: 'act_4',
+      username: 'Emma Wilson',
+      type: ActivityType.comment,
+      timeString: '1h ago',
+      additionalInfo: 'Could you share more details about this?',
+      targetContentId: 'content_4',
+      avatarUrl: 'https://randomuser.me/api/portraits/women/22.jpg',
+    ),
+    ActivityData(
+      id: 'act_5',
+      username: 'Ryan Martinez',
+      type: ActivityType.like,
+      timeString: '2h ago',
+      additionalInfo: null,
+      targetContentId: 'content_5',
+      avatarUrl: 'https://randomuser.me/api/portraits/men/54.jpg',
+    ),
+    ActivityData(
+      id: 'act_6',
+      username: 'Olivia Brown',
+      type: ActivityType.follow,
+      timeString: 'Yesterday',
+      additionalInfo: null,
+      targetContentId: null,
+      avatarUrl: 'https://randomuser.me/api/portraits/women/65.jpg',
+    ),
+    ActivityData(
+      id: 'act_7',
+      username: 'Noah Davis',
+      type: ActivityType.like,
+      timeString: 'Yesterday',
+      additionalInfo: null,
+      targetContentId: 'content_7',
+      avatarUrl: 'https://i.pravatar.cc/150?img=17',
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -71,21 +149,28 @@ class _MessagesScreenState extends State<MessagesScreen> {
     final isDarkMode = brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(context, false),
+      backgroundColor: AppTheme.getBackgroundColor(context),
       appBar: AppBar(
-        title: Text('Messages', style: TextStyle(color: AppTheme.getTextColor(context), fontWeight: FontWeight.bold)),
+        title: Text('Chat', style: TextStyle(color: AppTheme.getTextColor(context), fontWeight: FontWeight.bold)),
+        leading: IconButton(
+          padding: EdgeInsets.zero,
+          onPressed: () {
+            // Action for new contacts/group chat
+          },
+          icon: Icon(Icons.person_add_alt, color: AppTheme.getTextColor(context), size: 24),
+        ),
         actions: [
           IconButton(
             padding: EdgeInsets.zero,
             onPressed: () {
-              // Action for new message
+              // Action for search
             },
-            icon: Icon(FluentIcons.edit_24_regular, color: AppColors.primary, size: 24),
+            icon: Icon(Icons.search, color: AppTheme.getTextColor(context), size: 24),
           ),
-          const SizedBox(width: 8),
         ],
-        backgroundColor: isDarkMode ? AppColors.darkBackground.withAlpha(242) : AppColors.background,
+        backgroundColor: isDarkMode ? Colors.black : AppColors.background,
         elevation: 0, // No shadow
+        centerTitle: true,
       ),
       body: SafeArea(
         child: Column(
@@ -98,24 +183,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
               height: 0.5,
               width: double.infinity,
               color: isDarkMode ? AppColors.divider.withAlpha(51) : AppColors.divider.withAlpha(128),
-            ),
-
-            // Search bar
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-              child: SearchBar(
-                hintText: 'Search',
-                leading: Icon(FluentIcons.search_24_regular, color: AppTheme.getSecondaryTextColor(context), size: 18),
-                onChanged: (value) {
-                  // Handle search
-                },
-                padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16, vertical: 12)),
-                elevation: WidgetStateProperty.all(0),
-                backgroundColor: WidgetStateProperty.all(
-                  isDarkMode ? AppColors.deepPurple.withAlpha(128) : AppColors.lightLavender.withAlpha(77),
-                ),
-                shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-              ),
             ),
 
             // Content based on selected tab
@@ -162,7 +229,11 @@ class _MessagesScreenState extends State<MessagesScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: isSelected ? AppColors.primary : Colors.transparent, width: 2)),
+          border: Border(bottom: BorderSide(
+            color: isSelected 
+                ? label == 'Messages' ? AppColors.pink : AppColors.primary 
+                : Colors.transparent, 
+            width: 2)),
         ),
         child: Center(
           child: Text(
@@ -172,7 +243,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               color:
                   isSelected
-                      ? AppColors.primary
+                      ? label == 'Messages' ? AppColors.pink : AppColors.primary
                       : isDarkMode
                       ? AppColors.textLight.withAlpha(179)
                       : AppColors.textSecondary,

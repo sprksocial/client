@@ -11,6 +11,7 @@ class MessageList extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListView.builder(
       itemCount: messages.length,
+      padding: EdgeInsets.zero,
       itemBuilder: (context, index) {
         final MessageData message = messages[index];
         return MessageListItem(
@@ -19,6 +20,7 @@ class MessageList extends StatelessWidget {
           time: message.timeString,
           unreadCount: message.unreadCount,
           colorIndex: index,
+          avatarUrl: message.avatarUrl,
           onTap: () {
             if (onMessageTap != null) {
               onMessageTap!(message);
