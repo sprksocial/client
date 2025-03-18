@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:camera/camera.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import '../services/auth_service.dart';
 import '../services/camera_service.dart';
+import '../services/video_service.dart';
 import '../widgets/camera/camera_view.dart';
 import '../widgets/camera/camera_controls.dart';
 import '../widgets/camera/mode_selector.dart';
@@ -20,6 +21,7 @@ class CreateVideoScreen extends StatefulWidget {
 
 class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindingObserver {
   final CameraService _cameraService = CameraService();
+  late final VideoService _videoService;
   CameraMode _mode = CameraMode.video;
   bool _isRecording = false;
   double _recordingProgress = 0.0;
@@ -33,6 +35,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    _videoService = VideoService(Provider.of<AuthService>(context, listen: false));
     // Delay camera initialization slightly to ensure the widget is fully built
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
@@ -55,7 +58,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
     if (_cameraService.controller == null) {
       return;
     }
-    
+
     if (state == AppLifecycleState.inactive || state == AppLifecycleState.paused) {
       // Safely dispose camera when app is inactive
       _cameraService.dispose();
@@ -128,26 +131,80 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       return;
     }
 
-    // For now, just show a message
-    // In a real implementation, you would integrate with image/video picker
-    debugPrint('Gallery selection not implemented yet');
-    
-    // Show a placeholder message to the user
-    showCupertinoDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return CupertinoAlertDialog(
-          title: const Text('Gallery Selection'),
-          content: const Text('Gallery selection will be implemented in a future update.'),
-          actions: [
-            CupertinoDialogAction(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
-            ),
-          ],
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? video = await picker.pickVideo(
+        source: ImageSource.gallery,
+        maxDuration: const Duration(seconds: 180),
+      );
+
+      if (video != null) {
+        debugPrint('Video selected from gallery: ${video.path}');
+
+        // Show loading dialog
+        if (mounted) {
+          showCupertinoDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return const CupertinoAlertDialog(
+                title: Text('Uploading Video'),
+                content: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 12),
+                  child: CupertinoActivityIndicator(),
+                ),
+              );
+            },
+          );
+        }
+
+        // Upload the video
+        final processedVideo = await _videoService.processVideo(video.path);
+        final postRef = await _videoService.postVideo(processedVideo?['blobRef']);
+
+
+        // Close loading dialog
+        if (mounted) {
+          Navigator.of(context).pop();
+          showCupertinoDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return CupertinoAlertDialog(
+                title: const Text('Success'),
+                content: const Text('Video uploaded successfully'),
+                actions: [
+                  CupertinoDialogAction(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: const Text('OK'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error handling video: $e');
+      // Close loading dialog if it's showing
+      if (mounted) {
+        Navigator.of(context).pop();
+        showCupertinoDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return CupertinoAlertDialog(
+              title: const Text('Error'),
+              content: Text('Failed to upload video: ${e.toString()}'),
+              actions: [
+                CupertinoDialogAction(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('OK'),
+                ),
+              ],
+            );
+          },
         );
-      },
-    );
+      }
+    }
   }
 
   void _onCapturePressed() async {
@@ -184,14 +241,14 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       try {
         final XFile? video = await _cameraService.stopVideoRecording();
         _stopRecordingTimer();
-        
+
         setState(() {
           _isRecording = false;
           _recordingProgress = 0.0;
           _recordingTimeText = '00:00 / 03:00';
           _recordingSeconds = 0;
         });
-        
+
         if (video != null) {
           // Handle the video (implement this based on your app's flow)
           debugPrint('Video recorded: ${video.path}');
@@ -223,16 +280,16 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
           _toggleVideoRecording();
           return;
         }
-        
+
         setState(() {
           _recordingSeconds++;
           _recordingProgress = _recordingSeconds / _maxRecordingSeconds;
-          
+
           final int minutes = _recordingSeconds ~/ 60;
           final int seconds = _recordingSeconds % 60;
           final String minutesStr = minutes.toString().padLeft(2, '0');
           final String secondsStr = seconds.toString().padLeft(2, '0');
-          
+
           _recordingTimeText = '$minutesStr:$secondsStr / 03:00';
         });
       },
