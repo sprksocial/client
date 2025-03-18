@@ -9,6 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_dotenv: ^5.1.0
   ionicons: ^0.2.2
   cupertino_icons: ^1.0.6
   video_player: ^2.9.3
@@ -46,3 +47,4 @@ flutter:
   assets:
     - assets/images/
     - assets/branding/
+    - .env
