@@ -32,7 +32,6 @@ class SuggestedAccountCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Profile image
             Container(
               width: 48,
               height: 48,
@@ -43,7 +42,6 @@ class SuggestedAccountCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
 
-            // Account info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,7 +62,6 @@ class SuggestedAccountCard extends StatelessWidget {
               ),
             ),
 
-            // Follow button
             GestureDetector(
               onTap: onFollowTap,
               child: Container(

@@ -13,7 +13,6 @@ class ProfileTabContent {
   const ProfileTabContent({required this.selectedIndex, required this.isAuthenticated, required this.onLoginPressed});
 
   List<Widget> getTabContent() {
-    // For tabs that require authentication, show auth prompt if not authenticated
     if ((selectedIndex == 4) && !isAuthenticated) {
       return [
         AuthRequiredContent(

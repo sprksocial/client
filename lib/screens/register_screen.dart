@@ -40,7 +40,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     final authService = Provider.of<AuthService>(context, listen: false);
 
-    // Get the handle and add the domain suffix
     final String handle = "${_handleController.text}.sprk.so";
 
     final success = await authService.register(
@@ -95,7 +94,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Logo at the top
                   Center(
                     child: Container(
                       width: 80,
@@ -107,7 +105,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
 
-                  // Email Field
                   _buildLabel('Email'),
                   const SizedBox(height: 8),
                   TextField(
@@ -127,7 +124,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Handle Field with .sprk.so suffix
                   _buildLabel('Username'),
                   const SizedBox(height: 8),
                   Container(
@@ -165,7 +161,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Password Field
                   _buildLabel('Password'),
                   const SizedBox(height: 8),
                   TextField(
@@ -196,7 +191,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   const SizedBox(height: 24),
 
-                  // Invite Code Field (Optional)
                   _buildLabel('Invite Code (Optional)'),
                   const SizedBox(height: 8),
                   TextField(
@@ -229,7 +223,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                   const SizedBox(height: 40),
 
-                  // Register Button
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(

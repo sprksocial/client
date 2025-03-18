@@ -22,7 +22,6 @@ class VideosGrid extends StatelessWidget {
       ),
       itemCount: itemCount,
       itemBuilder: (context, index) {
-        // Create different color patterns based on the icon type
         Color backgroundColor;
         if (iconType == FluentIcons.heart_24_regular || iconType == FluentIcons.heart_24_filled) {
           backgroundColor =

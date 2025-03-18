@@ -6,14 +6,12 @@ import 'action_buttons/bookmark_action_button.dart';
 import 'action_buttons/share_action_button.dart';
 
 class VideoSideActionBar extends StatefulWidget {
-  // Callback functions for each action
   final VoidCallback? onProfilePressed;
   final VoidCallback? onLikePressed;
   final VoidCallback? onCommentPressed;
   final VoidCallback? onBookmarkPressed;
   final VoidCallback? onSharePressed;
 
-  // Counts and states
   final String likeCount;
   final String commentCount;
   final String bookmarkCount;
@@ -23,20 +21,17 @@ class VideoSideActionBar extends StatefulWidget {
 
   const VideoSideActionBar({
     super.key,
-    // Callbacks
     this.onProfilePressed,
     this.onLikePressed,
     this.onCommentPressed,
     this.onBookmarkPressed,
     this.onSharePressed,
 
-    // Counts with defaults
     this.likeCount = '0',
     this.commentCount = '0',
     this.bookmarkCount = '0',
     this.shareCount = '0',
 
-    // States
     this.isLiked = false,
     this.isBookmarked = false,
   });
@@ -95,19 +90,15 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Profile with plus button
         ProfileActionButton(onPressed: widget.onProfilePressed),
         const SizedBox(height: 20),
 
-        // Like button
         LikeActionButton(count: widget.likeCount, isLiked: _isLiked, onPressed: _handleLike),
         const SizedBox(height: 20),
 
-        // Comment button
         CommentActionButton(count: widget.commentCount, onPressed: widget.onCommentPressed),
         const SizedBox(height: 20),
 
-        // Bookmark button - Use const where possible to prevent unnecessary rebuilds
         BookmarkActionButton(
           count: widget.bookmarkCount,
           isBookmarked: _isBookmarked,
@@ -116,7 +107,6 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
         ),
         const SizedBox(height: 20),
 
-        // Share button
         ShareActionButton(count: widget.shareCount, onPressed: widget.onSharePressed),
       ],
     );

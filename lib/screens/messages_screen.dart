@@ -16,7 +16,6 @@ class MessagesScreen extends StatefulWidget {
 class _MessagesScreenState extends State<MessagesScreen> {
   int _selectedTabIndex = 0;
 
-  // Mock data for messages
   final List<MessageData> _messages = [
     MessageData(
       id: 'msg_1',
@@ -76,7 +75,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
     ),
   ];
 
-  // Mock data for activities
   final List<ActivityData> _activities = [
     ActivityData(
       id: 'act_1',
@@ -155,7 +153,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
         leading: IconButton(
           padding: EdgeInsets.zero,
           onPressed: () {
-            // Action for new contacts/group chat
           },
           icon: Icon(Icons.person_add_alt, color: AppTheme.getTextColor(context), size: 24),
         ),
@@ -163,7 +160,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
           IconButton(
             padding: EdgeInsets.zero,
             onPressed: () {
-              // Action for search
             },
             icon: Icon(Icons.search, color: AppTheme.getTextColor(context), size: 24),
           ),
@@ -175,17 +171,14 @@ class _MessagesScreenState extends State<MessagesScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // Custom tab selector (full width and minimalistic)
             _buildCustomTabBar(),
 
-            // Divider below tabs
             Container(
               height: 0.5,
               width: double.infinity,
               color: isDarkMode ? AppColors.divider.withAlpha(51) : AppColors.divider.withAlpha(128),
             ),
 
-            // Content based on selected tab
             Expanded(child: _selectedTabIndex == 0 ? _buildMessagesTab() : _buildActivitiesTab()),
           ],
         ),
@@ -258,7 +251,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
     return MessageList(
       messages: _messages,
       onMessageTap: (message) {
-        // Handle message tap
         print('Tapped on message: ${message.id}');
       },
     );
@@ -268,7 +260,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
     return ActivityList(
       activities: _activities,
       onActivityTap: (activity) {
-        // Handle activity tap
         print('Tapped on activity: ${activity.id}');
       },
     );

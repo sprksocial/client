@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
-// Import the modular components
 import 'play_pause_controls.dart';
 import 'progress_bar.dart';
 import 'speed_indicator.dart';
@@ -30,7 +29,6 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
   void initState() {
     super.initState();
 
-    // Start periodic timer to update UI with current video position
     _updateTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
       if (mounted && !_isDragging) {
         setState(() {});
@@ -128,7 +126,6 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
       setState(() {
         _isSpeedUp = isLongPress;
       });
-      // Set playback speed
       widget.controller.setPlaybackSpeed(_isSpeedUp ? 2.0 : 1.0);
     }
   }
@@ -140,7 +137,6 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
 
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Calculate bottom safe area for proper slider positioning
     final bottomSafeArea = MediaQuery.of(context).padding.bottom;
     final bottomNavHeight = 50.0; // Match the HomeScreen bottom nav height
     final progressBarBottomPadding = bottomNavHeight + bottomSafeArea + 10;
@@ -152,13 +148,10 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          // Transparent layer for tap detection
           Container(color: Colors.transparent),
 
-          // Speed indicator (2x) when long pressing
           Positioned(left: 10, bottom: 120, child: SpeedIndicator(isVisible: _isSpeedUp)),
 
-          // Controls overlay
           if (_controlsVisible)
             AnimatedOpacity(
               opacity: _controlsVisible ? 1.0 : 0.0,
@@ -167,7 +160,6 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
                 color: Colors.black.withAlpha(128),
                 child: Stack(
                   children: [
-                    // Timestamp indicator (centered below controls)
                     Positioned(
                       left: 0,
                       right: 0,
@@ -175,7 +167,6 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
                       child: Center(child: TimeDisplay(position: position, duration: duration)),
                     ),
 
-                    // Center play/pause and skip buttons - perfectly centered
                     Center(
                       child: PlayPauseControls(
                         controller: widget.controller,
@@ -185,7 +176,6 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
                       ),
                     ),
 
-                    // Bottom progress bar - positioned just above bottom nav
                     Positioned(
                       left: 0,
                       right: 0,

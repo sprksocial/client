@@ -20,14 +20,12 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _obscurePassword = true;
   final _formKey = GlobalKey<FormState>();
 
-  // Add focus nodes for autofill
   final _handleFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
-    // Schedule autofill request for after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       TextInput.ensureInitialized();
     });
@@ -48,7 +46,6 @@ class _LoginScreenState extends State<LoginScreen> {
       final success = await authService.login(_handleController.text.trim(), _passwordController.text);
 
       if (success && mounted) {
-        // Complete autofill when login is successful
         TextInput.finishAutofillContext(shouldSave: true);
         Navigator.of(context).pushReplacementNamed('/home');
       }
@@ -74,7 +71,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // Logo
                   Container(
                     width: 100,
                     height: 100,
@@ -87,7 +83,6 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                   ),
 
-                  // Title
                   Text(
                     'Login to your account',
                     style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 24, fontWeight: FontWeight.bold),
@@ -95,7 +90,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 30),
 
-                  // Handle field
                   AutofillGroup(
                     child: Column(
                       children: [
@@ -118,7 +112,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Password field
                         TextField(
                           controller: _passwordController,
                           focusNode: _passwordFocusNode,
@@ -156,7 +149,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Error message
                   if (authService.error != null)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
@@ -167,7 +159,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
 
-                  // Login button
                   ElevatedButton(
                     onPressed: authService.isLoading ? null : _login,
                     style: ElevatedButton.styleFrom(

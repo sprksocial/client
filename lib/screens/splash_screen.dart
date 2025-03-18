@@ -19,7 +19,6 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    // Initialize video player with the intro video
     _videoController =
         VideoPlayerController.asset('assets/branding/intro.mp4')
           ..setVolume(0.0) // Mute the audio
@@ -31,34 +30,28 @@ class _SplashScreenState extends State<SplashScreen> {
             _videoController.play();
           });
 
-    // Check if user is already authenticated
     _checkAuthentication();
   }
 
   Future<void> _checkAuthentication() async {
-    // Wait for video to play for at least 2 seconds
     await Future.delayed(const Duration(seconds: 2));
 
     if (!mounted) return;
 
     final authService = Provider.of<AuthService>(context, listen: false);
 
-    // Wait for auth service to finish loading saved session
     while (authService.isLoading) {
       await Future.delayed(const Duration(milliseconds: 100));
       if (!mounted) return;
     }
 
-    // Check if session is valid
     final bool isSessionValid = await authService.validateSession();
 
     if (!mounted) return;
 
     if (isSessionValid) {
-      // User is authenticated, go to home
       Navigator.of(context).pushReplacementNamed('/home');
     } else {
-      // User is not authenticated, go to login
       Navigator.of(context).pushReplacementNamed('/auth');
     }
   }
@@ -75,11 +68,9 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Widget _buildVideoPlayer() {
-    // Calculate the screen dimensions
     final size = MediaQuery.of(context).size;
     final videoSize = _videoController.value.size;
 
-    // Calculate scale to cover the whole screen
     final double scale =
         size.width / videoSize.width > size.height / videoSize.height
             ? size.width / videoSize.width

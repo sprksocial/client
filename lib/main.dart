@@ -90,7 +90,6 @@ class MainScreen extends StatelessWidget {
     final navigationProvider = Provider.of<NavigationProvider>(context);
     final authService = Provider.of<AuthService>(context);
 
-    // Creating the list of screens for navigation
     final List<Widget> screens = [
       const HomeScreen(),
       const SearchScreen(),
@@ -118,7 +117,6 @@ class MainScreen extends StatelessWidget {
         child: NavigationBar(
           selectedIndex: navigationProvider.currentIndex == 2 ? 0 : navigationProvider.currentIndex,
           onDestinationSelected: (index) {
-            // Handle the create button specially
             if (index == 2) {
               Navigator.of(
                 context,

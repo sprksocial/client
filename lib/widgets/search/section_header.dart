@@ -15,7 +15,6 @@ class SectionHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Title with optional icon
           Row(
             children: [
               if (icon != null) ...[Icon(icon, color: AppTheme.getTextColor(context), size: 22), const SizedBox(width: 8)],
@@ -23,7 +22,6 @@ class SectionHeader extends StatelessWidget {
             ],
           ),
 
-          // View all button
           if (onViewAllTap != null)
             GestureDetector(
               onTap: onViewAllTap,

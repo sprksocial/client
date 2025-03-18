@@ -26,7 +26,6 @@ class TrendingVideoCard extends StatelessWidget {
         ),
         child: Stack(
           children: [
-            // View count indicator - Updated to match screenshot
             Positioned(
               bottom: 8,
               left: 8,

@@ -25,7 +25,6 @@ class SoundCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Sound image
             Container(
               width: 60,
               height: 60,
@@ -36,7 +35,6 @@ class SoundCard extends StatelessWidget {
             ),
             const SizedBox(width: 12),
 
-            // Sound info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,7 +56,6 @@ class SoundCard extends StatelessWidget {
               ),
             ),
 
-            // Play button
             Container(
               width: 36,
               height: 36,

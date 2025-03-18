@@ -48,7 +48,6 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          // User avatar (smaller for replies)
           Container(
             width: 28,
             height: 28,
@@ -66,13 +65,11 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
           ),
           const SizedBox(width: 8),
 
-          // Reply content
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Username and time
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
@@ -83,15 +80,12 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
                 ),
                 const SizedBox(height: 2),
 
-                // Reply text
                 Text(widget.text, style: TextStyle(color: textColor, fontSize: 13)),
 
-                // Action buttons
                 const SizedBox(height: 4),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    // Like button
                     TextButton(
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.zero,
@@ -113,7 +107,6 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
                     ),
                     const SizedBox(width: 16),
 
-                    // Reply button
                     TextButton(
                       style: TextButton.styleFrom(
                         padding: EdgeInsets.zero,

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'app_colors.dart';
 
 class AppTheme {
-  // Light theme
   static ThemeData getLightTheme() {
     return ThemeData(
       useMaterial3: true,
@@ -24,7 +23,6 @@ class AppTheme {
     );
   }
 
-  // Dark theme
   static ThemeData getDarkTheme() {
     return ThemeData(
       useMaterial3: true,
@@ -50,7 +48,6 @@ class AppTheme {
     );
   }
 
-  // Helper methods to determine colors based on theme brightness
   static Color getNavBackgroundColor(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
     
@@ -74,13 +71,11 @@ class AppTheme {
     return brightness == Brightness.dark ? AppColors.darkBackground : AppColors.background;
   }
 
-  // Get text color based on brightness
   static Color getTextColor(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
     return brightness == Brightness.dark ? AppColors.textLight : AppColors.textPrimary;
   }
 
-  // Get secondary text color based on brightness
   static Color getSecondaryTextColor(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
     return brightness == Brightness.dark ? AppColors.textLight.withAlpha(179) : AppColors.textSecondary;

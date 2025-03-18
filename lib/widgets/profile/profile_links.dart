@@ -10,7 +10,6 @@ class ProfileLinks extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Debug print to verify links are being passed
     if (kDebugMode) {
       print('Building ProfileLinks with ${links.length} links: $links');
     }

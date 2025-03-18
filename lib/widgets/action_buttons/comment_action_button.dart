@@ -16,7 +16,6 @@ class CommentActionButton extends StatelessWidget {
       onPressed:
           onPressed != null
               ? () {
-                // Add a small delay to ensure UI updates properly
                 Future.delayed(Duration.zero, onPressed!);
               }
               : null,

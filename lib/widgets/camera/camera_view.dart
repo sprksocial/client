@@ -14,7 +14,6 @@ class CameraView extends StatefulWidget {
 class _CameraViewState extends State<CameraView> {
   @override
   Widget build(BuildContext context) {
-    // Show loading indicator if not initialized or controller is null
     if (!widget.isInitialized || widget.cameraController == null || !widget.cameraController!.value.isInitialized) {
       return Container(
         color: Colors.black,
@@ -32,7 +31,6 @@ class _CameraViewState extends State<CameraView> {
     }
 
     try {
-      // Get the aspect ratio, defaulting to 4:3 if there's an issue
       final aspectRatio = widget.cameraController!.value.aspectRatio;
 
       return ClipRRect(
@@ -40,7 +38,6 @@ class _CameraViewState extends State<CameraView> {
         child: AspectRatio(aspectRatio: aspectRatio, child: CameraPreview(widget.cameraController!)),
       );
     } catch (e) {
-      // Fallback in case of unexpected error
       debugPrint('Error building camera view: $e');
       return Container(
         color: Colors.black,

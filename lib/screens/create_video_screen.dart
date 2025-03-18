@@ -36,7 +36,6 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _videoService = VideoService(Provider.of<AuthService>(context, listen: false));
-    // Delay camera initialization slightly to ensure the widget is fully built
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
         _initializeCamera();
@@ -54,16 +53,13 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // Handle app lifecycle changes
     if (_cameraService.controller == null) {
       return;
     }
 
     if (state == AppLifecycleState.inactive || state == AppLifecycleState.paused) {
-      // Safely dispose camera when app is inactive
       _cameraService.dispose();
     } else if (state == AppLifecycleState.resumed) {
-      // Reinitialize when app is resumed
       _initializeCamera();
     }
   }
@@ -76,7 +72,6 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       }
     } catch (e) {
       debugPrint('Error initializing camera: $e');
-      // Show error to user
       if (mounted) {
         showDialog(
           context: context,
@@ -88,7 +83,6 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
-                    // Try again after error
                     Future.delayed(const Duration(seconds: 1), () {
                       if (mounted) {
                         _initializeCamera();
@@ -138,7 +132,6 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       if (video != null) {
         debugPrint('Video selected from gallery: ${video.path}');
 
-        // Show loading dialog
         if (mounted) {
           showDialog(
             context: context,
@@ -152,11 +145,9 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
           );
         }
 
-        // Upload the video
         final processedVideo = await _videoService.processVideo(video.path);
         final postRef = await _videoService.postVideo(processedVideo?['blobRef']);
 
-        // Close loading dialog
         if (mounted) {
           Navigator.of(context).pop();
           showDialog(
@@ -173,7 +164,6 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       }
     } catch (e) {
       debugPrint('Error handling video: $e');
-      // Close loading dialog if it's showing
       if (mounted) {
         Navigator.of(context).pop();
         showDialog(
@@ -210,9 +200,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
     try {
       final XFile? photo = await _cameraService.takePhoto();
       if (photo != null) {
-        // Handle the photo (implement this based on your app's flow)
         debugPrint('Photo taken: ${photo.path}');
-        // Here you would typically navigate to a preview/edit screen
       }
     } catch (e) {
       debugPrint('Error taking photo: $e');
@@ -233,9 +221,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
         });
 
         if (video != null) {
-          // Handle the video (implement this based on your app's flow)
           debugPrint('Video recorded: ${video.path}');
-          // Here you would typically navigate to a preview/edit screen
         }
       } catch (e) {
         debugPrint('Error stopping video recording: $e');
@@ -300,12 +286,10 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       body: SafeArea(
         child: Stack(
           children: [
-            // Camera view
             Positioned.fill(
               child: CameraView(cameraController: _cameraService.controller, isInitialized: _cameraService.isInitialized),
             ),
 
-            // Close button
             Positioned(
               top: 20,
               left: 20,
@@ -319,7 +303,6 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
               ),
             ),
 
-            // Mode selector
             Positioned(
               top: 20,
               left: 0,
@@ -327,20 +310,17 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
               child: Center(child: ModeSelector(selectedMode: _mode, onModeSelected: _onModeSelected)),
             ),
 
-            // Bottom controls
             Positioned(
               bottom: 30,
               left: 0,
               right: 0,
               child: Column(
                 children: [
-                  // Recording progress bar (only visible when recording or in video mode)
                   if (_mode == CameraMode.video) ...[
                     RecordingBar(isRecording: _isRecording, progress: _recordingProgress, timeText: _recordingTimeText),
                     const SizedBox(height: 20),
                   ],
 
-                  // Camera controls
                   CameraControls(
                     mode: _mode,
                     isRecording: _isRecording,

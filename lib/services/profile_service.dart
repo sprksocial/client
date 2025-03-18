@@ -10,7 +10,6 @@ class ProfileService extends ChangeNotifier {
 
   ProfileService(this._authService);
 
-  // Get profile by DID without updating internal state
   Future<Map<String, dynamic>?> getProfile(String did) async {
     if (!_authService.isAuthenticated) {
       return null;
@@ -33,7 +32,6 @@ class ProfileService extends ChangeNotifier {
         'postsCount': 0,
       };
 
-      // Try to resolve the handle using the DID
       try {
         final didDocResponse = await http.get(Uri.parse('https://plc.directory/$did'));
 
@@ -48,11 +46,9 @@ class ProfileService extends ChangeNotifier {
             .replaceFirst('at://', '');
         profileData['handle'] = handle;
       } catch (e) {
-        // If handle lookup fails, use DID as fallback
         profileData['handle'] = did;
       }
 
-      // Then get the profile record
       final response = await atProto.repo.getRecord(uri: AtUri.parse('at://$did/app.bsky.actor.profile/self'));
 
       final recordData = response.data.toJson();
@@ -76,7 +72,6 @@ class ProfileService extends ChangeNotifier {
     }
   }
 
-  // Get current user's profile
   Future<Map<String, dynamic>?> getCurrentUserProfile() async {
     if (!_authService.isAuthenticated || _authService.session == null) {
       return null;

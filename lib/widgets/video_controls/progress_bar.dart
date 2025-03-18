@@ -27,7 +27,6 @@ class VideoProgressBar extends StatefulWidget {
 class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerProviderStateMixin {
   bool _knobEnlarged = false;
 
-  // Animation controller for the timestamp animation
   late AnimationController _timestampAnimationController;
   late Animation<Offset> _timestampAnimation;
 
@@ -35,10 +34,8 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
   void initState() {
     super.initState();
 
-    // Initialize animation controller for timestamp
     _timestampAnimationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 200));
 
-    // Create animation for moving timestamp upward
     _timestampAnimation = Tween<Offset>(
       begin: const Offset(0, 0),
       end: const Offset(0, -1.0),
@@ -49,7 +46,6 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
   void didUpdateWidget(VideoProgressBar oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    // Update knob size based on dragging state
     if (widget.isDragging != oldWidget.isDragging) {
       setState(() {
         _knobEnlarged = widget.isDragging;
@@ -79,7 +75,6 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
 
-    // Progress bar configuration - easily adjustable
     final progressBarWidthPercentage = 0.7; // 70% of screen width
     final progressBarWidth = screenWidth * progressBarWidthPercentage;
     final progressBarHeight = 4.0;
@@ -92,14 +87,12 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
       padding: const EdgeInsets.symmetric(vertical: 15),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          // Get actual width from constraints for more accurate calculations
           final actualWidth = constraints.maxWidth;
 
           return GestureDetector(
             onHorizontalDragStart: (details) {
               final RenderBox box = context.findRenderObject() as RenderBox;
               final Offset localPos = box.globalToLocal(details.globalPosition);
-              // Calculate position within the progress bar container
               final progressBarLeft = (screenWidth - progressBarWidth) / 2;
               final relativeX = localPos.dx - progressBarLeft;
               final normalizedPosition = (relativeX / progressBarWidth).clamp(0.0, 1.0);
@@ -108,7 +101,6 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
             onHorizontalDragUpdate: (details) {
               final RenderBox box = context.findRenderObject() as RenderBox;
               final Offset localPos = box.globalToLocal(details.globalPosition);
-              // Calculate position within the progress bar container
               final progressBarLeft = (screenWidth - progressBarWidth) / 2;
               final relativeX = localPos.dx - progressBarLeft;
               final normalizedPosition = (relativeX / progressBarWidth).clamp(0.0, 1.0);
@@ -118,14 +110,12 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
             child: Stack(
               clipBehavior: Clip.none,
               children: [
-                // Background track
                 Container(
                   height: progressBarHeight,
                   width: double.infinity, // Full width of the parent container
                   color: Colors.grey.withAlpha(128),
                 ),
 
-                // Filled progress - now white
                 FractionallySizedBox(
                   widthFactor:
                       widget.isDragging
@@ -134,7 +124,6 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
                   child: Container(height: progressBarHeight, color: Colors.white),
                 ),
 
-                // Draggable knob
                 Positioned(
                   left:
                       widget.isDragging
@@ -147,7 +136,6 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
                     onHorizontalDragStart: (details) {
-                      // Use the same calculation method as the parent
                       final RenderBox box = context.findRenderObject() as RenderBox;
                       final Offset localPos = box.globalToLocal(details.globalPosition);
                       final progressBarLeft = (screenWidth - progressBarWidth) / 2;
@@ -156,7 +144,6 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
                       widget.onDragStart(normalizedPosition);
                     },
                     onHorizontalDragUpdate: (details) {
-                      // Use the same calculation method as the parent
                       final RenderBox box = context.findRenderObject() as RenderBox;
                       final Offset localPos = box.globalToLocal(details.globalPosition);
                       final progressBarLeft = (screenWidth - progressBarWidth) / 2;
@@ -177,7 +164,6 @@ class _VideoProgressBarState extends State<VideoProgressBar> with SingleTickerPr
                   ),
                 ),
 
-                // Animated timestamp above knob when dragging
                 if (widget.isDragging)
                   Positioned(
                     left: (widget.dragPosition * actualWidth - 25).clamp(0.0, actualWidth - 50),

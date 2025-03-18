@@ -52,7 +52,6 @@ class StoryCircle extends StatelessWidget {
                 ),
               ),
 
-              // Add button for Your Story
               if (isYourStory)
                 Positioned(
                   bottom: 0,
@@ -69,7 +68,6 @@ class StoryCircle extends StatelessWidget {
                   ),
                 ),
 
-              // Live badge - Updated position to match screenshot
               if (isLive)
                 Positioned(
                   bottom: 50,

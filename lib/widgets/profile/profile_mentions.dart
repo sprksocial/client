@@ -11,7 +11,6 @@ class ProfileMentions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Debug print to verify usernames are being passed
     if (kDebugMode) {
       print('Building ProfileMentions with ${usernames.length} usernames: $usernames');
     }
@@ -45,7 +44,6 @@ class ProfileMentions extends StatelessWidget {
             const SizedBox(width: 6),
             Expanded(
               child: Text(
-                // Remove @ if present for display purposes
                 username.startsWith('@') ? username.substring(1) : username,
                 style: const TextStyle(
                   color: AppColors.primary, // Pink color for username mentions

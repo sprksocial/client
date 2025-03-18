@@ -19,7 +19,6 @@ class EarlySupporterSheet extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag handle
           Container(
             width: 40,
             height: 4,
@@ -27,7 +26,6 @@ class EarlySupporterSheet extends StatelessWidget {
             decoration: BoxDecoration(color: Colors.grey[400], borderRadius: BorderRadius.circular(2)),
           ),
 
-          // Match icon
           SvgPicture.asset(
             'assets/images/match.svg',
             height: 48,
@@ -37,12 +35,10 @@ class EarlySupporterSheet extends StatelessWidget {
 
           const SizedBox(height: 16),
 
-          // Title
           const Text('Early supporter', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
 
           const SizedBox(height: 24),
 
-          // Description
           Text.rich(
             TextSpan(
               style: TextStyle(fontSize: 16, color: isDarkMode ? Colors.grey[400] : Colors.grey[600], height: 1.5),
@@ -60,7 +56,6 @@ class EarlySupporterSheet extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // Bottom message
           Text.rich(
             TextSpan(
               style: TextStyle(fontSize: 16, color: isDarkMode ? Colors.grey[400] : Colors.grey[600]),

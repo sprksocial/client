@@ -38,7 +38,6 @@ class ProfileTabs extends StatelessWidget {
     final isDarkMode = brightness == Brightness.dark;
     final isSelected = selectedIndex == index;
 
-    // Get filled icon variants based on the outline icon
     IconData getFilledIcon(IconData outlineIcon) {
       if (outlineIcon == FluentIcons.video_24_regular) {
         return FluentIcons.video_24_filled;
@@ -82,7 +81,6 @@ class ProfileTabs extends StatelessWidget {
   }
 }
 
-// Sticky Tab Bar Delegate for the persistent header
 class StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
   final double height;

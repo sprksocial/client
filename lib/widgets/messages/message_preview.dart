@@ -23,7 +23,6 @@ class MessagePreview extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Username and time row
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -32,7 +31,6 @@ class MessagePreview extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        // Message preview text
         MessageText(message: message, isUnread: isUnread, isDarkMode: isDarkMode),
       ],
     );

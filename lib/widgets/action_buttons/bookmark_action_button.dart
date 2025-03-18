@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../../utils/app_colors.dart';
 
-// Test widget to demonstrate the BookmarkActionButton works correctly
 class TestBookmarkWidget extends StatefulWidget {
   const TestBookmarkWidget({super.key});
 
@@ -47,10 +46,8 @@ class _BookmarkActionButtonState extends State<BookmarkActionButton> with Single
     super.initState();
     _isBookmarked = widget.isBookmarked;
 
-    // Initialize animation controller
     _animationController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
 
-    // Simple scale animation
     _scaleAnimation = TweenSequence([
       TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.2), weight: 50),
       TweenSequenceItem(tween: Tween<double>(begin: 1.2, end: 1.0), weight: 50),

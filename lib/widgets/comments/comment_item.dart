@@ -97,7 +97,6 @@ class _CommentItemState extends State<CommentItem> {
     final secondaryTextColor = widget.isDarkMode ? AppColors.textLight.withAlpha(179) : AppColors.textSecondary;
     final dividerColor = widget.isDarkMode ? AppColors.deepPurple.withAlpha(128) : AppColors.lightLavender;
 
-    // Mock replies data
     final mockReplies = [
       {
         'id': 'reply1',
@@ -125,7 +124,6 @@ class _CommentItemState extends State<CommentItem> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // User avatar
               Container(
                 width: 36,
                 height: 36,
@@ -143,12 +141,10 @@ class _CommentItemState extends State<CommentItem> {
               ),
               const SizedBox(width: 12),
 
-              // Comment content
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Username and time
                     Row(
                       children: [
                         Text(widget.username, style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
@@ -158,17 +154,13 @@ class _CommentItemState extends State<CommentItem> {
                     ),
                     const SizedBox(height: 4),
 
-                    // Comment text
                     Text(widget.text, style: TextStyle(color: textColor)),
 
-                    // Media content (if any)
                     if (widget.hasMedia) ...[const SizedBox(height: 8), _buildMediaContent()],
 
-                    // Action buttons
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        // Like button
                         TextButton(
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
@@ -190,7 +182,6 @@ class _CommentItemState extends State<CommentItem> {
                         ),
                         const SizedBox(width: 16),
 
-                        // Reply button
                         TextButton(
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
@@ -201,7 +192,6 @@ class _CommentItemState extends State<CommentItem> {
                           child: Text('Reply', style: TextStyle(fontSize: 12, color: secondaryTextColor)),
                         ),
 
-                        // View replies button (if any)
                         if (widget.replyCount > 0) ...[
                           const SizedBox(width: 16),
                           TextButton(
@@ -236,7 +226,6 @@ class _CommentItemState extends State<CommentItem> {
           ),
         ),
 
-        // Replies section
         if (_showReplies && widget.replyCount > 0) ...[
           Container(
             margin: const EdgeInsets.only(left: 64),
@@ -245,9 +234,7 @@ class _CommentItemState extends State<CommentItem> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Add a slight padding at the top for better visual separation
                 const SizedBox(height: 2),
-                // Use Column instead of ListView to avoid nested scrolling issues
                 ...mockReplies.map(
                   (reply) => CommentReplyItem(
                     id: reply['id'] as String,
@@ -265,7 +252,6 @@ class _CommentItemState extends State<CommentItem> {
           ),
         ],
 
-        // Divider
         Container(height: 0.5, color: dividerColor),
       ],
     );
@@ -279,7 +265,6 @@ class _CommentItemState extends State<CommentItem> {
     final borderRadius = BorderRadius.circular(8);
 
     if (widget.mediaType == 'image') {
-      // Image content
       return Container(
         width: double.infinity,
         height: 200,
@@ -304,7 +289,6 @@ class _CommentItemState extends State<CommentItem> {
         ),
       );
     } else if (widget.mediaType == 'video') {
-      // Video content
       return GestureDetector(
         onTap: _toggleVideoPlayback,
         child: Container(

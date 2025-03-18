@@ -18,7 +18,6 @@ class UserProfilePicture extends StatelessWidget {
       onTap: onTap,
       child: Stack(
         children: [
-          // Profile image container
           Container(
             width: size,
             height: size,
@@ -35,7 +34,6 @@ class UserProfilePicture extends StatelessWidget {
             ),
           ),
 
-          // Unread indicator
           if (hasUnread) Positioned(top: 0, right: 0, child: UnreadIndicator(count: unreadCount!)),
         ],
       ),
