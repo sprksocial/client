@@ -50,6 +50,10 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.light(primary: AppColors.primary, secondary: AppColors.accent),
           textTheme: Typography.blackMountainView.apply(bodyColor: AppColors.textPrimary, displayColor: AppColors.textPrimary),
           useMaterial3: true,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          splashFactory: NoSplash.splashFactory,
         ),
         darkTheme: ThemeData(
           primaryColor: AppColors.primary,
@@ -57,6 +61,10 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.dark(primary: AppColors.primary, secondary: AppColors.accent),
           textTheme: Typography.whiteMountainView.apply(bodyColor: AppColors.textLight, displayColor: AppColors.textLight),
           useMaterial3: true,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          splashFactory: NoSplash.splashFactory,
         ),
         themeMode: ThemeMode.system,
         home: const SplashScreen(),
@@ -82,25 +90,51 @@ class NavigationProvider extends ChangeNotifier {
   }
 }
 
-class MainScreen extends StatelessWidget {
+class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  final List<Widget?> _screens = List.filled(5, null);
+
+  Widget _getScreen(int index, BuildContext context) {
+    if (_screens[index] != null) {
+      return _screens[index]!;
+    }
+
+    final authService = Provider.of<AuthService>(context, listen: false);
+
+    switch (index) {
+      case 0:
+        _screens[0] = const HomeScreen();
+        break;
+      case 1:
+        _screens[1] = const SearchScreen();
+        break;
+      case 2:
+        _screens[2] = const SizedBox.shrink();
+        break;
+      case 3:
+        _screens[3] = const MessagesScreen();
+        break;
+      case 4:
+        _screens[4] = ProfileScreen(key: Key(authService.session?.did ?? ''), did: authService.session?.did);
+        break;
+    }
+
+    return _screens[index]!;
+  }
 
   @override
   Widget build(BuildContext context) {
     final navigationProvider = Provider.of<NavigationProvider>(context);
-    final authService = Provider.of<AuthService>(context);
-
-    final List<Widget> screens = [
-      const HomeScreen(),
-      const SearchScreen(),
-      const SizedBox.shrink(), // Placeholder for create button
-      const MessagesScreen(),
-      ProfileScreen(key: Key(authService.session?.did ?? ''), did: authService.session?.did),
-    ];
 
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context),
-      body: IndexedStack(index: navigationProvider.currentIndex, children: screens),
+      body: _getScreen(navigationProvider.currentIndex, context),
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(
           indicatorColor: Colors.transparent,
