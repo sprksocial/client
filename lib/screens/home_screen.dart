@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
       null, // Custom colored container
     ];
     return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(context),
+      backgroundColor: Colors.black,
       body: Stack(
         children: [
           SizedBox(
