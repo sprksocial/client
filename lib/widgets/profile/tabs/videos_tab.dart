@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
-import 'package:video_player/video_player.dart';
-import '../../../utils/app_colors.dart';
 import '../../../services/profile_service.dart';
 import '../../../services/auth_service.dart';
-import '../../../screens/video_playback_screen.dart';
+import '../../../screens/video_player_screen.dart';
+import '../../profile/profile_video_tile.dart';
 
 class VideosTab extends StatefulWidget {
   final String? did;
@@ -75,12 +74,48 @@ class _VideosTabState extends State<VideosTab> {
     }
   }
 
+  void _openVideoPlayer(int index, String videoUrl, String thumbnailUrl) {
+    final video = _videos[index];
+    final username = video['post']['author']['handle'] as String? ?? 'username';
+    final description = video['post']['text'] as String? ?? 'Video ${index + 1}';
+    final likeCount = video['post']['likeCount'] as int? ?? 0;
+
+    // Extract hashtags from the description
+    final List<String> hashtags = [];
+    final words = description.split(' ');
+    for (final word in words) {
+      if (word.startsWith('#')) {
+        hashtags.add(word.substring(1));
+      }
+    }
+
+    final videoTile = ProfileVideoTile(
+      videoUrl: videoUrl,
+      thumbnailUrl: thumbnailUrl,
+      username: username,
+      description: description,
+      hashtags: hashtags,
+      index: index,
+      likeCount: likeCount,
+      onTap: () {}, // Not needed here
+    );
+
+    final videoItem = videoTile.toVideoItem(
+      onLikePressed: () {},
+      onBookmarkPressed: () {},
+      onSharePressed: () {},
+      onProfilePressed: () {},
+      onUsernameTap: () {},
+      onHashtagTap: () {},
+    );
+
+    Navigator.push(context, MaterialPageRoute(builder: (context) => VideoPlayerScreen(videoItem: videoItem)));
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return const SliverFillRemaining(
-        child: Center(child: CircularProgressIndicator()),
-      );
+      return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
     }
 
     if (_error != null) {
@@ -124,70 +159,42 @@ class _VideosTabState extends State<VideosTab> {
           crossAxisSpacing: 1,
           mainAxisSpacing: 1,
         ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final video = _videos[index];
-            final thumbnailUrl = video['post']['embed']['thumbnail'] as String? ?? '';
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final video = _videos[index];
+          if (video == null) {
+            return const SizedBox.shrink();
+          }
 
-            return GestureDetector(
-              onTap: () {
-                final playlistUrl = video['post']['embed']['playlist'] as String? ?? '';
-                if (playlistUrl.isNotEmpty) {
-                  final controller = VideoPlayerController.networkUrl(Uri.parse(playlistUrl));
-                  controller.initialize().then((_) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => VideoPlaybackScreen(
-                          controller: controller,
-                        ),
-                      ),
-                    );
-                  });
-                }
-              },
-              child: Container(
-                color: AppColors.richPurple.withAlpha(120),
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    thumbnailUrl.isNotEmpty
-                        ? Image.network(
-                            thumbnailUrl,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => Center(
-                              child: Icon(FluentIcons.video_24_regular, color: AppColors.white.withAlpha(204), size: 24)
-                            ),
-                          )
-                        : Center(child: Icon(FluentIcons.video_24_regular, color: AppColors.white.withAlpha(204), size: 24)),
+          final thumbnailUrl = video['post']['embed']['thumbnail'] as String? ?? '';
+          final playlistUrl = video['post']['embed']['playlist'] as String? ?? '';
+          final username = video['post']['author']['handle'] as String? ?? 'username';
+          final description = video['post']['text'] as String? ?? 'Video ${index + 1}';
+          final likeCount = video['post']['likeCount'] as int? ?? 0;
 
-                    Positioned(
-                      bottom: 5,
-                      left: 5,
-                      child: Row(
-                        children: [
-                          const Icon(FluentIcons.eye_24_regular, color: AppColors.white, size: 12),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${video['post']['likeCount'] ?? 0}',
-                            style: const TextStyle(color: AppColors.white, fontSize: 12),
-                          ),
-                        ],
-                      ),
-                    ),
+          // Extract hashtags from the description
+          final List<String> hashtags = [];
+          final words = description.split(' ');
+          for (final word in words) {
+            if (word.startsWith('#')) {
+              hashtags.add(word.substring(1));
+            }
+          }
 
-                    const Positioned(
-                      top: 5,
-                      right: 5,
-                      child: Icon(FluentIcons.play_circle_24_filled, color: AppColors.white, size: 16),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-          childCount: _videos.length,
-        ),
+          return ProfileVideoTile(
+            videoUrl: playlistUrl.isNotEmpty ? playlistUrl : null,
+            thumbnailUrl: thumbnailUrl,
+            username: username,
+            description: description,
+            hashtags: hashtags,
+            index: index,
+            likeCount: likeCount,
+            onTap: () {
+              if (playlistUrl.isNotEmpty) {
+                _openVideoPlayer(index, playlistUrl, thumbnailUrl);
+              }
+            },
+          );
+        }, childCount: _videos.length),
       ),
     );
   }

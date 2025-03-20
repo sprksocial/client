@@ -199,11 +199,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: AppTheme.getBackgroundColor(context),
-        appBar: AppBar(
-          title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
-          elevation: 0,
-        ),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
@@ -275,8 +270,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context),
       appBar: AppBar(
+        centerTitle: true,
         title: Text(
-          isCurrentUser ? 'My Profile' : 'Profile',
+          extractedProfileData['name'] ?? extractedProfileData['handle'] ?? 'Profile',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.getTextColor(context)),
         ),
         backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
@@ -329,7 +325,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
 
             ...tabContent.getTabContent(),
-
           ],
         ),
       ),
