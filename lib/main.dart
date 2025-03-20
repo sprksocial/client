@@ -133,7 +133,7 @@ class _MainScreenState extends State<MainScreen> {
     final navigationProvider = Provider.of<NavigationProvider>(context);
 
     return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(context),
+      backgroundColor: Colors.black, //esta eh a porra da cor mais importante desse caralho de aplicativo.
       body: _getScreen(navigationProvider.currentIndex, context),
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(

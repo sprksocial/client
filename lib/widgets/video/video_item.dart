@@ -159,10 +159,10 @@ class _VideoItemState extends State<VideoItem> {
                     colors: [
                       Colors.transparent,
                       Colors.transparent,
-                      Colors.transparent,
-                      Colors.transparent,
-                      isDarkMode ? Colors.black.withAlpha(77) : AppColors.darkBackground.withAlpha(42),
-                      isDarkMode ? Colors.black.withAlpha(77) : AppColors.darkBackground.withAlpha(42),
+                      Colors.black.withAlpha(10),
+                      Colors.black.withAlpha(40),
+                      Colors.black.withAlpha(80),
+                      Colors.black.withAlpha(160),
                     ],
                     stops: const [0.0, 0.5, 0.65, 0.75, 0.85, 0.95],
                   ),
@@ -224,7 +224,7 @@ class _VideoItemState extends State<VideoItem> {
         ),
         BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-          child: Container(color: isDarkMode ? Colors.black.withAlpha(77) : AppColors.darkBackground.withAlpha(42)),
+          child: Container(color: isDarkMode ? Colors.black.withAlpha(128) : AppColors.darkBackground.withAlpha(128)),
         ),
       ],
     );
