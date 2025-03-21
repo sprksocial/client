@@ -18,6 +18,7 @@ class VideoSideActionBar extends StatefulWidget {
   final String shareCount;
   final bool isLiked;
   final bool isBookmarked;
+  final String? profileImageUrl;
 
   const VideoSideActionBar({
     super.key,
@@ -34,6 +35,7 @@ class VideoSideActionBar extends StatefulWidget {
 
     this.isLiked = false,
     this.isBookmarked = false,
+    this.profileImageUrl,
   });
 
   @override
@@ -90,7 +92,10 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        ProfileActionButton(onPressed: widget.onProfilePressed),
+        ProfileActionButton(
+          profileImageUrl: widget.profileImageUrl,
+          onPressed: widget.onProfilePressed,
+        ),
         const SizedBox(height: 20),
 
         LikeActionButton(count: widget.likeCount, isLiked: _isLiked, onPressed: _handleLike),

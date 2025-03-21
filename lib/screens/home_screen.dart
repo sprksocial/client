@@ -345,6 +345,12 @@ class _HomeScreenState extends State<HomeScreen> {
         final bookmarkCount = 0;
         final shareCount = post.repostCount ?? 0;
         
+        // Extract profile image URL
+        String? profileImageUrl;
+        if (post.author.avatar != null) {
+          profileImageUrl = post.author.avatar;
+        }
+        
         final isPreloaded = _preloadedVideos.containsKey(index) && 
                            _preloadedVideos[index]!.isInitialized;
         
@@ -360,6 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
             commentCount: commentCount,
             bookmarkCount: bookmarkCount,
             shareCount: shareCount,
+            profileImageUrl: profileImageUrl,
             isVisible: index == _currentIndex,
             onLikePressed: () {},
             onBookmarkPressed: () {},
@@ -386,6 +393,7 @@ class _HomeScreenState extends State<HomeScreen> {
             commentCount: commentCount,
             bookmarkCount: bookmarkCount,
             shareCount: shareCount,
+            profileImageUrl: profileImageUrl,
             onLikePressed: () {},
             onBookmarkPressed: () {},
             onSharePressed: () {},
@@ -421,6 +429,7 @@ class PreloadedVideoItem extends StatefulWidget {
   final int commentCount;
   final int bookmarkCount;
   final int shareCount;
+  final String? profileImageUrl;
   final bool isVisible;
   final VoidCallback? onLikePressed;
   final VoidCallback? onBookmarkPressed;
@@ -440,6 +449,7 @@ class PreloadedVideoItem extends StatefulWidget {
     this.commentCount = 0,
     this.bookmarkCount = 0,
     this.shareCount = 0,
+    this.profileImageUrl,
     required this.isVisible,
     this.onLikePressed,
     this.onBookmarkPressed,
@@ -559,6 +569,7 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> {
               commentCount: '${widget.commentCount}K',
               bookmarkCount: '${widget.bookmarkCount}K',
               shareCount: '${widget.shareCount}K',
+              profileImageUrl: widget.profileImageUrl,
               onLikePressed: widget.onLikePressed ?? () {},
               onCommentPressed: _toggleComments,
               onBookmarkPressed: widget.onBookmarkPressed ?? () {},

@@ -20,6 +20,7 @@ class VideoItem extends StatefulWidget {
   final int commentCount;
   final int bookmarkCount;
   final int shareCount;
+  final String? profileImageUrl;
   final VoidCallback? onLikePressed;
   final VoidCallback? onBookmarkPressed;
   final VoidCallback? onSharePressed;
@@ -38,6 +39,7 @@ class VideoItem extends StatefulWidget {
     this.commentCount = 0,
     this.bookmarkCount = 0,
     this.shareCount = 0,
+    this.profileImageUrl,
     this.onLikePressed,
     this.onBookmarkPressed,
     this.onSharePressed,
@@ -194,6 +196,7 @@ class _VideoItemState extends State<VideoItem> {
                 commentCount: '${widget.commentCount}K',
                 bookmarkCount: '${widget.bookmarkCount}K',
                 shareCount: '${widget.shareCount}K',
+                profileImageUrl: widget.profileImageUrl,
                 onLikePressed: widget.onLikePressed ?? () {},
                 onCommentPressed: _toggleComments,
                 onBookmarkPressed: widget.onBookmarkPressed ?? () {},
