@@ -18,6 +18,7 @@ class PreloadedVideoItem extends StatefulWidget {
   final int bookmarkCount;
   final int shareCount;
   final bool isVisible;
+  final String? profileImageUrl;
   final VoidCallback? onLikePressed;
   final VoidCallback? onBookmarkPressed;
   final VoidCallback? onSharePressed;
@@ -37,6 +38,7 @@ class PreloadedVideoItem extends StatefulWidget {
     this.bookmarkCount = 0,
     this.shareCount = 0,
     required this.isVisible,
+    this.profileImageUrl,
     this.onLikePressed,
     this.onBookmarkPressed,
     this.onSharePressed,
@@ -212,6 +214,7 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> with WidgetsBin
               commentCount: '${widget.commentCount}K',
               bookmarkCount: '${widget.bookmarkCount}K',
               shareCount: '${widget.shareCount}K',
+              profileImageUrl: widget.profileImageUrl,
               onLikePressed: widget.onLikePressed ?? () {},
               onCommentPressed: _toggleComments,
               onBookmarkPressed: widget.onBookmarkPressed ?? () {},

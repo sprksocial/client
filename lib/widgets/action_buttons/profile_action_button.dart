@@ -1,36 +1,72 @@
 import 'package:flutter/material.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../../utils/app_colors.dart';
 
 class ProfileActionButton extends StatelessWidget {
+  final String? profileImageUrl;
   final VoidCallback? onPressed;
+  final double size;
+  final BoxBorder? border;
 
-  const ProfileActionButton({super.key, this.onPressed});
+  const ProfileActionButton({
+    super.key,
+    this.profileImageUrl,
+    this.onPressed,
+    this.size = 50.0,
+    this.border,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onPressed,
-      child: Stack(
-        children: [
-          ClipOval(
-            child: Container(
-              width: 44,
-              height: 44,
-              color: Colors.grey,
-              child: const Center(child: Icon(FluentIcons.person_24_regular, color: Colors.white)),
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            right: 0,
-            child: Container(
-              width: 20,
-              height: 20,
-              decoration: const BoxDecoration(color: Colors.pink, shape: BoxShape.circle),
-              child: const Icon(FluentIcons.add_24_filled, color: Colors.white, size: 14),
-            ),
-          ),
-        ],
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: border ?? Border.all(color: AppColors.white, width: 2),
+        ),
+        child: ClipOval(
+          child: profileImageUrl != null && profileImageUrl!.isNotEmpty
+              ? CachedNetworkImage(
+                  imageUrl: profileImageUrl!,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    color: AppColors.deepPurple,
+                    child: const Center(
+                      child: SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppColors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    color: AppColors.deepPurple,
+                    child: Center(
+                      child: Icon(
+                        Icons.person,
+                        color: AppColors.white,
+                        size: size * 0.5,
+                      ),
+                    ),
+                  ),
+                )
+              : Container(
+                  color: AppColors.deepPurple,
+                  child: Center(
+                    child: Icon(
+                      Icons.person,
+                      color: AppColors.white,
+                      size: size * 0.5,
+                    ),
+                  ),
+                ),
+        ),
       ),
     );
   }

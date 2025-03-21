@@ -23,6 +23,16 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+  
+  // Force dark status bar and navigation bar
+  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+    statusBarIconBrightness: Brightness.light,
+    statusBarBrightness: Brightness.dark,
+    systemNavigationBarColor: Colors.black,
+    systemNavigationBarIconBrightness: Brightness.light,
+  ));
+  
   fvp.registerWith();
   runApp(const MyApp());
 }
@@ -46,8 +56,8 @@ class MyApp extends StatelessWidget {
         title: 'Spark',
         theme: ThemeData(
           primaryColor: AppColors.primary,
-          scaffoldBackgroundColor: AppColors.background,
-          colorScheme: ColorScheme.light(primary: AppColors.primary, secondary: AppColors.accent),
+          scaffoldBackgroundColor: Colors.black,
+          colorScheme: ColorScheme.light(primary: AppColors.primary, secondary: AppColors.accent, background: Colors.black),
           textTheme: Typography.blackMountainView.apply(bodyColor: AppColors.textPrimary, displayColor: AppColors.textPrimary),
           useMaterial3: true,
           splashColor: Colors.transparent,
@@ -57,8 +67,8 @@ class MyApp extends StatelessWidget {
         ),
         darkTheme: ThemeData(
           primaryColor: AppColors.primary,
-          scaffoldBackgroundColor: AppColors.darkBackground,
-          colorScheme: ColorScheme.dark(primary: AppColors.primary, secondary: AppColors.accent),
+          scaffoldBackgroundColor: Colors.black,
+          colorScheme: ColorScheme.dark(primary: AppColors.primary, secondary: AppColors.accent, background: Colors.black),
           textTheme: Typography.whiteMountainView.apply(bodyColor: AppColors.textLight, displayColor: AppColors.textLight),
           useMaterial3: true,
           splashColor: Colors.transparent,
