@@ -1,8 +1,13 @@
+import 'package:atproto/core.dart';
+import 'package:bluesky/app_bsky_embed_video.dart';
+import 'package:bluesky/bluesky.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:provider/provider.dart';
 import '../widgets/video/video_item.dart';
 import '../utils/app_theme.dart';
 import '../utils/app_colors.dart';
+import '../services/auth_service.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -11,15 +16,16 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
     final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
-    final videoUrls = [
-      //'https://pds.justdavi.dev/xrpc/com.atproto.sync.getBlob?did=did:plc:rbsrbl7koqfufypozf6yiyvb&cid=bafkreihq35d2vj4s5cfgaybkojexyiay5oymex22u6lx2tz33a6oczpmqm',
-      //'https://cdn.justdavi.dev/cabinha.mp4',
-      'https://cdn.justdavi.dev/vid_9_16.mp4',
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4', // Horizontal 16:9
-      'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4', // Horizontal 16:9
-      null, // Custom colored container
-      null, // Custom colored container
-    ];
+
+    final authService = context.read<AuthService>();
+    final bsky = Bluesky.fromSession(authService.session!);
+
+    // Create a future to get the feed data
+    final videosFuture = bsky.feed.getFeed(
+      generatorUri: AtUri.parse('at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/thevids'),
+      limit: 100,
+    );
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -27,39 +33,63 @@ class HomeScreen extends StatelessWidget {
           SizedBox(
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
-            child: PageView.builder(
-              scrollDirection: Axis.vertical,
-              itemCount: videoUrls.length,
-              itemBuilder: (context, index) {
-                final videoUrl = index < videoUrls.length ? videoUrls[index] : null;
-                final username = 'username${index + 1}';
-                final description = videoUrl != null
-                    ? 'Sample video ${index + 1}: This is a video that demonstrates proper fitting on the screen without cutting off content.'
-                    : 'This is a placeholder for video ${index + 1}';
-                final hashtags = ['spark', 'sample', 'video${index + 1}'];
-                final likeCount = (index + 1) * 35;
-                final commentCount = (index + 1) * 12;
-                final bookmarkCount = (index + 1) * 8;
-                final shareCount = (index + 1) * 20;
+            child: FutureBuilder(
+              future: videosFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                
+                if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}', style: const TextStyle(color: Colors.white)));
+                }
+                
+                if (!snapshot.hasData || snapshot.data == null) {
+                  return const Center(child: Text('No videos available', style: TextStyle(color: Colors.white)));
+                }
+                
+                final feed = snapshot.data!;
+                final feedItems = feed.data.feed;
+                
+                return PageView.builder(
+                  scrollDirection: Axis.vertical,
+                  itemCount: feedItems.length,
+                  itemBuilder: (context, index) {
+                    final feedItem = feedItems[index];
+                    final post = feedItem.post;
+                    
+                    // Try to extract video URL from the post
+                    String? videoUrl;
+                      videoUrl = (post.embed?.data as EmbedVideoView).playlist;
+                    
+                    final username = post.author.handle;
+                    final description = post.record.text;
+                    final hashtags = ['spark', 'sample', 'video${index + 1}'];
+                    final likeCount = post.likeCount ?? 0;
+                    final commentCount = post.replyCount ?? 0;
+                    final bookmarkCount = 0;
+                    final shareCount = post.repostCount ?? 0;
 
-                return VideoItem(
-                  index: index,
-                  videoUrl: videoUrl,
-                  username: username,
-                  description: description,
-                  hashtags: hashtags,
-                  likeCount: likeCount,
-                  commentCount: commentCount,
-                  bookmarkCount: bookmarkCount,
-                  shareCount: shareCount,
-                  onLikePressed: () {},
-                  onBookmarkPressed: () {},
-                  onSharePressed: () {},
-                  onProfilePressed: () {},
-                  onUsernameTap: () {},
-                  onHashtagTap: () {},
+                    return VideoItem(
+                      index: index,
+                      videoUrl: videoUrl,
+                      username: username,
+                      description: description,
+                      hashtags: hashtags,
+                      likeCount: likeCount,
+                      commentCount: commentCount,
+                      bookmarkCount: bookmarkCount,
+                      shareCount: shareCount,
+                      onLikePressed: () {},
+                      onBookmarkPressed: () {},
+                      onSharePressed: () {},
+                      onProfilePressed: () {},
+                      onUsernameTap: () {},
+                      onHashtagTap: () {},
+                    );
+                  },
                 );
-              },
+              }
             ),
           ),
 
