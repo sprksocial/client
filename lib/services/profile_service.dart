@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:bluesky/bluesky.dart';
 import 'package:flutter/foundation.dart';
 import 'package:atproto/core.dart';
 import 'package:http/http.dart' as http;
@@ -73,14 +74,33 @@ class ProfileService extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>?> getCurrentUserProfile() async {
-    if (!_authService.isAuthenticated || _authService.session == null) {
+  Future<Map<String, dynamic>?> getProfileFullBsky(String did) async {
+    if (!_authService.isAuthenticated) {
       return null;
     }
-    return getProfile(_authService.session!.did);
+
+    try {
+      final bsky = Bluesky.fromSession(_authService.session!);
+      final response = await bsky.actor.getProfile(actor: did);
+      final profile = response.data;
+
+      return {
+        'did': profile.did,
+        'handle': profile.handle,
+        'displayName': profile.displayName ?? profile.handle,
+        'description': profile.description ?? '',
+        'avatar': profile.avatar ?? '',
+        'followersCount': profile.followersCount,
+        'followingCount': profile.followsCount,
+        'postsCount': profile.postsCount,
+      };
+    } catch (e) {
+      throw Exception('Failed to fetch profile: $e');
+    }
   }
 
-  Future<Map<String, dynamic>?> getProfileVideos(String did) async {
+  Future<Map<String, dynamic>?> getProfileVideosSprk(String did) async {
+
     if (!_authService.isAuthenticated) {
       return null;
     }
@@ -92,9 +112,7 @@ class ProfileService extends ChangeNotifier {
       }
 
       final url = '${AppConfig.appViewUrl}/actorFeed/$did';
-      final response = await http.get(Uri.parse(url), headers: {
-        'Authorization': 'Bearer ${_authService.session?.accessJwt}',
-      });
+      final response = await http.get(Uri.parse(url), headers: {'Authorization': 'Bearer ${_authService.session?.accessJwt}'});
 
       if (response.statusCode != 200) {
         throw Exception('Failed to fetch profile videos: ${response.statusCode}');
@@ -104,6 +122,21 @@ class ProfileService extends ChangeNotifier {
       return data;
     } catch (e) {
       throw Exception('Failed to fetch profile videos: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>?> getProfileVideosBsky(String did) async {
+    if (!_authService.isAuthenticated) {
+      return null;
+    }
+
+    try {
+      final bsky = Bluesky.fromSession(_authService.session!);
+      final response = await bsky.feed.getAuthorFeed(actor: did, filter: FeedFilter.postsWithVideo);
+      final feed = response.data.toJson();
+      return feed;
+    } catch (e) {
+      throw Exception('Failed to fetch profile: $e');
     }
   }
 }

@@ -74,7 +74,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
     try {
       final profileService = Provider.of<ProfileService>(context, listen: false);
-      final result = await profileService.getProfile(targetDid);
+      final result = await profileService.getProfileFullBsky(targetDid);
 
       if (!mounted) return;
 

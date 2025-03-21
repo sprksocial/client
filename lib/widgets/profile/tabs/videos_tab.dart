@@ -48,19 +48,27 @@ class _VideosTabState extends State<VideosTab> {
         return;
       }
 
-      final result = await profileService.getProfileVideos(targetDid);
+      final resultBsky = await profileService.getProfileVideosBsky(targetDid);
+      final resultSprk = await profileService.getProfileVideosSprk(targetDid);
 
       if (!mounted) return;
 
-      if (result != null && result.containsKey('feed')) {
+      setState(() {
+        _videos = [];
+        _isLoading = false;
+      });
+
+      if (resultBsky != null && resultBsky.containsKey('feed')) {
+        final bskyVideos = resultBsky['feed'] as List<dynamic>;
         setState(() {
-          _videos = result['feed'] as List<dynamic>;
-          _isLoading = false;
+          _videos.addAll(bskyVideos);
         });
-      } else {
+      }
+
+      if (resultSprk != null && resultSprk.containsKey('feed')) {
+        final sprkVideos = resultSprk['feed'] as List<dynamic>;
         setState(() {
-          _videos = [];
-          _isLoading = false;
+          _videos.addAll(sprkVideos);
         });
       }
     } catch (e) {
@@ -180,6 +188,8 @@ class _VideosTabState extends State<VideosTab> {
             }
           }
 
+          final isSprk = playlistUrl.contains('sprk.so');
+
           return ProfileVideoTile(
             videoUrl: playlistUrl.isNotEmpty ? playlistUrl : null,
             thumbnailUrl: thumbnailUrl,
@@ -193,6 +203,7 @@ class _VideosTabState extends State<VideosTab> {
                 _openVideoPlayer(index, playlistUrl, thumbnailUrl);
               }
             },
+            isSprk: isSprk,
           );
         }, childCount: _videos.length),
       ),
