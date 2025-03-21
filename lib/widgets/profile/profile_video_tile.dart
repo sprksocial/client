@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../video/video_item.dart';
 import '../../utils/app_colors.dart';
 
@@ -12,6 +13,7 @@ class ProfileVideoTile extends StatelessWidget {
   final int index;
   final int likeCount;
   final VoidCallback onTap;
+  final bool isSprk;
 
   const ProfileVideoTile({
     super.key,
@@ -23,6 +25,7 @@ class ProfileVideoTile extends StatelessWidget {
     required this.index,
     this.likeCount = 0,
     required this.onTap,
+    this.isSprk = false,
   });
 
   @override
@@ -86,6 +89,29 @@ class ProfileVideoTile extends StatelessWidget {
                 FluentIcons.play_circle_24_filled,
                 color: AppColors.white,
                 size: 16
+              ),
+            ),
+
+            // Sprk indicator
+            Positioned(
+              top: 5,
+              left: 5,
+              child: Container(
+                padding: const EdgeInsets.all(4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.black.withAlpha(120),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: isSprk
+                  ? SvgPicture.asset('assets/images/sprk.svg', width: 14, height: 14)
+                  : SvgPicture.asset('assets/images/bsky.svg', width: 14, height: 14),
               ),
             ),
           ],
