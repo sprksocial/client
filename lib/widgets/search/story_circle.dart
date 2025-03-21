@@ -68,21 +68,21 @@ class StoryCircle extends StatelessWidget {
                   ),
                 ),
 
-              if (isLive)
-                Positioned(
-                  bottom: 50,
-                  left: 0,
-                  right: 0,
-                  child: Container(
-                    width: 38,
-                    height: 20,
-                    margin: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(color: AppColors.pink, borderRadius: BorderRadius.circular(4)),
-                    child: const Center(
-                      child: Text('LIVE', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                ),
+              // if (isLive)
+              //   Positioned(
+              //     bottom: 50,
+              //     left: 0,
+              //     right: 0,
+              //     child: Container(
+              //       width: 38,
+              //       height: 20,
+              //       margin: const EdgeInsets.symmetric(horizontal: 16),
+              //       decoration: BoxDecoration(color: AppColors.pink, borderRadius: BorderRadius.circular(4)),
+              //       child: const Center(
+              //         child: Text('LIVE', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+              //       ),
+              //     ),
+              //   ),
             ],
           ),
           const SizedBox(height: 4),
