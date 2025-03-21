@@ -9,6 +9,7 @@ import '../video_controls/video_controller_overlay.dart';
 import '../comments_tray.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/app_colors.dart';
+import '../../screens/profile_screen.dart';
 
 class VideoItem extends StatefulWidget {
   final int index;
@@ -27,6 +28,7 @@ class VideoItem extends StatefulWidget {
   final VoidCallback? onProfilePressed;
   final VoidCallback? onUsernameTap;
   final VoidCallback? onHashtagTap;
+  final String? authorDid;
 
   const VideoItem({
     super.key,
@@ -46,6 +48,7 @@ class VideoItem extends StatefulWidget {
     this.onProfilePressed,
     this.onUsernameTap,
     this.onHashtagTap,
+    this.authorDid,
   });
 
   @override
@@ -119,6 +122,34 @@ class _VideoItemState extends State<VideoItem> {
       },
       isDarkMode: isDarkMode,
     );
+  }
+
+  void _navigateToProfile() {
+    if (widget.authorDid != null) {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+            ProfileScreen(did: widget.authorDid),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.easeInOut;
+
+            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            var offsetAnimation = animation.drive(tween);
+
+            return SlideTransition(position: offsetAnimation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      );
+    }
+
+    // Still call the original callback if provided
+    if (widget.onProfilePressed != null) {
+      widget.onProfilePressed!();
+    }
   }
 
   @override
@@ -201,7 +232,7 @@ class _VideoItemState extends State<VideoItem> {
                 onCommentPressed: _toggleComments,
                 onBookmarkPressed: widget.onBookmarkPressed ?? () {},
                 onSharePressed: widget.onSharePressed ?? () {},
-                onProfilePressed: widget.onProfilePressed ?? () {},
+                onProfilePressed: _navigateToProfile,
               ),
             ),
 
