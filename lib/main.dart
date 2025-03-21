@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
+import 'package:video_editor_sdk/video_editor_sdk.dart';
+import 'package:imgly_sdk/imgly_sdk.dart';
 import 'screens/home_screen.dart';
 import 'screens/search_screen.dart';
 import 'screens/create_video_screen.dart';
@@ -23,6 +25,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+  
+  // Initialize IMGLY Video Editor SDK
+  // Note: You need to add a license file to assets folder and reference it in pubspec.yaml
+  // VESDK.unlockWithLicense("assets/licenses/vesdk_license");
   
   // Force dark status bar and navigation bar
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
