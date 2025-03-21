@@ -16,6 +16,7 @@ import '../widgets/comments_tray.dart';
 import '../utils/app_theme.dart';
 import '../utils/app_colors.dart';
 import '../services/auth_service.dart';
+import '../screens/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -30,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
   bool _isLoading = true;
   String? _errorMessage;
-  
+
   // Pre-initialized VideoPlayerControllers mapped by index
   final Map<int, PreloadedVideo> _preloadedVideos = {};
 
@@ -47,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
       video.controller.dispose();
     }
     _preloadedVideos.clear();
-    
+
     _pageController.dispose();
     super.dispose();
   }
@@ -58,31 +59,31 @@ class _HomeScreenState extends State<HomeScreen> {
         _isLoading = true;
         _errorMessage = null;
       });
-      
+
       final authService = context.read<AuthService>();
       final bsky = Bluesky.fromSession(authService.session!);
-      
+
       final feed = await bsky.feed.getFeed(
         generatorUri: AtUri.parse('at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/thevids'),
         limit: 100,
       );
-      
+
       setState(() {
         _feedItems = feed.data.feed;
         _isLoading = false;
-        
+
         // Preload initial batch of videos
         if (_feedItems != null && _feedItems!.isNotEmpty) {
           final initialLoad = <int>{0};
-          
+
           // Add up to 5 more videos to preload
           for (int i = 1; i <= 5 && i < _feedItems!.length; i++) {
             initialLoad.add(i);
           }
-          
+
           // Start loading in order of priority
           _preloadVideo(0); // Current video first
-          
+
           // Then preload the others
           for (int i = 1; i <= 5 && i < _feedItems!.length; i++) {
             _preloadVideo(i);
@@ -96,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
-  
+
   Future<void> _preloadVideo(int index) async {
     if (index < 0 || index >= (_feedItems?.length ?? 0) || _preloadedVideos.containsKey(index)) {
       return;
@@ -104,16 +105,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final feedItem = _feedItems![index];
     final post = feedItem.post;
-    
+
     String? videoUrl;
     if (post.embed?.data is EmbedVideoView) {
       videoUrl = (post.embed?.data as EmbedVideoView).playlist;
     }
-    
+
     if (videoUrl != null) {
       // Create a new controller
       final controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
-      
+
       try {
         // Register it as non-initialized first
         _preloadedVideos[index] = PreloadedVideo(
@@ -121,22 +122,22 @@ class _HomeScreenState extends State<HomeScreen> {
           isInitialized: false,
           videoUrl: videoUrl,
         );
-        
+
         // Set video to loop automatically
         controller.setLooping(true);
-        
+
         // Set volume to zero initially
         await controller.setVolume(0.0);
-        
+
         // Try to initialize
         await controller.initialize();
-        
+
         // Only proceed if still mounted and video is still needed
         if (mounted && _preloadedVideos.containsKey(index)) {
           // Only set volume on for the current video
           final isCurrent = index == _currentIndex;
           await controller.setVolume(isCurrent ? 1.0 : 0.0);
-          
+
           // Update the preloaded status
           setState(() {
             _preloadedVideos[index] = PreloadedVideo(
@@ -145,10 +146,10 @@ class _HomeScreenState extends State<HomeScreen> {
               videoUrl: videoUrl,
             );
           });
-          
+
           // Set playback speed to 1.0 (normal)
           await controller.setPlaybackSpeed(1.0);
-          
+
           // Start playing if this is the current video
           if (index == _currentIndex) {
             controller.play();
@@ -160,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
           _preloadedVideos[index]!.controller.dispose();
           _preloadedVideos.remove(index);
         }
-        
+
         // Try again after a short delay for some error types
         if (mounted && e.toString().contains('network')) {
           Future.delayed(const Duration(seconds: 2), () {
@@ -172,7 +173,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
   }
-  
+
   void _unloadVideo(int index) {
     if (_preloadedVideos.containsKey(index)) {
       // Stop and dispose the controller
@@ -181,11 +182,11 @@ class _HomeScreenState extends State<HomeScreen> {
       _preloadedVideos.remove(index);
     }
   }
-  
+
   void _updateLoadedVideos(int newIndex) {
     if (newIndex != _currentIndex) {
       // First mute the previously playing video
-      if (_preloadedVideos.containsKey(_currentIndex) && 
+      if (_preloadedVideos.containsKey(_currentIndex) &&
           _preloadedVideos[_currentIndex]!.isInitialized) {
         _preloadedVideos[_currentIndex]!.controller.setVolume(0.0);
         // Pause the previous video
@@ -194,33 +195,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Use a wider preloading range - 5 before and 5 after
       final toLoad = <int>{};
-      
+
       // Add 5 previous and 5 next videos
       for (int i = newIndex - 5; i <= newIndex + 5; i++) {
         toLoad.add(i);
       }
-      
+
       // Remove indices that are out of bounds
       final validToLoad = toLoad.where(
         (idx) => idx >= 0 && idx < (_feedItems?.length ?? 0)
       ).toSet();
-      
+
       // Find videos to unload (current loaded videos that aren't in the new set)
       final toUnload = _preloadedVideos.keys.toSet().difference(validToLoad);
-      
+
       // Find videos to load (new videos that aren't already loaded)
       final newToLoad = validToLoad.difference(_preloadedVideos.keys.toSet());
-      
+
       // Unload videos no longer needed
       for (final idx in toUnload) {
         _unloadVideo(idx);
       }
-      
+
       // Load new videos needed - prioritize immediate next/previous first
       final priorityLoad = [newIndex];
       if (newIndex + 1 < (_feedItems?.length ?? 0)) priorityLoad.add(newIndex + 1);
       if (newIndex - 1 >= 0) priorityLoad.add(newIndex - 1);
-      
+
       // First load priority videos
       for (final idx in priorityLoad) {
         if (newToLoad.contains(idx)) {
@@ -228,24 +229,24 @@ class _HomeScreenState extends State<HomeScreen> {
           newToLoad.remove(idx);
         }
       }
-      
+
       // Then load the rest
       for (final idx in newToLoad) {
         _preloadVideo(idx);
       }
-      
+
       // Update current index
       _currentIndex = newIndex;
-      
+
       // Set volume and play the current video
-      if (_preloadedVideos.containsKey(newIndex) && 
+      if (_preloadedVideos.containsKey(newIndex) &&
           _preloadedVideos[newIndex]!.isInitialized) {
         // Set volume for current video
         _preloadedVideos[newIndex]!.controller.setVolume(1.0);
         // Play the current video
         _preloadedVideos[newIndex]!.controller.play();
       }
-      
+
       // Make sure all other videos are muted
       for (final entry in _preloadedVideos.entries) {
         if (entry.key != newIndex && entry.value.isInitialized) {
@@ -267,9 +268,9 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
-            child: _isLoading 
+            child: _isLoading
               ? const Center(child: CircularProgressIndicator())
-              : _errorMessage != null 
+              : _errorMessage != null
                 ? Center(child: Text('Error: $_errorMessage', style: const TextStyle(color: Colors.white)))
                 : _feedItems == null || _feedItems!.isEmpty
                   ? const Center(child: Text('No videos available', style: TextStyle(color: Colors.white)))
@@ -336,7 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
       itemBuilder: (context, index) {
         final feedItem = _feedItems![index];
         final post = feedItem.post;
-        
+
         final username = post.author.handle;
         final description = post.record.text;
         final hashtags = ['spark', 'sample', 'video${index + 1}'];
@@ -344,16 +345,16 @@ class _HomeScreenState extends State<HomeScreen> {
         final commentCount = post.replyCount ?? 0;
         final bookmarkCount = 0;
         final shareCount = post.repostCount ?? 0;
-        
+
         // Extract profile image URL
         String? profileImageUrl;
         if (post.author.avatar != null) {
           profileImageUrl = post.author.avatar;
         }
-        
-        final isPreloaded = _preloadedVideos.containsKey(index) && 
+
+        final isPreloaded = _preloadedVideos.containsKey(index) &&
                            _preloadedVideos[index]!.isInitialized;
-        
+
         if (isPreloaded) {
           return PreloadedVideoItem(
             key: ValueKey('video_$index'),
@@ -367,6 +368,7 @@ class _HomeScreenState extends State<HomeScreen> {
             bookmarkCount: bookmarkCount,
             shareCount: shareCount,
             profileImageUrl: profileImageUrl,
+            authorDid: post.author.did,
             isVisible: index == _currentIndex,
             onLikePressed: () {},
             onBookmarkPressed: () {},
@@ -381,7 +383,7 @@ class _HomeScreenState extends State<HomeScreen> {
           if (post.embed?.data is EmbedVideoView) {
             videoUrl = (post.embed?.data as EmbedVideoView).playlist;
           }
-          
+
           return VideoItem(
             key: ValueKey('placeholder_$index'),
             index: index,
@@ -394,6 +396,7 @@ class _HomeScreenState extends State<HomeScreen> {
             bookmarkCount: bookmarkCount,
             shareCount: shareCount,
             profileImageUrl: profileImageUrl,
+            authorDid: post.author.did,
             onLikePressed: () {},
             onBookmarkPressed: () {},
             onSharePressed: () {},
@@ -411,7 +414,7 @@ class PreloadedVideo {
   final VideoPlayerController controller;
   final bool isInitialized;
   final String? videoUrl;
-  
+
   PreloadedVideo({
     required this.controller,
     required this.isInitialized,
@@ -437,6 +440,7 @@ class PreloadedVideoItem extends StatefulWidget {
   final VoidCallback? onProfilePressed;
   final VoidCallback? onUsernameTap;
   final VoidCallback? onHashtagTap;
+  final String? authorDid;
 
   const PreloadedVideoItem({
     super.key,
@@ -457,6 +461,7 @@ class PreloadedVideoItem extends StatefulWidget {
     this.onProfilePressed,
     this.onUsernameTap,
     this.onHashtagTap,
+    this.authorDid,
   });
 
   @override
@@ -465,22 +470,22 @@ class PreloadedVideoItem extends StatefulWidget {
 
 class _PreloadedVideoItemState extends State<PreloadedVideoItem> {
   bool _showComments = false;
-  
+
   @override
   void initState() {
     super.initState();
     _updatePlayState();
   }
-  
+
   @override
   void didUpdateWidget(PreloadedVideoItem oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (oldWidget.isVisible != widget.isVisible) {
       _updatePlayState();
     }
   }
-  
+
   void _updatePlayState() {
     if (widget.isVisible && !_showComments) {
       widget.controller.play();
@@ -488,7 +493,7 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> {
       widget.controller.pause();
     }
   }
-  
+
   void _toggleComments() {
     widget.controller.pause();
 
@@ -513,7 +518,35 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> {
       isDarkMode: isDarkMode,
     );
   }
-  
+
+  void _navigateToProfile() {
+    if (widget.authorDid != null) {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) =>
+            ProfileScreen(did: widget.authorDid),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            const curve = Curves.easeInOut;
+
+            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            var offsetAnimation = animation.drive(tween);
+
+            return SlideTransition(position: offsetAnimation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
+      );
+    }
+
+    // Still call the original callback if provided
+    if (widget.onProfilePressed != null) {
+      widget.onProfilePressed!();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
@@ -574,7 +607,7 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> {
               onCommentPressed: _toggleComments,
               onBookmarkPressed: widget.onBookmarkPressed ?? () {},
               onSharePressed: widget.onSharePressed ?? () {},
-              onProfilePressed: widget.onProfilePressed ?? () {},
+              onProfilePressed: _navigateToProfile,
             ),
           ),
         ],
@@ -610,15 +643,15 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> {
       return FittedBox(
         fit: BoxFit.contain,
         child: SizedBox(
-          width: videoSize.width, 
-          height: videoSize.height, 
+          width: videoSize.width,
+          height: videoSize.height,
           child: VideoPlayer(widget.controller)
         ),
       );
     }
 
     return AspectRatio(
-      aspectRatio: aspectRatio, 
+      aspectRatio: aspectRatio,
       child: VideoPlayer(widget.controller)
     );
   }
