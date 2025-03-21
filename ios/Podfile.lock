@@ -1,6 +1,13 @@
 PODS:
   - camera_avfoundation (0.0.1):
     - Flutter
+  - ffmpeg-kit-ios-https (6.0)
+  - ffmpeg_kit_flutter (6.0.3):
+    - ffmpeg_kit_flutter/https (= 6.0.3)
+    - Flutter
+  - ffmpeg_kit_flutter/https (6.0.3):
+    - ffmpeg-kit-ios-https (= 6.0)
+    - Flutter
   - Flutter (1.0.0)
   - fvp (0.30.0):
     - Flutter
@@ -8,6 +15,10 @@ PODS:
     - mdk (~> 0.31.0)
   - image_picker_ios (0.0.1):
     - Flutter
+  - imgly_sdk (3.2.0):
+    - Flutter
+    - imglyKit (~> 11.4)
+  - imglyKit (11.10.2)
   - mdk (0.31.0)
   - path_provider_foundation (0.0.1):
     - Flutter
@@ -18,53 +29,72 @@ PODS:
   - sqflite_darwin (0.0.4):
     - Flutter
     - FlutterMacOS
+  - video_editor_sdk (3.2.0):
+    - Flutter
+    - imgly_sdk (= 3.2.0)
   - video_player_avfoundation (0.0.1):
     - Flutter
     - FlutterMacOS
 
 DEPENDENCIES:
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
+  - ffmpeg_kit_flutter (from `.symlinks/plugins/ffmpeg_kit_flutter/ios`)
   - Flutter (from `Flutter`)
   - fvp (from `.symlinks/plugins/fvp/darwin`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - imgly_sdk (from `.symlinks/plugins/imgly_sdk/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
+  - video_editor_sdk (from `.symlinks/plugins/video_editor_sdk/ios`)
   - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)
 
 SPEC REPOS:
   trunk:
+    - ffmpeg-kit-ios-https
+    - imglyKit
     - mdk
 
 EXTERNAL SOURCES:
   camera_avfoundation:
     :path: ".symlinks/plugins/camera_avfoundation/ios"
+  ffmpeg_kit_flutter:
+    :path: ".symlinks/plugins/ffmpeg_kit_flutter/ios"
   Flutter:
     :path: Flutter
   fvp:
     :path: ".symlinks/plugins/fvp/darwin"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
+  imgly_sdk:
+    :path: ".symlinks/plugins/imgly_sdk/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   sqflite_darwin:
     :path: ".symlinks/plugins/sqflite_darwin/darwin"
+  video_editor_sdk:
+    :path: ".symlinks/plugins/video_editor_sdk/ios"
   video_player_avfoundation:
     :path: ".symlinks/plugins/video_player_avfoundation/darwin"
 
 SPEC CHECKSUMS:
   camera_avfoundation: 04b44aeb14070126c6529e5ab82cc7c9fca107cf
+  ffmpeg-kit-ios-https: ac1fbdb6095fc1595b446084a3447de2c6d78347
+  ffmpeg_kit_flutter: 66a088989cd7aa07aa8cde7c93a2e4611753fea5
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   fvp: 09ac649a31ccdeace1d75d56eee6d114d9d5f332
   image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
+  imgly_sdk: eedb78bcf5e4937f2a043e2210dcbbae7a0ec858
+  imglyKit: 0e5afb6a03202228b17aa4e9a387d9c7f371a94c
   mdk: 90571adbea8ee78c2d36c1954741acfef9fdacb6
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
+  video_editor_sdk: 19a9191daf907739131ec359a140212bad5f3d6a
   video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
 
-PODFILE CHECKSUM: 4305caec6b40dde0ae97be1573c53de1882a07e5
+PODFILE CHECKSUM: 77ed8898f0fe5b9ed102cbef0cb781ff2b0f769c
 
 COCOAPODS: 1.16.2

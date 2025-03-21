@@ -32,7 +32,14 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
   }
 
   void _initVideoPlayer() {
-    _controller = VideoPlayerController.file(File(widget.videoPath))
+    String videoPath = widget.videoPath;
+    
+    // Handle file:// URL scheme
+    if (videoPath.startsWith('file://')) {
+      videoPath = videoPath.replaceFirst('file://', '');
+    }
+    
+    _controller = VideoPlayerController.file(File(videoPath))
       ..initialize().then((_) {
         setState(() {});
         _controller.play();

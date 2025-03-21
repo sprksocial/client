@@ -99,13 +99,13 @@ class ProfileVideoTile extends StatelessWidget {
               child: Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(42),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.black.withAlpha(120),
-                      blurRadius: 6,
+                      color: AppColors.black.withAlpha(30),
+                      blurRadius: 4,
                       spreadRadius: 1,
-                      offset: const Offset(0, 2),
+                      offset: const Offset(0, 0),
                     ),
                   ],
                 ),

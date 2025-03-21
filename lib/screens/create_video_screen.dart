@@ -1,8 +1,13 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:video_editor_sdk/video_editor_sdk.dart';
+import 'package:imgly_sdk/imgly_sdk.dart' hide Configuration;
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import '../services/auth_service.dart';
 import '../services/camera_service.dart';
 import '../services/video_service.dart';
@@ -134,19 +139,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
         debugPrint('Video selected from gallery: ${video.path}');
         
         if (mounted) {
-          final result = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => VideoReviewScreen(videoPath: video.path),
-            ),
-          );
-          
-          // If the result is true, the video was posted successfully
-          if (result == true) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Video posted successfully!')),
-            );
-          }
+          await _openVideoEditor(video.path);
         }
       }
     } catch (e) {
@@ -206,24 +199,9 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
           _recordingSeconds = 0;
         });
 
-        if (video != null) {
+        if (video != null && mounted) {
           debugPrint('Video recorded: ${video.path}');
-          
-          if (mounted) {
-            final result = await Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => VideoReviewScreen(videoPath: video.path),
-              ),
-            );
-            
-            // If the result is true, the video was posted successfully
-            if (result == true) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Video posted successfully!')),
-              );
-            }
-          }
+          await _openVideoEditor(video.path);
         }
       } catch (e) {
         debugPrint('Error stopping video recording: $e');
@@ -267,6 +245,113 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
   void _stopRecordingTimer() {
     _recordingTimer?.cancel();
     _recordingTimer = null;
+  }
+
+  // New method to open the IMGLY video editor
+  Future<void> _openVideoEditor(String videoPath) async {
+    try {
+      // Create a Video object from the recorded or selected video
+      final video = Video(videoPath);
+      
+      // Open the editor with the video
+      final result = await VESDK.openEditor(video);
+      
+      if (result != null && result.video.isNotEmpty) {
+        // Video was edited successfully
+        String editedVideoPath = result.video;
+        debugPrint('Video edited successfully: $editedVideoPath');
+        
+        // Handle file:// URL scheme
+        if (editedVideoPath.startsWith('file://')) {
+          editedVideoPath = editedVideoPath.replaceFirst('file://', '');
+        }
+        
+        // Check if the file exists before proceeding
+        final file = File(editedVideoPath);
+        if (!await file.exists()) {
+          throw Exception('Edited video file does not exist: $editedVideoPath');
+        }
+        
+        // Debug info about the video file
+        final fileSize = await file.length();
+        debugPrint('Edited video file size: $fileSize bytes');
+        
+        // Navigate to the review screen with the edited video
+        if (mounted) {
+          try {
+            final reviewResult = await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => VideoReviewScreen(videoPath: editedVideoPath),
+              ),
+            );
+            
+            // If the result is true, the video was posted successfully
+            if (reviewResult == true) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Video posted successfully!')),
+              );
+            }
+          } catch (e) {
+            debugPrint('Error in review screen: $e');
+            throw e;
+          }
+        }
+      } else {
+        // User canceled editing or there was an issue
+        debugPrint('Video editing was canceled or failed to save');
+        
+        // If editing was canceled, we can still use the original video
+        if (mounted) {
+          final reviewResult = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => VideoReviewScreen(videoPath: videoPath),
+            ),
+          );
+          
+          if (reviewResult == true) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Video posted successfully!')),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error opening video editor: $e');
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text('Failed to process video: ${e.toString()}'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('OK')
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    // Try with the original video as fallback
+                    if (mounted) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => VideoReviewScreen(videoPath: videoPath),
+                        ),
+                      );
+                    }
+                  }, 
+                  child: const Text('Use Original Video')
+                ),
+              ],
+            );
+          },
+        );
+      }
+    }
   }
 
   @override

@@ -28,6 +28,8 @@ dependencies:
   lucide_icons_flutter: ^2.0.0
   fluentui_system_icons: ^1.1.273
   image_picker: ^1.0.7
+  video_editor_sdk: ^3.2.0
+  ffmpeg_kit_flutter: ^6.0.3
 
 dev_dependencies:
   flutter_test:
@@ -47,4 +49,5 @@ flutter:
   assets:
     - assets/images/
     - assets/branding/
+    - assets/licenses/
     - .env
