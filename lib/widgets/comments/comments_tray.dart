@@ -124,6 +124,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   ];
 
   bool _isLoading = false;
+  bool _hasMoreComments = true;
 
   @override
   void initState() {
@@ -145,8 +146,10 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   }
 
   void _scrollListener() {
-    // Load more comments when reaching end of list
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoading) {
+    // Only load more if we're near the end, not loading, and have more comments to load
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 &&
+        !_isLoading &&
+        _hasMoreComments) {
       _loadMoreComments();
     }
   }
@@ -163,9 +166,10 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     await Future.delayed(const Duration(milliseconds: 500));
 
     // In a real app, you would add new comments to your list
-    // This is just a simulation
+    // For this simulation, we'll set _hasMoreComments to false after first load
     setState(() {
       _isLoading = false;
+      _hasMoreComments = false; // Indicate we've loaded all available comments
     });
   }
 
@@ -264,16 +268,28 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.only(bottom: 16),
-      itemCount: _sampleComments.length + 1, // +1 for loading indicator
+      itemCount: _sampleComments.length + 1, // +1 for loading indicator or end message
       itemBuilder: (context, index) {
         if (index == _sampleComments.length) {
-          // Show loading indicator or end of list
-          return _isLoading
-            ? const Center(child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: CircularProgressIndicator(),
-              ))
-            : const SizedBox.shrink();
+          // Show loading indicator or end of list message
+          if (_isLoading) {
+            return const Center(child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: CircularProgressIndicator(),
+            ));
+          } else if (!_hasMoreComments) {
+            return Center(child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                'No more comments',
+                style: TextStyle(
+                  color: widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary,
+                  fontSize: 14,
+                ),
+              ),
+            ));
+          }
+          return const SizedBox.shrink();
         }
 
         final comment = _sampleComments[index];
