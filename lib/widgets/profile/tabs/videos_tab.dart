@@ -15,25 +15,65 @@ class VideosTab extends StatefulWidget {
   State<VideosTab> createState() => _VideosTabState();
 }
 
-class _VideosTabState extends State<VideosTab> {
+class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixin {
   bool _isLoading = false;
+  bool _isLoadingMore = false;
+  bool _hasMoreVideos = true;
   String? _error;
   List<dynamic> _videos = [];
+  final ScrollController _scrollController = ScrollController();
+  int _pageSize = 15; // Number of videos to load per page
+
+  // Keep this tab's state in memory
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
-    _loadVideos();
+    _loadInitialVideos();
+    _scrollController.addListener(_scrollListener);
   }
 
-  Future<void> _loadVideos() async {
+  @override
+  void dispose() {
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 300 &&
+        !_isLoading &&
+        !_isLoadingMore &&
+        _hasMoreVideos) {
+      _loadMoreVideos();
+    }
+  }
+
+  Future<void> _loadInitialVideos() async {
     if (!mounted) return;
 
     setState(() {
       _isLoading = true;
       _error = null;
+      _videos = [];
     });
 
+    await _fetchVideos();
+  }
+
+  Future<void> _loadMoreVideos() async {
+    if (!mounted) return;
+
+    setState(() {
+      _isLoadingMore = true;
+    });
+
+    await _fetchVideos(isLoadingMore: true);
+  }
+
+  Future<void> _fetchVideos({bool isLoadingMore = false}) async {
     try {
       final authService = Provider.of<AuthService>(context, listen: false);
       final profileService = Provider.of<ProfileService>(context, listen: false);
@@ -44,39 +84,49 @@ class _VideosTabState extends State<VideosTab> {
         setState(() {
           _error = "No profile specified";
           _isLoading = false;
+          _isLoadingMore = false;
         });
         return;
       }
 
+      // Here we would typically include a limit and offset parameter
+      // For example: offset: _videos.length, limit: _pageSize
       final resultBsky = await profileService.getProfileVideosBsky(targetDid);
       final resultSprk = await profileService.getProfileVideosSprk(targetDid);
 
       if (!mounted) return;
 
-      setState(() {
-        _videos = [];
-        _isLoading = false;
-      });
+      List<dynamic> newVideos = [];
 
       if (resultBsky != null && resultBsky.containsKey('feed')) {
         final bskyVideos = resultBsky['feed'] as List<dynamic>;
-        setState(() {
-          _videos.addAll(bskyVideos);
-        });
+        newVideos.addAll(bskyVideos);
       }
 
       if (resultSprk != null && resultSprk.containsKey('feed')) {
         final sprkVideos = resultSprk['feed'] as List<dynamic>;
-        setState(() {
-          _videos.addAll(sprkVideos);
-        });
+        newVideos.addAll(sprkVideos);
       }
+
+      setState(() {
+        if (isLoadingMore) {
+          _videos.addAll(newVideos);
+        } else {
+          _videos = newVideos;
+        }
+
+        // Determine if there are more videos to load
+        _hasMoreVideos = newVideos.length >= _pageSize;
+        _isLoading = false;
+        _isLoadingMore = false;
+      });
     } catch (e) {
       if (!mounted) return;
 
       setState(() {
         _error = e.toString();
         _isLoading = false;
+        _isLoadingMore = false;
       });
       debugPrint('Error loading videos: $e');
     }
@@ -117,11 +167,31 @@ class _VideosTabState extends State<VideosTab> {
       onHashtagTap: () {},
     );
 
-    Navigator.push(context, MaterialPageRoute(builder: (context) => VideoPlayerScreen(videoItem: videoItem)));
+    // Use Navigator.push instead of MaterialPageRoute to prevent complete rebuilds
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        opaque: true,
+        pageBuilder: (BuildContext context, _, __) => VideoPlayerScreen(videoItem: videoItem),
+        transitionsBuilder: (_, Animation<double> animation, __, Widget child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOutCirc;
+
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+
+          return SlideTransition(position: animation.drive(tween), child: child);
+        },
+
+        transitionDuration: const Duration(milliseconds: 300),
+        maintainState: true, // Preserve this screen's state
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+
     if (_isLoading) {
       return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
     }
@@ -136,7 +206,7 @@ class _VideosTabState extends State<VideosTab> {
               const SizedBox(height: 8),
               Text(_error!, style: const TextStyle(fontSize: 12)),
               const SizedBox(height: 16),
-              TextButton(onPressed: _loadVideos, child: const Text('Retry')),
+              TextButton(onPressed: _loadInitialVideos, child: const Text('Retry')),
             ],
           ),
         ),
@@ -161,6 +231,7 @@ class _VideosTabState extends State<VideosTab> {
     return SliverPadding(
       padding: const EdgeInsets.all(1),
       sliver: SliverGrid(
+        key: PageStorageKey<String>('videos_grid_${widget.did ?? 'current'}'),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
           childAspectRatio: 2 / 3,
@@ -168,6 +239,16 @@ class _VideosTabState extends State<VideosTab> {
           mainAxisSpacing: 1,
         ),
         delegate: SliverChildBuilderDelegate((context, index) {
+          // Show loading indicator at the end
+          if (index == _videos.length && _isLoadingMore) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          // Return empty container if we've reached the end
+          if (index >= _videos.length) {
+            return const SizedBox.shrink();
+          }
+
           final video = _videos[index];
           if (video == null) {
             return const SizedBox.shrink();
@@ -191,6 +272,7 @@ class _VideosTabState extends State<VideosTab> {
           final isSprk = playlistUrl.contains('sprk.so');
 
           return ProfileVideoTile(
+            key: ValueKey('video_tile_$index'),
             videoUrl: playlistUrl.isNotEmpty ? playlistUrl : null,
             thumbnailUrl: thumbnailUrl,
             username: username,
@@ -205,7 +287,7 @@ class _VideosTabState extends State<VideosTab> {
             },
             isSprk: isSprk,
           );
-        }, childCount: _videos.length),
+        }, childCount: _videos.length + (_isLoadingMore ? 1 : 0)),
       ),
     );
   }
