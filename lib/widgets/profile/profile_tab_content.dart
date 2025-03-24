@@ -19,30 +19,38 @@ class ProfileTabContent {
   });
 
   List<Widget> getTabContent() {
+    // Early return for auth check
     if ((selectedIndex == 4) && !isAuthenticated) {
-      return [
-        AuthRequiredContent(
-          title: 'Saved videos',
-          description: 'Login to view your saved content',
-          icon: FluentIcons.bookmark_24_regular,
-          onLoginPressed: onLoginPressed,
-        ),
-      ];
+      return [_buildAuthRequiredContent()];
     }
 
+    // Return only the selected tab's content
+    return [_buildSelectedTabContent()];
+  }
+
+  Widget _buildAuthRequiredContent() {
+    return AuthRequiredContent(
+      title: 'Saved videos',
+      description: 'Login to view your saved content',
+      icon: FluentIcons.bookmark_24_regular,
+      onLoginPressed: onLoginPressed,
+    );
+  }
+
+  Widget _buildSelectedTabContent() {
     switch (selectedIndex) {
       case 0:
-        return [VideosTab(did: did)];
+        return VideosTab(did: did);
       case 1:
-        return [const PhotosTab()];
+        return const PhotosTab();
       case 2:
-        return [ContentGridTab(icon: FluentIcons.heart_24_regular, type: 'favorites', itemCount: 30)];
+        return ContentGridTab(icon: FluentIcons.heart_24_regular, type: 'favorites', itemCount: 30);
       case 3:
-        return [ContentGridTab(icon: FluentIcons.arrow_repeat_all_24_regular, type: 'reposts', itemCount: 25)];
+        return ContentGridTab(icon: FluentIcons.arrow_repeat_all_24_regular, type: 'reposts', itemCount: 25);
       case 4:
-        return [ContentGridTab(icon: FluentIcons.bookmark_24_regular, type: 'saved', itemCount: 28)];
+        return ContentGridTab(icon: FluentIcons.bookmark_24_regular, type: 'saved', itemCount: 28);
       default:
-        return [const SliverToBoxAdapter(child: SizedBox.shrink())];
+        return const SliverToBoxAdapter(child: SizedBox.shrink());
     }
   }
 }

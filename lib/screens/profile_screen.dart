@@ -21,7 +21,7 @@ class ProfileScreen extends StatefulWidget {
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveClientMixin {
   int _selectedTabIndex = 0;
   bool _showAuthPrompt = false;
   bool _isLoading = false;
@@ -29,6 +29,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Map<String, dynamic>? _profileData;
 
   final bool _isEarlySupporter = true;
+
+  // Keep this screen in memory when navigating
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -181,6 +185,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
+
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
     final authService = Provider.of<AuthService>(context);
@@ -204,57 +210,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
 
     if (_error != null) {
-      return Scaffold(
-        backgroundColor: AppTheme.getBackgroundColor(context),
-        appBar: AppBar(
-          title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
-          elevation: 0,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Error loading profile',
-                style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _error!,
-                style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 14),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              TextButton(onPressed: _loadProfile, child: const Text('Retry')),
-            ],
-          ),
-        ),
-      );
+      return _buildErrorScreen(context, isDarkMode);
     }
 
     if (_profileData == null) {
-      return Scaffold(
-        backgroundColor: AppTheme.getBackgroundColor(context),
-        appBar: AppBar(
-          title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-          backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
-          elevation: 0,
-        ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Profile not found',
-                style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-              TextButton(onPressed: _loadProfile, child: const Text('Retry')),
-            ],
-          ),
-        ),
-      );
+      return _buildProfileNotFoundScreen(context, isDarkMode);
     }
 
     final isCurrentUser = _isCurrentUser();
@@ -289,30 +249,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 : null,
       ),
       body: SafeArea(
-        bottom: false, // Don't use SafeArea for bottom padding as we'll handle it manually
         child: CustomScrollView(
+          key: PageStorageKey<String>('profile_${widget.did ?? 'current'}'),
           slivers: [
+            // Profile header
             SliverToBoxAdapter(
               child: ProfileHeader(
                 profileData: extractedProfileData,
                 isCurrentUser: isCurrentUser,
                 isEarlySupporter: _isEarlySupporter,
                 onEarlySupporterTap: () => _showEarlySupporterInfo(context),
-                onEditTap:
-                    () => _checkAuthAndProceed(() {
-                      debugPrint('Edit profile tapped');
-                    }),
-                onShareTap: () {
-                  debugPrint('Share profile tapped');
-                },
-                onFollowTap:
-                    () => _checkAuthAndProceed(() {
-                      debugPrint('Follow tapped');
-                    }),
+                onEditTap: () => _checkAuthAndProceed(() => debugPrint('Edit profile tapped')),
+                onShareTap: () => debugPrint('Share profile tapped'),
+                onFollowTap: () => _checkAuthAndProceed(() => debugPrint('Follow tapped')),
                 onSettingsTap: _handleSettingsTap,
               ),
             ),
 
+            // Tab bar (pinned)
             SliverPersistentHeader(
               pinned: true,
               delegate: StickyTabBarDelegate(
@@ -324,7 +278,62 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
 
+            // Dynamic tab content
             ...tabContent.getTabContent(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildErrorScreen(BuildContext context, bool isDarkMode) {
+    return Scaffold(
+      backgroundColor: AppTheme.getBackgroundColor(context),
+      appBar: AppBar(
+        title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
+        elevation: 0,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Error loading profile',
+              style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _error!,
+              style: TextStyle(color: AppTheme.getSecondaryTextColor(context), fontSize: 14),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 16),
+            TextButton(onPressed: _loadProfile, child: const Text('Retry')),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildProfileNotFoundScreen(BuildContext context, bool isDarkMode) {
+    return Scaffold(
+      backgroundColor: AppTheme.getBackgroundColor(context),
+      appBar: AppBar(
+        title: const Text('Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
+        elevation: 0,
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Profile not found',
+              style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 16),
+            TextButton(onPressed: _loadProfile, child: const Text('Retry')),
           ],
         ),
       ),

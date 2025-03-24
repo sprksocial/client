@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../video/video_item.dart';
 import '../../utils/app_colors.dart';
 
@@ -37,26 +38,41 @@ class ProfileVideoTile extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Video thumbnail
-            thumbnailUrl != null && thumbnailUrl!.isNotEmpty
-                ? Image.network(
-                    thumbnailUrl!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Center(
-                      child: Icon(
-                        FluentIcons.video_24_regular,
-                        color: AppColors.white.withAlpha(204),
-                        size: 24
-                      )
+            // Video thumbnail with caching
+            if (thumbnailUrl != null && thumbnailUrl!.isNotEmpty)
+              CachedNetworkImage(
+                imageUrl: thumbnailUrl!,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => const Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
                     ),
-                  )
-                : Center(
-                    child: Icon(
-                      FluentIcons.video_24_regular,
-                      color: AppColors.white.withAlpha(204),
-                      size: 24
-                    )
                   ),
+                ),
+                errorWidget: (context, url, error) => Center(
+                  child: Icon(
+                    FluentIcons.video_24_regular,
+                    color: AppColors.white.withAlpha(204),
+                    size: 24
+                  )
+                ),
+                // Key prevents unnecessary rebuilds
+                key: ValueKey('thumbnail_$index'),
+                // Memory caching
+                memCacheHeight: 300,
+                memCacheWidth: 200,
+              )
+            else
+              Center(
+                child: Icon(
+                  FluentIcons.video_24_regular,
+                  color: AppColors.white.withAlpha(204),
+                  size: 24
+                )
+              ),
 
             // View count indicator
             Positioned(
