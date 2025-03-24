@@ -13,13 +13,16 @@ pluginManagement {
         google()
         mavenCentral()
         gradlePluginPortal()
+        maven("https://artifactory.img.ly/artifactory/imgly")
     }
 }
 
 plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
     id("com.android.application") version "8.7.0" apply false
-    id("org.jetbrains.kotlin.android") version "1.8.22" apply false
+    id("org.jetbrains.kotlin.android") version "2.0.21" apply false
+    id("com.google.devtools.ksp") version "2.0.21-1.0.26" apply false
+    id("ly.img.android.sdk") version "10.9.0" apply false
 }
 
 include(":app")

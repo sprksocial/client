@@ -2,20 +2,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://artifactory.img.ly/artifactory/imgly") }
-    }
-}
-
-buildscript {
-    val kotlinVersion = "1.7.21"
-    repositories {
-        google()
-        mavenCentral()
-        maven { url = uri("https://artifactory.img.ly/artifactory/imgly") }
-    }
-    dependencies {
-        classpath("com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:1.7.21-1.0.8")
-        classpath("ly.img.android.sdk:plugin:10.9.0")
+        maven("https://artifactory.img.ly/artifactory/imgly")
     }
 }
 
