@@ -55,25 +55,25 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> with WidgetsBin
   bool _showComments = false;
   bool _wasPlaying = false;
   bool _isFirstBuild = true;
-  
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _updatePlayState();
-    
+
     // Add a listener to restart the video when it ends
     widget.controller.addListener(_videoListener);
   }
-  
+
   @override
   void didUpdateWidget(PreloadedVideoItem oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
+
     if (oldWidget.isVisible != widget.isVisible || _isFirstBuild) {
       _isFirstBuild = false;
       _updatePlayState();
-      
+
       // Immediately apply volume changes
       if (widget.isVisible) {
         widget.controller.setVolume(1.0);
@@ -81,14 +81,14 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> with WidgetsBin
         widget.controller.setVolume(0.0);
       }
     }
-    
+
     // If the controller changed, update the listener
     if (oldWidget.controller != widget.controller) {
       oldWidget.controller.removeListener(_videoListener);
       widget.controller.addListener(_videoListener);
     }
   }
-  
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // Handle app going to background/foreground
@@ -103,7 +103,7 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> with WidgetsBin
       }
     }
   }
-  
+
   void _videoListener() {
     // Loop video when it completes
     if (widget.controller.value.isCompleted && widget.isVisible && !_showComments) {
@@ -111,7 +111,7 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> with WidgetsBin
       widget.controller.play();
     }
   }
-  
+
   void _updatePlayState() {
     // Make sure to call after a small delay to allow state to settle
     Future.microtask(() {
@@ -126,14 +126,14 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> with WidgetsBin
       }
     });
   }
-  
+
   @override
   void dispose() {
     widget.controller.removeListener(_videoListener);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
-  
+
   void _toggleComments() {
     widget.controller.pause();
 
@@ -158,7 +158,7 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> with WidgetsBin
       isDarkMode: isDarkMode,
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
@@ -228,6 +228,11 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> with WidgetsBin
   }
 
   Widget _buildBlurredBackground(bool isDarkMode) {
+    // Only show blurred background for horizontal videos
+    if (widget.controller.value.aspectRatio <= 1) {
+      return const SizedBox();
+    }
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -251,20 +256,28 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> with WidgetsBin
     final videoSize = widget.controller.value.size;
     double aspectRatio = videoSize.width / videoSize.height;
 
+    // For horizontal videos (landscape)
     if (aspectRatio > 1) {
       return FittedBox(
         fit: BoxFit.contain,
         child: SizedBox(
-          width: videoSize.width, 
-          height: videoSize.height, 
+          width: videoSize.width,
+          height: videoSize.height,
           child: VideoPlayer(widget.controller)
         ),
       );
     }
 
-    return AspectRatio(
-      aspectRatio: aspectRatio, 
-      child: VideoPlayer(widget.controller)
+    // For vertical videos (portrait) - no blur background needed
+    return SizedBox.expand(
+      child: FittedBox(
+        fit: BoxFit.contain,
+        child: SizedBox(
+          width: videoSize.width,
+          height: videoSize.height,
+          child: VideoPlayer(widget.controller),
+        ),
+      ),
     );
   }
-} 
+}
