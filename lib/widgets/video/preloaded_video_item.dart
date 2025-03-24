@@ -213,11 +213,6 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
   }
 
   Widget _buildBlurredBackground(bool isDarkMode) {
-    // Only show blurred background for horizontal videos
-    if (widget.controller.value.aspectRatio <= 1) {
-      return const SizedBox();
-    }
-
     return Stack(
       fit: StackFit.expand,
       children: [

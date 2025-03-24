@@ -232,10 +232,6 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
   }
 
   Widget _buildBlurredBackground(bool isDarkMode) {
-    if (_controller!.value.aspectRatio <= 1) {
-      return const SizedBox();
-    }
-
     return Stack(
       fit: StackFit.expand,
       children: [
