@@ -34,16 +34,6 @@ class ProfileActionButton extends StatelessWidget {
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
                     color: AppColors.deepPurple,
-                    child: const Center(
-                      child: SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: AppColors.white,
-                        ),
-                      ),
-                    ),
                   ),
                   errorWidget: (context, url, error) => Container(
                     color: AppColors.deepPurple,

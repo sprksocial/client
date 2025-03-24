@@ -1,22 +1,15 @@
-import 'dart:ui'; // For ImageFilter
 import 'package:atproto/core.dart';
 import 'package:bluesky/app_bsky_embed_video.dart';
 import 'package:bluesky/bluesky.dart';
-import 'package:bluesky/app_bsky_feed_defs.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import '../widgets/video/video_item.dart';
 import '../widgets/video/preloaded_video_item.dart';
-import '../widgets/video_controls/video_controller_overlay.dart';
-import '../widgets/video_info/video_info_bar.dart';
-import '../widgets/video_side_action_bar.dart';
-import '../widgets/comments/comments_tray.dart';
 import '../utils/app_theme.dart';
 import '../utils/app_colors.dart';
 import '../services/auth_service.dart';
-import '../screens/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
