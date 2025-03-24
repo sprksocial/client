@@ -20,10 +20,13 @@ void showCommentsTray({
     builder: (context) => CommentsTray(
       videoId: videoId,
       commentCount: commentCount,
-      onClose: onClose,
+      onClose: () {
+        Navigator.pop(context);
+        onClose();
+      },
       isDarkMode: isDarkMode,
     ),
-  );
+  ).whenComplete(onClose);
 }
 
 class CommentsTray extends StatefulWidget {
