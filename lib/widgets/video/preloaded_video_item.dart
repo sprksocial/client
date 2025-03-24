@@ -4,57 +4,61 @@ import 'package:video_player/video_player.dart';
 import '../video_controls/video_controller_overlay.dart';
 import '../video_info/video_info_bar.dart';
 import '../video_side_action_bar.dart';
-import '../comments_tray.dart';
 import '../../utils/app_colors.dart';
+import 'video_player_base.dart';
 
-class PreloadedVideoItem extends StatefulWidget {
-  final int index;
+class PreloadedVideoItem extends VideoPlayerBase {
   final VideoPlayerController controller;
-  final String username;
-  final String description;
-  final List<String> hashtags;
-  final int likeCount;
-  final int commentCount;
-  final int bookmarkCount;
-  final int shareCount;
   final bool isVisible;
-  final String? profileImageUrl;
-  final VoidCallback? onLikePressed;
-  final VoidCallback? onBookmarkPressed;
-  final VoidCallback? onSharePressed;
-  final VoidCallback? onProfilePressed;
-  final VoidCallback? onUsernameTap;
-  final VoidCallback? onHashtagTap;
 
   const PreloadedVideoItem({
     super.key,
-    required this.index,
+    required super.index,
     required this.controller,
-    this.username = '',
-    this.description = '',
-    this.hashtags = const [],
-    this.likeCount = 0,
-    this.commentCount = 0,
-    this.bookmarkCount = 0,
-    this.shareCount = 0,
+    super.username = '',
+    super.description = '',
+    super.hashtags = const [],
+    super.likeCount = 0,
+    super.commentCount = 0,
+    super.bookmarkCount = 0,
+    super.shareCount = 0,
     required this.isVisible,
-    this.profileImageUrl,
-    this.onLikePressed,
-    this.onBookmarkPressed,
-    this.onSharePressed,
-    this.onProfilePressed,
-    this.onUsernameTap,
-    this.onHashtagTap,
+    super.profileImageUrl,
+    super.onLikePressed,
+    super.onBookmarkPressed,
+    super.onSharePressed,
+    super.onProfilePressed,
+    super.onUsernameTap,
+    super.onHashtagTap,
+    super.authorDid,
   });
 
   @override
   State<PreloadedVideoItem> createState() => _PreloadedVideoItemState();
 }
 
-class _PreloadedVideoItemState extends State<PreloadedVideoItem> with WidgetsBindingObserver {
-  bool _showComments = false;
+class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> with WidgetsBindingObserver {
   bool _wasPlaying = false;
   bool _isFirstBuild = true;
+
+  @override
+  VideoPlayerController get videoController => widget.controller;
+
+  @override
+  bool get isInitialized => true; // Always initialized since controller is passed in
+
+  @override
+  bool get isVisible => widget.isVisible;
+
+  @override
+  void pauseVideo() {
+    widget.controller.pause();
+  }
+
+  @override
+  void playVideo() {
+    widget.controller.play();
+  }
 
   @override
   void initState() {
@@ -98,7 +102,7 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> with WidgetsBin
       widget.controller.pause();
     } else if (state == AppLifecycleState.resumed) {
       // App coming back to foreground - restore state if needed
-      if (_wasPlaying && widget.isVisible && !_showComments) {
+      if (_wasPlaying && widget.isVisible && !showComments) {
         widget.controller.play();
       }
     }
@@ -106,7 +110,7 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> with WidgetsBin
 
   void _videoListener() {
     // Loop video when it completes
-    if (widget.controller.value.isCompleted && widget.isVisible && !_showComments) {
+    if (widget.controller.value.isCompleted && widget.isVisible && !showComments) {
       widget.controller.seekTo(Duration.zero);
       widget.controller.play();
     }
@@ -116,7 +120,7 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> with WidgetsBin
     // Make sure to call after a small delay to allow state to settle
     Future.microtask(() {
       if (mounted) {
-        if (widget.isVisible && !_showComments) {
+        if (widget.isVisible && !showComments) {
           widget.controller.setVolume(1.0);
           widget.controller.play();
         } else {
@@ -134,29 +138,10 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> with WidgetsBin
     super.dispose();
   }
 
-  void _toggleComments() {
+  @override
+  void toggleComments() {
     widget.controller.pause();
-
-    setState(() {
-      _showComments = true;
-    });
-
-    final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
-
-    showCommentsTray(
-      context: context,
-      videoId: 'video_${widget.index + 1}',
-      commentCount: widget.commentCount,
-      onClose: () {
-        setState(() {
-          _showComments = false;
-          if (widget.isVisible) {
-            widget.controller.play();
-          }
-        });
-      },
-      isDarkMode: isDarkMode,
-    );
+    super.toggleComments();
   }
 
   @override
@@ -216,11 +201,11 @@ class _PreloadedVideoItemState extends State<PreloadedVideoItem> with WidgetsBin
               shareCount: '${widget.shareCount}K',
               profileImageUrl: widget.profileImageUrl,
               onLikePressed: widget.onLikePressed ?? () {},
-              onCommentPressed: _toggleComments,
+              onCommentPressed: toggleComments,
               onBookmarkPressed: widget.onBookmarkPressed ?? () {},
               onSharePressed: widget.onSharePressed ?? () {},
-              onProfilePressed: widget.onProfilePressed ?? () {},
-            ),
+              onProfilePressed: super.navigateToProfile,
+              ),
           ),
         ],
       ),

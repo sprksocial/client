@@ -61,9 +61,11 @@ class _CommentItemState extends State<CommentItem> {
   void _initializeVideoPlayer() {
     _videoController = VideoPlayerController.network(widget.mediaUrl!)
       ..initialize().then((_) {
-        setState(() {
-          _isVideoInitialized = true;
-        });
+        if (mounted) {
+          setState(() {
+            _isVideoInitialized = true;
+          });
+        }
       });
   }
 
@@ -97,7 +99,8 @@ class _CommentItemState extends State<CommentItem> {
     final secondaryTextColor = widget.isDarkMode ? AppColors.textLight.withAlpha(179) : AppColors.textSecondary;
     final dividerColor = widget.isDarkMode ? AppColors.deepPurple.withAlpha(128) : AppColors.lightLavender;
 
-    final mockReplies = [
+    // Mock replies data - in a real app, this would come from a data source
+    final mockReplies = const [
       {
         'id': 'reply1',
         'userId': 'replier1',
@@ -124,136 +127,160 @@ class _CommentItemState extends State<CommentItem> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: AppColors.accent,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 1),
-                ),
-                child: Center(
-                  child: Text(
-                    widget.username.isNotEmpty ? widget.username[0].toUpperCase() : '?',
-                    style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
+              _buildAvatar(),
               const SizedBox(width: 12),
-
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(widget.username, style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
-                        const SizedBox(width: 8),
-                        Text(widget.timeAgo, style: TextStyle(fontSize: 12, color: secondaryTextColor)),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-
-                    Text(widget.text, style: TextStyle(color: textColor)),
-
-                    if (widget.hasMedia) ...[const SizedBox(height: 8), _buildMediaContent()],
-
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          onPressed: _toggleLike,
-                          child: Row(
-                            children: [
-                              Icon(
-                                _isLiked ? FluentIcons.heart_24_filled : FluentIcons.heart_24_regular,
-                                size: 16,
-                                color: _isLiked ? AppColors.red : secondaryTextColor,
-                              ),
-                              const SizedBox(width: 4),
-                              Text(widget.likeCount.toString(), style: TextStyle(fontSize: 12, color: secondaryTextColor)),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-
-                        TextButton(
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          onPressed: () => widget.onReply(widget.userId, widget.username),
-                          child: Text('Reply', style: TextStyle(fontSize: 12, color: secondaryTextColor)),
-                        ),
-
-                        if (widget.replyCount > 0) ...[
-                          const SizedBox(width: 16),
-                          TextButton(
-                            style: TextButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              minimumSize: Size.zero,
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            ),
-                            onPressed: _toggleReplies,
-                            child: Row(
-                              children: [
-                                Icon(
-                                  _showReplies ? FluentIcons.chevron_up_24_regular : FluentIcons.chevron_down_24_regular,
-                                  size: 16,
-                                  color: secondaryTextColor,
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${widget.replyCount} ${widget.replyCount == 1 ? 'reply' : 'replies'}',
-                                  style: TextStyle(fontSize: 12, color: AppColors.blue),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
-                ),
-              ),
+              Expanded(child: _buildCommentContent(textColor, secondaryTextColor)),
             ],
           ),
         ),
 
-        if (_showReplies && widget.replyCount > 0) ...[
-          Container(
-            margin: const EdgeInsets.only(left: 64),
-            padding: const EdgeInsets.only(top: 4, bottom: 8),
-            decoration: BoxDecoration(border: Border(left: BorderSide(color: dividerColor, width: 1))),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 2),
-                ...mockReplies.map(
-                  (reply) => CommentReplyItem(
-                    id: reply['id'] as String,
-                    userId: reply['userId'] as String,
-                    username: reply['username'] as String,
-                    text: reply['text'] as String,
-                    timeAgo: reply['timeAgo'] as String,
-                    likeCount: reply['likeCount'] as int,
-                    isDarkMode: widget.isDarkMode,
-                    onReply: widget.onReply,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+        if (_showReplies && widget.replyCount > 0)
+          _buildRepliesSection(mockReplies, dividerColor),
 
         Container(height: 0.5, color: dividerColor),
       ],
+    );
+  }
+
+  Widget _buildAvatar() {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: AppColors.accent,
+        shape: BoxShape.circle,
+        border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 1),
+      ),
+      child: Center(
+        child: Text(
+          widget.username.isNotEmpty ? widget.username[0].toUpperCase() : '?',
+          style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCommentContent(Color textColor, Color secondaryTextColor) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(widget.username, style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+            const SizedBox(width: 8),
+            Text(widget.timeAgo, style: TextStyle(fontSize: 12, color: secondaryTextColor)),
+          ],
+        ),
+        const SizedBox(height: 4),
+
+        Text(widget.text, style: TextStyle(color: textColor)),
+
+        if (widget.hasMedia) ...[const SizedBox(height: 8), _buildMediaContent()],
+
+        const SizedBox(height: 8),
+        _buildActionButtons(secondaryTextColor),
+      ],
+    );
+  }
+
+  Widget _buildActionButtons(Color secondaryTextColor) {
+    return Row(
+      children: [
+        _buildLikeButton(secondaryTextColor),
+        const SizedBox(width: 16),
+
+        _buildReplyButton(secondaryTextColor),
+
+        if (widget.replyCount > 0) ...[
+          const SizedBox(width: 16),
+          _buildToggleRepliesButton(secondaryTextColor),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildLikeButton(Color secondaryTextColor) {
+    return TextButton(
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      onPressed: _toggleLike,
+      child: Row(
+        children: [
+          Icon(
+            _isLiked ? FluentIcons.heart_24_filled : FluentIcons.heart_24_regular,
+            size: 16,
+            color: _isLiked ? AppColors.red : secondaryTextColor,
+          ),
+          const SizedBox(width: 4),
+          Text(widget.likeCount.toString(), style: TextStyle(fontSize: 12, color: secondaryTextColor)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReplyButton(Color secondaryTextColor) {
+    return TextButton(
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      onPressed: () => widget.onReply(widget.userId, widget.username),
+      child: Text('Reply', style: TextStyle(fontSize: 12, color: secondaryTextColor)),
+    );
+  }
+
+  Widget _buildToggleRepliesButton(Color secondaryTextColor) {
+    return TextButton(
+      style: TextButton.styleFrom(
+        padding: EdgeInsets.zero,
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      onPressed: _toggleReplies,
+      child: Row(
+        children: [
+          Icon(
+            _showReplies ? FluentIcons.chevron_up_24_regular : FluentIcons.chevron_down_24_regular,
+            size: 16,
+            color: secondaryTextColor,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            '${widget.replyCount} ${widget.replyCount == 1 ? 'reply' : 'replies'}',
+            style: TextStyle(fontSize: 12, color: AppColors.blue),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRepliesSection(List<Map<String, dynamic>> replies, Color dividerColor) {
+    return Container(
+      margin: const EdgeInsets.only(left: 64),
+      padding: const EdgeInsets.only(top: 4, bottom: 8),
+      decoration: BoxDecoration(border: Border(left: BorderSide(color: dividerColor, width: 1))),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 2),
+          ...replies.map(
+            (reply) => CommentReplyItem(
+              id: reply['id'] as String,
+              userId: reply['userId'] as String,
+              username: reply['username'] as String,
+              text: reply['text'] as String,
+              timeAgo: reply['timeAgo'] as String,
+              likeCount: reply['likeCount'] as int,
+              isDarkMode: widget.isDarkMode,
+              onReply: widget.onReply,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -265,62 +292,72 @@ class _CommentItemState extends State<CommentItem> {
     final borderRadius = BorderRadius.circular(8);
 
     if (widget.mediaType == 'image') {
-      return Container(
+      return _buildImageContent(borderRadius);
+    } else if (widget.mediaType == 'video') {
+      return _buildVideoContent(borderRadius);
+    }
+
+    return const SizedBox.shrink();
+  }
+
+  Widget _buildImageContent(BorderRadius borderRadius) {
+    return Container(
+      width: double.infinity,
+      height: 200,
+      decoration: BoxDecoration(
+        borderRadius: borderRadius,
+        border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 0.5),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: Image.network(
+        widget.mediaUrl!,
+        fit: BoxFit.cover,
+        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
+          return frame == null
+            ? Center(child: CircularProgressIndicator(color: widget.isDarkMode ? AppColors.white : AppColors.deepPurple))
+            : child;
+        },
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            color: AppColors.darkPurple.withAlpha(26),
+            child: const Center(child: Icon(FluentIcons.image_24_regular, size: 24, color: Colors.white)),
+          );
+        },
+        cacheWidth: 500, // Optimize image loading with specified dimensions
+      ),
+    );
+  }
+
+  Widget _buildVideoContent(BorderRadius borderRadius) {
+    return GestureDetector(
+      onTap: _toggleVideoPlayback,
+      child: Container(
         width: double.infinity,
         height: 200,
         decoration: BoxDecoration(
           borderRadius: borderRadius,
           border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 0.5),
+          color: Colors.black,
         ),
         clipBehavior: Clip.antiAlias,
-        child: Image.network(
-          widget.mediaUrl!,
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Center(child: CircularProgressIndicator(color: widget.isDarkMode ? AppColors.white : AppColors.deepPurple));
-          },
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: AppColors.darkPurple.withAlpha(26),
-              child: Center(child: Icon(FluentIcons.image_24_regular, size: 24, color: Colors.white)),
-            );
-          },
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            if (_videoController != null && _isVideoInitialized)
+              AspectRatio(aspectRatio: _videoController!.value.aspectRatio, child: VideoPlayer(_videoController!)),
+
+            if (!_isVideoInitialized) const CircularProgressIndicator(color: AppColors.white),
+
+            if (_isVideoInitialized && !_videoController!.value.isPlaying)
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(color: Colors.black.withAlpha(128), shape: BoxShape.circle),
+                child: const Icon(FluentIcons.play_24_filled, size: 24, color: Colors.white),
+              ),
+          ],
         ),
-      );
-    } else if (widget.mediaType == 'video') {
-      return GestureDetector(
-        onTap: _toggleVideoPlayback,
-        child: Container(
-          width: double.infinity,
-          height: 200,
-          decoration: BoxDecoration(
-            borderRadius: borderRadius,
-            border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 0.5),
-            color: Colors.black,
-          ),
-          clipBehavior: Clip.antiAlias,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              if (_videoController != null && _isVideoInitialized)
-                AspectRatio(aspectRatio: _videoController!.value.aspectRatio, child: VideoPlayer(_videoController!)),
-
-              if (!_isVideoInitialized) const CircularProgressIndicator(color: AppColors.white),
-
-              if (_isVideoInitialized && !_videoController!.value.isPlaying)
-                Container(
-                  width: 60,
-                  height: 60,
-                  decoration: BoxDecoration(color: Colors.black.withAlpha(128), shape: BoxShape.circle),
-                  child: const Icon(FluentIcons.play_24_filled, size: 24, color: Colors.white),
-                ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    return const SizedBox.shrink();
+      ),
+    );
   }
 }

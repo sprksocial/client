@@ -6,61 +6,64 @@ import 'package:visibility_detector/visibility_detector.dart';
 import '../video_side_action_bar.dart';
 import '../video_info/video_info_bar.dart';
 import '../video_controls/video_controller_overlay.dart';
-import '../comments_tray.dart';
+import '../comments/comments_tray.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/app_colors.dart';
 import '../../screens/profile_screen.dart';
+import 'video_player_base.dart';
 
-class VideoItem extends StatefulWidget {
-  final int index;
+class VideoItem extends VideoPlayerBase {
   final String? videoUrl;
-  final String username;
-  final String description;
-  final List<String> hashtags;
-  final int likeCount;
-  final int commentCount;
-  final int bookmarkCount;
-  final int shareCount;
-  final String? profileImageUrl;
-  final VoidCallback? onLikePressed;
-  final VoidCallback? onBookmarkPressed;
-  final VoidCallback? onSharePressed;
-  final VoidCallback? onProfilePressed;
-  final VoidCallback? onUsernameTap;
-  final VoidCallback? onHashtagTap;
-  final String? authorDid;
 
   const VideoItem({
     super.key,
-    required this.index,
+    required super.index,
     this.videoUrl,
-    this.username = '',
-    this.description = '',
-    this.hashtags = const [],
-    this.likeCount = 0,
-    this.commentCount = 0,
-    this.bookmarkCount = 0,
-    this.shareCount = 0,
-    this.profileImageUrl,
-    this.onLikePressed,
-    this.onBookmarkPressed,
-    this.onSharePressed,
-    this.onProfilePressed,
-    this.onUsernameTap,
-    this.onHashtagTap,
-    this.authorDid,
+    super.username = '',
+    super.description = '',
+    super.hashtags = const [],
+    super.likeCount = 0,
+    super.commentCount = 0,
+    super.bookmarkCount = 0,
+    super.shareCount = 0,
+    super.profileImageUrl,
+    super.onLikePressed,
+    super.onBookmarkPressed,
+    super.onSharePressed,
+    super.onProfilePressed,
+    super.onUsernameTap,
+    super.onHashtagTap,
+    super.authorDid,
   });
 
   @override
   State<VideoItem> createState() => _VideoItemState();
 }
 
-class _VideoItemState extends State<VideoItem> {
+class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
   VideoPlayerController? _controller;
   bool _isInitialized = false;
   bool _isVisible = false;
   final String _videoKey = UniqueKey().toString();
-  bool _showComments = false;
+
+  @override
+  VideoPlayerController? get videoController => _controller;
+
+  @override
+  bool get isInitialized => _isInitialized && _controller != null;
+
+  @override
+  bool get isVisible => _isVisible;
+
+  @override
+  void pauseVideo() {
+    _controller?.pause();
+  }
+
+  @override
+  void playVideo() {
+    _controller?.play();
+  }
 
   @override
   void initState() {
@@ -97,31 +100,13 @@ class _VideoItemState extends State<VideoItem> {
     super.dispose();
   }
 
-  void _toggleComments() {
+  @override
+  void toggleComments() {
     if (_controller != null && _isInitialized) {
       _controller?.pause();
     }
 
-    setState(() {
-      _showComments = true;
-    });
-
-    final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
-
-    showCommentsTray(
-      context: context,
-      videoId: 'video_${widget.index + 1}',
-      commentCount: widget.commentCount,
-      onClose: () {
-        setState(() {
-          _showComments = false;
-          if (_isVisible && _controller != null && _isInitialized) {
-            _controller?.play();
-          }
-        });
-      },
-      isDarkMode: isDarkMode,
-    );
+    super.toggleComments();
   }
 
   void _navigateToProfile() {
@@ -163,10 +148,12 @@ class _VideoItemState extends State<VideoItem> {
           final isVisible = visibilityInfo.visibleFraction > 0.8;
 
           if (isVisible != _isVisible) {
-            _isVisible = isVisible;
+            setState(() {
+              _isVisible = isVisible;
+            });
 
             if (_controller != null && _isInitialized) {
-              if (isVisible && !_showComments) {
+              if (isVisible && !showComments) {
                 _controller?.play();
               } else {
                 if (mounted) {
@@ -229,7 +216,7 @@ class _VideoItemState extends State<VideoItem> {
                 shareCount: '${widget.shareCount}K',
                 profileImageUrl: widget.profileImageUrl,
                 onLikePressed: widget.onLikePressed ?? () {},
-                onCommentPressed: _toggleComments,
+                onCommentPressed: toggleComments,
                 onBookmarkPressed: widget.onBookmarkPressed ?? () {},
                 onSharePressed: widget.onSharePressed ?? () {},
                 onProfilePressed: _navigateToProfile,
