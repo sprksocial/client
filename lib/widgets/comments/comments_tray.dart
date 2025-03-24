@@ -4,6 +4,28 @@ import '../../utils/app_colors.dart';
 import 'comment_item.dart';
 import 'comment_input.dart';
 
+/// Shows the comments tray as a modal bottom sheet.
+/// This utility function can be used from any screen that needs to display comments.
+void showCommentsTray({
+  required BuildContext context,
+  required String videoId,
+  required int commentCount,
+  required VoidCallback onClose,
+  required bool isDarkMode,
+}) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => CommentsTray(
+      videoId: videoId,
+      commentCount: commentCount,
+      onClose: onClose,
+      isDarkMode: isDarkMode,
+    ),
+  );
+}
+
 class CommentsTray extends StatefulWidget {
   final String videoId;
   final int commentCount;
@@ -29,19 +51,119 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   String? _replyingToUsername;
   String? _replyingToId;
 
+  // Sample data - in a real app this would come from a data source
+  final List<Map<String, dynamic>> _sampleComments = const [
+    {
+      'id': '1',
+      'userId': 'user1',
+      'username': 'Emma',
+      'text': 'Protect Natasha Pang from Hackers all cost!!!!',
+      'timeAgo': '5h',
+      'likeCount': 7,
+      'hasMedia': false,
+      'replyCount': 0,
+    },
+    {
+      'id': '2',
+      'userId': 'user2',
+      'username': 'Nic',
+      'text': 'Natasha what did you download',
+      'timeAgo': '1d',
+      'likeCount': 2124,
+      'hasMedia': false,
+      'replyCount': 2,
+    },
+    {
+      'id': '3',
+      'userId': 'user3',
+      'username': 'PhotoEnthusiast',
+      'text': 'Check out this incredible sunset I captured yesterday!',
+      'timeAgo': '2h',
+      'likeCount': 189,
+      'hasMedia': true,
+      'mediaType': 'image',
+      'mediaUrl': 'https://placekitten.com/500/300',
+      'replyCount': 5,
+    },
+    {
+      'id': '4',
+      'userId': 'user4',
+      'username': 'VideoCreator',
+      'text': 'Made a quick tutorial on how to use this app:',
+      'timeAgo': '3h',
+      'likeCount': 432,
+      'hasMedia': false,
+      //'mediaType': 'video',
+      //'mediaUrl': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+      'replyCount': 12,
+    },
+    {
+      'id': '5',
+      'userId': 'user5',
+      'username': 'Hen Ry',
+      'text': 'Natasha pang baddie pics?',
+      'timeAgo': '14h',
+      'likeCount': 1,
+      'hasMedia': false,
+      'replyCount': 0,
+    },
+    {
+      'id': '6',
+      'userId': 'user6',
+      'username': 'WowCrazy',
+      'text':
+          'I think those are your future sales! Natasha Pang, the top Robotics Industry Sales Director for the India market and global influencer.',
+      'timeAgo': '1d',
+      'likeCount': 232,
+      'hasMedia': false,
+      'replyCount': 2,
+    },
+  ];
+
+  bool _isLoading = false;
+
   @override
   void initState() {
     super.initState();
     _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
     _animation = CurvedAnimation(parent: _animationController, curve: Curves.easeOut);
     _animationController.forward();
+
+    // Add scroll listener for lazy loading
+    _scrollController.addListener(_scrollListener);
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
     super.dispose();
+  }
+
+  void _scrollListener() {
+    // Load more comments when reaching end of list
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200 && !_isLoading) {
+      _loadMoreComments();
+    }
+  }
+
+  Future<void> _loadMoreComments() async {
+    // This would be an API call in a real app
+    if (_isLoading) return;
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Simulate network delay
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    // In a real app, you would add new comments to your list
+    // This is just a simulation
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   void _closeComments() {
@@ -71,74 +193,6 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     final borderColor = widget.isDarkMode ? AppColors.darkPurple : AppColors.lightLavender;
     final textColor = widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary;
 
-    final sampleComments = [
-      {
-        'id': '1',
-        'userId': 'user1',
-        'username': 'Emma',
-        'text': 'Protect Natasha Pang from Hackers all cost!!!!',
-        'timeAgo': '5h',
-        'likeCount': 7,
-        'hasMedia': false,
-        'replyCount': 0,
-      },
-      {
-        'id': '2',
-        'userId': 'user2',
-        'username': 'Nic',
-        'text': 'Natasha what did you download',
-        'timeAgo': '1d',
-        'likeCount': 2124,
-        'hasMedia': false,
-        'replyCount': 2,
-      },
-      {
-        'id': '3',
-        'userId': 'user3',
-        'username': 'PhotoEnthusiast',
-        'text': 'Check out this incredible sunset I captured yesterday!',
-        'timeAgo': '2h',
-        'likeCount': 189,
-        'hasMedia': true,
-        'mediaType': 'image',
-        'mediaUrl': 'https://placekitten.com/500/300',
-        'replyCount': 5,
-      },
-      {
-        'id': '4',
-        'userId': 'user4',
-        'username': 'VideoCreator',
-        'text': 'Made a quick tutorial on how to use this app:',
-        'timeAgo': '3h',
-        'likeCount': 432,
-        'hasMedia': true,
-        'mediaType': 'video',
-        'mediaUrl': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-        'replyCount': 12,
-      },
-      {
-        'id': '5',
-        'userId': 'user5',
-        'username': 'Hen Ry',
-        'text': 'Natasha pang baddie pics?',
-        'timeAgo': '14h',
-        'likeCount': 1,
-        'hasMedia': false,
-        'replyCount': 0,
-      },
-      {
-        'id': '6',
-        'userId': 'user6',
-        'username': 'WowCrazy',
-        'text':
-            'I think those are your future sales! Natasha Pang, the top Robotics Industry Sales Director for the India market and global influencer.',
-        'timeAgo': '1d',
-        'likeCount': 232,
-        'hasMedia': false,
-        'replyCount': 2,
-      },
-    ];
-
     return AnimatedBuilder(
       animation: _animation,
       builder: (context, child) {
@@ -153,64 +207,8 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
         ),
         child: Column(
           children: [
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(border: Border(bottom: BorderSide(color: borderColor, width: 0.5))),
-              child: Column(
-                children: [
-                  Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)),
-                  ),
-                  const SizedBox(height: 12),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          '${widget.commentCount} comments',
-                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
-                        ),
-                        IconButton(
-                          padding: EdgeInsets.zero,
-                          constraints: const BoxConstraints(),
-                          onPressed: _closeComments,
-                          icon: Icon(FluentIcons.dismiss_24_regular, color: textColor),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                padding: const EdgeInsets.only(bottom: 16),
-                itemCount: sampleComments.length,
-                itemBuilder: (context, index) {
-                  final comment = sampleComments[index];
-                  return CommentItem(
-                    id: comment['id'] as String,
-                    userId: comment['userId'] as String,
-                    username: comment['username'] as String,
-                    text: comment['text'] as String,
-                    timeAgo: comment['timeAgo'] as String,
-                    likeCount: comment['likeCount'] as int,
-                    hasMedia: comment['hasMedia'] as bool,
-                    mediaType: comment['mediaType'] as String?,
-                    mediaUrl: comment['mediaUrl'] as String?,
-                    replyCount: comment['replyCount'] as int,
-                    isDarkMode: widget.isDarkMode,
-                    onReply: _replyToComment,
-                  );
-                },
-              ),
-            ),
-
+            _buildHeader(borderColor, textColor),
+            Expanded(child: _buildCommentsList()),
             CommentInput(
               videoId: widget.videoId,
               replyingToUsername: _replyingToUsername,
@@ -221,6 +219,77 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildHeader(Color borderColor, Color textColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: borderColor, width: 0.5))),
+      child: Column(
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(color: AppColors.divider, borderRadius: BorderRadius.circular(2)),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  '${widget.commentCount} comments',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
+                ),
+                IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  onPressed: _closeComments,
+                  icon: Icon(FluentIcons.dismiss_24_regular, color: textColor),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCommentsList() {
+    return ListView.builder(
+      controller: _scrollController,
+      padding: const EdgeInsets.only(bottom: 16),
+      itemCount: _sampleComments.length + 1, // +1 for loading indicator
+      itemBuilder: (context, index) {
+        if (index == _sampleComments.length) {
+          // Show loading indicator or end of list
+          return _isLoading
+            ? const Center(child: Padding(
+                padding: EdgeInsets.all(16.0),
+                child: CircularProgressIndicator(),
+              ))
+            : const SizedBox.shrink();
+        }
+
+        final comment = _sampleComments[index];
+        return CommentItem(
+          key: ValueKey('comment-${comment['id']}'),
+          id: comment['id'] as String,
+          userId: comment['userId'] as String,
+          username: comment['username'] as String,
+          text: comment['text'] as String,
+          timeAgo: comment['timeAgo'] as String,
+          likeCount: comment['likeCount'] as int,
+          hasMedia: comment['hasMedia'] as bool,
+          mediaType: comment['mediaType'] as String?,
+          mediaUrl: comment['mediaUrl'] as String?,
+          replyCount: comment['replyCount'] as int,
+          isDarkMode: widget.isDarkMode,
+          onReply: _replyToComment,
+        );
+      },
     );
   }
 }

@@ -13,12 +13,7 @@ class CommentActionButton extends StatelessWidget {
     return ActionButton(
       icon: FluentIcons.chat_24_regular,
       label: count,
-      onPressed:
-          onPressed != null
-              ? () {
-                Future.delayed(Duration.zero, onPressed!);
-              }
-              : null,
+      onPressed: onPressed,
     );
   }
 }
