@@ -245,6 +245,10 @@ class _VideoItemState extends State<VideoItem> {
   }
 
   Widget _buildBlurredBackground(bool isDarkMode) {
+    if (_controller!.value.aspectRatio <= 1) {
+      return const SizedBox();
+    }
+
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -276,7 +280,16 @@ class _VideoItemState extends State<VideoItem> {
         );
       }
 
-      return AspectRatio(aspectRatio: aspectRatio, child: VideoPlayer(_controller!));
+      return SizedBox.expand(
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: SizedBox(
+            width: videoSize.width,
+            height: videoSize.height,
+            child: VideoPlayer(_controller!),
+          ),
+        ),
+      );
     }
 
     final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
