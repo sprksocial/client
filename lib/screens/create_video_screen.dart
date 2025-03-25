@@ -5,9 +5,6 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_editor_sdk/video_editor_sdk.dart';
-import 'package:imgly_sdk/imgly_sdk.dart' hide Configuration;
-import 'package:path_provider/path_provider.dart';
-import 'package:path/path.dart' as path;
 import '../services/auth_service.dart';
 import '../services/camera_service.dart';
 import '../services/video_service.dart';
@@ -294,7 +291,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
             }
           } catch (e) {
             debugPrint('Error in review screen: $e');
-            throw e;
+            rethrow;
           }
         }
       } else {

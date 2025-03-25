@@ -6,7 +6,6 @@ import 'package:visibility_detector/visibility_detector.dart';
 import '../video_side_action_bar.dart';
 import '../video_info/video_info_bar.dart';
 import '../video_controls/video_controller_overlay.dart';
-import '../comments/comments_tray.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/app_colors.dart';
 import '../../screens/profile_screen.dart';

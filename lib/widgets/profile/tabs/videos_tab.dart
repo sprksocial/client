@@ -22,7 +22,7 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
   String? _error;
   List<dynamic> _videos = [];
   final ScrollController _scrollController = ScrollController();
-  int _pageSize = 15; // Number of videos to load per page
+  final int _pageSize = 15; // Number of videos to load per page
 
   // Keep this tab's state in memory
   @override
