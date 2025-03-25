@@ -34,6 +34,7 @@ class VideoItem extends VideoPlayerBase {
     super.onUsernameTap,
     super.onHashtagTap,
     super.authorDid,
+    super.isLiked = false,
   });
 
   @override
@@ -215,6 +216,7 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
                 bookmarkCount: '${widget.bookmarkCount}K',
                 shareCount: '${widget.shareCount}K',
                 profileImageUrl: widget.profileImageUrl,
+                isLiked: widget.isLiked,
                 onLikePressed: widget.onLikePressed ?? () {},
                 onCommentPressed: toggleComments,
                 onBookmarkPressed: widget.onBookmarkPressed ?? () {},
