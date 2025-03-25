@@ -152,10 +152,13 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
       child: Stack(
         fit: StackFit.expand,
         children: [
+          // Blurred background layer
           _buildBlurredBackground(isDarkMode),
-
+          
+          // Main video content layer (not affected by blur)
           Center(child: _buildVideoContent()),
 
+          // Overlay gradient
           Positioned.fill(
             child: Container(
               decoration: BoxDecoration(
@@ -213,22 +216,31 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
   }
 
   Widget _buildBlurredBackground(bool isDarkMode) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        FittedBox(
-          fit: BoxFit.cover,
-          child: SizedBox(
-            width: widget.controller.value.size.width,
-            height: widget.controller.value.size.height,
-            child: VideoPlayer(widget.controller),
+    // Create a separate widget for the blurred background only
+    return Container(
+      color: isDarkMode ? Colors.black : AppColors.darkBackground,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Show a smaller, blurred version of the video in the background
+          ClipRect(
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
+              child: Transform.scale(
+                scale: 1.2, // Scale up slightly to cover any edges
+                child: Opacity(
+                  opacity: 0.5,
+                  child: VideoPlayer(widget.controller),
+                ),
+              ),
+            ),
           ),
-        ),
-        BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-          child: Container(color: isDarkMode ? Colors.black.withAlpha(128) : AppColors.darkBackground.withAlpha(128)),
-        ),
-      ],
+          // Darkened overlay
+          Container(color: isDarkMode 
+              ? Colors.black.withAlpha(120) 
+              : AppColors.darkBackground.withAlpha(120)),
+        ],
+      ),
     );
   }
 
@@ -248,7 +260,7 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
       );
     }
 
-    // For vertical videos (portrait) - no blur background needed
+    // For vertical videos (portrait)
     return SizedBox.expand(
       child: FittedBox(
         fit: BoxFit.contain,
