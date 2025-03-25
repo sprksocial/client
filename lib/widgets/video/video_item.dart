@@ -147,7 +147,7 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
         onVisibilityChanged: (visibilityInfo) {
           final isVisible = visibilityInfo.visibleFraction > 0.8;
 
-          if (isVisible != _isVisible) {
+          if (isVisible != _isVisible && mounted) {
             setState(() {
               _isVisible = isVisible;
             });
@@ -249,8 +249,8 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
               ),
             ),
           ),
-          Container(color: isDarkMode 
-              ? Colors.black.withAlpha(120) 
+          Container(color: isDarkMode
+              ? Colors.black.withAlpha(120)
               : AppColors.darkBackground.withAlpha(120)),
         ],
       ),

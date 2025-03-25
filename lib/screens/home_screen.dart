@@ -11,6 +11,103 @@ import '../utils/app_theme.dart';
 import '../utils/app_colors.dart';
 import '../services/auth_service.dart';
 
+/// A unified model for handling feed posts from different sources
+class FeedPost {
+  final String username;
+  final String authorDid;
+  final String? profileImageUrl;
+  final String description;
+  final String? videoUrl;
+  final int likeCount;
+  final int commentCount;
+  final int shareCount;
+  final List<String> hashtags;
+
+  FeedPost({
+    required this.username,
+    required this.authorDid,
+    this.profileImageUrl,
+    required this.description,
+    this.videoUrl,
+    this.likeCount = 0,
+    this.commentCount = 0,
+    this.shareCount = 0,
+    this.hashtags = const [],
+  });
+
+  /// Create a FeedPost from a Bluesky feed item
+  static FeedPost fromBlueskyFeed(dynamic feedItem) {
+    final post = feedItem.post;
+
+    // Extract video URL if available
+    String? videoUrl;
+    if (post.embed?.data is EmbedVideoView) {
+      videoUrl = (post.embed?.data as EmbedVideoView).playlist;
+    }
+
+    // Extract hashtags from description
+    List<String> hashtags = ['spark'];
+    final matches = RegExp(r'#(\w+)').allMatches(post.record.text);
+    if (matches.isNotEmpty) {
+      hashtags = matches.map((m) => m.group(1)!).toList();
+    }
+
+    return FeedPost(
+      username: post.author.handle,
+      authorDid: post.author.did,
+      profileImageUrl: post.author.avatar,
+      description: post.record.text,
+      videoUrl: videoUrl,
+      likeCount: post.likeCount ?? 0,
+      commentCount: post.replyCount ?? 0,
+      shareCount: post.repostCount ?? 0,
+      hashtags: hashtags,
+    );
+  }
+
+  /// Create a FeedPost from a Spark feed item
+  static FeedPost fromSparkFeed(Map<String, dynamic> feedItem) {
+    final post = feedItem['post'] as Map<String, dynamic>;
+    final author = post['author'] as Map<String, dynamic>;
+    final record = post['record'] as Map<String, dynamic>;
+
+    // Extract video URL if available
+    String? videoUrl;
+    if (post['embed'] != null && post['embed']['\$type'] == 'so.sprk.embed.video#view') {
+      videoUrl = post['embed']['playlist'];
+    }
+
+    // Extract hashtags from description
+    final description = record['text'] as String? ?? '';
+    List<String> hashtags = ['spark'];
+    final matches = RegExp(r'#(\w+)').allMatches(description);
+    if (matches.isNotEmpty) {
+      hashtags = matches.map((m) => m.group(1)!).toList();
+    }
+
+    return FeedPost(
+      username: author['handle'] as String? ?? '',
+      authorDid: author['did'] as String? ?? '',
+      profileImageUrl: author['avatar'] as String?,
+      description: description,
+      videoUrl: videoUrl,
+      likeCount: post['likeCount'] as int? ?? 0,
+      commentCount: post['replyCount'] as int? ?? 0,
+      shareCount: post['repostCount'] as int? ?? 0,
+      hashtags: hashtags,
+    );
+  }
+
+  /// Create a FeedPost from any feed item (either Bluesky or Spark)
+  static FeedPost fromAny(dynamic feedItem) {
+    if (feedItem is Map<String, dynamic>) {
+      return fromSparkFeed(feedItem);
+    } else {
+      return fromBlueskyFeed(feedItem);
+    }
+  }
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -20,10 +117,11 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final PageController _pageController = PageController();
-  List<dynamic>? _feedItems;
+  List<FeedPost>? _feedPosts;
   int _currentIndex = 0;
   bool _isLoading = true;
   String? _errorMessage;
+  int _selectedFeedType = 1; // 0: Following, 1: For You, 2: Spark new
 
   // Pre-initialized VideoPlayerControllers mapped by index
   final Map<int, PreloadedVideo> _preloadedVideos = {};
@@ -47,6 +145,44 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _fetchVideos() async {
+    if (_selectedFeedType == 0) {
+      await _fetchFollowingFeed();
+    } else if (_selectedFeedType == 1) {
+      await _fetchForYouFeed();
+    } else {
+      await _fetchSparkNewFeed();
+    }
+  }
+
+  Future<void> _fetchFollowingFeed() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      final authService = context.read<AuthService>();
+      final bsky = Bluesky.fromSession(authService.session!);
+
+      final feed = await bsky.feed.getTimeline(limit: 100);
+
+      // Convert feed items to our unified model
+      final posts = feed.data.feed.map((item) => FeedPost.fromBlueskyFeed(item)).toList();
+
+      setState(() {
+        _feedPosts = posts;
+        _isLoading = false;
+        _preloadInitialVideos();
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString();
+      });
+    }
+  }
+
+  Future<void> _fetchForYouFeed() async {
     try {
       setState(() {
         _isLoading = true;
@@ -61,27 +197,13 @@ class _HomeScreenState extends State<HomeScreen> {
         limit: 100,
       );
 
+      // Convert feed items to our unified model
+      final posts = feed.data.feed.map((item) => FeedPost.fromBlueskyFeed(item)).toList();
+
       setState(() {
-        _feedItems = feed.data.feed;
+        _feedPosts = posts;
         _isLoading = false;
-
-        // Preload initial batch of videos
-        if (_feedItems != null && _feedItems!.isNotEmpty) {
-          final initialLoad = <int>{0};
-
-          // Add up to 5 more videos to preload
-          for (int i = 1; i <= 5 && i < _feedItems!.length; i++) {
-            initialLoad.add(i);
-          }
-
-          // Start loading in order of priority
-          _preloadVideo(0); // Current video first
-
-          // Then preload the others
-          for (int i = 1; i <= 5 && i < _feedItems!.length; i++) {
-            _preloadVideo(i);
-          }
-        }
+        _preloadInitialVideos();
       });
     } catch (e) {
       setState(() {
@@ -91,18 +213,104 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _fetchSparkNewFeed() async {
+    try {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
+
+      final authService = context.read<AuthService>();
+
+      // Get feed skeleton with simple-desc feed
+      final feedGenRes = await authService.atproto!.get(
+        NSID.parse('so.sprk.feed.getFeedSkeleton'),
+        parameters: {'feed': 'simple-desc', 'limit': 30},
+        service: 'feeds.sprk.so',
+        to: (json) => json,
+      );
+
+      // Extract post URIs from the feed data
+      final feedData = feedGenRes.data['feed'] as List<dynamic>?;
+      final uris = feedData?.map((item) => item['post'] as String).toList() ?? [];
+
+      if (uris.isEmpty) {
+        setState(() {
+          _isLoading = false;
+          _feedPosts = [];
+        });
+        return;
+      }
+
+      // Get the actual posts using the URIs
+      final feedItems = await authService.atproto!.get(
+        NSID.parse('so.sprk.feed.getPosts'),
+        parameters: {'uris': uris},
+        headers: {
+          'atproto-proxy': 'did:web:api.sprk.so#sprk_appview'
+        },
+        to: (json) => json,
+      );
+
+      // Process the posts data
+      final posts = feedItems.data['posts'] as List<dynamic>?;
+
+      if (posts != null) {
+        // Convert to our unified model
+        final feedPosts = posts.map((post) {
+          // Create a feed item with the post
+          final feedItem = {'post': post};
+          return FeedPost.fromSparkFeed(feedItem as Map<String, dynamic>);
+        }).toList();
+
+        setState(() {
+          _feedPosts = feedPosts;
+          _isLoading = false;
+          _preloadInitialVideos();
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+          _feedPosts = [];
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = e.toString();
+      });
+    }
+  }
+
+  void _preloadInitialVideos() {
+    // Clear existing preloaded videos
+    for (final video in _preloadedVideos.values) {
+      video.controller.dispose();
+    }
+    _preloadedVideos.clear();
+
+    // Reset current index
+    _currentIndex = 0;
+
+    // Preload initial batch of videos
+    if (_feedPosts != null && _feedPosts!.isNotEmpty) {
+      // Start loading in order of priority
+      _preloadVideo(0); // Current video first
+
+      // Then preload the others
+      for (int i = 1; i <= 5 && i < _feedPosts!.length; i++) {
+        _preloadVideo(i);
+      }
+    }
+  }
+
   Future<void> _preloadVideo(int index) async {
-    if (index < 0 || index >= (_feedItems?.length ?? 0) || _preloadedVideos.containsKey(index)) {
+    if (index < 0 || index >= (_feedPosts?.length ?? 0) || _preloadedVideos.containsKey(index)) {
       return;
     }
 
-    final feedItem = _feedItems![index];
-    final post = feedItem.post;
-
-    String? videoUrl;
-    if (post.embed?.data is EmbedVideoView) {
-      videoUrl = (post.embed?.data as EmbedVideoView).playlist;
-    }
+    final post = _feedPosts![index];
+    final videoUrl = post.videoUrl;
 
     if (videoUrl != null) {
       // Create a new controller
@@ -110,11 +318,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       try {
         // Register it as non-initialized first
-        _preloadedVideos[index] = PreloadedVideo(
-          controller: controller,
-          isInitialized: false,
-          videoUrl: videoUrl,
-        );
+        _preloadedVideos[index] = PreloadedVideo(controller: controller, isInitialized: false, videoUrl: videoUrl);
 
         // Set video to loop automatically
         controller.setLooping(true);
@@ -133,11 +337,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
           // Update the preloaded status
           setState(() {
-            _preloadedVideos[index] = PreloadedVideo(
-              controller: controller,
-              isInitialized: true,
-              videoUrl: videoUrl,
-            );
+            _preloadedVideos[index] = PreloadedVideo(controller: controller, isInitialized: true, videoUrl: videoUrl);
           });
 
           // Set playback speed to 1.0 (normal)
@@ -179,8 +379,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _updateLoadedVideos(int newIndex) {
     if (newIndex != _currentIndex) {
       // First mute the previously playing video
-      if (_preloadedVideos.containsKey(_currentIndex) &&
-          _preloadedVideos[_currentIndex]!.isInitialized) {
+      if (_preloadedVideos.containsKey(_currentIndex) && _preloadedVideos[_currentIndex]!.isInitialized) {
         _preloadedVideos[_currentIndex]!.controller.setVolume(0.0);
         // Pause the previous video
         _preloadedVideos[_currentIndex]!.controller.pause();
@@ -195,9 +394,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       // Remove indices that are out of bounds
-      final validToLoad = toLoad.where(
-        (idx) => idx >= 0 && idx < (_feedItems?.length ?? 0)
-      ).toSet();
+      final validToLoad = toLoad.where((idx) => idx >= 0 && idx < (_feedPosts?.length ?? 0)).toSet();
 
       // Find videos to unload (current loaded videos that aren't in the new set)
       final toUnload = _preloadedVideos.keys.toSet().difference(validToLoad);
@@ -212,7 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Load new videos needed - prioritize immediate next/previous first
       final priorityLoad = [newIndex];
-      if (newIndex + 1 < (_feedItems?.length ?? 0)) priorityLoad.add(newIndex + 1);
+      if (newIndex + 1 < (_feedPosts?.length ?? 0)) priorityLoad.add(newIndex + 1);
       if (newIndex - 1 >= 0) priorityLoad.add(newIndex - 1);
 
       // First load priority videos
@@ -232,8 +429,7 @@ class _HomeScreenState extends State<HomeScreen> {
       _currentIndex = newIndex;
 
       // Set volume and play the current video
-      if (_preloadedVideos.containsKey(newIndex) &&
-          _preloadedVideos[newIndex]!.isInitialized) {
+      if (_preloadedVideos.containsKey(newIndex) && _preloadedVideos[newIndex]!.isInitialized) {
         // Set volume for current video
         _preloadedVideos[newIndex]!.controller.setVolume(1.0);
         // Play the current video
@@ -261,13 +457,14 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(
             height: MediaQuery.of(context).size.height,
             width: MediaQuery.of(context).size.width,
-            child: _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _errorMessage != null
-                ? Center(child: Text('Error: $_errorMessage', style: const TextStyle(color: Colors.white)))
-                : _feedItems == null || _feedItems!.isEmpty
-                  ? const Center(child: Text('No videos available', style: TextStyle(color: Colors.white)))
-                  : _buildVideoPageView(),
+            child:
+                _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _errorMessage != null
+                    ? Center(child: Text('Error: $_errorMessage', style: const TextStyle(color: Colors.white)))
+                    : _feedPosts == null || _feedPosts!.isEmpty
+                    ? const Center(child: Text('No videos available', style: TextStyle(color: Colors.white)))
+                    : _buildVideoPageView(),
           ),
 
           Positioned(
@@ -286,9 +483,16 @@ class _HomeScreenState extends State<HomeScreen> {
                         segments: const [
                           ButtonSegment<int>(value: 0, label: Text('Following')),
                           ButtonSegment<int>(value: 1, label: Text('For You')),
+                          ButtonSegment<int>(value: 2, label: Text('Spark new')),
                         ],
-                        onSelectionChanged: (Set<int> value) {},
-                        selected: const {1}, // Default to "For You"
+                        onSelectionChanged: (Set<int> value) {
+                          setState(() {
+                            _selectedFeedType = value.first;
+                          });
+                          _fetchVideos();
+                        },
+                        selected: {_selectedFeedType},
+                        selectedIcon: const SizedBox.shrink(),
                         style: ButtonStyle(
                           backgroundColor: WidgetStateProperty.resolveWith<Color>(
                             (states) =>
@@ -302,6 +506,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             (states) => states.contains(WidgetState.selected) ? AppColors.black : AppTheme.getTextColor(context),
                           ),
                           side: WidgetStateProperty.all(BorderSide(color: isDarkMode ? Colors.grey : AppColors.divider)),
+
                         ),
                       ),
                     ),
@@ -325,43 +530,26 @@ class _HomeScreenState extends State<HomeScreen> {
     return PageView.builder(
       controller: _pageController,
       scrollDirection: Axis.vertical,
-      itemCount: _feedItems?.length ?? 0,
+      itemCount: _feedPosts?.length ?? 0,
       onPageChanged: _updateLoadedVideos,
       itemBuilder: (context, index) {
-        final feedItem = _feedItems![index];
-        final post = feedItem.post;
-
-        final username = post.author.handle;
-        final description = post.record.text;
-        final hashtags = ['spark', 'sample', 'video${index + 1}'];
-        final likeCount = post.likeCount ?? 0;
-        final commentCount = post.replyCount ?? 0;
-        final bookmarkCount = 0;
-        final shareCount = post.repostCount ?? 0;
-
-        // Extract profile image URL
-        String? profileImageUrl;
-        if (post.author.avatar != null) {
-          profileImageUrl = post.author.avatar;
-        }
-
-        final isPreloaded = _preloadedVideos.containsKey(index) &&
-                           _preloadedVideos[index]!.isInitialized;
+        final post = _feedPosts![index];
+        final isPreloaded = _preloadedVideos.containsKey(index) && _preloadedVideos[index]!.isInitialized;
 
         if (isPreloaded) {
           return PreloadedVideoItem(
             key: ValueKey('video_$index'),
             index: index,
             controller: _preloadedVideos[index]!.controller,
-            username: username,
-            description: description,
-            hashtags: hashtags,
-            likeCount: likeCount,
-            commentCount: commentCount,
-            bookmarkCount: bookmarkCount,
-            shareCount: shareCount,
-            profileImageUrl: profileImageUrl,
-            authorDid: post.author.did,
+            username: post.username,
+            description: post.description,
+            hashtags: post.hashtags,
+            likeCount: post.likeCount,
+            commentCount: post.commentCount,
+            bookmarkCount: 0,
+            shareCount: post.shareCount,
+            profileImageUrl: post.profileImageUrl,
+            authorDid: post.authorDid,
             isVisible: index == _currentIndex,
             onLikePressed: () {},
             onBookmarkPressed: () {},
@@ -371,25 +559,19 @@ class _HomeScreenState extends State<HomeScreen> {
             onHashtagTap: () {},
           );
         } else {
-          // For videos not yet preloaded
-          String? videoUrl;
-          if (post.embed?.data is EmbedVideoView) {
-            videoUrl = (post.embed?.data as EmbedVideoView).playlist;
-          }
-
           return VideoItem(
             key: ValueKey('placeholder_$index'),
             index: index,
-            videoUrl: videoUrl,
-            username: username,
-            description: description,
-            hashtags: hashtags,
-            likeCount: likeCount,
-            commentCount: commentCount,
-            bookmarkCount: bookmarkCount,
-            shareCount: shareCount,
-            profileImageUrl: profileImageUrl,
-            authorDid: post.author.did,
+            videoUrl: post.videoUrl,
+            username: post.username,
+            description: post.description,
+            hashtags: post.hashtags,
+            likeCount: post.likeCount,
+            commentCount: post.commentCount,
+            bookmarkCount: 0,
+            shareCount: post.shareCount,
+            profileImageUrl: post.profileImageUrl,
+            authorDid: post.authorDid,
             onLikePressed: () {},
             onBookmarkPressed: () {},
             onSharePressed: () {},
@@ -408,9 +590,5 @@ class PreloadedVideo {
   final bool isInitialized;
   final String? videoUrl;
 
-  PreloadedVideo({
-    required this.controller,
-    required this.isInitialized,
-    required this.videoUrl,
-  });
+  PreloadedVideo({required this.controller, required this.isInitialized, required this.videoUrl});
 }
