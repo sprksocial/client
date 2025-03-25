@@ -156,6 +156,8 @@ class _HomeScreenState extends State<HomeScreen> {
         to: (json) => json,
       );
 
+      log('feedItems: $feedItems');
+
       // Process the posts data
       final posts = feedItems.data['posts'] as List<dynamic>?;
 
@@ -441,7 +443,7 @@ class _HomeScreenState extends State<HomeScreen> {
       itemBuilder: (context, index) {
         final post = _feedPosts![index];
         final isPreloaded = _preloadedVideos.containsKey(index) && _preloadedVideos[index]!.isInitialized;
-        final isLiked = actionsService.isPostLiked(post.uri);
+        final isLiked = post.isLiked;
 
         if (isPreloaded) {
           return PreloadedVideoItem(
@@ -499,10 +501,33 @@ class _HomeScreenState extends State<HomeScreen> {
     final actionsService = Provider.of<ActionsService>(context, listen: false);
 
     try {
-      // Toggle the like
-      await actionsService.toggleLike(post.cid, post.uri);
+      // Toggle the like and get the new likeUri
+      final newLikeUri = await actionsService.toggleLike(post);
 
-      // No need to setState as the ActionsService will call notifyListeners()
+      if (mounted) {
+        setState(() {
+          // Find the post in the list
+          final index = _feedPosts?.indexWhere((p) => p.uri == post.uri) ?? -1;
+          if (index >= 0 && _feedPosts != null) {
+            // Create a new post with updated likeUri
+            _feedPosts![index] = FeedPost(
+              username: post.username,
+              authorDid: post.authorDid,
+              profileImageUrl: post.profileImageUrl,
+              description: post.description,
+              videoUrl: post.videoUrl,
+              likeCount: post.likeCount + (newLikeUri != null ? 1 : post.isLiked ? -1 : 0),
+              commentCount: post.commentCount,
+              shareCount: post.shareCount,
+              hashtags: post.hashtags,
+              uri: post.uri,
+              cid: post.cid,
+              isSprk: post.isSprk,
+              likeUri: newLikeUri,
+            );
+          }
+        });
+      }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

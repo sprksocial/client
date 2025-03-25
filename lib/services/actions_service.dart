@@ -1,22 +1,20 @@
 import 'package:atproto/atproto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:atproto/core.dart';
+import '../models/feed_post.dart';
 import 'auth_service.dart';
 
 class ActionsService extends ChangeNotifier {
   final AuthService _authService;
 
-  // Track liked posts to maintain UI state
-  final Map<String, bool> _likedPosts = {};
-
   ActionsService(this._authService);
 
   // Check if a post is liked
-  bool isPostLiked(String postUri) {
-    return _likedPosts[postUri] ?? false;
+  bool isPostLiked(FeedPost post) {
+    return post.isLiked;
   }
 
-  Future<StrongRef?> likePost(String postCid, String postUri) async {
+  Future<XRPCResponse<StrongRef>> likePost(String postCid, String postUri) async {
     final authAtProto = _authService.atproto;
     if (authAtProto == null || authAtProto.session == null) {
       throw Exception('AtProto not initialized');
@@ -40,14 +38,11 @@ class ActionsService extends ChangeNotifier {
       throw Exception('Failed to like post: ${response.status} ${response.data}');
     }
 
-    // Update local state and notify listeners
-    _likedPosts[postUri] = true;
     notifyListeners();
-
-    return response.data;
+    return response;
   }
 
-  Future<EmptyData?> unlikePost(String likeUri) async {
+  Future<XRPCResponse<EmptyData>> unlikePost(String likeUri) async {
     final authAtProto = _authService.atproto;
     if (authAtProto == null || authAtProto.session == null) {
       throw Exception('AtProto not initialized');
@@ -58,23 +53,23 @@ class ActionsService extends ChangeNotifier {
       throw Exception('Failed to unlike post: ${response.status} ${response.data}');
     }
 
-    // Extract post URI from the like URI and update local state
-    final postUri = likeUri.split('/').sublist(0, 3).join('/');
-    _likedPosts[postUri] = false;
     notifyListeners();
-
-    return response.data;
+    return response;
   }
 
   // Toggle like status for a post or video
-  Future<void> toggleLike(String postCid, String postUri) async {
+  Future<String?> toggleLike(FeedPost post) async {
     try {
-      final isCurrentlyLiked = isPostLiked(postUri);
-
-      if (isCurrentlyLiked) {
-        await unlikePost(postUri);
+      if (post.isLiked) {
+        if (post.likeUri == null) {
+          throw Exception('Cannot unlike post: like URI is null');
+        }
+        await unlikePost(post.likeUri!);
+        return null; // Post is now unliked
       } else {
-        await likePost(postCid, postUri);
+        final response = await likePost(post.cid, post.uri);
+        // Return the new like URI from the response
+        return response.data.uri.toString();
       }
     } catch (e) {
       debugPrint('Error toggling like: $e');
