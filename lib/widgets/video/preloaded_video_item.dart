@@ -32,6 +32,7 @@ class PreloadedVideoItem extends VideoPlayerBase {
     super.onHashtagTap,
     super.authorDid,
     super.isLiked = false,
+    super.isSprk = false,
   });
 
   @override
@@ -190,6 +191,7 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
               username: widget.username,
               description: widget.description,
               hashtags: widget.hashtags,
+              isSprk: widget.isSprk,
               onUsernameTap: widget.onUsernameTap,
               onHashtagTap: widget.onHashtagTap,
             ),

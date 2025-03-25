@@ -1,5 +1,4 @@
 import 'package:atproto/core.dart';
-import 'package:bluesky/app_bsky_embed_video.dart';
 import 'package:bluesky/bluesky.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -11,111 +10,7 @@ import '../utils/app_theme.dart';
 import '../utils/app_colors.dart';
 import '../services/auth_service.dart';
 import '../services/actions_service.dart';
-
-/// A unified model for handling feed posts from different sources
-class FeedPost {
-  final String username;
-  final String authorDid;
-  final String? profileImageUrl;
-  final String description;
-  final String? videoUrl;
-  final int likeCount;
-  final int commentCount;
-  final int shareCount;
-  final List<String> hashtags;
-  final String uri; // Post URI for likes
-  final String cid; // Post CID for likes
-
-  FeedPost({
-    required this.username,
-    required this.authorDid,
-    this.profileImageUrl,
-    required this.description,
-    this.videoUrl,
-    this.likeCount = 0,
-    this.commentCount = 0,
-    this.shareCount = 0,
-    this.hashtags = const [],
-    required this.uri,
-    required this.cid,
-  });
-
-  /// Create a FeedPost from a Bluesky feed item
-  static FeedPost fromBlueskyFeed(dynamic feedItem) {
-    final post = feedItem.post;
-
-    // Extract video URL if available
-    String? videoUrl;
-    if (post.embed?.data is EmbedVideoView) {
-      videoUrl = (post.embed?.data as EmbedVideoView).playlist;
-    }
-
-    // Extract hashtags from description
-    List<String> hashtags = ['spark'];
-    final matches = RegExp(r'#(\w+)').allMatches(post.record.text);
-    if (matches.isNotEmpty) {
-      hashtags = matches.map((m) => m.group(1)!).toList();
-    }
-
-    return FeedPost(
-      username: post.author.handle,
-      authorDid: post.author.did,
-      profileImageUrl: post.author.avatar,
-      description: post.record.text,
-      videoUrl: videoUrl,
-      likeCount: post.likeCount ?? 0,
-      commentCount: post.replyCount ?? 0,
-      shareCount: post.repostCount ?? 0,
-      hashtags: hashtags,
-      uri: post.uri.toString(),
-      cid: post.cid,
-    );
-  }
-
-  /// Create a FeedPost from a Spark feed item
-  static FeedPost fromSparkFeed(Map<String, dynamic> feedItem) {
-    final post = feedItem['post'] as Map<String, dynamic>;
-    final author = post['author'] as Map<String, dynamic>;
-    final record = post['record'] as Map<String, dynamic>;
-
-    // Extract video URL if available
-    String? videoUrl;
-    if (post['embed'] != null && post['embed']['\$type'] == 'so.sprk.embed.video#view') {
-      videoUrl = post['embed']['playlist'];
-    }
-
-    // Extract hashtags from description
-    final description = record['text'] as String? ?? '';
-    List<String> hashtags = ['spark'];
-    final matches = RegExp(r'#(\w+)').allMatches(description);
-    if (matches.isNotEmpty) {
-      hashtags = matches.map((m) => m.group(1)!).toList();
-    }
-
-    return FeedPost(
-      username: author['handle'] as String? ?? '',
-      authorDid: author['did'] as String? ?? '',
-      profileImageUrl: author['avatar'] as String?,
-      description: description,
-      videoUrl: videoUrl,
-      likeCount: post['likeCount'] as int? ?? 0,
-      commentCount: post['replyCount'] as int? ?? 0,
-      shareCount: post['repostCount'] as int? ?? 0,
-      hashtags: hashtags,
-      uri: post['uri'] as String? ?? '',
-      cid: post['cid'] as String? ?? '',
-    );
-  }
-
-  /// Create a FeedPost from any feed item (either Bluesky or Spark)
-  static FeedPost fromAny(dynamic feedItem) {
-    if (feedItem is Map<String, dynamic>) {
-      return fromSparkFeed(feedItem);
-    } else {
-      return fromBlueskyFeed(feedItem);
-    }
-  }
-}
+import '../models/feed_post.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -269,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
         final feedPosts = posts.map((post) {
           // Create a feed item with the post
           final feedItem = {'post': post};
-          return FeedPost.fromSparkFeed(feedItem as Map<String, dynamic>);
+          return FeedPost.fromSparkFeed(feedItem);
         }).toList();
 
         setState(() {
@@ -564,6 +459,7 @@ class _HomeScreenState extends State<HomeScreen> {
             authorDid: post.authorDid,
             isVisible: index == _currentIndex,
             isLiked: isLiked,
+            isSprk: post.isSprk,
             onLikePressed: () => _handleLikePress(post),
             onBookmarkPressed: () {},
             onSharePressed: () {},
@@ -586,6 +482,7 @@ class _HomeScreenState extends State<HomeScreen> {
             profileImageUrl: post.profileImageUrl,
             authorDid: post.authorDid,
             isLiked: isLiked,
+            isSprk: post.isSprk,
             onLikePressed: () => _handleLikePress(post),
             onBookmarkPressed: () {},
             onSharePressed: () {},

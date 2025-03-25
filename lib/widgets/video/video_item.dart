@@ -35,6 +35,7 @@ class VideoItem extends VideoPlayerBase {
     super.onHashtagTap,
     super.authorDid,
     super.isLiked = false,
+    super.isSprk = false,
   });
 
   @override
@@ -202,6 +203,7 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
                 username: widget.username,
                 description: widget.description,
                 hashtags: widget.hashtags,
+                isSprk: widget.isSprk,
                 onUsernameTap: widget.onUsernameTap,
                 onHashtagTap: widget.onHashtagTap,
               ),
