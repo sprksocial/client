@@ -22,6 +22,7 @@ abstract class VideoPlayerBase extends StatefulWidget {
   final VoidCallback? onHashtagTap;
   final String? authorDid;
   final bool isLiked;
+  final bool isSprk;
 
   const VideoPlayerBase({
     super.key,
@@ -42,6 +43,7 @@ abstract class VideoPlayerBase extends StatefulWidget {
     this.onHashtagTap,
     this.authorDid,
     this.isLiked = false,
+    this.isSprk = false,
   });
 }
 

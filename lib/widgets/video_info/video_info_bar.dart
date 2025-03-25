@@ -7,6 +7,7 @@ class VideoInfoBar extends StatelessWidget {
   final String username;
   final String description;
   final List<String> hashtags;
+  final bool isSprk;
   final VoidCallback? onUsernameTap;
   final VoidCallback? onHashtagTap;
 
@@ -15,6 +16,7 @@ class VideoInfoBar extends StatelessWidget {
     required this.username,
     required this.description,
     required this.hashtags,
+    this.isSprk = false,
     this.onUsernameTap,
     this.onHashtagTap,
   });
@@ -24,7 +26,13 @@ class VideoInfoBar extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        GestureDetector(onTap: onUsernameTap, child: UsernameLabel(username: username)),
+        GestureDetector(
+          onTap: onUsernameTap,
+          child: UsernameLabel(
+            username: username,
+            isSprk: isSprk,
+          ),
+        ),
 
         const SizedBox(height: 10),
 
