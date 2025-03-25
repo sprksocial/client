@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:provider/provider.dart';
-import 'package:video_editor_sdk/video_editor_sdk.dart';
-import 'package:imgly_sdk/imgly_sdk.dart';
 import 'screens/home_screen.dart';
 import 'screens/search_screen.dart';
 import 'screens/create_video_screen.dart';
@@ -68,7 +66,7 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primaryColor: AppColors.primary,
           scaffoldBackgroundColor: Colors.black,
-          colorScheme: ColorScheme.light(primary: AppColors.primary, secondary: AppColors.accent, background: Colors.black),
+          colorScheme: ColorScheme.light(primary: AppColors.primary, secondary: AppColors.accent, surface: Colors.black),
           textTheme: Typography.blackMountainView.apply(bodyColor: AppColors.textPrimary, displayColor: AppColors.textPrimary),
           useMaterial3: true,
           splashColor: Colors.transparent,
@@ -79,7 +77,7 @@ class MyApp extends StatelessWidget {
         darkTheme: ThemeData(
           primaryColor: AppColors.primary,
           scaffoldBackgroundColor: Colors.black,
-          colorScheme: ColorScheme.dark(primary: AppColors.primary, secondary: AppColors.accent, background: Colors.black),
+          colorScheme: ColorScheme.dark(primary: AppColors.primary, secondary: AppColors.accent, surface: Colors.black),
           textTheme: Typography.whiteMountainView.apply(bodyColor: AppColors.textLight, displayColor: AppColors.textLight),
           useMaterial3: true,
           splashColor: Colors.transparent,
