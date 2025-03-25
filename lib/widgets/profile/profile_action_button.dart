@@ -35,9 +35,9 @@ class ProfileActionButton extends StatelessWidget {
         height: 36,
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
         decoration: BoxDecoration(
-          color: isPrimary ? AppColors.primary : Colors.transparent,
-          border: isOutlined ? Border.all(color: isDarkMode ? AppColors.lightLavender : AppColors.deepPurple, width: 1) : null,
-          borderRadius: BorderRadius.circular(4),
+          color: isPrimary ? AppColors.primary : AppColors.lightLavender,
+          border: isOutlined ? Border.all(color: isDarkMode ? Colors.transparent : Colors.transparent, width: 1) : null,
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Center(
           child: Row(

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import '../widgets/video/video_item.dart';
 import '../widgets/video/preloaded_video_item.dart';
+import '../widgets/feed/feed_selector.dart';
 import '../utils/app_theme.dart';
 import '../utils/app_colors.dart';
 import '../services/auth_service.dart';
@@ -156,7 +157,6 @@ class _HomeScreenState extends State<HomeScreen> {
         to: (json) => json,
       );
 
-      log('feedItems: $feedItems');
 
       // Process the posts data
       final posts = feedItems.data['posts'] as List<dynamic>?;
@@ -385,41 +385,32 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 30), // For balance
                   Expanded(
                     child: Center(
-                      child: SegmentedButton<int>(
-                        segments: const [
-                          ButtonSegment<int>(value: 0, label: Text('Following')),
-                          ButtonSegment<int>(value: 1, label: Text('For You')),
-                          ButtonSegment<int>(value: 2, label: Text('Spark new')),
-                        ],
-                        onSelectionChanged: (Set<int> value) {
-                          setState(() {
-                            _selectedFeedType = value.first;
-                          });
-                          _fetchVideos();
-                        },
-                        selected: {_selectedFeedType},
-                        selectedIcon: const SizedBox.shrink(),
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                            (states) =>
-                                states.contains(WidgetState.selected)
-                                    ? AppColors.white
-                                    : isDarkMode
-                                    ? Colors.black
-                                    : AppColors.darkBackground,
-                          ),
-                          foregroundColor: WidgetStateProperty.resolveWith<Color>(
-                            (states) => states.contains(WidgetState.selected) ? AppColors.black : AppTheme.getTextColor(context),
-                          ),
-                          side: WidgetStateProperty.all(BorderSide(color: isDarkMode ? Colors.grey : AppColors.divider)),
-
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: isDarkMode ? Colors.transparent : Colors.transparent,
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: FeedSelector(
+                          options: const [
+                            FeedOption(label: 'Following', value: 0),
+                            FeedOption(label: 'For You', value: 1),
+                            FeedOption(label: 'Latest', value: 2),
+                          ],
+                          selectedValue: _selectedFeedType,
+                          onOptionSelected: (value) {
+                            setState(() {
+                              _selectedFeedType = value;
+                            });
+                            _fetchVideos();
+                          },
                         ),
                       ),
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(FluentIcons.search_24_regular),
-                    color: AppTheme.getTextColor(context),
+                    icon: const Icon(FluentIcons.options_24_regular),
+                    color: AppColors.lightLavender,
                     iconSize: 30,
                     onPressed: () {},
                   ),
