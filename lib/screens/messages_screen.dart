@@ -4,7 +4,7 @@ import '../widgets/activities/activity_list.dart';
 import '../widgets/activities/activity_icon.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
-
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 class MessagesScreen extends StatefulWidget {
   const MessagesScreen({super.key});
 
@@ -153,14 +153,14 @@ class _MessagesScreenState extends State<MessagesScreen> {
           padding: EdgeInsets.zero,
           onPressed: () {
           },
-          icon: Icon(Icons.person_add_alt, color: AppTheme.getTextColor(context), size: 24),
+          icon: Icon(FluentIcons.add_24_regular, color: AppTheme.getTextColor(context), size: 24),
         ),
         actions: [
           IconButton(
             padding: EdgeInsets.zero,
             onPressed: () {
             },
-            icon: Icon(Icons.search, color: AppTheme.getTextColor(context), size: 24),
+            icon: Icon(FluentIcons.search_24_regular, color: AppTheme.getTextColor(context), size: 24),
           ),
         ],
         backgroundColor: isDarkMode ? Colors.black : AppColors.background,

@@ -99,7 +99,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16.0)),
                   elevation: WidgetStateProperty.all(0),
                   backgroundColor: WidgetStateProperty.all(
-                    isDarkMode ? Colors.grey[900] : AppColors.lightLavender.withOpacity(0.5),
+                    isDarkMode ? Colors.grey[900] : AppColors.lightLavender.withAlpha(50),
                   ),
                   onChanged: (value) {
                   },

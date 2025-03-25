@@ -11,6 +11,7 @@ import '../services/auth_service.dart';
 import '../services/profile_service.dart';
 import 'auth_prompt_screen.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import '../widgets/profile/profile_menu_sheet.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String? did; // DID of the profile to show, null means current user
@@ -109,40 +110,14 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
   void _showProfileMenu(BuildContext context) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder:
-          (context) => SafeArea(
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              ),
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Profile Options',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.black),
-                  ),
-                  const SizedBox(height: 16),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context); // Close the modal
-                      _handleLogout();
-                    },
-                    child: const Text('Logout', style: TextStyle(color: Colors.red)),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Cancel', style: TextStyle(color: AppColors.white)),
-                  ),
-                ],
-              ),
-            ),
-          ),
+      builder: (context) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.only(top: 20), 
+          child: ProfileMenuSheet(onLogout: _handleLogout)
+        )
+      ),
     );
   }
 

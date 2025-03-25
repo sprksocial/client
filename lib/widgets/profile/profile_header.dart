@@ -229,25 +229,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
               ),
 
               const SizedBox(width: 8),
-
-              Expanded(
-                flex: 1,
-                child:
-                    widget.isCurrentUser
-                        ? IconButton(
-                          style: IconButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: const Size.fromHeight(36),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              side: BorderSide(color: AppColors.border, width: 1),
-                            ),
-                          ),
-                          onPressed: widget.onSettingsTap,
-                          icon: Icon(FluentIcons.settings_24_regular, color: AppTheme.getTextColor(context), size: 20),
-                        )
-                        : ProfileActionButton(label: 'Follow', onPressed: widget.onFollowTap),
-              ),
+              
             ],
           ),
         ],
