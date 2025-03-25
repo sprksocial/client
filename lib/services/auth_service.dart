@@ -158,7 +158,7 @@ class AuthService extends ChangeNotifier {
         throw Exception('PDS endpoint not found in DID document');
       }
 
-      String pdsDomain = pdsUrl.replaceFirst('http://', '').replaceFirst('https://', '').replaceFirst('/', '');
+      String pdsDomain = Uri.parse(pdsUrl).host;
       final session = await createSession(identifier: handle, password: password, service: pdsDomain);
 
       _session = session.data;

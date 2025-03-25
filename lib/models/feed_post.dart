@@ -15,6 +15,7 @@ class FeedPost {
   final String uri; // Post URI for likes
   final String cid; // Post CID for likes
   final bool isSprk; // Whether the post is from Spark
+  final String? likeUri; // URI of the user's like if the post is liked
 
   FeedPost({
     required this.username,
@@ -29,6 +30,7 @@ class FeedPost {
     required this.uri,
     required this.cid,
     this.isSprk = false,
+    this.likeUri,
   });
 
   /// Create a FeedPost from a Bluesky feed item
@@ -61,6 +63,7 @@ class FeedPost {
       uri: post.uri.toString(),
       cid: post.cid,
       isSprk: false,
+      likeUri: post.viewer?.like?.toString(),
     );
   }
 
@@ -84,6 +87,12 @@ class FeedPost {
       hashtags = matches.map((m) => m.group(1)!).toList();
     }
 
+    // Extract like URI from viewer object if available
+    String? likeUri;
+    if (post.containsKey('viewer') && post['viewer'] is Map<String, dynamic>) {
+      likeUri = (post['viewer'] as Map<String, dynamic>)['like'] as String?;
+    }
+
     return FeedPost(
       username: author['handle'] as String? ?? '',
       authorDid: author['did'] as String? ?? '',
@@ -97,6 +106,7 @@ class FeedPost {
       uri: post['uri'] as String? ?? '',
       cid: post['cid'] as String? ?? '',
       isSprk: true,
+      likeUri: likeUri,
     );
   }
 
@@ -108,4 +118,7 @@ class FeedPost {
       return fromBlueskyFeed(feedItem);
     }
   }
+
+  /// Check if the post is liked based on whether there's a likeUri
+  bool get isLiked => likeUri != null;
 }
