@@ -232,22 +232,28 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
   }
 
   Widget _buildBlurredBackground(bool isDarkMode) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        FittedBox(
-          fit: BoxFit.cover,
-          child: SizedBox(
-            width: _controller!.value.size.width,
-            height: _controller!.value.size.height,
-            child: VideoPlayer(_controller!),
+    return Container(
+      color: isDarkMode ? Colors.black : AppColors.darkBackground,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ClipRect(
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
+              child: Transform.scale(
+                scale: 1.2,
+                child: Opacity(
+                  opacity: 0.5,
+                  child: VideoPlayer(_controller!),
+                ),
+              ),
+            ),
           ),
-        ),
-        BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-          child: Container(color: isDarkMode ? Colors.black.withAlpha(128) : AppColors.darkBackground.withAlpha(128)),
-        ),
-      ],
+          Container(color: isDarkMode 
+              ? Colors.black.withAlpha(120) 
+              : AppColors.darkBackground.withAlpha(120)),
+        ],
+      ),
     );
   }
 
