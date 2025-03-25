@@ -21,6 +21,7 @@ abstract class VideoPlayerBase extends StatefulWidget {
   final VoidCallback? onUsernameTap;
   final VoidCallback? onHashtagTap;
   final String? authorDid;
+  final bool isLiked;
 
   const VideoPlayerBase({
     super.key,
@@ -40,6 +41,7 @@ abstract class VideoPlayerBase extends StatefulWidget {
     this.onUsernameTap,
     this.onHashtagTap,
     this.authorDid,
+    this.isLiked = false,
   });
 }
 

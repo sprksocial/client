@@ -31,6 +31,7 @@ class PreloadedVideoItem extends VideoPlayerBase {
     super.onUsernameTap,
     super.onHashtagTap,
     super.authorDid,
+    super.isLiked = false,
   });
 
   @override
@@ -154,7 +155,7 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
         children: [
           // Blurred background layer
           _buildBlurredBackground(isDarkMode),
-          
+
           // Main video content layer (not affected by blur)
           Center(child: _buildVideoContent()),
 
@@ -203,12 +204,13 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
               bookmarkCount: '${widget.bookmarkCount}K',
               shareCount: '${widget.shareCount}K',
               profileImageUrl: widget.profileImageUrl,
+              isLiked: widget.isLiked,
               onLikePressed: widget.onLikePressed ?? () {},
               onCommentPressed: toggleComments,
               onBookmarkPressed: widget.onBookmarkPressed ?? () {},
               onSharePressed: widget.onSharePressed ?? () {},
               onProfilePressed: super.navigateToProfile,
-              ),
+            ),
           ),
         ],
       ),
@@ -236,8 +238,8 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
             ),
           ),
           // Darkened overlay
-          Container(color: isDarkMode 
-              ? Colors.black.withAlpha(120) 
+          Container(color: isDarkMode
+              ? Colors.black.withAlpha(120)
               : AppColors.darkBackground.withAlpha(120)),
         ],
       ),

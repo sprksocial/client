@@ -18,6 +18,7 @@ import 'screens/test_actions_screen.dart';
 import 'services/auth_service.dart';
 import 'services/profile_service.dart';
 import 'services/identity_service.dart';
+import 'services/actions_service.dart';
 import 'package:fvp/fvp.dart' as fvp;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -25,11 +26,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
-  
+
   // Initialize IMGLY Video Editor SDK
   // Note: You need to add a license file to assets folder and reference it in pubspec.yaml
   // VESDK.unlockWithLicense("assets/licenses/vesdk_license");
-  
+
   // Force dark status bar and navigation bar
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
@@ -38,7 +39,7 @@ void main() async {
     systemNavigationBarColor: Colors.black,
     systemNavigationBarIconBrightness: Brightness.light,
   ));
-  
+
   fvp.registerWith();
   runApp(const MyApp());
 }
@@ -56,6 +57,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProxyProvider<AuthService, ProfileService>(
           create: (context) => ProfileService(context.read<AuthService>()),
           update: (_, authService, previousProfileService) => previousProfileService ?? ProfileService(authService),
+        ),
+        ChangeNotifierProxyProvider<AuthService, ActionsService>(
+          create: (context) => ActionsService(context.read<AuthService>()),
+          update: (_, authService, previousActionsService) => previousActionsService ?? ActionsService(authService),
         ),
       ],
       child: MaterialApp(

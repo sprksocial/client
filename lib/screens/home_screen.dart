@@ -10,6 +10,7 @@ import '../widgets/video/preloaded_video_item.dart';
 import '../utils/app_theme.dart';
 import '../utils/app_colors.dart';
 import '../services/auth_service.dart';
+import '../services/actions_service.dart';
 
 /// A unified model for handling feed posts from different sources
 class FeedPost {
@@ -22,6 +23,8 @@ class FeedPost {
   final int commentCount;
   final int shareCount;
   final List<String> hashtags;
+  final String uri; // Post URI for likes
+  final String cid; // Post CID for likes
 
   FeedPost({
     required this.username,
@@ -33,6 +36,8 @@ class FeedPost {
     this.commentCount = 0,
     this.shareCount = 0,
     this.hashtags = const [],
+    required this.uri,
+    required this.cid,
   });
 
   /// Create a FeedPost from a Bluesky feed item
@@ -62,6 +67,8 @@ class FeedPost {
       commentCount: post.replyCount ?? 0,
       shareCount: post.repostCount ?? 0,
       hashtags: hashtags,
+      uri: post.uri.toString(),
+      cid: post.cid,
     );
   }
 
@@ -95,6 +102,8 @@ class FeedPost {
       commentCount: post['replyCount'] as int? ?? 0,
       shareCount: post['repostCount'] as int? ?? 0,
       hashtags: hashtags,
+      uri: post['uri'] as String? ?? '',
+      cid: post['cid'] as String? ?? '',
     );
   }
 
@@ -527,6 +536,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildVideoPageView() {
+    final actionsService = Provider.of<ActionsService>(context, listen: false);
+
     return PageView.builder(
       controller: _pageController,
       scrollDirection: Axis.vertical,
@@ -535,6 +546,7 @@ class _HomeScreenState extends State<HomeScreen> {
       itemBuilder: (context, index) {
         final post = _feedPosts![index];
         final isPreloaded = _preloadedVideos.containsKey(index) && _preloadedVideos[index]!.isInitialized;
+        final isLiked = actionsService.isPostLiked(post.uri);
 
         if (isPreloaded) {
           return PreloadedVideoItem(
@@ -551,7 +563,8 @@ class _HomeScreenState extends State<HomeScreen> {
             profileImageUrl: post.profileImageUrl,
             authorDid: post.authorDid,
             isVisible: index == _currentIndex,
-            onLikePressed: () {},
+            isLiked: isLiked,
+            onLikePressed: () => _handleLikePress(post),
             onBookmarkPressed: () {},
             onSharePressed: () {},
             onProfilePressed: () {},
@@ -572,7 +585,8 @@ class _HomeScreenState extends State<HomeScreen> {
             shareCount: post.shareCount,
             profileImageUrl: post.profileImageUrl,
             authorDid: post.authorDid,
-            onLikePressed: () {},
+            isLiked: isLiked,
+            onLikePressed: () => _handleLikePress(post),
             onBookmarkPressed: () {},
             onSharePressed: () {},
             onProfilePressed: () {},
@@ -582,6 +596,24 @@ class _HomeScreenState extends State<HomeScreen> {
         }
       },
     );
+  }
+
+  Future<void> _handleLikePress(FeedPost post) async {
+    final actionsService = Provider.of<ActionsService>(context, listen: false);
+
+    try {
+      // Toggle the like
+      await actionsService.toggleLike(post.cid, post.uri);
+
+      // No need to setState as the ActionsService will call notifyListeners()
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error liking post: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }
 
