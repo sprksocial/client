@@ -325,6 +325,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
           replyCount: comment.replyCount,
           isDarkMode: widget.isDarkMode,
           onReply: _replyToComment,
+          replies: comment.replies,
         );
       },
     );

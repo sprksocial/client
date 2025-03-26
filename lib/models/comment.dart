@@ -18,6 +18,7 @@ class Comment {
   final String? mediaUrl;
   final String? likeUri;
   final bool isSprk;
+  final List<Comment> replies;
 
   Comment({
     required this.id,
@@ -36,6 +37,7 @@ class Comment {
     this.mediaUrl,
     this.likeUri,
     this.isSprk = false,
+    this.replies = const [],
   });
 
   /// Parse a relative datetime string like "2023-11-19T12:34:56.789Z" and return a user-friendly string
@@ -81,7 +83,7 @@ class Comment {
         hasMedia = true;
         mediaType = 'image';
         mediaUrl = 'https://cdn.justdavi.dev/runnig.png';
-        
+
         //mediaUrl = embed.images[0].fullsize;
       } else if (embed is EmbedVideoView) {
         hasMedia = true;
@@ -105,8 +107,9 @@ class Comment {
       hasMedia: hasMedia,
       mediaType: mediaType,
       mediaUrl: mediaUrl,
-      likeUri: post.viewer?.like?.toString(),
+      likeUri: post.viewer.like?.toString(),
       isSprk: false,
+      replies: [],
     );
   }
 
@@ -146,7 +149,6 @@ class Comment {
     if (post.containsKey('viewer') && post['viewer'] is Map<String, dynamic>) {
       likeUri = (post['viewer'] as Map<String, dynamic>)['like'] as String?;
     }
-
     return Comment(
       id: post['uri'] as String? ?? '',
       uri: post['uri'] as String? ?? '',
@@ -155,7 +157,7 @@ class Comment {
       username: author['handle'] as String? ?? '',
       profileImageUrl: author['avatar'] as String?,
       text: text,
-      createdAt: formatTimeAgo(record['createdAt'] as String? ?? DateTime.now().toIso8601String()),
+      createdAt: formatTimeAgo(post['indexedAt'] as String? ?? DateTime.now().toIso8601String()),
       likeCount: post['likeCount'] as int? ?? 0,
       replyCount: post['replyCount'] as int? ?? 0,
       hashtags: hashtags,
@@ -164,6 +166,7 @@ class Comment {
       mediaUrl: mediaUrl,
       likeUri: likeUri,
       isSprk: true,
+      replies: [],
     );
   }
 
