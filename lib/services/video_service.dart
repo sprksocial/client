@@ -93,7 +93,7 @@ class VideoService {
       throw Exception('Video blob reference is null');
     }
 
-    final postText = description.isNotEmpty ? description : 'New video';
+    final postText = description.isNotEmpty ? description : '';
 
     final postRecord = {
       '\$type': 'so.sprk.feed.post',
