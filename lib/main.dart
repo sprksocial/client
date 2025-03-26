@@ -17,6 +17,7 @@ import 'services/auth_service.dart';
 import 'services/profile_service.dart';
 import 'services/identity_service.dart';
 import 'services/actions_service.dart';
+import 'services/comments_service.dart';
 import 'package:fvp/fvp.dart' as fvp;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
@@ -59,6 +60,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProxyProvider<AuthService, ActionsService>(
           create: (context) => ActionsService(context.read<AuthService>()),
           update: (_, authService, previousActionsService) => previousActionsService ?? ActionsService(authService),
+        ),
+        ChangeNotifierProxyProvider<AuthService, CommentsService>(
+          create: (context) => CommentsService(context.read<AuthService>()),
+          update: (_, authService, previousCommentsService) => previousCommentsService ?? CommentsService(authService),
         ),
       ],
       child: MaterialApp(

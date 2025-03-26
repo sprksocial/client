@@ -23,6 +23,7 @@ abstract class VideoPlayerBase extends StatefulWidget {
   final String? authorDid;
   final bool isLiked;
   final bool isSprk;
+  final String? videoUri;
 
   const VideoPlayerBase({
     super.key,
@@ -44,6 +45,7 @@ abstract class VideoPlayerBase extends StatefulWidget {
     this.authorDid,
     this.isLiked = false,
     this.isSprk = false,
+    this.videoUri,
   });
 }
 
@@ -69,6 +71,10 @@ abstract class VideoPlayerBaseState<T extends VideoPlayerBase> extends State<T> 
 
   /// Toggle comments visibility and show the comments tray
   void toggleComments() {
+    if (widget.videoUri == null) {
+      return;
+    }
+
     pauseVideo();
 
     setState(() {
@@ -79,7 +85,7 @@ abstract class VideoPlayerBaseState<T extends VideoPlayerBase> extends State<T> 
 
     showCommentsTray(
       context: context,
-      videoId: 'video_${widget.index + 1}',
+      postUri: widget.videoUri!,
       commentCount: widget.commentCount,
       onClose: () {
         setState(() {
@@ -90,6 +96,7 @@ abstract class VideoPlayerBaseState<T extends VideoPlayerBase> extends State<T> 
         });
       },
       isDarkMode: isDarkMode,
+      isSprk: widget.isSprk,
     );
   }
 

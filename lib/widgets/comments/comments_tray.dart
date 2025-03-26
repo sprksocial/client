@@ -1,46 +1,53 @@
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_colors.dart';
 import 'comment_item.dart';
 import 'comment_input.dart';
+import '../../services/comments_service.dart';
+import '../../models/comment.dart';
 
 /// Shows the comments tray as a modal bottom sheet.
 /// This utility function can be used from any screen that needs to display comments.
 void showCommentsTray({
   required BuildContext context,
-  required String videoId,
+  required String postUri,
   required int commentCount,
   required VoidCallback onClose,
   required bool isDarkMode,
+  required bool isSprk,
 }) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     builder: (context) => CommentsTray(
-      videoId: videoId,
+      postUri: postUri,
       commentCount: commentCount,
       onClose: () {
         Navigator.pop(context);
         onClose();
       },
       isDarkMode: isDarkMode,
+      isSprk: isSprk,
     ),
   ).whenComplete(onClose);
 }
 
 class CommentsTray extends StatefulWidget {
-  final String videoId;
+  final String postUri;
   final int commentCount;
   final VoidCallback onClose;
   final bool isDarkMode;
+  final bool isSprk;
 
   const CommentsTray({
     super.key,
-    required this.videoId,
+    required this.postUri,
     required this.commentCount,
     required this.onClose,
     this.isDarkMode = true,
+    required this.isSprk,
   });
 
   @override
@@ -54,76 +61,9 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   String? _replyingToUsername;
   String? _replyingToId;
 
-  // Sample data - in a real app this would come from a data source
-  final List<Map<String, dynamic>> _sampleComments = const [
-    {
-      'id': '1',
-      'userId': 'user1',
-      'username': 'Emma',
-      'text': 'Protect Natasha Pang from Hackers all cost!!!!',
-      'timeAgo': '5h',
-      'likeCount': 7,
-      'hasMedia': false,
-      'replyCount': 0,
-    },
-    {
-      'id': '2',
-      'userId': 'user2',
-      'username': 'Nic',
-      'text': 'Natasha what did you download',
-      'timeAgo': '1d',
-      'likeCount': 2124,
-      'hasMedia': false,
-      'replyCount': 2,
-    },
-    {
-      'id': '3',
-      'userId': 'user3',
-      'username': 'PhotoEnthusiast',
-      'text': 'Check out this incredible sunset I captured yesterday!',
-      'timeAgo': '2h',
-      'likeCount': 189,
-      'hasMedia': true,
-      'mediaType': 'image',
-      'mediaUrl': 'https://placekitten.com/500/300',
-      'replyCount': 5,
-    },
-    {
-      'id': '4',
-      'userId': 'user4',
-      'username': 'VideoCreator',
-      'text': 'Made a quick tutorial on how to use this app:',
-      'timeAgo': '3h',
-      'likeCount': 432,
-      'hasMedia': false,
-      //'mediaType': 'video',
-      //'mediaUrl': 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-      'replyCount': 12,
-    },
-    {
-      'id': '5',
-      'userId': 'user5',
-      'username': 'Hen Ry',
-      'text': 'Natasha pang baddie pics?',
-      'timeAgo': '14h',
-      'likeCount': 1,
-      'hasMedia': false,
-      'replyCount': 0,
-    },
-    {
-      'id': '6',
-      'userId': 'user6',
-      'username': 'WowCrazy',
-      'text':
-          'I think those are your future sales! Natasha Pang, the top Robotics Industry Sales Director for the India market and global influencer.',
-      'timeAgo': '1d',
-      'likeCount': 232,
-      'hasMedia': false,
-      'replyCount': 2,
-    },
-  ];
-
+  List<Comment>? _comments;
   bool _isLoading = false;
+  String? _error;
   bool _hasMoreComments = true;
 
   @override
@@ -135,6 +75,9 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
 
     // Add scroll listener for lazy loading
     _scrollController.addListener(_scrollListener);
+
+    // Load comments
+    _loadComments();
   }
 
   @override
@@ -154,22 +97,47 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     }
   }
 
-  Future<void> _loadMoreComments() async {
-    // This would be an API call in a real app
+  Future<void> _loadComments() async {
     if (_isLoading) return;
 
     setState(() {
       _isLoading = true;
+      _error = null;
     });
 
-    // Simulate network delay
-    await Future.delayed(const Duration(milliseconds: 500));
+    try {
+      // Get the service but don't listen to it here
+      final commentsService = Provider.of<CommentsService>(context, listen: false);
 
-    // In a real app, you would add new comments to your list
-    // For this simulation, we'll set _hasMoreComments to false after first load
+      final List<Comment> comments;
+      if (widget.isSprk) {
+        comments = await commentsService.getSparkComments(widget.postUri);
+      } else {
+        comments = await commentsService.getBlueskyComments(widget.postUri);
+      }
+
+      if (mounted) {
+        setState(() {
+          _comments = comments;
+          _isLoading = false;
+          _hasMoreComments = false; // Currently we load all comments at once
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = e.toString();
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _loadMoreComments() async {
+    // In the current implementation, we load all comments at once
+    // This is a placeholder for future pagination implementation
     setState(() {
-      _isLoading = false;
-      _hasMoreComments = false; // Indicate we've loaded all available comments
+      _hasMoreComments = false;
     });
   }
 
@@ -217,7 +185,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
             _buildHeader(borderColor, textColor),
             Expanded(child: _buildCommentsList()),
             CommentInput(
-              videoId: widget.videoId,
+              videoId: widget.postUri,
               replyingToUsername: _replyingToUsername,
               replyingToId: _replyingToId,
               onCancelReply: _cancelReply,
@@ -265,12 +233,62 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   }
 
   Widget _buildCommentsList() {
+    if (_isLoading && _comments == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Error loading comments',
+                style: TextStyle(
+                  color: widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _error!,
+                style: TextStyle(
+                  color: widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary,
+                  fontSize: 14,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: _loadComments,
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_comments == null || _comments!.isEmpty) {
+      return Center(
+        child: Text(
+          'No comments yet',
+          style: TextStyle(
+            color: widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary,
+            fontSize: 14,
+          ),
+        ),
+      );
+    }
+
     return ListView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.only(bottom: 16),
-      itemCount: _sampleComments.length + 1, // +1 for loading indicator or end message
+      itemCount: _comments!.length + 1, // +1 for loading indicator or end message
       itemBuilder: (context, index) {
-        if (index == _sampleComments.length) {
+        if (index == _comments!.length) {
           // Show loading indicator or end of list message
           if (_isLoading) {
             return const Center(child: Padding(
@@ -292,19 +310,19 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
           return const SizedBox.shrink();
         }
 
-        final comment = _sampleComments[index];
+        final comment = _comments![index];
         return CommentItem(
-          key: ValueKey('comment-${comment['id']}'),
-          id: comment['id'] as String,
-          userId: comment['userId'] as String,
-          username: comment['username'] as String,
-          text: comment['text'] as String,
-          timeAgo: comment['timeAgo'] as String,
-          likeCount: comment['likeCount'] as int,
-          hasMedia: comment['hasMedia'] as bool,
-          mediaType: comment['mediaType'] as String?,
-          mediaUrl: comment['mediaUrl'] as String?,
-          replyCount: comment['replyCount'] as int,
+          key: ValueKey('comment-${comment.id}'),
+          id: comment.id,
+          userId: comment.authorDid,
+          username: comment.username,
+          text: comment.text,
+          timeAgo: comment.createdAt,
+          likeCount: comment.likeCount,
+          hasMedia: comment.hasMedia,
+          mediaType: comment.mediaType,
+          mediaUrl: comment.mediaUrl,
+          replyCount: comment.replyCount,
           isDarkMode: widget.isDarkMode,
           onReply: _replyToComment,
         );
