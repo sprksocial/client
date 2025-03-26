@@ -3,6 +3,7 @@ import 'package:video_player/video_player.dart';
 import '../../utils/app_colors.dart';
 import 'comment_reply_item.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import '../../models/comment.dart';
 
 class CommentItem extends StatefulWidget {
   final String id;
@@ -17,6 +18,7 @@ class CommentItem extends StatefulWidget {
   final int replyCount;
   final bool isDarkMode;
   final Function(String, String) onReply;
+  final List<Comment> replies;
 
   const CommentItem({
     super.key,
@@ -32,6 +34,7 @@ class CommentItem extends StatefulWidget {
     required this.replyCount,
     required this.isDarkMode,
     required this.onReply,
+    this.replies = const [],
   });
 
   @override
@@ -99,26 +102,6 @@ class _CommentItemState extends State<CommentItem> {
     final secondaryTextColor = widget.isDarkMode ? AppColors.textLight.withAlpha(179) : AppColors.textSecondary;
     final dividerColor = widget.isDarkMode ? AppColors.deepPurple.withAlpha(128) : AppColors.lightLavender;
 
-    // Mock replies data - in a real app, this would come from a data source
-    final mockReplies = const [
-      {
-        'id': 'reply1',
-        'userId': 'replier1',
-        'username': 'ReplyUser1',
-        'text': 'This is amazing!',
-        'timeAgo': '2h',
-        'likeCount': 15,
-      },
-      {
-        'id': 'reply2',
-        'userId': 'replier2',
-        'username': 'ReplyUser2',
-        'text': 'I completely agree with this.',
-        'timeAgo': '1h',
-        'likeCount': 8,
-      },
-    ];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -135,7 +118,7 @@ class _CommentItemState extends State<CommentItem> {
         ),
 
         if (_showReplies && widget.replyCount > 0)
-          _buildRepliesSection(mockReplies, dividerColor),
+          _buildRepliesSection(dividerColor),
 
         Container(height: 0.5, color: dividerColor),
       ],
@@ -258,7 +241,7 @@ class _CommentItemState extends State<CommentItem> {
     );
   }
 
-  Widget _buildRepliesSection(List<Map<String, dynamic>> replies, Color dividerColor) {
+  Widget _buildRepliesSection(Color dividerColor) {
     return Container(
       margin: const EdgeInsets.only(left: 64),
       padding: const EdgeInsets.only(top: 4, bottom: 8),
@@ -267,14 +250,14 @@ class _CommentItemState extends State<CommentItem> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: 2),
-          ...replies.map(
+          ...widget.replies.map(
             (reply) => CommentReplyItem(
-              id: reply['id'] as String,
-              userId: reply['userId'] as String,
-              username: reply['username'] as String,
-              text: reply['text'] as String,
-              timeAgo: reply['timeAgo'] as String,
-              likeCount: reply['likeCount'] as int,
+              id: reply.id,
+              userId: reply.authorDid,
+              username: reply.username,
+              text: reply.text,
+              timeAgo: reply.createdAt,
+              likeCount: reply.likeCount,
               isDarkMode: widget.isDarkMode,
               onReply: widget.onReply,
             ),
