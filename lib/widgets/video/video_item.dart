@@ -17,7 +17,7 @@ class VideoItem extends VideoPlayerBase {
   const VideoItem({
     super.key,
     required super.index,
-    this.videoUrl,
+    required this.videoUrl,
     super.username = '',
     super.description = '',
     super.hashtags = const [],
@@ -35,6 +35,7 @@ class VideoItem extends VideoPlayerBase {
     super.authorDid,
     super.isLiked = false,
     super.isSprk = false,
+    super.videoUri,
   });
 
   @override

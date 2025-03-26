@@ -33,6 +33,7 @@ class PreloadedVideoItem extends VideoPlayerBase {
     super.authorDid,
     super.isLiked = false,
     super.isSprk = false,
+    super.videoUri,
   });
 
   @override
