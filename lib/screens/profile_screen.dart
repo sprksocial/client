@@ -12,6 +12,8 @@ import '../services/profile_service.dart';
 import 'auth_prompt_screen.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../widgets/profile/profile_menu_sheet.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class ProfileScreen extends StatefulWidget {
   final String? did; // DID of the profile to show, null means current user
@@ -28,8 +30,7 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
   bool _isLoading = false;
   String? _error;
   Map<String, dynamic>? _profileData;
-
-  final bool _isEarlySupporter = true;
+  bool _isEarlySupporter = false;
 
   // Keep this screen in memory when navigating
   @override
@@ -79,14 +80,29 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
 
     try {
       final profileService = Provider.of<ProfileService>(context, listen: false);
-      final result = await profileService.getProfileFullBsky(targetDid);
+
+      // Load profile data first
+      final profileData = await profileService.getProfileFullBsky(targetDid);
 
       if (!mounted) return;
 
       setState(() {
-        _profileData = result;
+        _profileData = profileData;
         _isLoading = false;
       });
+
+      // Check early supporter status independently
+      _checkEarlySupporter(targetDid).then((isSupporter) {
+        if (mounted) {
+          setState(() {
+            _isEarlySupporter = isSupporter;
+          });
+        }
+      }).catchError((e) {
+        debugPrint('Error checking early supporter status: $e');
+        // Keep default value (false) on error
+      });
+
     } catch (e) {
       if (!mounted) return;
 
@@ -95,6 +111,21 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
         _isLoading = false;
       });
       debugPrint('Unexpected error in _loadProfile: $e');
+    }
+  }
+
+  Future<bool> _checkEarlySupporter(String did) async {
+    try {
+      final response = await http.get(Uri.parse('https://spark-match.sparksplatforms.workers.dev/?did=$did'));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data['found'] == true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint('Error checking early supporter status: $e');
+      return false;
     }
   }
 
@@ -114,7 +145,7 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
       backgroundColor: Colors.transparent,
       builder: (context) => SafeArea(
         child: Padding(
-          padding: const EdgeInsets.only(top: 20), 
+          padding: const EdgeInsets.only(top: 20),
           child: ProfileMenuSheet(onLogout: _handleLogout)
         )
       ),
