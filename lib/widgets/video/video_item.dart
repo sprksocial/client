@@ -37,6 +37,7 @@ class VideoItem extends VideoPlayerBase {
     super.isLiked = false,
     super.isSprk = false,
     super.videoUri,
+    super.disableBackgroundBlur = false,
   });
 
   @override
@@ -252,18 +253,19 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          ClipRect(
-            child: ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-              child: Transform.scale(
-                scale: 1.2,
-                child: Opacity(
-                  opacity: 0.5,
-                  child: VideoPlayer(_controller!),
+          if (!widget.disableBackgroundBlur)
+            ClipRect(
+              child: ImageFiltered(
+                imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
+                child: Transform.scale(
+                  scale: 1.2,
+                  child: Opacity(
+                    opacity: 0.5,
+                    child: VideoPlayer(_controller!),
+                  ),
                 ),
               ),
             ),
-          ),
           Container(color: isDarkMode
               ? Colors.black.withAlpha(120)
               : AppColors.darkBackground.withAlpha(120)),

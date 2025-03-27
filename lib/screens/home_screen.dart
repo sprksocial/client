@@ -29,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   int _selectedFeedType = 1; // 0: Following, 1: For You, 2: Spark new
+  bool _disableVideoBackgroundBlur = false; // New setting for video background blur
 
   // Pre-initialized VideoPlayerControllers mapped by index
   final Map<int, PreloadedVideo> _preloadedVideos = {};
@@ -497,6 +498,7 @@ class _HomeScreenState extends State<HomeScreen> {
               isLiked: isLiked,
               isSprk: post.isSprk,
               videoUri: post.uri,
+              disableBackgroundBlur: _disableVideoBackgroundBlur,
               onLikePressed: () => _handleLikePress(post),
               onBookmarkPressed: () {},
               onSharePressed: () {},
@@ -521,6 +523,7 @@ class _HomeScreenState extends State<HomeScreen> {
               isLiked: isLiked,
               isSprk: post.isSprk,
               videoUri: post.uri,
+              disableBackgroundBlur: _disableVideoBackgroundBlur,
               onLikePressed: () => _handleLikePress(post),
               onBookmarkPressed: () {},
               onSharePressed: () {},
@@ -549,6 +552,7 @@ class _HomeScreenState extends State<HomeScreen> {
             isSprk: post.isSprk,
             postUri: post.uri,
             isVisible: index == _currentIndex,
+            disableBackgroundBlur: _disableVideoBackgroundBlur,
             onLikePressed: () => _handleLikePress(post),
             onBookmarkPressed: () {},
             onSharePressed: () {},
@@ -617,15 +621,24 @@ class _HomeScreenState extends State<HomeScreen> {
     final feedSettings = [
       FeedSetting(
         feedName: 'Following',
+        settingType: 'following_feed',
         isEnabled: true,
       ),
       FeedSetting(
         feedName: 'For You',
+        settingType: 'for_you_feed',
         isEnabled: true,
       ),
       FeedSetting(
         feedName: 'Latest',
+        settingType: 'latest_feed',
         isEnabled: true,
+      ),
+      FeedSetting(
+        feedName: 'Disable Background Blur',
+        settingType: 'disable_background_blur',
+        description: 'Turn off the background blur effect on media',
+        isEnabled: _disableVideoBackgroundBlur,
       ),
     ];
 
@@ -646,8 +659,16 @@ class _HomeScreenState extends State<HomeScreen> {
         behavior: HitTestBehavior.opaque,
         child: FeedSettingsSheet(
           feedSettings: feedSettings,
-          onToggleChanged: (feedName, isEnabled) {
+          onToggleChanged: (settingType, isEnabled) {
             // Handle feed toggle changes
+            if (settingType == 'disable_background_blur') {
+              setState(() {
+                _disableVideoBackgroundBlur = isEnabled;
+              });
+              return;
+            }
+            
+            final feedName = _getFeedNameFromSettingType(settingType);
             if (!isEnabled && _getSelectedFeedNameFromIndex() == feedName) {
               // Don't allow disabling the currently selected feed
               ScaffoldMessenger.of(context).showSnackBar(
@@ -662,6 +683,19 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  String _getFeedNameFromSettingType(String settingType) {
+    switch (settingType) {
+      case 'following_feed':
+        return 'Following';
+      case 'for_you_feed':
+        return 'For You';
+      case 'latest_feed':
+        return 'Latest';
+      default:
+        return '';
+    }
   }
 
   String _getSelectedFeedNameFromIndex() {

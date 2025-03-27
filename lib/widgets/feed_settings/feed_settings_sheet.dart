@@ -88,8 +88,8 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> {
 
   Widget _buildFeedList(bool isDark) {
     final itemColor = isDark 
-        ? AppColors.deepPurple.withOpacity(0.3) 
-        : AppColors.lightLavender.withOpacity(0.3);
+        ? Colors.grey.shade800
+        : Colors.grey.shade200;
     final textColor = isDark ? AppColors.white : AppColors.textPrimary;
     
     return ListView.builder(
@@ -99,6 +99,7 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> {
         final setting = _feedSettings[index];
         return FeedSettingItem(
           feedName: setting.feedName,
+          description: setting.description,
           isEnabled: setting.isEnabled,
           itemColor: itemColor,
           textColor: textColor,
@@ -107,11 +108,13 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> {
             setState(() {
               _feedSettings[index] = FeedSetting(
                 feedName: setting.feedName,
+                description: setting.description,
+                settingType: setting.settingType,
                 isEnabled: value,
               );
             });
             // Then call the parent callback
-            widget.onToggleChanged(setting.feedName, value);
+            widget.onToggleChanged(setting.settingType, value);
           },
         );
       },
@@ -121,16 +124,21 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> {
 
 class FeedSetting {
   final String feedName;
+  final String settingType;
+  final String? description;
   final bool isEnabled;
 
   const FeedSetting({
     required this.feedName,
     required this.isEnabled,
+    this.description,
+    required this.settingType,
   });
 }
 
 class FeedSettingItem extends StatelessWidget {
   final String feedName;
+  final String? description;
   final bool isEnabled;
   final Color itemColor;
   final Color textColor;
@@ -139,6 +147,7 @@ class FeedSettingItem extends StatelessWidget {
   const FeedSettingItem({
     super.key,
     required this.feedName,
+    this.description,
     required this.isEnabled,
     required this.itemColor,
     required this.textColor,
@@ -164,10 +173,22 @@ class FeedSettingItem extends StatelessWidget {
                 fontSize: 16,
               ),
             ),
+            subtitle: description != null 
+              ? Text(
+                  description!,
+                  style: TextStyle(
+                    color: textColor.withOpacity(0.7),
+                    fontSize: 12,
+                  ),
+                )
+              : null,
             trailing: Switch(
               value: isEnabled,
               onChanged: onToggleChanged,
               activeColor: AppColors.pink,
+              inactiveThumbColor: Colors.grey.shade400,
+              inactiveTrackColor: Colors.grey.shade600,
+              trackOutlineColor: MaterialStateProperty.all(Colors.transparent),
             ),
             onTap: () {
               // Toggle when tapping anywhere on the list tile

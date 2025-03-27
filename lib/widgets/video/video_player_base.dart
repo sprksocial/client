@@ -24,6 +24,7 @@ abstract class VideoPlayerBase extends StatefulWidget {
   final bool isLiked;
   final bool isSprk;
   final String? videoUri;
+  final bool disableBackgroundBlur;
 
   const VideoPlayerBase({
     super.key,
@@ -46,6 +47,7 @@ abstract class VideoPlayerBase extends StatefulWidget {
     this.isLiked = false,
     this.isSprk = false,
     this.videoUri,
+    this.disableBackgroundBlur = false,
   });
 }
 

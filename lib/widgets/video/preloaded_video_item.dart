@@ -11,6 +11,7 @@ import 'video_player_base.dart';
 class PreloadedVideoItem extends VideoPlayerBase {
   final VideoPlayerController controller;
   final bool isVisible;
+  final bool disableBackgroundBlur;
 
   const PreloadedVideoItem({
     super.key,
@@ -35,6 +36,7 @@ class PreloadedVideoItem extends VideoPlayerBase {
     super.isLiked = false,
     super.isSprk = false,
     super.videoUri,
+    this.disableBackgroundBlur = false,
   });
 
   @override
@@ -239,18 +241,19 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
         fit: StackFit.expand,
         children: [
           // Show a smaller, blurred version of the video in the background
-          ClipRect(
-            child: ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-              child: Transform.scale(
-                scale: 1.2, // Scale up slightly to cover any edges
-                child: Opacity(
-                  opacity: 0.5,
-                  child: VideoPlayer(widget.controller),
+          if (!widget.disableBackgroundBlur)
+            ClipRect(
+              child: ImageFiltered(
+                imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
+                child: Transform.scale(
+                  scale: 1.2, // Scale up slightly to cover any edges
+                  child: Opacity(
+                    opacity: 0.5,
+                    child: VideoPlayer(widget.controller),
+                  ),
                 ),
               ),
             ),
-          ),
           // Darkened overlay
           Container(color: isDarkMode
               ? Colors.black.withAlpha(120)
