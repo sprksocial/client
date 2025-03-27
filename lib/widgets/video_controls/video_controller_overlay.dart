@@ -176,22 +176,22 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
                       ),
                     ),
 
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: progressBarBottomPadding,
-                      child: Center(
-                        child: VideoProgressBar(
-                          position: position,
-                          duration: duration,
-                          isDragging: _isDragging,
-                          dragPosition: _dragPosition,
-                          onDragStart: _onDragStart,
-                          onDragUpdate: _onDragUpdate,
-                          onDragEnd: _onDragEnd,
-                        ),
-                      ),
-                    ),
+                    // Positioned(
+                    //   left: 0,
+                    //   right: 0,
+                    //   bottom: progressBarBottomPadding,
+                    //   child: Center(
+                    //     child: VideoProgressBar(
+                    //       position: position,
+                    //       duration: duration,
+                    //       isDragging: _isDragging,
+                    //       dragPosition: _dragPosition,
+                    //       onDragStart: _onDragStart,
+                    //       onDragUpdate: _onDragUpdate,
+                    //       onDragEnd: _onDragEnd,
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
