@@ -78,13 +78,10 @@ class Comment {
 
     final embed = post.embed?.data;
     if (embed != null) {
-      final embedType = '${embed.runtimeType}';
-      if (embedType.contains('EmbedImages')) {
+      if (embed is EmbedViewImages) {
         hasMedia = true;
         mediaType = 'image';
-        mediaUrl = 'https://cdn.justdavi.dev/runnig.png';
-
-        //mediaUrl = embed.images[0].fullsize;
+        mediaUrl = embed.images[0].thumbnail;
       } else if (embed is EmbedVideoView) {
         hasMedia = true;
         mediaType = 'video';
@@ -136,7 +133,7 @@ class Comment {
       if (embedType == 'so.sprk.embed.images#view') {
         hasMedia = true;
         mediaType = 'image';
-        mediaUrl = post['embed']['images'][0]['fullsize'] as String?;
+        mediaUrl = post['embed']['images'][0]['thumbnail'] as String?;
       } else if (embedType == 'so.sprk.embed.video#view') {
         hasMedia = true;
         mediaType = 'video';
