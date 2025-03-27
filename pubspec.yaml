@@ -32,6 +32,7 @@ dependencies:
   path: ^1.9.1
   preload_page_view: ^0.2.0
   mime: ^1.0.6
+  image: ^4.5.4
 
 dev_dependencies:
   flutter_test:
