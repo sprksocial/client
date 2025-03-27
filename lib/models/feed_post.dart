@@ -13,6 +13,7 @@ class FeedPost {
   final int commentCount;
   final int shareCount;
   final List<String> hashtags;
+  final List<String> imageUrls;
   final String uri; // Post URI for likes
   final String cid; // Post CID for likes
   final bool isSprk; // Whether the post is from Spark
@@ -30,6 +31,7 @@ class FeedPost {
     this.commentCount = 0,
     this.shareCount = 0,
     this.hashtags = const [],
+    this.imageUrls = const [],
     required this.uri,
     required this.cid,
     this.isSprk = false,
@@ -42,8 +44,9 @@ class FeedPost {
   static FeedPost fromBlueskyFeed(FeedView feedItem) {
     final post = feedItem.post;
 
-    // Extract video URL if available
+    // Extract video URL and image URLs if available
     String? videoUrl;
+    List<String> imageUrls = [];
     bool hasMedia = false;
 
     if (post.embed?.data is EmbedVideoView) {
@@ -51,6 +54,8 @@ class FeedPost {
       hasMedia = true;
     } else if (post.embed?.data is EmbedViewImages) {
       hasMedia = true;
+      final embedImages = post.embed?.data as EmbedViewImages;
+      imageUrls = embedImages.images.map((img) => img.fullsize).toList();
     }
     if (!hasMedia) {
     }
@@ -67,6 +72,7 @@ class FeedPost {
       profileImageUrl: post.author.avatar,
       description: post.record.text,
       videoUrl: videoUrl,
+      imageUrls: imageUrls,
       likeCount: post.likeCount,
       commentCount: post.replyCount,
       shareCount: post.repostCount,
@@ -86,8 +92,9 @@ class FeedPost {
     final author = post['author'] as Map<String, dynamic>;
     final record = post['record'] as Map<String, dynamic>;
 
-    // Extract video URL if available and check for media
+    // Extract video URL, image URLs if available and check for media
     String? videoUrl;
+    List<String> imageUrls = [];
     bool hasMedia = false;
 
     if (post['embed'] != null) {
@@ -97,6 +104,13 @@ class FeedPost {
         hasMedia = true;
       } else if (embedType == 'so.sprk.embed.images#view') {
         hasMedia = true;
+        final embedImages = post['embed']['images'] as List<dynamic>?;
+        if (embedImages != null) {
+          imageUrls = embedImages
+              .map((img) => img['fullsize'] as String? ?? '')
+              .where((url) => url.isNotEmpty)
+              .toList();
+        }
       }
     }
 
@@ -105,7 +119,7 @@ class FeedPost {
 
     // Extract description
     final description = record['text'] as String? ?? '';
-    
+
     // Extract hashtags
     List<String> hashtags = HashtagList.extractFromText(description);
 
@@ -121,6 +135,7 @@ class FeedPost {
       profileImageUrl: author['avatar'] as String?,
       description: description,
       videoUrl: videoUrl,
+      imageUrls: imageUrls,
       likeCount: post['likeCount'] as int? ?? 0,
       commentCount: post['replyCount'] as int? ?? 0,
       shareCount: post['repostCount'] as int? ?? 0,

@@ -9,7 +9,7 @@ class VideoInfoBar extends StatelessWidget {
   final List<String> hashtags;
   final bool isSprk;
   final VoidCallback? onUsernameTap;
-  final VoidCallback? onHashtagTap;
+  final Function(String)? onHashtagTap;
   final Function(bool isExpanded)? onDescriptionExpandToggle;
 
   const VideoInfoBar({

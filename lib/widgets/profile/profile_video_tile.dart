@@ -143,7 +143,7 @@ class ProfileVideoTile extends StatelessWidget {
     required VoidCallback onSharePressed,
     required VoidCallback onProfilePressed,
     required VoidCallback onUsernameTap,
-    required VoidCallback onHashtagTap,
+    required Function(String) onHashtagTap,
   }) {
     return VideoItem(
       index: index,
