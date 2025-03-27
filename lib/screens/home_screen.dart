@@ -7,7 +7,6 @@ import 'package:video_player/video_player.dart';
 import '../widgets/video/video_item.dart';
 import '../widgets/video/preloaded_video_item.dart';
 import '../widgets/feed/feed_selector.dart';
-import '../utils/app_theme.dart';
 import '../utils/app_colors.dart';
 import '../services/auth_service.dart';
 import '../services/actions_service.dart';
@@ -72,10 +71,14 @@ class _HomeScreenState extends State<HomeScreen> {
       final feed = await bsky.feed.getTimeline(limit: 100);
 
       // Convert feed items to our unified model
-      final posts = feed.data.feed.map((item) => FeedPost.fromBlueskyFeed(item)).toList();
+      final allPosts = feed.data.feed.map((item) => FeedPost.fromBlueskyFeed(item)).toList();
+
+      // Filter posts to only show those with media that aren't replies
+      final filteredPosts = allPosts.where((post) => post.hasMedia && !post.isReply).toList();
+
 
       setState(() {
-        _feedPosts = posts;
+        _feedPosts = filteredPosts;
         _isLoading = false;
         _preloadInitialVideos();
       });
@@ -103,10 +106,13 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       // Convert feed items to our unified model
-      final posts = feed.data.feed.map((item) => FeedPost.fromBlueskyFeed(item)).toList();
+      final allPosts = feed.data.feed.map((item) => FeedPost.fromBlueskyFeed(item)).toList();
+
+      // Filter posts to only show those with media that aren't replies
+      final filteredPosts = allPosts.where((post) => post.hasMedia && !post.isReply).toList();
 
       setState(() {
-        _feedPosts = posts;
+        _feedPosts = filteredPosts;
         _isLoading = false;
         _preloadInitialVideos();
       });
@@ -162,15 +168,18 @@ class _HomeScreenState extends State<HomeScreen> {
       final posts = feedItems.data['posts'] as List<dynamic>?;
 
       if (posts != null) {
-        // Convert to our unified model
-        final feedPosts = posts.map((post) {
+        // Convert to our unified model and filter
+        final allFeedPosts = posts.map((post) {
           // Create a feed item with the post
           final feedItem = {'post': post};
           return FeedPost.fromSparkFeed(feedItem);
         }).toList();
 
+        // Filter posts to only show those with media that aren't replies
+        final filteredPosts = allFeedPosts.where((post) => post.hasMedia && !post.isReply).toList();
+
         setState(() {
-          _feedPosts = feedPosts;
+          _feedPosts = filteredPosts;
           _isLoading = false;
           _preloadInitialVideos();
         });
@@ -424,8 +433,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildVideoPageView() {
-    final actionsService = Provider.of<ActionsService>(context, listen: false);
-
     return PageView.builder(
       controller: _pageController,
       scrollDirection: Axis.vertical,
@@ -517,6 +524,8 @@ class _HomeScreenState extends State<HomeScreen> {
               cid: post.cid,
               isSprk: post.isSprk,
               likeUri: newLikeUri,
+              hasMedia: post.hasMedia,
+              isReply: post.isReply,
             );
           }
         });

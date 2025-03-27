@@ -16,6 +16,8 @@ class FeedPost {
   final String cid; // Post CID for likes
   final bool isSprk; // Whether the post is from Spark
   final String? likeUri; // URI of the user's like if the post is liked
+  final bool hasMedia; // Whether the post has media (image or video)
+  final bool isReply; // Whether the post is a reply to another post
 
   FeedPost({
     required this.username,
@@ -31,6 +33,8 @@ class FeedPost {
     required this.cid,
     this.isSprk = false,
     this.likeUri,
+    this.hasMedia = false,
+    this.isReply = false,
   });
 
   /// Create a FeedPost from a Bluesky feed item
@@ -39,9 +43,19 @@ class FeedPost {
 
     // Extract video URL if available
     String? videoUrl;
+    bool hasMedia = false;
+
     if (post.embed?.data is EmbedVideoView) {
       videoUrl = (post.embed?.data as EmbedVideoView).playlist;
+      hasMedia = true;
+    } else if (post.embed?.data is EmbedViewImages) {
+      hasMedia = true;
     }
+    if (!hasMedia) {
+    }
+
+    // Check if the post is a reply
+    bool isReply = post.record.reply != null;
 
     // Extract hashtags from description
     List<String> hashtags = ['spark'];
@@ -63,7 +77,9 @@ class FeedPost {
       uri: post.uri.toString(),
       cid: post.cid,
       isSprk: false,
-      likeUri: post.viewer?.like?.toString(),
+      likeUri: post.viewer.like?.toString(),
+      hasMedia: hasMedia,
+      isReply: isReply,
     );
   }
 
@@ -73,11 +89,22 @@ class FeedPost {
     final author = post['author'] as Map<String, dynamic>;
     final record = post['record'] as Map<String, dynamic>;
 
-    // Extract video URL if available
+    // Extract video URL if available and check for media
     String? videoUrl;
-    if (post['embed'] != null && post['embed']['\$type'] == 'so.sprk.embed.video#view') {
-      videoUrl = post['embed']['playlist'];
+    bool hasMedia = false;
+
+    if (post['embed'] != null) {
+      final embedType = post['embed']['\$type'] as String?;
+      if (embedType == 'so.sprk.embed.video#view') {
+        videoUrl = post['embed']['playlist'];
+        hasMedia = true;
+      } else if (embedType == 'so.sprk.embed.images#view') {
+        hasMedia = true;
+      }
     }
+
+    // Check if the post is a reply
+    bool isReply = record.containsKey('reply');
 
     // Extract hashtags from description
     final description = record['text'] as String? ?? '';
@@ -107,6 +134,8 @@ class FeedPost {
       cid: post['cid'] as String? ?? '',
       isSprk: true,
       likeUri: likeUri,
+      hasMedia: hasMedia,
+      isReply: isReply,
     );
   }
 
