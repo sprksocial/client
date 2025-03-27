@@ -331,6 +331,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
           hasMedia: comment.hasMedia,
           mediaType: comment.mediaType,
           mediaUrl: comment.mediaUrl,
+          imageUrls: comment.imageUrls,
           replyCount: comment.replyCount,
           isDarkMode: widget.isDarkMode,
           onReply: (userId, username) => _replyToComment(userId, username, parentUri: comment.uri, parentCid: comment.cid),

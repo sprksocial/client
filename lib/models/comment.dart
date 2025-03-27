@@ -19,6 +19,7 @@ class Comment {
   final String? likeUri;
   final bool isSprk;
   final List<Comment> replies;
+  final List<String> imageUrls;
 
   Comment({
     required this.id,
@@ -38,6 +39,7 @@ class Comment {
     this.likeUri,
     this.isSprk = false,
     this.replies = const [],
+    this.imageUrls = const [],
   });
 
   /// Parse a relative datetime string like "2023-11-19T12:34:56.789Z" and return a user-friendly string
@@ -107,6 +109,7 @@ class Comment {
       likeUri: post.viewer.like?.toString(),
       isSprk: false,
       replies: [],
+      imageUrls: [],
     );
   }
 
@@ -127,13 +130,27 @@ class Comment {
     bool hasMedia = false;
     String? mediaType;
     String? mediaUrl;
+    List<String> imageUrls = [];
 
     if (post['embed'] != null) {
       final embedType = post['embed']['\$type'] as String?;
       if (embedType == 'so.sprk.embed.images#view') {
         hasMedia = true;
         mediaType = 'image';
-        mediaUrl = post['embed']['images'][0]['thumbnail'] as String?;
+
+        // Extract all image URLs
+        final images = post['embed']['images'] as List<dynamic>?;
+        if (images != null && images.isNotEmpty) {
+          mediaUrl = images[0]['thumb'] as String?;
+
+          // Add all fullsize images to imageUrls
+          for (final image in images) {
+            final fullsize = image['fullsize'] as String?;
+            if (fullsize != null) {
+              imageUrls.add(fullsize);
+            }
+          }
+        }
       } else if (embedType == 'so.sprk.embed.video#view') {
         hasMedia = true;
         mediaType = 'video';
@@ -164,6 +181,7 @@ class Comment {
       likeUri: likeUri,
       isSprk: true,
       replies: [],
+      imageUrls: imageUrls,
     );
   }
 
