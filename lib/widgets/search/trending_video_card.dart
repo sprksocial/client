@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../utils/formatters/text_formatter.dart';
 
 class TrendingVideoCard extends StatelessWidget {
   final String thumbnailUrl;
@@ -9,8 +10,7 @@ class TrendingVideoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final formattedViews =
-        viewCount >= 1000000 ? '${(viewCount / 1000000).toStringAsFixed(0)}M' : '${(viewCount / 1000).toStringAsFixed(0)}K';
+    final formattedViews = TextFormatter.formatCount(viewCount);
 
     return GestureDetector(
       onTap: onTap,

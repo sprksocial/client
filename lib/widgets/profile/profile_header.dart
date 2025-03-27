@@ -83,10 +83,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
     final List<String> links = TextFormatter.extractUrls(description);
 
-    if (links.isEmpty && description.contains("esfera.dev") && !description.contains("@esfera.dev")) {
-      links.add("esfera.dev");
-    }
-
     final uniqueLinks = links.toSet().toList();
 
     return Padding(
