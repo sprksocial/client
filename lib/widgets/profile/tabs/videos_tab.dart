@@ -135,8 +135,24 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
   void _openVideoPlayer(int index, String videoUrl, String thumbnailUrl) {
     final video = _videos[index];
     final username = video['post']['author']['handle'] as String? ?? 'username';
-    final description = video['post']['text'] as String? ?? 'Video ${index + 1}';
+    
+    // Try to get description from record text first, then post text, finally fallback to default
+    String? description;
+    if (video['post']['record'] != null && video['post']['record']['text'] != null) {
+      description = video['post']['record']['text'] as String?;
+    }
+    if (description == null || description.isEmpty) {
+      description = video['post']['text'] as String?;
+    }
+    if (description == null || description.isEmpty) {
+      description = 'Video ${index + 1}';
+    }
+    
     final likeCount = video['post']['likeCount'] as int? ?? 0;
+    final authorDid = video['post']['author']['did'] as String?;
+    final videoUri = video['post']['uri'] as String?;
+    final isSprk = videoUrl.contains('sprk.so');
+    final commentCount = video['post']['replyCount'] as int? ?? 0;
 
     // Extract hashtags from the description
     final List<String> hashtags = [];
@@ -156,6 +172,7 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
       index: index,
       likeCount: likeCount,
       onTap: () {}, // Not needed here
+      isSprk: isSprk,
     );
 
     final videoItem = videoTile.toVideoItem(
@@ -165,6 +182,10 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
       onProfilePressed: () {},
       onUsernameTap: () {},
       onHashtagTap: (String hashtag) {},
+      authorDid: authorDid,
+      videoUri: videoUri,
+      isSprk: isSprk,
+      commentCount: commentCount,
     );
 
     // Use Navigator.push instead of MaterialPageRoute to prevent complete rebuilds
@@ -257,7 +278,19 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
           final thumbnailUrl = video['post']['embed']['thumbnail'] as String? ?? '';
           final playlistUrl = video['post']['embed']['playlist'] as String? ?? '';
           final username = video['post']['author']['handle'] as String? ?? 'username';
-          final description = video['post']['text'] as String? ?? 'Video ${index + 1}';
+          
+          // Try to get description from record text first, then post text, finally fallback to default
+          String? description;
+          if (video['post']['record'] != null && video['post']['record']['text'] != null) {
+            description = video['post']['record']['text'] as String?;
+          }
+          if (description == null || description.isEmpty) {
+            description = video['post']['text'] as String?;
+          }
+          if (description == null || description.isEmpty) {
+            description = 'Video ${index + 1}';
+          }
+          
           final likeCount = video['post']['likeCount'] as int? ?? 0;
 
           // Extract hashtags from the description
