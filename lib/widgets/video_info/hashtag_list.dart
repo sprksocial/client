@@ -9,6 +9,10 @@ class HashtagList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (hashtags.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
     return Wrap(
       spacing: 4.0,
       runSpacing: 4.0,
@@ -23,5 +27,19 @@ class HashtagList extends StatelessWidget {
             );
           }).toList(),
     );
+  }
+  
+  /// Extract hashtags from a text string
+  static List<String> extractFromText(String text) {
+    if (text.isEmpty) {
+      return [];
+    }
+    
+    final matches = RegExp(r'#(\w+)').allMatches(text);
+    if (matches.isEmpty) {
+      return [];
+    }
+    
+    return matches.map((m) => m.group(1)!).toList();
   }
 }

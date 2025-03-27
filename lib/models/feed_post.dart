@@ -1,5 +1,6 @@
 import 'package:bluesky/app_bsky_embed_video.dart';
 import 'package:bluesky/bluesky.dart';
+import 'package:sparksocial/widgets/video_info/hashtag_list.dart';
 
 /// A unified model for handling feed posts from different sources
 class FeedPost {
@@ -58,11 +59,7 @@ class FeedPost {
     bool isReply = post.record.reply != null;
 
     // Extract hashtags from description
-    List<String> hashtags = ['spark'];
-    final matches = RegExp(r'#(\w+)').allMatches(post.record.text);
-    if (matches.isNotEmpty) {
-      hashtags = matches.map((m) => m.group(1)!).toList();
-    }
+    List<String> hashtags = HashtagList.extractFromText(post.record.text);
 
     return FeedPost(
       username: post.author.handle,
@@ -106,13 +103,11 @@ class FeedPost {
     // Check if the post is a reply
     bool isReply = record.containsKey('reply');
 
-    // Extract hashtags from description
+    // Extract description
     final description = record['text'] as String? ?? '';
-    List<String> hashtags = ['spark'];
-    final matches = RegExp(r'#(\w+)').allMatches(description);
-    if (matches.isNotEmpty) {
-      hashtags = matches.map((m) => m.group(1)!).toList();
-    }
+    
+    // Extract hashtags
+    List<String> hashtags = HashtagList.extractFromText(description);
 
     // Extract like URI from viewer object if available
     String? likeUri;
