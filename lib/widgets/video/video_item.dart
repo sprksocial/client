@@ -37,6 +37,7 @@ class VideoItem extends VideoPlayerBase {
     super.isLiked = false,
     super.isSprk = false,
     super.videoUri,
+    super.videoCid,
     super.disableBackgroundBlur = false,
   });
 

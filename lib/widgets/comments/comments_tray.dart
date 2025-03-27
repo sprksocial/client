@@ -12,6 +12,7 @@ import '../../models/comment.dart';
 void showCommentsTray({
   required BuildContext context,
   required String postUri,
+  required String postCid,
   required int commentCount,
   required VoidCallback onClose,
   required bool isDarkMode,
@@ -21,21 +22,24 @@ void showCommentsTray({
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (context) => CommentsTray(
-      postUri: postUri,
-      commentCount: commentCount,
-      onClose: () {
-        Navigator.pop(context);
-        onClose();
-      },
-      isDarkMode: isDarkMode,
-      isSprk: isSprk,
-    ),
+    builder:
+        (context) => CommentsTray(
+          postUri: postUri,
+          postCid: postCid,
+          commentCount: commentCount,
+          onClose: () {
+            Navigator.pop(context);
+            onClose();
+          },
+          isDarkMode: isDarkMode,
+          isSprk: isSprk,
+        ),
   ).whenComplete(onClose);
 }
 
 class CommentsTray extends StatefulWidget {
   final String postUri;
+  final String postCid;
   final int commentCount;
   final VoidCallback onClose;
   final bool isDarkMode;
@@ -44,6 +48,7 @@ class CommentsTray extends StatefulWidget {
   const CommentsTray({
     super.key,
     required this.postUri,
+    required this.postCid,
     required this.commentCount,
     required this.onClose,
     this.isDarkMode = true,
@@ -60,6 +65,8 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   final _scrollController = ScrollController();
   String? _replyingToUsername;
   String? _replyingToId;
+  String? _replyingToUri;
+  String? _replyingToCid;
 
   List<Comment>? _comments;
   bool _isLoading = false;
@@ -147,10 +154,12 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     });
   }
 
-  void _replyToComment(String userId, String username) {
+  void _replyToComment(String userId, String username, {String? parentUri, String? parentCid}) {
     setState(() {
       _replyingToUsername = username;
       _replyingToId = userId;
+      _replyingToUri = parentUri;
+      _replyingToCid = parentCid;
     });
   }
 
@@ -158,7 +167,14 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     setState(() {
       _replyingToUsername = null;
       _replyingToId = null;
+      _replyingToUri = null;
+      _replyingToCid = null;
     });
+  }
+
+  void _onCommentPosted(String commentUri) {
+    // Refresh comments after a new comment is posted
+    _loadComments();
   }
 
   @override
@@ -184,12 +200,18 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
           children: [
             _buildHeader(borderColor, textColor),
             Expanded(child: _buildCommentsList()),
+
             CommentInput(
               videoId: widget.postUri,
               replyingToUsername: _replyingToUsername,
               replyingToId: _replyingToId,
               onCancelReply: _cancelReply,
               isDarkMode: widget.isDarkMode,
+              postCid: widget.postCid,
+              postUri: widget.postUri,
+              parentCid: _replyingToCid,
+              parentUri: _replyingToUri,
+              onCommentPosted: _onCommentPosted,
             ),
           ],
         ),
@@ -254,17 +276,11 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
               const SizedBox(height: 8),
               Text(
                 _error!,
-                style: TextStyle(
-                  color: widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary, fontSize: 14),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: _loadComments,
-                child: const Text('Retry'),
-              ),
+              ElevatedButton(onPressed: _loadComments, child: const Text('Retry')),
             ],
           ),
         ),
@@ -275,10 +291,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
       return Center(
         child: Text(
           'No comments yet',
-          style: TextStyle(
-            color: widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary,
-            fontSize: 14,
-          ),
+          style: TextStyle(color: widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary, fontSize: 14),
         ),
       );
     }
@@ -291,21 +304,17 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
         if (index == _comments!.length) {
           // Show loading indicator or end of list message
           if (_isLoading) {
-            return const Center(child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: CircularProgressIndicator(),
-            ));
+            return const Center(child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator()));
           } else if (!_hasMoreComments) {
-            return Center(child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Text(
-                'No more comments',
-                style: TextStyle(
-                  color: widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary,
-                  fontSize: 14,
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Text(
+                  'No more comments',
+                  style: TextStyle(color: widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary, fontSize: 14),
                 ),
               ),
-            ));
+            );
           }
           return const SizedBox.shrink();
         }
@@ -324,8 +333,10 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
           mediaUrl: comment.mediaUrl,
           replyCount: comment.replyCount,
           isDarkMode: widget.isDarkMode,
-          onReply: _replyToComment,
+          onReply: (userId, username) => _replyToComment(userId, username, parentUri: comment.uri, parentCid: comment.cid),
           replies: comment.replies,
+          uri: comment.uri,
+          cid: comment.cid,
         );
       },
     );

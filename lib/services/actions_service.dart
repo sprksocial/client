@@ -42,6 +42,45 @@ class ActionsService extends ChangeNotifier {
     return response;
   }
 
+  Future<XRPCResponse<StrongRef>> postComment(String text, String parentCid, String parentUri, {String? rootCid, String? rootUri}) async {
+    final authAtProto = _authService.atproto;
+    if (authAtProto == null || authAtProto.session == null) {
+      throw Exception('AtProto not initialized');
+    }
+
+    // If root isn't provided, use parent as root
+    rootCid ??= parentCid;
+    rootUri ??= parentUri;
+
+    final commentRecord = {
+      "\$type": "so.sprk.feed.post",
+      "text": text,
+      "reply": {
+        "root": {
+          "cid": rootCid,
+          "uri": rootUri,
+        },
+        "parent": {
+          "cid": parentCid,
+          "uri": parentUri,
+        }
+      },
+      "createdAt": DateTime.now().toUtc().toIso8601String(),
+    };
+
+    final response = await authAtProto.repo.createRecord(
+      collection: NSID.parse('so.sprk.feed.post'),
+      record: commentRecord
+    );
+
+    if (response.status != HttpStatus.ok) {
+      throw Exception('Failed to post comment: ${response.status} ${response.data}');
+    }
+
+    notifyListeners();
+    return response;
+  }
+
   Future<XRPCResponse<EmptyData>> unlikePost(String likeUri) async {
     final authAtProto = _authService.atproto;
     if (authAtProto == null || authAtProto.session == null) {

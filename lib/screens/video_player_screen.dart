@@ -32,13 +32,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     super.initState();
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: _currentIndex);
-    
+
     if (widget.allVideos != null && widget.allVideos!.isNotEmpty) {
       _prepareVideoItems();
     } else {
       _videoItems = [widget.initialVideoItem];
     }
-    
+
     _preloadInitialMedia();
   }
 
@@ -58,13 +58,13 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     for (int i = 0; i < widget.allVideos!.length; i++) {
       final video = widget.allVideos![i];
       if (video == null) continue;
-      
+
       final thumbnailUrl = video['post']['embed']['thumbnail'] as String? ?? '';
       final videoUrl = video['post']['embed']['playlist'] as String? ?? '';
       if (videoUrl.isEmpty) continue;
-      
+
       final username = video['post']['author']['handle'] as String? ?? 'username';
-      
+
       // Get description from record text first, then post text, finally fallback to default
       String? description;
       if (video['post']['record'] != null && video['post']['record']['text'] != null) {
@@ -76,15 +76,16 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       if (description == null || description.isEmpty) {
         description = '';
       }
-      
+
       final likeCount = video['post']['likeCount'] as int? ?? 0;
       final commentCount = video['post']['replyCount'] as int? ?? 0;
       final shareCount = video['post']['repostCount'] as int? ?? 0;
       final authorDid = video['post']['author']['did'] as String? ?? '';
       final videoUri = video['post']['uri'] as String? ?? '';
+      final videoCid = video['post']['cid'] as String? ?? '';
       final profileImageUrl = video['post']['author']['avatar'] as String? ?? '';
       final isSprk = videoUrl.contains('sprk.so');
-      
+
       // Extract hashtags
       final List<String> hashtags = [];
       final words = description.split(' ');
@@ -93,7 +94,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           hashtags.add(word.substring(1));
         }
       }
-      
+
       final videoItem = VideoItem(
         key: ValueKey('video_item_$i'),
         index: i,
@@ -110,6 +111,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         isLiked: false,
         isSprk: isSprk,
         videoUri: videoUri,
+        videoCid: videoCid,
         disableBackgroundBlur: false,
         onLikePressed: () {},
         onBookmarkPressed: () {},
@@ -118,7 +120,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         onUsernameTap: () {},
         onHashtagTap: (String hashtag) {},
       );
-      
+
       _videoItems.add(videoItem);
     }
   }
@@ -135,7 +137,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     if (_videoItems.isNotEmpty) {
       // Load current video first
       _preloadVideo(_currentIndex);
-      
+
       // Then preload neighbors
       if (_currentIndex > 0) _preloadVideo(_currentIndex - 1);
       if (_currentIndex < _videoItems.length - 1) _preloadVideo(_currentIndex + 1);
@@ -291,10 +293,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         onPageChanged: _updateLoadedMedia,
         itemBuilder: (context, index) {
           final videoItem = _videoItems[index];
-          
+
           // For preloaded video items
           final isPreloaded = _preloadedVideos.containsKey(index) && _preloadedVideos[index]!.isInitialized;
-          
+
           if (isPreloaded) {
             return PreloadedVideoItem(
               key: ValueKey('preloaded_video_$index'),
@@ -313,6 +315,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               isLiked: videoItem.isLiked,
               isSprk: videoItem.isSprk,
               videoUri: videoItem.videoUri,
+              videoCid: videoItem.videoCid,
               disableBackgroundBlur: false,
               onLikePressed: videoItem.onLikePressed,
               onBookmarkPressed: videoItem.onBookmarkPressed,
