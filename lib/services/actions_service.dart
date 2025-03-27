@@ -1,9 +1,8 @@
-import 'dart:typed_data';
-import 'package:atproto/atproto.dart';
+import 'package:atproto/atproto.dart' as atp;
 import 'package:flutter/foundation.dart';
 import 'package:atproto/core.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:mime/mime.dart';
+import 'package:image/image.dart' as img;
 import '../models/feed_post.dart';
 import 'auth_service.dart';
 
@@ -12,13 +11,15 @@ class ActionsService extends ChangeNotifier {
 
   ActionsService(this._authService);
 
+  atp.ATProto? get _atproto => _authService.atproto; // Use prefixed type
+
   // Check if a post is liked
   bool isPostLiked(FeedPost post) {
     return post.isLiked;
   }
 
-  Future<XRPCResponse<StrongRef>> likePost(String postCid, String postUri) async {
-    final authAtProto = _authService.atproto;
+  Future<XRPCResponse<atp.StrongRef>> likePost(String postCid, String postUri) async {
+    final authAtProto = _atproto;
     if (authAtProto == null || authAtProto.session == null) {
       throw Exception('AtProto not initialized');
     }
@@ -31,15 +32,15 @@ class ActionsService extends ChangeNotifier {
 
     final response = await authAtProto.repo.createRecord(collection: NSID.parse('so.sprk.feed.like'), record: likeRecord);
 
-    if (response.status != HttpStatus.ok) {
-      throw Exception('Failed to like post: ${response.status} ${response.data}');
+    if (response.status.code != 200) {
+      throw Exception('Failed to like post: ${response.status.code} ${response.data}');
     }
 
     notifyListeners();
     return response;
   }
 
-  Future<XRPCResponse<StrongRef>> postComment(
+  Future<XRPCResponse<atp.StrongRef>> postComment(
     String text,
     String parentCid,
     String parentUri, {
@@ -47,41 +48,21 @@ class ActionsService extends ChangeNotifier {
     String? rootUri,
     List<XFile>? imageFiles,
   }) async {
-    final authAtProto = _authService.atproto;
+    final authAtProto = _atproto;
     if (authAtProto == null || authAtProto.session == null) {
       throw Exception('AtProto not initialized');
     }
 
     // Upload images and prepare embed JSON if provided
-    Map<String, dynamic>? embedJson; // Use a Map for the embed JSON
+    Map<String, dynamic>? embedJson;
     if (imageFiles != null && imageFiles.isNotEmpty) {
-      final List<Map<String, dynamic>> imagesJsonList = []; // List to hold image JSON objects
+      // Use the updated _uploadImages which returns List<Map<String, dynamic>>
+      final List<Map<String, dynamic>> uploadedImageMaps = await _uploadImages(imageFiles);
 
-      for (final file in imageFiles) {
-        final imageBytes = await file.readAsBytes();
-        final detectedMimeType = lookupMimeType(file.path) ?? 'application/octet-stream';
-
-        // Upload the blob
-        final response = await authAtProto.repo.uploadBlob(imageBytes);
-
-        if (response.status != HttpStatus.ok) {
-          throw Exception('Failed to upload image: ${response.status} ${response.data}');
-        }
-
-        debugPrint('Uploaded image: ${response.data.blob.toJson()}');
-
-        // Add the image JSON object to the list
-        imagesJsonList.add({
-          "\$type": "so.sprk.embed.images#image", // Optional: type for individual image if needed by spec
-          "alt": '', // Placeholder for alt text
-          "image": response.data.blob.toJson(), // Use the blob reference from the response
-        });
-      }
-
-      // Construct the embed JSON
+      // Construct the embed JSON using Spark lexicon type
       embedJson = {
-        "\$type": "so.sprk.embed.images", // Standard Bluesky image embed type
-        "images": imagesJsonList,
+        "\$type": "so.sprk.embed.images", // Spark image embed type
+        "images": uploadedImageMaps,
       };
     }
 
@@ -90,7 +71,7 @@ class ActionsService extends ChangeNotifier {
     rootUri ??= parentUri;
 
     final commentRecord = <String, dynamic>{
-      "\$type": "so.sprk.feed.post",
+      "\$type": "so.sprk.feed.post", // Spark feed post type
       "text": text,
       "reply": {
         "root": {"cid": rootCid, "uri": rootUri},
@@ -104,10 +85,14 @@ class ActionsService extends ChangeNotifier {
       commentRecord['embed'] = embedJson;
     }
 
+    // Use the correct NSID for Spark posts
     final response = await authAtProto.repo.createRecord(collection: NSID.parse('so.sprk.feed.post'), record: commentRecord);
 
-    if (response.status != HttpStatus.ok) {
-      throw Exception('Failed to post comment: ${response.status} ${response.data}');
+    // Check response status (using atp.HttpStatus if available, otherwise integer)
+    // Assuming HttpStatus.ok is 200 or similar standard code
+    if (response.status.code != 200) {
+      // Adjust status code check if needed
+      throw Exception('Failed to post comment: ${response.status.code} ${response.data}');
     }
 
     notifyListeners();
@@ -115,14 +100,14 @@ class ActionsService extends ChangeNotifier {
   }
 
   Future<XRPCResponse<EmptyData>> unlikePost(String likeUri) async {
-    final authAtProto = _authService.atproto;
+    final authAtProto = _atproto;
     if (authAtProto == null || authAtProto.session == null) {
       throw Exception('AtProto not initialized');
     }
 
     final response = await authAtProto.repo.deleteRecord(uri: AtUri.parse(likeUri));
-    if (response.status != HttpStatus.ok) {
-      throw Exception('Failed to unlike post: ${response.status} ${response.data}');
+    if (response.status.code != 200) {
+      throw Exception('Failed to unlike post: ${response.status.code} ${response.data}');
     }
 
     notifyListeners();
@@ -140,12 +125,86 @@ class ActionsService extends ChangeNotifier {
         return null; // Post is now unliked
       } else {
         final response = await likePost(post.cid, post.uri);
-        // Return the new like URI from the response
         return response.data.uri.toString();
       }
     } catch (e) {
       debugPrint('Error toggling like: $e');
       rethrow;
     }
+  }
+
+  /// Posts a new feed item with text and images using the Spark NSID.
+  /// Returns the StrongRef of the created post record.
+  Future<atp.StrongRef> postImageFeed(String text, List<XFile> imageFiles) async {
+    final authAtProto = _atproto; // Use prefixed type
+    if (authAtProto == null || authAtProto.session == null) {
+      throw Exception('AtProto not initialized');
+    }
+    if (imageFiles.isEmpty) {
+      throw ArgumentError('At least one image is required for an image post.');
+    }
+
+    final List<Map<String, dynamic>> uploadedImageMaps = await _uploadImages(imageFiles);
+
+    final embed = {"\$type": "so.sprk.embed.images", 'images': uploadedImageMaps};
+
+    try {
+      final response = await authAtProto.repo.createRecord(
+        collection: NSID.parse('so.sprk.feed.post'),
+        record: {
+          "\$type": "so.sprk.feed.post",
+          'text': text,
+          'embed': embed,
+          'createdAt': DateTime.now().toUtc().toIso8601String(),
+        },
+      );
+
+      if (response.status.code != 200) {
+        throw Exception('Failed to create image post: ${response.status.code} ${response.data}');
+      }
+
+      return response.data;
+    } catch (e) {
+      print('Error creating Spark image post record: $e');
+      rethrow;
+    }
+  }
+
+  /// Helper to upload multiple images, stripping EXIF, and return a list of JSON maps for embedding.
+  Future<List<Map<String, dynamic>>> _uploadImages(List<XFile> imageFiles) async {
+    final authAtProto = _atproto;
+    if (authAtProto == null) {
+      throw Exception('ATProto service not available');
+    }
+
+    final List<Map<String, dynamic>> uploadedImageMaps = [];
+    for (final imageFile in imageFiles) {
+      try {
+        final originalBytes = await imageFile.readAsBytes();
+
+        img.Image? decodedImage = img.decodeImage(originalBytes);
+
+        if (decodedImage == null) {
+          throw Exception('Failed to decode image ${imageFile.name}');
+        }
+
+        final processedBytes = Uint8List.fromList(img.encodeJpg(decodedImage, quality: 85));
+        final response = await authAtProto.repo.uploadBlob(processedBytes);
+
+        if (response.status.code != 200) {
+          throw Exception('Blob upload failed for ${imageFile.name}: ${response.status.code}');
+        }
+
+        uploadedImageMaps.add({
+          "\$type": "so.sprk.embed.images#image",
+          "alt": '', // Alt text - consider adding a way to input this later
+          "image": response.data.blob.toJson(),
+        });
+      } catch (e) {
+        debugPrint('Error processing/uploading image ${imageFile.name}: $e');
+        rethrow; // Rethrow to indicate failure
+      }
+    }
+    return uploadedImageMaps;
   }
 }

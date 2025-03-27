@@ -14,6 +14,7 @@ import '../widgets/camera/mode_selector.dart';
 import '../widgets/camera/recording_bar.dart';
 import 'auth_prompt_screen.dart';
 import 'video_review_screen.dart';
+import 'image_review_screen.dart';
 
 class CreateVideoScreen extends StatefulWidget {
   const CreateVideoScreen({super.key});
@@ -33,6 +34,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
   Timer? _recordingTimer;
   int _recordingSeconds = 0;
   final int _maxRecordingSeconds = 180; // 3 minutes
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -119,7 +121,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
     }
   }
 
-  void _onGalleryPressed() async {
+  void _onVideoGalleryPressed() async {
     final authService = Provider.of<AuthService>(context, listen: false);
     if (!authService.isAuthenticated) {
       setState(() {
@@ -129,12 +131,11 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
     }
 
     try {
-      final ImagePicker picker = ImagePicker();
-      final XFile? video = await picker.pickVideo(source: ImageSource.gallery, maxDuration: const Duration(seconds: 180));
+      final XFile? video = await _picker.pickVideo(source: ImageSource.gallery, maxDuration: const Duration(seconds: 180));
 
       if (video != null) {
         debugPrint('Video selected from gallery: ${video.path}');
-        
+
         if (mounted) {
           await _openVideoEditor(video.path);
         }
@@ -148,6 +149,61 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
             return AlertDialog(
               title: const Text('Error'),
               content: Text('Failed to select video: ${e.toString()}'),
+              actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK'))],
+            );
+          },
+        );
+      }
+    }
+  }
+
+  void _onImageGalleryPressed() async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    if (!authService.isAuthenticated) {
+      setState(() {
+        _showAuthPrompt = true;
+      });
+      return;
+    }
+
+    const maxImages = 4; // Limit image count
+
+    try {
+      final List<XFile> pickedFiles = await _picker.pickMultiImage(
+        limit: maxImages,
+      );
+
+      if (pickedFiles.isNotEmpty) {
+        debugPrint('${pickedFiles.length} images selected from gallery.');
+
+        if (mounted) {
+          // Navigate to the ImageReviewScreen
+          final postResult = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ImageReviewScreen(imageFiles: pickedFiles),
+            ),
+          );
+
+          // If the result is true, the post was successful
+          if (postResult == true) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Image post created successfully!')),
+            );
+            // Optionally pop this screen or navigate elsewhere
+            // Navigator.of(context).pop();
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error picking images for post: $e');
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Error'),
+              content: Text('Failed to select images: ${e.toString()}'),
               actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK'))],
             );
           },
@@ -249,30 +305,30 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
     try {
       // Create a Video object from the recorded or selected video
       final video = Video(videoPath);
-      
+
       // Open the editor with the video
       final result = await VESDK.openEditor(video);
-      
+
       if (result != null && result.video.isNotEmpty) {
         // Video was edited successfully
         String editedVideoPath = result.video;
         debugPrint('Video edited successfully: $editedVideoPath');
-        
+
         // Handle file:// URL scheme
         if (editedVideoPath.startsWith('file://')) {
           editedVideoPath = editedVideoPath.replaceFirst('file://', '');
         }
-        
+
         // Check if the file exists before proceeding
         final file = File(editedVideoPath);
         if (!await file.exists()) {
           throw Exception('Edited video file does not exist: $editedVideoPath');
         }
-        
+
         // Debug info about the video file
         final fileSize = await file.length();
         debugPrint('Edited video file size: $fileSize bytes');
-        
+
         // Navigate to the review screen with the edited video
         if (mounted) {
           try {
@@ -282,7 +338,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
                 builder: (context) => VideoReviewScreen(videoPath: editedVideoPath),
               ),
             );
-            
+
             // If the result is true, the video was posted successfully
             if (reviewResult == true) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -297,7 +353,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       } else {
         // User canceled editing or there was an issue
         debugPrint('Video editing was canceled or failed to save');
-        
+
         // If editing was canceled, we can still use the original video
         if (mounted) {
           final reviewResult = await Navigator.push(
@@ -306,7 +362,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
               builder: (context) => VideoReviewScreen(videoPath: videoPath),
             ),
           );
-          
+
           if (reviewResult == true) {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Video posted successfully!')),
@@ -340,7 +396,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
                         ),
                       );
                     }
-                  }, 
+                  },
                   child: const Text('Use Original Video')
                 ),
               ],
@@ -410,7 +466,8 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
                     isRecording: _isRecording,
                     onCapturePressed: _onCapturePressed,
                     onFlipCameraPressed: _onFlipCameraPressed,
-                    onGalleryPressed: _onGalleryPressed,
+                    onGalleryPressed: _onVideoGalleryPressed,
+                    onImageGalleryPressed: _onImageGalleryPressed,
                   ),
                 ],
               ),
