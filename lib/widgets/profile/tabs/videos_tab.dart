@@ -136,7 +136,7 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
   void _openVideoPlayer(int index, String videoUrl, String thumbnailUrl) {
     final video = _videos[index];
     final username = video['post']['author']['handle'] as String? ?? 'username';
-    
+
     // Try to get description from record text first, then post text, finally fallback to default
     String? description;
     if (video['post']['record'] != null && video['post']['record']['text'] != null) {
@@ -148,10 +148,11 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
     if (description == null || description.isEmpty) {
       description = '';
     }
-    
+
     final likeCount = video['post']['likeCount'] as int? ?? 0;
     final authorDid = video['post']['author']['did'] as String?;
     final videoUri = video['post']['uri'] as String?;
+    final videoCid = video['post']['cid'] as String?;
     final isSprk = videoUrl.contains('sprk.so');
     final commentCount = video['post']['replyCount'] as int? ?? 0;
     final shareCount = video['post']['repostCount'] as int? ?? 0;
@@ -182,6 +183,7 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
       isLiked: false,
       isSprk: isSprk,
       videoUri: videoUri,
+      videoCid: videoCid,
       disableBackgroundBlur: false,
       onLikePressed: () {},
       onBookmarkPressed: () {},
@@ -284,7 +286,7 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
           final thumbnailUrl = video['post']['embed']['thumbnail'] as String? ?? '';
           final playlistUrl = video['post']['embed']['playlist'] as String? ?? '';
           final username = video['post']['author']['handle'] as String? ?? 'username';
-          
+
           // Try to get description from record text first, then post text, finally fallback to default
           String? description;
           if (video['post']['record'] != null && video['post']['record']['text'] != null) {
@@ -296,7 +298,7 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
           if (description == null || description.isEmpty) {
             description = '';
           }
-          
+
           final likeCount = video['post']['likeCount'] as int? ?? 0;
 
           // Extract hashtags from the description

@@ -24,6 +24,7 @@ abstract class VideoPlayerBase extends StatefulWidget {
   final bool isLiked;
   final bool isSprk;
   final String? videoUri;
+  final String? videoCid;
   final bool disableBackgroundBlur;
 
   const VideoPlayerBase({
@@ -47,6 +48,7 @@ abstract class VideoPlayerBase extends StatefulWidget {
     this.isLiked = false,
     this.isSprk = false,
     this.videoUri,
+    this.videoCid,
     this.disableBackgroundBlur = false,
   });
 }
@@ -88,6 +90,7 @@ abstract class VideoPlayerBaseState<T extends VideoPlayerBase> extends State<T> 
     showCommentsTray(
       context: context,
       postUri: widget.videoUri!,
+      postCid: widget.videoCid!,
       commentCount: widget.commentCount,
       onClose: () {
         setState(() {

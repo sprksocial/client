@@ -19,6 +19,8 @@ class CommentItem extends StatefulWidget {
   final bool isDarkMode;
   final Function(String, String) onReply;
   final List<Comment> replies;
+  final String uri;
+  final String cid;
 
   const CommentItem({
     super.key,
@@ -35,6 +37,8 @@ class CommentItem extends StatefulWidget {
     required this.isDarkMode,
     required this.onReply,
     this.replies = const [],
+    required this.uri,
+    required this.cid,
   });
 
   @override

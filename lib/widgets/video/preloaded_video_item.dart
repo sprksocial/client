@@ -36,6 +36,7 @@ class PreloadedVideoItem extends VideoPlayerBase {
     super.isLiked = false,
     super.isSprk = false,
     super.videoUri,
+    super.videoCid,
     this.disableBackgroundBlur = false,
   });
 
