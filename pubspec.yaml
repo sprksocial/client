@@ -22,7 +22,7 @@ dependencies:
   atproto: ^0.13.3
   bluesky: ^0.18.10
   http: ^1.1.0
-  shared_preferences: ^2.5.2
+  shared_preferences: ^2.5.3
   visibility_detector: ^0.4.0+2
   fvp: ^0.30.0
   lucide_icons_flutter: ^2.0.0
