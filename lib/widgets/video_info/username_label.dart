@@ -16,15 +16,18 @@ class UsernameLabel extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text(
-          '@$username',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
+        Flexible(
+          child: Text(
+            '@$username',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+            overflow: TextOverflow.ellipsis,
           ),
         ),
-        ...[
+        if (isSprk || true) ...[
           const SizedBox(width: 4),
           Container(
             padding: const EdgeInsets.all(4),
