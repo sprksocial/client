@@ -1,5 +1,7 @@
+import 'dart:io'; // Import for File
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:image_picker/image_picker.dart'; // Import image_picker
 import 'package:provider/provider.dart';
 import '../../utils/app_colors.dart';
 import '../../services/actions_service.dart';
@@ -39,8 +41,11 @@ class CommentInput extends StatefulWidget {
 
 class _CommentInputState extends State<CommentInput> {
   final TextEditingController _textController = TextEditingController();
+  final ImagePicker _picker = ImagePicker(); // Add ImagePicker instance
+  List<XFile> _selectedImages = []; // State for selected images
   bool _canSubmit = false;
   bool _isPosting = false;
+  bool _isUploadingImages = false; // State for image upload phase
 
   @override
   void initState() {
@@ -56,7 +61,10 @@ class _CommentInputState extends State<CommentInput> {
   }
 
   void _updateSubmitState() {
-    final newCanSubmit = _textController.text.trim().isNotEmpty;
+    final textIsNotEmpty = _textController.text.trim().isNotEmpty;
+    final imagesAreSelected = _selectedImages.isNotEmpty;
+    final newCanSubmit = textIsNotEmpty || imagesAreSelected; // Can submit if text OR images exist
+
     if (newCanSubmit != _canSubmit) {
       setState(() {
         _canSubmit = newCanSubmit;
@@ -64,30 +72,83 @@ class _CommentInputState extends State<CommentInput> {
     }
   }
 
+  // Function to pick images
+  Future<void> _pickImages() async {
+    if (_isPosting) return; // Don't allow picking while posting
+
+    // Limit the number of images that can be selected (e.g., 4)
+    const maxImages = 4;
+    final currentImageCount = _selectedImages.length;
+    if (currentImageCount >= maxImages) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('You can select up to $maxImages images.')),
+      );
+      return;
+    }
+
+    try {
+      final List<XFile> pickedFiles = await _picker.pickMultiImage(
+        limit: maxImages - currentImageCount, // Limit selection based on remaining slots
+      );
+
+      if (pickedFiles.isNotEmpty) {
+        setState(() {
+          _selectedImages.addAll(pickedFiles);
+          _updateSubmitState(); // Re-check if can submit
+        });
+      }
+    } catch (e) {
+      debugPrint('Error picking images: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to pick images: ${e.toString()}')),
+      );
+    }
+  }
+
+  // Function to remove a selected image
+  void _removeImage(int index) {
+    if (_isPosting) return;
+    setState(() {
+      _selectedImages.removeAt(index);
+      _updateSubmitState(); // Re-check if can submit
+    });
+  }
+
   Future<void> _submitComment() async {
+    // Check if can submit and not already posting
     if (!_canSubmit || _isPosting) return;
 
     final text = _textController.text.trim();
+    final imagesToUpload = List<XFile>.from(_selectedImages); // Copy list
 
     // Get the target CID and URI for the comment
     final targetCid = widget.parentCid ?? widget.postCid;
     final targetUri = widget.parentUri ?? widget.postUri;
 
-    setState(() => _isPosting = true);
+    setState(() {
+      _isPosting = true; // Set posting state (covers text + image upload)
+      _isUploadingImages = imagesToUpload.isNotEmpty; // Specifically track image upload phase
+    });
 
     try {
       final actionsService = Provider.of<ActionsService>(context, listen: false);
 
+      // Pass text and selected images to the service method
       final response = await actionsService.postComment(
         text,
         targetCid,
         targetUri,
-        // If this is a reply to a comment (not the main post), we need to specify the root
         rootCid: widget.parentCid != null ? widget.postCid : null,
         rootUri: widget.parentUri != null ? widget.postUri : null,
+        imageFiles: imagesToUpload, // Pass the image files
       );
 
+      // Clear text and selected images on success
       _textController.clear();
+      setState(() {
+        _selectedImages = [];
+        _updateSubmitState(); // Update submit state after clearing
+      });
 
       if (widget.replyingToId != null) {
         widget.onCancelReply();
@@ -108,7 +169,10 @@ class _CommentInputState extends State<CommentInput> {
       debugPrint('Error posting comment: $e');
     } finally {
       if (mounted) {
-        setState(() => _isPosting = false);
+        setState(() {
+          _isPosting = false;
+          _isUploadingImages = false; // Ensure this is reset
+        });
       }
     }
   }
@@ -140,6 +204,9 @@ class _CommentInputState extends State<CommentInput> {
               _buildAttachmentButton(inputBackgroundColor, borderColor, textColor),
             ],
           ),
+
+          // Selected Images Preview (only show if images are selected)
+          if (_selectedImages.isNotEmpty) _buildSelectedImagesPreview(borderColor),
         ],
       ),
     );
@@ -192,10 +259,17 @@ class _CommentInputState extends State<CommentInput> {
   }
 
   Widget _buildTextField(Color inputBackgroundColor, Color borderColor, Color textColor, Color placeholderColor) {
+    String hint = 'Add a comment...';
+    if (widget.replyingToUsername != null) {
+      hint = 'Reply to ${widget.replyingToUsername}...';
+    } else if (_selectedImages.isNotEmpty && _textController.text.isEmpty) {
+      hint = 'Add a caption... (optional)';
+    }
+
     return TextField(
       controller: _textController,
       decoration: InputDecoration(
-        hintText: widget.replyingToUsername != null ? 'Reply to ${widget.replyingToUsername}...' : 'Add a comment...',
+        hintText: hint, // Updated hint logic
         hintStyle: TextStyle(color: placeholderColor, fontSize: 14),
         filled: true,
         fillColor: inputBackgroundColor,
@@ -212,36 +286,38 @@ class _CommentInputState extends State<CommentInput> {
           borderRadius: BorderRadius.circular(20),
           borderSide: BorderSide(color: borderColor, width: 0.5),
         ),
-        suffixIcon: _isPosting
+        suffixIcon: _isPosting // Show progress if posting OR specifically uploading images
             ? Container(
                 margin: const EdgeInsets.all(10),
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: AppColors.primary,
+                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary), // Use valueColor
                 ),
               )
             : IconButton(
                 icon: Icon(FluentIcons.send_24_filled, size: 20, color: _canSubmit ? AppColors.primary : placeholderColor),
-                onPressed: _canSubmit ? _submitComment : null,
+                onPressed: _canSubmit ? _submitComment : null, // Controlled by _canSubmit
               ),
       ),
       style: TextStyle(color: textColor, fontSize: 14),
       maxLines: 5,
       minLines: 1,
       cursorColor: AppColors.primary,
-      enabled: !_isPosting,
+      enabled: !_isPosting, // Disable field while posting
     );
   }
 
   Widget _buildAttachmentButton(Color inputBackgroundColor, Color borderColor, Color textColor) {
+    final bool canAddMoreImages = _selectedImages.length < 4; // Example limit
+    final bool enabled = !_isPosting && canAddMoreImages;
+
     return IconButton(
       padding: EdgeInsets.zero,
       constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-      onPressed: _isPosting ? null : () {
-        debugPrint('Open attachment options');
-      },
+      onPressed: enabled ? _pickImages : null, // Trigger image picker
+      tooltip: enabled ? 'Add images (up to 4)' : (_isPosting ? 'Posting...' : 'Maximum images reached'),
       icon: Container(
         width: 34,
         height: 34,
@@ -251,9 +327,65 @@ class _CommentInputState extends State<CommentInput> {
           border: Border.all(color: borderColor, width: 0.5),
         ),
         child: Icon(
+          // Change icon based on state if desired, e.g., FluentIcons.image_add_24_regular
           FluentIcons.add_24_regular,
           size: 18,
-          color: _isPosting ? textColor.withOpacity(0.5) : textColor
+          color: enabled ? textColor : textColor.withOpacity(0.5), // Dim if disabled
+        ),
+      ),
+    );
+  }
+
+  // New widget to display selected image thumbnails
+  Widget _buildSelectedImagesPreview(Color borderColor) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 12.0, left: 44), // Align with text field start
+      child: SizedBox(
+        height: 64, // Adjust height as needed
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: _selectedImages.length,
+          itemBuilder: (context, index) {
+            final imageFile = _selectedImages[index];
+            return Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: Stack(
+                alignment: Alignment.topRight,
+                children: [
+                  // Image Thumbnail
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: borderColor, width: 0.5),
+                      image: DecorationImage(
+                        image: FileImage(File(imageFile.path)),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                  // Remove Button
+                  Material(
+                    color: Colors.black.withOpacity(0.5),
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () => _removeImage(index),
+                      customBorder: const CircleBorder(),
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        child: const Icon(
+                          FluentIcons.dismiss_16_filled,
+                          color: Colors.white,
+                          size: 12,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

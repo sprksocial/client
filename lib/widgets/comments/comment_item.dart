@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../utils/app_colors.dart';
 import 'comment_reply_item.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../../models/comment.dart';
+import '../image/image_carousel.dart';
 
 class CommentItem extends StatefulWidget {
   final String id;
@@ -15,6 +17,7 @@ class CommentItem extends StatefulWidget {
   final bool hasMedia;
   final String? mediaType;
   final String? mediaUrl;
+  final List<String> imageUrls;
   final int replyCount;
   final bool isDarkMode;
   final Function(String, String) onReply;
@@ -33,6 +36,7 @@ class CommentItem extends StatefulWidget {
     required this.hasMedia,
     this.mediaType,
     this.mediaUrl,
+    this.imageUrls = const [],
     required this.replyCount,
     required this.isDarkMode,
     required this.onReply,
@@ -50,6 +54,7 @@ class _CommentItemState extends State<CommentItem> {
   bool _showReplies = false;
   VideoPlayerController? _videoController;
   bool _isVideoInitialized = false;
+  bool _isFirstImagePrecached = false;
 
   @override
   void initState() {
@@ -60,9 +65,23 @@ class _CommentItemState extends State<CommentItem> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.imageUrls.isNotEmpty && !_isFirstImagePrecached) {
+      _preloadFirstImage();
+      _isFirstImagePrecached = true;
+    }
+  }
+
+  @override
   void dispose() {
     _videoController?.dispose();
     super.dispose();
+  }
+
+  void _preloadFirstImage() {
+    if (!mounted || widget.imageUrls.isEmpty) return;
+    precacheImage(CachedNetworkImageProvider(widget.imageUrls.first), context);
   }
 
   void _initializeVideoPlayer() {
@@ -98,6 +117,41 @@ class _CommentItemState extends State<CommentItem> {
         }
       });
     }
+  }
+
+  void _showImageCarousel() {
+    if (widget.imageUrls.isEmpty) return;
+
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withOpacity(0.85),
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: EdgeInsets.zero,
+          child: Stack(
+            children: [
+              ImageCarousel(
+                imageUrls: widget.imageUrls,
+                autoPreload: true,
+                disableBackgroundBlur: false,
+              ),
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 10,
+                right: 10,
+                child: IconButton(
+                  icon: const Icon(FluentIcons.dismiss_24_filled, color: Colors.white, size: 30),
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: IconButton.styleFrom(
+                    backgroundColor: Colors.black.withOpacity(0.3),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -272,45 +326,79 @@ class _CommentItemState extends State<CommentItem> {
   }
 
   Widget _buildMediaContent() {
-    if (!widget.hasMedia || widget.mediaUrl == null) {
+    if (!widget.hasMedia) {
       return const SizedBox.shrink();
     }
 
     final borderRadius = BorderRadius.circular(8);
+    final bool hasImages = widget.mediaType == 'image' && widget.imageUrls.isNotEmpty;
+    final bool hasVideo = widget.mediaType == 'video' && widget.mediaUrl != null;
 
-    if (widget.mediaType == 'image') {
-      return _buildImageContent(borderRadius);
-    } else if (widget.mediaType == 'video') {
+    if (hasImages) {
+      return _buildImageThumbnail(borderRadius);
+    } else if (hasVideo) {
       return _buildVideoContent(borderRadius);
     }
 
     return const SizedBox.shrink();
   }
 
-  Widget _buildImageContent(BorderRadius borderRadius) {
-    return Container(
-      width: double.infinity,
-      height: 200,
-      decoration: BoxDecoration(
-        borderRadius: borderRadius,
-        border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 0.5),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Image.network(
-        widget.mediaUrl!,
-        fit: BoxFit.cover,
-        frameBuilder: (context, child, frame, wasSynchronouslyLoaded) {
-          return frame == null
-            ? Center(child: CircularProgressIndicator(color: widget.isDarkMode ? AppColors.white : AppColors.deepPurple))
-            : child;
-        },
-        errorBuilder: (context, error, stackTrace) {
-          return Container(
-            color: AppColors.darkPurple.withAlpha(26),
-            child: const Center(child: Icon(FluentIcons.image_24_regular, size: 24, color: Colors.white)),
-          );
-        },
-        cacheWidth: 500, // Optimize image loading with specified dimensions
+  Widget _buildImageThumbnail(BorderRadius borderRadius) {
+    final imageCount = widget.imageUrls.length;
+    const double thumbnailSize = 120.0;
+    final firstImageUrl = widget.imageUrls.first;
+
+    return GestureDetector(
+      onTap: _showImageCarousel,
+      child: Container(
+        width: thumbnailSize,
+        height: thumbnailSize,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          borderRadius: borderRadius,
+          border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 0.5),
+          color: widget.isDarkMode ? AppColors.deepPurple.withAlpha(50) : AppColors.lightLavender.withAlpha(50),
+        ),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            CachedNetworkImage(
+              imageUrl: firstImageUrl,
+              fit: BoxFit.cover,
+              placeholder: (context, url) => Container(
+                color: Colors.grey[850]?.withOpacity(0.5),
+                child: const Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
+                  ),
+                ),
+              ),
+              errorWidget: (context, url, error) => Container(
+                color: AppColors.darkPurple.withAlpha(26),
+                child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 24, color: Colors.white70)),
+              ),
+            ),
+
+            if (imageCount > 1)
+              Positioned(
+                top: 4,
+                right: 4,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '+${imageCount - 1}',
+                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

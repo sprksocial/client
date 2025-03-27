@@ -214,6 +214,7 @@ class CommentsService extends ChangeNotifier {
         replyCount: nestedReplies.length,
         hashtags: comment.hashtags,
         hasMedia: comment.hasMedia,
+        imageUrls: comment.imageUrls,
         mediaType: comment.mediaType,
         mediaUrl: comment.mediaUrl,
         likeUri: comment.likeUri,
