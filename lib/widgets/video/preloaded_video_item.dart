@@ -44,6 +44,7 @@ class PreloadedVideoItem extends VideoPlayerBase {
 class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> with WidgetsBindingObserver {
   bool _wasPlaying = false;
   bool _isFirstBuild = true;
+  bool _isDescriptionExpanded = false;
 
   @override
   VideoPlayerController get videoController => widget.controller;
@@ -62,6 +63,12 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
   @override
   void playVideo() {
     widget.controller.play();
+  }
+
+  void _handleDescriptionExpandToggle(bool isExpanded) {
+    setState(() {
+      _isDescriptionExpanded = isExpanded;
+    });
   }
 
   @override
@@ -163,22 +170,24 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
           Center(child: _buildVideoContent()),
 
           // Overlay gradient
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.transparent,
-                    Colors.black.withAlpha(10),
-                    Colors.black.withAlpha(40),
-                    Colors.black.withAlpha(80),
-                    Colors.black.withAlpha(160),
-                  ],
-                  stops: const [0.0, 0.5, 0.65, 0.75, 0.85, 0.95],
-                ),
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.transparent,
+                  Colors.black.withAlpha(_isDescriptionExpanded ? 30 : 10),
+                  Colors.black.withAlpha(_isDescriptionExpanded ? 80 : 40),
+                  Colors.black.withAlpha(_isDescriptionExpanded ? 150 : 80),
+                  Colors.black.withAlpha(_isDescriptionExpanded ? 200 : 160),
+                ],
+                stops: _isDescriptionExpanded
+                    ? const [0.0, 0.4, 0.5, 0.6, 0.75, 0.9]
+                    : const [0.0, 0.5, 0.65, 0.75, 0.85, 0.95],
               ),
             ),
           ),
@@ -196,6 +205,7 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
               isSprk: widget.isSprk,
               onUsernameTap: widget.onUsernameTap,
               onHashtagTap: widget.onHashtagTap,
+              onDescriptionExpandToggle: _handleDescriptionExpandToggle,
             ),
           ),
 

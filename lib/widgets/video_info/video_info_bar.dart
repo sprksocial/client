@@ -10,6 +10,7 @@ class VideoInfoBar extends StatelessWidget {
   final bool isSprk;
   final VoidCallback? onUsernameTap;
   final VoidCallback? onHashtagTap;
+  final Function(bool isExpanded)? onDescriptionExpandToggle;
 
   const VideoInfoBar({
     super.key,
@@ -19,6 +20,7 @@ class VideoInfoBar extends StatelessWidget {
     this.isSprk = false,
     this.onUsernameTap,
     this.onHashtagTap,
+    this.onDescriptionExpandToggle,
   });
 
   @override
@@ -36,7 +38,10 @@ class VideoInfoBar extends StatelessWidget {
 
         const SizedBox(height: 10),
 
-        VideoDescription(text: description),
+        VideoDescription(
+          text: description,
+          onExpandToggle: onDescriptionExpandToggle,
+        ),
 
         const SizedBox(height: 6),
 
