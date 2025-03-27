@@ -7,12 +7,7 @@ class ImageCarousel extends StatefulWidget {
   final bool autoPreload;
   final bool disableBackgroundBlur;
 
-  const ImageCarousel({
-    super.key,
-    required this.imageUrls,
-    this.autoPreload = true,
-    this.disableBackgroundBlur = false,
-  });
+  const ImageCarousel({super.key, required this.imageUrls, this.autoPreload = true, this.disableBackgroundBlur = false});
 
   @override
   State<ImageCarousel> createState() => _ImageCarouselState();
@@ -26,10 +21,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(
-      initialPage: 0,
-      keepPage: true,
-    );
+    _pageController = PageController(initialPage: 0, keepPage: true);
   }
 
   @override
@@ -67,7 +59,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
         // Background blur if enabled
         if (!widget.disableBackgroundBlur && widget.imageUrls.isNotEmpty)
           _buildBlurredBackground(widget.imageUrls[_currentIndex]),
-          
+
         // Full-screen PageView
         Positioned.fill(
           child: PageView.builder(
@@ -90,10 +82,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
             left: 0,
             right: 0,
             bottom: 16,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: _buildIndicators(),
-            ),
+            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: _buildIndicators()),
           ),
       ],
     );
@@ -101,7 +90,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
 
   Widget _buildBlurredBackground(String imageUrl) {
     final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
-    
+
     return Positioned.fill(
       child: Container(
         color: isDarkMode ? Colors.black : Colors.grey[900],
@@ -127,11 +116,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
               ),
             ),
             // Darkened overlay
-            Container(
-              color: isDarkMode
-                ? Colors.black.withAlpha(120)
-                : Colors.black.withAlpha(160),
-            ),
+            Container(color: isDarkMode ? Colors.black.withAlpha(120) : Colors.black.withAlpha(160)),
           ],
         ),
       ),
@@ -149,23 +134,14 @@ class _ImageCarouselState extends State<ImageCarousel> {
         fit: BoxFit.contain,
         width: double.infinity,
         height: double.infinity,
-        placeholder: (context, url) => Container(
-          color: Colors.grey[900],
-          child: const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white54),
+        placeholder:
+            (context, url) => Container(
+              color: Colors.grey[900],
+              child: const Center(child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white54))),
             ),
-          ),
-        ),
-        errorWidget: (context, url, error) => Container(
-          color: Colors.grey[900],
-          child: const Center(
-            child: Icon(
-              Icons.error_outline,
-              color: Colors.white54,
-            ),
-          ),
-        ),
+        errorWidget:
+            (context, url, error) =>
+                Container(color: Colors.grey[900], child: const Center(child: Icon(Icons.error_outline, color: Colors.white54))),
       ),
     );
   }
@@ -179,9 +155,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
         margin: const EdgeInsets.symmetric(horizontal: 4.0),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: _currentIndex == index
-              ? Colors.white
-              : Colors.white.withOpacity(0.5),
+          color: _currentIndex == index ? Colors.white : Colors.white.withValues(alpha: 0.5)
         ),
       ),
     );

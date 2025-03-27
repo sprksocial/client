@@ -68,16 +68,19 @@ class ImagePostItem extends StatelessWidget {
 
         // Gradient overlay for better text visibility
         Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.center,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent,
-                  Colors.black.withOpacity(0.5),
-                ],
-                stops: const [0.7, 1.0],
+          child: IgnorePointer(
+            ignoring: true,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.center,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.5),
+                  ],
+                  stops: const [0.7, 1.0],
+                ),
               ),
             ),
           ),
@@ -179,7 +182,7 @@ class ImagePostItem extends StatelessWidget {
           ),
         ),
 
-        // Bottom text info
+        //Bottom text info
         Positioned(
           left: 12,
           right: 70,
