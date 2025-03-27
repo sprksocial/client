@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import '../../utils/formatters/text_formatter.dart';
+import '../../utils/app_colors.dart';
+import '../../utils/app_theme.dart';
 
 class ProfileDescription extends StatefulWidget {
   final String text;
@@ -60,8 +63,69 @@ class _ProfileDescriptionState extends State<ProfileDescription> with SingleTick
     });
   }
 
+  List<Match> _findUsernameMatches(String text) {
+    // Match handles that begin with @ and may include domain format
+    // Match @username or @username.domain but not email@domain.com
+    // The key is to ensure the @ is the beginning of a word boundary
+    final RegExp usernameRegex = RegExp(r'\B@([a-zA-Z0-9_.-]+\.[a-zA-Z]{2,}|[a-zA-Z0-9_]+)', caseSensitive: false);
+    
+    return usernameRegex.allMatches(text).toList();
+  }
+
+  List<InlineSpan> _buildTextSpans(String text, List<Match> usernameMatches) {
+    final List<InlineSpan> spans = [];
+    int lastEnd = 0;
+
+    usernameMatches.sort((a, b) => a.start.compareTo(b.start));
+
+    for (final match in usernameMatches) {
+      if (match.start > lastEnd) {
+        spans.add(TextSpan(
+          text: text.substring(lastEnd, match.start),
+          style: widget.style,
+        ));
+      }
+
+      final username = match.group(0)!;
+      spans.add(
+        TextSpan(
+          text: username,
+          style: const TextStyle(
+            color: AppColors.primary,
+            fontWeight: FontWeight.bold,
+          ),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () {
+              if (widget.onMentionTap != null) {
+                widget.onMentionTap!(username);
+              }
+            },
+        ),
+      );
+
+      lastEnd = match.end;
+    }
+
+    if (lastEnd < text.length) {
+      spans.add(TextSpan(
+        text: text.substring(lastEnd),
+        style: widget.style,
+      ));
+    }
+
+    return spans;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final usernameMatches = _findUsernameMatches(widget.text);
+    final defaultStyle = widget.style ?? TextStyle(color: AppTheme.getTextColor(context), fontSize: 14);
+    
+    final textSpan = TextSpan(
+      children: _buildTextSpans(widget.text, usernameMatches),
+      style: defaultStyle,
+    );
+
     return GestureDetector(
       onTap: _toggleExpanded,
       child: AnimatedBuilder(
@@ -76,11 +140,10 @@ class _ProfileDescriptionState extends State<ProfileDescription> with SingleTick
         child: AnimatedSize(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeInOut,
-          child: TextFormatter.buildRichTextWithMentions(
-            context, 
-            widget.text, 
-            _isExpanded, 
-            widget.onMentionTap ?? (username) {},
+          child: RichText(
+            text: textSpan,
+            maxLines: _isExpanded ? null : widget.maxLines,
+            overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
           ),
         ),
       ),
