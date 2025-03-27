@@ -6,12 +6,14 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import '../widgets/video/video_item.dart';
 import '../widgets/video/preloaded_video_item.dart';
+import '../widgets/image/image_post_item.dart';
 import '../widgets/feed/feed_selector.dart';
 import '../widgets/feed_settings/feed_settings_sheet.dart';
 import '../utils/app_colors.dart';
 import '../services/auth_service.dart';
 import '../services/actions_service.dart';
 import '../models/feed_post.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,10 +33,13 @@ class _HomeScreenState extends State<HomeScreen> {
   // Pre-initialized VideoPlayerControllers mapped by index
   final Map<int, PreloadedVideo> _preloadedVideos = {};
 
+  // Track which image URLs have been preloaded
+  final Set<String> _preloadedImageUrls = {};
+
   @override
   void initState() {
     super.initState();
-    _fetchVideos();
+    _fetchFeed();
   }
 
   @override
@@ -49,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
-  Future<void> _fetchVideos() async {
+  Future<void> _fetchFeed() async {
     if (_selectedFeedType == 0) {
       await _fetchFollowingFeed();
     } else if (_selectedFeedType == 1) {
@@ -81,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _feedPosts = filteredPosts;
         _isLoading = false;
-        _preloadInitialVideos();
+        _preloadInitialMedia();
       });
     } catch (e) {
       setState(() {
@@ -115,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _feedPosts = filteredPosts;
         _isLoading = false;
-        _preloadInitialVideos();
+        _preloadInitialMedia();
       });
     } catch (e) {
       setState(() {
@@ -182,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _feedPosts = filteredPosts;
           _isLoading = false;
-          _preloadInitialVideos();
+          _preloadInitialMedia();
         });
       } else {
         setState(() {
@@ -198,30 +203,48 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _preloadInitialVideos() {
+  void _preloadInitialMedia() {
     // Clear existing preloaded videos
     for (final video in _preloadedVideos.values) {
       video.controller.dispose();
     }
     _preloadedVideos.clear();
+    _preloadedImageUrls.clear();
 
     // Reset current index
     _currentIndex = 0;
 
-    // Preload initial batch of videos
+    // Preload initial batch of media
     if (_feedPosts != null && _feedPosts!.isNotEmpty) {
       // Start loading in order of priority
-      _preloadVideo(0); // Current video first
+      _preloadMedia(0); // Current item first
 
       // Then preload the others
       for (int i = 1; i <= 5 && i < _feedPosts!.length; i++) {
-        _preloadVideo(i);
+        _preloadMedia(i);
       }
     }
   }
 
+  void _preloadMedia(int index) {
+    if (index < 0 || index >= (_feedPosts?.length ?? 0)) {
+      return;
+    }
+
+    final post = _feedPosts![index];
+
+    // Preload video if exists
+    if (post.videoUrl != null) {
+      _preloadVideo(index);
+    }
+    // Preload images if exist
+    else if (post.imageUrls.isNotEmpty) {
+      _preloadImages(post.imageUrls);
+    }
+  }
+
   Future<void> _preloadVideo(int index) async {
-    if (index < 0 || index >= (_feedPosts?.length ?? 0) || _preloadedVideos.containsKey(index)) {
+    if (_preloadedVideos.containsKey(index)) {
       return;
     }
 
@@ -283,6 +306,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _preloadImages(List<String> urls) {
+    for (final url in urls) {
+      if (!_preloadedImageUrls.contains(url)) {
+        _preloadedImageUrls.add(url);
+        precacheImage(CachedNetworkImageProvider(url), context);
+      }
+    }
+  }
+
   void _unloadVideo(int index) {
     if (_preloadedVideos.containsKey(index)) {
       // Stop and dispose the controller
@@ -292,19 +324,32 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _updateLoadedVideos(int newIndex) {
+  void _updateLoadedMedia(int newIndex) {
     if (newIndex != _currentIndex) {
-      // First mute the previously playing video
-      if (_preloadedVideos.containsKey(_currentIndex) && _preloadedVideos[_currentIndex]!.isInitialized) {
-        _preloadedVideos[_currentIndex]!.controller.setVolume(0.0);
-        // Pause the previous video
-        _preloadedVideos[_currentIndex]!.controller.pause();
+      // Handle video playback for the current and previous video
+      if (_feedPosts != null && _feedPosts!.isNotEmpty) {
+        final currentPost = _feedPosts![_currentIndex];
+        final newPost = _feedPosts![newIndex];
+
+        // Handle previous video if it exists
+        if (currentPost.videoUrl != null && _preloadedVideos.containsKey(_currentIndex)) {
+          // Mute and pause the previously playing video
+          _preloadedVideos[_currentIndex]!.controller.setVolume(0.0);
+          _preloadedVideos[_currentIndex]!.controller.pause();
+        }
+
+        // Handle new video if it exists
+        if (newPost.videoUrl != null && _preloadedVideos.containsKey(newIndex)) {
+          // Set volume and play the current video
+          _preloadedVideos[newIndex]!.controller.setVolume(1.0);
+          _preloadedVideos[newIndex]!.controller.play();
+        }
       }
 
       // Use a wider preloading range - 5 before and 5 after
       final toLoad = <int>{};
 
-      // Add 5 previous and 5 next videos
+      // Add 5 previous and 5 next items
       for (int i = newIndex - 5; i <= newIndex + 5; i++) {
         toLoad.add(i);
       }
@@ -315,7 +360,7 @@ class _HomeScreenState extends State<HomeScreen> {
       // Find videos to unload (current loaded videos that aren't in the new set)
       final toUnload = _preloadedVideos.keys.toSet().difference(validToLoad);
 
-      // Find videos to load (new videos that aren't already loaded)
+      // Find items to load (new items that aren't already loaded)
       final newToLoad = validToLoad.difference(_preloadedVideos.keys.toSet());
 
       // Unload videos no longer needed
@@ -328,36 +373,21 @@ class _HomeScreenState extends State<HomeScreen> {
       if (newIndex + 1 < (_feedPosts?.length ?? 0)) priorityLoad.add(newIndex + 1);
       if (newIndex - 1 >= 0) priorityLoad.add(newIndex - 1);
 
-      // First load priority videos
+      // First load priority items
       for (final idx in priorityLoad) {
         if (newToLoad.contains(idx)) {
-          _preloadVideo(idx);
+          _preloadMedia(idx);
           newToLoad.remove(idx);
         }
       }
 
       // Then load the rest
       for (final idx in newToLoad) {
-        _preloadVideo(idx);
+        _preloadMedia(idx);
       }
 
       // Update current index
       _currentIndex = newIndex;
-
-      // Set volume and play the current video
-      if (_preloadedVideos.containsKey(newIndex) && _preloadedVideos[newIndex]!.isInitialized) {
-        // Set volume for current video
-        _preloadedVideos[newIndex]!.controller.setVolume(1.0);
-        // Play the current video
-        _preloadedVideos[newIndex]!.controller.play();
-      }
-
-      // Make sure all other videos are muted
-      for (final entry in _preloadedVideos.entries) {
-        if (entry.key != newIndex && entry.value.isInitialized) {
-          entry.value.controller.setVolume(0.0);
-        }
-      }
     }
   }
 
@@ -379,8 +409,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     : _errorMessage != null
                     ? Center(child: Text('Error: $_errorMessage', style: const TextStyle(color: Colors.white)))
                     : _feedPosts == null || _feedPosts!.isEmpty
-                    ? const Center(child: Text('No videos available', style: TextStyle(color: Colors.white)))
-                    : _buildVideoPageView(),
+                    ? const Center(child: Text('No media available', style: TextStyle(color: Colors.white)))
+                    : _buildFeedPageView(),
           ),
 
           Positioned(
@@ -412,7 +442,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             setState(() {
                               _selectedFeedType = value;
                             });
-                            _fetchVideos();
+                            _fetchFeed();
                           },
                         ),
                       ),
@@ -435,22 +465,77 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildVideoPageView() {
+  Widget _buildFeedPageView() {
     return PageView.builder(
       controller: _pageController,
       scrollDirection: Axis.vertical,
       itemCount: _feedPosts?.length ?? 0,
-      onPageChanged: _updateLoadedVideos,
+      onPageChanged: _updateLoadedMedia,
       itemBuilder: (context, index) {
         final post = _feedPosts![index];
-        final isPreloaded = _preloadedVideos.containsKey(index) && _preloadedVideos[index]!.isInitialized;
         final isLiked = post.isLiked;
 
-        if (isPreloaded) {
-          return PreloadedVideoItem(
-            key: ValueKey('video_$index'),
+        // For video posts
+        if (post.videoUrl != null) {
+          final isPreloaded = _preloadedVideos.containsKey(index) && _preloadedVideos[index]!.isInitialized;
+
+          if (isPreloaded) {
+            return PreloadedVideoItem(
+              key: ValueKey('video_$index'),
+              index: index,
+              controller: _preloadedVideos[index]!.controller,
+              username: post.username,
+              description: post.description,
+              hashtags: post.hashtags,
+              likeCount: post.likeCount,
+              commentCount: post.commentCount,
+              bookmarkCount: 0,
+              shareCount: post.shareCount,
+              profileImageUrl: post.profileImageUrl,
+              authorDid: post.authorDid,
+              isVisible: index == _currentIndex,
+              isLiked: isLiked,
+              isSprk: post.isSprk,
+              videoUri: post.uri,
+              onLikePressed: () => _handleLikePress(post),
+              onBookmarkPressed: () {},
+              onSharePressed: () {},
+              onProfilePressed: () {},
+              onUsernameTap: () {},
+              onHashtagTap: (String hashtag) {},
+            );
+          } else {
+            return VideoItem(
+              key: ValueKey('placeholder_$index'),
+              index: index,
+              videoUrl: post.videoUrl,
+              username: post.username,
+              description: post.description,
+              hashtags: post.hashtags,
+              likeCount: post.likeCount,
+              commentCount: post.commentCount,
+              bookmarkCount: 0,
+              shareCount: post.shareCount,
+              profileImageUrl: post.profileImageUrl,
+              authorDid: post.authorDid,
+              isLiked: isLiked,
+              isSprk: post.isSprk,
+              videoUri: post.uri,
+              onLikePressed: () => _handleLikePress(post),
+              onBookmarkPressed: () {},
+              onSharePressed: () {},
+              onProfilePressed: () {},
+              onUsernameTap: () {},
+              onHashtagTap: (String hashtag) {},
+            );
+          }
+        }
+        // For image posts
+        else if (post.imageUrls.isNotEmpty) {
+          return ImagePostItem(
+            key: ValueKey('image_$index'),
             index: index,
-            controller: _preloadedVideos[index]!.controller,
+            imageUrls: post.imageUrls,
             username: post.username,
             description: post.description,
             hashtags: post.hashtags,
@@ -460,40 +545,25 @@ class _HomeScreenState extends State<HomeScreen> {
             shareCount: post.shareCount,
             profileImageUrl: post.profileImageUrl,
             authorDid: post.authorDid,
+            isLiked: isLiked,
+            isSprk: post.isSprk,
+            postUri: post.uri,
             isVisible: index == _currentIndex,
-            isLiked: isLiked,
-            isSprk: post.isSprk,
-            videoUri: post.uri,
             onLikePressed: () => _handleLikePress(post),
             onBookmarkPressed: () {},
             onSharePressed: () {},
             onProfilePressed: () {},
             onUsernameTap: () {},
-            onHashtagTap: () {},
+            onHashtagTap: (String hashtag) {},
           );
-        } else {
-          return VideoItem(
-            key: ValueKey('placeholder_$index'),
-            index: index,
-            videoUrl: post.videoUrl,
-            username: post.username,
-            description: post.description,
-            hashtags: post.hashtags,
-            likeCount: post.likeCount,
-            commentCount: post.commentCount,
-            bookmarkCount: 0,
-            shareCount: post.shareCount,
-            profileImageUrl: post.profileImageUrl,
-            authorDid: post.authorDid,
-            isLiked: isLiked,
-            isSprk: post.isSprk,
-            videoUri: post.uri,
-            onLikePressed: () => _handleLikePress(post),
-            onBookmarkPressed: () {},
-            onSharePressed: () {},
-            onProfilePressed: () {},
-            onUsernameTap: () {},
-            onHashtagTap: () {},
+        }
+        // Fallback for any other post type
+        else {
+          return Center(
+            child: Text(
+              'Unsupported media type',
+              style: const TextStyle(color: Colors.white),
+            ),
           );
         }
       },
@@ -585,7 +655,7 @@ class _HomeScreenState extends State<HomeScreen> {
               );
               return;
             }
-            
+
             // Here you would typically persist the settings
             // Don't automatically close on toggle
           },

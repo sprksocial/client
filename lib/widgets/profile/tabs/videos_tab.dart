@@ -164,7 +164,7 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
       onSharePressed: () {},
       onProfilePressed: () {},
       onUsernameTap: () {},
-      onHashtagTap: () {},
+      onHashtagTap: (String hashtag) {},
     );
 
     // Use Navigator.push instead of MaterialPageRoute to prevent complete rebuilds

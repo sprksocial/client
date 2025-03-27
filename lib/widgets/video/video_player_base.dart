@@ -19,7 +19,7 @@ abstract class VideoPlayerBase extends StatefulWidget {
   final VoidCallback? onSharePressed;
   final VoidCallback? onProfilePressed;
   final VoidCallback? onUsernameTap;
-  final VoidCallback? onHashtagTap;
+  final Function(String)? onHashtagTap;
   final String? authorDid;
   final bool isLiked;
   final bool isSprk;

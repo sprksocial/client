@@ -30,6 +30,7 @@ dependencies:
   image_picker: ^1.0.7
   video_editor_sdk: ^3.2.0
   path: ^1.9.1
+  preload_page_view: ^0.2.0
 
 dev_dependencies:
   flutter_test:
