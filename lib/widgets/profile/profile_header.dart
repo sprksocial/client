@@ -12,6 +12,7 @@ import '../../utils/formatters/text_formatter.dart';
 import 'profile_stat_item.dart';
 import 'profile_action_button.dart';
 import 'profile_links.dart';
+import 'profile_description.dart';
 
 class ProfileHeader extends StatefulWidget {
   final Map<String, dynamic> profileData;
@@ -42,9 +43,9 @@ class ProfileHeader extends StatefulWidget {
 class _ProfileHeaderState extends State<ProfileHeader> {
   bool _expandDescription = false;
 
-  void _toggleDescriptionExpand() {
+  void _toggleDescriptionExpand(bool isExpanded) {
     setState(() {
-      _expandDescription = !_expandDescription;
+      _expandDescription = isExpanded;
     });
   }
 
@@ -193,11 +194,11 @@ class _ProfileHeaderState extends State<ProfileHeader> {
             const SizedBox(height: 8),
 
             if (description.isNotEmpty)
-              GestureDetector(
-                onTap: _toggleDescriptionExpand,
-                child: TextFormatter.buildRichTextWithMentions(context, description, _expandDescription, (username) {
-                  _handleUsernameTap(username);
-                }),
+              ProfileDescription(
+                text: description,
+                style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 14),
+                onExpandToggle: _toggleDescriptionExpand,
+                onMentionTap: _handleUsernameTap,
               ),
 
             if (uniqueLinks.isNotEmpty)
