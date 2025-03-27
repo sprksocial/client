@@ -9,6 +9,7 @@ import '../video_controls/video_controller_overlay.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/app_colors.dart';
 import '../../screens/profile_screen.dart';
+import '../../utils/formatters/text_formatter.dart';
 import 'video_player_base.dart';
 
 class VideoItem extends VideoPlayerBase {
@@ -213,10 +214,10 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
               right: 10,
               bottom: 100,
               child: VideoSideActionBar(
-                likeCount: '${widget.likeCount}K',
-                commentCount: '${widget.commentCount}K',
-                bookmarkCount: '${widget.bookmarkCount}K',
-                shareCount: '${widget.shareCount}K',
+                likeCount: TextFormatter.formatCount(widget.likeCount),
+                commentCount: TextFormatter.formatCount(widget.commentCount),
+                bookmarkCount: TextFormatter.formatCount(widget.bookmarkCount),
+                shareCount: TextFormatter.formatCount(widget.shareCount),
                 profileImageUrl: widget.profileImageUrl,
                 isLiked: widget.isLiked,
                 onLikePressed: widget.onLikePressed ?? () {},

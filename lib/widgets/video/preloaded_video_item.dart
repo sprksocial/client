@@ -5,6 +5,7 @@ import '../video_controls/video_controller_overlay.dart';
 import '../video_info/video_info_bar.dart';
 import '../video_side_action_bar.dart';
 import '../../utils/app_colors.dart';
+import '../../utils/formatters/text_formatter.dart';
 import 'video_player_base.dart';
 
 class PreloadedVideoItem extends VideoPlayerBase {
@@ -202,10 +203,10 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
             right: 10,
             bottom: 100,
             child: VideoSideActionBar(
-              likeCount: '${widget.likeCount}K',
-              commentCount: '${widget.commentCount}K',
-              bookmarkCount: '${widget.bookmarkCount}K',
-              shareCount: '${widget.shareCount}K',
+              likeCount: TextFormatter.formatCount(widget.likeCount),
+              commentCount: TextFormatter.formatCount(widget.commentCount),
+              bookmarkCount: TextFormatter.formatCount(widget.bookmarkCount),
+              shareCount: TextFormatter.formatCount(widget.shareCount),
               profileImageUrl: widget.profileImageUrl,
               isLiked: widget.isLiked,
               onLikePressed: widget.onLikePressed ?? () {},

@@ -17,11 +17,11 @@ class TextFormatter {
     }
 
     if (numCount >= 1000000) {
-      return '${(numCount / 1000000).toStringAsFixed(1)}M';
-    } else if (numCount >= 10000) {
-      return '${(numCount / 1000).toStringAsFixed(0)}K';
+      final value = numCount / 1000000;
+      return '${value.toStringAsFixed(value.truncateToDouble() == value ? 0 : 1)}M';
     } else if (numCount >= 1000) {
-      return '${(numCount / 1000).toStringAsFixed(1)}K';
+      final value = numCount / 1000;
+      return '${value.toStringAsFixed(value.truncateToDouble() == value ? 0 : 1)}K';
     } else {
       return numCount.toString();
     }
