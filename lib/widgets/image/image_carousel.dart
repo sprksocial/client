@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:ui';
 
 class ImageCarousel extends StatefulWidget {
   final List<String> imageUrls;
   final bool autoPreload;
+  final bool disableBackgroundBlur;
 
   const ImageCarousel({
     super.key,
     required this.imageUrls,
     this.autoPreload = true,
+    this.disableBackgroundBlur = false,
   });
 
   @override
@@ -61,6 +64,10 @@ class _ImageCarouselState extends State<ImageCarousel> {
 
     return Stack(
       children: [
+        // Background blur if enabled
+        if (!widget.disableBackgroundBlur && widget.imageUrls.isNotEmpty)
+          _buildBlurredBackground(widget.imageUrls[_currentIndex]),
+          
         // Full-screen PageView
         Positioned.fill(
           child: PageView.builder(
@@ -89,6 +96,45 @@ class _ImageCarouselState extends State<ImageCarousel> {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildBlurredBackground(String imageUrl) {
+    final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
+    
+    return Positioned.fill(
+      child: Container(
+        color: isDarkMode ? Colors.black : Colors.grey[900],
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Blurred background image
+            ClipRect(
+              child: ImageFiltered(
+                imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
+                child: Transform.scale(
+                  scale: 1.2,
+                  child: Opacity(
+                    opacity: 0.5,
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(),
+                      errorWidget: (context, url, error) => Container(),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Darkened overlay
+            Container(
+              color: isDarkMode
+                ? Colors.black.withAlpha(120)
+                : Colors.black.withAlpha(160),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -135,7 +181,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
           shape: BoxShape.circle,
           color: _currentIndex == index
               ? Colors.white
-              : Colors.white.withValues(alpha: 0.5),
+              : Colors.white.withOpacity(0.5),
         ),
       ),
     );

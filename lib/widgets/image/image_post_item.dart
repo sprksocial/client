@@ -19,6 +19,7 @@ class ImagePostItem extends StatelessWidget {
   final bool isSprk;
   final String postUri;
   final bool isVisible;
+  final bool disableBackgroundBlur;
   final Function() onLikePressed;
   final Function() onBookmarkPressed;
   final Function() onSharePressed;
@@ -43,6 +44,7 @@ class ImagePostItem extends StatelessWidget {
     required this.isSprk,
     required this.postUri,
     this.isVisible = false,
+    this.disableBackgroundBlur = false,
     required this.onLikePressed,
     required this.onBookmarkPressed,
     required this.onSharePressed,
@@ -60,6 +62,7 @@ class ImagePostItem extends StatelessWidget {
         Positioned.fill(
           child: ImageCarousel(
             imageUrls: imageUrls,
+            disableBackgroundBlur: disableBackgroundBlur,
           ),
         ),
 
