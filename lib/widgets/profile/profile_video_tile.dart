@@ -43,27 +43,27 @@ class ProfileVideoTile extends StatelessWidget {
               CachedNetworkImage(
                 imageUrl: thumbnailUrl!,
                 fit: BoxFit.cover,
-                placeholder: (context, url) => const Center(
-                  child: SizedBox(
-                    width: 24,
-                    height: 24,
+                alignment: Alignment.center,
+                fadeInDuration: const Duration(milliseconds: 200),
+                placeholder: (context, url) => Container(
+                  color: Colors.black,
+                  child: const Center(
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
+                      color: Colors.white,
                     ),
                   ),
                 ),
-                errorWidget: (context, url, error) => Center(
-                  child: Icon(
-                    FluentIcons.video_24_regular,
-                    color: AppColors.white.withAlpha(204),
-                    size: 24
-                  )
+                errorWidget: (context, url, error) => Container(
+                  color: Colors.black,
+                  child: const Center(
+                    child: Icon(
+                      FluentIcons.video_24_regular,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
                 ),
-                // Key prevents unnecessary rebuilds
-                key: ValueKey('thumbnail_$index'),
-                // Memory caching
-                memCacheHeight: 300,
-                memCacheWidth: 200,
               )
             else
               Center(
