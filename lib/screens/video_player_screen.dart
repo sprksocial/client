@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import '../widgets/video/video_item.dart';
 import '../widgets/video/preloaded_video_item.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final VideoItem initialVideoItem;
@@ -110,8 +109,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         authorDid: authorDid,
         isLiked: false,
         isSprk: isSprk,
-        videoUri: videoUri,
-        videoCid: videoCid,
+        postUri: videoUri,
+        postCid: videoCid,
         disableBackgroundBlur: false,
         onLikePressed: () {},
         onBookmarkPressed: () {},
@@ -314,8 +313,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               isVisible: index == _currentIndex,
               isLiked: videoItem.isLiked,
               isSprk: videoItem.isSprk,
-              videoUri: videoItem.videoUri,
-              videoCid: videoItem.videoCid,
+              postUri: videoItem.postUri,
+              postCid: videoItem.postCid,
               disableBackgroundBlur: false,
               onLikePressed: videoItem.onLikePressed,
               onBookmarkPressed: videoItem.onBookmarkPressed,

@@ -1,241 +1,126 @@
 import 'package:flutter/material.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:sparksocial/widgets/image/image_carousel.dart';
-import 'package:sparksocial/widgets/video_info/hashtag_list.dart';
+import '../post/post_item_base.dart'; // Import the base class
+import '../../utils/app_colors.dart'; // For potential background fallback
+import 'dart:ui'; // For ImageFilter if needed for background
 
-class ImagePostItem extends StatelessWidget {
-  final int index;
+// Convert to StatefulWidget extending PostItemBase
+class ImagePostItem extends PostItemBase {
   final List<String> imageUrls;
-  final String username;
-  final String description;
-  final List<String> hashtags;
-  final int likeCount;
-  final int commentCount;
-  final int bookmarkCount;
-  final int shareCount;
-  final String? profileImageUrl;
-  final String authorDid;
-  final bool isLiked;
-  final bool isSprk;
-  final String postUri;
+  // isVisible is often managed externally for image carousels or pages, pass it in
   final bool isVisible;
-  final bool disableBackgroundBlur;
-  final Function() onLikePressed;
-  final Function() onBookmarkPressed;
-  final Function() onSharePressed;
-  final Function() onProfilePressed;
-  final Function() onUsernameTap;
-  final Function(String)? onHashtagTap;
+  // Add postCid if needed for comments, passed to super
+  // final String postCid; // Inherited from PostItemBase
 
   const ImagePostItem({
-    Key? key,
-    required this.index,
+    super.key,
+    required super.index,
     required this.imageUrls,
-    required this.username,
-    required this.description,
-    required this.hashtags,
-    required this.likeCount,
-    required this.commentCount,
-    this.bookmarkCount = 0,
-    required this.shareCount,
-    this.profileImageUrl,
-    required this.authorDid,
-    required this.isLiked,
-    required this.isSprk,
-    required this.postUri,
-    this.isVisible = false,
-    this.disableBackgroundBlur = false,
-    required this.onLikePressed,
-    required this.onBookmarkPressed,
-    required this.onSharePressed,
-    required this.onProfilePressed,
-    required this.onUsernameTap,
-    this.onHashtagTap,
-  }) : super(key: key);
+    required super.username,
+    required super.description,
+    required super.hashtags,
+    required super.likeCount,
+    required super.commentCount,
+    super.bookmarkCount,
+    required super.shareCount,
+    super.profileImageUrl,
+    required super.authorDid,
+    required super.isLiked,
+    required super.isSprk,
+    required super.postUri, // Pass postUri for comments
+    required super.postCid, // Pass postCid for comments
+    this.isVisible = false, // Default visibility
+    super.disableBackgroundBlur,
+    required super.onLikePressed,
+    super.onCommentPressed, // Pass callback to base
+    required super.onBookmarkPressed,
+    required super.onSharePressed,
+    super.onProfilePressed, // Pass callback to base
+    required super.onUsernameTap,
+    super.onHashtagTap,
+  });
 
   @override
-  Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        // Image carousel
-        Positioned.fill(
-          child: ImageCarousel(
-            imageUrls: imageUrls,
-            disableBackgroundBlur: disableBackgroundBlur,
-          ),
-        ),
+  State<ImagePostItem> createState() => _ImagePostItemState();
+}
 
-        // Gradient overlay for better text visibility
-        Positioned.fill(
-          child: IgnorePointer(
-            ignoring: true,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.center,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.5),
-                  ],
-                  stops: const [0.7, 1.0],
+// Create State class extending PostItemBaseState
+class _ImagePostItemState extends PostItemBaseState<ImagePostItem> {
+
+  // --- Implement required abstract members ---
+
+  @override
+  bool get isVisible => widget.isVisible; // Get visibility from widget property
+
+  @override
+  void pauseMedia() {
+    // No media to pause for images
+  }
+
+  @override
+  void playMedia() {
+    // No media to play for images
+  }
+
+   @override
+  Widget buildBackground(BuildContext context) {
+
+    final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
+    if (widget.disableBackgroundBlur || widget.imageUrls.isEmpty) {
+      return Container(color: isDarkMode ? Colors.black : AppColors.darkBackground);
+    }
+
+    // Use ImageCarousel's background logic if suitable, or replicate here
+     return Container(
+      color: isDarkMode ? Colors.black : AppColors.darkBackground,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          // Blurred first image
+          ClipRect(
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
+              child: Transform.scale(
+                scale: 1.2,
+                child: Opacity(
+                  opacity: 0.5,
+                  child: Image.network(
+                    widget.imageUrls.first,
+                    fit: BoxFit.cover,
+                     // Add error builder for background image
+                    errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-
-        // Right side actions
-        Positioned(
-          right: 12,
-          bottom: 100,
-          child: Column(
-            children: [
-              // Profile image
-              GestureDetector(
-                onTap: onProfilePressed,
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                  child: ClipOval(
-                    child: profileImageUrl != null
-                        ? Image.network(
-                            profileImageUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const CircleAvatar(
-                              backgroundColor: Colors.grey,
-                              child: Icon(Icons.person, color: Colors.white),
-                            ),
-                          )
-                        : const CircleAvatar(
-                            backgroundColor: Colors.grey,
-                            child: Icon(Icons.person, color: Colors.white),
-                          ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Like button
-              Column(
-                children: [
-                  IconButton(
-                    onPressed: onLikePressed,
-                    icon: Icon(
-                      isLiked
-                          ? FluentIcons.heart_24_filled
-                          : FluentIcons.heart_24_regular,
-                      color: isLiked ? Colors.red : Colors.white,
-                      size: 30,
-                    ),
-                  ),
-                  Text(
-                    '$likeCount',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              // Comment button
-              Column(
-                children: [
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      FluentIcons.comment_24_regular,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                  ),
-                  Text(
-                    '$commentCount',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 10),
-
-              // Share button
-              Column(
-                children: [
-                  IconButton(
-                    onPressed: onSharePressed,
-                    icon: const Icon(
-                      FluentIcons.share_24_regular,
-                      color: Colors.white,
-                      size: 30,
-                    ),
-                  ),
-                  Text(
-                    '$shareCount',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-
-        //Bottom text info
-        Positioned(
-          left: 12,
-          right: 70,
-          bottom: 50,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Username
-              GestureDetector(
-                onTap: onUsernameTap,
-                child: Row(
-                  children: [
-                    Text(
-                      '@$username',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                    if (isSprk)
-                      Padding(
-                        padding: const EdgeInsets.only(left: 4.0),
-                        child: Icon(
-                          FluentIcons.sparkle_24_filled,
-                          color: Colors.amber[300],
-                          size: 16,
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 8),
-
-              // Description
-              Text(
-                description,
-                style: const TextStyle(color: Colors.white),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-
-              // Hashtags
-              if (hashtags.isNotEmpty)
-                HashtagList(
-                  hashtags: hashtags,
-                  onHashtagTap: onHashtagTap,
-                ),
-            ],
-          ),
-        ),
-      ],
+          // Darkened overlay
+          Container(color: isDarkMode
+              ? Colors.black.withAlpha(120)
+              : AppColors.darkBackground.withAlpha(120)),
+        ],
+      ),
     );
+  }
+
+  @override
+  Widget buildContent(BuildContext context) {
+    // The main content is the ImageCarousel
+    return ImageCarousel(
+      imageUrls: widget.imageUrls,
+      // Pass disableBackgroundBlur to the carousel if it handles its own internal background separately
+      // disableBackgroundBlur: widget.disableBackgroundBlur,
+      // Ensure ImageCarousel doesn't conflict with the base background
+    );
+  }
+
+  // --- Build Method ---
+
+  @override
+  Widget build(BuildContext context) {
+    // Use the base class build method which assembles the common parts
+    // The base build calls buildBackground, buildContent, buildGradientOverlay, etc.
+    return super.build(context);
+    // No need to manually position SideActionBar or InfoBar here anymore.
   }
 }
