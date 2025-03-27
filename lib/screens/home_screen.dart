@@ -7,6 +7,7 @@ import 'package:video_player/video_player.dart';
 import '../widgets/video/video_item.dart';
 import '../widgets/video/preloaded_video_item.dart';
 import '../widgets/feed/feed_selector.dart';
+import '../widgets/feed_settings/feed_settings_sheet.dart';
 import '../utils/app_colors.dart';
 import '../services/auth_service.dart';
 import '../services/actions_service.dart';
@@ -421,7 +422,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     icon: const Icon(FluentIcons.options_24_regular),
                     color: AppColors.lightLavender,
                     iconSize: 30,
-                    onPressed: () {},
+                    onPressed: () {
+                      _showFeedSettingsSheet(context);
+                    },
                   ),
                 ],
               ),
@@ -537,6 +540,70 @@ class _HomeScreenState extends State<HomeScreen> {
           backgroundColor: Colors.red,
         ),
       );
+    }
+  }
+
+  void _showFeedSettingsSheet(BuildContext context) {
+    final feedSettings = [
+      FeedSetting(
+        feedName: 'Following',
+        isEnabled: true,
+      ),
+      FeedSetting(
+        feedName: 'For You',
+        isEnabled: true,
+      ),
+      FeedSetting(
+        feedName: 'Latest',
+        isEnabled: true,
+      ),
+    ];
+
+    // Use modal bottom sheet with proper configuration
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
+      transitionAnimationController: AnimationController(
+        duration: const Duration(milliseconds: 300),
+        vsync: Navigator.of(context),
+      ),
+      builder: (context) => GestureDetector(
+        // This is needed to prevent taps from dismissing the modal
+        onTap: () {},
+        behavior: HitTestBehavior.opaque,
+        child: FeedSettingsSheet(
+          feedSettings: feedSettings,
+          onToggleChanged: (feedName, isEnabled) {
+            // Handle feed toggle changes
+            if (!isEnabled && _getSelectedFeedNameFromIndex() == feedName) {
+              // Don't allow disabling the currently selected feed
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Cannot disable active feed')),
+              );
+              return;
+            }
+            
+            // Here you would typically persist the settings
+            // Don't automatically close on toggle
+          },
+        ),
+      ),
+    );
+  }
+
+  String _getSelectedFeedNameFromIndex() {
+    switch (_selectedFeedType) {
+      case 0:
+        return 'Following';
+      case 1:
+        return 'For You';
+      case 2:
+        return 'Latest';
+      default:
+        return 'For You';
     }
   }
 }
