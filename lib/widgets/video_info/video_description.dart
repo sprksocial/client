@@ -4,12 +4,14 @@ class VideoDescription extends StatefulWidget {
   final String text;
   final TextStyle? style;
   final int maxLines;
+  final Function(bool isExpanded)? onExpandToggle;
 
   const VideoDescription({
     super.key, 
     required this.text, 
     this.style, 
     this.maxLines = 2,
+    this.onExpandToggle,
   });
 
   @override
@@ -51,6 +53,10 @@ class _VideoDescriptionState extends State<VideoDescription> with SingleTickerPr
         _animationController.forward(from: 0);
       } else {
         _animationController.forward(from: 0);
+      }
+      
+      if (widget.onExpandToggle != null) {
+        widget.onExpandToggle!(_isExpanded);
       }
     });
   }
