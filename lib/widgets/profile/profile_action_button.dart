@@ -35,8 +35,15 @@ class ProfileActionButton extends StatelessWidget {
         height: 36,
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
         decoration: BoxDecoration(
-          color: isPrimary ? AppColors.primary : AppColors.lightLavender,
-          border: isOutlined ? Border.all(color: isDarkMode ? Colors.transparent : Colors.transparent, width: 1) : null,
+          color: isPrimary 
+              ? AppColors.primary 
+              : isDarkMode ? AppColors.modalBackground : AppColors.lightLavender,
+          border: isOutlined 
+              ? Border.all(
+                  color: isDarkMode ? Colors.grey.withOpacity(0.5) : Colors.grey.withOpacity(0.2), 
+                  width: 1
+                ) 
+              : null,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Center(
