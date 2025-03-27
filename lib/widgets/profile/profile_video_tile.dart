@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import '../video/video_item.dart';
 import '../../utils/app_colors.dart';
 
 class ProfileVideoTile extends StatelessWidget {
@@ -133,41 +132,6 @@ class ProfileVideoTile extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-
-  // Method to expand this tile into a full video player
-  VideoItem toVideoItem({
-    required VoidCallback onLikePressed,
-    required VoidCallback onBookmarkPressed,
-    required VoidCallback onSharePressed,
-    required VoidCallback onProfilePressed,
-    required VoidCallback onUsernameTap,
-    required Function(String) onHashtagTap,
-    String? authorDid,
-    String? videoUri,
-    bool isSprk = false,
-    int? commentCount,
-  }) {
-    return VideoItem(
-      index: index,
-      videoUrl: videoUrl,
-      username: username,
-      description: description,
-      hashtags: hashtags,
-      likeCount: likeCount,
-      commentCount: commentCount ?? (index + 1) * 12, // Use real count if available, fallback to calculated
-      bookmarkCount: (index + 1) * 8,
-      shareCount: (index + 1) * 20,
-      onLikePressed: onLikePressed,
-      onBookmarkPressed: onBookmarkPressed,
-      onSharePressed: onSharePressed,
-      onProfilePressed: onProfilePressed,
-      onUsernameTap: onUsernameTap,
-      onHashtagTap: onHashtagTap,
-      authorDid: authorDid,
-      videoUri: videoUri,
-      isSprk: isSprk,
     );
   }
 }
