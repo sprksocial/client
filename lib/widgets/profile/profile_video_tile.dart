@@ -144,6 +144,10 @@ class ProfileVideoTile extends StatelessWidget {
     required VoidCallback onProfilePressed,
     required VoidCallback onUsernameTap,
     required Function(String) onHashtagTap,
+    String? authorDid,
+    String? videoUri,
+    bool isSprk = false,
+    int? commentCount,
   }) {
     return VideoItem(
       index: index,
@@ -152,7 +156,7 @@ class ProfileVideoTile extends StatelessWidget {
       description: description,
       hashtags: hashtags,
       likeCount: likeCount,
-      commentCount: (index + 1) * 12,
+      commentCount: commentCount ?? (index + 1) * 12, // Use real count if available, fallback to calculated
       bookmarkCount: (index + 1) * 8,
       shareCount: (index + 1) * 20,
       onLikePressed: onLikePressed,
@@ -161,6 +165,9 @@ class ProfileVideoTile extends StatelessWidget {
       onProfilePressed: onProfilePressed,
       onUsernameTap: onUsernameTap,
       onHashtagTap: onHashtagTap,
+      authorDid: authorDid,
+      videoUri: videoUri,
+      isSprk: isSprk,
     );
   }
 }
