@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../utils/app_colors.dart';
+import '../../services/settings_service.dart';
 
 class FeedSettingsSheet extends StatefulWidget {
   final List<FeedSetting> feedSettings;
@@ -97,6 +99,23 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemBuilder: (context, index) {
         final setting = _feedSettings[index];
+        
+        // If this is the feed blur setting, get its value from the SettingsService
+        if (setting.settingType == 'feed_blur') {
+          final settingsService = Provider.of<SettingsService>(context);
+          final isBlurEnabled = settingsService.feedBlurEnabled;
+          
+          // Update local state if it differs from service
+          if (setting.isEnabled != isBlurEnabled) {
+            _feedSettings[index] = FeedSetting(
+              feedName: setting.feedName,
+              description: setting.description,
+              settingType: setting.settingType,
+              isEnabled: isBlurEnabled,
+            );
+          }
+        }
+        
         return FeedSettingItem(
           feedName: setting.feedName,
           description: setting.description,
@@ -113,6 +132,13 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> {
                 isEnabled: value,
               );
             });
+            
+            // If this is the feed blur setting, update the SettingsService
+            if (setting.settingType == 'feed_blur') {
+              final settingsService = Provider.of<SettingsService>(context, listen: false);
+              settingsService.setFeedBlur(value);
+            }
+            
             // Then call the parent callback
             widget.onToggleChanged(setting.settingType, value);
           },

@@ -5,6 +5,7 @@ import '../../../services/profile_service.dart';
 import '../../../services/auth_service.dart';
 import '../../../screens/video_player_screen.dart';
 import '../../profile/profile_video_tile.dart';
+import '../../../widgets/video/video_item.dart';
 
 class VideosTab extends StatefulWidget {
   final String? did;
@@ -145,7 +146,7 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
       description = video['post']['text'] as String?;
     }
     if (description == null || description.isEmpty) {
-      description = 'Video ${index + 1}';
+      description = '';
     }
     
     final likeCount = video['post']['likeCount'] as int? ?? 0;
@@ -153,6 +154,8 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
     final videoUri = video['post']['uri'] as String?;
     final isSprk = videoUrl.contains('sprk.so');
     final commentCount = video['post']['replyCount'] as int? ?? 0;
+    final shareCount = video['post']['repostCount'] as int? ?? 0;
+    final profileImageUrl = video['post']['author']['avatar'] as String? ?? '';
 
     // Extract hashtags from the description
     final List<String> hashtags = [];
@@ -163,36 +166,40 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
       }
     }
 
-    final videoTile = ProfileVideoTile(
+    final videoItem = VideoItem(
+      key: ValueKey('video_item_$index'),
+      index: index,
       videoUrl: videoUrl,
-      thumbnailUrl: thumbnailUrl,
       username: username,
       description: description,
       hashtags: hashtags,
-      index: index,
       likeCount: likeCount,
-      onTap: () {}, // Not needed here
+      commentCount: commentCount,
+      bookmarkCount: 0,
+      shareCount: shareCount,
+      profileImageUrl: profileImageUrl,
+      authorDid: authorDid,
+      isLiked: false,
       isSprk: isSprk,
-    );
-
-    final videoItem = videoTile.toVideoItem(
+      videoUri: videoUri,
+      disableBackgroundBlur: false,
       onLikePressed: () {},
       onBookmarkPressed: () {},
       onSharePressed: () {},
       onProfilePressed: () {},
       onUsernameTap: () {},
       onHashtagTap: (String hashtag) {},
-      authorDid: authorDid,
-      videoUri: videoUri,
-      isSprk: isSprk,
-      commentCount: commentCount,
     );
 
-    // Use Navigator.push instead of MaterialPageRoute to prevent complete rebuilds
+    // Use Navigator.push with the new VideoPlayerScreen that supports scrolling
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: true,
-        pageBuilder: (BuildContext context, _, __) => VideoPlayerScreen(videoItem: videoItem),
+        pageBuilder: (BuildContext context, _, __) => VideoPlayerScreen(
+          initialVideoItem: videoItem,
+          allVideos: _videos,
+          initialIndex: index,
+        ),
         transitionsBuilder: (_, Animation<double> animation, __, Widget child) {
           const begin = Offset(0.0, 1.0);
           const end = Offset.zero;
@@ -202,9 +209,8 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
 
           return SlideTransition(position: animation.drive(tween), child: child);
         },
-
         transitionDuration: const Duration(milliseconds: 300),
-        maintainState: true, // Preserve this screen's state
+        maintainState: true,
       ),
     );
   }
@@ -288,7 +294,7 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
             description = video['post']['text'] as String?;
           }
           if (description == null || description.isEmpty) {
-            description = 'Video ${index + 1}';
+            description = '';
           }
           
           final likeCount = video['post']['likeCount'] as int? ?? 0;
