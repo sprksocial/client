@@ -60,9 +60,9 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
       final taskId = uploadService.registerTask('image');
       uploadService.startTask(taskId);
 
-      // Return to previous screen while upload continues in background
+      // Navigate to home screen while upload continues in background
       if (mounted) {
-        Navigator.of(context).pop(true);
+        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
       }
 
       // Call the service method to post images in the background
