@@ -1,26 +1,27 @@
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:fvp/fvp.dart' as fvp;
 import 'package:provider/provider.dart';
-import 'screens/home_screen.dart';
-import 'screens/search_screen.dart';
+
+import 'screens/auth_prompt_screen.dart';
 import 'screens/create_video_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/messages_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/search_screen.dart';
 import 'screens/splash_screen.dart';
+import 'screens/test_actions_screen.dart';
+import 'services/actions_service.dart';
+import 'services/auth_service.dart';
+import 'services/comments_service.dart';
+import 'services/identity_service.dart';
+import 'services/profile_service.dart';
+import 'services/settings_service.dart';
 import 'utils/app_colors.dart';
 import 'utils/app_theme.dart';
-import 'screens/login_screen.dart';
-import 'screens/auth_prompt_screen.dart';
-import 'screens/test_actions_screen.dart';
-import 'services/auth_service.dart';
-import 'services/profile_service.dart';
-import 'services/identity_service.dart';
-import 'services/actions_service.dart';
-import 'services/comments_service.dart';
-import 'services/settings_service.dart';
-import 'package:fvp/fvp.dart' as fvp;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,13 +33,15 @@ void main() async {
   // VESDK.unlockWithLicense("assets/licenses/vesdk_license");
 
   // Force dark status bar and navigation bar
-  SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
-    statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
-    statusBarBrightness: Brightness.dark,
-    systemNavigationBarColor: Colors.black,
-    systemNavigationBarIconBrightness: Brightness.light,
-  ));
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      statusBarBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.black,
+      systemNavigationBarIconBrightness: Brightness.light,
+    ),
+  );
 
   fvp.registerWith();
   runApp(const MyApp());
@@ -206,9 +209,9 @@ class _MainScreenState extends State<MainScreen> {
               label: 'Create',
             ),
             const NavigationDestination(
-              icon: Icon(FluentIcons.chat_24_regular),
-              selectedIcon: Icon(FluentIcons.chat_24_filled),
-              label: 'Messages',
+              icon: Icon(FluentIcons.mail_inbox_all_24_regular),
+              selectedIcon: Icon(FluentIcons.mail_inbox_all_24_filled),
+              label: 'Inbox',
             ),
             const NavigationDestination(
               icon: Icon(FluentIcons.person_24_regular),

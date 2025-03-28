@@ -150,7 +150,7 @@ class _MessagesScreenState extends State<MessagesScreen> {
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context),
       appBar: AppBar(
-        title: Text('Chat', style: TextStyle(color: AppTheme.getTextColor(context), fontWeight: FontWeight.bold)),
+        title: Text('Inbox', style: TextStyle(color: AppTheme.getTextColor(context), fontWeight: FontWeight.bold)),
         leading: IconButton(
           padding: EdgeInsets.zero,
           onPressed: () {},
