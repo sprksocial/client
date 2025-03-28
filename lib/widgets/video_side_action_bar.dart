@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'action_buttons/comment_action_button.dart';
 import 'action_buttons/like_action_button.dart';
 import 'action_buttons/profile_action_button.dart';
-import 'action_buttons/share_action_button.dart';
 
 class VideoSideActionBar extends StatefulWidget {
   final VoidCallback? onProfilePressed;
@@ -109,7 +108,7 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
         // ),
         const SizedBox(height: 20),
 
-        ShareActionButton(count: widget.shareCount, onPressed: widget.onSharePressed),
+        // ShareActionButton(count: widget.shareCount, onPressed: widget.onSharePressed),
       ],
     );
   }
