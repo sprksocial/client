@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
+
 import '../../utils/app_colors.dart';
 import '../../utils/app_theme.dart';
 
@@ -24,10 +25,10 @@ class ProfileTabs extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           _buildTabItem(context, 0, FluentIcons.video_24_regular),
-          _buildTabItem(context, 1, FluentIcons.image_24_regular),
-          _buildTabItem(context, 2, FluentIcons.heart_24_regular),
-          _buildTabItem(context, 3, FluentIcons.arrow_repeat_all_24_regular),
-          if (isAuthenticated) _buildTabItem(context, 4, FluentIcons.bookmark_24_regular),
+          // _buildTabItem(context, 1, FluentIcons.image_24_regular),
+          // _buildTabItem(context, 2, FluentIcons.heart_24_regular),
+          // _buildTabItem(context, 3, FluentIcons.arrow_repeat_all_24_regular),
+          // if (isAuthenticated) _buildTabItem(context, 4, FluentIcons.bookmark_24_regular),
         ],
       ),
     );
