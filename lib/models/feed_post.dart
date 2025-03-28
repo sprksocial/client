@@ -57,8 +57,7 @@ class FeedPost {
       final embedImages = post.embed?.data as EmbedViewImages;
       imageUrls = embedImages.images.map((img) => img.fullsize).toList();
     }
-    if (!hasMedia) {
-    }
+    if (!hasMedia) {}
 
     // Check if the post is a reply
     bool isReply = post.record.reply != null;
@@ -106,10 +105,7 @@ class FeedPost {
         hasMedia = true;
         final embedImages = post['embed']['images'] as List<dynamic>?;
         if (embedImages != null) {
-          imageUrls = embedImages
-              .map((img) => img['fullsize'] as String? ?? '')
-              .where((url) => url.isNotEmpty)
-              .toList();
+          imageUrls = embedImages.map((img) => img['fullsize'] as String? ?? '').where((url) => url.isNotEmpty).toList();
         }
       }
     }
@@ -160,4 +156,15 @@ class FeedPost {
 
   /// Check if the post is liked based on whether there's a likeUri
   bool get isLiked => likeUri != null;
+
+  /// Check if this post is a duplicate of another post
+  bool isDuplicateOf(FeedPost other) {
+    // If both posts have the same URI, they're definitely duplicates
+    if (uri == other.uri) return true;
+
+    // If both posts have videos and the video URLs match, consider them duplicates
+    if (videoUrl != null && other.videoUrl != null && videoUrl == other.videoUrl) return true;
+
+    return false;
+  }
 }
