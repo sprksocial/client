@@ -1,11 +1,12 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import '../../utils/app_colors.dart';
-import 'comment_reply_item.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+
 import '../../models/comment.dart';
+import '../../utils/app_colors.dart';
 import '../image/image_carousel.dart';
+import 'comment_reply_item.dart';
 
 class CommentItem extends StatefulWidget {
   final String id;
@@ -24,6 +25,7 @@ class CommentItem extends StatefulWidget {
   final List<Comment> replies;
   final String uri;
   final String cid;
+  final String? profileImageUrl;
 
   const CommentItem({
     super.key,
@@ -43,6 +45,7 @@ class CommentItem extends StatefulWidget {
     this.replies = const [],
     required this.uri,
     required this.cid,
+    this.profileImageUrl,
   });
 
   @override
@@ -131,20 +134,14 @@ class _CommentItemState extends State<CommentItem> {
           insetPadding: EdgeInsets.zero,
           child: Stack(
             children: [
-              ImageCarousel(
-                imageUrls: widget.imageUrls,
-                autoPreload: true,
-                disableBackgroundBlur: false,
-              ),
+              ImageCarousel(imageUrls: widget.imageUrls, autoPreload: true, disableBackgroundBlur: false),
               Positioned(
                 top: MediaQuery.of(context).padding.top + 10,
                 right: 10,
                 child: IconButton(
                   icon: const Icon(FluentIcons.dismiss_24_filled, color: Colors.white, size: 30),
                   onPressed: () => Navigator.of(context).pop(),
-                  style: IconButton.styleFrom(
-                    backgroundColor: Colors.black.withOpacity(0.3),
-                  ),
+                  style: IconButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.3)),
                 ),
               ),
             ],
@@ -175,8 +172,7 @@ class _CommentItemState extends State<CommentItem> {
           ),
         ),
 
-        if (_showReplies && widget.replyCount > 0)
-          _buildRepliesSection(dividerColor),
+        if (_showReplies && widget.replyCount > 0) _buildRepliesSection(dividerColor),
 
         Container(height: 0.5, color: dividerColor),
       ],
@@ -184,6 +180,43 @@ class _CommentItemState extends State<CommentItem> {
   }
 
   Widget _buildAvatar() {
+    if (widget.profileImageUrl != null && widget.profileImageUrl!.isNotEmpty) {
+      return Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 1),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: CachedNetworkImage(
+          imageUrl: widget.profileImageUrl!,
+          fit: BoxFit.cover,
+          placeholder:
+              (context, url) => Container(
+                color: AppColors.accent,
+                child: Center(
+                  child: Text(
+                    widget.username.isNotEmpty ? widget.username[0].toUpperCase() : '?',
+                    style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+          errorWidget:
+              (context, url, error) => Container(
+                color: AppColors.accent,
+                child: Center(
+                  child: Text(
+                    widget.username.isNotEmpty ? widget.username[0].toUpperCase() : '?',
+                    style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+        ),
+      );
+    }
+
+    // Fallback to the circle with initial if no profile image
     return Container(
       width: 36,
       height: 36,
@@ -232,10 +265,7 @@ class _CommentItemState extends State<CommentItem> {
 
         _buildReplyButton(secondaryTextColor),
 
-        if (widget.replyCount > 0) ...[
-          const SizedBox(width: 16),
-          _buildToggleRepliesButton(secondaryTextColor),
-        ],
+        if (widget.replyCount > 0) ...[const SizedBox(width: 16), _buildToggleRepliesButton(secondaryTextColor)],
       ],
     );
   }
@@ -318,6 +348,7 @@ class _CommentItemState extends State<CommentItem> {
               likeCount: reply.likeCount,
               isDarkMode: widget.isDarkMode,
               onReply: widget.onReply,
+              profileImageUrl: reply.profileImageUrl,
             ),
           ),
         ],
@@ -365,20 +396,22 @@ class _CommentItemState extends State<CommentItem> {
             CachedNetworkImage(
               imageUrl: firstImageUrl,
               fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                color: Colors.grey[850]?.withOpacity(0.5),
-                child: const Center(
-                  child: SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
+              placeholder:
+                  (context, url) => Container(
+                    color: Colors.grey[850]?.withOpacity(0.5),
+                    child: const Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-              errorWidget: (context, url, error) => Container(
-                color: AppColors.darkPurple.withAlpha(26),
-                child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 24, color: Colors.white70)),
-              ),
+              errorWidget:
+                  (context, url, error) => Container(
+                    color: AppColors.darkPurple.withAlpha(26),
+                    child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 24, color: Colors.white70)),
+                  ),
             ),
 
             if (imageCount > 1)
@@ -387,10 +420,7 @@ class _CommentItemState extends State<CommentItem> {
                 right: 4,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(10)),
                   child: Text(
                     '+${imageCount - 1}',
                     style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),

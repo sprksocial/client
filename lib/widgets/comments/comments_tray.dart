@@ -1,11 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../utils/app_colors.dart';
-import 'comment_item.dart';
-import 'comment_input.dart';
-import '../../services/comments_service.dart';
+
 import '../../models/comment.dart';
+import '../../services/comments_service.dart';
+import '../../utils/app_colors.dart';
+import 'comment_input.dart';
+import 'comment_item.dart';
 
 /// Shows the comments tray as a modal bottom sheet.
 /// This utility function can be used from any screen that needs to display comments.
@@ -338,6 +339,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
           replies: comment.replies,
           uri: comment.uri,
           cid: comment.cid,
+          profileImageUrl: comment.profileImageUrl,
         );
       },
     );
