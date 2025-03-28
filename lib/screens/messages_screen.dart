@@ -1,10 +1,12 @@
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import '../widgets/messages/message_list.dart';
-import '../widgets/activities/activity_list.dart';
-import '../widgets/activities/activity_icon.dart';
+
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import '../widgets/activities/activity_icon.dart';
+import '../widgets/activities/activity_list.dart';
+import '../widgets/messages/message_list.dart';
+
 class MessagesScreen extends StatefulWidget {
   const MessagesScreen({super.key});
 
@@ -151,15 +153,13 @@ class _MessagesScreenState extends State<MessagesScreen> {
         title: Text('Chat', style: TextStyle(color: AppTheme.getTextColor(context), fontWeight: FontWeight.bold)),
         leading: IconButton(
           padding: EdgeInsets.zero,
-          onPressed: () {
-          },
+          onPressed: () {},
           icon: Icon(FluentIcons.add_24_regular, color: AppTheme.getTextColor(context), size: 24),
         ),
         actions: [
           IconButton(
             padding: EdgeInsets.zero,
-            onPressed: () {
-            },
+            onPressed: () {},
             icon: Icon(FluentIcons.search_24_regular, color: AppTheme.getTextColor(context), size: 24),
           ),
         ],
@@ -221,11 +221,17 @@ class _MessagesScreenState extends State<MessagesScreen> {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(
-            color: isSelected 
-                ? label == 'Messages' ? AppColors.pink : AppColors.primary 
-                : Colors.transparent, 
-            width: 2)),
+          border: Border(
+            bottom: BorderSide(
+              color:
+                  isSelected
+                      ? label == 'Messages'
+                          ? AppColors.pink
+                          : AppColors.primary
+                      : Colors.transparent,
+              width: 2,
+            ),
+          ),
         ),
         child: Center(
           child: Text(
@@ -235,7 +241,9 @@ class _MessagesScreenState extends State<MessagesScreen> {
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               color:
                   isSelected
-                      ? label == 'Messages' ? AppColors.pink : AppColors.primary
+                      ? label == 'Messages'
+                          ? AppColors.pink
+                          : AppColors.primary
                       : isDarkMode
                       ? AppColors.textLight.withAlpha(179)
                       : AppColors.textSecondary,

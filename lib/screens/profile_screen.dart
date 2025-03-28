@@ -1,19 +1,21 @@
+import 'dart:convert';
+
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+
+import '../services/auth_service.dart';
+import '../services/profile_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
 import '../utils/profile_helper.dart';
-import '../widgets/profile/profile_header.dart';
-import '../widgets/profile/profile_tabs.dart';
-import '../widgets/profile/profile_tab_content.dart';
 import '../widgets/profile/early_supporter_sheet.dart';
-import '../services/auth_service.dart';
-import '../services/profile_service.dart';
-import 'auth_prompt_screen.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import '../widgets/profile/profile_header.dart';
 import '../widgets/profile/profile_menu_sheet.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import '../widgets/profile/profile_tab_content.dart';
+import '../widgets/profile/profile_tabs.dart';
+import 'auth_prompt_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String? did; // DID of the profile to show, null means current user
@@ -92,17 +94,18 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
       });
 
       // Check early supporter status independently
-      _checkEarlySupporter(targetDid).then((isSupporter) {
-        if (mounted) {
-          setState(() {
-            _isEarlySupporter = isSupporter;
+      _checkEarlySupporter(targetDid)
+          .then((isSupporter) {
+            if (mounted) {
+              setState(() {
+                _isEarlySupporter = isSupporter;
+              });
+            }
+          })
+          .catchError((e) {
+            debugPrint('Error checking early supporter status: $e');
+            // Keep default value (false) on error
           });
-        }
-      }).catchError((e) {
-        debugPrint('Error checking early supporter status: $e');
-        // Keep default value (false) on error
-      });
-
     } catch (e) {
       if (!mounted) return;
 
@@ -143,12 +146,9 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 20),
-          child: ProfileMenuSheet(onLogout: _handleLogout)
-        )
-      ),
+      builder:
+          (context) =>
+              SafeArea(child: Padding(padding: const EdgeInsets.only(top: 20), child: ProfileMenuSheet(onLogout: _handleLogout))),
     );
   }
 

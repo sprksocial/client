@@ -1,15 +1,12 @@
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 class VideoPlaybackScreen extends StatefulWidget {
   final VideoPlayerController controller;
 
-  const VideoPlaybackScreen({
-    super.key,
-    required this.controller,
-  });
+  const VideoPlaybackScreen({super.key, required this.controller});
 
   @override
   State<VideoPlaybackScreen> createState() => _VideoPlaybackScreenState();
@@ -28,7 +25,7 @@ class _VideoPlaybackScreenState extends State<VideoPlaybackScreen> {
       DeviceOrientation.landscapeLeft,
       DeviceOrientation.landscapeRight,
     ]);
-    
+
     // Hide controls after a delay
     _autoHideControls();
   }
@@ -83,7 +80,7 @@ class _VideoPlaybackScreenState extends State<VideoPlaybackScreen> {
   Widget build(BuildContext context) {
     final duration = widget.controller.value.duration;
     final position = widget.controller.value.position;
-    
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: GestureDetector(
@@ -91,13 +88,8 @@ class _VideoPlaybackScreenState extends State<VideoPlaybackScreen> {
         child: Stack(
           children: [
             // Video Player
-            Center(
-              child: AspectRatio(
-                aspectRatio: widget.controller.value.aspectRatio,
-                child: VideoPlayer(widget.controller),
-              ),
-            ),
-            
+            Center(child: AspectRatio(aspectRatio: widget.controller.value.aspectRatio, child: VideoPlayer(widget.controller))),
+
             // Controls overlay
             if (_showControls)
               Positioned.fill(
@@ -109,29 +101,23 @@ class _VideoPlaybackScreenState extends State<VideoPlaybackScreen> {
                       // Play/Pause button
                       IconButton(
                         icon: Icon(
-                          _isPlaying 
-                              ? FluentIcons.pause_48_filled 
-                              : FluentIcons.play_48_filled,
+                          _isPlaying ? FluentIcons.pause_48_filled : FluentIcons.play_48_filled,
                           color: Colors.white,
                           size: 60,
                         ),
                         onPressed: _togglePlayPause,
                       ),
-                      
+
                       // Back button
                       Positioned(
                         top: MediaQuery.of(context).padding.top + 16,
                         left: 16,
                         child: IconButton(
-                          icon: const Icon(
-                            FluentIcons.arrow_left_24_filled,
-                            color: Colors.white,
-                            size: 28,
-                          ),
+                          icon: const Icon(FluentIcons.arrow_left_24_filled, color: Colors.white, size: 28),
                           onPressed: () => Navigator.pop(context),
                         ),
                       ),
-                      
+
                       // Progress bar and time
                       Positioned(
                         bottom: MediaQuery.of(context).padding.bottom + 24,
@@ -146,24 +132,12 @@ class _VideoPlaybackScreenState extends State<VideoPlaybackScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    _formatDuration(position),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                  Text(
-                                    _formatDuration(duration),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 12,
-                                    ),
-                                  ),
+                                  Text(_formatDuration(position), style: const TextStyle(color: Colors.white, fontSize: 12)),
+                                  Text(_formatDuration(duration), style: const TextStyle(color: Colors.white, fontSize: 12)),
                                 ],
                               ),
                             ),
-                            
+
                             // Progress slider
                             SliderTheme(
                               data: SliderThemeData(
@@ -171,21 +145,15 @@ class _VideoPlaybackScreenState extends State<VideoPlaybackScreen> {
                                 activeTrackColor: Colors.pink,
                                 inactiveTrackColor: Colors.white.withOpacity(0.3),
                                 thumbColor: Colors.pink,
-                                thumbShape: const RoundSliderThumbShape(
-                                  enabledThumbRadius: 6,
-                                ),
-                                overlayShape: const RoundSliderOverlayShape(
-                                  overlayRadius: 12,
-                                ),
+                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
                               ),
                               child: Slider(
                                 value: position.inMilliseconds.toDouble(),
                                 min: 0,
                                 max: duration.inMilliseconds.toDouble(),
                                 onChanged: (value) {
-                                  widget.controller.seekTo(
-                                    Duration(milliseconds: value.toInt()),
-                                  );
+                                  widget.controller.seekTo(Duration(milliseconds: value.toInt()));
                                 },
                               ),
                             ),
@@ -201,4 +169,4 @@ class _VideoPlaybackScreenState extends State<VideoPlaybackScreen> {
       ),
     );
   }
-} 
+}

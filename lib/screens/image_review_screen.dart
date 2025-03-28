@@ -1,18 +1,17 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+
 import '../services/actions_service.dart';
 import '../utils/app_colors.dart'; // Assuming you have AppColors
 
 class ImageReviewScreen extends StatefulWidget {
   final List<XFile> imageFiles;
 
-  const ImageReviewScreen({
-    super.key,
-    required this.imageFiles,
-  });
+  const ImageReviewScreen({super.key, required this.imageFiles});
 
   @override
   State<ImageReviewScreen> createState() => _ImageReviewScreenState();
@@ -62,11 +61,7 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
             padding: EdgeInsets.symmetric(vertical: 12),
             child: Column(
               mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Please wait while we upload your images...'),
-              ],
+              children: [CircularProgressIndicator(), SizedBox(height: 16), Text('Please wait while we upload your images...')],
             ),
           ),
         );
@@ -92,12 +87,9 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
           _isPosting = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to create post: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to create post: ${e.toString()}'), backgroundColor: Colors.red));
       }
     }
   }
@@ -180,10 +172,7 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
                       // Description field
                       Container(
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: inputBackgroundColor,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                        decoration: BoxDecoration(color: inputBackgroundColor, borderRadius: BorderRadius.circular(8)),
                         child: TextField(
                           controller: _descriptionController,
                           style: TextStyle(color: textColor),
@@ -215,28 +204,17 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary, // Use your primary color
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
                   ),
-                  child: _isPosting
-                      ? SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: buttonTextColor,
-                          ),
-                        )
-                      : Text(
-                          'Post',
-                          style: TextStyle(
-                            color: buttonTextColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                          ),
-                        ),
+                  child:
+                      _isPosting
+                          ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: buttonTextColor),
+                          )
+                          : Text('Post', style: TextStyle(color: buttonTextColor, fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ),

@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
 import 'login_screen.dart';
