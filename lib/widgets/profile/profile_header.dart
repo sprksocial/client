@@ -1,7 +1,7 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:provider/provider.dart';
 import 'package:sparksocial/screens/profile_screen.dart';
 import 'package:sparksocial/services/identity_service.dart';
@@ -9,10 +9,9 @@ import 'package:sparksocial/services/identity_service.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/formatters/text_formatter.dart';
-import 'profile_stat_item.dart';
-import 'profile_action_button.dart';
-import 'profile_links.dart';
 import 'profile_description.dart';
+import 'profile_links.dart';
+import 'profile_stat_item.dart';
 
 class ProfileHeader extends StatefulWidget {
   final Map<String, dynamic> profileData;
@@ -210,23 +209,21 @@ class _ProfileHeaderState extends State<ProfileHeader> {
           Row(
             children: [
               if (widget.isCurrentUser) ...[
-                Expanded(
-                  flex: 1,
-                  child: ProfileActionButton(label: 'Edit', onPressed: widget.onEditTap, isPrimary: true, isOutlined: false),
-                ),
+                // Expanded(
+                //   flex: 1,
+                //   child: ProfileActionButton(label: 'Edit', onPressed: widget.onEditTap, isPrimary: true, isOutlined: false),
+                // ),
                 const SizedBox(width: 8),
               ],
 
-              Expanded(
-                flex: 1,
-                child: Container(
-                  constraints: const BoxConstraints(minHeight: 36),
-                  child: ProfileActionButton(label: 'Share Profile', onPressed: widget.onShareTap),
-                ),
-              ),
-
+              // Expanded(
+              //   flex: 1,
+              //   child: Container(
+              //     constraints: const BoxConstraints(minHeight: 36),
+              //     child: ProfileActionButton(label: 'Share Profile', onPressed: widget.onShareTap),
+              //   ),
+              // ),
               const SizedBox(width: 8),
-              
             ],
           ),
         ],
