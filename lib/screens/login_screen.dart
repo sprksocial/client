@@ -8,6 +8,13 @@ import '../services/auth_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
 
+class UpperCaseTextFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    return TextEditingValue(text: newValue.text.toUpperCase(), selection: newValue.selection);
+  }
+}
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -18,11 +25,14 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _handleController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _authCodeController = TextEditingController();
   bool _obscurePassword = true;
   final _formKey = GlobalKey<FormState>();
+  bool _showAuthCodeField = false;
 
   final _handleFocusNode = FocusNode();
   final _passwordFocusNode = FocusNode();
+  final _authCodeFocusNode = FocusNode();
 
   @override
   void initState() {
@@ -36,19 +46,30 @@ class _LoginScreenState extends State<LoginScreen> {
   void dispose() {
     _handleController.dispose();
     _passwordController.dispose();
+    _authCodeController.dispose();
     _handleFocusNode.dispose();
     _passwordFocusNode.dispose();
+    _authCodeFocusNode.dispose();
     super.dispose();
   }
 
   Future<void> _login() async {
     if (_formKey.currentState?.validate() ?? false) {
       final authService = Provider.of<AuthService>(context, listen: false);
-      final success = await authService.login(_handleController.text.trim(), _passwordController.text);
+      final result = await authService.login(
+        _handleController.text.trim(),
+        _passwordController.text,
+        authCode: _showAuthCodeField ? _authCodeController.text.trim() : null,
+      );
 
-      if (success && mounted) {
+      if (result == LoginStatus.success && mounted) {
         TextInput.finishAutofillContext(shouldSave: true);
         Navigator.of(context).pushReplacementNamed('/home');
+      } else if (result == LoginStatus.codeRequired && mounted) {
+        setState(() {
+          _showAuthCodeField = true;
+        });
+        _authCodeFocusNode.requestFocus();
       }
     }
   }
@@ -141,10 +162,43 @@ class _LoginScreenState extends State<LoginScreen> {
                           keyboardType: TextInputType.visiblePassword,
                           autofillHints: const [AutofillHints.password],
                           onEditingComplete: () {
-                            TextInput.finishAutofillContext();
-                            _login();
+                            if (_showAuthCodeField) {
+                              _authCodeFocusNode.requestFocus();
+                            } else {
+                              TextInput.finishAutofillContext();
+                              _login();
+                            }
                           },
                         ),
+
+                        if (_showAuthCodeField) ...[
+                          const SizedBox(height: 16),
+                          TextField(
+                            controller: _authCodeController,
+                            focusNode: _authCodeFocusNode,
+                            decoration: InputDecoration(
+                              hintText: 'Enter code (e.g., ABCD1-ZXC45)',
+                              helperText: 'Enter the code from your email',
+                              prefixIcon: const Icon(FluentIcons.key_24_regular, color: AppColors.primary),
+                              filled: true,
+                              fillColor: isDarkMode ? AppColors.deepPurple : Colors.grey[200],
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                              contentPadding: const EdgeInsets.all(16),
+                            ),
+                            style: TextStyle(color: AppTheme.getTextColor(context)),
+                            textInputAction: TextInputAction.done,
+                            keyboardType: TextInputType.text,
+                            textCapitalization: TextCapitalization.characters,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\-]')),
+                              UpperCaseTextFormatter(),
+                            ],
+                            onEditingComplete: () {
+                              TextInput.finishAutofillContext();
+                              _login();
+                            },
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -171,7 +225,10 @@ class _LoginScreenState extends State<LoginScreen> {
                     child:
                         authService.isLoading
                             ? const CircularProgressIndicator(color: AppColors.white)
-                            : const Text('Login', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.white)),
+                            : Text(
+                              _showAuthCodeField ? 'Verify Code' : 'Login',
+                              style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.white),
+                            ),
                   ),
                 ],
               ),

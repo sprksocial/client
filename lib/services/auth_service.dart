@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:flutter/foundation.dart';
-import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
+enum LoginStatus { success, failed, codeRequired }
 
 class AuthService extends ChangeNotifier {
   Session? _session;
@@ -132,7 +135,7 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  Future<bool> login(String handle, String password) async {
+  Future<LoginStatus> login(String handle, String password, {String? authCode}) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -159,25 +162,43 @@ class AuthService extends ChangeNotifier {
       }
 
       String pdsDomain = Uri.parse(pdsUrl).host;
-      final session = await createSession(identifier: handle, password: password, service: pdsDomain);
 
-      _session = session.data;
-      if (_session == null) {
-        throw Exception('Failed to create session');
+      try {
+        final session = await createSession(
+          identifier: handle,
+          password: password,
+          service: pdsDomain,
+          authFactorToken: authCode,
+        );
+
+        _session = session.data;
+        if (_session == null) {
+          throw Exception('Failed to create session');
+        }
+
+        _atProto = ATProto.fromSession(_session!);
+        await _saveSession(_session!);
+
+        _isLoading = false;
+        notifyListeners();
+        return LoginStatus.success;
+      } catch (e) {
+        if (e.toString().contains('401') &&
+            (e.toString().contains('sign in code') ||
+                e.toString().contains('sign-in code') ||
+                e.toString().contains('verification code'))) {
+          _error = 'Authentication code required. Check your email for a verification code.';
+          _isLoading = false;
+          notifyListeners();
+          return LoginStatus.codeRequired;
+        }
+        rethrow;
       }
-
-      _atProto = ATProto.fromSession(_session!);
-
-      await _saveSession(_session!);
-
-      _isLoading = false;
-      notifyListeners();
-      return true;
     } catch (e) {
       _error = e.toString();
       _isLoading = false;
       notifyListeners();
-      return false;
+      return LoginStatus.failed;
     }
   }
 
