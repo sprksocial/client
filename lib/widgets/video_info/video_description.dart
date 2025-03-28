@@ -12,14 +12,36 @@ class VideoDescription extends StatefulWidget {
   State<VideoDescription> createState() => _VideoDescriptionState();
 }
 
-class _VideoDescriptionState extends State<VideoDescription> {
+class _VideoDescriptionState extends State<VideoDescription> with SingleTickerProviderStateMixin {
   bool _isExpanded = false;
+  late final AnimationController _animationController;
+  late final Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
+
+    _scaleAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.03), weight: 30),
+      TweenSequenceItem(tween: Tween<double>(begin: 1.03, end: 1.0), weight: 70),
+    ]).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   void _toggleExpanded() {
-    if (!mounted) return;
-
     setState(() {
       _isExpanded = !_isExpanded;
+      if (_isExpanded) {
+        _animationController.forward(from: 0);
+      } else {
+        _animationController.forward(from: 0);
+      }
 
       if (widget.onExpandToggle != null) {
         widget.onExpandToggle!(_isExpanded);
@@ -29,59 +51,24 @@ class _VideoDescriptionState extends State<VideoDescription> {
 
   @override
   Widget build(BuildContext context) {
-    final defaultTextStyle =
-        Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white, fontSize: 13, fontFamily: 'Roboto') ??
-        const TextStyle(color: Colors.white, fontSize: 13, fontFamily: 'Roboto');
-
-    // Process text to ensure emoji display correctly
-    final processedText = widget.text;
-
     return GestureDetector(
       onTap: _toggleExpanded,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Use RichText for better control over text rendering
-          _isExpanded
-              ? Text.rich(TextSpan(text: processedText), style: widget.style ?? defaultTextStyle, textAlign: TextAlign.start)
-              : LayoutBuilder(
-                builder: (context, constraints) {
-                  return Text(
-                    processedText,
-                    style: widget.style ?? defaultTextStyle,
-                    maxLines: widget.maxLines,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.start,
-                  );
-                },
-              ),
-          if (widget.text.isNotEmpty && !_isExpanded && _isTextTruncated(context))
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                'See more',
-                style: defaultTextStyle.copyWith(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.w500),
-              ),
-            ),
-        ],
+      child: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Transform.scale(scale: _scaleAnimation.value, alignment: Alignment.topLeft, child: child);
+        },
+        child: AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          child: Text(
+            widget.text,
+            style: widget.style ?? const TextStyle(color: Colors.white, fontSize: 13),
+            maxLines: _isExpanded ? null : widget.maxLines,
+            overflow: _isExpanded ? TextOverflow.visible : TextOverflow.ellipsis,
+          ),
+        ),
       ),
     );
-  }
-
-  bool _isTextTruncated(BuildContext context) {
-    final textSpan = TextSpan(
-      text: widget.text,
-      style: widget.style ?? Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.white, fontSize: 13),
-    );
-
-    final textPainter = TextPainter(text: textSpan, textDirection: TextDirection.ltr, maxLines: widget.maxLines);
-
-    // Use available width accounting for padding
-    final availableWidth = MediaQuery.of(context).size.width - 32;
-    textPainter.layout(maxWidth: availableWidth);
-
-    // Check if the text would be truncated
-    return textPainter.didExceedMaxLines || textPainter.height > (widget.maxLines * textPainter.preferredLineHeight);
   }
 }
