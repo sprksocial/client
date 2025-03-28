@@ -234,7 +234,6 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
       onLikePressed: () {},
       onBookmarkPressed: () {},
       onSharePressed: () {},
-      onProfilePressed: () {},
       onUsernameTap: () {},
       onHashtagTap: (String hashtag) {},
     );

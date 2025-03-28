@@ -269,7 +269,6 @@ class _HomeScreenState extends State<HomeScreen> {
               onLikePressed: () => _handleLikePress(post),
               onBookmarkPressed: () {},
               onSharePressed: () {},
-              onProfilePressed: () {},
               onUsernameTap: () {},
               onHashtagTap: (String hashtag) {},
             );
@@ -295,7 +294,6 @@ class _HomeScreenState extends State<HomeScreen> {
               onLikePressed: () => _handleLikePress(post),
               onBookmarkPressed: () {},
               onSharePressed: () {},
-              onProfilePressed: () {},
               onUsernameTap: () {},
               onHashtagTap: (String hashtag) {},
             );

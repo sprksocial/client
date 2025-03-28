@@ -115,7 +115,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         onLikePressed: () {},
         onBookmarkPressed: () {},
         onSharePressed: () {},
-        onProfilePressed: () {},
         onUsernameTap: () {},
         onHashtagTap: (String hashtag) {},
       );
