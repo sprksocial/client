@@ -1,20 +1,22 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/material.dart';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:provider/provider.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 import 'package:video_editor_sdk/video_editor_sdk.dart';
+
 import '../services/auth_service.dart';
 import '../services/camera_service.dart';
 import '../services/video_service.dart';
-import '../widgets/camera/camera_view.dart';
 import '../widgets/camera/camera_controls.dart';
+import '../widgets/camera/camera_view.dart';
 import '../widgets/camera/mode_selector.dart';
 import '../widgets/camera/recording_bar.dart';
 import 'auth_prompt_screen.dart';
-import 'video_review_screen.dart';
 import 'image_review_screen.dart';
+import 'video_review_screen.dart';
 
 class CreateVideoScreen extends StatefulWidget {
   const CreateVideoScreen({super.key});
@@ -169,9 +171,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
     const maxImages = 4; // Limit image count
 
     try {
-      final List<XFile> pickedFiles = await _picker.pickMultiImage(
-        limit: maxImages,
-      );
+      final List<XFile> pickedFiles = await _picker.pickMultiImage(limit: maxImages);
 
       if (pickedFiles.isNotEmpty) {
         debugPrint('${pickedFiles.length} images selected from gallery.');
@@ -180,16 +180,12 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
           // Navigate to the ImageReviewScreen
           final postResult = await Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => ImageReviewScreen(imageFiles: pickedFiles),
-            ),
+            MaterialPageRoute(builder: (context) => ImageReviewScreen(imageFiles: pickedFiles)),
           );
 
           // If the result is true, the post was successful
           if (postResult == true) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Image post created successfully!')),
-            );
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Image post created successfully!')));
             // Optionally pop this screen or navigate elsewhere
             // Navigator.of(context).pop();
           }
@@ -334,16 +330,12 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
           try {
             final reviewResult = await Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => VideoReviewScreen(videoPath: editedVideoPath),
-              ),
+              MaterialPageRoute(builder: (context) => VideoReviewScreen(videoPath: editedVideoPath)),
             );
 
             // If the result is true, the video was posted successfully
             if (reviewResult == true) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Video posted successfully!')),
-              );
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Video posted successfully!')));
             }
           } catch (e) {
             debugPrint('Error in review screen: $e');
@@ -358,15 +350,11 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
         if (mounted) {
           final reviewResult = await Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (context) => VideoReviewScreen(videoPath: videoPath),
-            ),
+            MaterialPageRoute(builder: (context) => VideoReviewScreen(videoPath: videoPath)),
           );
 
           if (reviewResult == true) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Video posted successfully!')),
-            );
+            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Video posted successfully!')));
           }
         }
       }
@@ -380,24 +368,16 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
               title: const Text('Error'),
               content: Text('Failed to process video: ${e.toString()}'),
               actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('OK')
-                ),
+                TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK')),
                 TextButton(
                   onPressed: () {
                     Navigator.of(context).pop();
                     // Try with the original video as fallback
                     if (mounted) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => VideoReviewScreen(videoPath: videoPath),
-                        ),
-                      );
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => VideoReviewScreen(videoPath: videoPath)));
                     }
                   },
-                  child: const Text('Use Original Video')
+                  child: const Text('Use Original Video'),
                 ),
               ],
             );

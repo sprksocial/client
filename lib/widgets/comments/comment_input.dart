@@ -226,7 +226,7 @@ class _CommentInputState extends State<CommentInput> {
           Expanded(
             child: Text(
               'Replying to ${widget.replyingToUsername}',
-              style: TextStyle(color: textColor, fontStyle: FontStyle.italic, fontSize: 13),
+              style: TextStyle(color: textColor, fontSize: 13),
             ),
           ),
           IconButton(

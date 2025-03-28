@@ -1,19 +1,20 @@
-import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
-import '../widgets/video/video_item.dart';
-import '../widgets/video/preloaded_video_item.dart';
-import '../widgets/image/image_post_item.dart';
-import '../widgets/feed/feed_selector.dart';
-import '../widgets/feed_settings/feed_settings_sheet.dart';
-import '../utils/app_colors.dart';
-import '../services/auth_service.dart';
+
+import '../models/feed_post.dart';
 import '../services/actions_service.dart';
+import '../services/auth_service.dart';
 import '../services/feed_manager.dart';
 import '../services/feed_settings_service.dart';
 import '../services/media_manager.dart';
-import '../models/feed_post.dart';
+import '../utils/app_colors.dart';
+import '../widgets/feed/feed_selector.dart';
+import '../widgets/feed_settings/feed_settings_sheet.dart';
+import '../widgets/image/image_post_item.dart';
+import '../widgets/video/preloaded_video_item.dart';
+import '../widgets/video/video_item.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -128,12 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          _buildMainContent(),
-          _buildTopBar(topPadding, isDarkMode, feedOptions),
-        ],
-      ),
+      body: Stack(children: [_buildMainContent(), _buildTopBar(topPadding, isDarkMode, feedOptions)]),
     );
   }
 
@@ -159,13 +155,14 @@ class _HomeScreenState extends State<HomeScreen> {
     return SizedBox(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
-      child: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-          ? Center(child: Text('Error: $_errorMessage', style: const TextStyle(color: Colors.white)))
-          : _feedPosts == null || _feedPosts!.isEmpty
-          ? const Center(child: Text('No media available', style: TextStyle(color: Colors.white)))
-          : _buildFeedPageView(),
+      child:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _errorMessage != null
+              ? Center(child: Text('Error: $_errorMessage', style: const TextStyle(color: Colors.white)))
+              : _feedPosts == null || _feedPosts!.isEmpty
+              ? const Center(child: Text('No media available', style: TextStyle(color: Colors.white)))
+              : _buildFeedPageView(),
     );
   }
 
@@ -184,15 +181,15 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Center(
                 child: Container(
                   padding: const EdgeInsets.all(2),
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: feedOptions.isNotEmpty ? FeedSelector(
-                    options: feedOptions,
-                    selectedValue: _feedSettings.selectedFeedType,
-                    onOptionSelected: _onFeedSelected,
-                  ) : const SizedBox(),
+                  decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(20)),
+                  child:
+                      feedOptions.isNotEmpty
+                          ? FeedSelector(
+                            options: feedOptions,
+                            selectedValue: _feedSettings.selectedFeedType,
+                            onOptionSelected: _onFeedSelected,
+                          )
+                          : const SizedBox(),
                 ),
               ),
             ),
@@ -334,12 +331,7 @@ class _HomeScreenState extends State<HomeScreen> {
         }
         // Fallback for any other post type
         else {
-          return const Center(
-            child: Text(
-              'Unsupported media type',
-              style: TextStyle(color: Colors.white),
-            ),
-          );
+          return const Center(child: Text('Unsupported media type', style: TextStyle(color: Colors.white)));
         }
       },
     );
@@ -362,7 +354,13 @@ class _HomeScreenState extends State<HomeScreen> {
             profileImageUrl: post.profileImageUrl,
             description: post.description,
             videoUrl: post.videoUrl,
-            likeCount: post.likeCount + (newLikeUri != null ? 1 : post.isLiked ? -1 : 0),
+            likeCount:
+                post.likeCount +
+                (newLikeUri != null
+                    ? 1
+                    : post.isLiked
+                    ? -1
+                    : 0),
             commentCount: post.commentCount,
             shareCount: post.shareCount,
             hashtags: post.hashtags,
@@ -378,32 +376,17 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (e) {
       if (!mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error liking post: ${e.toString()}'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error liking post: ${e.toString()}'), backgroundColor: Colors.red));
     }
   }
 
   void _showFeedSettingsSheet(BuildContext context) {
     final feedSettings = [
-      FeedSetting(
-        feedName: 'Following',
-        settingType: 'following_feed',
-        isEnabled: _feedSettings.followingFeedEnabled,
-      ),
-      FeedSetting(
-        feedName: 'For You',
-        settingType: 'for_you_feed',
-        isEnabled: _feedSettings.forYouFeedEnabled,
-      ),
-      FeedSetting(
-        feedName: 'Latest',
-        settingType: 'latest_feed',
-        isEnabled: _feedSettings.latestFeedEnabled,
-      ),
+      FeedSetting(feedName: 'Following', settingType: 'following_feed', isEnabled: _feedSettings.followingFeedEnabled),
+      FeedSetting(feedName: 'For You', settingType: 'for_you_feed', isEnabled: _feedSettings.forYouFeedEnabled),
+      FeedSetting(feedName: 'Latest', settingType: 'latest_feed', isEnabled: _feedSettings.latestFeedEnabled),
       FeedSetting(
         feedName: 'Disable Background Blur',
         settingType: 'disable_background_blur',
@@ -422,14 +405,12 @@ class _HomeScreenState extends State<HomeScreen> {
         duration: const Duration(milliseconds: 300),
         vsync: Navigator.of(context),
       ),
-      builder: (context) => GestureDetector(
-        onTap: () {},
-        behavior: HitTestBehavior.opaque,
-        child: FeedSettingsSheet(
-          feedSettings: feedSettings,
-          onToggleChanged: _handleSettingToggle,
-        ),
-      ),
+      builder:
+          (context) => GestureDetector(
+            onTap: () {},
+            behavior: HitTestBehavior.opaque,
+            child: FeedSettingsSheet(feedSettings: feedSettings, onToggleChanged: _handleSettingToggle),
+          ),
     );
   }
 
@@ -441,9 +422,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (!isEnabled && !_feedSettings.canDisableFeed(settingType)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cannot disable this feed')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot disable this feed')));
       return;
     }
 

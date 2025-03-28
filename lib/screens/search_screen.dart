@@ -1,13 +1,14 @@
-import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
+
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
-import '../widgets/search/story_circle.dart';
-import '../widgets/search/trending_video_card.dart';
-import '../widgets/search/sound_card.dart';
 import '../widgets/search/category_chip.dart';
-import '../widgets/search/suggested_account_card.dart';
 import '../widgets/search/section_header.dart';
+import '../widgets/search/sound_card.dart';
+import '../widgets/search/story_circle.dart';
+import '../widgets/search/suggested_account_card.dart';
+import '../widgets/search/trending_video_card.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -98,11 +99,8 @@ class _SearchScreenState extends State<SearchScreen> {
                   leading: Icon(FluentIcons.search_24_regular, color: AppTheme.getSecondaryTextColor(context)),
                   padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16.0)),
                   elevation: WidgetStateProperty.all(0),
-                  backgroundColor: WidgetStateProperty.all(
-                    isDarkMode ? Colors.grey[900] : AppColors.lightLavender.withAlpha(50),
-                  ),
-                  onChanged: (value) {
-                  },
+                  backgroundColor: WidgetStateProperty.all(isDarkMode ? Colors.grey[900] : AppColors.lightLavender.withAlpha(50)),
+                  onChanged: (value) {},
                 ),
               ),
 
