@@ -23,6 +23,7 @@ void showCommentsTray({
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
+    useSafeArea: true,
     builder:
         (context) => CommentsTray(
           postUri: postUri,
@@ -64,6 +65,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   late AnimationController _animationController;
   late Animation<double> _animation;
   final _scrollController = ScrollController();
+  final _focusNode = FocusNode();
   String? _replyingToUsername;
   String? _replyingToId;
   String? _replyingToUri;
@@ -84,6 +86,9 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     // Add scroll listener for lazy loading
     _scrollController.addListener(_scrollListener);
 
+    // Add focus listener to scroll to bottom when comment field receives focus
+    _focusNode.addListener(_focusListener);
+
     // Load comments
     _loadComments();
   }
@@ -93,7 +98,18 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     _animationController.dispose();
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
+    _focusNode.removeListener(_focusListener);
+    _focusNode.dispose();
     super.dispose();
+  }
+
+  void _focusListener() {
+    if (_focusNode.hasFocus) {
+      // When the text field gets focus, ensure it's visible
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToBottom();
+      });
+    }
   }
 
   void _scrollListener() {
@@ -155,12 +171,27 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     });
   }
 
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
+
   void _replyToComment(String userId, String username, {String? parentUri, String? parentCid}) {
     setState(() {
       _replyingToUsername = username;
       _replyingToId = userId;
       _replyingToUri = parentUri;
       _replyingToCid = parentCid;
+    });
+
+    // When replying, make sure the input is visible
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
     });
   }
 
@@ -184,6 +215,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     final backgroundColor = widget.isDarkMode ? AppColors.nearBlack : Colors.white;
     final borderColor = widget.isDarkMode ? AppColors.darkPurple : AppColors.lightLavender;
     final textColor = widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary;
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
     return AnimatedBuilder(
       animation: _animation,
@@ -202,17 +234,20 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
             _buildHeader(borderColor, textColor),
             Expanded(child: _buildCommentsList()),
 
-            CommentInput(
-              videoId: widget.postUri,
-              replyingToUsername: _replyingToUsername,
-              replyingToId: _replyingToId,
-              onCancelReply: _cancelReply,
-              isDarkMode: widget.isDarkMode,
-              postCid: widget.postCid,
-              postUri: widget.postUri,
-              parentCid: _replyingToCid,
-              parentUri: _replyingToUri,
-              onCommentPosted: _onCommentPosted,
+            Padding(
+              padding: EdgeInsets.only(bottom: keyboardHeight),
+              child: CommentInput(
+                videoId: widget.postUri,
+                replyingToUsername: _replyingToUsername,
+                replyingToId: _replyingToId,
+                onCancelReply: _cancelReply,
+                isDarkMode: widget.isDarkMode,
+                postCid: widget.postCid,
+                postUri: widget.postUri,
+                parentCid: _replyingToCid,
+                parentUri: _replyingToUri,
+                onCommentPosted: _onCommentPosted,
+              ),
             ),
           ],
         ),

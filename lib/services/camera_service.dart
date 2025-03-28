@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 
@@ -8,23 +9,47 @@ class CameraService {
   int _selectedCameraIndex = 0;
   bool _isInitialized = false;
   bool _isRecording = false;
+  int _initAttempts = 0;
+  static const int _maxInitAttempts = 3;
 
   CameraController? get controller => _controller;
   bool get isInitialized => _isInitialized;
   bool get isRecording => _isRecording;
 
   Future<void> initCamera() async {
+    _initAttempts++;
+
     try {
-      _cameras = await availableCameras();
       if (_cameras == null || _cameras!.isEmpty) {
-        debugPrint('No cameras found');
-        throw Exception('No cameras found');
+        _cameras = await availableCameras();
+        if (_cameras == null || _cameras!.isEmpty) {
+          debugPrint('No cameras found');
+          throw Exception('No cameras found');
+        }
       }
 
       await _initCameraController(_cameras![_selectedCameraIndex]);
+
+      // Reset attempts counter on success
+      _initAttempts = 0;
     } catch (e) {
       _isInitialized = false;
-      debugPrint('Error initializing camera: $e');
+      debugPrint('Error initializing camera (attempt $_initAttempts): $e');
+
+      // If we hit a permissions error, we need to propagate it so the UI can handle it
+      final String errorMsg = e.toString().toLowerCase();
+      final bool isPermissionError =
+          errorMsg.contains('permission') || errorMsg.contains('denied') || errorMsg.contains('access');
+
+      if (isPermissionError || _initAttempts >= _maxInitAttempts) {
+        // Reset attempts counter and rethrow to let caller handle it
+        _initAttempts = 0;
+        rethrow;
+      } else {
+        // Try once more with a delay if it's not a permission error
+        await Future.delayed(const Duration(milliseconds: 500));
+        return initCamera();
+      }
     }
   }
 
@@ -39,8 +64,11 @@ class CameraService {
       _controller = CameraController(camera, ResolutionPreset.high, enableAudio: true, imageFormatGroup: ImageFormatGroup.jpeg);
 
       if (_controller != null) {
+        // Wait for controller to initialize
         await _controller!.initialize();
-        await Future.delayed(const Duration(milliseconds: 200));
+
+        // Add a small delay to ensure everything is properly set up
+        await Future.delayed(const Duration(milliseconds: 300));
 
         if (_controller != null && _controller!.value.isInitialized) {
           _isInitialized = true;
@@ -48,11 +76,13 @@ class CameraService {
         } else {
           _isInitialized = false;
           debugPrint('Camera initialization incomplete');
+          throw Exception('Camera controller initialized but camera not ready');
         }
       }
     } catch (e) {
       _isInitialized = false;
       debugPrint('Error initializing camera controller: $e');
+      rethrow;
     }
   }
 

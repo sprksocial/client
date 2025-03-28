@@ -1,10 +1,12 @@
 import 'dart:io'; // Import for File
-import 'package:flutter/material.dart';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart'; // Import image_picker
 import 'package:provider/provider.dart';
-import '../../utils/app_colors.dart';
+
 import '../../services/actions_service.dart';
+import '../../utils/app_colors.dart';
 
 class CommentInput extends StatefulWidget {
   final String videoId;
@@ -20,6 +22,8 @@ class CommentInput extends StatefulWidget {
   final String? parentUri;
   // Callback when comment is posted successfully
   final Function(String)? onCommentPosted;
+  // Focus node for the text field
+  final FocusNode? focusNode;
 
   const CommentInput({
     super.key,
@@ -33,6 +37,7 @@ class CommentInput extends StatefulWidget {
     this.parentCid,
     this.parentUri,
     this.onCommentPosted,
+    this.focusNode,
   });
 
   @override
@@ -80,9 +85,7 @@ class _CommentInputState extends State<CommentInput> {
     const maxImages = 4;
     final currentImageCount = _selectedImages.length;
     if (currentImageCount >= maxImages) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('You can select up to $maxImages images.')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('You can select up to $maxImages images.')));
       return;
     }
 
@@ -99,9 +102,7 @@ class _CommentInputState extends State<CommentInput> {
       }
     } catch (e) {
       debugPrint('Error picking images: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to pick images: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to pick images: ${e.toString()}')));
     }
   }
 
@@ -159,13 +160,9 @@ class _CommentInputState extends State<CommentInput> {
         widget.onCommentPosted!(response.data.uri.toString());
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Comment posted successfully')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Comment posted successfully')));
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to post comment: ${e.toString()}')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to post comment: ${e.toString()}')));
       debugPrint('Error posting comment: $e');
     } finally {
       if (mounted) {
@@ -186,7 +183,7 @@ class _CommentInputState extends State<CommentInput> {
     final inputBackgroundColor = widget.isDarkMode ? AppColors.deepPurple.withAlpha(128) : AppColors.lightLavender.withAlpha(77);
 
     return Container(
-      padding: EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 12 + MediaQuery.of(context).padding.bottom),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(color: backgroundColor, border: Border(top: BorderSide(color: borderColor, width: 0.5))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,12 +220,7 @@ class _CommentInputState extends State<CommentInput> {
       ),
       child: Row(
         children: [
-          Expanded(
-            child: Text(
-              'Replying to ${widget.replyingToUsername}',
-              style: TextStyle(color: textColor, fontSize: 13),
-            ),
-          ),
+          Expanded(child: Text('Replying to ${widget.replyingToUsername}', style: TextStyle(color: textColor, fontSize: 13))),
           IconButton(
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -268,6 +260,7 @@ class _CommentInputState extends State<CommentInput> {
 
     return TextField(
       controller: _textController,
+      focusNode: widget.focusNode,
       decoration: InputDecoration(
         hintText: hint, // Updated hint logic
         hintStyle: TextStyle(color: placeholderColor, fontSize: 14),
@@ -286,20 +279,21 @@ class _CommentInputState extends State<CommentInput> {
           borderRadius: BorderRadius.circular(20),
           borderSide: BorderSide(color: borderColor, width: 0.5),
         ),
-        suffixIcon: _isPosting // Show progress if posting OR specifically uploading images
-            ? Container(
-                margin: const EdgeInsets.all(10),
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary), // Use valueColor
+        suffixIcon:
+            _isPosting // Show progress if posting OR specifically uploading images
+                ? Container(
+                  margin: const EdgeInsets.all(10),
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary), // Use valueColor
+                  ),
+                )
+                : IconButton(
+                  icon: Icon(FluentIcons.send_24_filled, size: 20, color: _canSubmit ? AppColors.primary : placeholderColor),
+                  onPressed: _canSubmit ? _submitComment : null, // Controlled by _canSubmit
                 ),
-              )
-            : IconButton(
-                icon: Icon(FluentIcons.send_24_filled, size: 20, color: _canSubmit ? AppColors.primary : placeholderColor),
-                onPressed: _canSubmit ? _submitComment : null, // Controlled by _canSubmit
-              ),
       ),
       style: TextStyle(color: textColor, fontSize: 14),
       maxLines: 5,
@@ -359,10 +353,7 @@ class _CommentInputState extends State<CommentInput> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(color: borderColor, width: 0.5),
-                      image: DecorationImage(
-                        image: FileImage(File(imageFile.path)),
-                        fit: BoxFit.cover,
-                      ),
+                      image: DecorationImage(image: FileImage(File(imageFile.path)), fit: BoxFit.cover),
                     ),
                   ),
                   // Remove Button
@@ -374,11 +365,7 @@ class _CommentInputState extends State<CommentInput> {
                       customBorder: const CircleBorder(),
                       child: Container(
                         padding: const EdgeInsets.all(2),
-                        child: const Icon(
-                          FluentIcons.dismiss_16_filled,
-                          color: Colors.white,
-                          size: 12,
-                        ),
+                        child: const Icon(FluentIcons.dismiss_16_filled, color: Colors.white, size: 12),
                       ),
                     ),
                   ),

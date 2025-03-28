@@ -1,8 +1,10 @@
+import 'dart:ui'; // For ImageFilter if needed for background
+
 import 'package:flutter/material.dart';
 import 'package:sparksocial/widgets/image/image_carousel.dart';
-import '../post/post_item_base.dart'; // Import the base class
+
 import '../../utils/app_colors.dart'; // For potential background fallback
-import 'dart:ui'; // For ImageFilter if needed for background
+import '../post/post_item_base.dart'; // Import the base class
 
 // Convert to StatefulWidget extending PostItemBase
 class ImagePostItem extends PostItemBase {
@@ -46,7 +48,6 @@ class ImagePostItem extends PostItemBase {
 
 // Create State class extending PostItemBaseState
 class _ImagePostItemState extends PostItemBaseState<ImagePostItem> {
-
   // --- Implement required abstract members ---
 
   @override
@@ -62,16 +63,15 @@ class _ImagePostItemState extends PostItemBaseState<ImagePostItem> {
     // No media to play for images
   }
 
-   @override
+  @override
   Widget buildBackground(BuildContext context) {
-
     final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
     if (widget.disableBackgroundBlur || widget.imageUrls.isEmpty) {
       return Container(color: isDarkMode ? Colors.black : AppColors.darkBackground);
     }
 
     // Use ImageCarousel's background logic if suitable, or replicate here
-     return Container(
+    return Container(
       color: isDarkMode ? Colors.black : AppColors.darkBackground,
       child: Stack(
         fit: StackFit.expand,
@@ -87,7 +87,7 @@ class _ImagePostItemState extends PostItemBaseState<ImagePostItem> {
                   child: Image.network(
                     widget.imageUrls.first,
                     fit: BoxFit.cover,
-                     // Add error builder for background image
+                    // Add error builder for background image
                     errorBuilder: (context, error, stackTrace) => Container(color: Colors.grey),
                   ),
                 ),
@@ -95,9 +95,7 @@ class _ImagePostItemState extends PostItemBaseState<ImagePostItem> {
             ),
           ),
           // Darkened overlay
-          Container(color: isDarkMode
-              ? Colors.black.withAlpha(120)
-              : AppColors.darkBackground.withAlpha(120)),
+          Container(color: isDarkMode ? Colors.black.withAlpha(120) : AppColors.darkBackground.withAlpha(120)),
         ],
       ),
     );
@@ -108,8 +106,7 @@ class _ImagePostItemState extends PostItemBaseState<ImagePostItem> {
     // The main content is the ImageCarousel
     return ImageCarousel(
       imageUrls: widget.imageUrls,
-      // Pass disableBackgroundBlur to the carousel if it handles its own internal background separately
-      // disableBackgroundBlur: widget.disableBackgroundBlur,
+      disableBackgroundBlur: widget.disableBackgroundBlur,
       // Ensure ImageCarousel doesn't conflict with the base background
     );
   }
