@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../utils/app_colors.dart';
-import '../widgets/action_buttons/bookmark_action_button.dart';
 import '../widgets/action_buttons/like_action_button.dart';
 
 class TestActionsScreen extends StatefulWidget {
@@ -44,7 +43,7 @@ class _TestActionsScreenState extends State<TestActionsScreen> {
             const SizedBox(height: 40),
             const Text('Bookmark Color Test', style: TextStyle(color: Colors.white, fontSize: 18)),
             const SizedBox(height: 20),
-            BookmarkActionButton(count: '425', isBookmarked: _isBookmarked, onPressed: _toggleBookmark),
+            // BookmarkActionButton(count: '425', isBookmarked: _isBookmarked, onPressed: _toggleBookmark),
           ],
         ),
       ),
