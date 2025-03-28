@@ -1,8 +1,10 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+
 import '../services/auth_service.dart';
 import '../services/video_service.dart';
 import '../widgets/video_review/video_thumbnail.dart';
@@ -10,10 +12,7 @@ import '../widgets/video_review/video_thumbnail.dart';
 class VideoReviewScreen extends StatefulWidget {
   final String videoPath;
 
-  const VideoReviewScreen({
-    super.key,
-    required this.videoPath,
-  });
+  const VideoReviewScreen({super.key, required this.videoPath});
 
   @override
   State<VideoReviewScreen> createState() => _VideoReviewScreenState();
@@ -22,7 +21,6 @@ class VideoReviewScreen extends StatefulWidget {
 class _VideoReviewScreenState extends State<VideoReviewScreen> {
   late VideoPlayerController _controller;
   final TextEditingController _descriptionController = TextEditingController();
-  bool _isPostingToBluesky = true;
   bool _isPosting = false;
 
   @override
@@ -33,16 +31,15 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
 
   void _initVideoPlayer() {
     String videoPath = widget.videoPath;
-    
+
     // Handle file:// URL scheme
     if (videoPath.startsWith('file://')) {
       videoPath = videoPath.replaceFirst('file://', '');
     }
-    
+
     _controller = VideoPlayerController.file(File(videoPath))
       ..initialize().then((_) {
         setState(() {});
-        _controller.play();
         _controller.setLooping(true);
       });
   }
@@ -75,11 +72,7 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
               padding: EdgeInsets.symmetric(vertical: 12),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('Please wait while we upload your video...'),
-                ],
+                children: [CircularProgressIndicator(), SizedBox(height: 16), Text('Please wait while we upload your video...')],
               ),
             ),
           );
@@ -89,21 +82,15 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
       final processedVideo = await videoService.processVideo(widget.videoPath);
 
       // Update the postVideo method to include the description
-      final postRef = await videoService.postVideo(
-        processedVideo?['blobRef'],
-        _descriptionController.text,
-      );
+      final postRef = await videoService.postVideo(processedVideo?['blobRef'], _descriptionController.text);
 
       if (mounted) {
         Navigator.of(context).pop(); // Close loading dialog
         Navigator.of(context).pop(true); // Return to camera with success
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Video posted successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Video posted successfully!'), backgroundColor: Colors.green));
       }
     } catch (e) {
       if (mounted) {
@@ -112,12 +99,9 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
           _isPosting = false;
         });
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to upload video: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to upload video: ${e.toString()}'), backgroundColor: Colors.red));
       }
     }
   }
@@ -149,16 +133,15 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
                       // Description field on left
                       Expanded(
                         child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade200,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
+                          height: 250,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(8)),
                           child: TextField(
                             controller: _descriptionController,
                             style: const TextStyle(color: Colors.black),
-                            maxLines: 8,
+                            maxLines: null,
                             maxLength: 280,
+                            expands: true,
                             decoration: const InputDecoration(
                               hintText: 'Description goes here',
                               hintStyle: TextStyle(color: Colors.grey),
@@ -175,52 +158,17 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
 
                       // Video thumbnail on right
                       if (_controller.value.isInitialized)
-                        VideoThumbnail(
-                          controller: _controller,
-                          width: 160,
-                          height: 250,
-                        )
+                        VideoThumbnail(controller: _controller, width: 160, height: 250)
                       else
                         Container(
                           width: 160,
                           height: 250,
-                          decoration: BoxDecoration(
-                            color: Colors.grey,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Center(
-                            child: CircularProgressIndicator(),
-                          ),
+                          decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(8)),
+                          child: const Center(child: CircularProgressIndicator()),
                         ),
                     ],
                   ),
                 ),
-              ),
-            ),
-
-            // Toggle for Bluesky posting
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Row(
-                children: [
-                  const Text(
-                    'Post also on Bluesky',
-                    style: TextStyle(
-                      color: Colors.black87,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const Spacer(),
-                  Switch(
-                    value: _isPostingToBluesky,
-                    onChanged: (value) {
-                      setState(() {
-                        _isPostingToBluesky = value;
-                      });
-                    },
-                    activeColor: Colors.pink,
-                  ),
-                ],
               ),
             ),
 
@@ -236,16 +184,8 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
                       child: Container(
                         height: 55,
                         alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.shade300,
-                        ),
-                        child: const Text(
-                          'cancel',
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
+                        decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(16)),
+                        child: const Text('cancel', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500)),
                       ),
                     ),
                   ),
@@ -261,23 +201,16 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
                           color: _isPosting ? Colors.pink.shade300 : Colors.pink,
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        child: _isPosting
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : const Text(
-                                'post',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
+                        child:
+                            _isPosting
+                                ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                                )
+                                : const Text('post', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
                       ),
                     ),
                   ),
