@@ -74,19 +74,25 @@ class FeedManager {
     // Process the posts data
     final posts = feedItems.data['posts'] as List<dynamic>?;
 
-    if (posts != null) {
-      // Convert to our unified model and filter
-      final allFeedPosts =
-          posts.map((post) {
-            // Create a feed item with the post
-            final feedItem = {'post': post};
-            return FeedPost.fromSparkFeed(feedItem);
-          }).toList();
-
-      // Filter posts to only show those with media that aren't replies
-      return allFeedPosts.where((post) => post.hasMedia && !post.isReply).toList();
+    if (posts == null) {
+      return [];
     }
 
-    return [];
+    // Sort posts by indexedAt in descending order (newest first)
+    posts.sort((a, b) {
+      final dateA = a['indexedAt'] as String?;
+      final dateB = b['indexedAt'] as String?;
+      if (dateA == null || dateB == null) return 0;
+      return dateB.compareTo(dateA); // Descending order
+    });
+
+    // Convert to our unified model and filter
+    final allFeedPosts = posts.map((post) {
+      final feedItem = {'post': post};
+      return FeedPost.fromSparkFeed(feedItem);
+    }).toList();
+
+    // Filter posts to only show those with media that aren't replies
+    return allFeedPosts.where((post) => post.hasMedia && !post.isReply).toList();
   }
 }
