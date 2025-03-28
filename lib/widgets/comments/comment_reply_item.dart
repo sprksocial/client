@@ -1,5 +1,7 @@
-import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
+
 import '../../utils/app_colors.dart';
 
 class CommentReplyItem extends StatefulWidget {
@@ -11,6 +13,7 @@ class CommentReplyItem extends StatefulWidget {
   final int likeCount;
   final bool isDarkMode;
   final Function(String, String) onReply;
+  final String? profileImageUrl;
 
   const CommentReplyItem({
     super.key,
@@ -22,6 +25,7 @@ class CommentReplyItem extends StatefulWidget {
     required this.likeCount,
     required this.isDarkMode,
     required this.onReply,
+    this.profileImageUrl,
   });
 
   @override
@@ -47,16 +51,49 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          _buildAvatar(),
-          const SizedBox(width: 8),
-          Expanded(child: _buildReplyContent(textColor, secondaryTextColor)),
-        ],
+        children: [_buildAvatar(), const SizedBox(width: 8), Expanded(child: _buildReplyContent(textColor, secondaryTextColor))],
       ),
     );
   }
 
   Widget _buildAvatar() {
+    if (widget.profileImageUrl != null && widget.profileImageUrl!.isNotEmpty) {
+      return Container(
+        width: 28,
+        height: 28,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 1),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: CachedNetworkImage(
+          imageUrl: widget.profileImageUrl!,
+          fit: BoxFit.cover,
+          placeholder:
+              (context, url) => Container(
+                color: AppColors.accent.withAlpha(204),
+                child: Center(
+                  child: Text(
+                    widget.username.isNotEmpty ? widget.username[0].toUpperCase() : '?',
+                    style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ),
+              ),
+          errorWidget:
+              (context, url, error) => Container(
+                color: AppColors.accent.withAlpha(204),
+                child: Center(
+                  child: Text(
+                    widget.username.isNotEmpty ? widget.username[0].toUpperCase() : '?',
+                    style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ),
+              ),
+        ),
+      );
+    }
+
+    // Fallback to the circle with initial if no profile image
     return Container(
       width: 28,
       height: 28,
@@ -100,11 +137,7 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
   Widget _buildActionButtons(Color secondaryTextColor) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.start,
-      children: [
-        _buildLikeButton(secondaryTextColor),
-        const SizedBox(width: 16),
-        _buildReplyButton(secondaryTextColor),
-      ],
+      children: [_buildLikeButton(secondaryTextColor), const SizedBox(width: 16), _buildReplyButton(secondaryTextColor)],
     );
   }
 
