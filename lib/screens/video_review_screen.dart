@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import '../services/auth_service.dart';
+import '../services/upload_service.dart';
 import '../services/video_service.dart';
 import '../widgets/video_review/video_thumbnail.dart';
 
@@ -60,48 +61,38 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
 
     try {
       final videoService = VideoService(Provider.of<AuthService>(context, listen: false));
+      final uploadService = Provider.of<UploadService>(context, listen: false);
 
-      // Show loading dialog
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (BuildContext context) {
-          return const AlertDialog(
-            title: Text('Uploading Video'),
-            content: Padding(
-              padding: EdgeInsets.symmetric(vertical: 12),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [CircularProgressIndicator(), SizedBox(height: 16), Text('Please wait while we upload your video...')],
-              ),
-            ),
-          );
-        },
-      );
+      // Register a new upload task
+      final taskId = uploadService.registerTask('video');
+      uploadService.startTask(taskId);
 
+      // Return to previous screen while upload continues in background
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      }
+
+      // Process the video in the background
       final processedVideo = await videoService.processVideo(widget.videoPath);
-
-      // Update the postVideo method to include the description
       final postRef = await videoService.postVideo(processedVideo?['blobRef'], _descriptionController.text);
 
-      if (mounted) {
-        Navigator.of(context).pop(); // Close loading dialog
-        Navigator.of(context).pop(true); // Return to camera with success
-
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text('Video posted successfully!'), backgroundColor: Colors.green));
-      }
+      // Mark task as completed
+      uploadService.completeTask(taskId);
     } catch (e) {
       if (mounted) {
-        Navigator.of(context).pop(); // Close loading dialog
         setState(() {
           _isPosting = false;
         });
 
+        // Show error without blocking UI
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Failed to upload video: ${e.toString()}'), backgroundColor: Colors.red));
+
+        // Update upload service with error state
+        final uploadService = Provider.of<UploadService>(context, listen: false);
+        final tasks = uploadService.registerTask('video');
+        uploadService.failTask(tasks, e.toString());
       }
     }
   }

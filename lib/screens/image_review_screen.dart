@@ -6,7 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../services/actions_service.dart';
-import '../utils/app_colors.dart'; // Assuming you have AppColors
+import '../services/upload_service.dart';
+import '../utils/app_colors.dart';
 
 class ImageReviewScreen extends StatefulWidget {
   final List<XFile> imageFiles;
@@ -50,46 +51,42 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
       _isPosting = true;
     });
 
-    // Show loading dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return const AlertDialog(
-          title: Text('Creating Post'),
-          content: Padding(
-            padding: EdgeInsets.symmetric(vertical: 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [CircularProgressIndicator(), SizedBox(height: 16), Text('Please wait while we upload your images...')],
-            ),
-          ),
-        );
-      },
-    );
-
     try {
       final actionsService = Provider.of<ActionsService>(context, listen: false);
+      final uploadService = Provider.of<UploadService>(context, listen: false);
       final description = _descriptionController.text;
 
-      // Call the service method to post images
+      // Register a new upload task
+      final taskId = uploadService.registerTask('image');
+      uploadService.startTask(taskId);
+
+      // Return to previous screen while upload continues in background
+      if (mounted) {
+        Navigator.of(context).pop(true);
+      }
+
+      // Call the service method to post images in the background
       await actionsService.postImageFeed(description, widget.imageFiles);
 
-      if (mounted) {
-        Navigator.of(context).pop(); // Close loading dialog
-        Navigator.of(context).pop(true); // Return success to previous screen
-      }
+      // Mark task as completed
+      uploadService.completeTask(taskId);
     } catch (e) {
       debugPrint('Failed to post images: $e');
+
       if (mounted) {
-        Navigator.of(context).pop(); // Close loading dialog
         setState(() {
           _isPosting = false;
         });
 
+        // Show error without blocking UI
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Failed to create post: ${e.toString()}'), backgroundColor: Colors.red));
+
+        // Update upload service with error state
+        final uploadService = Provider.of<UploadService>(context, listen: false);
+        final tasks = uploadService.registerTask('image');
+        uploadService.failTask(tasks, e.toString());
       }
     }
   }
