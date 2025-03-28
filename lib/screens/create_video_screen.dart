@@ -11,6 +11,7 @@ import '../services/video_service.dart';
 import '../widgets/camera/camera_controls.dart';
 import '../widgets/camera/camera_view.dart';
 import '../widgets/camera/mode_selector.dart';
+import '../widgets/camera/permission_request.dart';
 import '../widgets/camera/recording_bar.dart';
 import 'auth_prompt_screen.dart';
 import 'image_review_screen.dart';
@@ -35,6 +36,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
   int _recordingSeconds = 0;
   final int _maxRecordingSeconds = 180; // 3 minutes
   final ImagePicker _picker = ImagePicker();
+  bool _cameraPermissionDenied = false;
 
   @override
   void initState() {
@@ -71,35 +73,49 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
 
   Future<void> _initializeCamera() async {
     try {
+      setState(() {
+        _cameraPermissionDenied = false;
+      });
+
       await _cameraService.initCamera();
       if (mounted) {
         setState(() {});
       }
     } catch (e) {
       debugPrint('Error initializing camera: $e');
+      final String errorMsg = e.toString().toLowerCase();
+      final bool isPermissionError =
+          errorMsg.contains('permission') || errorMsg.contains('denied') || errorMsg.contains('access');
+
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Camera Error'),
-              content: Text('Could not initialize camera: ${e.toString()}'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    Future.delayed(const Duration(seconds: 1), () {
-                      if (mounted) {
-                        _initializeCamera();
-                      }
-                    });
-                  },
-                  child: const Text('Try Again'),
-                ),
-              ],
-            );
-          },
-        );
+        setState(() {
+          _cameraPermissionDenied = isPermissionError;
+        });
+
+        if (!isPermissionError) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return AlertDialog(
+                title: const Text('Camera Error'),
+                content: Text('Could not initialize camera: ${e.toString()}'),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      Future.delayed(const Duration(seconds: 1), () {
+                        if (mounted) {
+                          _initializeCamera();
+                        }
+                      });
+                    },
+                    child: const Text('Try Again'),
+                  ),
+                ],
+              );
+            },
+          );
+        }
       }
     }
   }
@@ -303,9 +319,12 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       body: SafeArea(
         child: Stack(
           children: [
-            Positioned.fill(
-              child: CameraView(cameraController: _cameraService.controller, isInitialized: _cameraService.isInitialized),
-            ),
+            if (_cameraPermissionDenied)
+              Positioned.fill(child: CameraPermissionRequest(onRequestPermission: _initializeCamera))
+            else
+              Positioned.fill(
+                child: CameraView(cameraController: _cameraService.controller, isInitialized: _cameraService.isInitialized),
+              ),
 
             Positioned(
               top: 20,
