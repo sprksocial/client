@@ -1,13 +1,14 @@
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
 import 'dart:ui'; // For ImageFilter
+
+import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
-import '../video_controls/video_controller_overlay.dart';
+
 import '../../utils/app_colors.dart';
 import 'video_player_base.dart';
 
 class VideoItem extends VideoPlayerBase {
+  @override
   final String? videoUrl;
 
   const VideoItem({
@@ -116,8 +117,7 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
         children: [
           super.build(context),
 
-          if (widget.videoUrl != null && !_isInitialized)
-            const Center(child: CircularProgressIndicator(color: AppColors.white)),
+          if (widget.videoUrl != null && !_isInitialized) const Center(child: CircularProgressIndicator(color: AppColors.white)),
         ],
       ),
     );
@@ -147,18 +147,10 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
             ClipRect(
               child: ImageFiltered(
                 imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-                child: Transform.scale(
-                  scale: 1.2,
-                  child: Opacity(
-                    opacity: 0.5,
-                    child: VideoPlayer(_controller!),
-                  ),
-                ),
+                child: Transform.scale(scale: 1.2, child: Opacity(opacity: 0.5, child: VideoPlayer(_controller!))),
               ),
             ),
-          Container(color: isDarkMode
-              ? Colors.black.withAlpha(120)
-              : AppColors.darkBackground.withAlpha(120)),
+          Container(color: isDarkMode ? Colors.black.withAlpha(120) : AppColors.darkBackground.withAlpha(120)),
         ],
       ),
     );
@@ -178,22 +170,14 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
     if (aspectRatio > 1) {
       return FittedBox(
         fit: BoxFit.contain,
-        child: SizedBox(
-          width: videoSize.width,
-          height: videoSize.height,
-          child: VideoPlayer(_controller!),
-        ),
+        child: SizedBox(width: videoSize.width, height: videoSize.height, child: VideoPlayer(_controller!)),
       );
     }
 
     return SizedBox.expand(
       child: FittedBox(
         fit: BoxFit.contain,
-        child: SizedBox(
-          width: videoSize.width,
-          height: videoSize.height,
-          child: VideoPlayer(_controller!),
-        ),
+        child: SizedBox(width: videoSize.width, height: videoSize.height, child: VideoPlayer(_controller!)),
       ),
     );
   }
@@ -205,19 +189,7 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
           widget.index % 2 == 0
               ? (isDarkMode ? Colors.indigo.shade900 : Colors.indigo.shade200)
               : (isDarkMode ? Colors.purple.shade900 : Colors.purple.shade200),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(FluentIcons.play_circle_24_regular, size: 80, color: Theme.of(context).colorScheme.onSurface.withAlpha(179)),
-            const SizedBox(height: 16),
-            Text(
-              'Video ${widget.index + 1}',
-              style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
+      child: const SizedBox.shrink(),
     );
   }
 }
