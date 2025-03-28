@@ -71,8 +71,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
       if (!mounted) return;
 
+      // Filter out duplicate posts
+      final uniquePosts = _removeDuplicatePosts(posts);
+
       setState(() {
-        _feedPosts = posts;
+        _feedPosts = uniquePosts;
         _isLoading = false;
 
         // Reset page controller safely after new content is loaded
@@ -89,6 +92,24 @@ class _HomeScreenState extends State<HomeScreen> {
         _errorMessage = e.toString();
       });
     }
+  }
+
+  /// Remove duplicate posts from the feed while preserving order
+  List<FeedPost> _removeDuplicatePosts(List<FeedPost> posts) {
+    if (posts.isEmpty) return [];
+
+    final uniquePosts = <FeedPost>[];
+
+    for (final post in posts) {
+      // Check if this post is a duplicate of any post we've already added
+      final isDuplicate = uniquePosts.any((uniquePost) => uniquePost.isDuplicateOf(post));
+
+      if (!isDuplicate) {
+        uniquePosts.add(post);
+      }
+    }
+
+    return uniquePosts;
   }
 
   void _resetPageController() {
