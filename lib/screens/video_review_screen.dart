@@ -67,9 +67,9 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
       final taskId = uploadService.registerTask('video');
       uploadService.startTask(taskId);
 
-      // Return to previous screen while upload continues in background
+      // Navigate to home screen while upload continues in background
       if (mounted) {
-        Navigator.of(context).pop(true);
+        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
       }
 
       // Process the video in the background
