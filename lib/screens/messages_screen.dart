@@ -5,6 +5,7 @@ import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
 import '../widgets/activities/activity_icon.dart';
 import '../widgets/activities/activity_list.dart';
+import '../widgets/common/development_overlay.dart';
 import '../widgets/messages/message_list.dart';
 
 class MessagesScreen extends StatefulWidget {
@@ -168,17 +169,22 @@ class _MessagesScreenState extends State<MessagesScreen> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            _buildCustomTabBar(),
+            Column(
+              children: [
+                _buildCustomTabBar(),
 
-            Container(
-              height: 0.5,
-              width: double.infinity,
-              color: isDarkMode ? AppColors.divider.withAlpha(51) : AppColors.divider.withAlpha(128),
+                Container(
+                  height: 0.5,
+                  width: double.infinity,
+                  color: isDarkMode ? AppColors.divider.withAlpha(51) : AppColors.divider.withAlpha(128),
+                ),
+
+                Expanded(child: _selectedTabIndex == 0 ? _buildMessagesTab() : _buildActivitiesTab()),
+              ],
             ),
-
-            Expanded(child: _selectedTabIndex == 0 ? _buildMessagesTab() : _buildActivitiesTab()),
+            const DevelopmentOverlay(),
           ],
         ),
       ),
