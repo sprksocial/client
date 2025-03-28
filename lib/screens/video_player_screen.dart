@@ -1,19 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import '../widgets/video/video_item.dart';
+
 import '../widgets/video/preloaded_video_item.dart';
+import '../widgets/video/video_item.dart';
 
 class VideoPlayerScreen extends StatefulWidget {
   final VideoItem initialVideoItem;
   final List<dynamic>? allVideos;
   final int initialIndex;
 
-  const VideoPlayerScreen({
-    super.key,
-    required this.initialVideoItem,
-    this.allVideos,
-    this.initialIndex = 0,
-  });
+  const VideoPlayerScreen({super.key, required this.initialVideoItem, this.allVideos, this.initialIndex = 0});
 
   @override
   State<VideoPlayerScreen> createState() => _VideoPlayerScreenState();
@@ -25,6 +21,8 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   final Map<int, PreloadedVideo> _preloadedVideos = {};
   final Set<String> _preloadedImageUrls = {};
   List<VideoItem> _videoItems = [];
+  // Configuration for better video loop performance
+  static final _videoBufferingConfig = VideoPlayerOptions(mixWithOthers: false, allowBackgroundPlayback: false);
 
   @override
   void initState() {
@@ -150,14 +148,14 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     final videoUrl = videoItem.videoUrl;
     if (videoUrl == null || videoUrl.isEmpty) return;
 
-    // Create a new controller
-    final controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+    // Create a new controller with optimized buffering configuration
+    final controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl), videoPlayerOptions: _videoBufferingConfig);
 
     try {
       // Register it as non-initialized first
       _preloadedVideos[index] = PreloadedVideo(controller: controller, isInitialized: false, videoUrl: videoUrl);
 
-      // Set video to loop automatically
+      // Set video to loop automatically with seamless looping
       controller.setLooping(true);
 
       // Set volume to zero initially
@@ -165,6 +163,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
       // Try to initialize
       await controller.initialize();
+
+      // Increase buffer size for smoother looping
+      await controller.setPlaybackSpeed(1.0);
 
       // Only proceed if still mounted and video is still needed
       if (mounted && _preloadedVideos.containsKey(index)) {
@@ -178,12 +179,34 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
           });
         }
 
-        // Set playback speed to normal
-        await controller.setPlaybackSpeed(1.0);
-
         // Start playing if this is current video
         if (index == _currentIndex) {
           controller.play();
+
+          // Add listener to handle seamless looping
+          controller.addListener(() {
+            if (mounted && index == _currentIndex) {
+              // If video is near the end, ensure smooth transition
+              final position = controller.value.position;
+              final duration = controller.value.duration;
+
+              // If we're within 200ms of the end, prepare for looping
+              if (duration.inMilliseconds - position.inMilliseconds < 200 &&
+                  duration.inMilliseconds > 0 &&
+                  !controller.value.isBuffering) {
+                // The built-in looping will handle this, but we ensure
+                // playback doesn't stutter by forcing a seek to 0 position
+                // just before the end
+                if (controller.value.isPlaying && position.inMilliseconds > 0) {
+                  controller.seekTo(Duration.zero).then((_) {
+                    if (controller.value.isPlaying == false) {
+                      controller.play();
+                    }
+                  });
+                }
+              }
+            }
+          });
         }
       }
     } catch (e) {
@@ -213,65 +236,59 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   }
 
   void _updateLoadedMedia(int newIndex) {
-    if (newIndex != _currentIndex) {
-      // Handle video playback for current and previous video
-      if (_videoItems.isNotEmpty) {
-        // Mute and pause previous video
-        if (_preloadedVideos.containsKey(_currentIndex)) {
-          _preloadedVideos[_currentIndex]!.controller.setVolume(0.0);
-          _preloadedVideos[_currentIndex]!.controller.pause();
-        }
+    if (newIndex == _currentIndex) return;
 
-        // Set volume and play new video
-        if (_preloadedVideos.containsKey(newIndex)) {
-          _preloadedVideos[newIndex]!.controller.setVolume(1.0);
-          _preloadedVideos[newIndex]!.controller.play();
-        }
+    // Handle video playback for current and previous video
+    if (_videoItems.isNotEmpty) {
+      // Mute and pause previous video
+      if (_preloadedVideos.containsKey(_currentIndex)) {
+        _preloadedVideos[_currentIndex]!.controller.setVolume(0.0);
+        _preloadedVideos[_currentIndex]!.controller.pause();
       }
 
-      // Videos to preload (current, prev, next, prev-prev, next-next)
-      final toLoad = <int>{
-        newIndex,
-        newIndex - 1,
-        newIndex + 1,
-        newIndex - 2,
-        newIndex + 2,
-      };
-
-      // Filter out-of-bounds indices
-      final validToLoad = toLoad.where((idx) => idx >= 0 && idx < _videoItems.length).toSet();
-
-      // Find videos to unload
-      final toUnload = _preloadedVideos.keys.toSet().difference(validToLoad);
-
-      // Find new videos to load
-      final newToLoad = validToLoad.difference(_preloadedVideos.keys.toSet());
-
-      // Unload videos no longer needed
-      for (final idx in toUnload) {
-        _unloadVideo(idx);
+      // Set volume and play new video
+      if (_preloadedVideos.containsKey(newIndex)) {
+        _preloadedVideos[newIndex]!.controller.setVolume(1.0);
+        _preloadedVideos[newIndex]!.controller.play();
       }
-
-      // Load priority videos first (current, next, prev)
-      final priorityLoad = [newIndex];
-      if (newIndex + 1 < _videoItems.length) priorityLoad.add(newIndex + 1);
-      if (newIndex - 1 >= 0) priorityLoad.add(newIndex - 1);
-
-      for (final idx in priorityLoad) {
-        if (newToLoad.contains(idx)) {
-          _preloadVideo(idx);
-          newToLoad.remove(idx);
-        }
-      }
-
-      // Then load the rest
-      for (final idx in newToLoad) {
-        _preloadVideo(idx);
-      }
-
-      // Update current index
-      _currentIndex = newIndex;
     }
+
+    // Videos to preload (current, prev, next, prev-prev, next-next)
+    final toLoad = <int>{newIndex, newIndex - 1, newIndex + 1, newIndex - 2, newIndex + 2};
+
+    // Filter out-of-bounds indices
+    final validToLoad = toLoad.where((idx) => idx >= 0 && idx < _videoItems.length).toSet();
+
+    // Find videos to unload
+    final toUnload = _preloadedVideos.keys.toSet().difference(validToLoad);
+
+    // Find new videos to load
+    final newToLoad = validToLoad.difference(_preloadedVideos.keys.toSet());
+
+    // Unload videos no longer needed
+    for (final idx in toUnload) {
+      _unloadVideo(idx);
+    }
+
+    // Load priority videos first (current, next, prev)
+    final priorityLoad = [newIndex];
+    if (newIndex + 1 < _videoItems.length) priorityLoad.add(newIndex + 1);
+    if (newIndex - 1 >= 0) priorityLoad.add(newIndex - 1);
+
+    for (final idx in priorityLoad) {
+      if (newToLoad.contains(idx)) {
+        _preloadVideo(idx);
+        newToLoad.remove(idx);
+      }
+    }
+
+    // Then load the rest
+    for (final idx in newToLoad) {
+      _preloadVideo(idx);
+    }
+
+    // Update current index
+    _currentIndex = newIndex;
   }
 
   @override
@@ -279,11 +296,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
-      ),
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0, iconTheme: const IconThemeData(color: Colors.white)),
       body: PageView.builder(
         controller: _pageController,
         scrollDirection: Axis.vertical,

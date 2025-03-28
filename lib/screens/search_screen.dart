@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
+import '../widgets/common/development_overlay.dart';
 import '../widgets/search/category_chip.dart';
 import '../widgets/search/section_header.dart';
 import '../widgets/search/sound_card.dart';
@@ -87,128 +88,144 @@ class _SearchScreenState extends State<SearchScreen> {
     return Scaffold(
       backgroundColor: isDarkMode ? Colors.black : AppTheme.getBackgroundColor(context),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SearchBar(
-                  controller: _searchController,
-                  hintText: 'Explore',
-                  leading: Icon(FluentIcons.search_24_regular, color: AppTheme.getSecondaryTextColor(context)),
-                  padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16.0)),
-                  elevation: WidgetStateProperty.all(0),
-                  backgroundColor: WidgetStateProperty.all(isDarkMode ? Colors.grey[900] : AppColors.lightLavender.withAlpha(50)),
-                  onChanged: (value) {},
-                ),
-              ),
-
-              SizedBox(
-                height: 105,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _stories.length,
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  itemBuilder: (context, index) {
-                    final story = _stories[index];
-                    return StoryCircle(
-                      username: story['username'],
-                      imageUrl: story['imageUrl'],
-                      isLive: story['isLive'] ?? false,
-                      isYourStory: story['isYourStory'] ?? false,
-                      onTap: () {},
-                    );
-                  },
-                ),
-              ),
-
-              SectionHeader(title: 'Trending', icon: FluentIcons.data_trending_24_regular, onViewAllTap: () {}),
-
-              SizedBox(
-                height: 180,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _trendingVideos.length,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemBuilder: (context, index) {
-                    final video = _trendingVideos[index];
-                    return Container(
-                      width: 160,
-                      margin: const EdgeInsets.only(right: 10),
-                      child: TrendingVideoCard(thumbnailUrl: video['thumbnailUrl'], viewCount: video['viewCount'], onTap: () {}),
-                    );
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              SectionHeader(title: 'Sounds', icon: FluentIcons.music_note_2_24_regular, onViewAllTap: () {}),
-
-              SizedBox(
-                height: 85,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _sounds.length,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemBuilder: (context, index) {
-                    final sound = _sounds[index];
-                    return Container(
-                      width: 240,
-                      margin: const EdgeInsets.only(right: 10),
-                      child: SoundCard(title: sound['title'], artist: sound['artist'], imageUrl: sound['imageUrl'], onTap: () {}),
-                    );
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              SectionHeader(title: 'Recommended Feeds', icon: FluentIcons.star_24_regular, onViewAllTap: () {}),
-
-              SizedBox(
-                height: 40,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _categories.length,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: CategoryChip(label: _categories[index], onTap: () {}),
-                    );
-                  },
-                ),
-              ),
-
-              const SizedBox(height: 16),
-
-              SectionHeader(title: 'Suggested Accounts', icon: FluentIcons.person_24_regular, onViewAllTap: () {}),
-
-              ListView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: _suggestedAccounts.length,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemBuilder: (context, index) {
-                  final account = _suggestedAccounts[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: SuggestedAccountCard(
-                      username: account['username'],
-                      handle: account['handle'],
-                      avatarUrl: account['avatarUrl'],
-                      onTap: () {},
-                      onFollowTap: () {},
+        child: Stack(
+          children: [
+            SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: SearchBar(
+                      controller: _searchController,
+                      hintText: 'Explore',
+                      leading: Icon(FluentIcons.search_24_regular, color: AppTheme.getSecondaryTextColor(context)),
+                      padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16.0)),
+                      elevation: WidgetStateProperty.all(0),
+                      backgroundColor: WidgetStateProperty.all(
+                        isDarkMode ? Colors.grey[900] : AppColors.lightLavender.withAlpha(50),
+                      ),
+                      onChanged: (value) {},
                     ),
-                  );
-                },
-              ),
+                  ),
 
-              const SizedBox(height: 20),
-            ],
-          ),
+                  SizedBox(
+                    height: 105,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _stories.length,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      itemBuilder: (context, index) {
+                        final story = _stories[index];
+                        return StoryCircle(
+                          username: story['username'],
+                          imageUrl: story['imageUrl'],
+                          isLive: story['isLive'] ?? false,
+                          isYourStory: story['isYourStory'] ?? false,
+                          onTap: () {},
+                        );
+                      },
+                    ),
+                  ),
+
+                  SectionHeader(title: 'Trending', icon: FluentIcons.data_trending_24_regular, onViewAllTap: () {}),
+
+                  SizedBox(
+                    height: 180,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _trendingVideos.length,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemBuilder: (context, index) {
+                        final video = _trendingVideos[index];
+                        return Container(
+                          width: 160,
+                          margin: const EdgeInsets.only(right: 10),
+                          child: TrendingVideoCard(
+                            thumbnailUrl: video['thumbnailUrl'],
+                            viewCount: video['viewCount'],
+                            onTap: () {},
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  SectionHeader(title: 'Sounds', icon: FluentIcons.music_note_2_24_regular, onViewAllTap: () {}),
+
+                  SizedBox(
+                    height: 85,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _sounds.length,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemBuilder: (context, index) {
+                        final sound = _sounds[index];
+                        return Container(
+                          width: 240,
+                          margin: const EdgeInsets.only(right: 10),
+                          child: SoundCard(
+                            title: sound['title'],
+                            artist: sound['artist'],
+                            imageUrl: sound['imageUrl'],
+                            onTap: () {},
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  SectionHeader(title: 'Recommended Feeds', icon: FluentIcons.star_24_regular, onViewAllTap: () {}),
+
+                  SizedBox(
+                    height: 40,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _categories.length,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(right: 8),
+                          child: CategoryChip(label: _categories[index], onTap: () {}),
+                        );
+                      },
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  SectionHeader(title: 'Suggested Accounts', icon: FluentIcons.person_24_regular, onViewAllTap: () {}),
+
+                  ListView.builder(
+                    physics: const NeverScrollableScrollPhysics(),
+                    shrinkWrap: true,
+                    itemCount: _suggestedAccounts.length,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemBuilder: (context, index) {
+                      final account = _suggestedAccounts[index];
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: SuggestedAccountCard(
+                          username: account['username'],
+                          handle: account['handle'],
+                          avatarUrl: account['avatarUrl'],
+                          onTap: () {},
+                          onFollowTap: () {},
+                        ),
+                      );
+                    },
+                  ),
+
+                  const SizedBox(height: 20),
+                ],
+              ),
+            ),
+            const DevelopmentOverlay(),
+          ],
         ),
       ),
     );
