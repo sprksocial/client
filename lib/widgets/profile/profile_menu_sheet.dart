@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
+
 import '../../utils/app_colors.dart';
 
 class ProfileMenuSheet extends StatelessWidget {
@@ -32,11 +33,7 @@ class ProfileMenuSheet extends StatelessWidget {
           // Title
           Text(
             'Profile Options',
-            style: TextStyle(
-              fontSize: 24, 
-              fontWeight: FontWeight.bold, 
-              color: AppColors.darkPurple
-            ),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: isDarkMode ? Colors.white : Colors.black),
           ),
 
           const SizedBox(height: 32),
@@ -52,16 +49,11 @@ class ProfileMenuSheet extends StatelessWidget {
               onLogout();
             },
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Cancel Button
-          _buildMenuButton(
-            context,
-            icon: FluentIcons.dismiss_20_filled,
-            label: 'Cancel',
-            onTap: () => Navigator.pop(context),
-          ),
+          _buildMenuButton(context, icon: FluentIcons.dismiss_20_filled, label: 'Cancel', onTap: () => Navigator.pop(context)),
 
           const SizedBox(height: 16),
         ],
@@ -78,22 +70,16 @@ class ProfileMenuSheet extends StatelessWidget {
   }) {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
-    
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
         child: Row(
           children: [
-            Icon(
-              icon,
-              color: textColor ?? (isDarkMode ? Colors.white : Colors.black87),
-              size: 24,
-            ),
+            Icon(icon, color: textColor ?? (isDarkMode ? Colors.white : Colors.black87), size: 24),
             const SizedBox(width: 16),
             Text(
               label,
@@ -108,4 +94,4 @@ class ProfileMenuSheet extends StatelessWidget {
       ),
     );
   }
-} 
+}
