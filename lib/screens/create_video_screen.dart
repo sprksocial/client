@@ -136,14 +136,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       if (video != null && mounted) {
         debugPrint('Video selected from gallery: ${video.path}');
 
-        final reviewResult = await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => VideoReviewScreen(videoPath: video.path)),
-        );
-
-        if (reviewResult == true) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Video posted successfully!')));
-        }
+        Navigator.push(context, MaterialPageRoute(builder: (context) => VideoReviewScreen(videoPath: video.path)));
       }
     } catch (e) {
       debugPrint('Error handling video: $e');
@@ -181,17 +174,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
 
         if (mounted) {
           // Navigate to the ImageReviewScreen
-          final postResult = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ImageReviewScreen(imageFiles: pickedFiles)),
-          );
-
-          // If the result is true, the post was successful
-          if (postResult == true) {
-            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Image post created successfully!')));
-            // Optionally pop this screen or navigate elsewhere
-            // Navigator.of(context).pop();
-          }
+          Navigator.push(context, MaterialPageRoute(builder: (context) => ImageReviewScreen(imageFiles: pickedFiles)));
         }
       }
     } catch (e) {
@@ -254,14 +237,7 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
         if (video != null && mounted) {
           debugPrint('Video recorded: ${video.path}');
           if (mounted) {
-            final reviewResult = await Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => VideoReviewScreen(videoPath: video.path)),
-            );
-
-            if (reviewResult == true) {
-              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Video posted successfully!')));
-            }
+            Navigator.push(context, MaterialPageRoute(builder: (context) => VideoReviewScreen(videoPath: video.path)));
           }
         }
       } catch (e) {

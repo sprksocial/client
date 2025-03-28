@@ -20,8 +20,10 @@ import 'services/comments_service.dart';
 import 'services/identity_service.dart';
 import 'services/profile_service.dart';
 import 'services/settings_service.dart';
+import 'services/upload_service.dart';
 import 'utils/app_colors.dart';
 import 'utils/app_theme.dart';
+import 'widgets/upload/upload_progress_indicator.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,6 +60,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => CachedIdentityService()),
         ChangeNotifierProvider(create: (_) => SettingsService()),
+        ChangeNotifierProvider(create: (_) => UploadService()),
         ChangeNotifierProxyProvider<AuthService, ProfileService>(
           create: (context) => ProfileService(context.read<AuthService>()),
           update: (_, authService, previousProfileService) => previousProfileService ?? ProfileService(authService),
@@ -102,6 +105,29 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginScreen(),
           '/auth': (context) => const AuthPromptScreen(),
           '/test': (context) => const TestActionsScreen(),
+        },
+        builder: (context, child) {
+          return Stack(
+            children: [
+              child!,
+              // Global upload indicator positioned at bottom right
+              Positioned(
+                bottom: 20,
+                right: 20,
+                child: Consumer<UploadService>(
+                  builder: (context, uploadService, _) {
+                    return uploadService.isAnyTaskActive || uploadService.isAnyTaskCompleted
+                        ? UploadProgressIndicator(
+                          isUploading: uploadService.isAnyTaskActive,
+                          isCompleted: uploadService.isAnyTaskCompleted && !uploadService.isAnyTaskActive,
+                          onDismiss: () => uploadService.clearCompletedTasks(),
+                        )
+                        : const SizedBox.shrink();
+                  },
+                ),
+              ),
+            ],
+          );
         },
       ),
     );
@@ -162,7 +188,7 @@ class _MainScreenState extends State<MainScreen> {
     final navigationProvider = Provider.of<NavigationProvider>(context);
 
     return Scaffold(
-      backgroundColor: Colors.black, //esta eh a porra da cor mais importante desse caralho de aplicativo.
+      backgroundColor: Colors.black,
       body: _getScreen(navigationProvider.currentIndex, context),
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(
