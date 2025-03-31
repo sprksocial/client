@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart';
 import 'package:flutter/foundation.dart';
@@ -77,10 +79,9 @@ class CommentsService extends ChangeNotifier {
       final response = await atproto.get(
         NSID.parse('so.sprk.feed.getPostThread'),
         parameters: {'uri': postUri},
-        headers: {
-          'atproto-proxy': 'did:web:api.sprk.so#sprk_appview'
-        },
-        to: (json) => json,
+        headers: {'atproto-proxy': 'did:web:api.sprk.so#sprk_appview'},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
 
       // Extract comments from the thread
@@ -113,34 +114,26 @@ class CommentsService extends ChangeNotifier {
     final List<Comment> result = [];
 
     // Skip the root post, only include replies
-    final replies = thread.whenOrNull(
-      record: (rec) => rec.replies
-    );
+    final replies = thread.whenOrNull(record: (rec) => rec.replies);
 
     if (replies == null) {
       return result;
     }
 
     for (final reply in replies) {
-      final post = reply.whenOrNull(
-        record: (rec) => rec.post,
-      );
+      final post = reply.whenOrNull(record: (rec) => rec.post);
 
       if (post == null) {
         continue;
       }
 
       // Process any nested replies if they exist
-      final nestedReplies = reply.whenOrNull(
-        record: (rec) => rec.replies,
-      );
+      final nestedReplies = reply.whenOrNull(record: (rec) => rec.replies);
 
       final List<Comment> commentReplies = [];
       if (nestedReplies != null && nestedReplies.isNotEmpty) {
         for (final nestedReply in nestedReplies) {
-          final nestedPost = nestedReply.whenOrNull(
-            record: (rec) => rec.post,
-          );
+          final nestedPost = nestedReply.whenOrNull(record: (rec) => rec.post);
 
           if (nestedPost != null) {
             commentReplies.add(Comment.fromBlueskyComment(nestedPost));
@@ -150,25 +143,27 @@ class CommentsService extends ChangeNotifier {
 
       final comment = Comment.fromBlueskyComment(post);
       // Create a new comment with the nested replies
-      result.add(Comment(
-        id: comment.id,
-        uri: comment.uri,
-        cid: comment.cid,
-        authorDid: comment.authorDid,
-        username: comment.username,
-        profileImageUrl: comment.profileImageUrl,
-        text: comment.text,
-        createdAt: comment.createdAt,
-        likeCount: comment.likeCount,
-        replyCount: commentReplies.length,
-        hashtags: comment.hashtags,
-        hasMedia: comment.hasMedia,
-        mediaType: comment.mediaType,
-        mediaUrl: comment.mediaUrl,
-        likeUri: comment.likeUri,
-        isSprk: comment.isSprk,
-        replies: commentReplies,
-      ));
+      result.add(
+        Comment(
+          id: comment.id,
+          uri: comment.uri,
+          cid: comment.cid,
+          authorDid: comment.authorDid,
+          username: comment.username,
+          profileImageUrl: comment.profileImageUrl,
+          text: comment.text,
+          createdAt: comment.createdAt,
+          likeCount: comment.likeCount,
+          replyCount: commentReplies.length,
+          hashtags: comment.hashtags,
+          hasMedia: comment.hasMedia,
+          mediaType: comment.mediaType,
+          mediaUrl: comment.mediaUrl,
+          likeUri: comment.likeUri,
+          isSprk: comment.isSprk,
+          replies: commentReplies,
+        ),
+      );
     }
 
     return result;
@@ -201,26 +196,28 @@ class CommentsService extends ChangeNotifier {
       }
 
       // Create a new comment with the nested replies
-      result.add(Comment(
-        id: comment.id,
-        uri: comment.uri,
-        cid: comment.cid,
-        authorDid: comment.authorDid,
-        username: comment.username,
-        profileImageUrl: comment.profileImageUrl,
-        text: comment.text,
-        createdAt: comment.createdAt,
-        likeCount: comment.likeCount,
-        replyCount: nestedReplies.length,
-        hashtags: comment.hashtags,
-        hasMedia: comment.hasMedia,
-        imageUrls: comment.imageUrls,
-        mediaType: comment.mediaType,
-        mediaUrl: comment.mediaUrl,
-        likeUri: comment.likeUri,
-        isSprk: comment.isSprk,
-        replies: nestedReplies,
-      ));
+      result.add(
+        Comment(
+          id: comment.id,
+          uri: comment.uri,
+          cid: comment.cid,
+          authorDid: comment.authorDid,
+          username: comment.username,
+          profileImageUrl: comment.profileImageUrl,
+          text: comment.text,
+          createdAt: comment.createdAt,
+          likeCount: comment.likeCount,
+          replyCount: nestedReplies.length,
+          hashtags: comment.hashtags,
+          hasMedia: comment.hasMedia,
+          imageUrls: comment.imageUrls,
+          mediaType: comment.mediaType,
+          mediaUrl: comment.mediaUrl,
+          likeUri: comment.likeUri,
+          isSprk: comment.isSprk,
+          replies: nestedReplies,
+        ),
+      );
     }
 
     return result;
