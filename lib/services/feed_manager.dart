@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart';
+
 import '../models/feed_post.dart';
 import 'auth_service.dart';
 
@@ -52,7 +55,8 @@ class FeedManager {
       NSID.parse('so.sprk.feed.getFeedSkeleton'),
       parameters: {'feed': 'simple-desc', 'limit': 30},
       service: 'feeds.sprk.so',
-      to: (json) => json,
+      to: (jsonMap) => jsonMap,
+      adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
     );
 
     // Extract post URIs from the feed data
@@ -68,7 +72,8 @@ class FeedManager {
       NSID.parse('so.sprk.feed.getPosts'),
       parameters: {'uris': uris},
       headers: {'atproto-proxy': 'did:web:api.sprk.so#sprk_appview'},
-      to: (json) => json,
+      to: (jsonMap) => jsonMap,
+      adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
     );
 
     // Process the posts data
@@ -87,10 +92,11 @@ class FeedManager {
     });
 
     // Convert to our unified model and filter
-    final allFeedPosts = posts.map((post) {
-      final feedItem = {'post': post};
-      return FeedPost.fromSparkFeed(feedItem);
-    }).toList();
+    final allFeedPosts =
+        posts.map((post) {
+          final feedItem = {'post': post};
+          return FeedPost.fromSparkFeed(feedItem);
+        }).toList();
 
     // Filter posts to only show those with media that aren't replies
     return allFeedPosts.where((post) => post.hasMedia && !post.isReply).toList();
