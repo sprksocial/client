@@ -1,6 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import '../../utils/formatters/text_formatter.dart';
+import 'package:flutter/material.dart';
+
 import '../../utils/app_colors.dart';
 import '../../utils/app_theme.dart';
 
@@ -12,9 +12,9 @@ class ProfileDescription extends StatefulWidget {
   final Function(String username)? onMentionTap;
 
   const ProfileDescription({
-    super.key, 
-    required this.text, 
-    this.style, 
+    super.key,
+    required this.text,
+    this.style,
     this.maxLines = 2,
     this.onExpandToggle,
     this.onMentionTap,
@@ -28,35 +28,29 @@ class _ProfileDescriptionState extends State<ProfileDescription> with SingleTick
   bool _isExpanded = false;
   late final AnimationController _animationController;
   late final Animation<double> _scaleAnimation;
-  
+
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-    
+    _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
+
     _scaleAnimation = TweenSequence<double>([
       TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.03), weight: 30),
       TweenSequenceItem(tween: Tween<double>(begin: 1.03, end: 1.0), weight: 70),
-    ]).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
+    ]).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
   }
-  
+
   @override
   void dispose() {
     _animationController.dispose();
     super.dispose();
   }
-  
+
   void _toggleExpanded() {
     setState(() {
       _isExpanded = !_isExpanded;
       _animationController.forward(from: 0);
-      
+
       if (widget.onExpandToggle != null) {
         widget.onExpandToggle!(_isExpanded);
       }
@@ -68,7 +62,7 @@ class _ProfileDescriptionState extends State<ProfileDescription> with SingleTick
     // Match @username or @username.domain but not email@domain.com
     // The key is to ensure the @ is the beginning of a word boundary
     final RegExp usernameRegex = RegExp(r'\B@([a-zA-Z0-9_.-]+\.[a-zA-Z]{2,}|[a-zA-Z0-9_]+)', caseSensitive: false);
-    
+
     return usernameRegex.allMatches(text).toList();
   }
 
@@ -80,26 +74,21 @@ class _ProfileDescriptionState extends State<ProfileDescription> with SingleTick
 
     for (final match in usernameMatches) {
       if (match.start > lastEnd) {
-        spans.add(TextSpan(
-          text: text.substring(lastEnd, match.start),
-          style: widget.style,
-        ));
+        spans.add(TextSpan(text: text.substring(lastEnd, match.start), style: widget.style));
       }
 
       final username = match.group(0)!;
       spans.add(
         TextSpan(
           text: username,
-          style: const TextStyle(
-            color: AppColors.primary,
-            fontWeight: FontWeight.bold,
-          ),
-          recognizer: TapGestureRecognizer()
-            ..onTap = () {
-              if (widget.onMentionTap != null) {
-                widget.onMentionTap!(username);
-              }
-            },
+          style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+          recognizer:
+              TapGestureRecognizer()
+                ..onTap = () {
+                  if (widget.onMentionTap != null) {
+                    widget.onMentionTap!(username);
+                  }
+                },
         ),
       );
 
@@ -107,10 +96,7 @@ class _ProfileDescriptionState extends State<ProfileDescription> with SingleTick
     }
 
     if (lastEnd < text.length) {
-      spans.add(TextSpan(
-        text: text.substring(lastEnd),
-        style: widget.style,
-      ));
+      spans.add(TextSpan(text: text.substring(lastEnd), style: widget.style));
     }
 
     return spans;
@@ -120,22 +106,15 @@ class _ProfileDescriptionState extends State<ProfileDescription> with SingleTick
   Widget build(BuildContext context) {
     final usernameMatches = _findUsernameMatches(widget.text);
     final defaultStyle = widget.style ?? TextStyle(color: AppTheme.getTextColor(context), fontSize: 14);
-    
-    final textSpan = TextSpan(
-      children: _buildTextSpans(widget.text, usernameMatches),
-      style: defaultStyle,
-    );
+
+    final textSpan = TextSpan(children: _buildTextSpans(widget.text, usernameMatches), style: defaultStyle);
 
     return GestureDetector(
       onTap: _toggleExpanded,
       child: AnimatedBuilder(
         animation: _animationController,
         builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            alignment: Alignment.topLeft,
-            child: child,
-          );
+          return Transform.scale(scale: _scaleAnimation.value, alignment: Alignment.topLeft, child: child);
         },
         child: AnimatedSize(
           duration: const Duration(milliseconds: 200),
@@ -149,4 +128,4 @@ class _ProfileDescriptionState extends State<ProfileDescription> with SingleTick
       ),
     );
   }
-} 
+}
