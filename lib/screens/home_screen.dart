@@ -389,6 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
             likeUri: newLikeUri,
             hasMedia: post.hasMedia,
             isReply: post.isReply,
+            imageUrls: post.imageUrls,
           );
         }
       });
