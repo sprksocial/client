@@ -1,17 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../utils/app_colors.dart';
+
 import '../../services/settings_service.dart';
+import '../../utils/app_colors.dart';
 
 class FeedSettingsSheet extends StatefulWidget {
   final List<FeedSetting> feedSettings;
   final Function(String, bool) onToggleChanged;
 
-  const FeedSettingsSheet({
-    super.key,
-    required this.feedSettings,
-    required this.onToggleChanged,
-  });
+  const FeedSettingsSheet({super.key, required this.feedSettings, required this.onToggleChanged});
 
   @override
   State<FeedSettingsSheet> createState() => _FeedSettingsSheetState();
@@ -32,10 +29,10 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> {
     final isDark = brightness == Brightness.dark;
     final backgroundColor = isDark ? Colors.black : AppColors.background;
     final textColor = isDark ? AppColors.white : AppColors.textPrimary;
-    
+
     // Make sure we have adequate padding for the notch/dynamic island
     final topPadding = MediaQuery.of(context).padding.top + 24.0;
-    
+
     return Material(
       type: MaterialType.transparency,
       child: Container(
@@ -43,19 +40,14 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> {
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
+          borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
         ),
         child: Column(
           children: [
             // Add extra padding at the top for the notch/camera hole
             SizedBox(height: topPadding),
             _buildHeader(context, textColor),
-            Expanded(
-              child: _buildFeedList(isDark),
-            ),
+            Expanded(child: _buildFeedList(isDark)),
             // Bottom safe area
             SizedBox(height: MediaQuery.of(context).padding.bottom),
           ],
@@ -70,18 +62,8 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          IconButton(
-            icon: Icon(Icons.close, color: textColor),
-            onPressed: () => Navigator.pop(context),
-          ),
-          Text(
-            'Feed Settings',
-            style: TextStyle(
-              color: textColor,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          IconButton(icon: Icon(Icons.close, color: textColor), onPressed: () => Navigator.pop(context)),
+          Text('Feed Settings', style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(width: 48), // For balance
         ],
       ),
@@ -89,22 +71,20 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> {
   }
 
   Widget _buildFeedList(bool isDark) {
-    final itemColor = isDark 
-        ? Colors.grey.shade800
-        : Colors.grey.shade200;
+    final itemColor = isDark ? Colors.grey.shade800 : Colors.grey.shade200;
     final textColor = isDark ? AppColors.white : AppColors.textPrimary;
-    
+
     return ListView.builder(
       itemCount: _feedSettings.length,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemBuilder: (context, index) {
         final setting = _feedSettings[index];
-        
+
         // If this is the feed blur setting, get its value from the SettingsService
         if (setting.settingType == 'feed_blur') {
           final settingsService = Provider.of<SettingsService>(context);
           final isBlurEnabled = settingsService.feedBlurEnabled;
-          
+
           // Update local state if it differs from service
           if (setting.isEnabled != isBlurEnabled) {
             _feedSettings[index] = FeedSetting(
@@ -115,7 +95,7 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> {
             );
           }
         }
-        
+
         return FeedSettingItem(
           feedName: setting.feedName,
           description: setting.description,
@@ -132,13 +112,13 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> {
                 isEnabled: value,
               );
             });
-            
+
             // If this is the feed blur setting, update the SettingsService
             if (setting.settingType == 'feed_blur') {
               final settingsService = Provider.of<SettingsService>(context, listen: false);
               settingsService.setFeedBlur(value);
             }
-            
+
             // Then call the parent callback
             widget.onToggleChanged(setting.settingType, value);
           },
@@ -154,12 +134,7 @@ class FeedSetting {
   final String? description;
   final bool isEnabled;
 
-  const FeedSetting({
-    required this.feedName,
-    required this.isEnabled,
-    this.description,
-    required this.settingType,
-  });
+  const FeedSetting({required this.feedName, required this.isEnabled, this.description, required this.settingType});
 }
 
 class FeedSettingItem extends StatelessWidget {
@@ -187,34 +162,20 @@ class FeedSettingItem extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          decoration: BoxDecoration(
-            color: itemColor,
-            borderRadius: BorderRadius.circular(12),
-          ),
+          decoration: BoxDecoration(color: itemColor, borderRadius: BorderRadius.circular(12)),
           child: ListTile(
-            title: Text(
-              feedName,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 16,
-              ),
-            ),
-            subtitle: description != null 
-              ? Text(
-                  description!,
-                  style: TextStyle(
-                    color: textColor.withOpacity(0.7),
-                    fontSize: 12,
-                  ),
-                )
-              : null,
+            title: Text(feedName, style: TextStyle(color: textColor, fontSize: 16)),
+            subtitle:
+                description != null
+                    ? Text(description!, style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 12))
+                    : null,
             trailing: Switch(
               value: isEnabled,
               onChanged: onToggleChanged,
               activeColor: AppColors.pink,
               inactiveThumbColor: Colors.grey.shade400,
               inactiveTrackColor: Colors.grey.shade600,
-              trackOutlineColor: MaterialStateProperty.all(Colors.transparent),
+              trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
             ),
             onTap: () {
               // Toggle when tapping anywhere on the list tile
@@ -226,4 +187,4 @@ class FeedSettingItem extends StatelessWidget {
       ),
     );
   }
-} 
+}

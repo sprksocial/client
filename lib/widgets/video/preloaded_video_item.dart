@@ -1,7 +1,8 @@
 import 'dart:ui'; // For ImageFilter
+
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import '../video_controls/video_controller_overlay.dart';
+
 import '../../utils/app_colors.dart';
 import 'video_player_base.dart';
 
@@ -159,8 +160,7 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
       children: [
         super.build(context),
 
-        if (!isInitialized)
-          const Center(child: CircularProgressIndicator(color: AppColors.white)),
+        if (!isInitialized) const Center(child: CircularProgressIndicator(color: AppColors.white)),
       ],
     );
   }
@@ -189,18 +189,10 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
             ClipRect(
               child: ImageFiltered(
                 imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-                child: Transform.scale(
-                  scale: 1.2,
-                  child: Opacity(
-                    opacity: 0.5,
-                    child: VideoPlayer(widget.controller),
-                  ),
-                ),
+                child: Transform.scale(scale: 1.2, child: Opacity(opacity: 0.5, child: VideoPlayer(widget.controller))),
               ),
             ),
-          Container(color: isDarkMode
-              ? Colors.black.withAlpha(120)
-              : AppColors.darkBackground.withAlpha(120)),
+          Container(color: isDarkMode ? Colors.black.withAlpha(120) : AppColors.darkBackground.withAlpha(120)),
         ],
       ),
     );
@@ -219,22 +211,14 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
     if (aspectRatio > 1) {
       return FittedBox(
         fit: BoxFit.contain,
-        child: SizedBox(
-          width: videoSize.width,
-          height: videoSize.height,
-          child: VideoPlayer(widget.controller)
-        ),
+        child: SizedBox(width: videoSize.width, height: videoSize.height, child: VideoPlayer(widget.controller)),
       );
     }
 
     return SizedBox.expand(
       child: FittedBox(
         fit: BoxFit.contain,
-        child: SizedBox(
-          width: videoSize.width,
-          height: videoSize.height,
-          child: VideoPlayer(widget.controller),
-        ),
+        child: SizedBox(width: videoSize.width, height: videoSize.height, child: VideoPlayer(widget.controller)),
       ),
     );
   }

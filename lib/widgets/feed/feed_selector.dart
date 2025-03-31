@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+
 import '../../utils/app_colors.dart';
-import '../../utils/app_theme.dart';
 
 class FeedOption {
   final String label;
@@ -15,7 +15,7 @@ class FeedSelector extends StatelessWidget {
   final ValueChanged<int> onOptionSelected;
   final double height;
   final EdgeInsets? padding;
-  
+
   const FeedSelector({
     super.key,
     required this.options,
@@ -27,49 +27,38 @@ class FeedSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     return Container(
       height: height,
-      decoration: BoxDecoration(
-        color: Colors.transparent,
-        borderRadius: BorderRadius.circular(20),
-      ),
+      decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(20)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(
-          options.length,
-          (index) {
-            final option = options[index];
-            final isSelected = option.value == selectedValue;
-            
-            return Expanded(
-              child: GestureDetector(
-                onTap: () => onOptionSelected(option.value),
-                child: Container(
-                  height: height,
-                  decoration: BoxDecoration(
-                    color: isSelected 
-                        ? AppColors.white.withAlpha(100)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    option.label,
-                    style: TextStyle(
-                      color: isSelected 
-                          ? AppColors.white 
-                          : AppColors.lightLavender,
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                      fontSize: 14,
-                    ),
+        children: List.generate(options.length, (index) {
+          final option = options[index];
+          final isSelected = option.value == selectedValue;
+
+          return Expanded(
+            child: GestureDetector(
+              onTap: () => onOptionSelected(option.value),
+              child: Container(
+                height: height,
+                decoration: BoxDecoration(
+                  color: isSelected ? AppColors.white.withAlpha(100) : Colors.transparent,
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  option.label,
+                  style: TextStyle(
+                    color: isSelected ? AppColors.white : AppColors.lightLavender,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontSize: 14,
                   ),
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        }),
       ),
     );
   }
-} 
+}
