@@ -1,9 +1,11 @@
+import 'dart:developer';
 import 'dart:ui'; // For ImageFilter
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import '../../main.dart';
 import '../../utils/app_colors.dart';
 import 'video_player_base.dart';
 
@@ -41,7 +43,7 @@ class VideoItem extends VideoPlayerBase {
   State<VideoItem> createState() => _VideoItemState();
 }
 
-class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
+class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware {
   VideoPlayerController? _controller;
   bool _isInitialized = false;
   bool _isVisible = false;
@@ -60,6 +62,29 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
   void initState() {
     super.initState();
     _initializeVideoPlayer();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    ModalRoute<void>? route = ModalRoute.of(context);
+    if (route != null) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void didPushNext() {
+    // Route was pushed on top of this one - pause the video
+    pauseMedia();
+  }
+
+  @override
+  void didPopNext() {
+    // Returned to this route - play video if visible
+    if (_isVisible && isInitialized) {
+      playMedia();
+    }
   }
 
   void _initializeVideoPlayer() {
@@ -87,6 +112,7 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
 
   @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _controller?.dispose();
     super.dispose();
   }
@@ -96,6 +122,7 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
     return VisibilityDetector(
       key: Key(_videoKey),
       onVisibilityChanged: (visibilityInfo) {
+        log('visibilityInfo: $visibilityInfo');
         final newVisibility = visibilityInfo.visibleFraction > 0.8;
 
         if (newVisibility == _isVisible || !mounted) return;
