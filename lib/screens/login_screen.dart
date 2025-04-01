@@ -62,10 +62,12 @@ class _LoginScreenState extends State<LoginScreen> {
         authCode: _showAuthCodeField ? _authCodeController.text.trim() : null,
       );
 
-      if (result == LoginStatus.success && mounted) {
+      if (!mounted) return;
+
+      if (result == LoginStatus.success) {
         TextInput.finishAutofillContext(shouldSave: true);
-        Navigator.of(context).pushReplacementNamed('/home');
-      } else if (result == LoginStatus.codeRequired && mounted) {
+        Navigator.of(context).pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
+      } else if (result == LoginStatus.codeRequired) {
         setState(() {
           _showAuthCodeField = true;
         });
