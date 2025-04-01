@@ -25,6 +25,9 @@ import 'utils/app_colors.dart';
 import 'utils/app_theme.dart';
 import 'widgets/upload/upload_progress_indicator.dart';
 
+// Global RouteObserver instance
+final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
@@ -99,6 +102,7 @@ class MyApp extends StatelessWidget {
           splashFactory: NoSplash.splashFactory,
         ),
         themeMode: ThemeMode.system,
+        navigatorObservers: [routeObserver],
         home: const SplashScreen(),
         routes: {
           '/home': (context) => const MainScreen(),
