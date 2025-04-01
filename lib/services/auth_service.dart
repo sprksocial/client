@@ -141,7 +141,7 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      ATProto at = ATProto.anonymous();
+      ATProto at = ATProto.anonymous(service: 'pds.sprk.so');
       final didRes = await at.identity.resolveHandle(handle: handle);
       String did = didRes.data.did;
 
