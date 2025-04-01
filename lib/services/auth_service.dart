@@ -141,7 +141,7 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      ATProto at = ATProto.anonymous(service: 'shimeji.us-east.host.bsky.network');
+      ATProto at = ATProto.anonymous();
       final didRes = await at.identity.resolveHandle(handle: handle);
       String did = didRes.data.did;
 
