@@ -1,11 +1,12 @@
 import 'dart:convert';
 
+import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart';
 import 'package:flutter/foundation.dart';
-import 'package:atproto/core.dart';
 import 'package:http/http.dart' as http;
-import 'auth_service.dart';
+
 import '../config/app_config.dart';
+import 'auth_service.dart';
 
 class ProfileService extends ChangeNotifier {
   final AuthService _authService;
@@ -99,8 +100,42 @@ class ProfileService extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>?> getProfileVideosSprk(String did) async {
+  Future<Map<String, dynamic>?> getProfileFullSprk(String did) async {
+    if (!_authService.isAuthenticated) {
+      return null;
+    }
 
+    try {
+      final profileRes = await _authService.atproto!.get(
+        NSID.parse('so.sprk.actor.getProfile'),
+        parameters: {'actor': did},
+        headers: {'atproto-proxy': 'did:web:api.sprk.so#sprk_appview'},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+      );
+
+      final profile = profileRes.data as Map<String, dynamic>?;
+
+      if (profile == null) {
+        return null;
+      }
+
+      return {
+        'did': profile['did'],
+        'handle': profile['handle'],
+        'displayName': profile['displayName'],
+        'description': profile['description'],
+        'avatar': profile['avatar'],
+        'followersCount': profile['followersCount'],
+        'followingCount': profile['followingCount'],
+        'postsCount': profile['postsCount'],
+      };
+    } catch (e) {
+      throw Exception('Failed to fetch profile: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>?> getProfileVideosSprk(String did) async {
     if (!_authService.isAuthenticated) {
       return null;
     }
