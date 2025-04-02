@@ -17,6 +17,7 @@ import 'screens/test_actions_screen.dart';
 import 'services/actions_service.dart';
 import 'services/auth_service.dart';
 import 'services/comments_service.dart';
+import 'services/feed_service.dart';
 import 'services/identity_service.dart';
 import 'services/profile_service.dart';
 import 'services/settings_service.dart';
@@ -75,6 +76,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProxyProvider<AuthService, CommentsService>(
           create: (context) => CommentsService(context.read<AuthService>()),
           update: (_, authService, previousCommentsService) => previousCommentsService ?? CommentsService(authService),
+        ),
+        ChangeNotifierProxyProvider<AuthService, FeedService>(
+          create: (context) => FeedService(context.read<AuthService>()),
+          update: (_, authService, previousFeedService) => previousFeedService ?? FeedService(authService),
         ),
       ],
       child: MaterialApp(
@@ -157,43 +162,42 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final List<Widget?> _screens = List.filled(5, null);
+  // Keep a list of initialized screens
+  final List<Widget> _screens = [];
+  // Store the AuthService instance
+  late final AuthService _authService;
 
-  Widget _getScreen(int index, BuildContext context) {
-    if (_screens[index] != null) {
-      return _screens[index]!;
-    }
-
-    final authService = Provider.of<AuthService>(context, listen: false);
-
-    switch (index) {
-      case 0:
-        _screens[0] = const HomeScreen();
-        break;
-      case 1:
-        _screens[1] = const SearchScreen();
-        break;
-      case 2:
-        _screens[2] = const SizedBox.shrink();
-        break;
-      case 3:
-        _screens[3] = const MessagesScreen();
-        break;
-      case 4:
-        _screens[4] = ProfileScreen(key: Key(authService.session?.did ?? ''), did: authService.session?.did);
-        break;
-    }
-
-    return _screens[index]!;
+  @override
+  void initState() {
+    super.initState();
+    _authService = Provider.of<AuthService>(context, listen: false);
+    // Initialize screens list - potentially add placeholder/loading states initially
+    _screens.addAll([
+      const HomeScreen(), // Assuming HomeScreen uses AutomaticKeepAliveClientMixin
+      const SearchScreen(), // Assuming SearchScreen uses AutomaticKeepAliveClientMixin
+      const SizedBox.shrink(), // Placeholder for the Create button's index
+      const MessagesScreen(), // Assuming MessagesScreen uses AutomaticKeepAliveClientMixin
+      // Use a specific key based on DID to ensure ProfileScreen instance is consistent
+      ProfileScreen(
+        key: ValueKey(_authService.session?.did ?? 'profile'),
+        did: _authService.session?.did,
+      ), // Assuming ProfileScreen uses AutomaticKeepAliveClientMixin
+    ]);
   }
 
   @override
   Widget build(BuildContext context) {
     final navigationProvider = Provider.of<NavigationProvider>(context);
+    final currentIndex = navigationProvider.currentIndex;
+
+    // Ensure index 2 (Create) maps to a valid index for IndexedStack (e.g., 0 or last active)
+    // Or handle it outside the IndexedStack logic if it's just a button press
+    final stackIndex = currentIndex == 2 ? 0 : currentIndex; // Default to home if create is selected
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: _getScreen(navigationProvider.currentIndex, context),
+      // Use IndexedStack to keep screen states alive
+      body: IndexedStack(index: stackIndex, children: _screens),
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(
           indicatorColor: Colors.transparent,
@@ -208,9 +212,11 @@ class _MainScreenState extends State<MainScreen> {
           }),
         ),
         child: NavigationBar(
-          selectedIndex: navigationProvider.currentIndex == 2 ? 0 : navigationProvider.currentIndex,
+          // Ensure selectedIndex reflects the UI, might need adjustment if index 2 maps elsewhere
+          selectedIndex: currentIndex,
           onDestinationSelected: (index) {
             if (index == 2) {
+              // Navigate to CreateVideoScreen without changing the main stack index
               Navigator.of(
                 context,
               ).push(MaterialPageRoute(fullscreenDialog: true, builder: (context) => const CreateVideoScreen()));
