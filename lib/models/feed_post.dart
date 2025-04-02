@@ -1,5 +1,3 @@
-import 'package:bluesky/app_bsky_embed_video.dart';
-import 'package:bluesky/bluesky.dart';
 import 'package:sparksocial/widgets/video_info/hashtag_list.dart';
 
 /// A unified model for handling feed posts from different sources
@@ -17,9 +15,10 @@ class FeedPost {
   final String uri; // Post URI for likes
   final String cid; // Post CID for likes
   final bool isSprk; // Whether the post is from Spark
-  final String? likeUri; // URI of the user's like if the post is liked
+  final String? likeUri; // Store original like URI if needed
   final bool hasMedia; // Whether the post has media (image or video)
   final bool isReply; // Whether the post is a reply to another post
+  final dynamic viewerState; // Use dynamic for viewerState for now
 
   FeedPost({
     required this.username,
@@ -38,92 +37,119 @@ class FeedPost {
     this.likeUri,
     this.hasMedia = false,
     this.isReply = false,
+    this.viewerState,
   });
 
   /// Create a FeedPost from a Bluesky feed item
-  static FeedPost fromBlueskyFeed(FeedView feedItem) {
+  static FeedPost fromBlueskyFeed(dynamic feedItem) {
     final post = feedItem.post;
 
-    // Extract video URL and image URLs if available
     String? videoUrl;
     List<String> imageUrls = [];
     bool hasMedia = false;
+    String? embedType;
 
-    if (post.embed?.data is EmbedVideoView) {
-      videoUrl = (post.embed?.data as EmbedVideoView).playlist;
-      hasMedia = true;
-    } else if (post.embed?.data is EmbedViewImages) {
-      hasMedia = true;
-      final embedImages = post.embed?.data as EmbedViewImages;
-      imageUrls = embedImages.images.map((img) => img.fullsize).toList();
+    final embedData = post.embed?.data?.toJson();
+
+    if (embedData != null && embedData is Map<String, dynamic>) {
+      embedType = embedData['\$type'] as String?;
+
+      if (embedType == 'app.bsky.embed.images#view' || embedType == 'app.bsky.embed.images') {
+        hasMedia = true;
+        final imagesList = embedData['images'] as List<dynamic>?;
+        if (imagesList != null) {
+          imageUrls =
+              imagesList
+                  .map((img) => (img as Map<String, dynamic>?)?['fullsize'] as String? ?? '')
+                  .where((url) => url.isNotEmpty)
+                  .toList();
+        }
+      } else if (embedType == 'so.sprk.embed.video#view' || embedType == 'so.sprk.embed.video') {
+        videoUrl = embedData['playlist'] as String?;
+        hasMedia = videoUrl != null && videoUrl.isNotEmpty;
+      } else if (embedType == 'app.bsky.embed.recordWithMedia#view' || embedType == 'app.bsky.embed.recordWithMedia') {
+        final mediaData = embedData['media'] as Map<String, dynamic>?;
+        if (mediaData != null) {
+          final mediaType = mediaData['\$type'] as String?;
+          if (mediaType == 'app.bsky.embed.images#view' || mediaType == 'app.bsky.embed.images') {
+            hasMedia = true;
+            final imagesList = mediaData['images'] as List<dynamic>?;
+            if (imagesList != null) {
+              imageUrls =
+                  imagesList
+                      .map((img) => (img as Map<String, dynamic>?)?['fullsize'] as String? ?? '')
+                      .where((url) => url.isNotEmpty)
+                      .toList();
+            }
+          }
+        }
+      }
     }
-    if (!hasMedia) {}
 
-    // Check if the post is a reply
-    bool isReply = post.record.reply != null;
+    bool isReply = feedItem.reply != null;
+    final record = post.record?.toJson();
+    final descriptionText = (record is Map<String, dynamic> ? record['text'] : null) as String? ?? '';
 
-    // Extract hashtags from description
-    List<String> hashtags = HashtagList.extractFromText(post.record.text);
+    List<String> hashtags = HashtagList.extractFromText(descriptionText);
+
+    final derivedLikeUri = post.viewer?.like?.toString();
 
     return FeedPost(
       username: post.author.handle,
       authorDid: post.author.did,
       profileImageUrl: post.author.avatar,
-      description: post.record.text,
+      description: descriptionText,
       videoUrl: videoUrl,
       imageUrls: imageUrls,
-      likeCount: post.likeCount,
-      commentCount: post.replyCount,
-      shareCount: post.repostCount,
+      likeCount: post.likeCount ?? 0,
+      commentCount: post.replyCount ?? 0,
+      shareCount: post.repostCount ?? 0,
       hashtags: hashtags,
       uri: post.uri.toString(),
       cid: post.cid,
       isSprk: false,
-      likeUri: post.viewer.like?.toString(),
+      likeUri: derivedLikeUri,
       hasMedia: hasMedia,
       isReply: isReply,
+      viewerState: post.viewer,
     );
   }
 
-  /// Create a FeedPost from a Spark feed item
   static FeedPost fromSparkFeed(Map<String, dynamic> feedItem) {
-    final post = feedItem['post'] as Map<String, dynamic>;
-    final author = post['author'] as Map<String, dynamic>;
-    final record = post['record'] as Map<String, dynamic>;
+    final post = feedItem['post'] as Map<String, dynamic>? ?? feedItem;
+    final author = post['author'] as Map<String, dynamic>? ?? {};
+    final record = post['record'] as Map<String, dynamic>? ?? {};
+    final embed = post['embed'] as Map<String, dynamic>?;
+    final viewer = post['viewer'] as Map<String, dynamic>?;
 
-    // Extract video URL, image URLs if available and check for media
     String? videoUrl;
     List<String> imageUrls = [];
     bool hasMedia = false;
 
-    if (post['embed'] != null) {
-      final embedType = post['embed']['\$type'] as String?;
-      if (embedType == 'so.sprk.embed.video#view') {
-        videoUrl = post['embed']['playlist'];
-        hasMedia = true;
-      } else if (embedType == 'so.sprk.embed.images#view') {
-        hasMedia = true;
-        final embedImages = post['embed']['images'] as List<dynamic>?;
-        if (embedImages != null) {
-          imageUrls = embedImages.map((img) => img['fullsize'] as String? ?? '').where((url) => url.isNotEmpty).toList();
+    if (embed != null) {
+      final embedType = embed['\$type'] as String?;
+      if (embedType == 'so.sprk.embed.video#view' || embedType == 'so.sprk.embed.video') {
+        videoUrl = embed['playlist'] as String?;
+        hasMedia = videoUrl != null && videoUrl.isNotEmpty;
+      } else if (embedType == 'so.sprk.embed.images#view' || embedType == 'so.sprk.embed.images') {
+        final imagesList = embed['images'] as List<dynamic>?;
+        if (imagesList != null) {
+          imageUrls =
+              imagesList
+                  .map((img) => (img as Map<String, dynamic>?)?['fullsize'] as String? ?? '')
+                  .where((url) => url.isNotEmpty)
+                  .toList();
+          hasMedia = imageUrls.isNotEmpty;
         }
       }
     }
 
-    // Check if the post is a reply
     bool isReply = record.containsKey('reply');
-
-    // Extract description
     final description = record['text'] as String? ?? '';
-
-    // Extract hashtags
     List<String> hashtags = HashtagList.extractFromText(description);
 
-    // Extract like URI from viewer object if available
-    String? likeUri;
-    if (post.containsKey('viewer') && post['viewer'] is Map<String, dynamic>) {
-      likeUri = (post['viewer'] as Map<String, dynamic>)['like'] as String?;
-    }
+    String? likeUriString = viewer?['like'] as String?;
+    dynamic constructedViewerState = viewer;
 
     return FeedPost(
       username: author['handle'] as String? ?? '',
@@ -139,9 +165,10 @@ class FeedPost {
       uri: post['uri'] as String? ?? '',
       cid: post['cid'] as String? ?? '',
       isSprk: true,
-      likeUri: likeUri,
+      likeUri: likeUriString,
       hasMedia: hasMedia,
       isReply: isReply,
+      viewerState: constructedViewerState,
     );
   }
 
@@ -150,21 +177,33 @@ class FeedPost {
     if (feedItem is Map<String, dynamic>) {
       return fromSparkFeed(feedItem);
     } else {
-      return fromBlueskyFeed(feedItem);
+      print("Info: Feed item is not a Map, attempting Bluesky parsing: ${feedItem.runtimeType}");
+      try {
+        return fromBlueskyFeed(feedItem);
+      } catch (e) {
+        print("Error parsing feed item as Bluesky object: $e");
+        throw ArgumentError('Unsupported feed item type and failed Bluesky fallback: ${feedItem.runtimeType}');
+      }
     }
   }
 
-  /// Check if the post is liked based on whether there's a likeUri
-  bool get isLiked => likeUri != null;
+  /// Check if the post is liked based on the viewer state (dynamic access)
+  bool get isLiked {
+    if (viewerState is Map<String, dynamic>) {
+      return viewerState?['like'] != null;
+    } else {
+      try {
+        return viewerState?.like != null;
+      } catch (_) {
+        return false;
+      }
+    }
+  }
 
-  /// Check if this post is a duplicate of another post
+  /// Check if this post is a duplicate of another post (basic check)
   bool isDuplicateOf(FeedPost other) {
-    // If both posts have the same URI, they're definitely duplicates
-    if (uri == other.uri) return true;
-
-    // If both posts have videos and the video URLs match, consider them duplicates
-    if (videoUrl != null && other.videoUrl != null && videoUrl == other.videoUrl) return true;
-
+    if (uri.isNotEmpty && uri == other.uri) return true;
+    if (videoUrl != null && videoUrl == other.videoUrl) return true;
     return false;
   }
 }

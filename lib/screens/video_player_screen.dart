@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
+import '../services/feed_service.dart';
 import '../widgets/video/preloaded_video_item.dart';
 import '../widgets/video/video_item.dart';
 
@@ -21,14 +23,18 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   final Map<int, PreloadedVideo> _preloadedVideos = {};
   final Set<String> _preloadedImageUrls = {};
   List<VideoItem> _videoItems = [];
-  // Configuration for better video loop performance
-  static final _videoBufferingConfig = VideoPlayerOptions(mixWithOthers: false, allowBackgroundPlayback: false);
+  // Optimized video options
+  static final _videoPlayerOptions = VideoPlayerOptions(mixWithOthers: false, allowBackgroundPlayback: false);
+  // Add FeedService instance variable
+  late FeedService _feedService;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
     _pageController = PageController(initialPage: _currentIndex);
+    // Get FeedService instance
+    _feedService = context.read<FeedService>();
 
     if (widget.allVideos != null && widget.allVideos!.isNotEmpty) {
       _prepareVideoItems();
@@ -53,48 +59,47 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
   void _prepareVideoItems() {
     _videoItems = [];
     for (int i = 0; i < widget.allVideos!.length; i++) {
-      final video = widget.allVideos![i];
-      if (video == null) continue;
+      final videoData = widget.allVideos![i];
+      // Skip null or invalid video data
+      if (videoData == null || videoData is! Map<String, dynamic>) continue;
 
-      final thumbnailUrl = video['post']['embed']['thumbnail'] as String? ?? '';
-      final videoUrl = video['post']['embed']['playlist'] as String? ?? '';
+      // Safely extract data using null-aware operators and default values
+      final post = videoData['post'] as Map<String, dynamic>?;
+      final embed = post?['embed'] as Map<String, dynamic>?;
+      final author = post?['author'] as Map<String, dynamic>?;
+      final record = post?['record'] as Map<String, dynamic>?;
+
+      final videoUrl = embed?['playlist'] as String? ?? '';
+      // Crucially, skip if there's no video URL
       if (videoUrl.isEmpty) continue;
 
-      final username = video['post']['author']['handle'] as String? ?? 'username';
+      final thumbnailUrl = embed?['thumbnail'] as String? ?? '';
+      final username = author?['handle'] as String? ?? 'username';
 
-      // Get description from record text first, then post text, finally fallback to default
-      String? description;
-      if (video['post']['record'] != null && video['post']['record']['text'] != null) {
-        description = video['post']['record']['text'] as String?;
-      }
-      if (description == null || description.isEmpty) {
-        description = video['post']['text'] as String?;
-      }
-      if (description == null || description.isEmpty) {
-        description = '';
-      }
+      String description = record?['text'] as String? ?? post?['text'] as String? ?? '';
 
-      final likeCount = video['post']['likeCount'] as int? ?? 0;
-      final commentCount = video['post']['replyCount'] as int? ?? 0;
-      final shareCount = video['post']['repostCount'] as int? ?? 0;
-      final authorDid = video['post']['author']['did'] as String? ?? '';
-      final videoUri = video['post']['uri'] as String? ?? '';
-      final videoCid = video['post']['cid'] as String? ?? '';
-      final profileImageUrl = video['post']['author']['avatar'] as String? ?? '';
+      final likeCount = post?['likeCount'] as int? ?? 0;
+      final commentCount = post?['replyCount'] as int? ?? 0;
+      final shareCount = post?['repostCount'] as int? ?? 0;
+      final authorDid = author?['did'] as String? ?? '';
+      final videoUri = post?['uri'] as String? ?? '';
+      final videoCid = post?['cid'] as String? ?? '';
+      final profileImageUrl = author?['avatar'] as String? ?? '';
       final isSprk = videoUrl.contains('sprk.so');
 
-      // Extract hashtags
+      // Extract hashtags (consider moving this to a utility function)
       final List<String> hashtags = [];
       final words = description.split(' ');
       for (final word in words) {
-        if (word.startsWith('#')) {
+        if (word.startsWith('#') && word.length > 1) {
           hashtags.add(word.substring(1));
         }
       }
 
       final videoItem = VideoItem(
-        key: ValueKey('video_item_$i'),
-        index: i,
+        // Use a more robust key
+        key: ValueKey('video_item_${videoUri}_${videoCid}_$i'),
+        index: i, // This index needs careful management if list changes
         videoUrl: videoUrl,
         username: username,
         description: description,
@@ -105,19 +110,41 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         shareCount: shareCount,
         profileImageUrl: profileImageUrl,
         authorDid: authorDid,
-        isLiked: false,
+        isLiked: false, // State should be managed elsewhere
         isSprk: isSprk,
         postUri: videoUri,
         postCid: videoCid,
         disableBackgroundBlur: false,
-        onLikePressed: () {},
-        onBookmarkPressed: () {},
-        onSharePressed: () {},
-        onUsernameTap: () {},
-        onHashtagTap: (String hashtag) {},
+        // --- Pass actual callbacks or use Provider for actions ---
+        onLikePressed: () {
+          print("Like pressed on item $i");
+        },
+        onBookmarkPressed: () {
+          print("Bookmark pressed on item $i");
+        },
+        onSharePressed: () {
+          print("Share pressed on item $i");
+        },
+        onProfilePressed: () {
+          print("Profile pressed on item $i");
+        },
+        onUsernameTap: () {
+          print("Username tapped on item $i");
+        },
+        onHashtagTap: (String hashtag) {
+          print("Hashtag '$hashtag' tapped on item $i");
+        },
+        // -----------------------------------------------------------
       );
 
       _videoItems.add(videoItem);
+    }
+    // Update initial index if filtering removed preceding items
+    final initialUri = widget.initialVideoItem.postUri;
+    final newInitialIndex = _videoItems.indexWhere((item) => item.postUri == initialUri);
+    if (newInitialIndex != -1) {
+      _currentIndex = newInitialIndex;
+      _pageController = PageController(initialPage: _currentIndex); // Recreate page controller
     }
   }
 
@@ -129,170 +156,198 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
     _preloadedVideos.clear();
     _preloadedImageUrls.clear();
 
-    // Preload initial batch of videos (current + 2 neighbors)
+    // Preload initial batch using the updated logic
     if (_videoItems.isNotEmpty) {
-      // Load current video first
-      _preloadVideo(_currentIndex);
-
-      // Then preload neighbors
-      if (_currentIndex > 0) _preloadVideo(_currentIndex - 1);
-      if (_currentIndex < _videoItems.length - 1) _preloadVideo(_currentIndex + 1);
+      _updateLoadedMedia(_currentIndex, isInitialLoad: true);
     }
   }
 
   Future<void> _preloadVideo(int index) async {
     if (index < 0 || index >= _videoItems.length) return;
+    // Don't preload if already loaded or loading
     if (_preloadedVideos.containsKey(index)) return;
 
     final videoItem = _videoItems[index];
     final videoUrl = videoItem.videoUrl;
+    // Should not happen due to filtering in _prepareVideoItems, but double-check
     if (videoUrl == null || videoUrl.isEmpty) return;
 
-    // Create a new controller with optimized buffering configuration
-    final controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl), videoPlayerOptions: _videoBufferingConfig);
+    // --- Check for FeedService pre-initialized controller first ---
+    VideoPlayerController? controller = _feedService.getPreloadedController(videoUrl);
+    bool wasPreInitialized = controller != null;
+
+    if (controller == null) {
+      // If not pre-initialized by FeedService, create a new one
+      controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl), videoPlayerOptions: _videoPlayerOptions);
+      print("VideoPlayerScreen: Creating NEW controller for index $index (URL: $videoUrl)");
+    } else {
+      print("VideoPlayerScreen: Using PRE-INITIALIZED controller for index $index (URL: $videoUrl)");
+    }
+    // --- End check ---
 
     try {
-      // Register it as non-initialized first
-      _preloadedVideos[index] = PreloadedVideo(controller: controller, isInitialized: false, videoUrl: videoUrl);
+      // Store in map immediately
+      _preloadedVideos[index] = PreloadedVideo(controller: controller, isInitialized: wasPreInitialized, videoUrl: videoUrl);
 
-      // Set video to loop automatically with seamless looping
-      controller.setLooping(true);
+      // Apply settings only if we created it or it wasn't initialized
+      if (!wasPreInitialized || !controller.value.isInitialized) {
+        controller.setLooping(true);
+        await controller.setVolume(index == _currentIndex ? 1.0 : 0.0);
 
-      // Set volume to zero initially
-      await controller.setVolume(0.0);
-
-      // Try to initialize
-      await controller.initialize();
-
-      // Increase buffer size for smoother looping
-      await controller.setPlaybackSpeed(1.0);
-
-      // Only proceed if still mounted and video is still needed
-      if (mounted && _preloadedVideos.containsKey(index)) {
-        // Set volume on only for current video
-        final isCurrent = index == _currentIndex;
-        await controller.setVolume(isCurrent ? 1.0 : 0.0);
-
-        if (mounted) {
-          setState(() {
-            _preloadedVideos[index] = PreloadedVideo(controller: controller, isInitialized: true, videoUrl: videoUrl);
-          });
-        }
-
-        // Start playing if this is current video
-        if (index == _currentIndex) {
-          controller.play();
-
-          // Add listener to handle seamless looping
-          controller.addListener(() {
-            if (mounted && index == _currentIndex) {
-              // If video is near the end, ensure smooth transition
-              final position = controller.value.position;
-              final duration = controller.value.duration;
-
-              // If we're within 200ms of the end, prepare for looping
-              if (duration.inMilliseconds - position.inMilliseconds < 200 &&
-                  duration.inMilliseconds > 0 &&
-                  !controller.value.isBuffering) {
-                // The built-in looping will handle this, but we ensure
-                // playback doesn't stutter by forcing a seek to 0 position
-                // just before the end
-                if (controller.value.isPlaying && position.inMilliseconds > 0) {
-                  controller.seekTo(Duration.zero).then((_) {
-                    if (controller.value.isPlaying == false) {
-                      controller.play();
-                    }
-                  });
+        // Start initialization if not already started/completed
+        if (!controller.value.isInitialized) {
+          controller
+              .initialize()
+              .then((_) {
+                if (mounted && index == _currentIndex && !controller!.value.isPlaying && controller.value.isInitialized) {
+                  controller.play();
                 }
-              }
-            }
-          });
+              })
+              .catchError((error) {
+                debugPrint("Error initializing video controller for index $index: $error");
+                if (mounted) {
+                  setState(() {});
+                }
+              });
         }
+      }
+
+      // Attempt to play immediately if it's the current video
+      if (index == _currentIndex) {
+        // Play regardless of wasPreInitialized, controller handles state
+        controller.play();
       }
     } catch (e) {
-      // Clean up on error
-      if (_preloadedVideos.containsKey(index)) {
-        _preloadedVideos[index]!.controller.dispose();
-        _preloadedVideos.remove(index);
-      }
-
-      // Try again for network errors after a delay
-      if (mounted && e.toString().contains('network')) {
-        Future.delayed(const Duration(seconds: 2), () {
-          if (mounted && !_preloadedVideos.containsKey(index)) {
-            _preloadVideo(index);
-          }
-        });
-      }
+      debugPrint('Error during video controller setup for index $index: $e');
+      _preloadedVideos.remove(index)?.controller.dispose(); // Clean up on error
     }
   }
 
   void _unloadVideo(int index) {
     if (_preloadedVideos.containsKey(index)) {
-      _preloadedVideos[index]!.controller.pause();
-      _preloadedVideos[index]!.controller.dispose();
-      _preloadedVideos.remove(index);
+      final video = _preloadedVideos.remove(index)!;
+      // Don't pause, just dispose
+      video.controller.dispose();
+      debugPrint("Unloaded video $index");
     }
   }
 
-  void _updateLoadedMedia(int newIndex) {
-    if (newIndex == _currentIndex) return;
+  // Add isInitialLoad parameter to prevent unnecessary state updates during init
+  void _updateLoadedMedia(int newIndex, {bool isInitialLoad = false}) {
+    if (!isInitialLoad && newIndex == _currentIndex) return;
 
-    // Handle video playback for current and previous video
-    if (_videoItems.isNotEmpty) {
-      // Mute and pause previous video
-      if (_preloadedVideos.containsKey(_currentIndex)) {
-        _preloadedVideos[_currentIndex]!.controller.setVolume(0.0);
-        _preloadedVideos[_currentIndex]!.controller.pause();
-      }
+    final oldIndex = _currentIndex;
 
-      // Set volume and play new video
-      if (_preloadedVideos.containsKey(newIndex)) {
-        _preloadedVideos[newIndex]!.controller.setVolume(1.0);
-        _preloadedVideos[newIndex]!.controller.play();
+    // --- Volume/Playback Control ---
+    // Mute/Pause the old video if it exists and was the current one
+    if (_preloadedVideos.containsKey(oldIndex)) {
+      final oldController = _preloadedVideos[oldIndex]!.controller;
+      if (oldController.value.isInitialized) {
+        // Check if initialized before accessing value
+        oldController.setVolume(0.0);
+        oldController.pause();
       }
     }
 
-    // Videos to preload (current, prev, next, prev-prev, next-next)
-    final toLoad = <int>{newIndex, newIndex - 1, newIndex + 1, newIndex - 2, newIndex + 2};
+    // Set volume and attempt to play the new video if it exists
+    if (_preloadedVideos.containsKey(newIndex)) {
+      final newController = _preloadedVideos[newIndex]!.controller;
+      // Set volume immediately
+      newController.setVolume(1.0);
+      // Play optimistically - controller will play when ready
+      // Check initialized state just before playing as a safeguard
+      if (newController.value.isInitialized && !newController.value.isPlaying) {
+        newController.play();
+      } else if (!newController.value.isInitialized) {
+        // If not initialized yet, play will be called later by initialize().then()
+        // or by the PreloadedVideoItem listener/state update
+        newController.play(); // Still try to play, might start sooner
+      }
+    } else {
+      // If the target video isn't even loading yet, preload it now.
+      _preloadVideo(newIndex);
+    }
+    // --- End Volume/Playback Control ---
 
-    // Filter out-of-bounds indices
-    final validToLoad = toLoad.where((idx) => idx >= 0 && idx < _videoItems.length).toSet();
+    // --- Preloading Window Update ---
+    const preloadAhead = 5; // Load 5 videos ahead
+    const preloadBehind = 2; // Keep 2 videos behind for back navigation
 
-    // Find videos to unload
-    final toUnload = _preloadedVideos.keys.toSet().difference(validToLoad);
+    final Set<int> desiredLoadWindow = {};
+    // Always include current index
+    desiredLoadWindow.add(newIndex);
 
-    // Find new videos to load
-    final newToLoad = validToLoad.difference(_preloadedVideos.keys.toSet());
+    // Add indices ahead of current position (prioritized)
+    for (int i = 1; i <= preloadAhead; i++) {
+      int nextIdx = newIndex + i;
+      if (nextIdx < _videoItems.length) {
+        desiredLoadWindow.add(nextIdx);
+      }
+    }
 
-    // Unload videos no longer needed
+    // Add a few indices behind current position (for back navigation)
+    for (int i = 1; i <= preloadBehind; i++) {
+      int prevIdx = newIndex - i;
+      if (prevIdx >= 0) {
+        desiredLoadWindow.add(prevIdx);
+      }
+    }
+
+    final currentLoaded = _preloadedVideos.keys.toSet();
+    final toUnload = currentLoaded.difference(desiredLoadWindow);
+    final newToLoad = desiredLoadWindow.difference(currentLoaded);
+
     for (final idx in toUnload) {
       _unloadVideo(idx);
     }
 
-    // Load priority videos first (current, next, prev)
-    final priorityLoad = [newIndex];
-    if (newIndex + 1 < _videoItems.length) priorityLoad.add(newIndex + 1);
-    if (newIndex - 1 >= 0) priorityLoad.add(newIndex - 1);
+    // Prioritize loading with focus on next videos first
+    final List<int> loadOrder = [];
 
-    for (final idx in priorityLoad) {
-      if (newToLoad.contains(idx)) {
-        _preloadVideo(idx);
-        newToLoad.remove(idx);
+    // First priority: current video
+    if (newToLoad.contains(newIndex)) {
+      loadOrder.add(newIndex);
+    }
+
+    // Second priority: next 5 videos in order
+    for (int i = 1; i <= preloadAhead; i++) {
+      int nextIdx = newIndex + i;
+      if (newToLoad.contains(nextIdx)) {
+        loadOrder.add(nextIdx);
       }
     }
 
-    // Then load the rest
-    for (final idx in newToLoad) {
-      _preloadVideo(idx);
+    // Third priority: previous videos
+    for (int i = 1; i <= preloadBehind; i++) {
+      int prevIdx = newIndex - i;
+      if (newToLoad.contains(prevIdx)) {
+        loadOrder.add(prevIdx);
+      }
     }
 
-    // Update current index
-    _currentIndex = newIndex;
+    // Load videos in prioritized order
+    for (final idx in loadOrder) {
+      _preloadVideo(idx);
+    }
+    // --- End Preloading Window Update ---
+
+    // Update current index - use setState only if not initial load to avoid build errors
+    if (mounted && !isInitialLoad) {
+      setState(() {
+        _currentIndex = newIndex;
+      });
+    } else {
+      _currentIndex = newIndex;
+    }
+
+    debugPrint("Updated media focus to index: $newIndex. Preloading window: $desiredLoadWindow");
   }
 
   @override
   Widget build(BuildContext context) {
+    // Ensure FeedService is available if accessed during build (though primarily used in methods)
+    // _feedService = context.watch<FeedService>(); // Use watch if build depends on it
+
     return Scaffold(
       backgroundColor: Colors.black,
       extendBodyBehindAppBar: true,
@@ -301,18 +356,74 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
         controller: _pageController,
         scrollDirection: Axis.vertical,
         itemCount: _videoItems.length,
+        // Use a key based on the number of items if it can change
+        key: ValueKey('video_page_view_${_videoItems.length}'),
         onPageChanged: _updateLoadedMedia,
         itemBuilder: (context, index) {
+          if (index >= _videoItems.length) {
+            return Container(
+              color: Colors.red,
+              child: Center(child: Text("Error: Index out of bounds $index >= ${_videoItems.length}")),
+            );
+          }
           final videoItem = _videoItems[index];
+          final videoUrl = videoItem.videoUrl;
 
-          // For preloaded video items
-          final isPreloaded = _preloadedVideos.containsKey(index) && _preloadedVideos[index]!.isInitialized;
+          // --- Determine which controller to use --- //
+          VideoPlayerController? controllerToUse;
+          // Check our internal map first (most common case after initial load)
+          PreloadedVideo? preloadedVideoData = _preloadedVideos[index];
 
-          if (isPreloaded) {
+          if (preloadedVideoData != null) {
+            // Use the controller already managed by VideoPlayerScreen
+            controllerToUse = preloadedVideoData.controller;
+          } else if (videoUrl != null && videoUrl.isNotEmpty) {
+            // If not in map, check FeedService (relevant for first load of index 0 usually)
+            controllerToUse = _feedService.getPreloadedController(videoUrl);
+            if (controllerToUse != null) {
+              // If found in FeedService, add it to our map
+              print("VideoPlayerScreen itemBuilder: Using controller pre-initialized by FeedService for index $index");
+              _preloadedVideos[index] = PreloadedVideo(
+                controller: controllerToUse,
+                isInitialized: controllerToUse.value.isInitialized,
+                videoUrl: videoUrl,
+              );
+              // Trigger play if it's the current index and ready
+              // Also ensure volume is set correctly for the pre-initialized controller
+              if (index == _currentIndex) {
+                controllerToUse.setVolume(1.0); // Ensure volume is 1 for current
+                if (controllerToUse.value.isInitialized && !controllerToUse.value.isPlaying) {
+                  controllerToUse.play();
+                } else if (!controllerToUse.value.isInitialized) {
+                  // If controller from FeedService isn't ready yet, play will be called
+                  // when its initialize() future completes in _preloadVideo
+                  // or by the PreloadedVideoItem widget itself.
+                  // We can still call play() optimistically here.
+                  controllerToUse.play();
+                }
+              } else {
+                controllerToUse.setVolume(0.0); // Ensure volume is 0 if not current
+              }
+            } else {
+              // If not found in FeedService either, trigger normal preload
+              // This happens when scrolling to videos beyond the initial one
+              print("VideoPlayerScreen itemBuilder: No controller found for index $index, triggering preload.");
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                // Avoid calling setState during build
+                if (mounted) {
+                  _preloadVideo(index);
+                }
+              });
+            }
+          }
+          // --- Controller determined --- //
+
+          if (controllerToUse != null) {
+            // We have a controller (either from _preloadedVideos or FeedService)
             return PreloadedVideoItem(
-              key: ValueKey('preloaded_video_$index'),
+              key: ValueKey('preloaded_video_${videoItem.postUri}_$index'),
               index: index,
-              controller: _preloadedVideos[index]!.controller,
+              controller: controllerToUse,
               username: videoItem.username,
               description: videoItem.description,
               hashtags: videoItem.hashtags,
@@ -327,7 +438,7 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               isSprk: videoItem.isSprk,
               postUri: videoItem.postUri,
               postCid: videoItem.postCid,
-              disableBackgroundBlur: false,
+              disableBackgroundBlur: videoItem.disableBackgroundBlur,
               onLikePressed: videoItem.onLikePressed,
               onBookmarkPressed: videoItem.onBookmarkPressed,
               onSharePressed: videoItem.onSharePressed,
@@ -336,8 +447,10 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
               onHashtagTap: videoItem.onHashtagTap,
             );
           } else {
-            // Return original video item as fallback
-            return videoItem;
+            // Fallback if no controller is ready AND preload hasn't been triggered yet
+            // This state should be temporary until _preloadVideo runs.
+            debugPrint("Warning: No controller available for index $index in itemBuilder, rendering fallback.");
+            return videoItem; // Render the original item (likely without player)
           }
         },
       ),
@@ -347,7 +460,9 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
 
 class PreloadedVideo {
   final VideoPlayerController controller;
-  final bool isInitialized;
+  // isInitialized here tracks if WE have called initialize(), not if it has completed.
+  // Completion state is checked via controller.value.isInitialized.
+  final bool isInitialized; // Consider renaming to isInitializing or similar
   final String? videoUrl;
 
   PreloadedVideo({required this.controller, required this.isInitialized, required this.videoUrl});

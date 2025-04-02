@@ -58,16 +58,19 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    if (isInitialized) {
-      widget.controller.addListener(_videoListener);
-      _updatePlayState();
-    } else {
+    // Add listener immediately
+    widget.controller.addListener(_videoListener);
+    // Initialize if needed, then update play state
+    if (!isInitialized) {
       widget.controller.initialize().then((_) {
         if (mounted) {
-          widget.controller.addListener(_videoListener);
           _updatePlayState();
+          setState(() {}); // Trigger rebuild once initialized
         }
       });
+    } else {
+      // Already initialized, just update play state
+      _updatePlayState();
     }
   }
 
@@ -84,20 +87,25 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
       } catch (e) {
         debugPrint("Error removing listener from old controller: $e");
       }
-      if (isInitialized) {
-        widget.controller.addListener(_videoListener);
-      } else {
+      // Add listener to the new controller
+      widget.controller.addListener(_videoListener);
+      // If new controller isn't initialized, initialize it
+      if (!isInitialized) {
         widget.controller.initialize().then((_) {
           if (mounted) {
-            widget.controller.addListener(_videoListener);
             _updatePlayState();
+            setState(() {}); // Trigger rebuild
           }
         });
+      } else {
+        // If already initialized, update play state immediately
+        _updatePlayState();
       }
-    }
-
-    if ((visibilityChanged || controllerChanged) && isInitialized) {
-      _updatePlayState();
+    } else if (visibilityChanged) {
+      // Only visibility changed, update play state if initialized
+      if (isInitialized) {
+        _updatePlayState();
+      }
     }
   }
 
@@ -116,19 +124,40 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
   }
 
   void _videoListener() {
-    if (!mounted || !isInitialized) return;
+    if (!mounted) return;
 
+    // Check initialization state in the listener too
+    final bool currentlyInitialized = widget.controller.value.isInitialized;
+
+    // If the initialization state changed, trigger a rebuild
+    if (currentlyInitialized != _lastKnownInitializedState) {
+      setState(() {
+        _lastKnownInitializedState = currentlyInitialized;
+      });
+    }
+
+    if (!currentlyInitialized) return;
+
+    // Handle looping
     if (widget.controller.value.isCompleted && isVisible && !showComments) {
       widget.controller.seekTo(Duration.zero);
-      playMedia();
+      playMedia(); // Ensure it plays after seeking
     }
-    if (widget.controller.value.hasError) {
-      setState(() {});
+    // Handle errors
+    if (widget.controller.value.hasError && !_errorShown) {
+      setState(() {
+        _errorShown = true; // Prevent continuous rebuilds on error
+      });
+      debugPrint("VideoPlayer Error: ${widget.controller.value.errorDescription}");
     }
   }
 
+  bool _lastKnownInitializedState = false;
+  bool _errorShown = false;
+
   void _updatePlayState() {
-    Future.microtask(() {
+    // Run after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted || !isInitialized) return;
       if (isVisible && !showComments) {
         widget.controller.setVolume(1.0);
@@ -142,12 +171,12 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
 
   @override
   void dispose() {
-    if (widget.controller.value.isInitialized) {
-      try {
-        widget.controller.removeListener(_videoListener);
-      } catch (e) {
-        debugPrint("Error removing listener from disposed controller: $e");
-      }
+    // Remove listener safely
+    // The controller itself is disposed by VideoPlayerScreen
+    try {
+      widget.controller.removeListener(_videoListener);
+    } catch (e) {
+      debugPrint("Error removing listener during dispose: $e");
     }
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -155,14 +184,9 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        super.build(context),
-
-        if (!isInitialized) const Center(child: CircularProgressIndicator(color: AppColors.white)),
-      ],
-    );
+    // Base build method handles background, content, and overlays
+    return super.build(context);
+    // Removed redundant loading indicator check here
   }
 
   @override
@@ -173,11 +197,22 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
 
   @override
   Widget buildContent(BuildContext context) {
-    return _buildVideoContent();
+    // Build video content and overlay loading indicator if needed
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        _buildVideoContent(), // Always build the player if controller exists
+        // Show loading indicator if controller is not yet initialized by the video_player package
+        if (!isInitialized && !widget.controller.value.hasError) const CircularProgressIndicator(color: AppColors.white),
+        // Show error icon if controller has error
+        if (widget.controller.value.hasError) const Icon(Icons.error_outline, color: Colors.white70, size: 48.0),
+      ],
+    );
   }
 
   Widget _buildBlurredBackground(bool isDarkMode) {
-    if (!isInitialized) {
+    // Use a placeholder color if not initialized or background blur disabled
+    if (widget.disableBackgroundBlur || !isInitialized) {
       return Container(color: isDarkMode ? Colors.black : AppColors.darkBackground);
     }
     return Container(
@@ -185,13 +220,13 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (!widget.disableBackgroundBlur)
-            ClipRect(
-              child: ImageFiltered(
-                imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-                child: Transform.scale(scale: 1.2, child: Opacity(opacity: 0.5, child: VideoPlayer(widget.controller))),
-              ),
+          // Ensure VideoPlayer is built for blur effect only if initialized
+          ClipRect(
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
+              child: Transform.scale(scale: 1.2, child: Opacity(opacity: 0.5, child: VideoPlayer(widget.controller))),
             ),
+          ),
           Container(color: isDarkMode ? Colors.black.withAlpha(120) : AppColors.darkBackground.withAlpha(120)),
         ],
       ),
@@ -199,27 +234,23 @@ class _PreloadedVideoItemState extends VideoPlayerBaseState<PreloadedVideoItem> 
   }
 
   Widget _buildVideoContent() {
-    if (!isInitialized) {
-      return const Center(child: CircularProgressIndicator(color: AppColors.white));
-    }
-    final videoSize = widget.controller.value.size;
-    if (videoSize.width <= 0 || videoSize.height <= 0) {
-      return const Center(child: Text("Invalid video size", style: TextStyle(color: Colors.white)));
-    }
-    double aspectRatio = videoSize.width / videoSize.height;
-
-    if (aspectRatio > 1) {
+    // Don't need isInitialized check here, handled by the overlay in buildContent
+    // Check for valid size *after* initialization
+    if (isInitialized) {
+      final videoSize = widget.controller.value.size;
+      if (videoSize.width <= 0 || videoSize.height <= 0) {
+        // Return error/placeholder if size is invalid after init
+        return const Center(child: Text("Invalid video size", style: TextStyle(color: Colors.white)));
+      }
+      // Use contain fit for video playback
       return FittedBox(
         fit: BoxFit.contain,
         child: SizedBox(width: videoSize.width, height: videoSize.height, child: VideoPlayer(widget.controller)),
       );
+    } else {
+      // Return an empty container or placeholder while initializing
+      // The loading indicator is handled by the Stack in buildContent
+      return Container();
     }
-
-    return SizedBox.expand(
-      child: FittedBox(
-        fit: BoxFit.contain,
-        child: SizedBox(width: videoSize.width, height: videoSize.height, child: VideoPlayer(widget.controller)),
-      ),
-    );
   }
 }
