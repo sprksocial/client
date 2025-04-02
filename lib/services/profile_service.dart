@@ -18,61 +18,34 @@ class ProfileService extends ChangeNotifier {
       return null;
     }
 
+    // Try Spark profile first
     try {
-      final atProto = _authService.atproto;
-      if (atProto == null) {
-        return null;
+      final sprkProfile = await getProfileFullSprk(did);
+      if (sprkProfile != null) {
+        return sprkProfile;
       }
-
-      final profileData = {
-        'did': did,
-        'handle': '',
-        'displayName': '',
-        'description': '',
-        'avatar': '',
-        'followersCount': 0,
-        'followingCount': 0,
-        'postsCount': 0,
-      };
-
-      try {
-        final didDocResponse = await http.get(Uri.parse('https://plc.directory/$did'));
-
-        if (didDocResponse.statusCode != 200) {
-          throw Exception('Failed to fetch DID document: ${didDocResponse.statusCode}');
-        }
-
-        final didDoc = json.decode(didDocResponse.body);
-
-        final handle = (didDoc['alsoKnownAs'] as List<dynamic>)
-            .firstWhere((s) => s.startsWith('at://'), orElse: () => '')
-            .replaceFirst('at://', '');
-        profileData['handle'] = handle;
-      } catch (e) {
-        profileData['handle'] = did;
-      }
-
-      final response = await atProto.repo.getRecord(uri: AtUri.parse('at://$did/app.bsky.actor.profile/self'));
-
-      final recordData = response.data.toJson();
-
-      if (recordData.containsKey('value')) {
-        final value = recordData['value'] as Map<String, dynamic>;
-        profileData['displayName'] = value['displayName'] ?? profileData['handle'];
-        profileData['description'] = value['description'] ?? '';
-        profileData['followersCount'] = value['followersCount'] ?? 0;
-        profileData['followingCount'] = value['followingCount'] ?? 0;
-        profileData['postsCount'] = value['postsCount'] ?? 0;
-
-        final avatarRef = value['avatar']?['ref']?['\$link'];
-        if (avatarRef != null) {
-          profileData['avatar'] = 'https://cdn.bsky.app/img/feed_fullsize/plain/$did/$avatarRef@jpeg';
-        }
-      }
-      return profileData;
+      return null;
     } catch (e) {
-      throw Exception('Failed to fetch profile: $e');
+      // Only continue to Bluesky if it's a 404-like error
+      final errorMsg = e.toString().toLowerCase();
+      if (!errorMsg.contains('404')) {
+        throw Exception('Failed to fetch Spark profile: $e');
+      }
     }
+
+    // Try Bluesky profile if Spark fails with 404
+    try {
+      final bskyProfile = await getProfileFullBsky(did);
+      if (bskyProfile != null) {
+        return bskyProfile;
+      }
+    } catch (e) {
+      // Both failed, return null
+      return null;
+    }
+
+    // Both Spark and Bluesky failed, return null
+    return null;
   }
 
   Future<Map<String, dynamic>?> getProfileFullBsky(String did) async {

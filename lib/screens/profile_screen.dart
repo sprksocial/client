@@ -84,7 +84,7 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
       final profileService = Provider.of<ProfileService>(context, listen: false);
 
       // Load profile data first
-      final profileData = await profileService.getProfileFullSprk(targetDid);
+      final profileData = await profileService.getProfile(targetDid);
 
       if (!mounted) return;
 
