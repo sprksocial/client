@@ -240,13 +240,7 @@ class _CommentItemState extends State<CommentItem> {
       children: [
         Row(
           children: [
-            Flexible(
-              child: Text(
-                widget.username,
-                style: TextStyle(fontWeight: FontWeight.bold, color: textColor),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
+            Text(widget.username, style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
             const SizedBox(width: 8),
             Text(widget.timeAgo, style: TextStyle(fontSize: 12, color: secondaryTextColor)),
           ],
