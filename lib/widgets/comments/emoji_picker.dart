@@ -23,7 +23,11 @@ class _EmojiPickerState extends State<EmojiPicker> {
 
     return Container(
       height: 50,
-      decoration: BoxDecoration(color: backgroundColor, border: Border(bottom: BorderSide(color: borderColor, width: 0.5))),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor, width: 0.5),
+      ),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: _emojis.length,
