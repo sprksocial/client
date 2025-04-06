@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../../services/actions_service.dart';
 import '../../utils/app_colors.dart';
+import 'emoji_picker.dart';
 
 class CommentInput extends StatefulWidget {
   final String videoId;
@@ -75,6 +76,30 @@ class _CommentInputState extends State<CommentInput> {
         _canSubmit = newCanSubmit;
       });
     }
+  }
+
+  // Method to insert emoji at current cursor position
+  void _insertEmoji(String emoji) {
+    if (_isPosting) return;
+
+    final currentText = _textController.text;
+    final selection = _textController.selection;
+
+    // Handle invalid selection (when text field doesn't have focus)
+    if (selection.baseOffset < 0) {
+      // Insert at the end of text if no valid selection
+      _textController.text = currentText + emoji;
+      // Move cursor to end
+      _textController.selection = TextSelection.collapsed(offset: _textController.text.length);
+      return;
+    }
+
+    final newText = currentText.replaceRange(selection.start, selection.end, emoji);
+
+    _textController.value = TextEditingValue(
+      text: newText,
+      selection: TextSelection.collapsed(offset: selection.baseOffset + emoji.length),
+    );
   }
 
   // Function to pick images
@@ -189,6 +214,11 @@ class _CommentInputState extends State<CommentInput> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
+          // Emoji Picker is always displayed at the top
+          EmojiPicker(onEmojiSelected: _insertEmoji, isDarkMode: widget.isDarkMode),
+
+          const SizedBox(height: 8),
+
           if (widget.replyingToUsername != null) _buildReplyingToNotice(inputBackgroundColor, borderColor, textColor),
 
           Row(
