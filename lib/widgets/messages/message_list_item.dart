@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sparksocial/widgets/common/user_avatar.dart';
+
 import '../../utils/app_colors.dart';
 
 class MessageListItem extends StatelessWidget {
@@ -33,22 +35,25 @@ class MessageListItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         decoration: BoxDecoration(
           color: isDarkMode ? Colors.black : AppColors.white,
-          border: Border(bottom: BorderSide(color: isDarkMode ? Colors.grey.shade900 : AppColors.divider.withAlpha(30), width: 0.5)),
+          border: Border(
+            bottom: BorderSide(color: isDarkMode ? Colors.grey.shade900 : AppColors.divider.withAlpha(30), width: 0.5),
+          ),
         ),
         child: Row(
           children: [
             Stack(
               children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: _getAvatarColor(colorIndex),
-                  backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl!) : null,
-                  child: avatarUrl == null
-                      ? Text(
-                          username.substring(0, 1).toUpperCase(),
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                        )
-                      : null,
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(shape: BoxShape.circle),
+                  clipBehavior: Clip.antiAlias,
+                  child: UserAvatar(
+                    imageUrl: avatarUrl,
+                    username: username,
+                    size: 48,
+                    backgroundColor: _getAvatarColor(colorIndex),
+                  ),
                 ),
               ],
             ),
@@ -85,28 +90,15 @@ class MessageListItem extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  time,
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
-                  ),
-                ),
+                Text(time, style: TextStyle(fontSize: 12, color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600)),
                 const SizedBox(height: 4),
                 if (hasUnread && unreadCount! > 0)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.pink,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
+                    decoration: BoxDecoration(color: AppColors.pink, borderRadius: BorderRadius.circular(10)),
                     child: Text(
                       unreadCount.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                   ),
               ],
@@ -118,15 +110,7 @@ class MessageListItem extends StatelessWidget {
   }
 
   Color _getAvatarColor(int index) {
-    final List<Color> colors = [
-      Colors.blue,
-      Colors.green,
-      Colors.orange,
-      Colors.purple,
-      Colors.teal,
-      Colors.pink,
-      Colors.indigo,
-    ];
+    final List<Color> colors = [Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.teal, Colors.pink, Colors.indigo];
     return colors[index % colors.length];
   }
 }

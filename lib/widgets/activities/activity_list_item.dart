@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'activity_icon.dart';
+import 'package:flutter/material.dart';
+import 'package:sparksocial/widgets/common/user_avatar.dart';
+
 import '../../utils/app_colors.dart';
+import 'activity_icon.dart';
 
 class ActivityListItem extends StatelessWidget {
   final String username;
@@ -34,23 +36,26 @@ class ActivityListItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 14.0),
         decoration: BoxDecoration(
           color: isDarkMode ? Colors.black : Colors.white,
-          border: Border(bottom: BorderSide(color: isDarkMode ? Colors.grey.shade900 : AppColors.divider.withOpacity(0.3), width: 0.5)),
+          border: Border(
+            bottom: BorderSide(color: isDarkMode ? Colors.grey.shade900 : AppColors.divider.withOpacity(0.3), width: 0.5),
+          ),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Stack(
               children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: _getAvatarColor(colorIndex),
-                  backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl!) : null,
-                  child: avatarUrl == null
-                      ? Text(
-                          username.substring(0, 1).toUpperCase(),
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-                        )
-                      : null,
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(shape: BoxShape.circle),
+                  clipBehavior: Clip.antiAlias,
+                  child: UserAvatar(
+                    imageUrl: avatarUrl,
+                    username: username,
+                    size: 48,
+                    backgroundColor: _getAvatarColor(colorIndex),
+                  ),
                 ),
                 Positioned(
                   right: -2,
@@ -63,13 +68,7 @@ class ActivityListItem extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: Border.all(color: isDarkMode ? Colors.black : Colors.white, width: 2),
                     ),
-                    child: Center(
-                      child: Icon(
-                        _getActivityIcon(),
-                        color: Colors.white,
-                        size: 14,
-                      ),
-                    ),
+                    child: Center(child: Icon(_getActivityIcon(), color: Colors.white, size: 14)),
                   ),
                 ),
               ],
@@ -83,11 +82,7 @@ class ActivityListItem extends StatelessWidget {
                 children: [
                   Text(
                     _getActivityDescription(),
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: isDarkMode ? Colors.white : Colors.black,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: TextStyle(fontSize: 16, color: isDarkMode ? Colors.white : Colors.black, fontWeight: FontWeight.w500),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -95,10 +90,7 @@ class ActivityListItem extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       additionalInfo!,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700,
-                      ),
+                      style: TextStyle(fontSize: 14, color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -107,13 +99,7 @@ class ActivityListItem extends StatelessWidget {
               ),
             ),
 
-            Text(
-              time,
-              style: TextStyle(
-                fontSize: 12,
-                color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600,
-              ),
-            ),
+            Text(time, style: TextStyle(fontSize: 12, color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600)),
           ],
         ),
       ),
@@ -154,15 +140,7 @@ class ActivityListItem extends StatelessWidget {
   }
 
   Color _getAvatarColor(int index) {
-    final List<Color> colors = [
-      Colors.blue,
-      Colors.green,
-      Colors.orange,
-      Colors.purple,
-      Colors.teal,
-      Colors.pink,
-      Colors.indigo,
-    ];
+    final List<Color> colors = [Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.teal, Colors.pink, Colors.indigo];
     return colors[index % colors.length];
   }
 }

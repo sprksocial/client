@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+
 import '../../utils/app_colors.dart';
 import '../../utils/app_theme.dart';
+import '../common/user_avatar.dart';
 
 class SuggestedAccountCard extends StatelessWidget {
   final String username;
@@ -35,10 +37,9 @@ class SuggestedAccountCard extends StatelessWidget {
             Container(
               width: 48,
               height: 48,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(image: NetworkImage(avatarUrl), fit: BoxFit.cover),
-              ),
+              decoration: BoxDecoration(shape: BoxShape.circle),
+              clipBehavior: Clip.antiAlias,
+              child: UserAvatar(imageUrl: avatarUrl, username: username, size: 48),
             ),
             const SizedBox(width: 12),
 

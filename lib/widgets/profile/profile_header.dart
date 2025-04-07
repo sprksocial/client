@@ -1,10 +1,10 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 import 'package:sparksocial/screens/profile_screen.dart';
 import 'package:sparksocial/services/identity_service.dart';
+import 'package:sparksocial/widgets/common/user_avatar.dart';
 
 import '../../utils/app_colors.dart';
 import '../../utils/app_theme.dart';
@@ -107,18 +107,11 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                       child:
                           avatar != null && avatar.isNotEmpty
                               ? ClipOval(
-                                child: CachedNetworkImage(
+                                child: UserAvatar(
                                   imageUrl: avatar,
-                                  width: 90,
-                                  height: 90,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => const CircularProgressIndicator(),
-                                  errorWidget:
-                                      (context, url, error) => Icon(
-                                        FluentIcons.person_24_regular,
-                                        size: 40,
-                                        color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
-                                      ),
+                                  username: displayName.isNotEmpty ? displayName : handle,
+                                  size: 90,
+                                  borderWidth: 0,
                                 ),
                               )
                               : Icon(
