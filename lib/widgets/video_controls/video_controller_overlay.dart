@@ -15,8 +15,8 @@ class VideoControllerOverlay extends StatefulWidget {
   final bool isLiked;
 
   const VideoControllerOverlay({
-    super.key, 
-    required this.controller, 
+    super.key,
+    required this.controller,
     required this.onTap,
     this.onLikePressed,
     this.isLiked = false,
@@ -38,21 +38,13 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> with Ti
   bool _showHeart = false;
   Timer? _tapTimer;
   bool _isDoubleTap = false;
-  bool _isLiked = false;
 
   @override
   void initState() {
     super.initState();
 
-    _heartAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
-      vsync: this,
-    );
-    _heartAnimation = CurvedAnimation(
-      parent: _heartAnimationController,
-      curve: Curves.easeOutBack,
-    );
-
+    _heartAnimationController = AnimationController(duration: const Duration(milliseconds: 1200), vsync: this);
+    _heartAnimation = CurvedAnimation(parent: _heartAnimationController, curve: Curves.easeOutBack);
     _updateTimer = Timer.periodic(const Duration(milliseconds: 360), (timer) {
       if (mounted && !_isDragging) {
         setState(() {});
@@ -72,7 +64,7 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> with Ti
   void _handleTap() {
     // Cancel any existing timer
     _tapTimer?.cancel();
-    
+
     // Start a new timer
     _tapTimer = Timer(const Duration(milliseconds: 300), () {
       if (!_isDoubleTap && mounted) {
@@ -85,7 +77,7 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> with Ti
   void _handleDoubleTap() {
     _isDoubleTap = true;
     _tapTimer?.cancel();
-    
+
     // Always show heart animation
     setState(() {
       _showHeart = true;
@@ -217,23 +209,13 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> with Ti
           if (_showHeart)
             FadeTransition(
               opacity: Tween<double>(begin: 1.0, end: 0.0).animate(
-                CurvedAnimation(
-                  parent: _heartAnimationController,
-                  curve: const Interval(0.5, 1.0, curve: Curves.easeOut),
-                ),
+                CurvedAnimation(parent: _heartAnimationController, curve: const Interval(0.5, 1.0, curve: Curves.easeOut)),
               ),
               child: ScaleTransition(
                 scale: Tween<double>(begin: 0.0, end: 1.2).animate(
-                  CurvedAnimation(
-                    parent: _heartAnimationController,
-                    curve: const Interval(0.0, 0.5, curve: Curves.elasticOut),
-                  ),
+                  CurvedAnimation(parent: _heartAnimationController, curve: const Interval(0.0, 0.5, curve: Curves.elasticOut)),
                 ),
-                child: const Icon(
-                  FluentIcons.heart_24_filled,
-                  color: Colors.pink,
-                  size: 100,
-                ),
+                child: const Icon(FluentIcons.heart_24_filled, color: Colors.pink, size: 100),
               ),
             ),
 
