@@ -16,6 +16,12 @@ flutter precache --ios
 # Install Flutter dependencies.
 flutter pub get
 
+# Create .env file with required environment variables
+cat > .env << EOL
+VIDEO_SERVICE_URL=https://video.sprk.so
+SPRK_APPVIEW_URL=https://api.sprk.so
+EOL
+
 # Install CocoaPods using Homebrew.
 HOMEBREW_NO_AUTO_UPDATE=1 # disable homebrew's automatic updates.
 brew install cocoapods
