@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 import 'play_pause_controls.dart';
 import 'speed_indicator.dart';
@@ -10,26 +11,49 @@ import 'time_display.dart';
 class VideoControllerOverlay extends StatefulWidget {
   final VideoPlayerController controller;
   final VoidCallback onTap;
+  final VoidCallback? onLikePressed;
+  final bool isLiked;
 
-  const VideoControllerOverlay({super.key, required this.controller, required this.onTap});
+  const VideoControllerOverlay({
+    super.key, 
+    required this.controller, 
+    required this.onTap,
+    this.onLikePressed,
+    this.isLiked = false,
+  });
 
   @override
   State<VideoControllerOverlay> createState() => _VideoControllerOverlayState();
 }
 
-class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
+class _VideoControllerOverlayState extends State<VideoControllerOverlay> with TickerProviderStateMixin {
   bool _controlsVisible = false;
   bool _isSpeedUp = false;
   Timer? _hideTimer;
   Timer? _updateTimer;
   double _dragPosition = 0.0;
   bool _isDragging = false;
+  late AnimationController _heartAnimationController;
+  late Animation<double> _heartAnimation;
+  bool _showHeart = false;
+  Timer? _tapTimer;
+  bool _isDoubleTap = false;
+  bool _isLiked = false;
 
   @override
   void initState() {
     super.initState();
 
-    _updateTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+    _heartAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    );
+    _heartAnimation = CurvedAnimation(
+      parent: _heartAnimationController,
+      curve: Curves.easeOutBack,
+    );
+
+    _updateTimer = Timer.periodic(const Duration(milliseconds: 360), (timer) {
       if (mounted && !_isDragging) {
         setState(() {});
       }
@@ -40,7 +64,44 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
   void dispose() {
     _hideTimer?.cancel();
     _updateTimer?.cancel();
+    _tapTimer?.cancel();
+    _heartAnimationController.dispose();
     super.dispose();
+  }
+
+  void _handleTap() {
+    // Cancel any existing timer
+    _tapTimer?.cancel();
+    
+    // Start a new timer
+    _tapTimer = Timer(const Duration(milliseconds: 300), () {
+      if (!_isDoubleTap && mounted) {
+        _toggleControls();
+      }
+      _isDoubleTap = false;
+    });
+  }
+
+  void _handleDoubleTap() {
+    _isDoubleTap = true;
+    _tapTimer?.cancel();
+    
+    // Always show heart animation
+    setState(() {
+      _showHeart = true;
+    });
+    _heartAnimationController.reset();
+    _heartAnimationController.forward().then((_) {
+      if (mounted) {
+        setState(() {
+          _showHeart = false;
+        });
+      }
+    });
+
+    if (widget.onLikePressed != null && !widget.isLiked) {
+      widget.onLikePressed!();
+    }
   }
 
   void _toggleControls() {
@@ -142,7 +203,8 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
     final progressBarBottomPadding = bottomNavHeight + bottomSafeArea + 10;
 
     return GestureDetector(
-      onTap: _toggleControls,
+      onTap: _handleTap,
+      onDoubleTap: _handleDoubleTap,
       onLongPressStart: (_) => _handleSpeedUp(true),
       onLongPressEnd: (_) => _handleSpeedUp(false),
       child: Stack(
@@ -151,6 +213,29 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> {
           Container(color: Colors.transparent),
 
           Positioned(left: 10, bottom: 120, child: SpeedIndicator(isVisible: _isSpeedUp)),
+
+          if (_showHeart)
+            FadeTransition(
+              opacity: Tween<double>(begin: 1.0, end: 0.0).animate(
+                CurvedAnimation(
+                  parent: _heartAnimationController,
+                  curve: const Interval(0.5, 1.0, curve: Curves.easeOut),
+                ),
+              ),
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 0.0, end: 1.2).animate(
+                  CurvedAnimation(
+                    parent: _heartAnimationController,
+                    curve: const Interval(0.0, 0.5, curve: Curves.elasticOut),
+                  ),
+                ),
+                child: const Icon(
+                  FluentIcons.heart_24_filled,
+                  color: Colors.pink,
+                  size: 100,
+                ),
+              ),
+            ),
 
           if (_controlsVisible)
             AnimatedOpacity(

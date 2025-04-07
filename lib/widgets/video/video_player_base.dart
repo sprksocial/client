@@ -74,7 +74,7 @@ abstract class VideoPlayerBaseState<T extends VideoPlayerBase> extends PostItemB
     final currentController = videoController;
     if (currentController != null && isInitialized) {
       return [
-        VideoControllerOverlay(controller: currentController, onTap: () {}),
+        VideoControllerOverlay(controller: currentController, onLikePressed: widget.onLikePressed, isLiked: widget.isLiked, onTap: () {}),
       ];
     }
     return []; // Return empty list if not initialized
