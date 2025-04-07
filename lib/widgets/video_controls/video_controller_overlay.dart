@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 import 'play_pause_controls.dart';
 import 'speed_indicator.dart';
@@ -36,8 +36,10 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> with Ti
   late AnimationController _heartAnimationController;
   late Animation<double> _heartAnimation;
   bool _showHeart = false;
-  Timer? _tapTimer;
-  bool _isDoubleTap = false;
+
+  // Track taps more reliably
+  int _tapCount = 0;
+  Timer? _tapDebounceTimer;
 
   @override
   void initState() {
@@ -56,32 +58,37 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> with Ti
   void dispose() {
     _hideTimer?.cancel();
     _updateTimer?.cancel();
-    _tapTimer?.cancel();
+    _tapDebounceTimer?.cancel();
     _heartAnimationController.dispose();
     super.dispose();
   }
 
   void _handleTap() {
-    // Cancel any existing timer
-    _tapTimer?.cancel();
+    _tapCount++;
 
-    // Start a new timer
-    _tapTimer = Timer(const Duration(milliseconds: 300), () {
-      if (!_isDoubleTap && mounted) {
+    // Cancel any existing timer first
+    _tapDebounceTimer?.cancel();
+
+    _tapDebounceTimer = Timer(const Duration(milliseconds: 300), () {
+      if (_tapCount == 1) {
+        // Single tap - toggle controls
         _toggleControls();
+      } else if (_tapCount == 2) {
+        // Double tap - like action
+        _showLikeAnimation();
       }
-      _isDoubleTap = false;
+
+      // Reset tap count after processing
+      _tapCount = 0;
     });
   }
 
-  void _handleDoubleTap() {
-    _isDoubleTap = true;
-    _tapTimer?.cancel();
-
-    // Always show heart animation
+  void _showLikeAnimation() {
+    // Don't toggle controls for double tap
     setState(() {
       _showHeart = true;
     });
+
     _heartAnimationController.reset();
     _heartAnimationController.forward().then((_) {
       if (mounted) {
@@ -97,6 +104,9 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> with Ti
   }
 
   void _toggleControls() {
+    // Pass the single tap to parent if needed
+    widget.onTap();
+
     setState(() {
       _controlsVisible = !_controlsVisible;
       if (_controlsVisible) {
@@ -196,7 +206,7 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> with Ti
 
     return GestureDetector(
       onTap: _handleTap,
-      onDoubleTap: _handleDoubleTap,
+      // Remove separate onDoubleTap since we handle it in _handleTap
       onLongPressStart: (_) => _handleSpeedUp(true),
       onLongPressEnd: (_) => _handleSpeedUp(false),
       child: Stack(

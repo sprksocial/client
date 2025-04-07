@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+
 import '../post/post_item_base.dart';
 import '../video_controls/video_controller_overlay.dart';
 
@@ -63,8 +64,14 @@ abstract class VideoPlayerBaseState<T extends VideoPlayerBase> extends PostItemB
     // Only play if initialized and not showing comments (handled by base toggleComments logic)
     // Also check if controller exists and is initialized
     if (isInitialized && !showComments && videoController?.value.isInitialized == true) {
-       videoController?.play();
+      videoController?.play();
     }
+  }
+
+  /// Handle tap on the video overlay
+  void _handleVideoTap() {
+    // This is intentionally empty as the VideoControllerOverlay now handles toggles internally
+    // This is just used to receive tap notification if needed in the future
   }
 
   /// Override to add the VideoControllerOverlay on top of the video content.
@@ -74,7 +81,12 @@ abstract class VideoPlayerBaseState<T extends VideoPlayerBase> extends PostItemB
     final currentController = videoController;
     if (currentController != null && isInitialized) {
       return [
-        VideoControllerOverlay(controller: currentController, onLikePressed: widget.onLikePressed, isLiked: widget.isLiked, onTap: () {}),
+        VideoControllerOverlay(
+          controller: currentController,
+          onLikePressed: widget.onLikePressed,
+          isLiked: widget.isLiked,
+          onTap: _handleVideoTap,
+        ),
       ];
     }
     return []; // Return empty list if not initialized
