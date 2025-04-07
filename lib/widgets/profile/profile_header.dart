@@ -175,6 +175,33 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                   ),
                 ),
               ],
+
+              if (widget.profileData['source'] != null) ...[
+                const SizedBox(width: 8),
+                Tooltip(
+                  message: widget.profileData['source'] == 'spark' ? 'Spark Profile' : 'Bluesky Profile',
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(42),
+                    ),
+                    child:
+                        widget.profileData['source'] == 'spark'
+                            ? SvgPicture.asset(
+                              'assets/images/sprk.svg',
+                              width: 20,
+                              height: 20,
+                              colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+                            )
+                            : SvgPicture.asset(
+                              'assets/images/bsky.svg',
+                              width: 20,
+                              height: 20,
+                              colorFilter: const ColorFilter.mode(Color(0xFF0084FF), BlendMode.srcIn),
+                            ),
+                  ),
+                ),
+              ],
             ],
           ),
 

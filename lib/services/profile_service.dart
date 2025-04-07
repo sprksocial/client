@@ -22,7 +22,7 @@ class ProfileService extends ChangeNotifier {
     try {
       final sprkProfile = await getProfileFullSprk(did);
       if (sprkProfile != null) {
-        return sprkProfile;
+        return {...sprkProfile, 'source': 'spark'};
       }
       return null;
     } catch (e) {
@@ -37,7 +37,7 @@ class ProfileService extends ChangeNotifier {
     try {
       final bskyProfile = await getProfileFullBsky(did);
       if (bskyProfile != null) {
-        return bskyProfile;
+        return {...bskyProfile, 'source': 'bluesky'};
       }
     } catch (e) {
       // Both failed, return null

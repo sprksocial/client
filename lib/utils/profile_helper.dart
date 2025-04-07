@@ -15,6 +15,7 @@ class ProfileHelper {
       'postsCount': profileData['postsCount'] ?? profileData['posts_count'] ?? profileData['postCount'] ?? 0,
       'followersCount': profileData['followersCount'] ?? profileData['followers_count'] ?? profileData['followerCount'] ?? 0,
       'followingCount': profileData['followingCount'] ?? profileData['following_count'] ?? profileData['followsCount'] ?? 0,
+      'source': profileData['source'],
     };
   }
 }
