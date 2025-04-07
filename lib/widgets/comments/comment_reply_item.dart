@@ -1,6 +1,6 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:sparksocial/widgets/common/user_avatar.dart';
 
 import '../../utils/app_colors.dart';
 
@@ -57,56 +57,20 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
   }
 
   Widget _buildAvatar() {
-    if (widget.profileImageUrl != null && widget.profileImageUrl!.isNotEmpty) {
-      return Container(
-        width: 28,
-        height: 28,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 1),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: CachedNetworkImage(
-          imageUrl: widget.profileImageUrl!,
-          fit: BoxFit.cover,
-          placeholder:
-              (context, url) => Container(
-                color: AppColors.accent.withAlpha(204),
-                child: Center(
-                  child: Text(
-                    widget.username.isNotEmpty ? widget.username[0].toUpperCase() : '?',
-                    style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                  ),
-                ),
-              ),
-          errorWidget:
-              (context, url, error) => Container(
-                color: AppColors.accent.withAlpha(204),
-                child: Center(
-                  child: Text(
-                    widget.username.isNotEmpty ? widget.username[0].toUpperCase() : '?',
-                    style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 12),
-                  ),
-                ),
-              ),
-        ),
-      );
-    }
-
-    // Fallback to the circle with initial if no profile image
     return Container(
       width: 28,
       height: 28,
       decoration: BoxDecoration(
-        color: AppColors.accent.withAlpha(204),
         shape: BoxShape.circle,
         border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 1),
       ),
-      child: Center(
-        child: Text(
-          widget.username.isNotEmpty ? widget.username[0].toUpperCase() : '?',
-          style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 12),
-        ),
+      clipBehavior: Clip.antiAlias,
+      child: UserAvatar(
+        imageUrl: widget.profileImageUrl,
+        username: widget.username,
+        size: 28,
+        borderWidth: 0,
+        backgroundColor: AppColors.accent.withAlpha(204),
       ),
     );
   }
