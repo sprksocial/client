@@ -56,4 +56,4 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
           packageName: so.sprk.app
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
-          track: qa
+          track: internal
