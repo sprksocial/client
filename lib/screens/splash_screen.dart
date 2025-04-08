@@ -68,13 +68,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Widget _buildVideoPlayer() {
-    final size = MediaQuery.of(context).size;
     final videoSize = _videoController.value.size;
-
-    final double scale =
-        size.width / videoSize.width > size.height / videoSize.height
-            ? size.width / videoSize.width
-            : size.height / videoSize.height;
 
     return SizedBox.expand(
       child: FittedBox(

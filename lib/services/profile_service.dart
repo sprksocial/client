@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../config/app_config.dart';
+import '../models/profile.dart';
 import 'auth_service.dart';
 
 class ProfileService extends ChangeNotifier {
@@ -13,19 +14,50 @@ class ProfileService extends ChangeNotifier {
 
   ProfileService(this._authService);
 
-  Future<Map<String, dynamic>?> getProfile(String did) async {
+  Future<Profile?> getProfile(String did) async {
+    debugPrint('getProfile called with did: $did');
     if (!_authService.isAuthenticated) {
+      debugPrint('Not authenticated, returning null');
       return null;
+    }
+
+    // Check for existing follow first
+    String? existingFollowUri;
+    try {
+      debugPrint('Checking existing follows...');
+      final existingFollows = await _authService.atproto!.repo.listRecords(
+        repo: _authService.session!.did,
+        collection: NSID.parse('so.sprk.graph.follow'),
+      );
+
+      // Find the follow record for this DID if it exists
+      for (final record in existingFollows.data.records) {
+        if (record.value['subject'] == did) {
+          existingFollowUri = record.uri.toString();
+          break;
+        }
+      }
+      debugPrint('Existing follows check completed');
+    } catch (e) {
+      debugPrint('Error checking existing follows: $e');
     }
 
     // Try Spark profile first
     try {
+      debugPrint('Attempting to fetch Spark profile...');
       final sprkProfile = await getProfileFullSprk(did);
+      debugPrint('Spark profile fetch result: ${sprkProfile != null ? 'success' : 'null'}');
       if (sprkProfile != null) {
-        return {...sprkProfile, 'source': 'spark'};
+        final viewer = sprkProfile['viewer'] as Map<String, dynamic>?;
+        return Profile.fromSparkProfile({
+          'actor': sprkProfile,
+          'viewer': {...?viewer, 'following': existingFollowUri},
+          'source': 'spark',
+        });
       }
       return null;
     } catch (e) {
+      debugPrint('Error fetching Spark profile: $e');
       // Only continue to Bluesky if it's a 404-like error
       final errorMsg = e.toString().toLowerCase();
       if (!errorMsg.contains('404')) {
@@ -37,7 +69,15 @@ class ProfileService extends ChangeNotifier {
     try {
       final bskyProfile = await getProfileFullBsky(did);
       if (bskyProfile != null) {
-        return {...bskyProfile, 'source': 'bluesky'};
+        final profile = Profile.fromBlueskyActor(bskyProfile);
+        final counts = bskyProfile.toJson();
+        return profile.withCounts({
+          'followersCount': counts['followersCount'] as int? ?? 0,
+          'followingCount': counts['followsCount'] as int? ?? 0,
+          'postsCount': counts['postsCount'] as int? ?? 0,
+          'isFollowing': existingFollowUri != null,
+          'followUri': existingFollowUri,
+        });
       }
     } catch (e) {
       // Both failed, return null
@@ -48,7 +88,7 @@ class ProfileService extends ChangeNotifier {
     return null;
   }
 
-  Future<Map<String, dynamic>?> getProfileFullBsky(String did) async {
+  Future<ActorProfile?> getProfileFullBsky(String did) async {
     if (!_authService.isAuthenticated) {
       return null;
     }
@@ -56,29 +96,21 @@ class ProfileService extends ChangeNotifier {
     try {
       final bsky = Bluesky.fromSession(_authService.session!);
       final response = await bsky.actor.getProfile(actor: did);
-      final profile = response.data;
-
-      return {
-        'did': profile.did,
-        'handle': profile.handle,
-        'displayName': profile.displayName ?? profile.handle,
-        'description': profile.description ?? '',
-        'avatar': profile.avatar ?? '',
-        'followersCount': profile.followersCount,
-        'followingCount': profile.followsCount,
-        'postsCount': profile.postsCount,
-      };
+      return response.data;
     } catch (e) {
       throw Exception('Failed to fetch profile: $e');
     }
   }
 
   Future<Map<String, dynamic>?> getProfileFullSprk(String did) async {
+    debugPrint('getProfileFullSprk called with did: $did');
     if (!_authService.isAuthenticated) {
+      debugPrint('getProfileFullSprk: Not authenticated, returning null');
       return null;
     }
 
     try {
+      debugPrint('getProfileFullSprk: Making API request...');
       final profileRes = await _authService.atproto!.get(
         NSID.parse('so.sprk.actor.getProfile'),
         parameters: {'actor': did},
@@ -86,24 +118,20 @@ class ProfileService extends ChangeNotifier {
         to: (jsonMap) => jsonMap,
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
+      debugPrint('getProfileFullSprk: API request completed');
 
       final profile = profileRes.data as Map<String, dynamic>?;
+      debugPrint('getProfileFullSprk: Profile data: ${profile != null ? 'exists' : 'null'}');
+      if (profile == null) return null;
 
-      if (profile == null) {
-        return null;
+      // Ensure we have the viewer information
+      if (!profile.containsKey('viewer')) {
+        profile['viewer'] = {};
       }
 
-      return {
-        'did': profile['did'],
-        'handle': profile['handle'],
-        'displayName': profile['displayName'],
-        'description': profile['description'],
-        'avatar': profile['avatar'],
-        'followersCount': profile['followersCount'],
-        'followingCount': profile['followingCount'],
-        'postsCount': profile['postsCount'],
-      };
+      return profile;
     } catch (e) {
+      debugPrint('getProfileFullSprk: Error occurred: $e');
       throw Exception('Failed to fetch profile: $e');
     }
   }
@@ -114,6 +142,25 @@ class ProfileService extends ChangeNotifier {
     }
 
     try {
+      // Check for existing follow first
+      String? existingFollowUri;
+      try {
+        final existingFollows = await _authService.atproto!.repo.listRecords(
+          repo: _authService.session!.did,
+          collection: NSID.parse('so.sprk.graph.follow'),
+        );
+
+        // Find the follow record for this DID if it exists
+        for (final record in existingFollows.data.records) {
+          if (record.value['subject'] == did) {
+            existingFollowUri = record.uri.toString();
+            break;
+          }
+        }
+      } catch (e) {
+        debugPrint('Error checking existing follows: $e');
+      }
+
       final pdsUrl = _authService.atproto?.service;
       if (pdsUrl == null) {
         return null;
@@ -127,6 +174,10 @@ class ProfileService extends ChangeNotifier {
       }
 
       final data = json.decode(response.body);
+      // Add follow status to the response
+      if (data is Map<String, dynamic>) {
+        data['viewer'] = {'following': existingFollowUri};
+      }
       return data;
     } catch (e) {
       throw Exception('Failed to fetch profile videos: $e');
@@ -139,9 +190,32 @@ class ProfileService extends ChangeNotifier {
     }
 
     try {
+      // Check for existing follow first
+      String? existingFollowUri;
+      try {
+        final existingFollows = await _authService.atproto!.repo.listRecords(
+          repo: _authService.session!.did,
+          collection: NSID.parse('so.sprk.graph.follow'),
+        );
+
+        // Find the follow record for this DID if it exists
+        for (final record in existingFollows.data.records) {
+          if (record.value['subject'] == did) {
+            existingFollowUri = record.uri.toString();
+            break;
+          }
+        }
+      } catch (e) {
+        debugPrint('Error checking existing follows: $e');
+      }
+
       final bsky = Bluesky.fromSession(_authService.session!);
       final response = await bsky.feed.getAuthorFeed(actor: did, filter: FeedFilter.postsWithVideo);
       final feed = response.data.toJson();
+      // Add follow status to the response
+      if (feed is Map<String, dynamic>) {
+        feed['viewer'] = {'following': existingFollowUri};
+      }
       return feed;
     } catch (e) {
       throw Exception('Failed to fetch profile: $e');

@@ -5,20 +5,21 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
+import '../models/profile.dart';
 import '../services/auth_service.dart';
 import '../services/profile_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
-import '../utils/profile_helper.dart';
 import '../widgets/profile/early_supporter_sheet.dart';
 import '../widgets/profile/profile_header.dart';
 import '../widgets/profile/profile_menu_sheet.dart';
 import '../widgets/profile/profile_tab_content.dart';
 import '../widgets/profile/profile_tabs.dart';
 import 'auth_prompt_screen.dart';
+import '../services/actions_service.dart';
 
 class ProfileScreen extends StatefulWidget {
-  final String? did; // DID of the profile to show, null means current user
+  final String? did;
 
   const ProfileScreen({this.did, super.key});
 
@@ -31,7 +32,7 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
   bool _showAuthPrompt = false;
   bool _isLoading = false;
   String? _error;
-  Map<String, dynamic>? _profileData;
+  Profile? _profile;
   bool _isEarlySupporter = false;
 
   // Keep this screen in memory when navigating
@@ -77,19 +78,19 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
     setState(() {
       _isLoading = true;
       _error = null;
-      _profileData = null;
+      _profile = null;
     });
 
     try {
       final profileService = Provider.of<ProfileService>(context, listen: false);
 
       // Load profile data first
-      final profileData = await profileService.getProfile(targetDid);
+      final profile = await profileService.getProfile(targetDid);
 
       if (!mounted) return;
 
       setState(() {
-        _profileData = profileData;
+        _profile = profile;
         _isLoading = false;
       });
 
@@ -184,9 +185,51 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
   }
 
   bool _isCurrentUser() {
-    if (_profileData == null) return false;
+    if (_profile == null) return false;
     final authService = Provider.of<AuthService>(context, listen: false);
-    return authService.isAuthenticated && authService.session?.did == _profileData!['did'];
+    return authService.isAuthenticated && authService.session?.did == _profile!.did;
+  }
+
+  Future<void> _handleFollow() async {
+    if (!mounted || _profile == null) return;
+
+    final actionsService = Provider.of<ActionsService>(context, listen: false);
+
+    try {
+      // Toggle follow status
+      final newFollowUri = await actionsService.toggleFollow(_profile!.did, _profile!.followUri);
+
+      if (!mounted) return;
+
+      // Update the profile data with new follow status
+      setState(() {
+        _profile = Profile(
+          username: _profile!.username,
+          did: _profile!.did,
+          displayName: _profile!.displayName,
+          description: _profile!.description,
+          avatarUrl: _profile!.avatarUrl,
+          bannerUrl: _profile!.bannerUrl,
+          followersCount: _profile!.followersCount + (newFollowUri != null ? 1 : -1),
+          followingCount: _profile!.followingCount,
+          postsCount: _profile!.postsCount,
+          isSprk: _profile!.isSprk,
+          isFollowing: newFollowUri != null,
+          followUri: newFollowUri,
+        );
+      });
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(newFollowUri != null ? 'Followed successfully' : 'Unfollowed successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red));
+    }
   }
 
   @override
@@ -219,18 +262,17 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
       return _buildErrorScreen(context, isDarkMode);
     }
 
-    if (_profileData == null) {
+    if (_profile == null) {
       return _buildProfileNotFoundScreen(context, isDarkMode);
     }
 
     final isCurrentUser = _isCurrentUser();
-    final extractedProfileData = ProfileHelper.extractProfileData(_profileData!);
 
     final tabContent = ProfileTabContent(
       selectedIndex: _selectedTabIndex,
       isAuthenticated: isAuthenticated,
       onLoginPressed: _handleLogin,
-      did: _profileData!['did'] as String?,
+      did: _profile!.did,
     );
 
     return Scaffold(
@@ -238,7 +280,7 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          extractedProfileData['name'] ?? extractedProfileData['handle'] ?? 'Profile',
+          _profile!.displayName ?? _profile!.username,
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.getTextColor(context)),
         ),
         backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
@@ -261,13 +303,13 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
             // Profile header
             SliverToBoxAdapter(
               child: ProfileHeader(
-                profileData: extractedProfileData,
+                profile: _profile!,
                 isCurrentUser: isCurrentUser,
                 isEarlySupporter: _isEarlySupporter,
                 onEarlySupporterTap: () => _showEarlySupporterInfo(context),
                 onEditTap: () => _checkAuthAndProceed(() => debugPrint('Edit profile tapped')),
                 onShareTap: () => debugPrint('Share profile tapped'),
-                onFollowTap: () => _checkAuthAndProceed(() => debugPrint('Follow tapped')),
+                onFollowTap: () => _checkAuthAndProceed(_handleFollow),
                 onSettingsTap: _handleSettingsTap,
               ),
             ),

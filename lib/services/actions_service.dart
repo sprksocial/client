@@ -207,4 +207,76 @@ class ActionsService extends ChangeNotifier {
     }
     return uploadedImageMaps;
   }
+
+  Future<XRPCResponse<atp.StrongRef>> followUser(String did) async {
+    final authAtProto = _atproto;
+    if (authAtProto == null || authAtProto.session == null) {
+      throw Exception('AtProto not initialized');
+    }
+
+    // Check if already following
+    try {
+      // Query existing follow records
+      final existingFollows = await authAtProto.repo.listRecords(
+        repo: authAtProto.session!.did,
+        collection: NSID.parse('so.sprk.graph.follow'),
+      );
+
+      // Check if we're already following this specific user
+      for (final record in existingFollows.data.records) {
+        if (record.value['subject'] == did) {
+          throw Exception('Already following this user');
+        }
+      }
+
+      // If not already following, create new follow record
+      final followRecord = {
+        "\$type": "so.sprk.graph.follow",
+        "subject": did,
+        "createdAt": DateTime.now().toUtc().toIso8601String(),
+      };
+
+      final response = await authAtProto.repo.createRecord(collection: NSID.parse('so.sprk.graph.follow'), record: followRecord);
+
+      if (response.status.code != 200) {
+        throw Exception('Failed to follow user: ${response.status.code} ${response.data}');
+      }
+
+      notifyListeners();
+      return response;
+    } catch (e) {
+      debugPrint('Error in followUser: $e');
+      rethrow;
+    }
+  }
+
+  Future<XRPCResponse<EmptyData>> unfollowUser(String followUri) async {
+    final authAtProto = _atproto;
+    if (authAtProto == null || authAtProto.session == null) {
+      throw Exception('AtProto not initialized');
+    }
+
+    final response = await authAtProto.repo.deleteRecord(uri: AtUri.parse(followUri));
+    if (response.status.code != 200) {
+      throw Exception('Failed to unfollow user: ${response.status.code} ${response.data}');
+    }
+
+    notifyListeners();
+    return response;
+  }
+
+  Future<String?> toggleFollow(String did, String? followUri) async {
+    try {
+      if (followUri != null) {
+        await unfollowUser(followUri);
+        return null; // User is now unfollowed
+      } else {
+        final response = await followUser(did);
+        return response.data.uri.toString();
+      }
+    } catch (e) {
+      debugPrint('Error toggling follow: $e');
+      rethrow;
+    }
+  }
 }
