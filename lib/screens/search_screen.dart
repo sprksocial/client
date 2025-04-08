@@ -1,5 +1,6 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
@@ -10,6 +11,9 @@ import '../widgets/search/sound_card.dart';
 import '../widgets/search/story_circle.dart';
 import '../widgets/search/suggested_account_card.dart';
 import '../widgets/search/trending_video_card.dart';
+import '../services/actions_service.dart';
+import '../services/profile_service.dart';
+import '../screens/profile_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -78,6 +82,40 @@ class _SearchScreenState extends State<SearchScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handleFollow(String did) async {
+    if (!mounted) return;
+
+    final actionsService = Provider.of<ActionsService>(context, listen: false);
+    final profileService = Provider.of<ProfileService>(context, listen: false);
+
+    try {
+      // Get the current profile data to check if we're already following
+      final currentProfile = await profileService.getProfile(did);
+      if (currentProfile == null) {
+        throw Exception('Could not fetch profile data');
+      }
+
+      // Get the follow URI if we're following
+      final followUri = currentProfile.followUri;
+
+      // Toggle follow status
+      final newFollowUri = await actionsService.toggleFollow(did, followUri);
+
+      if (!mounted) return;
+
+      // Show success message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(newFollowUri != null ? 'Followed successfully' : 'Unfollowed successfully'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red));
+    }
   }
 
   @override
@@ -213,8 +251,11 @@ class _SearchScreenState extends State<SearchScreen> {
                           username: account['username'],
                           handle: account['handle'],
                           avatarUrl: account['avatarUrl'],
-                          onTap: () {},
-                          onFollowTap: () {},
+                          onTap: () {
+                            // Navigate to profile
+                            Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen(did: account['did'])));
+                          },
+                          onFollowTap: () => _handleFollow(account['did']),
                         ),
                       );
                     },

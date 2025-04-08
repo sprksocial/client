@@ -6,6 +6,7 @@ import 'package:sparksocial/screens/profile_screen.dart';
 import 'package:sparksocial/services/identity_service.dart';
 import 'package:sparksocial/widgets/common/user_avatar.dart';
 
+import '../../models/profile.dart';
 import '../../utils/app_colors.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/formatters/text_formatter.dart';
@@ -14,7 +15,7 @@ import 'profile_links.dart';
 import 'profile_stat_item.dart';
 
 class ProfileHeader extends StatefulWidget {
-  final Map<String, dynamic> profileData;
+  final Profile profile;
   final bool isCurrentUser;
   final bool isEarlySupporter;
   final VoidCallback onEarlySupporterTap;
@@ -25,7 +26,7 @@ class ProfileHeader extends StatefulWidget {
 
   const ProfileHeader({
     super.key,
-    required this.profileData,
+    required this.profile,
     required this.isCurrentUser,
     this.isEarlySupporter = false,
     required this.onEarlySupporterTap,
@@ -72,14 +73,14 @@ class _ProfileHeaderState extends State<ProfileHeader> {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
 
-    final displayName = widget.profileData['displayName'] ?? '';
-    final handle = widget.profileData['handle'] ?? '';
-    final description = widget.profileData['description'] ?? '';
-    final avatar = widget.profileData['avatar'];
+    final displayName = widget.profile.displayName ?? '';
+    final handle = widget.profile.username;
+    final description = widget.profile.description ?? '';
+    final avatar = widget.profile.avatarUrl;
 
-    final postsCount = TextFormatter.formatCount(widget.profileData['postsCount']);
-    final followersCount = TextFormatter.formatCount(widget.profileData['followersCount']);
-    final followingCount = TextFormatter.formatCount(widget.profileData['followingCount']);
+    final postsCount = TextFormatter.formatCount(widget.profile.postsCount);
+    final followersCount = TextFormatter.formatCount(widget.profile.followersCount);
+    final followingCount = TextFormatter.formatCount(widget.profile.followingCount);
 
     final List<String> links = TextFormatter.extractUrls(description);
 
@@ -176,29 +177,19 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 ),
               ],
 
-              if (widget.profileData['source'] != null) ...[
+              if (widget.profile.isSprk) ...[
                 const SizedBox(width: 8),
                 Tooltip(
-                  message: widget.profileData['source'] == 'spark' ? 'Spark Profile' : 'Bluesky Profile',
+                  message: 'Spark Profile',
                   child: Container(
                     padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(42),
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(42)),
+                    child: SvgPicture.asset(
+                      'assets/images/sprk.svg',
+                      width: 20,
+                      height: 20,
+                      colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
                     ),
-                    child:
-                        widget.profileData['source'] == 'spark'
-                            ? SvgPicture.asset(
-                              'assets/images/sprk.svg',
-                              width: 20,
-                              height: 20,
-                              colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
-                            )
-                            : SvgPicture.asset(
-                              'assets/images/bsky.svg',
-                              width: 20,
-                              height: 20,
-                              colorFilter: const ColorFilter.mode(Color(0xFF0084FF), BlendMode.srcIn),
-                            ),
                   ),
                 ),
               ],
@@ -234,6 +225,28 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 //   child: ProfileActionButton(label: 'Edit', onPressed: widget.onEditTap, isPrimary: true, isOutlined: false),
                 // ),
                 const SizedBox(width: 8),
+              ] else ...[
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: 36),
+                    child: ElevatedButton(
+                      onPressed: widget.onFollowTap,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: widget.profile.isFollowing ? AppTheme.getNavBackgroundColor(context) : AppColors.primary,
+                        foregroundColor: AppTheme.getTextColor(context),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          side: widget.profile.isFollowing ? BorderSide(color: AppTheme.getTextColor(context)) : BorderSide.none,
+                        ),
+                      ),
+                      child: Text(
+                        widget.profile.isFollowing ? 'Following' : 'Follow',
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ),
               ],
 
               // Expanded(
