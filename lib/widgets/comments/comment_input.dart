@@ -51,7 +51,6 @@ class _CommentInputState extends State<CommentInput> {
   List<XFile> _selectedImages = []; // State for selected images
   bool _canSubmit = false;
   bool _isPosting = false;
-  bool _isUploadingImages = false; // State for image upload phase
 
   @override
   void initState() {
@@ -153,7 +152,6 @@ class _CommentInputState extends State<CommentInput> {
 
     setState(() {
       _isPosting = true; // Set posting state (covers text + image upload)
-      _isUploadingImages = imagesToUpload.isNotEmpty; // Specifically track image upload phase
     });
 
     try {
@@ -193,7 +191,6 @@ class _CommentInputState extends State<CommentInput> {
       if (mounted) {
         setState(() {
           _isPosting = false;
-          _isUploadingImages = false; // Ensure this is reset
         });
       }
     }

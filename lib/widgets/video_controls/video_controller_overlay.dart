@@ -34,7 +34,6 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> with Ti
   double _dragPosition = 0.0;
   bool _isDragging = false;
   late AnimationController _heartAnimationController;
-  late Animation<double> _heartAnimation;
   bool _showHeart = false;
 
   // Track taps more reliably
@@ -46,7 +45,6 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> with Ti
     super.initState();
 
     _heartAnimationController = AnimationController(duration: const Duration(milliseconds: 1200), vsync: this);
-    _heartAnimation = CurvedAnimation(parent: _heartAnimationController, curve: Curves.easeOutBack);
     _updateTimer = Timer.periodic(const Duration(milliseconds: 360), (timer) {
       if (mounted && !_isDragging) {
         setState(() {});

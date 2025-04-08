@@ -5,9 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
-import '../services/auth_service.dart';
 import '../services/upload_service.dart';
-import '../services/video_service.dart';
 import '../widgets/video_review/video_thumbnail.dart';
 
 class VideoReviewScreen extends StatefulWidget {
@@ -60,7 +58,6 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
     });
 
     try {
-      final videoService = VideoService(Provider.of<AuthService>(context, listen: false));
       final uploadService = Provider.of<UploadService>(context, listen: false);
 
       // Register a new upload task
@@ -71,10 +68,6 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
       if (mounted) {
         Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
       }
-
-      // Process the video in the background
-      final processedVideo = await videoService.processVideo(widget.videoPath);
-      final postRef = await videoService.postVideo(processedVideo?['blobRef'], _descriptionController.text);
 
       // Mark task as completed
       uploadService.completeTask(taskId);

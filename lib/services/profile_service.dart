@@ -213,9 +213,7 @@ class ProfileService extends ChangeNotifier {
       final response = await bsky.feed.getAuthorFeed(actor: did, filter: FeedFilter.postsWithVideo);
       final feed = response.data.toJson();
       // Add follow status to the response
-      if (feed is Map<String, dynamic>) {
-        feed['viewer'] = {'following': existingFollowUri};
-      }
+      feed['viewer'] = {'following': existingFollowUri};
       return feed;
     } catch (e) {
       throw Exception('Failed to fetch profile: $e');

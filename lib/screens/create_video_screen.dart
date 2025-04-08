@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 
 import '../services/auth_service.dart';
 import '../services/camera_service.dart';
-import '../services/video_service.dart';
 import '../widgets/camera/camera_controls.dart';
 import '../widgets/camera/camera_view.dart';
 import '../widgets/camera/mode_selector.dart';
@@ -26,7 +25,6 @@ class CreateVideoScreen extends StatefulWidget {
 
 class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindingObserver {
   final CameraService _cameraService = CameraService();
-  late final VideoService _videoService;
   CameraMode _mode = CameraMode.video;
   bool _isRecording = false;
   double _recordingProgress = 0.0;
@@ -42,7 +40,6 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _videoService = VideoService(Provider.of<AuthService>(context, listen: false));
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
         _initializeCamera();
