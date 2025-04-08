@@ -27,7 +27,7 @@ class ProfileActionButton extends StatefulWidget {
     this.showFollowButton = true,
     this.isFollowing = false,
     this.followButtonBottomOffset = 8.0,
-    this.followButtonRightOffset = 12.0,
+    this.followButtonRightOffset = 13.0,
     this.verticalOffset = -20.0,
     this.debugHitboxes = true,
   });
