@@ -38,14 +38,17 @@ jobs:
           echo "VIDEO_SERVICE_URL=${{ secrets.VIDEO_SERVICE_URL }}" >> .env
           echo "SPRK_APPVIEW_URL=${{ secrets.SPRK_APPVIEW_URL }}" >> .env
 
+      - name: Configure Keystore
+        run: |
+          echo "storeFile=/home/runner/work/_temp/keystore/upload_key.jks" >> key.properties
+          echo "storePassword=${{ secrets.SIGNING_STORE_PASSWORD }}" >> key.properties
+          echo "keyAlias=${{ secrets.SIGNING_KEY_ALIAS }}" >> key.properties
+          echo "keyPassword=${{ secrets.SIGNING_KEY_PASSWORD }}" >> key.properties
+        working-directory: android
+
       - name: Build PlayStore AAB
         run: |
-          flutter build appbundle --release
-        env:
-          SIGNING_KEY_PATH: "/home/runner/work/_temp/keystore/upload_key.jks"
-          SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
-          SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
-          SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+          flutter build appbundle
 
       - name: Upload AAB to PlayStore
         uses: r0adkll/upload-google-play@v1
