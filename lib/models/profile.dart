@@ -43,8 +43,8 @@ class Profile {
       followingCount: 0,
       postsCount: 0,
       isSprk: false,
-      isFollowing: actor.viewer?.following != null,
-      followUri: actor.viewer?.following?.toString(),
+      isFollowing: actor.viewer.following != null,
+      followUri: actor.viewer.following?.toString(),
     );
   }
 

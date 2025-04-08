@@ -25,8 +25,6 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
   final ScrollController _scrollController = ScrollController();
   // --- Pagination: You need to pass limit/offset to your service methods ---
   String? _cursor; // Use cursor for pagination if API supports it
-  final int _pageSize = 15; // Number of videos to load per page
-
 
   @override
   bool get wantKeepAlive => true;
@@ -36,8 +34,9 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
     super.initState();
     // Use WidgetsBinding to ensure context is available for Provider
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) { // Check if mounted before accessing context
-         _loadInitialVideos();
+      if (mounted) {
+        // Check if mounted before accessing context
+        _loadInitialVideos();
       }
     });
     _scrollController.addListener(_scrollListener);
@@ -108,15 +107,13 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
       }
 
       // Example using cursor (preferred for Bluesky-like APIs):
-      final resultBsky = await profileService.getProfileVideosBsky(
-        targetDid,
-      );
+      final resultBsky = await profileService.getProfileVideosBsky(targetDid);
       // Assuming Sprk doesn't have pagination or uses a different method? Adjust as needed.
       // If loading more, maybe skip Sprk or handle its pagination separately.
-      final resultSprk = isLoadingMore
-          ? null // Don't re-fetch Sprk when loading more Bsky, unless Sprk also paginates
-          : await profileService.getProfileVideosSprk(targetDid);
-
+      final resultSprk =
+          isLoadingMore
+              ? null // Don't re-fetch Sprk when loading more Bsky, unless Sprk also paginates
+              : await profileService.getProfileVideosSprk(targetDid);
 
       if (!mounted) return;
 
@@ -125,19 +122,23 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
       String? nextCursor;
 
       if (resultBsky != null) {
-         // Filter nulls AT THE SOURCE
-        fetchedBskyVideos = (resultBsky['feed'] as List<dynamic>?)
+        // Filter nulls AT THE SOURCE
+        fetchedBskyVideos =
+            (resultBsky['feed'] as List<dynamic>?)
                 ?.where((item) => item != null) // Filter nulls here!
-                .toList() ?? [];
+                .toList() ??
+            [];
         nextCursor = resultBsky['cursor'] as String?; // Get the cursor for the next page
       }
 
       // Only add Sprk videos on the initial load if not paginating them
       if (!isLoadingMore && resultSprk != null) {
         // Filter nulls AT THE SOURCE
-        fetchedSprkVideos = (resultSprk['feed'] as List<dynamic>?)
+        fetchedSprkVideos =
+            (resultSprk['feed'] as List<dynamic>?)
                 ?.where((item) => item != null) // Filter nulls here!
-                .toList() ?? [];
+                .toList() ??
+            [];
       }
 
       // Combine non-null results
@@ -155,12 +156,12 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
         _hasMoreVideos = _cursor != null && _cursor!.isNotEmpty; // More videos if there's a next cursor
         // OR based on count if no cursor: _hasMoreVideos = fetchedBskyVideos.length == _pageSize;
 
-
         _isLoading = false;
         _isLoadingMore = false;
         _error = null; // Clear previous error on success
       });
-    } catch (e, stackTrace) { // Catch stackTrace for better debugging
+    } catch (e, stackTrace) {
+      // Catch stackTrace for better debugging
       if (!mounted) return;
 
       setState(() {
@@ -173,16 +174,13 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
     }
   }
 
-
   void _openVideoPlayer(
-      int indexInFilteredList, // Index within the validVideos list
-      Map<String, dynamic> videoData, // Pass the actual video data
-      List<Map<String, dynamic>> allValidVideos // Pass the filtered list
-      ) {
-
+    int indexInFilteredList, // Index within the validVideos list
+    Map<String, dynamic> videoData, // Pass the actual video data
+    List<Map<String, dynamic>> allValidVideos, // Pass the filtered list
+  ) {
     // --- Extract data directly from videoData ---
     // No need to access _videos[index] anymore
-    final thumbnailUrl = videoData['post']?['embed']?['thumbnail'] as String? ?? '';
     final playlistUrl = videoData['post']?['embed']?['playlist'] as String? ?? '';
     final username = videoData['post']?['author']?['handle'] as String? ?? 'username';
     final authorDid = videoData['post']?['author']?['did'] as String?;
@@ -210,7 +208,6 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
 
     final isSprk = playlistUrl.contains('sprk.so');
     // --- End data extraction ---
-
 
     final videoItem = VideoItem(
       // Use a stable unique ID from the data if possible
@@ -242,13 +239,14 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: true,
-        pageBuilder: (BuildContext context, _, __) => VideoPlayerScreen(
-          initialVideoItem: videoItem,
-          // Pass the FILTERED list
-          allVideos: allValidVideos,
-          // Pass the index relative to the FILTERED list
-          initialIndex: indexInFilteredList,
-        ),
+        pageBuilder:
+            (BuildContext context, _, __) => VideoPlayerScreen(
+              initialVideoItem: videoItem,
+              // Pass the FILTERED list
+              allVideos: allValidVideos,
+              // Pass the index relative to the FILTERED list
+              initialIndex: indexInFilteredList,
+            ),
         transitionsBuilder: (_, Animation<double> animation, __, Widget child) {
           const begin = Offset(0.0, 1.0);
           const end = Offset.zero;
@@ -267,23 +265,22 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
     super.build(context); // Required for AutomaticKeepAliveClientMixin
 
     // --- Filter out nulls before building the grid ---
-    final List<Map<String, dynamic>> validVideos = _videos
-        .where((videoData) => videoData != null && videoData is Map<String, dynamic>) // Ensure it's a non-null Map
-        .cast<Map<String, dynamic>>()
-        .toList();
+    final List<Map<String, dynamic>> validVideos =
+        _videos
+            .where((videoData) => videoData != null && videoData is Map<String, dynamic>) // Ensure it's a non-null Map
+            .cast<Map<String, dynamic>>()
+            .toList();
 
     // Calculate childCount based on the FILTERED list
     final int itemCount = validVideos.length + (_isLoadingMore && _hasMoreVideos ? 1 : 0);
     // --- End filtering ---
 
-
     // Handle Loading State
     // Show loading indicator only if loading initially AND the list is currently empty
     if (_isLoading && validVideos.isEmpty) {
-       // Use SliverFillRemaining if this is the only content in a CustomScrollView
-       // If it's part of a larger scroll view, a simple SliverToBoxAdapter might be enough
-       return const SliverFillRemaining(
-            child: Center(child: CircularProgressIndicator()));
+      // Use SliverFillRemaining if this is the only content in a CustomScrollView
+      // If it's part of a larger scroll view, a simple SliverToBoxAdapter might be enough
+      return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
     }
 
     // Handle Error State
@@ -291,22 +288,20 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
     if (_error != null && validVideos.isEmpty) {
       return SliverFillRemaining(
         child: Center(
-          child: Padding( // Add padding for better spacing
+          child: Padding(
+            // Add padding for better spacing
             padding: const EdgeInsets.all(16.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Icon(Icons.error_outline, color: Colors.red, size: 48),
                 const SizedBox(height: 16),
-                Text('Error Loading Videos',
-                    style: Theme.of(context).textTheme.titleLarge,
-                    textAlign: TextAlign.center),
+                Text('Error Loading Videos', style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
                 const SizedBox(height: 8),
-                Text(_error!,
-                    style: Theme.of(context).textTheme.bodySmall,
-                    textAlign: TextAlign.center),
+                Text(_error!, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
                 const SizedBox(height: 24),
-                ElevatedButton( // Use ElevatedButton for better visibility
+                ElevatedButton(
+                  // Use ElevatedButton for better visibility
                   onPressed: _loadInitialVideos,
                   child: const Text('Retry'),
                 ),
@@ -318,7 +313,8 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
     }
 
     // Handle Empty State (after loading and no error)
-    if (!_isLoading && validVideos.isEmpty && !_isLoadingMore) { // Check !isLoadingMore too
+    if (!_isLoading && validVideos.isEmpty && !_isLoadingMore) {
+      // Check !isLoadingMore too
       return SliverFillRemaining(
         child: Center(
           child: Column(
@@ -355,10 +351,10 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
 
             // Access the video from the FILTERED list
             // Add bounds check as a safeguard, though itemCount should prevent this.
-             if (index >= validVideos.length) {
-               print("Warning: Grid index $index out of bounds for validVideos (length ${validVideos.length}).");
-               return Container(color: Colors.red.withOpacity(0.1)); // Error placeholder
-             }
+            if (index >= validVideos.length) {
+              print("Warning: Grid index $index out of bounds for validVideos (length ${validVideos.length}).");
+              return Container(color: Colors.red.withOpacity(0.1)); // Error placeholder
+            }
             final video = validVideos[index];
 
             // --- Data extraction (can assume video is not null) ---
@@ -368,23 +364,23 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
             final username = video['post']?['author']?['handle'] as String? ?? 'username';
 
             String? description;
-             if (video['post']?['record']?['text'] != null) {
-               description = video['post']['record']['text'] as String?;
-             }
-             description ??= video['post']?['text'] as String?;
-             description ??= ''; // Default to empty string
-
+            if (video['post']?['record']?['text'] != null) {
+              description = video['post']['record']['text'] as String?;
+            }
+            description ??= video['post']?['text'] as String?;
+            description ??= ''; // Default to empty string
 
             final likeCount = video['post']?['likeCount'] as int? ?? 0;
 
             final List<String> hashtags = [];
             final words = description.split(' ');
             for (final word in words) {
-              if (word.startsWith('#') && word.length > 1) { // Avoid adding just '#'
+              if (word.startsWith('#') && word.length > 1) {
+                // Avoid adding just '#'
                 // Optional: Clean the hashtag (remove punctuation)
                 // final cleanHashtag = word.substring(1).replaceAll(RegExp(r'[^\w]'), '');
                 // if (cleanHashtag.isNotEmpty) hashtags.add(cleanHashtag);
-                 hashtags.add(word.substring(1));
+                hashtags.add(word.substring(1));
               }
             }
 

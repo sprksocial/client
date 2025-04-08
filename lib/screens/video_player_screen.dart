@@ -56,7 +56,6 @@ class _VideoPlayerScreenState extends State<VideoPlayerScreen> {
       final video = widget.allVideos![i];
       if (video == null) continue;
 
-      final thumbnailUrl = video['post']['embed']['thumbnail'] as String? ?? '';
       final videoUrl = video['post']['embed']['playlist'] as String? ?? '';
       if (videoUrl.isEmpty) continue;
 

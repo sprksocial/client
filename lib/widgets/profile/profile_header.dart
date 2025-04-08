@@ -41,14 +41,6 @@ class ProfileHeader extends StatefulWidget {
 }
 
 class _ProfileHeaderState extends State<ProfileHeader> {
-  bool _expandDescription = false;
-
-  void _toggleDescriptionExpand(bool isExpanded) {
-    setState(() {
-      _expandDescription = isExpanded;
-    });
-  }
-
   Future<void> _handleUsernameTap(String username) async {
     final identityService = context.read<CachedIdentityService>();
     try {
@@ -207,7 +199,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
               ProfileDescription(
                 text: description,
                 style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 14),
-                onExpandToggle: _toggleDescriptionExpand,
                 onMentionTap: _handleUsernameTap,
               ),
 
