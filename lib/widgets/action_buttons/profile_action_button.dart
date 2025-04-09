@@ -28,8 +28,8 @@ class ProfileActionButton extends StatefulWidget {
     this.isFollowing = false,
     this.followButtonBottomOffset = 8.0,
     this.followButtonRightOffset = 13.0,
-    this.verticalOffset = -20.0,
-    this.debugHitboxes = true,
+    this.verticalOffset = 0,
+    this.debugHitboxes = false,
   });
 
   @override
@@ -74,7 +74,7 @@ class _ProfileActionButtonState extends State<ProfileActionButton> with SingleTi
     // Main widget container
     return Material(
       color: Colors.transparent,
-      elevation: 100, // Very high elevation to ensure it's on top
+      elevation: 0, // Lower elevation to not interfere with other elements
       child: SizedBox(
         width: widget.size,
         height: widget.size + 10,
@@ -84,34 +84,36 @@ class _ProfileActionButtonState extends State<ProfileActionButton> with SingleTi
             clipBehavior: Clip.none,
             children: [
               // PROFILE IMAGE - first child (lower z-index)
-              GestureDetector(
-                onTap: _handleProfileTap,
-                behavior: HitTestBehavior.translucent,
-                child: Container(
-                  width: widget.size,
-                  height: widget.size,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: widget.debugHitboxes ? Colors.red.withAlpha(50) : null,
-                    border: widget.border ?? Border.all(color: AppColors.white, width: 2),
-                  ),
-                  child: ClipOval(
-                    child:
-                        widget.profileImageUrl != null && widget.profileImageUrl!.isNotEmpty
-                            ? CachedNetworkImage(
-                              imageUrl: widget.profileImageUrl!,
-                              fit: BoxFit.cover,
-                              placeholder: (context, url) => Container(color: AppColors.deepPurple),
-                              errorWidget:
-                                  (context, url, error) => Container(
-                                    color: AppColors.deepPurple,
-                                    child: Center(child: Icon(Icons.person, color: AppColors.white, size: widget.size * 0.5)),
-                                  ),
-                            )
-                            : Container(
-                              color: AppColors.deepPurple,
-                              child: Center(child: Icon(Icons.person, color: AppColors.white, size: widget.size * 0.5)),
-                            ),
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: _handleProfileTap,
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    width: widget.size,
+                    height: widget.size,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: widget.debugHitboxes ? Colors.red.withAlpha(50) : null,
+                      border: widget.border ?? Border.all(color: AppColors.white, width: 2),
+                    ),
+                    child: ClipOval(
+                      child:
+                          widget.profileImageUrl != null && widget.profileImageUrl!.isNotEmpty
+                              ? CachedNetworkImage(
+                                imageUrl: widget.profileImageUrl!,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(color: AppColors.deepPurple),
+                                errorWidget:
+                                    (context, url, error) => Container(
+                                      color: AppColors.deepPurple,
+                                      child: Center(child: Icon(Icons.person, color: AppColors.white, size: widget.size * 0.5)),
+                                    ),
+                              )
+                              : Container(
+                                color: AppColors.deepPurple,
+                                child: Center(child: Icon(Icons.person, color: AppColors.white, size: widget.size * 0.5)),
+                              ),
+                    ),
                   ),
                 ),
               ),
@@ -122,17 +124,14 @@ class _ProfileActionButtonState extends State<ProfileActionButton> with SingleTi
                   bottom: -(widget.size * 0.25) + widget.followButtonBottomOffset,
                   right: widget.size / 2 - widget.followButtonRightOffset,
                   child: GestureDetector(
-                    onTap: () {
-                      debugPrint('Follow button tapped directly');
-                      _handleFollowTap();
-                    },
+                    onTap: _handleFollowTap,
                     behavior: HitTestBehavior.opaque,
                     child: Container(
                       width: followButtonSize,
                       height: followButtonSize,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.primary,
+                        color: widget.debugHitboxes ? Colors.blue.withAlpha(50) : AppColors.primary,
                         border: Border.all(color: AppColors.white, width: 2),
                       ),
                       child: Center(
