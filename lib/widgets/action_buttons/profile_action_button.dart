@@ -24,7 +24,7 @@ class ProfileActionButton extends StatefulWidget {
     this.onFollowPressed,
     this.size = 50.0,
     this.border,
-    this.showFollowButton = true,
+    this.showFollowButton = false,
     this.isFollowing = false,
     this.followButtonBottomOffset = 8.0,
     this.followButtonRightOffset = 13.0,
