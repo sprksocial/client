@@ -69,11 +69,81 @@ class ProfileService extends ChangeNotifier {
     try {
       final bskyProfile = await getProfileFullBsky(did);
       if (bskyProfile != null) {
+        debugPrint('Bsky profile found, retrieving counts...');
         final profile = Profile.fromBlueskyActor(bskyProfile);
         final counts = bskyProfile.toJson();
+        debugPrint('Bsky profile counts: $counts');
+
+        var followersCount = counts['followersCount'] as int? ?? 0;
+        var followingCount = counts['followsCount'] as int? ?? 0;
+
+        debugPrint('Initial counts - Followers: $followersCount, Following: $followingCount');
+
+        // Try to enhance with Spark data, but don't fail if these calls fail
+        try {
+          debugPrint('Fetching Spark followers...');
+          final sparkFollowers = await _authService.atproto!.get(
+            NSID.parse('so.sprk.graph.getFollowers'),
+            parameters: {'actor': did},
+            headers: {'atproto-proxy': 'did:web:api.sprk.so#sprk_appview'},
+            to: (jsonMap) => jsonMap,
+            adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+          );
+          debugPrint('Spark followers response: ${sparkFollowers.data}');
+
+          try {
+            final followers = sparkFollowers.data['followers'] as List;
+            // Just add the Spark followers count directly
+            // Bluesky followers count is already included in the profile
+            debugPrint('Found ${followers.length} Spark followers');
+            if (followers.isNotEmpty) {
+              debugPrint('First few Spark follower DIDs: ${followers.take(3).map((f) => f['did']).toList()}');
+              // Add all Spark followers since they're likely to be different from Bluesky followers
+              followersCount += followers.length;
+              debugPrint('Added ${followers.length} Spark followers, new total: $followersCount');
+            }
+          } catch (e) {
+            debugPrint('Error processing followers: $e');
+          }
+        } catch (e) {
+          debugPrint('Error fetching Spark followers: $e');
+          // Continue anyway
+        }
+
+        try {
+          debugPrint('Fetching Spark follows...');
+          final sparkFollows = await _authService.atproto!.get(
+            NSID.parse('so.sprk.graph.getFollows'),
+            parameters: {'actor': did},
+            headers: {'atproto-proxy': 'did:web:api.sprk.so#sprk_appview'},
+            to: (jsonMap) => jsonMap,
+            adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+          );
+          debugPrint('Spark follows response: ${sparkFollows.data}');
+
+          try {
+            final follows = sparkFollows.data['follows'] as List;
+            // Just add the Spark follows count directly
+            debugPrint('Found ${follows.length} Spark follows');
+            if (follows.isNotEmpty) {
+              debugPrint('First few Spark follow DIDs: ${follows.take(3).map((f) => f['did']).toList()}');
+              // Add all Spark follows since they're likely to be different from Bluesky follows
+              followingCount += follows.length;
+              debugPrint('Added ${follows.length} Spark follows, new total: $followingCount');
+            }
+          } catch (e) {
+            debugPrint('Error processing follows: $e');
+          }
+        } catch (e) {
+          debugPrint('Error fetching Spark follows: $e');
+          // Continue anyway
+        }
+
+        debugPrint('Final counts - Followers: $followersCount, Following: $followingCount');
+
         return profile.withCounts({
-          'followersCount': counts['followersCount'] as int? ?? 0,
-          'followingCount': counts['followsCount'] as int? ?? 0,
+          'followersCount': followersCount,
+          'followingCount': followingCount,
           'postsCount': counts['postsCount'] as int? ?? 0,
           'isFollowing': existingFollowUri != null,
           'followUri': existingFollowUri,
