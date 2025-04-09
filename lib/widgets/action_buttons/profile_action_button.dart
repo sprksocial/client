@@ -77,14 +77,14 @@ class _ProfileActionButtonState extends State<ProfileActionButton> with SingleTi
       elevation: 0, // Lower elevation to not interfere with other elements
       child: SizedBox(
         width: widget.size,
-        height: widget.size + 10,
+        height: widget.size,
         child: Transform.translate(
           offset: Offset(0, widget.verticalOffset),
           child: Stack(
             clipBehavior: Clip.none,
             children: [
               // PROFILE IMAGE - first child (lower z-index)
-              Positioned.fill(
+              Center(
                 child: GestureDetector(
                   onTap: _handleProfileTap,
                   behavior: HitTestBehavior.opaque,
