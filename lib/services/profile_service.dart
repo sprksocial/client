@@ -48,7 +48,7 @@ class ProfileService extends ChangeNotifier {
       final sprkProfile = await getProfileFullSprk(did);
       debugPrint('Spark profile fetch result: ${sprkProfile != null ? 'success' : 'null'}');
       if (sprkProfile != null) {
-        final viewer = sprkProfile['viewer'] as Map<String, dynamic>?;
+        final viewer = sprkProfile['viewer'] as Map<dynamic, dynamic>?;
         return Profile.fromSparkProfile({
           'actor': sprkProfile,
           'viewer': {...?viewer, 'following': existingFollowUri},

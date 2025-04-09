@@ -51,7 +51,7 @@ class Profile {
   /// Create a Profile from a Spark profile
   static Profile fromSparkProfile(Map<String, dynamic> profileData) {
     final actor = profileData['actor'] as Map<String, dynamic>;
-    final viewer = profileData['viewer'] as Map<String, dynamic>?;
+    final viewer = profileData['viewer'] as Map<dynamic, dynamic>?;
 
     return Profile(
       username: actor['handle'] as String? ?? '',
