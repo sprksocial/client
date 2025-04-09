@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart';
+import 'package:sparksocial/config/app_config.dart';
 
 import '../models/feed_post.dart';
 import 'auth_service.dart';
@@ -67,11 +68,14 @@ class FeedManager {
       return [];
     }
 
+    final sprkAppView = Uri.parse(AppConfig.appViewUrl);
+    final sprkDid = "did:web:${sprkAppView.host}#sprk_appview";
+
     // Get the actual posts using the URIs
     final feedItems = await authService.atproto!.get(
       NSID.parse('so.sprk.feed.getPosts'),
       parameters: {'uris': uris},
-      headers: {'atproto-proxy': 'did:web:api.sprk.so#sprk_appview'},
+      headers: {'atproto-proxy': sprkDid},
       to: (jsonMap) => jsonMap,
       adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
     );
