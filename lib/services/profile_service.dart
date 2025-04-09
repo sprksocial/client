@@ -166,12 +166,15 @@ class ProfileService extends ChangeNotifier {
       return null;
     }
 
+    final sprkAppView = Uri.parse(AppConfig.appViewUrl);
+    final sprkDid = "did:web:${sprkAppView.host}#sprk_appview";
+
     try {
       debugPrint('getProfileFullSprk: Making API request...');
       final profileRes = await _authService.atproto!.get(
         NSID.parse('so.sprk.actor.getProfile'),
         parameters: {'actor': did},
-        headers: {'atproto-proxy': 'did:web:api.sprk.so#sprk_appview'},
+        headers: {'atproto-proxy': sprkDid},
         to: (jsonMap) => jsonMap,
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
