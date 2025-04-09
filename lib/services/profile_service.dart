@@ -93,15 +93,8 @@ class ProfileService extends ChangeNotifier {
 
           try {
             final followers = sparkFollowers.data['followers'] as List;
-            // Just add the Spark followers count directly
-            // Bluesky followers count is already included in the profile
-            debugPrint('Found ${followers.length} Spark followers');
-            if (followers.isNotEmpty) {
-              debugPrint('First few Spark follower DIDs: ${followers.take(3).map((f) => f['did']).toList()}');
-              // Add all Spark followers since they're likely to be different from Bluesky followers
-              followersCount += followers.length;
-              debugPrint('Added ${followers.length} Spark followers, new total: $followersCount');
-            }
+            followersCount += followers.length;
+            debugPrint('Added ${followers.length} Spark followers, new total: $followersCount');
           } catch (e) {
             debugPrint('Error processing followers: $e');
           }
@@ -123,14 +116,8 @@ class ProfileService extends ChangeNotifier {
 
           try {
             final follows = sparkFollows.data['follows'] as List;
-            // Just add the Spark follows count directly
-            debugPrint('Found ${follows.length} Spark follows');
-            if (follows.isNotEmpty) {
-              debugPrint('First few Spark follow DIDs: ${follows.take(3).map((f) => f['did']).toList()}');
-              // Add all Spark follows since they're likely to be different from Bluesky follows
-              followingCount += follows.length;
-              debugPrint('Added ${follows.length} Spark follows, new total: $followingCount');
-            }
+            followingCount += follows.length;
+            debugPrint('Added ${follows.length} Spark follows, new total: $followingCount');
           } catch (e) {
             debugPrint('Error processing follows: $e');
           }
