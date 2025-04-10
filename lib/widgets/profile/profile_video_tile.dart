@@ -14,6 +14,7 @@ class ProfileVideoTile extends StatelessWidget {
   final int likeCount;
   final VoidCallback onTap;
   final bool isSprk;
+  final bool isImage;
 
   const ProfileVideoTile({
     super.key,
@@ -26,10 +27,12 @@ class ProfileVideoTile extends StatelessWidget {
     this.likeCount = 0,
     required this.onTap,
     this.isSprk = false,
+    this.isImage = false,
   });
 
   @override
   Widget build(BuildContext context) {
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -97,13 +100,27 @@ class ProfileVideoTile extends StatelessWidget {
             ),
 
             // Play indicator
-            const Positioned(
+            Positioned(
               top: 5,
               right: 5,
-              child: Icon(
-                FluentIcons.play_circle_24_filled,
-                color: AppColors.white,
-                size: 16
+              child: Container(
+                padding: const EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(42),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.black.withAlpha(30),
+                      blurRadius: 4,
+                      spreadRadius: 1,
+                      offset: const Offset(0, 0),
+                    ),
+                  ],
+                ),
+                child: Icon(
+                  isImage ? FluentIcons.image_24_regular : FluentIcons.play_circle_24_filled,
+                  color: AppColors.white,
+                  size: 16
+                ),
               ),
             ),
 
@@ -112,7 +129,7 @@ class ProfileVideoTile extends StatelessWidget {
               top: 5,
               left: 5,
               child: Container(
-                padding: const EdgeInsets.all(4),
+                padding: const EdgeInsets.all(2),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(42),
                   boxShadow: [
