@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart';
 import 'package:flutter/foundation.dart';
+import 'package:sparksocial/config/app_config.dart';
 
 import '../models/comment.dart';
 import 'auth_service.dart';
@@ -74,12 +75,14 @@ class CommentsService extends ChangeNotifier {
       if (atproto == null) {
         throw Exception('AtProto not initialized');
       }
+      final sprkAppView = Uri.parse(AppConfig.appViewUrl);
+      final sprkDid = "did:web:${sprkAppView.host}#sprk_appview";
 
       // Get the post thread
       final response = await atproto.get(
         NSID.parse('so.sprk.feed.getPostThread'),
         parameters: {'uri': postUri},
-        headers: {'atproto-proxy': 'did:web:api.sprk.so#sprk_appview'},
+        headers: {'atproto-proxy': sprkDid},
         to: (jsonMap) => jsonMap,
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
