@@ -1,11 +1,12 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import '../comments/comments_tray.dart';
+
 import '../../screens/profile_screen.dart';
+import '../../utils/formatters/text_formatter.dart';
+import '../comments/comments_tray.dart';
 import '../video_info/video_info_bar.dart'; // Reusing VideoInfoBar for now
 import '../video_side_action_bar.dart'; // Reusing VideoSideActionBar for now
-import '../../utils/formatters/text_formatter.dart';
 
 /// Base class for post items (Video, Image, etc.) to handle common parameters.
 abstract class PostItemBase extends StatefulWidget {
@@ -61,8 +62,26 @@ abstract class PostItemBase extends StatefulWidget {
 
 /// Base state class with common methods and UI building blocks.
 abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
+  bool isVisible = true;
   bool showComments = false;
   bool _isDescriptionExpanded = false;
+  late int _commentCount;
+
+  @override
+  void initState() {
+    super.initState();
+    _commentCount = widget.commentCount;
+  }
+
+  @override
+  void didUpdateWidget(T oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.commentCount != widget.commentCount) {
+      setState(() {
+        _commentCount = widget.commentCount;
+      });
+    }
+  }
 
   /// Abstract method for subclasses to build the main content (VideoPlayer, ImageCarousel).
   Widget buildContent(BuildContext context);
@@ -75,9 +94,6 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
   List<Widget> buildContentOverlays(BuildContext context) {
     return []; // Default implementation returns no overlays
   }
-
-  /// Abstract getter to know if the current item is visible on screen.
-  bool get isVisible;
 
   /// Abstract method to pause any media playing in the content.
   void pauseMedia();
@@ -92,7 +108,7 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
     });
   }
 
-  /// Toggle comments visibility and show the comments tray.
+  /// Toggle comments tray.
   void toggleComments() {
     // Allow overriding via widget callback first
     if (widget.onCommentPressed != null) {
@@ -119,16 +135,24 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
       context: context,
       postUri: widget.postUri!,
       postCid: widget.postCid!,
-      commentCount: widget.commentCount,
-      onClose: () {
+      commentCount: _commentCount,
+      onClose: (updatedCount) {
         if (!mounted) return;
-        setState(() {
-          showComments = false;
-          // Resume media only if the item is still visible
-          if (isVisible) {
-            playMedia();
-          }
-        });
+        if (updatedCount != _commentCount) {
+          setState(() {
+            showComments = false;
+            _commentCount = updatedCount; // Update local comment count
+          });
+        } else {
+          setState(() {
+            showComments = false;
+          });
+        }
+
+        // Resume media only if the item is still visible
+        if (isVisible) {
+          playMedia();
+        }
       },
       isDarkMode: isDarkMode,
       isSprk: widget.isSprk,
@@ -218,7 +242,7 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
       child: VideoSideActionBar(
         // Consider renaming VideoSideActionBar later
         likeCount: TextFormatter.formatCount(widget.likeCount),
-        commentCount: TextFormatter.formatCount(widget.commentCount),
+        commentCount: TextFormatter.formatCount(_commentCount), // Use local state
         bookmarkCount: TextFormatter.formatCount(widget.bookmarkCount),
         shareCount: TextFormatter.formatCount(widget.shareCount),
         profileImageUrl: widget.profileImageUrl,

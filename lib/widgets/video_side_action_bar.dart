@@ -65,6 +65,9 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
         _isBookmarked = widget.isBookmarked;
       });
     }
+    if (oldWidget.commentCount != widget.commentCount) {
+      setState(() {});
+    }
   }
 
   void _handleLike() {
