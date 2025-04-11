@@ -1,5 +1,6 @@
-import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
+
 import 'action_button.dart';
 
 class CommentActionButton extends StatelessWidget {
@@ -11,6 +12,7 @@ class CommentActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ActionButton(
+      key: ValueKey('comment_button_$count'),
       icon: FluentIcons.chat_24_regular,
       label: count,
       onPressed: onPressed,
