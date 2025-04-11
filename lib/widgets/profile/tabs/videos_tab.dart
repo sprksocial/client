@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -117,6 +115,13 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
 
       List<dynamic> newPosts = [...fetchedSprkPosts, ...fetchedBskyPosts];
 
+      // Filter out image posts
+      newPosts =
+          newPosts.where((post) {
+            final embedType = post?['post']?['embed']?['\$type'] as String?;
+            return embedType != 'so.sprk.embed.images#view';
+          }).toList();
+
       setState(() {
         if (isLoadingMore) {
           _posts.addAll(newPosts);
@@ -142,7 +147,6 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
   }
 
   void _openMediaViewer(int index, Map<String, dynamic> post, List<Map<String, dynamic>> allPosts) {
-
     // Simple approach - just create the VideoItem for the clicked post
     final embedType = post['post']?['embed']?['\$type'] as String?;
     final isImage = embedType == 'so.sprk.embed.images#view';
@@ -261,7 +265,7 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
             children: [
               Icon(FluentIcons.video_clip_off_24_regular, size: 48, color: Colors.grey.shade400),
               const SizedBox(height: 16),
-              Text('No media found', style: TextStyle(color: Colors.grey.shade600)),
+              Text('No videos found', style: TextStyle(color: Colors.grey.shade600)),
             ],
           ),
         ),
