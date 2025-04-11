@@ -1,9 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'tabs/videos_tab.dart';
-import 'tabs/photos_tab.dart';
-import 'tabs/content_grid_tab.dart';
+import 'package:flutter/material.dart';
+
 import 'auth_required_content.dart';
+import 'tabs/content_grid_tab.dart';
+import 'tabs/photos_tab.dart';
+import 'tabs/videos_tab.dart';
 
 class ProfileTabContent {
   final int selectedIndex;
@@ -11,12 +12,7 @@ class ProfileTabContent {
   final VoidCallback onLoginPressed;
   final String? did;
 
-  const ProfileTabContent({
-    required this.selectedIndex,
-    required this.isAuthenticated,
-    required this.onLoginPressed,
-    this.did,
-  });
+  const ProfileTabContent({required this.selectedIndex, required this.isAuthenticated, required this.onLoginPressed, this.did});
 
   List<Widget> getTabContent() {
     // Early return for auth check
@@ -42,7 +38,7 @@ class ProfileTabContent {
       case 0:
         return VideosTab(did: did);
       case 1:
-        return const PhotosTab();
+        return PhotosTab(did: did);
       case 2:
         return ContentGridTab(icon: FluentIcons.heart_24_regular, type: 'favorites', itemCount: 30);
       case 3:
