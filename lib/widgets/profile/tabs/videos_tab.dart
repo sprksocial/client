@@ -1,11 +1,14 @@
-import 'package:flutter/material.dart';
+import 'dart:developer';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../services/profile_service.dart';
+
+import '../../../screens/profile_player_screen.dart';
 import '../../../services/auth_service.dart';
-import '../../../screens/video_player_screen.dart'; // Assuming VideoPlayerScreen can handle the filtered list
+import '../../../services/profile_service.dart';
+import '../../../widgets/video/video_item.dart';
 import '../../profile/profile_video_tile.dart';
-import '../../../widgets/video/video_item.dart'; // Assuming VideoItem definition exists
 
 class VideosTab extends StatefulWidget {
   final String? did;
@@ -19,12 +22,10 @@ class VideosTab extends StatefulWidget {
 class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixin {
   bool _isLoading = false;
   bool _isLoadingMore = false;
-  bool _hasMoreVideos = true;
   String? _error;
-  List<dynamic> _videos = []; // This list might contain nulls from the fetch
+  List<dynamic> _posts = [];
   final ScrollController _scrollController = ScrollController();
-  // --- Pagination: You need to pass limit/offset to your service methods ---
-  String? _cursor; // Use cursor for pagination if API supports it
+  String? _cursor;
 
   @override
   bool get wantKeepAlive => true;
@@ -32,12 +33,9 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
   @override
   void initState() {
     super.initState();
-    // Use WidgetsBinding to ensure context is available for Provider
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) {
-        // Check if mounted before accessing context
-        _loadInitialVideos();
-      }
+      if (!mounted) return;
+      _loadInitialPosts();
     });
     _scrollController.addListener(_scrollListener);
   }
@@ -50,170 +48,138 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
   }
 
   void _scrollListener() {
-    // Load more slightly before reaching the absolute end
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent * 0.9 &&
         !_isLoading &&
         !_isLoadingMore &&
-        _hasMoreVideos) {
-      _loadMoreVideos();
+        _cursor != null) {
+      _loadMorePosts();
     }
   }
 
-  Future<void> _loadInitialVideos() async {
+  Future<void> _loadInitialPosts() async {
     if (!mounted) return;
 
     setState(() {
       _isLoading = true;
       _error = null;
-      _videos = [];
-      _cursor = null; // Reset cursor for initial load
-      _hasMoreVideos = true; // Assume there are videos initially
+      _posts = [];
+      _cursor = null;
     });
 
-    await _fetchVideos();
+    await _fetchPosts();
   }
 
-  Future<void> _loadMoreVideos() async {
-    if (!mounted || _isLoading || _isLoadingMore || !_hasMoreVideos) return; // Prevent concurrent loads
+  Future<void> _loadMorePosts() async {
+    if (!mounted || _isLoading || _isLoadingMore || _cursor == null) return;
 
     setState(() {
       _isLoadingMore = true;
     });
 
-    await _fetchVideos(isLoadingMore: true);
+    await _fetchPosts(isLoadingMore: true);
   }
 
-  // --- Updated _fetchVideos ---
-  Future<void> _fetchVideos({bool isLoadingMore = false}) async {
-    // Ensure context is valid if called early (though less likely here)
+  Future<void> _fetchPosts({bool isLoadingMore = false}) async {
     if (!mounted) return;
 
     try {
-      // Use read for fetching data in async methods after initState
       final authService = context.read<AuthService>();
       final profileService = context.read<ProfileService>();
 
       final targetDid = widget.did ?? authService.session?.did;
 
       if (targetDid == null) {
-        if (!mounted) return;
         setState(() {
           _error = "No profile specified";
           _isLoading = false;
           _isLoadingMore = false;
-          _hasMoreVideos = false; // No DID, no more videos
         });
         return;
       }
 
-      // Example using cursor (preferred for Bluesky-like APIs):
       final resultBsky = await profileService.getProfileVideosBsky(targetDid);
-      // Assuming Sprk doesn't have pagination or uses a different method? Adjust as needed.
-      // If loading more, maybe skip Sprk or handle its pagination separately.
-      final resultSprk =
-          isLoadingMore
-              ? null // Don't re-fetch Sprk when loading more Bsky, unless Sprk also paginates
-              : await profileService.getProfileVideosSprk(targetDid);
+      final resultSprk = isLoadingMore ? null : await profileService.getProfileVideosSprk(targetDid);
 
       if (!mounted) return;
 
-      List<dynamic> fetchedBskyVideos = [];
-      List<dynamic> fetchedSprkVideos = [];
+      List<dynamic> fetchedBskyPosts = [];
+      List<dynamic> fetchedSprkPosts = [];
       String? nextCursor;
 
       if (resultBsky != null) {
-        // Filter nulls AT THE SOURCE
-        fetchedBskyVideos =
-            (resultBsky['feed'] as List<dynamic>?)
-                ?.where((item) => item != null) // Filter nulls here!
-                .toList() ??
-            [];
-        nextCursor = resultBsky['cursor'] as String?; // Get the cursor for the next page
+        fetchedBskyPosts = (resultBsky['feed'] as List<dynamic>?) ?? [];
+        nextCursor = resultBsky['cursor'] as String?;
       }
 
-      // Only add Sprk videos on the initial load if not paginating them
       if (!isLoadingMore && resultSprk != null) {
-        // Filter nulls AT THE SOURCE
-        fetchedSprkVideos =
-            (resultSprk['feed'] as List<dynamic>?)
-                ?.where((item) => item != null) // Filter nulls here!
-                .toList() ??
-            [];
+        fetchedSprkPosts = (resultSprk['feed'] as List<dynamic>?) ?? [];
       }
 
-      // Combine non-null results
-      List<dynamic> newVideos = [...fetchedSprkVideos, ...fetchedBskyVideos];
+      List<dynamic> newPosts = [...fetchedSprkPosts, ...fetchedBskyPosts];
 
       setState(() {
         if (isLoadingMore) {
-          _videos.addAll(newVideos);
+          _posts.addAll(newPosts);
         } else {
-          _videos = newVideos;
+          _posts = newPosts;
         }
 
-        // Update cursor and hasMoreVideos based on Bsky result
         _cursor = nextCursor;
-        _hasMoreVideos = _cursor != null && _cursor!.isNotEmpty; // More videos if there's a next cursor
-        // OR based on count if no cursor: _hasMoreVideos = fetchedBskyVideos.length == _pageSize;
-
         _isLoading = false;
         _isLoadingMore = false;
-        _error = null; // Clear previous error on success
+        _error = null;
       });
-    } catch (e, stackTrace) {
-      // Catch stackTrace for better debugging
+    } catch (e) {
       if (!mounted) return;
 
       setState(() {
-        _error = "Failed to load videos: ${e.toString()}";
+        _error = "Failed to load posts: ${e.toString()}";
         _isLoading = false;
         _isLoadingMore = false;
-        // Consider setting _hasMoreVideos = false on error? Depends on desired retry behavior.
       });
-      debugPrint('Error loading videos: $e\n$stackTrace'); // Print stack trace
+      debugPrint('Error loading posts: $e');
     }
   }
 
-  void _openVideoPlayer(
-    int indexInFilteredList, // Index within the validVideos list
-    Map<String, dynamic> videoData, // Pass the actual video data
-    List<Map<String, dynamic>> allValidVideos, // Pass the filtered list
-  ) {
-    // --- Extract data directly from videoData ---
-    // No need to access _videos[index] anymore
-    final playlistUrl = videoData['post']?['embed']?['playlist'] as String? ?? '';
-    final username = videoData['post']?['author']?['handle'] as String? ?? 'username';
-    final authorDid = videoData['post']?['author']?['did'] as String?;
-    final profileImageUrl = videoData['post']?['author']?['avatar'] as String? ?? '';
-    final videoUri = videoData['post']?['uri'] as String?;
-    final videoCid = videoData['post']?['cid'] as String?;
-    final likeCount = videoData['post']?['likeCount'] as int? ?? 0;
-    final commentCount = videoData['post']?['replyCount'] as int? ?? 0;
-    final shareCount = videoData['post']?['repostCount'] as int? ?? 0;
+  void _openMediaViewer(int index, Map<String, dynamic> post, List<Map<String, dynamic>> allPosts) {
 
-    String? description;
-    if (videoData['post']?['record']?['text'] != null) {
-      description = videoData['post']['record']['text'] as String?;
+    // Simple approach - just create the VideoItem for the clicked post
+    final embedType = post['post']?['embed']?['\$type'] as String?;
+    final isImage = embedType == 'so.sprk.embed.images#view';
+
+    // Extract post data
+    final username = post['post']?['author']?['handle'] as String? ?? 'username';
+    final authorDid = post['post']?['author']?['did'] as String? ?? '';
+    final profileImageUrl = post['post']?['author']?['avatar'] as String? ?? '';
+    final postUri = post['post']?['uri'] as String? ?? '';
+    final postCid = post['post']?['cid'] as String? ?? '';
+    final likeCount = post['post']?['likeCount'] as int? ?? 0;
+    final commentCount = post['post']?['replyCount'] as int? ?? 0;
+    final shareCount = post['post']?['repostCount'] as int? ?? 0;
+
+    String description = '';
+    if (post['post']?['record']?['text'] != null) {
+      description = post['post']['record']['text'] as String? ?? '';
+    } else if (post['post']?['text'] != null) {
+      description = post['post']['text'] as String? ?? '';
     }
-    description ??= videoData['post']?['text'] as String?;
-    description ??= '';
 
     final List<String> hashtags = [];
-    final words = description.split(' ');
-    for (final word in words) {
-      if (word.startsWith('#')) {
+    for (final word in description.split(' ')) {
+      if (word.startsWith('#') && word.length > 1) {
         hashtags.add(word.substring(1));
       }
     }
 
-    final isSprk = playlistUrl.contains('sprk.so');
-    // --- End data extraction ---
+    final isSprk = postUri.contains('so.sprk.feed.post');
+
+    // For video posts, use the playlist URL, for image posts, use empty string
+    final videoUrl = isImage ? '' : (post['post']?['embed']?['playlist'] as String? ?? '');
 
     final videoItem = VideoItem(
-      // Use a stable unique ID from the data if possible
-      key: ValueKey('video_item_${videoUri ?? videoCid ?? indexInFilteredList}'),
-      index: indexInFilteredList, // This is the index in the *filtered* list
-      videoUrl: playlistUrl,
+      key: ValueKey('video_item_${postUri}_$index'),
+      index: index,
+      videoUrl: videoUrl,
       username: username,
       description: description,
       hashtags: hashtags,
@@ -223,10 +189,10 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
       shareCount: shareCount,
       profileImageUrl: profileImageUrl,
       authorDid: authorDid,
-      isLiked: false, // This state should likely be managed elsewhere
+      isLiked: false,
       isSprk: isSprk,
-      postUri: videoUri,
-      postCid: videoCid,
+      postUri: postUri,
+      postCid: postCid,
       disableBackgroundBlur: false,
       onLikePressed: () {},
       onBookmarkPressed: () {},
@@ -235,18 +201,12 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
       onHashtagTap: (String hashtag) {},
     );
 
-    // Ensure VideoPlayerScreen can work with the filtered list and corresponding index
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: true,
         pageBuilder:
-            (BuildContext context, _, __) => VideoPlayerScreen(
-              initialVideoItem: videoItem,
-              // Pass the FILTERED list
-              allVideos: allValidVideos,
-              // Pass the index relative to the FILTERED list
-              initialIndex: indexInFilteredList,
-            ),
+            (BuildContext context, _, __) =>
+                ProfilePlayerScreen(initialVideoItem: videoItem, allVideos: allPosts, initialIndex: index),
         transitionsBuilder: (_, Animation<double> animation, __, Widget child) {
           const begin = Offset(0.0, 1.0);
           const end = Offset.zero;
@@ -255,160 +215,128 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
           return SlideTransition(position: animation.drive(tween), child: child);
         },
         transitionDuration: const Duration(milliseconds: 300),
-        maintainState: true, // Be cautious with maintainState if VideoPlayerScreen is heavy
+        maintainState: true,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    super.build(context);
 
-    // --- Filter out nulls before building the grid ---
-    final List<Map<String, dynamic>> validVideos =
-        _videos
-            .where((videoData) => videoData != null && videoData is Map<String, dynamic>) // Ensure it's a non-null Map
-            .cast<Map<String, dynamic>>()
-            .toList();
+    // Convert posts to correct type and filter out nulls
+    final List<Map<String, dynamic>> validPosts =
+        _posts.where((post) => post != null && post is Map<String, dynamic>).cast<Map<String, dynamic>>().toList();
 
-    // Calculate childCount based on the FILTERED list
-    final int itemCount = validVideos.length + (_isLoadingMore && _hasMoreVideos ? 1 : 0);
-    // --- End filtering ---
+    final int itemCount = validPosts.length + (_isLoadingMore && _cursor != null ? 1 : 0);
 
-    // Handle Loading State
-    // Show loading indicator only if loading initially AND the list is currently empty
-    if (_isLoading && validVideos.isEmpty) {
-      // Use SliverFillRemaining if this is the only content in a CustomScrollView
-      // If it's part of a larger scroll view, a simple SliverToBoxAdapter might be enough
+    if (_isLoading && validPosts.isEmpty) {
       return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
     }
 
-    // Handle Error State
-    // Show error only if an error occurred AND the list is currently empty
-    if (_error != null && validVideos.isEmpty) {
-      return SliverFillRemaining(
-        child: Center(
-          child: Padding(
-            // Add padding for better spacing
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                const SizedBox(height: 16),
-                Text('Error Loading Videos', style: Theme.of(context).textTheme.titleLarge, textAlign: TextAlign.center),
-                const SizedBox(height: 8),
-                Text(_error!, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  // Use ElevatedButton for better visibility
-                  onPressed: _loadInitialVideos,
-                  child: const Text('Retry'),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    // Handle Empty State (after loading and no error)
-    if (!_isLoading && validVideos.isEmpty && !_isLoadingMore) {
-      // Check !isLoadingMore too
+    if (_error != null && validPosts.isEmpty) {
       return SliverFillRemaining(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(FluentIcons.video_clip_off_24_regular, size: 48, color: Colors.grey.shade400), // Changed icon
+              const Icon(Icons.error_outline, color: Colors.red, size: 48),
               const SizedBox(height: 16),
-              Text('No videos found', style: TextStyle(color: Colors.grey.shade600)),
+              Text('Error Loading Media', style: Theme.of(context).textTheme.titleLarge),
+              const SizedBox(height: 8),
+              Text(_error!, style: Theme.of(context).textTheme.bodySmall),
+              const SizedBox(height: 24),
+              ElevatedButton(onPressed: _loadInitialPosts, child: const Text('Retry')),
             ],
           ),
         ),
       );
     }
 
-    // --- Build the Grid using validVideos ---
+    if (!_isLoading && validPosts.isEmpty) {
+      return SliverFillRemaining(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(FluentIcons.video_clip_off_24_regular, size: 48, color: Colors.grey.shade400),
+              const SizedBox(height: 16),
+              Text('No media found', style: TextStyle(color: Colors.grey.shade600)),
+            ],
+          ),
+        ),
+      );
+    }
+
     return SliverPadding(
       padding: const EdgeInsets.all(1),
       sliver: SliverGrid(
-        key: PageStorageKey<String>('videos_grid_${widget.did ?? 'current'}'),
+        key: PageStorageKey<String>('media_grid_${widget.did ?? 'current'}'),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
           childAspectRatio: 2 / 3,
           crossAxisSpacing: 1,
           mainAxisSpacing: 1,
         ),
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            // Show loading indicator at the end (use validVideos.length)
-            if (index == validVideos.length) {
-              // This condition is only met if itemCount calculated included the loading indicator
-              // Which happens if _isLoadingMore is true and _hasMoreVideos is true
-              return const Center(child: CircularProgressIndicator());
+        delegate: SliverChildBuilderDelegate((context, index) {
+          if (index == validPosts.length) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final post = validPosts[index];
+
+          // Extract media information
+          String thumbnailUrl = '';
+          String? videoUrl;
+          bool isImage = false;
+
+          // Handle image posts
+          final embedType = post['post']?['embed']?['\$type'] as String?;
+          if (embedType == 'so.sprk.embed.images#view') {
+            final images = post['post']?['embed']?['images'] as List?;
+            if (images != null && images.isNotEmpty) {
+              final firstImage = images[0];
+              thumbnailUrl = firstImage['thumb'] as String? ?? '';
+              isImage = true;
             }
+          } else {
+            // Handle video posts
+            thumbnailUrl = post['post']?['embed']?['thumbnail'] as String? ?? '';
+            videoUrl = post['post']?['embed']?['playlist'] as String?;
+          }
 
-            // Access the video from the FILTERED list
-            // Add bounds check as a safeguard, though itemCount should prevent this.
-            if (index >= validVideos.length) {
-              print("Warning: Grid index $index out of bounds for validVideos (length ${validVideos.length}).");
-              return Container(color: Colors.red.withOpacity(0.1)); // Error placeholder
+          // Skip posts without media
+          if (thumbnailUrl.isEmpty && (videoUrl == null || videoUrl.isEmpty)) {
+            return const SizedBox();
+          }
+
+          final username = post['post']?['author']?['handle'] as String? ?? 'username';
+          final description = post['post']?['record']?['text'] as String? ?? post['post']?['text'] as String? ?? '';
+          final likeCount = post['post']?['likeCount'] as int? ?? 0;
+
+          final List<String> hashtags = [];
+          for (final word in description.split(' ')) {
+            if (word.startsWith('#') && word.length > 1) {
+              hashtags.add(word.substring(1));
             }
-            final video = validVideos[index];
+          }
 
-            // --- Data extraction (can assume video is not null) ---
-            // Simplified using null-aware operators
-            final thumbnailUrl = video['post']?['embed']?['thumbnail'] as String? ?? '';
-            final playlistUrl = video['post']?['embed']?['playlist'] as String? ?? '';
-            final username = video['post']?['author']?['handle'] as String? ?? 'username';
+          final isSprk = post['post']?['uri']?.toString().contains('so.sprk.feed.post') ?? false;
 
-            String? description;
-            if (video['post']?['record']?['text'] != null) {
-              description = video['post']['record']['text'] as String?;
-            }
-            description ??= video['post']?['text'] as String?;
-            description ??= ''; // Default to empty string
-
-            final likeCount = video['post']?['likeCount'] as int? ?? 0;
-
-            final List<String> hashtags = [];
-            final words = description.split(' ');
-            for (final word in words) {
-              if (word.startsWith('#') && word.length > 1) {
-                // Avoid adding just '#'
-                // Optional: Clean the hashtag (remove punctuation)
-                // final cleanHashtag = word.substring(1).replaceAll(RegExp(r'[^\w]'), '');
-                // if (cleanHashtag.isNotEmpty) hashtags.add(cleanHashtag);
-                hashtags.add(word.substring(1));
-              }
-            }
-
-            final isSprk = playlistUrl.contains('sprk.so');
-            // --- End data extraction ---
-
-            return ProfileVideoTile(
-              // Use a stable key from the data itself
-              key: ValueKey('video_tile_${video['post']?['uri'] ?? index}'),
-              videoUrl: playlistUrl.isNotEmpty ? playlistUrl : null,
-              thumbnailUrl: thumbnailUrl,
-              username: username,
-              description: description,
-              hashtags: hashtags,
-              index: index, // Index within the filtered list
-              likeCount: likeCount,
-              onTap: () {
-                if (playlistUrl.isNotEmpty) {
-                  // Pass the specific video data and the filtered list
-                  _openVideoPlayer(index, video, validVideos);
-                }
-              },
-              isSprk: isSprk,
-            );
-          },
-          // Use the calculated itemCount based on the FILTERED list
-          childCount: itemCount,
-        ),
+          return ProfileVideoTile(
+            key: ValueKey('media_tile_${post['post']?['uri'] ?? index}'),
+            videoUrl: videoUrl,
+            thumbnailUrl: thumbnailUrl,
+            username: username,
+            description: description,
+            hashtags: hashtags,
+            index: index,
+            isImage: isImage,
+            likeCount: likeCount,
+            onTap: () => _openMediaViewer(index, post, validPosts),
+            isSprk: isSprk,
+          );
+        }, childCount: itemCount),
       ),
     );
   }

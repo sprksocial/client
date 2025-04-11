@@ -221,23 +221,25 @@ class ProfileService extends ChangeNotifier {
         debugPrint('Error checking existing follows: $e');
       }
 
-      final pdsUrl = _authService.atproto?.service;
-      if (pdsUrl == null) {
-        return null;
+      final sprkAppView = Uri.parse(AppConfig.appViewUrl);
+      final sprkDid = "did:web:${sprkAppView.host}#sprk_appview";
+
+      final response = await _authService.atproto!.get(
+        NSID.parse('so.sprk.feed.getAuthorFeed'),
+        parameters: {'actor': did},
+        headers: {'atproto-proxy': sprkDid},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+      );
+
+      if (response.status.code != 200) {
+        throw Exception('Failed to fetch profile videos: ${response.status}');
       }
 
-      final url = '${AppConfig.appViewUrl}/actorFeed/$did';
-      final response = await http.get(Uri.parse(url), headers: {'Authorization': 'Bearer ${_authService.session?.accessJwt}'});
+      final data = response.data;
 
-      if (response.statusCode != 200) {
-        throw Exception('Failed to fetch profile videos: ${response.statusCode}');
-      }
+      data['viewer'] = {'following': existingFollowUri};
 
-      final data = json.decode(response.body);
-      // Add follow status to the response
-      if (data is Map<String, dynamic>) {
-        data['viewer'] = {'following': existingFollowUri};
-      }
       return data;
     } catch (e) {
       throw Exception('Failed to fetch profile videos: $e');
