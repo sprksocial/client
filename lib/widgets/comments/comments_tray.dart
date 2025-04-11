@@ -15,7 +15,7 @@ void showCommentsTray({
   required String postUri,
   required String postCid,
   required int commentCount,
-  required VoidCallback onClose,
+  required Function(int) onClose,
   required bool isDarkMode,
   required bool isSprk,
 }) {
@@ -29,21 +29,21 @@ void showCommentsTray({
           postUri: postUri,
           postCid: postCid,
           commentCount: commentCount,
-          onClose: () {
+          onClose: (updatedCount) {
             Navigator.pop(context);
-            onClose();
+            onClose(updatedCount);
           },
           isDarkMode: isDarkMode,
           isSprk: isSprk,
         ),
-  ).whenComplete(onClose);
+  );
 }
 
 class CommentsTray extends StatefulWidget {
   final String postUri;
   final String postCid;
   final int commentCount;
-  final VoidCallback onClose;
+  final Function(int) onClose;
   final bool isDarkMode;
   final bool isSprk;
 
@@ -75,6 +75,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   bool _isLoading = false;
   String? _error;
   bool _hasMoreComments = true;
+  late int _commentCount;
 
   @override
   void initState() {
@@ -82,6 +83,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
     _animation = CurvedAnimation(parent: _animationController, curve: Curves.easeOut);
     _animationController.forward();
+    _commentCount = widget.commentCount;
 
     // Add scroll listener for lazy loading
     _scrollController.addListener(_scrollListener);
@@ -167,7 +169,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
 
   void _closeComments() {
     _animationController.reverse().then((_) {
-      widget.onClose();
+      widget.onClose(_commentCount);
     });
   }
 
@@ -205,6 +207,11 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   }
 
   void _onCommentPosted(String commentUri) {
+    // Increment the comment count
+    setState(() {
+      _commentCount++;
+    });
+
     // Refresh comments after a new comment is posted
     _loadComments();
   }
@@ -272,10 +279,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  '${widget.commentCount} comments',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
-                ),
+                Text('$_commentCount comments', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor)),
                 IconButton(
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
