@@ -7,8 +7,8 @@ on:
       - v*
 
 permissions:
-  contents: 'read'
-  id-token: 'write'
+  contents: "read"
+  id-token: "write"
 
 jobs:
   build:
@@ -40,6 +40,7 @@ jobs:
         run: |
           echo "VIDEO_SERVICE_URL=${{ secrets.VIDEO_SERVICE_URL }}" >> .env
           echo "SPRK_APPVIEW_URL=${{ secrets.SPRK_APPVIEW_URL }}" >> .env
+          echo "SIGNUPS_DISABLED=${{ secrets.SIGNUPS_DISABLED }}" >> .env
 
       - name: Configure Keystore
         run: |
