@@ -2,7 +2,7 @@ name: sparksocial
 description: "A new Flutter project."
 publish_to: 'none'
 # The number after + must always be incremented on any change for android build to work
-version: 0.1.6+2
+version: 0.1.6+3
 
 environment:
   sdk: ^3.7.2
