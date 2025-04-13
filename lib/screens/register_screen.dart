@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
+import '../config/app_config.dart';
 import '../services/auth_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
@@ -66,7 +67,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   bool _isFormValid() {
-    return _emailController.text.isNotEmpty && _handleController.text.isNotEmpty && _passwordController.text.isNotEmpty;
+    return !AppConfig.signupsDisabled &&
+        _emailController.text.isNotEmpty &&
+        _handleController.text.isNotEmpty &&
+        _passwordController.text.isNotEmpty;
   }
 
   @override
@@ -106,6 +110,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
 
+                  if (AppConfig.signupsDisabled) ...[
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppColors.error.withAlpha(26),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(FluentIcons.warning_24_regular, color: AppColors.error),
+                          const SizedBox(width: 8),
+                          const Expanded(
+                            child: Text(
+                              'New account registration is currently disabled while we correct issues in our system. We will try to re-enable it as soon as possible.',
+                              style: TextStyle(color: AppColors.error),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                   _buildLabel('Email'),
                   const SizedBox(height: 8),
                   TextField(
