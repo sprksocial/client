@@ -1,13 +1,10 @@
-import 'dart:convert';
-
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart';
 import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
 
-import '../config/app_config.dart';
 import '../models/profile.dart';
 import 'auth_service.dart';
+import 'sprk_client.dart';
 
 class ProfileService extends ChangeNotifier {
   final AuthService _authService;
@@ -80,15 +77,11 @@ class ProfileService extends ChangeNotifier {
         debugPrint('Initial counts - Followers: $followersCount, Following: $followingCount');
 
         // Try to enhance with Spark data, but don't fail if these calls fail
+        final client = SprkClient(_authService);
+
         try {
           debugPrint('Fetching Spark followers...');
-          final sparkFollowers = await _authService.atproto!.get(
-            NSID.parse('so.sprk.graph.getFollowers'),
-            parameters: {'actor': did},
-            headers: {'atproto-proxy': 'did:web:api.sprk.so#sprk_appview'},
-            to: (jsonMap) => jsonMap,
-            adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
-          );
+          final sparkFollowers = await client.graph.getFollowers(did);
           debugPrint('Spark followers response: ${sparkFollowers.data}');
 
           try {
@@ -105,13 +98,7 @@ class ProfileService extends ChangeNotifier {
 
         try {
           debugPrint('Fetching Spark follows...');
-          final sparkFollows = await _authService.atproto!.get(
-            NSID.parse('so.sprk.graph.getFollows'),
-            parameters: {'actor': did},
-            headers: {'atproto-proxy': 'did:web:api.sprk.so#sprk_appview'},
-            to: (jsonMap) => jsonMap,
-            adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
-          );
+          final sparkFollows = await client.graph.getFollows(did);
           debugPrint('Spark follows response: ${sparkFollows.data}');
 
           try {
@@ -166,18 +153,10 @@ class ProfileService extends ChangeNotifier {
       return null;
     }
 
-    final sprkAppView = Uri.parse(AppConfig.appViewUrl);
-    final sprkDid = "did:web:${sprkAppView.host}#sprk_appview";
-
     try {
       debugPrint('getProfileFullSprk: Making API request...');
-      final profileRes = await _authService.atproto!.get(
-        NSID.parse('so.sprk.actor.getProfile'),
-        parameters: {'actor': did},
-        headers: {'atproto-proxy': sprkDid},
-        to: (jsonMap) => jsonMap,
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
-      );
+      final client = SprkClient(_authService);
+      final profileRes = await client.actor.getProfile(did);
       debugPrint('getProfileFullSprk: API request completed');
 
       final profile = profileRes.data as Map<String, dynamic>?;
@@ -221,16 +200,8 @@ class ProfileService extends ChangeNotifier {
         debugPrint('Error checking existing follows: $e');
       }
 
-      final sprkAppView = Uri.parse(AppConfig.appViewUrl);
-      final sprkDid = "did:web:${sprkAppView.host}#sprk_appview";
-
-      final response = await _authService.atproto!.get(
-        NSID.parse('so.sprk.feed.getAuthorFeed'),
-        parameters: {'actor': did},
-        headers: {'atproto-proxy': sprkDid},
-        to: (jsonMap) => jsonMap,
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
-      );
+      final client = SprkClient(_authService);
+      final response = await client.feed.getAuthorFeed(did);
 
       if (response.status.code != 200) {
         throw Exception('Failed to fetch profile videos: ${response.status}');
