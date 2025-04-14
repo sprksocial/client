@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:atproto/core.dart';
 import 'package:sparksocial/config/app_config.dart';
@@ -20,22 +21,16 @@ class SprkClient {
   /// Execute API request with token expiration handling
   Future<dynamic> _executeWithRetry(Future<dynamic> Function() apiCall) async {
     try {
-      print("Executing call");
       return await apiCall();
     } catch (e) {
       // Check if the error is a token expired error
       final errorStr = e.toString().toLowerCase();
-      print("Captured error: $errorStr");
       if (errorStr.contains('400') && (errorStr.contains('expired'))) {
-        print("Refreshing token");
         // Try to refresh the token
         final refreshed = await _authService.refreshToken();
-        print("Refreshed token: $refreshed");
         if (!refreshed) {
-          print("Failed to refresh expired token");
           throw Exception('Failed to refresh expired token');
         }
-        print("Retrying call with new token");
 
         // Retry the call with the new token
         return await apiCall();
@@ -54,6 +49,9 @@ class SprkClient {
 
   /// Graph namespace for Spark API
   GraphAPI get graph => GraphAPI(this);
+
+  /// Repository namespace for Spark API
+  RepoAPI get repo => RepoAPI(this);
 }
 
 /// Feed-related API endpoints
@@ -242,6 +240,87 @@ class GraphAPI {
         to: (jsonMap) => jsonMap,
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
+    });
+  }
+}
+
+/// Repository-related API endpoints
+class RepoAPI {
+  final SprkClient _client;
+
+  RepoAPI(this._client);
+
+  /// Create a record in the repository
+  ///
+  /// [collection] The NSID of the collection to create the record in
+  /// [record] The record data to create
+  Future<dynamic> createRecord({required NSID collection, required Map<String, dynamic> record}) async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      return await atproto.repo.createRecord(collection: collection, record: record);
+    });
+  }
+
+  /// Delete a record from the repository
+  ///
+  /// [uri] The URI of the record to delete
+  Future<dynamic> deleteRecord({required AtUri uri}) async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      return await atproto.repo.deleteRecord(uri: uri);
+    });
+  }
+
+  /// Upload a blob to the repository
+  ///
+  /// [data] The blob data to upload
+  Future<dynamic> uploadBlob(Uint8List data) async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      return await atproto.repo.uploadBlob(data);
+    });
+  }
+
+  /// List records in a collection
+  ///
+  /// [repo] The DID of the repo to list records from
+  /// [collection] The NSID of the collection to list records from
+  Future<dynamic> listRecords({required String repo, required NSID collection, String? cursor, int? limit, bool? reverse}) async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      return await atproto.repo.listRecords(repo: repo, collection: collection, cursor: cursor, limit: limit, reverse: reverse);
     });
   }
 }
