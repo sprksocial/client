@@ -57,12 +57,7 @@ class AuthService extends ChangeNotifier {
   }
 
   bool _isTokenExpired(Jwt token) {
-    try {
-      return DateTime.now().isAfter(token.exp.subtract(const Duration(minutes: 5)));
-    } catch (e) {
-      print('Failed to check token expiry: $e');
-      return true;
-    }
+    return DateTime.now().isAfter(token.exp.subtract(const Duration(minutes: 5)));
   }
 
   String? _extractPdsDomain(Map<String, dynamic> doc) {
@@ -296,5 +291,18 @@ class AuthService extends ChangeNotifier {
   void clearError() {
     _error = null;
     notifyListeners();
+  }
+
+  /// Refreshes the token
+  /// Returns true if the session was successfully refreshed
+  Future<bool> refreshToken() async {
+    try {
+      await _refreshSession();
+      return _session != null;
+    } catch (e) {
+      _error = 'Failed to refresh session: ${e.toString()}';
+      notifyListeners();
+      return false;
+    }
   }
 }

@@ -1,11 +1,9 @@
-import 'dart:convert';
-
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart';
-import 'package:sparksocial/config/app_config.dart';
 
 import '../models/feed_post.dart';
 import 'auth_service.dart';
+import 'sprk_client.dart';
 
 class FeedManager {
   static final FeedManager _instance = FeedManager._internal();
@@ -51,14 +49,10 @@ class FeedManager {
   }
 
   Future<List<FeedPost>> _fetchSparkNewFeed(AuthService authService) async {
+    final client = SprkClient(authService);
+
     // Get feed skeleton with simple-desc feed
-    final feedGenRes = await authService.atproto!.get(
-      NSID.parse('so.sprk.feed.getFeedSkeleton'),
-      parameters: {'feed': 'simple-desc', 'limit': 30},
-      service: 'feeds.sprk.so',
-      to: (jsonMap) => jsonMap,
-      adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
-    );
+    final feedGenRes = await client.feed.getFeedSkeleton('simple-desc', limit: 30);
 
     // Extract post URIs from the feed data
     final feedData = feedGenRes.data['feed'] as List<dynamic>?;
@@ -68,17 +62,8 @@ class FeedManager {
       return [];
     }
 
-    final sprkAppView = Uri.parse(AppConfig.appViewUrl);
-    final sprkDid = "did:web:${sprkAppView.host}#sprk_appview";
-
     // Get the actual posts using the URIs
-    final feedItems = await authService.atproto!.get(
-      NSID.parse('so.sprk.feed.getPosts'),
-      parameters: {'uris': uris},
-      headers: {'atproto-proxy': sprkDid},
-      to: (jsonMap) => jsonMap,
-      adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
-    );
+    final feedItems = await client.feed.getPosts(uris);
 
     // Process the posts data
     final posts = feedItems.data['posts'] as List<dynamic>?;
