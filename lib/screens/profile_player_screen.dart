@@ -86,13 +86,21 @@ class _ProfilePlayerScreenState extends State<ProfilePlayerScreen> {
     return imageUrls;
   }
 
+  List<String> _extractImageAlts(Map<dynamic, dynamic> post, int count) {
+    final images = post['post']?['embed']?['images'] as List?;
+    if (images == null) return List.filled(count, '');
+    return List<String>.generate(count, (i) => (i < images.length ? (images[i]['alt'] as String? ?? '') : ''));
+  }
+
   ImagePostItem _createImageItem(Map<dynamic, dynamic> post, int index, List<String> imageUrls) {
     final postData = _extractPostData(post);
+    final List<String> imageAlts = _extractImageAlts(post, imageUrls.length);
 
     return ImagePostItem(
       key: ValueKey('image_item_$index'),
       index: index,
       imageUrls: imageUrls,
+      imageAlts: imageAlts,
       username: postData.username,
       description: postData.description,
       hashtags: postData.hashtags,
@@ -331,10 +339,13 @@ class _ProfilePlayerScreenState extends State<ProfilePlayerScreen> {
   }
 
   ImagePostItem _createUpdatedImageItem(ImagePostItem original, bool isVisible) {
+    // Try to preserve the original alts if possible, fallback to empty strings
+    final imageAlts = original.imageAlts.isNotEmpty ? original.imageAlts : List.filled(original.imageUrls.length, '');
     return ImagePostItem(
       key: original.key,
       index: original.index,
       imageUrls: original.imageUrls,
+      imageAlts: imageAlts,
       username: original.username,
       description: original.description,
       hashtags: original.hashtags,
