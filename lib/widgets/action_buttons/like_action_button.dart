@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
+
 import '../../utils/app_colors.dart';
+import 'action_button.dart';
 
 class LikeActionButton extends StatefulWidget {
   final String count;
@@ -62,31 +64,20 @@ class _LikeActionButtonState extends State<LikeActionButton> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        SizedBox(
-          height: 40,
-          width: 40,
-          child: GestureDetector(
-            onTap: _handleTap,
-            child: AnimatedBuilder(
-              animation: _animationController,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _isLiked ? (_animationController.isAnimating ? _scaleAnimation.value : 1.0) : 1.0,
-                  child: Icon(
-                    _isLiked ? FluentIcons.heart_24_filled : FluentIcons.heart_24_regular,
-                    color: _isLiked ? AppColors.red : Colors.white,
-                    size: 30,
-                  ),
-                );
-              },
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(widget.count, style: const TextStyle(color: Colors.white, fontSize: 12)),
-      ],
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        final scale = _isLiked && _animationController.isAnimating ? _scaleAnimation.value : 1.0;
+
+        return ActionButton(
+          key: ValueKey('like_button_${widget.count}'),
+          icon: _isLiked ? FluentIcons.heart_24_filled : FluentIcons.heart_24_regular,
+          color: _isLiked ? AppColors.red : null,
+          label: widget.count,
+          onPressed: _handleTap,
+          scale: scale,
+        );
+      },
     );
   }
 }
