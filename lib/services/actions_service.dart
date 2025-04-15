@@ -47,18 +47,13 @@ class ActionsService extends ChangeNotifier {
     String? rootCid,
     String? rootUri,
     List<XFile>? imageFiles,
+    Map<String, String>? altTexts,
   }) async {
     // Upload images and prepare embed JSON if provided
     Map<String, dynamic>? embedJson;
     if (imageFiles != null && imageFiles.isNotEmpty) {
-      // Use the updated _uploadImages which returns List<Map<String, dynamic>>
-      final List<Map<String, dynamic>> uploadedImageMaps = await _uploadImages(imageFiles, {});
-
-      // Construct the embed JSON using Spark lexicon type
-      embedJson = {
-        "\$type": "so.sprk.embed.images", // Spark image embed type
-        "images": uploadedImageMaps,
-      };
+      final List<Map<String, dynamic>> uploadedImageMaps = await _uploadImages(imageFiles, altTexts ?? {});
+      embedJson = {"\$type": "so.sprk.embed.images", "images": uploadedImageMaps};
     }
 
     // If root isn't provided, use parent as root
