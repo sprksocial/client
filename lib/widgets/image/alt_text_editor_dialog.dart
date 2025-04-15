@@ -6,10 +6,10 @@ import 'package:image_picker/image_picker.dart';
 import '../../utils/app_colors.dart';
 
 class AltTextEditorDialog extends StatefulWidget {
-  final XFile imageFile;
+  final XFile? imageFile;
   final String initialAltText;
 
-  const AltTextEditorDialog({super.key, required this.imageFile, required this.initialAltText});
+  const AltTextEditorDialog({super.key, this.imageFile, required this.initialAltText});
 
   @override
   State<AltTextEditorDialog> createState() => _AltTextEditorDialogState();
@@ -50,10 +50,13 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.file(File(widget.imageFile.path), width: 220, height: 220, fit: BoxFit.cover),
-              ),
+              if (widget.imageFile != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Image.file(File(widget.imageFile!.path), width: 220, height: 220, fit: BoxFit.cover),
+                )
+              else
+                Text('Add alt text', style: TextStyle(color: textColor, fontSize: 16)),
               const SizedBox(height: 20),
               Container(
                 decoration: BoxDecoration(
@@ -68,7 +71,7 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
                   style: TextStyle(color: textColor, fontSize: 16),
                   decoration: InputDecoration(
                     hintText: 'Add alt text',
-                    hintStyle: TextStyle(color: textColor.withOpacity(0.5)),
+                    hintStyle: TextStyle(color: textColor.withAlpha(100)),
                     border: InputBorder.none,
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
                     counterText: '',
@@ -79,7 +82,7 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
               const SizedBox(height: 8),
               Align(
                 alignment: Alignment.centerRight,
-                child: Text('$textLength/1000', style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 12)),
+                child: Text('$textLength/1000', style: TextStyle(color: textColor.withAlpha(130), fontSize: 12)),
               ),
               const SizedBox(height: 12),
               Row(
