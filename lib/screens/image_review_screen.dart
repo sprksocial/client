@@ -41,6 +41,7 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
   List<XFile> _imageFiles = [];
   static const int _maxImages = 12;
   final ImagePicker _picker = ImagePicker();
+  final Map<String, String> _altTexts = {};
 
   @override
   void initState() {
@@ -63,6 +64,95 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
     super.dispose();
   }
 
+  void _editAltText(XFile imageFile) async {
+    final path = imageFile.path;
+    final initialText = _altTexts[path] ?? '';
+    final controller = TextEditingController(text: initialText);
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) {
+        final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
+        final backgroundColor = isDarkMode ? AppColors.nearBlack : Colors.white;
+        final textColor = isDarkMode ? AppColors.textLight : AppColors.textPrimary;
+        final inputBackgroundColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200;
+        final borderColor = isDarkMode ? AppColors.deepPurple : AppColors.lightLavender;
+        return StatefulBuilder(
+          builder: (context, setState) {
+            final textLength = controller.text.runes.length;
+            return Dialog(
+              backgroundColor: backgroundColor,
+              insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.file(File(imageFile.path), width: 220, height: 220, fit: BoxFit.cover),
+                      ),
+                      const SizedBox(height: 20),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: inputBackgroundColor,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: borderColor, width: 1),
+                        ),
+                        child: TextField(
+                          controller: controller,
+                          maxLength: 1000,
+                          maxLines: 4,
+                          style: TextStyle(color: textColor, fontSize: 16),
+                          decoration: InputDecoration(
+                            hintText: 'Add alt text',
+                            hintStyle: TextStyle(color: textColor.withOpacity(0.5)),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                            counterText: '',
+                          ),
+                          onChanged: (_) => setState(() {}),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: Text('$textLength/1000', style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 12)),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                          const SizedBox(width: 8),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context, controller.text),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: AppColors.white,
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
+                            child: const Text('Save'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+    if (result == null) return;
+    setState(() {
+      _altTexts[path] = result.trim();
+    });
+  }
+
   Future<void> _pickMoreImages() async {
     final int remaining = _maxImages - _imageFiles.length;
     if (remaining <= 0) return;
@@ -71,6 +161,9 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
       if (pickedFiles.isEmpty) return;
       setState(() {
         _imageFiles.addAll(pickedFiles);
+        for (final file in pickedFiles) {
+          _altTexts[file.path] = '';
+        }
       });
     } catch (e) {
       debugPrint('Error picking more images: $e');
@@ -95,7 +188,7 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
       if (mounted) {
         Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
       }
-      await actionsService.postImageFeed(description, _imageFiles);
+      await actionsService.postImageFeed(description, _imageFiles, _altTexts);
       uploadService.completeTask(taskId);
     } catch (e) {
       debugPrint('Failed to post images: $e');
@@ -153,41 +246,75 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
                                 controller: _pageController,
                                 itemCount: _imageFiles.length,
                                 itemBuilder: (context, index) {
+                                  final image = _imageFiles[index];
                                   return GestureDetector(
-                                    onTap: () => showFullscreenImage(context, _imageFiles[index]),
+                                    onTap: () => showFullscreenImage(context, image),
                                     child: Stack(
                                       children: [
                                         Container(
                                           margin: const EdgeInsets.symmetric(horizontal: 4.0),
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(8),
-                                            image: DecorationImage(
-                                              image: FileImage(File(_imageFiles[index].path)),
-                                              fit: BoxFit.cover,
-                                            ),
+                                            image: DecorationImage(image: FileImage(File(image.path)), fit: BoxFit.cover),
                                           ),
                                         ),
                                         Positioned(
-                                          top: 8,
+                                          bottom: 8,
                                           right: 8,
-                                          child: Material(
-                                            color: Colors.black.withOpacity(0.5),
-                                            shape: const CircleBorder(),
-                                            child: InkWell(
-                                              onTap: () {
-                                                setState(() {
-                                                  _imageFiles.removeAt(index);
-                                                  if (_currentPage >= _imageFiles.length && _currentPage > 0) {
-                                                    _currentPage = _imageFiles.length - 1;
-                                                  }
-                                                });
-                                              },
-                                              customBorder: const CircleBorder(),
-                                              child: const Padding(
-                                                padding: EdgeInsets.all(4),
-                                                child: Icon(FluentIcons.dismiss_16_filled, color: Colors.white, size: 20),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Material(
+                                                color: Colors.black.withOpacity(0.5),
+                                                borderRadius: BorderRadius.circular(8),
+                                                child: InkWell(
+                                                  onTap: () => _editAltText(image),
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  child: Padding(
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                    child: Row(
+                                                      children: [
+                                                        Icon(
+                                                          FluentIcons.image_alt_text_20_regular,
+                                                          color: Colors.white,
+                                                          size: 16,
+                                                        ),
+                                                        const SizedBox(width: 2),
+                                                        Text(
+                                                          "ALT",
+                                                          style: const TextStyle(
+                                                            color: Colors.white,
+                                                            fontSize: 12,
+                                                            fontWeight: FontWeight.bold,
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ),
                                               ),
-                                            ),
+                                              const SizedBox(width: 8),
+                                              Material(
+                                                color: Colors.black.withOpacity(0.5),
+                                                shape: const CircleBorder(),
+                                                child: InkWell(
+                                                  onTap: () {
+                                                    setState(() {
+                                                      _imageFiles.removeAt(index);
+                                                      _altTexts.remove(image.path);
+                                                      if (_currentPage >= _imageFiles.length && _currentPage > 0) {
+                                                        _currentPage = _imageFiles.length - 1;
+                                                      }
+                                                    });
+                                                  },
+                                                  customBorder: const CircleBorder(),
+                                                  child: const Padding(
+                                                    padding: EdgeInsets.all(4),
+                                                    child: Icon(FluentIcons.dismiss_16_filled, color: Colors.white, size: 20),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                         ),
                                       ],
