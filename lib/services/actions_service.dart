@@ -1,36 +1,33 @@
-import 'package:atproto/atproto.dart' as atp;
-import 'package:flutter/foundation.dart';
 import 'package:atproto/core.dart';
-import 'package:image_picker/image_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
+import 'package:image_picker/image_picker.dart';
+
 import '../models/feed_post.dart';
 import 'auth_service.dart';
+import 'sprk_client.dart';
 
 class ActionsService extends ChangeNotifier {
   final AuthService _authService;
+  late final SprkClient _client;
 
-  ActionsService(this._authService);
-
-  atp.ATProto? get _atproto => _authService.atproto; // Use prefixed type
+  ActionsService(this._authService) {
+    _client = SprkClient(_authService);
+  }
 
   // Check if a post is liked
   bool isPostLiked(FeedPost post) {
     return post.isLiked;
   }
 
-  Future<XRPCResponse<atp.StrongRef>> likePost(String postCid, String postUri) async {
-    final authAtProto = _atproto;
-    if (authAtProto == null || authAtProto.session == null) {
-      throw Exception('AtProto not initialized');
-    }
-
+  Future<dynamic> likePost(String postCid, String postUri) async {
     final likeRecord = {
       "\$type": "so.sprk.feed.like",
       "subject": {"cid": postCid, "uri": postUri},
       "createdAt": DateTime.now().toUtc().toIso8601String(),
     };
 
-    final response = await authAtProto.repo.createRecord(collection: NSID.parse('so.sprk.feed.like'), record: likeRecord);
+    final response = await _client.repo.createRecord(collection: NSID.parse('so.sprk.feed.like'), record: likeRecord);
 
     if (response.status.code != 200) {
       throw Exception('Failed to like post: ${response.status.code} ${response.data}');
@@ -40,7 +37,7 @@ class ActionsService extends ChangeNotifier {
     return response;
   }
 
-  Future<XRPCResponse<atp.StrongRef>> postComment(
+  Future<dynamic> postComment(
     String text,
     String parentCid,
     String parentUri, {
@@ -48,11 +45,6 @@ class ActionsService extends ChangeNotifier {
     String? rootUri,
     List<XFile>? imageFiles,
   }) async {
-    final authAtProto = _atproto;
-    if (authAtProto == null || authAtProto.session == null) {
-      throw Exception('AtProto not initialized');
-    }
-
     // Upload images and prepare embed JSON if provided
     Map<String, dynamic>? embedJson;
     if (imageFiles != null && imageFiles.isNotEmpty) {
@@ -86,12 +78,10 @@ class ActionsService extends ChangeNotifier {
     }
 
     // Use the correct NSID for Spark posts
-    final response = await authAtProto.repo.createRecord(collection: NSID.parse('so.sprk.feed.post'), record: commentRecord);
+    final response = await _client.repo.createRecord(collection: NSID.parse('so.sprk.feed.post'), record: commentRecord);
 
-    // Check response status (using atp.HttpStatus if available, otherwise integer)
-    // Assuming HttpStatus.ok is 200 or similar standard code
+    // Check response status
     if (response.status.code != 200) {
-      // Adjust status code check if needed
       throw Exception('Failed to post comment: ${response.status.code} ${response.data}');
     }
 
@@ -99,13 +89,9 @@ class ActionsService extends ChangeNotifier {
     return response;
   }
 
-  Future<XRPCResponse<EmptyData>> unlikePost(String likeUri) async {
-    final authAtProto = _atproto;
-    if (authAtProto == null || authAtProto.session == null) {
-      throw Exception('AtProto not initialized');
-    }
+  Future<dynamic> unlikePost(String likeUri) async {
+    final response = await _client.repo.deleteRecord(uri: AtUri.parse(likeUri));
 
-    final response = await authAtProto.repo.deleteRecord(uri: AtUri.parse(likeUri));
     if (response.status.code != 200) {
       throw Exception('Failed to unlike post: ${response.status.code} ${response.data}');
     }
@@ -135,11 +121,7 @@ class ActionsService extends ChangeNotifier {
 
   /// Posts a new feed item with text and images using the Spark NSID.
   /// Returns the StrongRef of the created post record.
-  Future<atp.StrongRef> postImageFeed(String text, List<XFile> imageFiles) async {
-    final authAtProto = _atproto; // Use prefixed type
-    if (authAtProto == null || authAtProto.session == null) {
-      throw Exception('AtProto not initialized');
-    }
+  Future<dynamic> postImageFeed(String text, List<XFile> imageFiles) async {
     if (imageFiles.isEmpty) {
       throw ArgumentError('At least one image is required for an image post.');
     }
@@ -149,7 +131,7 @@ class ActionsService extends ChangeNotifier {
     final embed = {"\$type": "so.sprk.embed.images", 'images': uploadedImageMaps};
 
     try {
-      final response = await authAtProto.repo.createRecord(
+      final response = await _client.repo.createRecord(
         collection: NSID.parse('so.sprk.feed.post'),
         record: {
           "\$type": "so.sprk.feed.post",
@@ -172,11 +154,6 @@ class ActionsService extends ChangeNotifier {
 
   /// Helper to upload multiple images, stripping EXIF, and return a list of JSON maps for embedding.
   Future<List<Map<String, dynamic>>> _uploadImages(List<XFile> imageFiles) async {
-    final authAtProto = _atproto;
-    if (authAtProto == null) {
-      throw Exception('ATProto service not available');
-    }
-
     final List<Map<String, dynamic>> uploadedImageMaps = [];
     for (final imageFile in imageFiles) {
       try {
@@ -189,7 +166,7 @@ class ActionsService extends ChangeNotifier {
         }
 
         final processedBytes = Uint8List.fromList(img.encodeJpg(decodedImage, quality: 85));
-        final response = await authAtProto.repo.uploadBlob(processedBytes);
+        final response = await _client.repo.uploadBlob(processedBytes);
 
         if (response.status.code != 200) {
           throw Exception('Blob upload failed for ${imageFile.name}: ${response.status.code}');
@@ -208,17 +185,12 @@ class ActionsService extends ChangeNotifier {
     return uploadedImageMaps;
   }
 
-  Future<XRPCResponse<atp.StrongRef>> followUser(String did) async {
-    final authAtProto = _atproto;
-    if (authAtProto == null || authAtProto.session == null) {
-      throw Exception('AtProto not initialized');
-    }
-
+  Future<dynamic> followUser(String did) async {
     // Check if already following
     try {
       // Query existing follow records
-      final existingFollows = await authAtProto.repo.listRecords(
-        repo: authAtProto.session!.did,
+      final existingFollows = await _client.repo.listRecords(
+        repo: _authService.session!.did,
         collection: NSID.parse('so.sprk.graph.follow'),
       );
 
@@ -236,7 +208,7 @@ class ActionsService extends ChangeNotifier {
         "createdAt": DateTime.now().toUtc().toIso8601String(),
       };
 
-      final response = await authAtProto.repo.createRecord(collection: NSID.parse('so.sprk.graph.follow'), record: followRecord);
+      final response = await _client.repo.createRecord(collection: NSID.parse('so.sprk.graph.follow'), record: followRecord);
 
       if (response.status.code != 200) {
         throw Exception('Failed to follow user: ${response.status.code} ${response.data}');
@@ -250,13 +222,9 @@ class ActionsService extends ChangeNotifier {
     }
   }
 
-  Future<XRPCResponse<EmptyData>> unfollowUser(String followUri) async {
-    final authAtProto = _atproto;
-    if (authAtProto == null || authAtProto.session == null) {
-      throw Exception('AtProto not initialized');
-    }
+  Future<dynamic> unfollowUser(String followUri) async {
+    final response = await _client.repo.deleteRecord(uri: AtUri.parse(followUri));
 
-    final response = await authAtProto.repo.deleteRecord(uri: AtUri.parse(followUri));
     if (response.status.code != 200) {
       throw Exception('Failed to unfollow user: ${response.status.code} ${response.data}');
     }
