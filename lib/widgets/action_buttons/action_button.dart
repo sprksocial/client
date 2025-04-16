@@ -39,7 +39,7 @@ class ActionButton extends StatelessWidget {
             ),
             // Button with transparent background
             SizedBox(
-              height: 48,
+              height: 35,
               width: 48,
               child: Material(
                 color: Colors.transparent,
@@ -53,7 +53,6 @@ class ActionButton extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 4),
         Text(
           label,
           style: const TextStyle(

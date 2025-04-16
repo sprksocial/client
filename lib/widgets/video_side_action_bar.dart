@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'action_buttons/comment_action_button.dart';
 import 'action_buttons/like_action_button.dart';
 import 'action_buttons/profile_action_button.dart';
+import 'action_buttons/menu_action_button.dart';
+import '../services/mod_service.dart';
+import '../services/auth_service.dart';
+import '../widgets/dialogs/report_dialog.dart';
 
 class VideoSideActionBar extends StatefulWidget {
   final VoidCallback? onProfilePressed;
@@ -10,6 +14,7 @@ class VideoSideActionBar extends StatefulWidget {
   final VoidCallback? onCommentPressed;
   final VoidCallback? onBookmarkPressed;
   final VoidCallback? onSharePressed;
+  final VoidCallback? onReportPressed;
 
   final String likeCount;
   final String commentCount;
@@ -19,6 +24,10 @@ class VideoSideActionBar extends StatefulWidget {
   final bool isBookmarked;
   final String? profileImageUrl;
 
+  // Add post info for reporting
+  final String? postUri;
+  final String? postCid;
+
   const VideoSideActionBar({
     super.key,
     this.onProfilePressed,
@@ -26,6 +35,7 @@ class VideoSideActionBar extends StatefulWidget {
     this.onCommentPressed,
     this.onBookmarkPressed,
     this.onSharePressed,
+    this.onReportPressed,
 
     this.likeCount = '0',
     this.commentCount = '0',
@@ -35,6 +45,9 @@ class VideoSideActionBar extends StatefulWidget {
     this.isLiked = false,
     this.isBookmarked = false,
     this.profileImageUrl,
+
+    this.postUri,
+    this.postCid,
   });
 
   @override
@@ -90,12 +103,46 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
     }
   }
 
+  void _handleReport(BuildContext context, AuthService authService) {
+    if (widget.postUri == null || widget.postCid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot report this content')));
+      return;
+    }
+
+    final modService = ModService(authService);
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => ReportDialog(
+            postUri: widget.postUri!,
+            postCid: widget.postCid!,
+            onSubmit: (subject, reasonType, reason, service) async {
+              try {
+                final result = await modService.createReport(
+                  subject: subject,
+                  reasonType: reasonType,
+                  reason: reason,
+                  service: service,
+                );
+
+                if (result) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+              }
+            },
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
         ProfileActionButton(profileImageUrl: widget.profileImageUrl, onPressed: widget.onProfilePressed),
-        const SizedBox(height: 20),
+        const SizedBox(height: 30),
 
         LikeActionButton(count: widget.likeCount, isLiked: _isLiked, onPressed: _handleLike),
         const SizedBox(height: 20),
@@ -109,9 +156,17 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
         //   onPressed: _handleBookmark,
         //   key: const ValueKey('bookmark_button'), // Add a stable key
         // ),
+        MenuActionButton(
+          onPressed:
+              widget.onReportPressed ??
+              () {
+                // Use inherited widget or dependency injection to get the AuthService
+                // This is a placeholder - you need to properly inject AuthService
+                final authService = AuthService();
+                _handleReport(context, authService);
+              },
+        ),
         const SizedBox(height: 20),
-
-        // ShareActionButton(count: widget.shareCount, onPressed: widget.onSharePressed),
       ],
     );
   }

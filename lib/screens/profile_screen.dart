@@ -4,6 +4,10 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
+import 'package:atproto/atproto.dart';
+import 'package:sparksocial/widgets/action_buttons/menu_action_button.dart';
+import 'package:sparksocial/widgets/dialogs/report_dialog.dart';
+import 'package:sparksocial/services/mod_service.dart';
 
 import '../models/profile.dart';
 import '../services/auth_service.dart';
@@ -232,6 +236,39 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
     }
   }
 
+  void _handleReportProfile() {
+    if (_profile == null) return;
+
+    final did = _profile!.did;
+    final modService = ModService(Provider.of<AuthService>(context, listen: false));
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => ReportDialog(
+            postUri: 'at://$did/app.bsky.actor.profile/self',
+            postCid: 'profile', // Using placeholder, the DID is the important part
+            onSubmit: (subject, reasonType, reason, service) async {
+              try {
+                // Create report for a profile
+                final result = await modService.createReport(
+                  subject: ReportSubject.repoRef(data: RepoRef(did: did)),
+                  reasonType: reasonType,
+                  reason: reason,
+                  service: service,
+                );
+
+                if (result) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+              }
+            },
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
@@ -285,16 +322,26 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
         ),
         backgroundColor: isDarkMode ? AppColors.deepPurple : AppColors.background,
         elevation: 0,
-        actions:
-            isCurrentUser
-                ? [
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () => _showProfileMenu(context),
-                    icon: Icon(FluentIcons.more_horizontal_24_regular, color: AppTheme.getTextColor(context)),
-                  ),
-                ]
-                : null,
+        actions: [
+          if (isCurrentUser)
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: IconButton(
+                padding: EdgeInsets.zero,
+                onPressed: () => _showProfileMenu(context),
+                icon: Icon(FluentIcons.more_horizontal_24_regular, color: AppTheme.getTextColor(context)),
+              ),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.only(right: 8.0),
+              child: MenuActionButton(
+                onPressed: _handleReportProfile,
+                backgroundColor: isDarkMode ? Colors.black.withOpacity(0.15) : Colors.grey.withOpacity(0.1),
+                isProfile: true,
+              ),
+            ),
+        ],
       ),
       body: SafeArea(
         child: CustomScrollView(
