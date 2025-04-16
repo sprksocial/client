@@ -82,7 +82,8 @@ class _ImageCarouselState extends State<ImageCarousel> {
               widget.onPageChanged?.call(index);
             },
             itemBuilder: (context, index) {
-              return _buildImageItem(widget.imageUrls[index]);
+              final altText = widget.imageAlts != null && widget.imageAlts!.length > index ? widget.imageAlts![index] : null;
+              return _buildImageItem(widget.imageUrls[index], altText);
             },
           ),
         ),
@@ -134,7 +135,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
     );
   }
 
-  Widget _buildImageItem(String imageUrl) {
+  Widget _buildImageItem(String imageUrl, String? altText) {
     return GestureDetector(
       onTap: () {
         // Image can be tapped to view in fullscreen
@@ -142,9 +143,15 @@ class _ImageCarouselState extends State<ImageCarousel> {
       },
       child: CachedNetworkImage(
         imageUrl: imageUrl,
-        fit: BoxFit.contain,
-        width: double.infinity,
-        height: double.infinity,
+        imageBuilder: (context, imageProvider) {
+          return Image(
+            image: imageProvider,
+            semanticLabel: altText,
+            fit: BoxFit.contain,
+            width: double.infinity,
+            height: double.infinity,
+          );
+        },
         placeholder:
             (context, url) => Container(
               color: Colors.grey[900],
