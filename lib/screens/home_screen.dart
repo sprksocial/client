@@ -292,6 +292,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onSharePressed: () {},
               onUsernameTap: () {},
               onHashtagTap: (String hashtag) {},
+              videoAlt: post.videoAlt,
             );
           } else {
             return VideoItem(
@@ -317,6 +318,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onSharePressed: () {},
               onUsernameTap: () {},
               onHashtagTap: (String hashtag) {},
+              videoAlt: post.videoAlt,
             );
           }
         }
@@ -326,6 +328,7 @@ class _HomeScreenState extends State<HomeScreen> {
             key: ValueKey('image_$index'),
             index: index,
             imageUrls: post.imageUrls,
+            imageAlts: post.imageAlts,
             username: post.username,
             description: post.description,
             hashtags: post.hashtags,

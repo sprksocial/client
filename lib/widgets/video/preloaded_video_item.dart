@@ -9,6 +9,8 @@ import 'video_player_base.dart';
 class PreloadedVideoItem extends VideoPlayerBase {
   final VideoPlayerController controller;
   final bool isVisible;
+  @override
+  final String? videoAlt;
 
   const PreloadedVideoItem({
     super.key,
@@ -36,6 +38,7 @@ class PreloadedVideoItem extends VideoPlayerBase {
     super.postUri,
     super.postCid,
     super.disableBackgroundBlur = false,
+    this.videoAlt,
   }) : super(videoUrl: null);
 
   @override

@@ -12,11 +12,14 @@ import 'video_player_base.dart';
 class VideoItem extends VideoPlayerBase {
   @override
   final String? videoUrl;
+  @override
+  final String? videoAlt;
 
   const VideoItem({
     super.key,
     required super.index,
     required this.videoUrl,
+    this.videoAlt,
     super.username = '',
     super.description = '',
     super.hashtags = const [],

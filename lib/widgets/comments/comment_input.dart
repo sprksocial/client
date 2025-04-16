@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../../services/actions_service.dart';
 import '../../utils/app_colors.dart';
+import '../../widgets/image/alt_text_editor_dialog.dart';
 import 'emoji_picker.dart';
 
 class CommentInput extends StatefulWidget {
@@ -51,6 +52,7 @@ class _CommentInputState extends State<CommentInput> {
   List<XFile> _selectedImages = []; // State for selected images
   bool _canSubmit = false;
   bool _isPosting = false;
+  Map<String, String> _altTexts = {};
 
   @override
   void initState() {
@@ -121,6 +123,9 @@ class _CommentInputState extends State<CommentInput> {
       if (pickedFiles.isNotEmpty) {
         setState(() {
           _selectedImages.addAll(pickedFiles);
+          for (final file in pickedFiles) {
+            _altTexts[file.path] = '';
+          }
           _updateSubmitState(); // Re-check if can submit
         });
       }
@@ -134,7 +139,8 @@ class _CommentInputState extends State<CommentInput> {
   void _removeImage(int index) {
     if (_isPosting) return;
     setState(() {
-      _selectedImages.removeAt(index);
+      final removed = _selectedImages.removeAt(index);
+      _altTexts.remove(removed.path);
       _updateSubmitState(); // Re-check if can submit
     });
   }
@@ -164,13 +170,15 @@ class _CommentInputState extends State<CommentInput> {
         targetUri,
         rootCid: widget.parentCid != null ? widget.postCid : null,
         rootUri: widget.parentUri != null ? widget.postUri : null,
-        imageFiles: imagesToUpload, // Pass the image files
+        imageFiles: imagesToUpload,
+        altTexts: _altTexts,
       );
 
       // Clear text and selected images on success
       _textController.clear();
       setState(() {
         _selectedImages = [];
+        _altTexts = {};
         _updateSubmitState(); // Update submit state after clearing
       });
 
@@ -368,10 +376,11 @@ class _CommentInputState extends State<CommentInput> {
           itemCount: _selectedImages.length,
           itemBuilder: (context, index) {
             final imageFile = _selectedImages[index];
+            final alt = _altTexts[imageFile.path] ?? '';
             return Padding(
               padding: const EdgeInsets.only(right: 8.0),
               child: Stack(
-                alignment: Alignment.topRight,
+                alignment: Alignment.bottomRight,
                 children: [
                   // Image Thumbnail
                   Container(
@@ -383,16 +392,53 @@ class _CommentInputState extends State<CommentInput> {
                       image: DecorationImage(image: FileImage(File(imageFile.path)), fit: BoxFit.cover),
                     ),
                   ),
-                  // Remove Button
-                  Material(
-                    color: Colors.black.withOpacity(0.5),
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      onTap: () => _removeImage(index),
-                      customBorder: const CircleBorder(),
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        child: const Icon(FluentIcons.dismiss_16_filled, color: Colors.white, size: 12),
+                  // ALT Button (bottom right)
+                  Positioned(
+                    bottom: 4,
+                    right: 4,
+                    child: Material(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.circular(8),
+                      child: InkWell(
+                        onTap: () async {
+                          final result = await showDialog<String>(
+                            context: context,
+                            builder: (context) => AltTextEditorDialog(imageFile: imageFile, initialAltText: alt),
+                          );
+                          if (result != null) {
+                            setState(() {
+                              _altTexts[imageFile.path] = result.trim();
+                            });
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(8),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          child: Row(
+                            children: [
+                              Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 14),
+                              const SizedBox(width: 2),
+                              const Text('ALT', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Remove Button (top right)
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Material(
+                      color: Colors.black.withOpacity(0.5),
+                      shape: const CircleBorder(),
+                      child: InkWell(
+                        onTap: () => _removeImage(index),
+                        customBorder: const CircleBorder(),
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          child: const Icon(FluentIcons.dismiss_16_filled, color: Colors.white, size: 12),
+                        ),
                       ),
                     ),
                   ),

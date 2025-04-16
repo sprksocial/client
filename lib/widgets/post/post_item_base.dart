@@ -32,6 +32,8 @@ abstract class PostItemBase extends StatefulWidget {
   final String? postUri; // Renamed from videoUri
   final String? postCid; // Renamed from videoCid
   final bool disableBackgroundBlur;
+  final String? videoAlt;
+  final List<String> imageAlts;
 
   const PostItemBase({
     super.key,
@@ -57,6 +59,8 @@ abstract class PostItemBase extends StatefulWidget {
     this.postUri,
     this.postCid,
     this.disableBackgroundBlur = false,
+    this.videoAlt,
+    this.imageAlts = const [],
   });
 }
 
@@ -228,6 +232,7 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
         description: widget.description,
         hashtags: widget.hashtags,
         isSprk: widget.isSprk,
+        altText: widget.videoAlt ?? (widget.imageAlts.isNotEmpty ? widget.imageAlts.first : null),
         onUsernameTap: widget.onUsernameTap,
         onHashtagTap: widget.onHashtagTap,
         onDescriptionExpandToggle: _handleDescriptionExpandToggle,

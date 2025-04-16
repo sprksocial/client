@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
-import 'package:path/path.dart' as path;
-import 'package:sparksocial/services/auth_service.dart';
-import 'package:sparksocial/config/app_config.dart';
 import 'package:http/http.dart' as http;
+import 'package:path/path.dart' as path;
+import 'package:sparksocial/config/app_config.dart';
+import 'package:sparksocial/services/auth_service.dart';
 
 class VideoService {
   final AuthService _authService;
@@ -47,10 +48,7 @@ class VideoService {
       final serviceToken = serviceTokenRes.data.token;
       final response = await http.post(
         Uri.parse('${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.uploadVideo'),
-        headers: {
-          'Authorization': 'Bearer $serviceToken',
-          'Content-Type': _getContentType(videoPath),
-        },
+        headers: {'Authorization': 'Bearer $serviceToken', 'Content-Type': _getContentType(videoPath)},
         body: videoBytes,
       );
 
@@ -83,7 +81,7 @@ class VideoService {
     }
   }
 
-  Future<StrongRef> postVideo(Map<String, dynamic>? videoBlobRef, [String description = '']) async {
+  Future<StrongRef> postVideo(Map<String, dynamic>? videoBlobRef, {String description = '', String videoAltText = ''}) async {
     final authAtProto = _authService.atproto;
     if (authAtProto == null || authAtProto.session == null) {
       throw Exception('AtProto not initialized');
@@ -98,7 +96,7 @@ class VideoService {
     final postRecord = {
       '\$type': 'so.sprk.feed.post',
       'text': postText,
-      'embed': {'\$type': 'so.sprk.embed.video', 'video': videoBlobRef},
+      'embed': {'\$type': 'so.sprk.embed.video', 'video': videoBlobRef, 'alt': videoAltText},
       'createdAt': DateTime.now().toUtc().toIso8601String(),
     };
 
