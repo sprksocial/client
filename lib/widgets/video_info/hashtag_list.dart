@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../common/fading_list_view.dart';
 
 class HashtagList extends StatelessWidget {
   final List<String> hashtags;
@@ -13,30 +14,24 @@ class HashtagList extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: hashtags.map((tag) {
-          return Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: GestureDetector(
+    return FadingListView(
+      isHorizontal: true,
+      fadeWidth: 16.0,
+      itemSpacing: 8.0,
+      children:
+          hashtags.map((tag) {
+            return GestureDetector(
               onTap: onHashtagTap != null ? () => onHashtagTap!(tag) : null,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                decoration: BoxDecoration(
-                  color: Colors.white.withAlpha(50),
-                  borderRadius: BorderRadius.circular(12.0),
-                ),
+                decoration: BoxDecoration(color: Colors.white.withAlpha(50), borderRadius: BorderRadius.circular(12.0)),
                 child: Text(
                   '#$tag',
                   style: style ?? const TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 13),
                 ),
               ),
-            ),
-          );
-        }).toList(),
-      ),
+            );
+          }).toList(),
     );
   }
 

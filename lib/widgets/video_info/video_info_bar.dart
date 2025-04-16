@@ -46,7 +46,7 @@ class VideoInfoBar extends StatelessWidget {
 
         const SizedBox(height: 6),
 
-        HashtagList(hashtags: hashtags, onHashtagTap: onHashtagTap),
+        SizedBox(height: 30, child: HashtagList(hashtags: hashtags, onHashtagTap: onHashtagTap)),
       ],
     );
   }
