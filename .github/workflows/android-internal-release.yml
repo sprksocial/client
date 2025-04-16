@@ -3,8 +3,8 @@ name: "Internal testing android release"
 on:
   workflow_dispatch:
   push:
-    tags:
-      - v*
+    branches:
+      - main
 
 permissions:
   contents: "read"
@@ -41,6 +41,14 @@ jobs:
           echo "VIDEO_SERVICE_URL=${{ secrets.VIDEO_SERVICE_URL }}" >> .env
           echo "SPRK_APPVIEW_URL=${{ secrets.SPRK_APPVIEW_URL }}" >> .env
           echo "SIGNUPS_DISABLED=${{ secrets.SIGNUPS_DISABLED }}" >> .env
+
+      - name: Set versionCode (commit count + run attempt)
+        run: |
+          COMMIT_COUNT=$(git rev-list --count HEAD)
+          BUILD_ATTEMPT=${{ github.run_attempt }}
+          VERSION_CODE=$((COMMIT_COUNT * 10 + BUILD_ATTEMPT))
+          sed -i "s/^\(version:.*\)+[0-9]*\$/\1+${VERSION_CODE}/" pubspec.yaml
+          echo "Using versionCode: $VERSION_CODE"
 
       - name: Configure Keystore
         run: |
