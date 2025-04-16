@@ -12,16 +12,13 @@ class ProfileService extends ChangeNotifier {
   ProfileService(this._authService);
 
   Future<Profile?> getProfile(String did) async {
-    debugPrint('getProfile called with did: $did');
     if (!_authService.isAuthenticated) {
-      debugPrint('Not authenticated, returning null');
       return null;
     }
 
     // Check for existing follow first
     String? existingFollowUri;
     try {
-      debugPrint('Checking existing follows...');
       final existingFollows = await _authService.atproto!.repo.listRecords(
         repo: _authService.session!.did,
         collection: NSID.parse('so.sprk.graph.follow'),
@@ -34,16 +31,13 @@ class ProfileService extends ChangeNotifier {
           break;
         }
       }
-      debugPrint('Existing follows check completed');
     } catch (e) {
       debugPrint('Error checking existing follows: $e');
     }
 
     // Try Spark profile first
     try {
-      debugPrint('Attempting to fetch Spark profile...');
       final sprkProfile = await getProfileFullSprk(did);
-      debugPrint('Spark profile fetch result: ${sprkProfile != null ? 'success' : 'null'}');
       if (sprkProfile != null) {
         final viewer = sprkProfile['viewer'] as Map<dynamic, dynamic>?;
         return Profile.fromSparkProfile({
@@ -66,54 +60,37 @@ class ProfileService extends ChangeNotifier {
     try {
       final bskyProfile = await getProfileFullBsky(did);
       if (bskyProfile != null) {
-        debugPrint('Bsky profile found, retrieving counts...');
         final profile = Profile.fromBlueskyActor(bskyProfile);
         final counts = bskyProfile.toJson();
-        debugPrint('Bsky profile counts: $counts');
 
         var followersCount = counts['followersCount'] as int? ?? 0;
         var followingCount = counts['followsCount'] as int? ?? 0;
-
-        debugPrint('Initial counts - Followers: $followersCount, Following: $followingCount');
 
         // Try to enhance with Spark data, but don't fail if these calls fail
         final client = SprkClient(_authService);
 
         try {
-          debugPrint('Fetching Spark followers...');
           final sparkFollowers = await client.graph.getFollowers(did);
-          debugPrint('Spark followers response: ${sparkFollowers.data}');
 
           try {
             final followers = sparkFollowers.data['followers'] as List;
             followersCount += followers.length;
-            debugPrint('Added ${followers.length} Spark followers, new total: $followersCount');
-          } catch (e) {
-            debugPrint('Error processing followers: $e');
-          }
+          } catch (e) {}
         } catch (e) {
           debugPrint('Error fetching Spark followers: $e');
           // Continue anyway
         }
 
         try {
-          debugPrint('Fetching Spark follows...');
           final sparkFollows = await client.graph.getFollows(did);
-          debugPrint('Spark follows response: ${sparkFollows.data}');
 
           try {
             final follows = sparkFollows.data['follows'] as List;
             followingCount += follows.length;
-            debugPrint('Added ${follows.length} Spark follows, new total: $followingCount');
-          } catch (e) {
-            debugPrint('Error processing follows: $e');
-          }
+          } catch (e) {}
         } catch (e) {
           debugPrint('Error fetching Spark follows: $e');
-          // Continue anyway
         }
-
-        debugPrint('Final counts - Followers: $followersCount, Following: $followingCount');
 
         return profile.withCounts({
           'followersCount': followersCount,
@@ -147,20 +124,15 @@ class ProfileService extends ChangeNotifier {
   }
 
   Future<Map<String, dynamic>?> getProfileFullSprk(String did) async {
-    debugPrint('getProfileFullSprk called with did: $did');
     if (!_authService.isAuthenticated) {
-      debugPrint('getProfileFullSprk: Not authenticated, returning null');
       return null;
     }
 
     try {
-      debugPrint('getProfileFullSprk: Making API request...');
       final client = SprkClient(_authService);
       final profileRes = await client.actor.getProfile(did);
-      debugPrint('getProfileFullSprk: API request completed');
 
       final profile = profileRes.data as Map<String, dynamic>?;
-      debugPrint('getProfileFullSprk: Profile data: ${profile != null ? 'exists' : 'null'}');
       if (profile == null) return null;
 
       // Ensure we have the viewer information
@@ -170,7 +142,6 @@ class ProfileService extends ChangeNotifier {
 
       return profile;
     } catch (e) {
-      debugPrint('getProfileFullSprk: Error occurred: $e');
       throw Exception('Failed to fetch profile: $e');
     }
   }
