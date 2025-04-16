@@ -1,7 +1,7 @@
 name: sparksocial
 description: "A new Flutter project."
 publish_to: 'none'
-# The number after + must always be incremented on any change for android build to work
+# The number after + should stay fixed, the android workflow will change it on every build
 version: 0.1.6+4
 
 environment:
