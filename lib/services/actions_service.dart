@@ -1,7 +1,10 @@
+import 'package:atproto/atproto.dart' as atp;
 import 'package:atproto/core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+
 
 import '../models/feed_post.dart';
 import 'auth_service.dart';
@@ -44,18 +47,13 @@ class ActionsService extends ChangeNotifier {
     String? rootCid,
     String? rootUri,
     List<XFile>? imageFiles,
+    Map<String, String>? altTexts,
   }) async {
     // Upload images and prepare embed JSON if provided
     Map<String, dynamic>? embedJson;
     if (imageFiles != null && imageFiles.isNotEmpty) {
-      // Use the updated _uploadImages which returns List<Map<String, dynamic>>
-      final List<Map<String, dynamic>> uploadedImageMaps = await _uploadImages(imageFiles);
-
-      // Construct the embed JSON using Spark lexicon type
-      embedJson = {
-        "\$type": "so.sprk.embed.images", // Spark image embed type
-        "images": uploadedImageMaps,
-      };
+      final List<Map<String, dynamic>> uploadedImageMaps = await _uploadImages(imageFiles, altTexts ?? {});
+      embedJson = {"\$type": "so.sprk.embed.images", "images": uploadedImageMaps};
     }
 
     // If root isn't provided, use parent as root
@@ -121,12 +119,12 @@ class ActionsService extends ChangeNotifier {
 
   /// Posts a new feed item with text and images using the Spark NSID.
   /// Returns the StrongRef of the created post record.
-  Future<dynamic> postImageFeed(String text, List<XFile> imageFiles) async {
+  Future<dynamic> postImageFeed(String text, List<XFile> imageFiles, Map<String, String> altTexts) async {
     if (imageFiles.isEmpty) {
       throw ArgumentError('At least one image is required for an image post.');
     }
 
-    final List<Map<String, dynamic>> uploadedImageMaps = await _uploadImages(imageFiles);
+    final List<Map<String, dynamic>> uploadedImageMaps = await _uploadImages(imageFiles, altTexts);
 
     final embed = {"\$type": "so.sprk.embed.images", 'images': uploadedImageMaps};
 
@@ -153,7 +151,7 @@ class ActionsService extends ChangeNotifier {
   }
 
   /// Helper to upload multiple images, stripping EXIF, and return a list of JSON maps for embedding.
-  Future<List<Map<String, dynamic>>> _uploadImages(List<XFile> imageFiles) async {
+  Future<List<Map<String, dynamic>>> _uploadImages(List<XFile> imageFiles, Map<String, String> altTexts) async {
     final List<Map<String, dynamic>> uploadedImageMaps = [];
     for (final imageFile in imageFiles) {
       try {
@@ -174,7 +172,7 @@ class ActionsService extends ChangeNotifier {
 
         uploadedImageMaps.add({
           "\$type": "so.sprk.embed.images#image",
-          "alt": '', // Alt text - consider adding a way to input this later
+          "alt": altTexts[imageFile.path] ?? '',
           "image": response.data.blob.toJson(),
         });
       } catch (e) {

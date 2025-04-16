@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import '../services/upload_service.dart';
+import '../utils/app_colors.dart';
+import '../widgets/image/alt_text_editor_dialog.dart';
 import '../widgets/video_review/video_thumbnail.dart';
 
 class VideoReviewScreen extends StatefulWidget {
@@ -21,6 +23,7 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
   late VideoPlayerController _controller;
   final TextEditingController _descriptionController = TextEditingController();
   bool _isPosting = false;
+  String _videoAltText = '';
 
   @override
   void initState() {
@@ -92,113 +95,175 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
+    final backgroundColor = isDarkMode ? AppColors.nearBlack : Colors.white;
+    final textColor = isDarkMode ? AppColors.textLight : AppColors.textPrimary;
+    final inputBackgroundColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200;
+    final appBarIconColor = isDarkMode ? Colors.white : Colors.black;
+    final appBarTextColor = isDarkMode ? Colors.white : Colors.black;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: backgroundColor,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: backgroundColor,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(FluentIcons.arrow_left_24_regular, color: Colors.black),
+          icon: Icon(FluentIcons.arrow_left_24_regular, color: appBarIconColor),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Review Video', style: TextStyle(color: Colors.black)),
+        title: Text('Review Video', style: TextStyle(color: appBarTextColor)),
       ),
       body: SafeArea(
         child: Column(
           children: [
-            // Content area with scrolling
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      // Description field on left
-                      Expanded(
-                        child: Container(
-                          height: 250,
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(8)),
-                          child: TextField(
-                            controller: _descriptionController,
-                            style: const TextStyle(color: Colors.black),
-                            maxLines: null,
-                            maxLength: 280,
-                            expands: true,
-                            decoration: const InputDecoration(
-                              hintText: 'Description goes here',
-                              hintStyle: TextStyle(color: Colors.grey),
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.zero,
-                              isDense: true,
-                              counterText: '',
+                      // Video preview big on top with ALT overlay
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final maxWidth = constraints.maxWidth;
+                          final maxHeight = 320.0;
+                          if (!_controller.value.isInitialized) {
+                            return SizedBox(
+                              height: maxHeight,
+                              width: double.infinity,
+                              child:
+                                  _controller.value.hasError
+                                      ? Container(
+                                        color: Colors.grey.shade900,
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          'Video preview unavailable',
+                                          style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      )
+                                      : Container(
+                                        color: Colors.grey,
+                                        alignment: Alignment.center,
+                                        child: const CircularProgressIndicator(),
+                                      ),
+                            );
+                          }
+                          final aspectRatio = _controller.value.aspectRatio;
+                          double width = maxWidth;
+                          double height = width / aspectRatio;
+                          if (height > maxHeight) {
+                            height = maxHeight;
+                            width = height * aspectRatio;
+                          }
+                          return SizedBox(
+                            height: height,
+                            width: width,
+                            child: Stack(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: AspectRatio(aspectRatio: aspectRatio, child: VideoThumbnail(controller: _controller)),
+                                ),
+                                // ALT button overlay (bottom right)
+                                Positioned(
+                                  bottom: 12,
+                                  right: 12,
+                                  child: Material(
+                                    color: Colors.black.withOpacity(0.5),
+                                    borderRadius: BorderRadius.circular(8),
+                                    child: InkWell(
+                                      onTap: () async {
+                                        final wasPlaying = _controller.value.isPlaying;
+                                        _controller.pause();
+                                        final result = await showDialog<String>(
+                                          context: context,
+                                          builder:
+                                              (context) => AltTextEditorDialog(imageFile: null, initialAltText: _videoAltText),
+                                        );
+                                        if (result != null) {
+                                          setState(() {
+                                            _videoAltText = result.trim();
+                                          });
+                                        }
+                                        if (wasPlaying && mounted) {
+                                          _controller.play();
+                                        }
+                                      },
+                                      borderRadius: BorderRadius.circular(8),
+                                      child: Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                        child: Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 16),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              _videoAltText.isEmpty ? 'ALT' : 'ALT',
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      // Description field
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(color: inputBackgroundColor, borderRadius: BorderRadius.circular(8)),
+                        child: TextField(
+                          controller: _descriptionController,
+                          style: TextStyle(color: textColor),
+                          maxLines: 5,
+                          maxLength: 300,
+                          decoration: InputDecoration(
+                            hintText: 'Add a description... (optional)',
+                            hintStyle: TextStyle(color: textColor.withOpacity(0.5)),
+                            border: InputBorder.none,
+                            contentPadding: EdgeInsets.zero,
+                            isDense: true,
+                            counterText: '',
                           ),
                         ),
                       ),
-
-                      const SizedBox(width: 20),
-
-                      // Video thumbnail on right
-                      if (_controller.value.isInitialized)
-                        VideoThumbnail(controller: _controller, width: 160, height: 250)
-                      else
-                        Container(
-                          width: 160,
-                          height: 250,
-                          decoration: BoxDecoration(color: Colors.grey, borderRadius: BorderRadius.circular(8)),
-                          child: const Center(child: CircularProgressIndicator()),
-                        ),
                     ],
                   ),
                 ),
               ),
             ),
-
-            // Bottom buttons
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  // Cancel button
-                  Expanded(
-                    child: InkWell(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        height: 55,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(16)),
-                        child: const Text('cancel', style: TextStyle(color: Colors.black87, fontWeight: FontWeight.w500)),
-                      ),
-                    ),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isPosting ? null : _uploadVideo,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
                   ),
-
-                  const SizedBox(width: 16),
-
-                  // Post button
-                  Expanded(
-                    child: InkWell(
-                      onTap: _isPosting ? null : _uploadVideo,
-                      child: Container(
-                        height: 55,
-                        alignment: Alignment.center,
-                        decoration: BoxDecoration(
-                          color: _isPosting ? Colors.pink.shade300 : Colors.pink,
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child:
-                            _isPosting
-                                ? const SizedBox(
-                                  height: 20,
-                                  width: 20,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                )
-                                : const Text('post', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
-                      ),
-                    ),
-                  ),
-                ],
+                  child:
+                      _isPosting
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                          : const Text('Post', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
               ),
             ),
           ],

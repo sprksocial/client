@@ -177,33 +177,28 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       return;
     }
 
-    const maxImages = 4; // Limit image count
+    const maxImages = 12;
 
     try {
       final List<XFile> pickedFiles = await _picker.pickMultiImage(limit: maxImages);
-
-      if (pickedFiles.isNotEmpty) {
-        debugPrint('${pickedFiles.length} images selected from gallery.');
-
-        if (mounted) {
-          // Navigate to the ImageReviewScreen
-          Navigator.push(context, MaterialPageRoute(builder: (context) => ImageReviewScreen(imageFiles: pickedFiles)));
-        }
-      }
+      if (pickedFiles.isEmpty) return;
+      final List<XFile> limitedFiles = pickedFiles.length > maxImages ? pickedFiles.sublist(0, maxImages) : pickedFiles;
+      debugPrint('${limitedFiles.length} images selected from gallery.');
+      if (!mounted) return;
+      Navigator.push(context, MaterialPageRoute(builder: (context) => ImageReviewScreen(imageFiles: limitedFiles)));
     } catch (e) {
       debugPrint('Error picking images for post: $e');
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Error'),
-              content: Text('Failed to select images: ${e.toString()}'),
-              actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK'))],
-            );
-          },
-        );
-      }
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Error'),
+            content: Text('Failed to select images: ${e.toString()}'),
+            actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK'))],
+          );
+        },
+      );
     }
   }
 

@@ -9,6 +9,8 @@ import '../post/post_item_base.dart'; // Import the base class
 // Convert to StatefulWidget extending PostItemBase
 class ImagePostItem extends PostItemBase {
   final List<String> imageUrls;
+  @override
+  final List<String> imageAlts;
   // isVisible is often managed externally for image carousels or pages, pass it in
   final bool isVisible;
   // Add postCid if needed for comments, passed to super
@@ -18,6 +20,7 @@ class ImagePostItem extends PostItemBase {
     super.key,
     required super.index,
     required this.imageUrls,
+    required this.imageAlts,
     required super.username,
     required super.description,
     required super.hashtags,
@@ -106,6 +109,7 @@ class _ImagePostItemState extends PostItemBaseState<ImagePostItem> {
     // The main content is the ImageCarousel
     return ImageCarousel(
       imageUrls: widget.imageUrls,
+      imageAlts: widget.imageAlts,
       disableBackgroundBlur: widget.disableBackgroundBlur,
       // Ensure ImageCarousel doesn't conflict with the base background
     );

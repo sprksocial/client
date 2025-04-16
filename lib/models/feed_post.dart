@@ -20,6 +20,8 @@ class FeedPost {
   final String? likeUri; // URI of the user's like if the post is liked
   final bool hasMedia; // Whether the post has media (image or video)
   final bool isReply; // Whether the post is a reply to another post
+  final List<String> imageAlts;
+  final String? videoAlt;
 
   FeedPost({
     required this.username,
@@ -38,6 +40,8 @@ class FeedPost {
     this.likeUri,
     this.hasMedia = false,
     this.isReply = false,
+    this.imageAlts = const [],
+    this.videoAlt,
   });
 
   /// Create a FeedPost from a Bluesky feed item
@@ -48,14 +52,18 @@ class FeedPost {
     String? videoUrl;
     List<String> imageUrls = [];
     bool hasMedia = false;
+    List<String> imageAlts = [];
+    String? videoAlt;
 
     if (post.embed?.data is EmbedVideoView) {
       videoUrl = (post.embed?.data as EmbedVideoView).playlist;
+      // TODO: Extract alt if available from EmbedVideoView
       hasMedia = true;
     } else if (post.embed?.data is EmbedViewImages) {
       hasMedia = true;
       final embedImages = post.embed?.data as EmbedViewImages;
       imageUrls = embedImages.images.map((img) => img.fullsize).toList();
+      imageAlts = embedImages.images.map((img) => img.alt).toList();
     }
     if (!hasMedia) {}
 
@@ -82,6 +90,8 @@ class FeedPost {
       likeUri: post.viewer.like?.toString(),
       hasMedia: hasMedia,
       isReply: isReply,
+      imageAlts: imageAlts,
+      videoAlt: videoAlt,
     );
   }
 
@@ -95,17 +105,21 @@ class FeedPost {
     String? videoUrl;
     List<String> imageUrls = [];
     bool hasMedia = false;
+    List<String> imageAlts = [];
+    String? videoAlt;
 
     if (post['embed'] != null) {
       final embedType = post['embed']['\$type'] as String?;
-      if (embedType == 'so.sprk.embed.video#view') {
-        videoUrl = post['embed']['playlist'];
+      if (embedType == 'so.sprk.embed.video#view' || embedType == 'so.sprk.embed.video') {
+        videoUrl = post['embed']['playlist'] ?? post['embed']['video'];
+        videoAlt = post['embed']['alt'] as String?;
         hasMedia = true;
-      } else if (embedType == 'so.sprk.embed.images#view') {
+      } else if (embedType == 'so.sprk.embed.images#view' || embedType == 'so.sprk.embed.images') {
         hasMedia = true;
         final embedImages = post['embed']['images'] as List<dynamic>?;
         if (embedImages != null) {
           imageUrls = embedImages.map((img) => img['fullsize'] as String? ?? '').where((url) => url.isNotEmpty).toList();
+          imageAlts = embedImages.map((img) => (img['alt'] as String?) ?? '').toList();
         }
       }
     }
@@ -142,6 +156,8 @@ class FeedPost {
       likeUri: likeUri,
       hasMedia: hasMedia,
       isReply: isReply,
+      imageAlts: imageAlts,
+      videoAlt: videoAlt,
     );
   }
 

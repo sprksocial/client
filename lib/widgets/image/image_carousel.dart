@@ -1,13 +1,21 @@
-import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'dart:ui';
+
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
 
 class ImageCarousel extends StatefulWidget {
   final List<String> imageUrls;
+  final List<String>? imageAlts;
   final bool autoPreload;
   final bool disableBackgroundBlur;
 
-  const ImageCarousel({super.key, required this.imageUrls, this.autoPreload = true, this.disableBackgroundBlur = false});
+  const ImageCarousel({
+    super.key,
+    required this.imageUrls,
+    this.imageAlts,
+    this.autoPreload = true,
+    this.disableBackgroundBlur = false,
+  });
 
   @override
   State<ImageCarousel> createState() => _ImageCarouselState();
@@ -71,7 +79,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
               });
             },
             itemBuilder: (context, index) {
-              return _buildImageItem(widget.imageUrls[index]);
+              return Stack(children: [Positioned.fill(child: _buildImageItem(widget.imageUrls[index]))]);
             },
           ),
         ),
@@ -155,7 +163,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
         margin: const EdgeInsets.symmetric(horizontal: 4.0),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: _currentIndex == index ? Colors.white : Colors.white.withValues(alpha: 0.5)
+          color: _currentIndex == index ? Colors.white : Colors.white.withValues(alpha: 0.5),
         ),
       ),
     );

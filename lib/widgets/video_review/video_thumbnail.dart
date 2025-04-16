@@ -6,10 +6,8 @@ import '../../screens/video_playback_screen.dart';
 
 class VideoThumbnail extends StatefulWidget {
   final VideoPlayerController controller;
-  final double width;
-  final double height;
 
-  const VideoThumbnail({super.key, required this.controller, this.width = 160, this.height = 250});
+  const VideoThumbnail({super.key, required this.controller});
 
   @override
   State<VideoThumbnail> createState() => _VideoThumbnailState();
@@ -29,13 +27,10 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
   }
 
   void _openFullscreenPlayback(BuildContext context) {
-    // Pause the preview before opening fullscreen
     widget.controller.pause();
-
     Navigator.of(context).push(MaterialPageRoute(builder: (context) => VideoPlaybackScreen(controller: widget.controller))).then((
       _,
     ) {
-      // Don't auto resume when returning from fullscreen
       setState(() {});
     });
   }
@@ -43,9 +38,8 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
   @override
   Widget build(BuildContext context) {
     if (!widget.controller.value.isInitialized) {
-      return SizedBox(
-        width: widget.width,
-        height: widget.height,
+      return AspectRatio(
+        aspectRatio: 16 / 9,
         child: Container(color: Colors.grey[600], child: const Center(child: CircularProgressIndicator(color: Colors.white))),
       );
     }
@@ -53,22 +47,16 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
     return GestureDetector(
       onTap: _togglePlayPause,
       onLongPress: () => _openFullscreenPlayback(context),
-      child: SizedBox(
-        width: widget.width,
-        height: widget.height,
+      child: AspectRatio(
+        aspectRatio: widget.controller.value.aspectRatio,
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // Video frame
             Container(
-              width: widget.width,
-              height: widget.height,
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(color: Colors.grey[800], borderRadius: BorderRadius.circular(8)),
-              child: AspectRatio(aspectRatio: widget.controller.value.aspectRatio, child: VideoPlayer(widget.controller)),
+              child: VideoPlayer(widget.controller),
             ),
-
-            // Play/Pause button overlay
             if (!_isPlaying)
               Container(
                 width: 50,
@@ -76,10 +64,8 @@ class _VideoThumbnailState extends State<VideoThumbnail> {
                 decoration: BoxDecoration(color: Colors.black.withOpacity(0.5), shape: BoxShape.circle),
                 child: const Icon(FluentIcons.play_24_filled, color: Colors.white, size: 32),
               ),
-
-            // Interaction hint
             Positioned(
-              bottom: 8,
+              top: 8,
               left: 0,
               right: 0,
               child: Container(
