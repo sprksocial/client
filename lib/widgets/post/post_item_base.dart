@@ -7,6 +7,10 @@ import '../../utils/formatters/text_formatter.dart';
 import '../comments/comments_tray.dart';
 import '../video_info/video_info_bar.dart'; // Reusing VideoInfoBar for now
 import '../video_side_action_bar.dart'; // Reusing VideoSideActionBar for now
+import '../dialogs/report_dialog.dart'; // Add import for ReportDialog
+import 'package:atproto/atproto.dart'; // Import for ReportSubject and ModerationReasonType
+import '../../services/mod_service.dart'; // Import for ModService
+import '../../services/auth_service.dart'; // Import for AuthService
 
 /// Base class for post items (Video, Image, etc.) to handle common parameters.
 abstract class PostItemBase extends StatefulWidget {
@@ -85,6 +89,40 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
         _commentCount = widget.commentCount;
       });
     }
+  }
+
+  void showReportDialog() {
+    if (widget.postUri == null || widget.postCid == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot report this content')));
+      return;
+    }
+
+    final modService = ModService(AuthService());
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => ReportDialog(
+            postUri: widget.postUri!,
+            postCid: widget.postCid!,
+            onSubmit: (subject, reasonType, reason, service) async {
+              try {
+                final result = await modService.createReport(
+                  subject: subject,
+                  reasonType: reasonType,
+                  reason: reason,
+                  service: service,
+                );
+
+                if (result) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+              }
+            },
+          ),
+    );
   }
 
   /// Abstract method for subclasses to build the main content (VideoPlayer, ImageCarousel).
@@ -225,7 +263,7 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
     return Positioned(
       bottom: 20,
       left: 10,
-      right: 70, // Give space for the side action bar
+      right: 65,
       child: VideoInfoBar(
         // Consider renaming VideoInfoBar later if needed
         username: widget.username,
@@ -242,8 +280,8 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
 
   Widget buildSideActionBar() {
     return Positioned(
-      right: 10,
-      bottom: 100,
+      right: 16,
+      bottom: 16,
       child: VideoSideActionBar(
         // Consider renaming VideoSideActionBar later
         likeCount: TextFormatter.formatCount(widget.likeCount),
@@ -257,6 +295,8 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
         onBookmarkPressed: widget.onBookmarkPressed ?? () {},
         onSharePressed: widget.onSharePressed ?? () {},
         onProfilePressed: navigateToProfile, // Use the unified method
+        postCid: widget.postCid,
+        postUri: widget.postUri,
       ),
     );
   }

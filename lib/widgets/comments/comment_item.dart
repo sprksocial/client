@@ -2,12 +2,18 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/widgets/common/user_avatar.dart';
+import 'package:sparksocial/widgets/dialogs/report_dialog.dart';
+import 'package:atproto/atproto.dart';
+import 'package:provider/provider.dart';
+import 'package:sparksocial/services/mod_service.dart';
+import 'package:sparksocial/services/auth_service.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../models/comment.dart';
 import '../../utils/app_colors.dart';
 import '../image/image_carousel.dart';
 import 'comment_reply_item.dart';
+import '../action_buttons/menu_action_button.dart';
 
 class CommentItem extends StatefulWidget {
   final String id;
@@ -152,6 +158,35 @@ class _CommentItemState extends State<CommentItem> {
     );
   }
 
+  void _handleReportComment() {
+    final modService = ModService(Provider.of<AuthService>(context, listen: false));
+
+    showDialog(
+      context: context,
+      builder:
+          (context) => ReportDialog(
+            postUri: widget.uri,
+            postCid: widget.cid,
+            onSubmit: (subject, reasonType, reason, service) async {
+              try {
+                final result = await modService.createReport(
+                  subject: subject,
+                  reasonType: reasonType,
+                  reason: reason,
+                  service: service,
+                );
+
+                if (result) {
+                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+                }
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+              }
+            },
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final textColor = widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary;
@@ -198,10 +233,25 @@ class _CommentItemState extends State<CommentItem> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(widget.username, style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
-            const SizedBox(width: 8),
-            Text(widget.timeAgo, style: TextStyle(fontSize: 12, color: secondaryTextColor)),
+            Expanded(
+              child: Row(
+                children: [
+                  Text(widget.username, style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+                  const SizedBox(width: 8),
+                  Text(widget.timeAgo, style: TextStyle(fontSize: 12, color: secondaryTextColor)),
+                ],
+              ),
+            ),
+            MenuActionButton(
+              onPressed: () {
+                _handleReportComment();
+              },
+              isCompact: true,
+              backgroundColor: widget.isDarkMode ? Colors.black.withOpacity(0.2) : Colors.grey.withOpacity(0.1),
+              isProfile: false,
+            ),
           ],
         ),
         const SizedBox(height: 4),
