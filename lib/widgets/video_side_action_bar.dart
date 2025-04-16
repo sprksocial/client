@@ -165,6 +165,7 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
                 final authService = AuthService();
                 _handleReport(context, authService);
               },
+          isOnVideo: true,
         ),
         const SizedBox(height: 20),
       ],
