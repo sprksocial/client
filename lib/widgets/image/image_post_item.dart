@@ -5,6 +5,7 @@ import 'package:sparksocial/widgets/image/image_carousel.dart';
 
 import '../../utils/app_colors.dart'; // For potential background fallback
 import '../post/post_item_base.dart'; // Import the base class
+import '../video_info/video_info_bar.dart';
 
 // Convert to StatefulWidget extending PostItemBase
 class ImagePostItem extends PostItemBase {
@@ -51,6 +52,9 @@ class ImagePostItem extends PostItemBase {
 
 // Create State class extending PostItemBaseState
 class _ImagePostItemState extends PostItemBaseState<ImagePostItem> {
+  // Track current carousel page index
+  int _currentCarouselIndex = 0;
+
   // --- Implement required abstract members ---
 
   @override
@@ -106,22 +110,38 @@ class _ImagePostItemState extends PostItemBaseState<ImagePostItem> {
 
   @override
   Widget buildContent(BuildContext context) {
-    // The main content is the ImageCarousel
     return ImageCarousel(
       imageUrls: widget.imageUrls,
       imageAlts: widget.imageAlts,
       disableBackgroundBlur: widget.disableBackgroundBlur,
-      // Ensure ImageCarousel doesn't conflict with the base background
+      onPageChanged: (index) => setState(() => _currentCarouselIndex = index),
     );
   }
 
-  // --- Build Method ---
-
   @override
-  Widget build(BuildContext context) {
-    // Use the base class build method which assembles the common parts
-    // The base build calls buildBackground, buildContent, buildGradientOverlay, etc.
-    return super.build(context);
-    // No need to manually position SideActionBar or InfoBar here anymore.
+  Widget buildInfoBar() {
+    String? alt;
+    if (widget.imageUrls.length > 1) {
+      final candidate = widget.imageAlts.length > _currentCarouselIndex ? widget.imageAlts[_currentCarouselIndex] : null;
+      if (candidate?.trim().isNotEmpty ?? false) alt = candidate;
+    } else {
+      final candidate = widget.imageAlts.isNotEmpty ? widget.imageAlts.first : null;
+      if (candidate?.trim().isNotEmpty ?? false) alt = candidate;
+    }
+    return Positioned(
+      bottom: 20,
+      left: 10,
+      right: 65,
+      child: VideoInfoBar(
+        username: widget.username,
+        description: widget.description,
+        hashtags: widget.hashtags,
+        isSprk: widget.isSprk,
+        altText: alt,
+        onUsernameTap: widget.onUsernameTap,
+        onHashtagTap: widget.onHashtagTap,
+        onDescriptionExpandToggle: handleDescriptionExpandToggle,
+      ),
+    );
   }
 }

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 class ImageCarousel extends StatefulWidget {
   final List<String> imageUrls;
   final List<String>? imageAlts;
+  final ValueChanged<int>? onPageChanged;
   final bool autoPreload;
   final bool disableBackgroundBlur;
 
@@ -13,6 +14,7 @@ class ImageCarousel extends StatefulWidget {
     super.key,
     required this.imageUrls,
     this.imageAlts,
+    this.onPageChanged,
     this.autoPreload = true,
     this.disableBackgroundBlur = false,
   });
@@ -77,9 +79,11 @@ class _ImageCarouselState extends State<ImageCarousel> {
               setState(() {
                 _currentIndex = index;
               });
+              widget.onPageChanged?.call(index);
             },
             itemBuilder: (context, index) {
-              return Stack(children: [Positioned.fill(child: _buildImageItem(widget.imageUrls[index]))]);
+              final altText = widget.imageAlts != null && widget.imageAlts!.length > index ? widget.imageAlts![index] : null;
+              return _buildImageItem(widget.imageUrls[index], altText);
             },
           ),
         ),
@@ -131,7 +135,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
     );
   }
 
-  Widget _buildImageItem(String imageUrl) {
+  Widget _buildImageItem(String imageUrl, String? altText) {
     return GestureDetector(
       onTap: () {
         // Image can be tapped to view in fullscreen
@@ -139,9 +143,15 @@ class _ImageCarouselState extends State<ImageCarousel> {
       },
       child: CachedNetworkImage(
         imageUrl: imageUrl,
-        fit: BoxFit.contain,
-        width: double.infinity,
-        height: double.infinity,
+        imageBuilder: (context, imageProvider) {
+          return Image(
+            image: imageProvider,
+            semanticLabel: altText,
+            fit: BoxFit.contain,
+            width: double.infinity,
+            height: double.infinity,
+          );
+        },
         placeholder:
             (context, url) => Container(
               color: Colors.grey[900],

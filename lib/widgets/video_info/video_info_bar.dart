@@ -1,5 +1,6 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:sparksocial/widgets/dialogs/alt_text_dialog.dart';
 
 import 'hashtag_list.dart';
 import 'username_label.dart';
@@ -58,22 +59,11 @@ class VideoInfoBar extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(8),
         onTap: () {
-          showDialog(
+          showModalBottomSheet(
             context: context,
-            builder:
-                (context) => AlertDialog(
-                  backgroundColor: Colors.black87,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  content: SingleChildScrollView(
-                    child: Text(altText!, style: const TextStyle(color: Colors.white, fontSize: 16)),
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('Close', style: TextStyle(color: Colors.white)),
-                    ),
-                  ],
-                ),
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            builder: (_) => AltTextDialog(altText: altText!),
           );
         },
         child: Padding(
