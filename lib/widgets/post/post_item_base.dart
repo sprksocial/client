@@ -3,14 +3,13 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 
 import '../../screens/profile_screen.dart';
+import '../../services/auth_service.dart';
+import '../../services/mod_service.dart';
 import '../../utils/formatters/text_formatter.dart';
 import '../comments/comments_tray.dart';
-import '../video_info/video_info_bar.dart'; // Reusing VideoInfoBar for now
-import '../video_side_action_bar.dart'; // Reusing VideoSideActionBar for now
-import '../dialogs/report_dialog.dart'; // Add import for ReportDialog
-import 'package:atproto/atproto.dart'; // Import for ReportSubject and ModerationReasonType
-import '../../services/mod_service.dart'; // Import for ModService
-import '../../services/auth_service.dart'; // Import for AuthService
+import '../dialogs/report_dialog.dart';
+import '../video_info/video_info_bar.dart';
+import '../video_side_action_bar.dart';
 
 /// Base class for post items (Video, Image, etc.) to handle common parameters.
 abstract class PostItemBase extends StatefulWidget {
@@ -115,10 +114,14 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
                 );
 
                 if (result) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+                  }
                 }
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+                }
               }
             },
           ),
@@ -143,7 +146,8 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
   /// Abstract method to play/resume any media playing in the content.
   void playMedia();
 
-  void _handleDescriptionExpandToggle(bool isExpanded) {
+  /// Public handler for description expand/collapse, updates gradient overlay.
+  void handleDescriptionExpandToggle(bool isExpanded) {
     if (!mounted) return;
     setState(() {
       _isDescriptionExpanded = isExpanded;
@@ -270,10 +274,12 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
         description: widget.description,
         hashtags: widget.hashtags,
         isSprk: widget.isSprk,
-        altText: widget.videoAlt ?? (widget.imageAlts.isNotEmpty ? widget.imageAlts.first : null),
+        altText:
+            widget.videoAlt ??
+            (widget.imageAlts.length == 1 && widget.imageAlts.first.trim().isNotEmpty ? widget.imageAlts.first : null),
         onUsernameTap: widget.onUsernameTap,
         onHashtagTap: widget.onHashtagTap,
-        onDescriptionExpandToggle: _handleDescriptionExpandToggle,
+        onDescriptionExpandToggle: handleDescriptionExpandToggle,
       ),
     );
   }
