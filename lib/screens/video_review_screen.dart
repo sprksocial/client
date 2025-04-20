@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import '../services/upload_service.dart';
+import '../services/video_service.dart';
 import '../utils/app_colors.dart';
 import '../widgets/image/alt_text_editor_dialog.dart';
 import '../widgets/video_review/video_thumbnail.dart';
@@ -62,6 +63,8 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
 
     try {
       final uploadService = Provider.of<UploadService>(context, listen: false);
+      final videoService = Provider.of<VideoService>(context, listen: false);
+      final description = _descriptionController.text;
 
       // Register a new upload task
       final taskId = uploadService.registerTask('video');
@@ -71,6 +74,12 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
       if (mounted) {
         Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
       }
+
+      // Process the video and get blob reference
+      final videoBlobRef = await videoService.processVideo(widget.videoPath);
+
+      // Post the video with the blob reference
+      await videoService.postVideo(videoBlobRef, description: description, videoAltText: _videoAltText);
 
       // Mark task as completed
       uploadService.completeTask(taskId);
@@ -87,8 +96,8 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
 
         // Update upload service with error state
         final uploadService = Provider.of<UploadService>(context, listen: false);
-        final tasks = uploadService.registerTask('video');
-        uploadService.failTask(tasks, e.toString());
+        final taskId = uploadService.registerTask('video');
+        uploadService.failTask(taskId, e.toString());
       }
     }
   }

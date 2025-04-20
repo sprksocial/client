@@ -44,6 +44,7 @@ class ImagePostItem extends PostItemBase {
     super.onProfilePressed, // Pass callback to base
     required super.onUsernameTap,
     super.onHashtagTap,
+    super.onPostDeleted,
   });
 
   @override

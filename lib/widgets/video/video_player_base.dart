@@ -34,7 +34,8 @@ abstract class VideoPlayerBase extends PostItemBase {
     super.postUri, // Accept postUri
     super.postCid, // Accept postCid
     super.disableBackgroundBlur,
-  });
+    VoidCallback? onPostDeleted, // Add the callback
+  }) : super(onPostDeleted: onPostDeleted);
 }
 
 /// Base state class for video players, extending PostItemBaseState.

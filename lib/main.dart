@@ -21,6 +21,7 @@ import 'services/identity_service.dart';
 import 'services/profile_service.dart';
 import 'services/settings_service.dart';
 import 'services/upload_service.dart';
+import 'services/video_service.dart';
 import 'utils/app_colors.dart';
 import 'utils/app_theme.dart';
 import 'widgets/upload/upload_progress_indicator.dart';
@@ -75,6 +76,10 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProxyProvider<AuthService, CommentsService>(
           create: (context) => CommentsService(context.read<AuthService>()),
           update: (_, authService, previousCommentsService) => previousCommentsService ?? CommentsService(authService),
+        ),
+        ProxyProvider<AuthService, VideoService>(
+          create: (context) => VideoService(context.read<AuthService>()),
+          update: (_, authService, previousVideoService) => previousVideoService ?? VideoService(authService),
         ),
       ],
       child: MaterialApp(

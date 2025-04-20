@@ -29,6 +29,7 @@ abstract class PostItemBase extends StatefulWidget {
   final VoidCallback? onProfilePressed;
   final VoidCallback? onUsernameTap;
   final Function(String)? onHashtagTap;
+  final VoidCallback? onPostDeleted;
   final String? authorDid;
   final bool isLiked;
   final bool isSprk;
@@ -56,6 +57,7 @@ abstract class PostItemBase extends StatefulWidget {
     this.onProfilePressed,
     this.onUsernameTap,
     this.onHashtagTap,
+    this.onPostDeleted,
     this.authorDid,
     this.isLiked = false,
     this.isSprk = false,
@@ -236,7 +238,12 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
         },
         transitionDuration: const Duration(milliseconds: 300),
       ),
-    );
+    ).catchError((error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
+      }
+      return null;
+    });
   }
 
   // --- Common UI Building Blocks ---
@@ -303,6 +310,8 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
         onProfilePressed: navigateToProfile, // Use the unified method
         postCid: widget.postCid,
         postUri: widget.postUri,
+        authorDid: widget.authorDid,
+        onPostDeleted: widget.onPostDeleted ?? () {},
       ),
     );
   }

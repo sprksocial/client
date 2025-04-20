@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'action_buttons/comment_action_button.dart';
 import 'action_buttons/like_action_button.dart';
@@ -6,6 +7,7 @@ import 'action_buttons/profile_action_button.dart';
 import 'action_buttons/menu_action_button.dart';
 import '../services/mod_service.dart';
 import '../services/auth_service.dart';
+import '../services/actions_service.dart';
 import '../widgets/dialogs/report_dialog.dart';
 
 class VideoSideActionBar extends StatefulWidget {
@@ -15,6 +17,7 @@ class VideoSideActionBar extends StatefulWidget {
   final VoidCallback? onBookmarkPressed;
   final VoidCallback? onSharePressed;
   final VoidCallback? onReportPressed;
+  final VoidCallback? onPostDeleted;
 
   final String likeCount;
   final String commentCount;
@@ -27,6 +30,7 @@ class VideoSideActionBar extends StatefulWidget {
   // Add post info for reporting
   final String? postUri;
   final String? postCid;
+  final String? authorDid;
 
   const VideoSideActionBar({
     super.key,
@@ -36,6 +40,7 @@ class VideoSideActionBar extends StatefulWidget {
     this.onBookmarkPressed,
     this.onSharePressed,
     this.onReportPressed,
+    this.onPostDeleted,
 
     this.likeCount = '0',
     this.commentCount = '0',
@@ -48,6 +53,7 @@ class VideoSideActionBar extends StatefulWidget {
 
     this.postUri,
     this.postCid,
+    this.authorDid,
   });
 
   @override
@@ -55,8 +61,8 @@ class VideoSideActionBar extends StatefulWidget {
 }
 
 class _VideoSideActionBarState extends State<VideoSideActionBar> {
-  late bool _isLiked;
-  late bool _isBookmarked;
+  bool _isLiked = false;
+  bool _isBookmarked = false;
 
   @override
   void initState() {
@@ -78,16 +84,12 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
         _isBookmarked = widget.isBookmarked;
       });
     }
-    if (oldWidget.commentCount != widget.commentCount) {
-      setState(() {});
-    }
   }
 
   void _handleLike() {
     setState(() {
       _isLiked = !_isLiked;
     });
-
     if (widget.onLikePressed != null) {
       widget.onLikePressed!();
     }
@@ -97,7 +99,6 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
     setState(() {
       _isBookmarked = !_isBookmarked;
     });
-
     if (widget.onBookmarkPressed != null) {
       widget.onBookmarkPressed!();
     }
@@ -137,8 +138,75 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
     );
   }
 
+  void _handleDelete(BuildContext context) async {
+    if (widget.postUri == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot delete this post')));
+      return;
+    }
+
+    // Confirm deletion
+    final shouldDelete =
+        await showDialog<bool>(
+          context: context,
+          builder:
+              (context) => AlertDialog(
+                title: const Text('Delete Post'),
+                content: const Text('Are you sure you want to delete this post? This action cannot be undone.'),
+                actions: [
+                  TextButton(onPressed: () => Navigator.of(context).pop(false), child: const Text('Cancel')),
+                  TextButton(
+                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    onPressed: () => Navigator.of(context).pop(true),
+                    child: const Text('Delete'),
+                  ),
+                ],
+              ),
+        ) ??
+        false;
+
+    if (!shouldDelete || !mounted) return;
+
+    try {
+      final actionsService = Provider.of<ActionsService>(context, listen: false);
+      final result = await actionsService.deletePost(widget.postUri!);
+
+      if (result) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post deleted successfully')));
+
+          // Add a delay to ensure the server has processed the deletion
+          await Future.delayed(const Duration(milliseconds: 800));
+
+          // Check if widget is still mounted after the delay
+          if (!mounted) return;
+
+          // Notify parent that post was deleted
+          if (widget.onPostDeleted != null) {
+            widget.onPostDeleted!();
+          }
+
+          // Check if we can navigate back (for profile view)
+          if (Navigator.of(context).canPop()) {
+            // Pop back to the previous screen with result=true to indicate post was deleted
+            Navigator.of(context).pop(true);
+          }
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete post')));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error deleting post: $e')));
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    final authService = Provider.of<AuthService>(context);
+
     return Column(
       children: [
         ProfileActionButton(profileImageUrl: widget.profileImageUrl, onPressed: widget.onProfilePressed),
@@ -157,15 +225,10 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
         //   key: const ValueKey('bookmark_button'), // Add a stable key
         // ),
         MenuActionButton(
-          onPressed:
-              widget.onReportPressed ??
-              () {
-                // Use inherited widget or dependency injection to get the AuthService
-                // This is a placeholder - you need to properly inject AuthService
-                final authService = AuthService();
-                _handleReport(context, authService);
-              },
+          onPressed: widget.onReportPressed ?? () => _handleReport(context, authService),
+          onDeletePressed: () => _handleDelete(context),
           isOnVideo: true,
+          authorDid: widget.authorDid,
         ),
         const SizedBox(height: 20),
       ],

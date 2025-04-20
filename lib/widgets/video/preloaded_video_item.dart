@@ -33,6 +33,7 @@ class PreloadedVideoItem extends VideoPlayerBase {
     super.onUsernameTap,
     super.onHashtagTap,
     super.authorDid,
+    super.onPostDeleted,
     super.isLiked = false,
     super.isSprk = false,
     super.postUri,

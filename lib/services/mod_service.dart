@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:atproto/core.dart';
 import 'package:atproto/atproto.dart';
 import 'package:flutter/rendering.dart';
-import 'package:sparksocial/config/app_config.dart';
 import 'package:http/http.dart' as http;
 import 'auth_service.dart';
 
@@ -13,11 +12,6 @@ class ModService {
   ModService(this._authService);
 
   ATProto? get _atproto => _authService.atproto;
-
-  static String _getSprkDid() {
-    final sprkAppView = Uri.parse(AppConfig.appViewUrl);
-    return "did:web:${sprkAppView.host}#sprk_appview";
-  }
 
   Future<bool> createReport({
     required ReportSubject subject,
