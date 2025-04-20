@@ -379,6 +379,15 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
           uri: comment.uri,
           cid: comment.cid,
           profileImageUrl: comment.profileImageUrl,
+          authorDid: comment.authorDid,
+          onCommentDeleted: () {
+            // Refresh the comments list after deletion
+            _loadComments();
+            // Update the comment count
+            setState(() {
+              _commentCount = _commentCount > 0 ? _commentCount - 1 : 0;
+            });
+          },
         );
       },
     );

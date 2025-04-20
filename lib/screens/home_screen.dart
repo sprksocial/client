@@ -15,6 +15,7 @@ import '../widgets/feed_settings/feed_settings_sheet.dart';
 import '../widgets/image/image_post_item.dart';
 import '../widgets/video/preloaded_video_item.dart';
 import '../widgets/video/video_item.dart';
+import '../screens/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -290,13 +291,34 @@ class _HomeScreenState extends State<HomeScreen> {
               onLikePressed: () => _handleLikePress(post),
               onBookmarkPressed: () {},
               onSharePressed: () {},
-              onUsernameTap: () {},
+              onProfilePressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
+                  error,
+                ) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
+                  return null;
+                });
+              },
+              onUsernameTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
+                  error,
+                ) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
+                  return null;
+                });
+              },
               onHashtagTap: (String hashtag) {},
-              videoAlt: post.videoAlt,
+              onPostDeleted: () {
+                _fetchFeed();
+              },
             );
           } else {
             return VideoItem(
-              key: ValueKey('placeholder_$index'),
+              key: ValueKey('video_$index'),
               index: index,
               videoUrl: post.videoUrl,
               username: post.username,
@@ -316,9 +338,30 @@ class _HomeScreenState extends State<HomeScreen> {
               onLikePressed: () => _handleLikePress(post),
               onBookmarkPressed: () {},
               onSharePressed: () {},
-              onUsernameTap: () {},
+              onProfilePressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
+                  error,
+                ) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
+                  return null;
+                });
+              },
+              onUsernameTap: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
+                  error,
+                ) {
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
+                  return null;
+                });
+              },
               onHashtagTap: (String hashtag) {},
-              videoAlt: post.videoAlt,
+              onPostDeleted: () {
+                _fetchFeed();
+              },
             );
           }
         }
