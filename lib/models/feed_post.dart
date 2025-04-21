@@ -138,7 +138,7 @@ class FeedPost {
             if (uriParts.length >= 3) {
               final did = uriParts[0].replaceFirst('at://', '');
               final cid = videoCid ?? uriParts[2];
-              videoUrl = '${AppConfig.videoServiceUrl}/video/$did/$cid';
+              videoUrl = 'media.sprk.so/video/$did/$cid';
             }
           }
         }
