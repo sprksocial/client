@@ -5,7 +5,6 @@ import 'package:image/image.dart' as img;
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 
-
 import '../models/feed_post.dart';
 import 'auth_service.dart';
 import 'sprk_client.dart';
@@ -21,6 +20,24 @@ class ActionsService extends ChangeNotifier {
   // Check if a post is liked
   bool isPostLiked(FeedPost post) {
     return post.isLiked;
+  }
+
+  // Delete a post by its URI
+  Future<bool> deletePost(String postUri) async {
+    try {
+      final response = await _client.repo.deleteRecord(uri: AtUri.parse(postUri));
+
+      if (response.status.code != 200) {
+        debugPrint('Failed to delete post: ${response.status.code} ${response.data}');
+        return false;
+      }
+
+      notifyListeners();
+      return true;
+    } catch (e) {
+      debugPrint('Error deleting post: $e');
+      return false;
+    }
   }
 
   Future<dynamic> likePost(String postCid, String postUri) async {

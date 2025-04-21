@@ -3,11 +3,11 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/widgets/common/user_avatar.dart';
 import 'package:sparksocial/widgets/dialogs/report_dialog.dart';
-import 'package:atproto/atproto.dart';
 import 'package:provider/provider.dart';
 import 'package:sparksocial/services/mod_service.dart';
 import 'package:sparksocial/services/auth_service.dart';
 import 'package:video_player/video_player.dart';
+import 'package:sparksocial/services/actions_service.dart';
 
 import '../../models/comment.dart';
 import '../../utils/app_colors.dart';
@@ -33,6 +33,8 @@ class CommentItem extends StatefulWidget {
   final String uri;
   final String cid;
   final String? profileImageUrl;
+  final String authorDid;
+  final Function()? onCommentDeleted;
 
   const CommentItem({
     super.key,
@@ -53,6 +55,8 @@ class CommentItem extends StatefulWidget {
     required this.uri,
     required this.cid,
     this.profileImageUrl,
+    required this.authorDid,
+    this.onCommentDeleted,
   });
 
   @override
@@ -187,6 +191,44 @@ class _CommentItemState extends State<CommentItem> {
     );
   }
 
+  void _handleDeleteComment() {
+    final actionsService = Provider.of<ActionsService>(context, listen: false);
+
+    // Confirm deletion
+    showDialog(
+      context: context,
+      builder:
+          (context) => AlertDialog(
+            title: const Text('Delete Comment'),
+            content: const Text('Are you sure you want to delete this comment? This action cannot be undone.'),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+              TextButton(
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  try {
+                    final result = await actionsService.deletePost(widget.uri);
+                    if (result && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Comment deleted successfully')));
+                      // Notify parent to refresh comments
+                      if (widget.onCommentDeleted != null) {
+                        widget.onCommentDeleted!();
+                      }
+                    }
+                  } catch (e) {
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete comment: $e')));
+                    }
+                  }
+                },
+                child: const Text('Delete'),
+              ),
+            ],
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final textColor = widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary;
@@ -248,9 +290,13 @@ class _CommentItemState extends State<CommentItem> {
               onPressed: () {
                 _handleReportComment();
               },
+              onDeletePressed: () {
+                _handleDeleteComment();
+              },
               isCompact: true,
               backgroundColor: widget.isDarkMode ? Colors.black.withOpacity(0.2) : Colors.grey.withOpacity(0.1),
               isProfile: false,
+              authorDid: widget.authorDid,
             ),
           ],
         ),

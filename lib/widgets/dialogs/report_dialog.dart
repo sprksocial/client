@@ -64,7 +64,7 @@ class _ReportDialogState extends State<ReportDialog> {
           Navigator.of(context).pop();
         }
       }
-    } catch (e, stackTrace) {
+    } catch (e) {
       if (mounted) {
         setState(() {
           _errorMessage = 'Error: $e';

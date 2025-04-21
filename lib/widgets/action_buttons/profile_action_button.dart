@@ -98,7 +98,9 @@ class _ProfileActionButtonState extends State<ProfileActionButton> with SingleTi
                     ),
                     child: ClipOval(
                       child:
-                          widget.profileImageUrl != null && widget.profileImageUrl!.isNotEmpty
+                          widget.profileImageUrl != null &&
+                                  widget.profileImageUrl!.isNotEmpty &&
+                                  !widget.profileImageUrl!.contains('undefined')
                               ? CachedNetworkImage(
                                 imageUrl: widget.profileImageUrl!,
                                 fit: BoxFit.cover,
