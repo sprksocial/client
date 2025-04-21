@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../../services/auth_service.dart';
 
 class MenuActionButton extends StatelessWidget {
   final VoidCallback? onPressed;
+  final VoidCallback? onDeletePressed;
   final bool isCompact;
   final Color? backgroundColor;
   final bool isProfile;
   final bool isOnVideo;
+  final bool isOwnPost;
+  final String? authorDid;
 
   const MenuActionButton({
     super.key,
     this.onPressed,
+    this.onDeletePressed,
     this.isCompact = false,
     this.backgroundColor,
     this.isProfile = false,
     this.isOnVideo = false,
+    this.isOwnPost = false,
+    this.authorDid,
   });
 
   void _showOptionsMenu(BuildContext context) {
@@ -21,6 +29,10 @@ class MenuActionButton extends StatelessWidget {
     final isDark = theme.brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
     final menuBackgroundColor = isDark ? theme.colorScheme.surface : Colors.white;
+
+    // Check if current user is the author
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final isCurrentUserAuthor = authService.session?.did == authorDid;
 
     showModalBottomSheet(
       context: context,
@@ -31,6 +43,18 @@ class MenuActionButton extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Show delete option if the user is the author
+              if (isCurrentUserAuthor)
+                ListTile(
+                  leading: const Icon(Icons.delete_outline, color: Colors.red),
+                  title: Text('Delete', style: TextStyle(color: Colors.red)),
+                  onTap: () {
+                    Navigator.pop(context);
+                    if (onDeletePressed != null) {
+                      onDeletePressed!();
+                    }
+                  },
+                ),
               ListTile(
                 leading: const Icon(Icons.report_outlined),
                 title: Text(isProfile ? 'Report Profile' : 'Report', style: TextStyle(color: textColor)),
@@ -82,20 +106,32 @@ class MenuActionButton extends StatelessWidget {
 
 class CompactMenuButton extends StatelessWidget {
   final VoidCallback? onPressed;
+  final VoidCallback? onDeletePressed;
   final Color? backgroundColor;
   final bool isProfile;
   final bool isOnVideo;
+  final String? authorDid;
 
-  const CompactMenuButton({super.key, this.onPressed, this.backgroundColor, this.isProfile = false, this.isOnVideo = false});
+  const CompactMenuButton({
+    super.key,
+    this.onPressed,
+    this.onDeletePressed,
+    this.backgroundColor,
+    this.isProfile = false,
+    this.isOnVideo = false,
+    this.authorDid,
+  });
 
   @override
   Widget build(BuildContext context) {
     return MenuActionButton(
       onPressed: onPressed,
+      onDeletePressed: onDeletePressed,
       isCompact: true,
       backgroundColor: backgroundColor,
       isProfile: isProfile,
       isOnVideo: isOnVideo,
+      authorDid: authorDid,
     );
   }
 }
