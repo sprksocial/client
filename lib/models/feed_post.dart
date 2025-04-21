@@ -1,6 +1,7 @@
 import 'package:bluesky/app_bsky_embed_video.dart';
 import 'package:bluesky/bluesky.dart';
 import 'package:sparksocial/widgets/video_info/hashtag_list.dart';
+import 'package:sparksocial/config/app_config.dart';
 
 /// A unified model for handling feed posts from different sources
 class FeedPost {
@@ -132,7 +133,13 @@ class FeedPost {
             videoCid = ref['\$link'] as String;
 
             // Construct a video URL from the URI and CID
-            videoUrl = 'https://video.bsky.app/v1/$postUri';
+            // Extract DID and CID from the postUri (format: at://did:plc:abc123/app.bsky.feed.post/cid123)
+            final uriParts = postUri.split('/');
+            if (uriParts.length >= 3) {
+              final did = uriParts[0].replaceFirst('at://', '');
+              final cid = videoCid ?? uriParts[2];
+              videoUrl = '${AppConfig.videoServiceUrl}/video/$did/$cid';
+            }
           }
         }
       }
