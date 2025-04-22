@@ -125,163 +125,71 @@ class _SearchScreenState extends State<SearchScreen> {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : AppTheme.getBackgroundColor(context),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: SearchBar(
-                      controller: _searchController,
-                      hintText: 'Search users',
-                      leading: Icon(FluentIcons.search_24_regular, color: AppTheme.getSecondaryTextColor(context)),
-                      padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16.0)),
-                      elevation: WidgetStateProperty.all(0),
-                      backgroundColor: WidgetStateProperty.all(
-                        isDarkMode ? Colors.grey[900] : AppColors.lightLavender.withAlpha(50),
-                      ),
-                      onChanged: (value) {
-                        _onSearchChanged(value.trim());
-                      },
-                    ),
-                  ),
-
-                  // SizedBox(
-                  //   height: 105,
-                  //   child: ListView.builder(
-                  //     scrollDirection: Axis.horizontal,
-                  //     itemCount: _stories.length,
-                  //     padding: const EdgeInsets.symmetric(horizontal: 8),
-                  //     itemBuilder: (context, index) {
-                  //       final story = _stories[index];
-                  //       return StoryCircle(
-                  //         username: story['username'],
-                  //         imageUrl: story['imageUrl'],
-                  //         isLive: story['isLive'] ?? false,
-                  //         isYourStory: story['isYourStory'] ?? false,
-                  //         onTap: () {},
-                  //       );
-                  //     },
-                  //   ),
-                  // ),
-
-                  // SectionHeader(title: 'Trending', icon: FluentIcons.data_trending_24_regular, onViewAllTap: () {}),
-
-                  // SizedBox(
-                  //   height: 180,
-                  //   child: ListView.builder(
-                  //     scrollDirection: Axis.horizontal,
-                  //     itemCount: _trendingVideos.length,
-                  //     padding: const EdgeInsets.symmetric(horizontal: 16),
-                  //     itemBuilder: (context, index) {
-                  //       final video = _trendingVideos[index];
-                  //       return Container(
-                  //         width: 160,
-                  //         margin: const EdgeInsets.only(right: 10),
-                  //         child: TrendingVideoCard(
-                  //           thumbnailUrl: video['thumbnailUrl'],
-                  //           viewCount: video['viewCount'],
-                  //           onTap: () {},
-                  //         ),
-                  //       );
-                  //     },
-                  //   ),
-                  // ),
-
-                  // const SizedBox(height: 16),
-
-                  // SectionHeader(title: 'Sounds', icon: FluentIcons.music_note_2_24_regular, onViewAllTap: () {}),
-
-                  // SizedBox(
-                  //   height: 85,
-                  //   child: ListView.builder(
-                  //     scrollDirection: Axis.horizontal,
-                  //     itemCount: _sounds.length,
-                  //     padding: const EdgeInsets.symmetric(horizontal: 16),
-                  //     itemBuilder: (context, index) {
-                  //       final sound = _sounds[index];
-                  //       return Container(
-                  //         width: 240,
-                  //         margin: const EdgeInsets.only(right: 10),
-                  //         child: SoundCard(
-                  //           title: sound['title'],
-                  //           artist: sound['artist'],
-                  //           imageUrl: sound['imageUrl'],
-                  //           onTap: () {},
-                  //         ),
-                  //       );
-                  //     },
-                  //   ),
-                  // ),
-
-                  // const SizedBox(height: 16),
-
-                  // SectionHeader(title: 'Recommended Feeds', icon: FluentIcons.star_24_regular, onViewAllTap: () {}),
-
-                  // SizedBox(
-                  //   height: 40,
-                  //   child: ListView.builder(
-                  //     scrollDirection: Axis.horizontal,
-                  //     itemCount: _categories.length,
-                  //     padding: const EdgeInsets.symmetric(horizontal: 16),
-                  //     itemBuilder: (context, index) {
-                  //       return Padding(
-                  //         padding: const EdgeInsets.only(right: 8),
-                  //         child: CategoryChip(label: _categories[index], onTap: () {}),
-                  //       );
-                  //     },
-                  //   ),
-                  // ),
-
-                  // const SizedBox(height: 16),
-
-                  // SectionHeader(title: 'Suggested Accounts', icon: FluentIcons.person_24_regular, onViewAllTap: () {}),
-                  if (_isLoading)
-                    const Center(child: Padding(padding: EdgeInsets.only(top: 32), child: CircularProgressIndicator())),
-                  if (_error.isNotEmpty)
-                    Center(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 32),
-                        child: Text(_error, style: TextStyle(color: Colors.red)),
-                      ),
-                    ),
-                  if (_searchController.text.isNotEmpty && !_isLoading && _error.isEmpty)
-                    ListView.builder(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _searchResults.length,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemBuilder: (context, index) {
-                        final user = _searchResults[index];
-                        final authService = Provider.of<AuthService>(context, listen: false);
-                        final currentDid = authService.session?.did;
-                        final userDid = user['did'];
-                        final isCurrentUser = userDid == currentDid;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: SuggestedAccountCard(
-                            username: user['displayName'] ?? user['handle'] ?? '',
-                            handle: '@${user['handle'] ?? ''}',
-                            avatarUrl: user['avatar'] ?? '',
-                            description: user['description'] ?? '',
-                            onTap: () {},
-                            showFollowButton: !isCurrentUser,
-                          ),
-                        );
-                      },
-                    ),
-                ],
+    return DefaultTabController(
+      length: 1,
+      child: Scaffold(
+        backgroundColor: isDarkMode ? Colors.black : AppTheme.getBackgroundColor(context),
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: SearchBar(
+                  controller: _searchController,
+                  hintText: 'Search users',
+                  leading: Icon(FluentIcons.search_24_regular, color: AppTheme.getSecondaryTextColor(context)),
+                  padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16.0)),
+                  elevation: WidgetStateProperty.all(0),
+                  backgroundColor: WidgetStateProperty.all(isDarkMode ? Colors.grey[900] : AppColors.lightLavender.withAlpha(50)),
+                  onChanged: (value) => _onSearchChanged(value.trim()),
+                ),
               ),
-            ),
-            //const DevelopmentOverlay(),
-          ],
+              TabBar(
+                tabs: const [Tab(text: 'Users')],
+                indicatorColor: AppColors.pink,
+                labelColor: AppTheme.getTextColor(context),
+                unselectedLabelColor: AppTheme.getSecondaryTextColor(context),
+              ),
+              Expanded(child: TabBarView(children: [_buildUserResults()])),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildUserResults() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error.isNotEmpty) {
+      return Center(child: Text(_error, style: const TextStyle(color: Colors.red)));
+    }
+    if (_searchController.text.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return ListView.builder(
+      itemCount: _searchResults.length,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemBuilder: (context, index) {
+        final user = _searchResults[index];
+        final authService = Provider.of<AuthService>(context, listen: false);
+        final currentDid = authService.session?.did;
+        final userDid = user['did'];
+        final isCurrentUser = userDid == currentDid;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: SuggestedAccountCard(
+            username: user['displayName'] ?? user['handle'] ?? '',
+            handle: '@${user['handle'] ?? ''}',
+            avatarUrl: user['avatar'] ?? '',
+            description: user['description'] ?? '',
+            onTap: () {},
+            showFollowButton: !isCurrentUser,
+          ),
+        );
+      },
     );
   }
 }
