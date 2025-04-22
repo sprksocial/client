@@ -1,9 +1,13 @@
+import 'dart:typed_data';
+
 import 'package:bluesky/bluesky.dart' as bs;
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../services/auth_service.dart';
 import '../services/onboarding_service.dart';
+import '../services/sprk_client.dart';
 import '../utils/app_colors.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -76,17 +80,34 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     setState(() => _loading = true);
     final authService = Provider.of<AuthService>(context, listen: false);
     final onboardingService = OnboardingService(authService);
+    dynamic avatarToSend = _localAvatar;
+    if (_localAvatar is Uint8List) {
+      final sprkClient = SprkClient(authService);
+      final resp = await sprkClient.repo.uploadBlob(_localAvatar as Uint8List);
+      if (resp.status.code != 200) throw Exception('Failed to upload avatar blob');
+      avatarToSend = resp.data.blob.toJson();
+    }
     await onboardingService.importCustomProfile(
       displayName: _displayNameController.text.trim(),
       description: _descriptionController.text.trim(),
-      avatar: _localAvatar,
+      avatar: avatarToSend,
     );
     if (!mounted) return;
     Navigator.of(context).pushReplacementNamed('/import-follows');
   }
 
+  Future<void> _pickAvatar() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+    if (picked == null) return;
+    final bytes = await picked.readAsBytes();
+    if (!mounted) return;
+    setState(() => _localAvatar = bytes);
+  }
+
   String? _avatarUrlFrom(dynamic avatar) {
     if (avatar == null) return null;
+    if (avatar is String) return avatar;
     final authService = Provider.of<AuthService>(context, listen: false);
     final did = authService.session?.did ?? '';
     final cid = avatar['ref']?['\$link'] as String?;
@@ -103,7 +124,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       return const Scaffold(body: Center(child: CircularProgressIndicator(color: Colors.white)));
     }
 
-    final avatarUrl = _avatarUrlFrom(_localAvatar);
+    final bool isBytes = _localAvatar is Uint8List;
+    final String? avatarUrl = !isBytes ? _avatarUrlFrom(_localAvatar) : null;
+    final ImageProvider<Object>? avatarImage =
+        isBytes
+            ? MemoryImage(_localAvatar as Uint8List) as ImageProvider<Object>
+            : avatarUrl != null
+            ? NetworkImage(avatarUrl) as ImageProvider<Object>
+            : null;
 
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -131,10 +159,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: Stack(
                   alignment: Alignment.topRight,
                   children: [
-                    CircleAvatar(
-                      radius: 50,
-                      backgroundImage: avatarUrl != null ? NetworkImage(avatarUrl) : null,
-                      child: avatarUrl == null ? const Icon(Icons.person, size: 50) : null,
+                    GestureDetector(
+                      onTap: _pickAvatar,
+                      child: CircleAvatar(
+                        radius: 50,
+                        backgroundImage: avatarImage,
+                        child: avatarImage == null ? const Icon(Icons.person, size: 50) : null,
+                      ),
                     ),
                     Row(
                       mainAxisSize: MainAxisSize.min,

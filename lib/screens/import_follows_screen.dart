@@ -2,6 +2,7 @@ import 'package:bluesky/bluesky.dart' as bs;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import '../services/onboarding_service.dart';
@@ -77,6 +78,7 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
+        centerTitle: true,
         backgroundColor: bgColor,
         elevation: 0,
         leading: Padding(
@@ -84,13 +86,13 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
           child: Container(
             decoration: BoxDecoration(color: const Color(0xFF201D22), borderRadius: BorderRadius.circular(8)),
             child: IconButton(
-              icon: const Icon(FluentIcons.ios_arrow_ltr_24_filled, color: Colors.white), // Using Fluent icon as requested
+              icon: const Icon(FluentIcons.ios_arrow_ltr_24_filled, color: Colors.white),
               onPressed: () => Navigator.of(context).pop(),
               tooltip: 'Skip import',
             ),
           ),
         ),
-        title: const Text('Bluesky'),
+        title: SvgPicture.asset('assets/images/bskywordmark.svg', height: 24),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pushReplacementNamed('/home'),
@@ -147,8 +149,8 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
                           final isFollowed = _followed.contains(did.did);
                           return ListTile(
                             leading: CircleAvatar(backgroundImage: CachedNetworkImageProvider(did.avatar ?? '')),
-                            title: Text(did.handle),
-                            subtitle: Text(did.displayName ?? ''),
+                            title: Text(did.displayName ?? ''),
+                            subtitle: Text(did.handle),
                             trailing: OutlinedButton(
                               onPressed: isFollowed ? null : () => _follow(did.did),
                               style: OutlinedButton.styleFrom(
@@ -164,7 +166,7 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
                     ElevatedButton(
                       onPressed: _followAll,
                       style: ElevatedButton.styleFrom(backgroundColor: AppColors.pink),
-                      child: const Text('Follow all'),
+                      child: const Text('Follow all', style: TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),
