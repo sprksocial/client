@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import '../models/feed_post.dart';
+import '../screens/profile_screen.dart';
 import '../services/actions_service.dart';
 import '../services/auth_service.dart';
 import '../services/feed_manager.dart';
@@ -15,7 +16,6 @@ import '../widgets/feed_settings/feed_settings_sheet.dart';
 import '../widgets/image/image_post_item.dart';
 import '../widgets/video/preloaded_video_item.dart';
 import '../widgets/video/video_item.dart';
-import '../screens/profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -288,6 +288,7 @@ class _HomeScreenState extends State<HomeScreen> {
               postUri: post.uri,
               postCid: post.cid,
               disableBackgroundBlur: _feedSettings.disableVideoBackgroundBlur,
+              videoAlt: post.videoAlt,
               onLikePressed: () => _handleLikePress(post),
               onBookmarkPressed: () {},
               onSharePressed: () {},
@@ -321,6 +322,7 @@ class _HomeScreenState extends State<HomeScreen> {
               key: ValueKey('video_$index'),
               index: index,
               videoUrl: post.videoUrl,
+              videoAlt: post.videoAlt,
               username: post.username,
               description: post.description,
               hashtags: post.hashtags,
@@ -419,6 +421,7 @@ class _HomeScreenState extends State<HomeScreen> {
             profileImageUrl: post.profileImageUrl,
             description: post.description,
             videoUrl: post.videoUrl,
+            videoAlt: post.videoAlt,
             likeCount:
                 post.likeCount +
                 (newLikeUri != null
@@ -431,6 +434,7 @@ class _HomeScreenState extends State<HomeScreen> {
             hashtags: post.hashtags,
             uri: post.uri,
             cid: post.cid,
+            imageAlts: post.imageAlts,
             isSprk: post.isSprk,
             likeUri: newLikeUri,
             hasMedia: post.hasMedia,

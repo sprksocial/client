@@ -415,6 +415,7 @@ class _ProfilePlayerScreenState extends State<ProfilePlayerScreen> {
                 onProfilePressed: mediaItem.onProfilePressed,
                 onUsernameTap: mediaItem.onUsernameTap,
                 onHashtagTap: mediaItem.onHashtagTap,
+                videoAlt: mediaItem.videoAlt,
               );
             } else {
               return mediaItem;
