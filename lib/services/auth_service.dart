@@ -275,7 +275,7 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>?> getCurrentUserProfile() async {
+  Future<Map<String, dynamic>?> getCurrentUserBskyProfile() async {
     if (_atProto == null) return null;
 
     try {
