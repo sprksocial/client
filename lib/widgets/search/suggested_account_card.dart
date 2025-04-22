@@ -8,16 +8,20 @@ class SuggestedAccountCard extends StatelessWidget {
   final String username;
   final String handle;
   final String avatarUrl;
+  final String? description;
   final VoidCallback? onTap;
   final VoidCallback? onFollowTap;
+  final bool showFollowButton;
 
   const SuggestedAccountCard({
     super.key,
     required this.username,
     required this.handle,
     required this.avatarUrl,
+    this.description,
     this.onTap,
     this.onFollowTap,
+    this.showFollowButton = true,
   });
 
   @override
@@ -59,18 +63,29 @@ class SuggestedAccountCard extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+                  if (description != null && description!.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2.0),
+                      child: Text(
+                        description!,
+                        style: TextStyle(fontSize: 13, color: AppTheme.getSecondaryTextColor(context)),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                 ],
               ),
             ),
 
-            GestureDetector(
-              onTap: onFollowTap,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                decoration: BoxDecoration(color: AppColors.pink, borderRadius: BorderRadius.circular(24)),
-                child: const Text('Follow', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
+            if (showFollowButton)
+              GestureDetector(
+                onTap: onFollowTap,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                  decoration: BoxDecoration(color: AppColors.pink, borderRadius: BorderRadius.circular(24)),
+                  child: const Text('Follow', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14)),
+                ),
               ),
-            ),
           ],
         ),
       ),
