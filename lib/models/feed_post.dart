@@ -58,7 +58,7 @@ class FeedPost {
 
     if (post.embed?.data is EmbedVideoView) {
       videoUrl = (post.embed?.data as EmbedVideoView).playlist;
-      // TODO: Extract alt if available from EmbedVideoView
+      videoAlt = (post.embed?.data as EmbedVideoView).alt;
       hasMedia = true;
     } else if (post.embed?.data is EmbedViewImages) {
       hasMedia = true;
