@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:bluesky/bluesky.dart' as bs;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -5,11 +7,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
+import '../services/auth_service.dart';
 import '../services/onboarding_service.dart';
+import '../services/sprk_client.dart';
 import '../utils/app_colors.dart';
 
 class ImportFollowsScreen extends StatefulWidget {
-  const ImportFollowsScreen({super.key});
+  final String displayName;
+  final String description;
+  final dynamic avatar;
+  const ImportFollowsScreen({super.key, required this.displayName, required this.description, required this.avatar});
 
   @override
   State<ImportFollowsScreen> createState() => _ImportFollowsScreenState();
@@ -88,16 +95,16 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
             child: IconButton(
               icon: const Icon(FluentIcons.ios_arrow_ltr_24_filled, color: Colors.white),
               onPressed: () => Navigator.of(context).pop(),
-              tooltip: 'Skip import',
+              tooltip: 'Back',
             ),
           ),
         ),
         title: SvgPicture.asset('assets/images/bskywordmark.svg', height: 24),
         actions: [
           TextButton(
-            onPressed: () => Navigator.of(context).pushReplacementNamed('/home'),
+            onPressed: _finishOnboarding,
             style: TextButton.styleFrom(foregroundColor: AppColors.pink),
-            child: const Text('Next'),
+            child: const Text('Finish'),
           ),
           const SizedBox(width: 8),
         ],
@@ -172,5 +179,25 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
                 ),
               ),
     );
+  }
+
+  Future<void> _finishOnboarding() async {
+    setState(() => _loading = true);
+    final authService = Provider.of<AuthService>(context, listen: false);
+    dynamic avatarToSend = widget.avatar;
+    if (widget.avatar is Uint8List) {
+      final sprkClient = SprkClient(authService);
+      final resp = await sprkClient.repo.uploadBlob(widget.avatar as Uint8List);
+      if (resp.status.code != 200) throw Exception('Failed to upload avatar blob');
+      avatarToSend = resp.data.blob.toJson();
+    }
+    final onboardingService = OnboardingService(authService);
+    await onboardingService.importCustomProfile(
+      displayName: widget.displayName,
+      description: widget.description,
+      avatar: avatarToSend,
+    );
+    if (!mounted) return;
+    Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
   }
 }

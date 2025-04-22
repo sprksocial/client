@@ -7,8 +7,8 @@ import 'package:provider/provider.dart';
 
 import '../services/auth_service.dart';
 import '../services/onboarding_service.dart';
-import '../services/sprk_client.dart';
 import '../utils/app_colors.dart';
+import 'import_follows_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -66,34 +66,18 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     }
   }
 
-  Future<void> _handleSkipImport() async {
-    setState(() => _loading = true);
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final onboardingService = OnboardingService(authService);
-    await onboardingService.createEmptySparkProfile();
-    if (!mounted) return;
-    Navigator.of(context).pushReplacementNamed('/import-follows');
-  }
-
   Future<void> _handleCustomImport() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() => _loading = true);
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final onboardingService = OnboardingService(authService);
-    dynamic avatarToSend = _localAvatar;
-    if (_localAvatar is Uint8List) {
-      final sprkClient = SprkClient(authService);
-      final resp = await sprkClient.repo.uploadBlob(_localAvatar as Uint8List);
-      if (resp.status.code != 200) throw Exception('Failed to upload avatar blob');
-      avatarToSend = resp.data.blob.toJson();
-    }
-    await onboardingService.importCustomProfile(
-      displayName: _displayNameController.text.trim(),
-      description: _descriptionController.text.trim(),
-      avatar: avatarToSend,
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (context) => ImportFollowsScreen(
+              displayName: _displayNameController.text.trim(),
+              description: _descriptionController.text.trim(),
+              avatar: _localAvatar,
+            ),
+      ),
     );
-    if (!mounted) return;
-    Navigator.of(context).pushReplacementNamed('/import-follows');
   }
 
   Future<void> _pickAvatar() async {
@@ -135,19 +119,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(
-        backgroundColor: backgroundColor,
-        elevation: 0,
-        title: const Text('Complete your profile'),
-        actions: [
-          TextButton(
-            onPressed: _handleSkipImport,
-            style: TextButton.styleFrom(foregroundColor: AppColors.pink),
-            child: const Text('Skip'),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
+      appBar: AppBar(backgroundColor: backgroundColor, elevation: 0, title: const Text('Complete your profile')),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -210,7 +182,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               borderRadius: BorderRadius.circular(8),
                               borderSide: BorderSide(color: AppColors.pink),
                             ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.red),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: Colors.red),
+                            ),
                           ),
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) return 'Display Name is required';
+                            return null;
+                          },
                         ),
                         Positioned(
                           bottom: 0,

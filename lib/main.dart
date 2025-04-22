@@ -8,7 +8,6 @@ import 'package:provider/provider.dart';
 import 'screens/auth_prompt_screen.dart';
 import 'screens/create_video_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/import_follows_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/messages_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -116,7 +115,6 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginScreen(),
           '/auth': (context) => const AuthPromptScreen(),
           '/onboarding': (context) => const OnboardingScreen(),
-          '/import-follows': (context) => const ImportFollowsScreen(),
           '/test': (context) => const TestActionsScreen(),
         },
         builder: (context, child) {
