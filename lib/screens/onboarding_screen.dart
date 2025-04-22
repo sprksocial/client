@@ -165,79 +165,63 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Stack(
-                      children: [
-                        TextFormField(
-                          controller: _displayNameController,
-                          decoration: InputDecoration(
-                            hintText: 'Display Name',
-                            filled: true,
-                            fillColor: backgroundColor,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: AppColors.border),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: AppColors.pink),
-                            ),
-                            errorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.red),
-                            ),
-                            focusedErrorBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: Colors.red),
-                            ),
-                          ),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) return 'Display Name is required';
-                            return null;
-                          },
+                    TextFormField(
+                      controller: _displayNameController,
+                      decoration: InputDecoration(
+                        hintText: 'Display Name',
+                        filled: true,
+                        fillColor: backgroundColor,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: AppColors.border),
                         ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: IconButton(
-                            icon: const Icon(Icons.undo, size: 20),
-                            onPressed: () => setState(() => _displayNameController.text = _bskyProfile?.displayName ?? ''),
-                            tooltip: 'Revert display name',
-                          ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: AppColors.pink),
                         ),
-                      ],
+                        errorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.red),
+                        ),
+                        focusedErrorBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: Colors.red),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.undo, size: 20),
+                          onPressed: () => setState(() => _displayNameController.text = _bskyProfile?.displayName ?? ''),
+                          tooltip: 'Revert display name',
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) return 'Display Name is required';
+                        return null;
+                      },
                     ),
                     const SizedBox(height: 12),
-                    Stack(
-                      children: [
-                        TextFormField(
-                          controller: _descriptionController,
-                          decoration: InputDecoration(
-                            hintText: 'Bio',
-                            filled: true,
-                            fillColor: backgroundColor,
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: AppColors.border),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: AppColors.pink),
-                            ),
-                          ),
-                          maxLines: 3,
+                    TextFormField(
+                      controller: _descriptionController,
+                      decoration: InputDecoration(
+                        hintText: 'Bio',
+                        filled: true,
+                        fillColor: backgroundColor,
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: AppColors.border),
                         ),
-                        Positioned(
-                          bottom: 0,
-                          right: 0,
-                          child: IconButton(
-                            icon: const Icon(Icons.undo, size: 20),
-                            onPressed: () => setState(() => _descriptionController.text = _bskyProfile?.description ?? ''),
-                            tooltip: 'Revert bio',
-                          ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: AppColors.pink),
                         ),
-                      ],
+                        suffixIcon: IconButton(
+                          icon: const Icon(Icons.undo, size: 20),
+                          onPressed: () => setState(() => _descriptionController.text = _bskyProfile?.description ?? ''),
+                          tooltip: 'Revert bio',
+                        ),
+                      ),
+                      maxLines: 3,
                     ),
                     const SizedBox(height: 24),
                     Align(
