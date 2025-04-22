@@ -1,3 +1,4 @@
+import 'package:bluesky/bluesky.dart' as bs;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -14,7 +15,7 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   bool _loading = true;
-  Map<String, dynamic>? _bskyProfile;
+  bs.ActorProfile? _bskyProfile;
   late TextEditingController _displayNameController;
   late TextEditingController _descriptionController;
   dynamic _initialAvatar;
@@ -40,16 +41,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final authService = Provider.of<AuthService>(context, listen: false);
     final onboardingService = OnboardingService(authService);
     try {
-      final profileRes = await onboardingService.getBskyProfile();
-      final profile = profileRes?["value"];
+      final profile = await onboardingService.getBskyProfile();
       if (!mounted) return;
       setState(() {
         _bskyProfile = profile;
         _loading = false;
         if (profile != null) {
-          _displayNameController.text = profile['displayName'] ?? '';
-          _descriptionController.text = profile['description'] ?? '';
-          _initialAvatar = profile['avatar'];
+          _displayNameController.text = profile.displayName ?? '';
+          _descriptionController.text = profile.description ?? '';
+          _initialAvatar = profile.avatar;
           _localAvatar = _initialAvatar;
         }
       });
@@ -100,9 +100,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     final backgroundColor = isDark ? AppColors.darkBackground : AppColors.lightBackground;
 
     if (_loading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator(color: Colors.white)),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator(color: Colors.white)));
     }
 
     final avatarUrl = _avatarUrlFrom(_localAvatar);
@@ -188,9 +186,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           right: 0,
                           child: IconButton(
                             icon: const Icon(Icons.undo, size: 20),
-                            onPressed: () => setState(
-                              () => _displayNameController.text = _bskyProfile?['displayName'] ?? '',
-                            ),
+                            onPressed: () => setState(() => _displayNameController.text = _bskyProfile?.displayName ?? ''),
                             tooltip: 'Revert display name',
                           ),
                         ),
@@ -222,9 +218,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           right: 0,
                           child: IconButton(
                             icon: const Icon(Icons.undo, size: 20),
-                            onPressed: () => setState(
-                              () => _descriptionController.text = _bskyProfile?['description'] ?? '',
-                            ),
+                            onPressed: () => setState(() => _descriptionController.text = _bskyProfile?.description ?? ''),
                             tooltip: 'Revert bio',
                           ),
                         ),
@@ -239,17 +233,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           backgroundColor: AppColors.pink,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Text('Next'),
-                            SizedBox(width: 8),
-                            Icon(Icons.arrow_forward),
-                          ],
+                          children: const [Text('Next'), SizedBox(width: 8), Icon(Icons.arrow_forward)],
                         ),
                       ),
                     ),
