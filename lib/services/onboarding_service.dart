@@ -1,5 +1,5 @@
 import 'package:atproto/core.dart';
-import 'package:bluesky/bluesky.dart';
+import 'package:bluesky/bluesky.dart' as bs;
 
 import 'auth_service.dart';
 import 'sprk_client.dart';
@@ -30,8 +30,12 @@ class OnboardingService {
   }
 
   /// Retrieves the Bluesky profile for import
-  Future<Map<String, dynamic>?> getBskyProfile() async {
-    return _authService.getCurrentUserBskyProfile();
+  Future<bs.ActorProfile?> getBskyProfile() async {
+    final session = _authService.session;
+    if (session == null) return null;
+    final bsky = bs.Bluesky.fromSession(session);
+    final profile = await bsky.actor.getProfile(actor: session.did);
+    return profile.data;
   }
 
   /// Imports data from Bluesky profile into a Spark actor profile
@@ -40,9 +44,9 @@ class OnboardingService {
     if (bskyProfile == null) return;
     final record = <String, dynamic>{
       '\$type': 'so.sprk.actor.profile',
-      'displayName': bskyProfile['displayName'] ?? '',
-      'description': bskyProfile['description'] ?? '',
-      if (bskyProfile['avatar'] != null) 'avatar': bskyProfile['avatar'],
+      'displayName': bskyProfile.displayName ?? '',
+      'description': bskyProfile.description ?? '',
+      if (bskyProfile.avatar != null) 'avatar': bskyProfile.avatar,
     };
     final response = await _sprkClient.repo.createRecord(
       collection: NSID.parse('so.sprk.actor.profile'),
@@ -86,16 +90,17 @@ class OnboardingService {
   }
 
   /// Fetches the list of DIDs that the user follows on Bluesky
-  Future<XRPCResponse<Follows>> getBskyFollows() async {
+  Future<bs.Follows> getBskyFollows() async {
     final session = _authService.session;
     final atproto = _authService.atproto;
 
     if (session == null || atproto == null) throw Exception('Not authenticated');
 
-    final bsky = Bluesky.fromSession(session);
+    final bsky = bs.Bluesky.fromSession(session);
     final did = session.did;
+    // TODO: Paginate with cursor
     final response = await bsky.graph.getFollows(actor: did, limit: 100);
-    return response;
+    return response.data;
   }
 
   /// Creates a follow record in Spark for the given subject DID

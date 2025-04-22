@@ -40,8 +40,8 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
     final follows = await service.getBskyFollows();
     if (!mounted) return;
     setState(() {
-      _allFollows = follows.data;
-      _filteredFollows = follows.data.follows;
+      _allFollows = follows;
+      _filteredFollows = follows.follows;
       _loading = false;
     });
   }
