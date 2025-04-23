@@ -24,20 +24,27 @@ class ImportFollowsScreen extends StatefulWidget {
 
 class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
   bool _loading = true;
-  bs.Follows _allFollows = bs.Follows(subject: bs.Actor(did: '', handle: ''), follows: []);
   List<bs.Actor> _filteredFollows = [];
+  List<bs.Actor> _allActors = [];
   final Set<String> _followed = {};
   final TextEditingController _searchController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  String? _cursor;
+  bool _isLoadingMore = false;
+  bool _hasMore = true;
 
   @override
   void initState() {
     super.initState();
     _loadFollows();
     _searchController.addListener(_onSearchChanged);
+    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
@@ -48,8 +55,10 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
     final follows = await service.getBskyFollows();
     if (!mounted) return;
     setState(() {
-      _allFollows = follows;
-      _filteredFollows = follows.follows;
+      _allActors = List.from(follows.follows);
+      _filteredFollows = _allActors;
+      _cursor = follows.cursor;
+      _hasMore = follows.cursor != null;
       _loading = false;
     });
   }
@@ -57,7 +66,7 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      _filteredFollows = _allFollows.follows.where((did) => did.handle.toLowerCase().contains(query)).toList();
+      _filteredFollows = _allActors.where((actor) => actor.handle.toLowerCase().contains(query)).toList();
     });
   }
 
@@ -69,13 +78,36 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
 
   Future<void> _followAll() async {
     final service = OnboardingService(Provider.of(context, listen: false));
-    for (var actor in _allFollows.follows) {
+    for (var actor in _allActors) {
       if (_followed.contains(actor.did)) continue;
       await service.createSparkFollow(actor.did);
       _followed.add(actor.did);
     }
     if (!mounted) return;
     setState(() {});
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients || _isLoadingMore || !_hasMore) return;
+    if (_scrollController.position.extentAfter < 300) {
+      _loadMore();
+    }
+  }
+
+  Future<void> _loadMore() async {
+    if (!_hasMore || _isLoadingMore) return;
+    setState(() => _isLoadingMore = true);
+    final service = OnboardingService(Provider.of(context, listen: false));
+    final follows = await service.getBskyFollows(cursor: _cursor);
+    if (!mounted) return;
+    setState(() {
+      _allActors.addAll(follows.follows);
+      _cursor = follows.cursor;
+      _hasMore = follows.cursor != null;
+      _filteredFollows =
+          _allActors.where((actor) => actor.handle.toLowerCase().contains(_searchController.text.toLowerCase())).toList();
+      _isLoadingMore = false;
+    });
   }
 
   @override
@@ -91,9 +123,12 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
           child: Container(
-            decoration: BoxDecoration(color: const Color(0xFF201D22), borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF201D22) : AppColors.lightLavender,
+              borderRadius: BorderRadius.circular(8),
+            ),
             child: IconButton(
-              icon: const Icon(FluentIcons.ios_arrow_ltr_24_filled, color: Colors.white),
+              icon: Icon(FluentIcons.ios_arrow_ltr_24_filled, color: isDark ? Colors.white : AppColors.darkPurple),
               onPressed: () => Navigator.of(context).pop(),
               tooltip: 'Back',
             ),
@@ -149,9 +184,16 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
                     const SizedBox(height: 16),
                     Expanded(
                       child: ListView.separated(
-                        itemCount: _filteredFollows.length,
+                        controller: _scrollController,
+                        itemCount: _filteredFollows.length + (_isLoadingMore ? 1 : 0),
                         separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemBuilder: (context, index) {
+                          if (index >= _filteredFollows.length) {
+                            return const Padding(
+                              padding: EdgeInsets.symmetric(vertical: 8),
+                              child: Center(child: CircularProgressIndicator(color: Colors.white)),
+                            );
+                          }
                           final did = _filteredFollows[index];
                           final isFollowed = _followed.contains(did.did);
                           return ListTile(

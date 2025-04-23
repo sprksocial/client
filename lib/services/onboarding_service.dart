@@ -76,21 +76,8 @@ class OnboardingService {
     }
   }
 
-  /// Creates an empty Spark actor profile if the user skips import
-  Future<void> createEmptySparkProfile() async {
-    final record = <String, dynamic>{'\$type': 'so.sprk.actor.profile', 'displayName': '', 'description': ''};
-    final response = await _sprkClient.repo.createRecord(
-      collection: NSID.parse('so.sprk.actor.profile'),
-      record: record,
-      rkey: 'self',
-    );
-    if (response.status.code != 200) {
-      throw Exception('Failed to create empty Spark profile: ${response.status.code} ${response.data}');
-    }
-  }
-
   /// Fetches the list of DIDs that the user follows on Bluesky
-  Future<bs.Follows> getBskyFollows() async {
+  Future<bs.Follows> getBskyFollows({String? cursor}) async {
     final session = _authService.session;
     final atproto = _authService.atproto;
 
@@ -98,8 +85,7 @@ class OnboardingService {
 
     final bsky = bs.Bluesky.fromSession(session);
     final did = session.did;
-    // TODO: Paginate with cursor
-    final response = await bsky.graph.getFollows(actor: did, limit: 100);
+    final response = await bsky.graph.getFollows(actor: did, limit: 100, cursor: cursor);
     return response.data;
   }
 
