@@ -47,6 +47,11 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
     final service = OnboardingService(Provider.of(context, listen: false));
     final follows = await service.getBskyFollows();
     if (!mounted) return;
+    // If there are no follows, skip import and finish onboarding immediately
+    if (follows.follows.isEmpty) {
+      await _finishOnboarding();
+      return;
+    }
     setState(() {
       _allActors = List.from(follows.follows);
       _filteredFollows = _allActors;

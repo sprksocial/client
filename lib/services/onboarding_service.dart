@@ -30,31 +30,17 @@ class OnboardingService {
   }
 
   /// Retrieves the Bluesky profile for import
-  Future<bs.ActorProfile?> getBskyProfile() async {
+  Future<Map<String, dynamic>?> getBskyProfile() async {
     final session = _authService.session;
     if (session == null) return null;
-    final bsky = bs.Bluesky.fromSession(session);
-    final profile = await bsky.actor.getProfile(actor: session.did);
-    return profile.data;
-  }
 
-  /// Imports data from Bluesky profile into a Spark actor profile
-  Future<void> importBskyProfile() async {
-    final bskyProfile = await getBskyProfile();
-    if (bskyProfile == null) return;
-    final record = <String, dynamic>{
-      '\$type': 'so.sprk.actor.profile',
-      'displayName': bskyProfile.displayName ?? '',
-      'description': bskyProfile.description ?? '',
-      if (bskyProfile.avatar != null) 'avatar': bskyProfile.avatar,
-    };
-    final response = await _sprkClient.repo.createRecord(
-      collection: NSID.parse('so.sprk.actor.profile'),
-      record: record,
-      rkey: 'self',
-    );
-    if (response.status.code != 200) {
-      throw Exception('Failed to import Spark profile: ${response.status.code} ${response.data}');
+    try {
+      final uri = AtUri.parse('at://${session.did}/app.bsky.actor.profile/self');
+      final response = await _sprkClient.repo.getRecord(uri: uri);
+      return response.data?.toJson();
+    } catch (e) {
+      // Profile might not exist
+      return null;
     }
   }
 

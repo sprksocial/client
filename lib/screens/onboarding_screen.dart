@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:bluesky/bluesky.dart' as bs;
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -19,7 +18,7 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   bool _loading = true;
-  bs.ActorProfile? _bskyProfile;
+  Map<String, dynamic>? _bskyProfile;
   late TextEditingController _displayNameController;
   late TextEditingController _descriptionController;
   dynamic _initialAvatar;
@@ -51,10 +50,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         _bskyProfile = profile;
         _loading = false;
         if (profile != null) {
-          _displayNameController.text = profile.displayName ?? '';
-          _descriptionController.text = profile.description ?? '';
-          _initialAvatar = profile.avatar;
-          _localAvatar = _initialAvatar;
+          final value = profile['value'] as Map<String, dynamic>?;
+          if (value != null) {
+            _displayNameController.text = value['displayName'] as String? ?? '';
+            _descriptionController.text = value['description'] as String? ?? '';
+            _initialAvatar = value['avatar'];
+            _localAvatar = _initialAvatar;
+          }
         }
       });
     } catch (_) {
@@ -190,7 +192,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.undo, size: 20),
-                          onPressed: () => setState(() => _displayNameController.text = _bskyProfile?.displayName ?? ''),
+                          onPressed: () {
+                            if (_bskyProfile != null) {
+                              final value = _bskyProfile!['value'] as Map<String, dynamic>?;
+                              setState(() => _displayNameController.text = value?['displayName'] as String? ?? '');
+                            }
+                          },
                           tooltip: 'Revert display name',
                         ),
                       ),
@@ -217,7 +224,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         ),
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.undo, size: 20),
-                          onPressed: () => setState(() => _descriptionController.text = _bskyProfile?.description ?? ''),
+                          onPressed: () {
+                            if (_bskyProfile != null) {
+                              final value = _bskyProfile!['value'] as Map<String, dynamic>?;
+                              setState(() => _descriptionController.text = value?['description'] as String? ?? '');
+                            }
+                          },
                           tooltip: 'Revert bio',
                         ),
                       ),
