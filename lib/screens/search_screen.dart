@@ -135,21 +135,34 @@ class _SearchScreenState extends State<SearchScreen> {
             children: [
               Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: SearchBar(
+                child: TextField(
                   controller: _searchController,
-                  hintText: 'Search users',
-                  leading: Icon(FluentIcons.search_24_regular, color: AppTheme.getSecondaryTextColor(context)),
-                  padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16.0)),
-                  elevation: WidgetStateProperty.all(0),
-                  backgroundColor: WidgetStateProperty.all(isDarkMode ? Colors.grey[900] : AppColors.lightLavender.withAlpha(50)),
                   onChanged: (value) => _onSearchChanged(value.trim()),
+                  decoration: InputDecoration(
+                    hintText: 'Search users',
+                    prefixIcon: Icon(FluentIcons.search_24_regular, color: AppTheme.getSecondaryTextColor(context)),
+                    filled: true,
+                    fillColor: isDarkMode ? Colors.grey[900] : AppColors.lightLavender.withAlpha(50),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: AppColors.border),
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: AppColors.border),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  ),
                 ),
               ),
-              TabBar(
-                tabs: const [Tab(text: 'Users')],
-                indicatorColor: AppColors.pink,
-                labelColor: AppTheme.getTextColor(context),
-                unselectedLabelColor: AppTheme.getSecondaryTextColor(context),
+              Theme(
+                data: Theme.of(context).copyWith(tabBarTheme: const TabBarTheme(dividerColor: Colors.transparent)),
+                child: TabBar(
+                  tabs: const [Tab(text: 'Users')],
+                  indicatorColor: AppColors.pink,
+                  labelColor: AppTheme.getTextColor(context),
+                  unselectedLabelColor: AppTheme.getSecondaryTextColor(context),
+                ),
               ),
               Expanded(child: TabBarView(children: [_buildUserResults()])),
             ],
