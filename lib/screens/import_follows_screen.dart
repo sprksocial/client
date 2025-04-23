@@ -28,23 +28,16 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
   List<bs.Actor> _allActors = [];
   final Set<String> _followed = {};
   final TextEditingController _searchController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-  String? _cursor;
-  bool _isLoadingMore = false;
-  bool _hasMore = true;
 
   @override
   void initState() {
     super.initState();
     _loadFollows();
     _searchController.addListener(_onSearchChanged);
-    _scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
     _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
@@ -57,10 +50,31 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
     setState(() {
       _allActors = List.from(follows.follows);
       _filteredFollows = _allActors;
-      _cursor = follows.cursor;
-      _hasMore = follows.cursor != null;
       _loading = false;
     });
+    // Load remaining pages in background
+    _prefetchRemainingFollows(follows.cursor);
+  }
+
+  Future<void> _prefetchRemainingFollows(String? cursor) async {
+    if (cursor == null) return;
+    final service = OnboardingService(Provider.of(context, listen: false));
+    String? nextCursor = cursor;
+    while (mounted && nextCursor != null) {
+      try {
+        final page = await service.getBskyFollows(cursor: nextCursor);
+        nextCursor = page.cursor;
+        if (!mounted) break;
+        setState(() {
+          _allActors.addAll(page.follows);
+          final query = _searchController.text.toLowerCase();
+          _filteredFollows =
+              query.isEmpty ? _allActors : _allActors.where((actor) => actor.handle.toLowerCase().contains(query)).toList();
+        });
+      } catch (_) {
+        break;
+      }
+    }
   }
 
   void _onSearchChanged() {
@@ -85,29 +99,6 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
     }
     if (!mounted) return;
     setState(() {});
-  }
-
-  void _onScroll() {
-    if (!_scrollController.hasClients || _isLoadingMore || !_hasMore) return;
-    if (_scrollController.position.extentAfter < 300) {
-      _loadMore();
-    }
-  }
-
-  Future<void> _loadMore() async {
-    if (!_hasMore || _isLoadingMore) return;
-    setState(() => _isLoadingMore = true);
-    final service = OnboardingService(Provider.of(context, listen: false));
-    final follows = await service.getBskyFollows(cursor: _cursor);
-    if (!mounted) return;
-    setState(() {
-      _allActors.addAll(follows.follows);
-      _cursor = follows.cursor;
-      _hasMore = follows.cursor != null;
-      _filteredFollows =
-          _allActors.where((actor) => actor.handle.toLowerCase().contains(_searchController.text.toLowerCase())).toList();
-      _isLoadingMore = false;
-    });
   }
 
   @override
@@ -184,16 +175,11 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
                     const SizedBox(height: 16),
                     Expanded(
                       child: ListView.separated(
-                        controller: _scrollController,
-                        itemCount: _filteredFollows.length + (_isLoadingMore ? 1 : 0),
+                        addAutomaticKeepAlives: false,
+                        addRepaintBoundaries: false,
+                        itemCount: _filteredFollows.length,
                         separatorBuilder: (_, __) => const SizedBox(height: 8),
                         itemBuilder: (context, index) {
-                          if (index >= _filteredFollows.length) {
-                            return const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 8),
-                              child: Center(child: CircularProgressIndicator(color: Colors.white)),
-                            );
-                          }
                           final did = _filteredFollows[index];
                           final isFollowed = _followed.contains(did.did);
                           return ListTile(
