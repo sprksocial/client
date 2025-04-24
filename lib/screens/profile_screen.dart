@@ -1,15 +1,16 @@
 import 'dart:convert';
 
+import 'package:atproto/atproto.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-import 'package:atproto/atproto.dart';
+import 'package:sparksocial/services/mod_service.dart';
 import 'package:sparksocial/widgets/action_buttons/menu_action_button.dart';
 import 'package:sparksocial/widgets/dialogs/report_dialog.dart';
-import 'package:sparksocial/services/mod_service.dart';
 
 import '../models/profile.dart';
+import '../services/actions_service.dart';
 import '../services/auth_service.dart';
 import '../services/profile_service.dart';
 import '../utils/app_colors.dart';
@@ -20,7 +21,7 @@ import '../widgets/profile/profile_menu_sheet.dart';
 import '../widgets/profile/profile_tab_content.dart';
 import '../widgets/profile/profile_tabs.dart';
 import 'auth_prompt_screen.dart';
-import '../services/actions_service.dart';
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String? did;
@@ -186,6 +187,19 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
     } else {
       action();
     }
+  }
+
+  /// Navigate to EditProfileScreen and refresh profile on update
+  void _navigateToEdit() {
+    if (_profile == null) return;
+    Navigator.of(context).push<bool>(MaterialPageRoute(builder: (context) => EditProfileScreen(profile: _profile!))).then((
+      updated,
+    ) {
+      if (updated == true && mounted) {
+        _loadProfile();
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated successfully')));
+      }
+    });
   }
 
   bool _isCurrentUser() {
@@ -354,7 +368,7 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
                 isCurrentUser: isCurrentUser,
                 isEarlySupporter: _isEarlySupporter,
                 onEarlySupporterTap: () => _showEarlySupporterInfo(context),
-                onEditTap: () => _checkAuthAndProceed(() => debugPrint('Edit profile tapped')),
+                onEditTap: () => _checkAuthAndProceed(_navigateToEdit),
                 onShareTap: () => debugPrint('Share profile tapped'),
                 onFollowTap: () => _checkAuthAndProceed(_handleFollow),
                 onSettingsTap: _handleSettingsTap,

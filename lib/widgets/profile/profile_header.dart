@@ -211,10 +211,21 @@ class _ProfileHeaderState extends State<ProfileHeader> {
           Row(
             children: [
               if (widget.isCurrentUser) ...[
-                // Expanded(
-                //   flex: 1,
-                //   child: ProfileActionButton(label: 'Edit', onPressed: widget.onEditTap, isPrimary: true, isOutlined: false),
-                // ),
+                Expanded(
+                  flex: 1,
+                  child: Container(
+                    constraints: const BoxConstraints(minHeight: 36),
+                    child: ElevatedButton(
+                      onPressed: widget.onEditTap,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: AppTheme.getTextColor(context),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                      ),
+                      child: const Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.w600)),
+                    ),
+                  ),
+                ),
                 const SizedBox(width: 8),
               ] else ...[
                 Expanded(
