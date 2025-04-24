@@ -1,8 +1,11 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+
 import '../services/auth_service.dart';
+import '../services/onboarding_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -48,12 +51,16 @@ class _SplashScreenState extends State<SplashScreen> {
     final bool isSessionValid = await authService.validateSession();
 
     if (!mounted) return;
-
-    if (isSessionValid) {
-      Navigator.of(context).pushReplacementNamed('/home');
-    } else {
+    if (!isSessionValid) {
       Navigator.of(context).pushReplacementNamed('/auth');
+      return;
     }
+    // Check if Spark profile exists
+    final onboardingService = OnboardingService(authService);
+    final hasSpark = await onboardingService.hasSparkProfile();
+    if (!mounted) return;
+    final nextRoute = hasSpark ? '/home' : '/onboarding';
+    Navigator.of(context).pushReplacementNamed(nextRoute);
   }
 
   @override

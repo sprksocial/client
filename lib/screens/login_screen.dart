@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import '../services/auth_service.dart';
+import '../services/onboarding_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
 
@@ -66,7 +67,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (result == LoginStatus.success) {
         TextInput.finishAutofillContext(shouldSave: true);
-        Navigator.of(context).pushNamedAndRemoveUntil('/home', (Route<dynamic> route) => false);
+        final onboardingService = OnboardingService(authService);
+        final hasSpark = await onboardingService.hasSparkProfile();
+        if (!mounted) return;
+        Navigator.of(context).pushNamedAndRemoveUntil(hasSpark ? '/home' : '/onboarding', (Route<dynamic> route) => false);
       } else if (result == LoginStatus.codeRequired) {
         setState(() {
           _showAuthCodeField = true;
@@ -222,7 +226,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       backgroundColor: AppColors.primary,
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                      disabledBackgroundColor: AppColors.primary.withAlpha(128),
                     ),
                     child:
                         authService.isLoading

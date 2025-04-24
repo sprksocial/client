@@ -10,6 +10,7 @@ import 'screens/create_video_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/messages_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/search_screen.dart';
 import 'screens/splash_screen.dart';
@@ -113,6 +114,7 @@ class MyApp extends StatelessWidget {
           '/home': (context) => const MainScreen(),
           '/login': (context) => const LoginScreen(),
           '/auth': (context) => const AuthPromptScreen(),
+          '/onboarding': (context) => const OnboardingScreen(),
           '/test': (context) => const TestActionsScreen(),
         },
         builder: (context, child) {
