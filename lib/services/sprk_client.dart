@@ -250,11 +250,25 @@ class RepoAPI {
 
   RepoAPI(this._client);
 
+  /// Get a record from the repository
+  Future<dynamic> getRecord({required AtUri uri}) async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+      return await atproto.repo.getRecord(uri: uri);
+    });
+  }
+
   /// Create a record in the repository
   ///
   /// [collection] The NSID of the collection to create the record in
   /// [record] The record data to create
-  Future<dynamic> createRecord({required NSID collection, required Map<String, dynamic> record}) async {
+  Future<dynamic> createRecord({required NSID collection, required Map<String, dynamic> record, String? rkey}) async {
     return _client._executeWithRetry(() async {
       if (!_client._authService.isAuthenticated) {
         throw Exception('Not authenticated');
@@ -265,7 +279,7 @@ class RepoAPI {
         throw Exception('AtProto not initialized');
       }
 
-      return await atproto.repo.createRecord(collection: collection, record: record);
+      return await atproto.repo.createRecord(collection: collection, record: record, rkey: rkey);
     });
   }
 

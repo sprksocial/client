@@ -275,19 +275,6 @@ class AuthService extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>?> getCurrentUserProfile() async {
-    if (_atProto == null) return null;
-
-    try {
-      final response = await _atProto!.repo.getRecord(uri: AtUri.parse('at://${_session!.did}/app.bsky.actor.profile/self'));
-      return response.data.toJson();
-    } catch (e) {
-      _error = e.toString();
-      notifyListeners();
-      return null;
-    }
-  }
-
   void clearError() {
     _error = null;
     notifyListeners();

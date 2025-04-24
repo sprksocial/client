@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../config/app_config.dart';
 import '../services/auth_service.dart';
+import '../services/onboarding_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
 
@@ -56,9 +57,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     if (success) {
-      if (mounted) {
-        Navigator.of(context).pushReplacementNamed('/home');
-      }
+      final onboardingService = OnboardingService(authService);
+      final hasSpark = await onboardingService.hasSparkProfile();
+      if (!mounted) return;
+      Navigator.of(context).pushReplacementNamed(hasSpark ? '/home' : '/onboarding');
     } else {
       setState(() {
         _errorMessage = authService.error;
@@ -113,10 +115,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   if (AppConfig.signupsDisabled) ...[
                     Container(
                       padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: AppColors.error.withAlpha(26),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      decoration: BoxDecoration(color: AppColors.error.withAlpha(26), borderRadius: BorderRadius.circular(12)),
                       child: Row(
                         children: [
                           const Icon(FluentIcons.warning_24_regular, color: AppColors.error),
