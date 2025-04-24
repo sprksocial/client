@@ -130,7 +130,7 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
             ),
           ),
         ),
-        title: SvgPicture.asset('assets/images/bskywordmark.svg', height: 24),
+        title: SvgPicture.asset(isDark ? 'assets/images/bskywordmark.svg' : 'assets/images/bskywordmark_light.svg', height: 24),
         actions: [
           TextButton(
             onPressed: _finishOnboarding,

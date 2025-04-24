@@ -145,16 +145,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (_localAvatar != _initialAvatar)
-                          IconButton(
-                            icon: const Icon(Icons.undo, color: Colors.white),
-                            onPressed: () => setState(() => _localAvatar = _initialAvatar),
-                            tooltip: 'Revert avatar',
+                          GestureDetector(
+                            onTap: () => setState(() => _localAvatar = _initialAvatar),
+                            child: Container(
+                              decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                              padding: const EdgeInsets.all(4),
+                              child: const Icon(Icons.undo, size: 16, color: Colors.white),
+                            ),
                           ),
                         if (_localAvatar != null)
-                          IconButton(
-                            icon: const Icon(Icons.close, color: Colors.white),
-                            onPressed: () => setState(() => _localAvatar = null),
-                            tooltip: 'Remove avatar',
+                          GestureDetector(
+                            onTap: () => setState(() => _localAvatar = null),
+                            child: Container(
+                              decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                              padding: const EdgeInsets.all(4),
+                              child: const Icon(Icons.close, size: 16, color: Colors.white),
+                            ),
                           ),
                       ],
                     ),
