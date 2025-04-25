@@ -213,7 +213,7 @@ class _CommentInputState extends State<CommentInput> {
     final inputBackgroundColor = widget.isDarkMode ? AppColors.deepPurple.withAlpha(128) : AppColors.lightLavender.withAlpha(77);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       decoration: BoxDecoration(color: backgroundColor, border: Border(top: BorderSide(color: borderColor, width: 0.5))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,23 +222,40 @@ class _CommentInputState extends State<CommentInput> {
           // Emoji Picker is always displayed at the top
           EmojiPicker(onEmojiSelected: _insertEmoji, isDarkMode: widget.isDarkMode),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 16),
 
-          if (widget.replyingToUsername != null) _buildReplyingToNotice(inputBackgroundColor, borderColor, textColor),
+          if (widget.replyingToUsername != null) 
+            Padding(
+              padding: const EdgeInsets.only(bottom: 12.0),
+              child: _buildReplyingToNotice(inputBackgroundColor, borderColor, textColor),
+            ),
 
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              _buildUserAvatar(borderColor),
-              const SizedBox(width: 12),
-              Expanded(child: _buildTextField(inputBackgroundColor, borderColor, textColor, placeholderColor)),
-              const SizedBox(width: 8),
-              _buildAttachmentButton(inputBackgroundColor, borderColor, textColor),
-            ],
+          // Updated input row with centered alignment
+          Container(
+            decoration: BoxDecoration(
+              color: inputBackgroundColor,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: borderColor, width: 0.5),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _buildUserAvatar(borderColor),
+                const SizedBox(width: 8),
+                _buildAttachmentButton(borderColor, textColor),
+                const SizedBox(width: 8),
+                Expanded(child: _buildTextField(textColor, placeholderColor)),
+              ],
+            ),
           ),
 
           // Selected Images Preview (only show if images are selected)
-          if (_selectedImages.isNotEmpty) _buildSelectedImagesPreview(borderColor),
+          if (_selectedImages.isNotEmpty) 
+            Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: _buildSelectedImagesPreview(borderColor),
+            ),
         ],
       ),
     );
@@ -247,7 +264,6 @@ class _CommentInputState extends State<CommentInput> {
   Widget _buildReplyingToNotice(Color inputBackgroundColor, Color borderColor, Color textColor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
         color: inputBackgroundColor,
         borderRadius: BorderRadius.circular(8),
@@ -274,7 +290,14 @@ class _CommentInputState extends State<CommentInput> {
       decoration: BoxDecoration(
         color: AppColors.accent,
         shape: BoxShape.circle,
-        border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 1),
+        border: Border.all(color: borderColor, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.accent.withOpacity(0.2),
+            blurRadius: 4,
+            spreadRadius: 1,
+          ),
+        ],
       ),
       child: const Center(
         child: Text(
@@ -285,7 +308,7 @@ class _CommentInputState extends State<CommentInput> {
     );
   }
 
-  Widget _buildTextField(Color inputBackgroundColor, Color borderColor, Color textColor, Color placeholderColor) {
+  Widget _buildTextField(Color textColor, Color placeholderColor) {
     String hint = 'Add a comment...';
     if (widget.replyingToUsername != null) {
       hint = 'Reply to ${widget.replyingToUsername}...';
@@ -297,156 +320,141 @@ class _CommentInputState extends State<CommentInput> {
       controller: _textController,
       focusNode: widget.focusNode,
       decoration: InputDecoration(
-        hintText: hint, // Updated hint logic
+        hintText: hint,
         hintStyle: TextStyle(color: placeholderColor, fontSize: 14),
-        filled: true,
-        fillColor: inputBackgroundColor,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: borderColor, width: 0.5),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: borderColor, width: 0.5),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(20),
-          borderSide: BorderSide(color: borderColor, width: 0.5),
-        ),
+        filled: false,
+        isDense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+        border: InputBorder.none,
+        enabledBorder: InputBorder.none,
+        focusedBorder: InputBorder.none,
         suffixIcon:
-            _isPosting // Show progress if posting OR specifically uploading images
+            _isPosting
                 ? Container(
-                  margin: const EdgeInsets.all(10),
+                  margin: const EdgeInsets.all(8),
                   width: 20,
                   height: 20,
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary), // Use valueColor
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                   ),
                 )
                 : IconButton(
                   icon: Icon(FluentIcons.send_24_filled, size: 20, color: _canSubmit ? AppColors.primary : placeholderColor),
-                  onPressed: _canSubmit ? _submitComment : null, // Controlled by _canSubmit
+                  onPressed: _canSubmit ? _submitComment : null,
                 ),
       ),
       style: TextStyle(color: textColor, fontSize: 14),
       maxLines: 5,
       minLines: 1,
       cursorColor: AppColors.primary,
-      enabled: !_isPosting, // Disable field while posting
+      enabled: !_isPosting,
     );
   }
 
-  Widget _buildAttachmentButton(Color inputBackgroundColor, Color borderColor, Color textColor) {
-    final bool canAddMoreImages = _selectedImages.length < 4; // Example limit
+  Widget _buildAttachmentButton(Color borderColor, Color textColor) {
+    final bool canAddMoreImages = _selectedImages.length < 4;
     final bool enabled = !_isPosting && canAddMoreImages;
 
     return IconButton(
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
-      onPressed: enabled ? _pickImages : null, // Trigger image picker
+      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+      onPressed: enabled ? _pickImages : null,
       tooltip: enabled ? 'Add images (up to 4)' : (_isPosting ? 'Posting...' : 'Maximum images reached'),
-      icon: Container(
-        width: 34,
-        height: 34,
-        decoration: BoxDecoration(
-          color: inputBackgroundColor,
-          shape: BoxShape.circle,
-          border: Border.all(color: borderColor, width: 0.5),
-        ),
-        child: Icon(
-          // Change icon based on state if desired, e.g., FluentIcons.image_add_24_regular
-          FluentIcons.add_24_regular,
-          size: 18,
-          color: enabled ? textColor : textColor.withOpacity(0.5), // Dim if disabled
-        ),
+      icon: Icon(
+        FluentIcons.image_24_regular,
+        size: 20,
+        color: enabled ? AppColors.primary : textColor.withOpacity(0.5),
       ),
     );
   }
 
   // New widget to display selected image thumbnails
   Widget _buildSelectedImagesPreview(Color borderColor) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 12.0, left: 44), // Align with text field start
-      child: SizedBox(
-        height: 64, // Adjust height as needed
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: _selectedImages.length,
-          itemBuilder: (context, index) {
-            final imageFile = _selectedImages[index];
-            final alt = _altTexts[imageFile.path] ?? '';
-            return Padding(
-              padding: const EdgeInsets.only(right: 8.0),
-              child: Stack(
-                alignment: Alignment.bottomRight,
-                children: [
-                  // Image Thumbnail
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: borderColor, width: 0.5),
-                      image: DecorationImage(image: FileImage(File(imageFile.path)), fit: BoxFit.cover),
-                    ),
+    return SizedBox(
+      height: 72,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: _selectedImages.length,
+        itemBuilder: (context, index) {
+          final imageFile = _selectedImages[index];
+          final alt = _altTexts[imageFile.path] ?? '';
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                // Image Thumbnail with rounded corners and shadow
+                Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: borderColor, width: 0.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 4,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                    image: DecorationImage(image: FileImage(File(imageFile.path)), fit: BoxFit.cover),
                   ),
-                  // ALT Button (bottom right)
-                  Positioned(
-                    bottom: 4,
-                    right: 4,
-                    child: Material(
-                      color: Colors.black.withOpacity(0.5),
+                ),
+                // ALT Button (bottom right)
+                Positioned(
+                  bottom: 4,
+                  right: 4,
+                  child: Material(
+                    color: Colors.black.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(8),
+                    child: InkWell(
+                      onTap: () async {
+                        final result = await showDialog<String>(
+                          context: context,
+                          builder: (context) => AltTextEditorDialog(imageFile: imageFile, initialAltText: alt),
+                        );
+                        if (result != null) {
+                          setState(() {
+                            _altTexts[imageFile.path] = result.trim();
+                          });
+                        }
+                      },
                       borderRadius: BorderRadius.circular(8),
-                      child: InkWell(
-                        onTap: () async {
-                          final result = await showDialog<String>(
-                            context: context,
-                            builder: (context) => AltTextEditorDialog(imageFile: imageFile, initialAltText: alt),
-                          );
-                          if (result != null) {
-                            setState(() {
-                              _altTexts[imageFile.path] = result.trim();
-                            });
-                          }
-                        },
-                        borderRadius: BorderRadius.circular(8),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          child: Row(
-                            children: [
-                              Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 14),
-                              const SizedBox(width: 2),
-                              const Text('ALT', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
-                            ],
-                          ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        child: Row(
+                          children: [
+                            Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 14),
+                            const SizedBox(width: 2),
+                            const Text('ALT', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                  // Remove Button (top right)
-                  Positioned(
-                    top: 4,
-                    right: 4,
-                    child: Material(
-                      color: Colors.black.withOpacity(0.5),
-                      shape: const CircleBorder(),
-                      child: InkWell(
-                        onTap: () => _removeImage(index),
-                        customBorder: const CircleBorder(),
-                        child: Container(
-                          padding: const EdgeInsets.all(2),
-                          child: const Icon(FluentIcons.dismiss_16_filled, color: Colors.white, size: 12),
-                        ),
+                ),
+                // Remove Button (top right)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Material(
+                    color: Colors.black.withOpacity(0.5),
+                    shape: const CircleBorder(),
+                    child: InkWell(
+                      onTap: () => _removeImage(index),
+                      customBorder: const CircleBorder(),
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        child: const Icon(FluentIcons.dismiss_16_filled, color: Colors.white, size: 12),
                       ),
                     ),
                   ),
-                ],
-              ),
-            );
-          },
-        ),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
