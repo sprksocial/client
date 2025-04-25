@@ -219,10 +219,9 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                       onPressed: widget.onEditTap,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
-                        foregroundColor: AppTheme.getTextColor(context),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: const Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.w600)),
+                      child: Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.w600, color: Colors.white)),
                     ),
                   ),
                 ),

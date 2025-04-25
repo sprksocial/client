@@ -79,57 +79,61 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     return Scaffold(
       appBar: AppBar(title: const Text('Edit Profile'), backgroundColor: bgColor, elevation: 0),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              children: [
-                Stack(
-                  alignment: Alignment.topRight,
-                  children: [
-                    GestureDetector(
-                      onTap: _pickAvatar,
-                      child: CircleAvatar(
-                        radius: 50,
-                        backgroundImage: avatarImageProvider,
-                        child: avatarImageProvider == null ? const Icon(Icons.person, size: 50) : null,
+        child: Container(
+          alignment: Alignment.center,
+          color: MediaQuery.of(context).platformBrightness == Brightness.light ? Colors.white : bgColor,
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  Stack(
+                    alignment: Alignment.topRight,
+                    children: [
+                      GestureDetector(
+                        onTap: _pickAvatar,
+                        child: CircleAvatar(
+                          radius: 50,
+                          backgroundImage: avatarImageProvider,
+                          child: avatarImageProvider == null ? const Icon(Icons.person, size: 50) : null,
+                        ),
                       ),
-                    ),
-                    if (_localAvatar is Uint8List)
-                      IconButton(icon: const Icon(Icons.undo), onPressed: _revertAvatar, color: AppColors.pink),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                CustomTextField(controller: _displayNameController, hintText: 'Display Name', fillColor: bgColor),
-                const SizedBox(height: 16),
-                CustomTextField(controller: _descriptionController, hintText: 'Description', fillColor: bgColor, maxLines: 3),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isSaving ? null : _saveProfile,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    ),
-                    child:
-                        _isSaving
-                            ? const SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: CircularProgressIndicator(
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                                strokeWidth: 2,
-                              ),
-                            )
-                            : const Text(
-                              'Save',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
-                            ),
+                      if (_localAvatar is Uint8List)
+                        IconButton(icon: const Icon(Icons.undo), onPressed: _revertAvatar, color: AppColors.pink),
+                    ],
                   ),
-                ),
-              ],
+                  const SizedBox(height: 16),
+                  CustomTextField(controller: _displayNameController, hintText: 'Display Name', fillColor: bgColor),
+                  const SizedBox(height: 16),
+                  CustomTextField(controller: _descriptionController, hintText: 'Description', fillColor: bgColor, maxLines: 3),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isSaving ? null : _saveProfile,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      child:
+                          _isSaving
+                              ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  strokeWidth: 2,
+                                ),
+                              )
+                              : const Text(
+                                'Save',
+                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white),
+                              ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
