@@ -264,6 +264,23 @@ class RepoAPI {
     });
   }
 
+  /// Edit a record in the repository
+  ///
+  /// [uri] The URI of the record to edit
+  /// [record] The record data to edit
+  Future<dynamic> editRecord({required AtUri uri, required Map<String, dynamic> record}) async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+      return await atproto.repo.putRecord(uri: uri, record: record);
+    });
+  }
+
   /// Create a record in the repository
   ///
   /// [collection] The NSID of the collection to create the record in

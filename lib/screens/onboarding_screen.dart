@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import '../services/auth_service.dart';
 import '../services/onboarding_service.dart';
 import '../utils/app_colors.dart';
+import '../widgets/common/custom_text_field.dart';
 import 'import_follows_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -173,73 +174,33 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    TextFormField(
+                    CustomTextField(
                       controller: _displayNameController,
-                      decoration: InputDecoration(
-                        hintText: 'Display Name',
-                        filled: true,
-                        fillColor: backgroundColor,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppColors.border),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppColors.pink),
-                        ),
-                        errorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.red),
-                        ),
-                        focusedErrorBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: Colors.red),
-                        ),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.undo, size: 20),
-                          onPressed: () {
-                            if (_bskyProfile != null) {
-                              final value = _bskyProfile!['value'] as Map<String, dynamic>?;
-                              setState(() => _displayNameController.text = value?['displayName'] as String? ?? '');
-                            }
-                          },
-                          tooltip: 'Revert display name',
-                        ),
-                      ),
+                      hintText: 'Display Name',
+                      fillColor: backgroundColor,
+                      onUndo: () {
+                        if (_bskyProfile != null) {
+                          final value = _bskyProfile!['value'] as Map<String, dynamic>?;
+                          setState(() => _displayNameController.text = value?['displayName'] as String? ?? '');
+                        }
+                      },
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) return 'Display Name is required';
                         return null;
                       },
                     ),
                     const SizedBox(height: 12),
-                    TextFormField(
+                    CustomTextField(
                       controller: _descriptionController,
-                      decoration: InputDecoration(
-                        hintText: 'Bio',
-                        filled: true,
-                        fillColor: backgroundColor,
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppColors.border),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppColors.pink),
-                        ),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.undo, size: 20),
-                          onPressed: () {
-                            if (_bskyProfile != null) {
-                              final value = _bskyProfile!['value'] as Map<String, dynamic>?;
-                              setState(() => _descriptionController.text = value?['description'] as String? ?? '');
-                            }
-                          },
-                          tooltip: 'Revert bio',
-                        ),
-                      ),
+                      hintText: 'Bio',
+                      fillColor: backgroundColor,
                       maxLines: 3,
+                      onUndo: () {
+                        if (_bskyProfile != null) {
+                          final value = _bskyProfile!['value'] as Map<String, dynamic>?;
+                          setState(() => _descriptionController.text = value?['description'] as String? ?? '');
+                        }
+                      },
                     ),
                     const SizedBox(height: 24),
                     Align(

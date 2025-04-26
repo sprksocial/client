@@ -223,4 +223,26 @@ class ProfileService extends ChangeNotifier {
       throw Exception('Failed to fetch profile: $e');
     }
   }
+
+  /// Updates existing Spark actor profile
+  Future<void> updateProfile({required String displayName, required String description, dynamic avatar}) async {
+    if (!_authService.isAuthenticated) {
+      throw Exception('Not authenticated');
+    }
+    final client = SprkClient(_authService);
+    final record = <String, dynamic>{
+      '\$type': 'so.sprk.actor.profile',
+      'displayName': displayName,
+      'description': description,
+      if (avatar != null) 'avatar': avatar,
+    };
+    final response = await client.repo.editRecord(
+      uri: AtUri.parse('at://${_authService.session!.did}/so.sprk.actor.profile/self'),
+      record: record,
+    );
+    if (response.status.code != 200) {
+      throw Exception('Failed to update Spark profile: \\${response.status.code} \\${response.data}');
+    }
+    notifyListeners();
+  }
 }
