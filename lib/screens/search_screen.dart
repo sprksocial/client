@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../screens/profile_screen.dart';
+import '../services/actions_service.dart';
 import '../services/auth_service.dart';
 import '../services/sprk_client.dart';
 import '../utils/app_colors.dart';
@@ -189,9 +190,44 @@ class _SearchScreenState extends State<SearchScreen> {
       itemBuilder: (context, index) {
         final user = _searchResults[index];
         final authService = Provider.of<AuthService>(context, listen: false);
+        final actionsService = Provider.of<ActionsService>(context, listen: false);
         final currentDid = authService.session?.did;
         final userDid = user['did'];
         final isCurrentUser = userDid == currentDid;
+        final viewer = user['viewer'] as Map<String, dynamic>?;
+        final followUri = viewer != null ? viewer['following'] as String? : null;
+        final isFollowing = followUri != null && followUri.isNotEmpty;
+
+        Future<void> handleFollow() async {
+          try {
+            final newFollowUri = await actionsService.toggleFollow(userDid, null);
+            setState(() {
+              _searchResults[index]['viewer'] ??= {};
+              _searchResults[index]['viewer']['following'] = newFollowUri;
+            });
+          } catch (e) {
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Failed to follow: $e'), backgroundColor: Colors.red));
+          }
+        }
+
+        Future<void> handleUnfollow() async {
+          try {
+            await actionsService.toggleFollow(userDid, followUri);
+            setState(() {
+              _searchResults[index]['viewer'] ??= {};
+              _searchResults[index]['viewer']['following'] = null;
+            });
+          } catch (e) {
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Failed to unfollow: $e'), backgroundColor: Colors.red));
+          }
+        }
+
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: SuggestedAccountCard(
@@ -205,6 +241,9 @@ class _SearchScreenState extends State<SearchScreen> {
               }
             },
             showFollowButton: !isCurrentUser,
+            isFollowing: isFollowing,
+            onFollowTap: handleFollow,
+            onUnfollowTap: handleUnfollow,
           ),
         );
       },
