@@ -16,8 +16,11 @@ import '../widgets/video/video_item.dart';
 
 class FeedScreen extends StatefulWidget {
   final int feedType;
+  final List<FeedPost>? initialPosts;
+  final int? initialIndex;
+  final bool showBackButton;
 
-  const FeedScreen({super.key, required this.feedType});
+  const FeedScreen({super.key, required this.feedType, this.initialPosts, this.initialIndex, this.showBackButton = false});
 
   @override
   State<FeedScreen> createState() => _FeedScreenState();
@@ -40,7 +43,22 @@ class _FeedScreenState extends State<FeedScreen> {
   }
 
   Future<void> _initializeScreen() async {
-    await _fetchFeed();
+    if (widget.initialPosts != null) {
+      setState(() {
+        _feedPosts = widget.initialPosts;
+        _isLoading = false;
+        _currentIndex = widget.initialIndex ?? 0;
+      });
+
+      // Set initial page position
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_pageController.hasClients) {
+          _pageController.jumpToPage(_currentIndex);
+        }
+      });
+    } else {
+      await _fetchFeed();
+    }
   }
 
   @override
@@ -126,7 +144,23 @@ class _FeedScreenState extends State<FeedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return _buildMainContent();
+    return Material(
+      color: Colors.black,
+      child: Stack(
+        children: [
+          _buildMainContent(),
+          if (widget.showBackButton)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 10,
+              left: 10,
+              child: IconButton(
+                icon: const Icon(FluentIcons.arrow_left_24_regular, color: Colors.white),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+        ],
+      ),
+    );
   }
 
   Widget _buildMainContent() {

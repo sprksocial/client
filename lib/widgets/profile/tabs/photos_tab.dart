@@ -2,7 +2,8 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../screens/profile_player_screen.dart';
+import '../../../models/feed_post.dart';
+import '../../../screens/feed_screen.dart';
 import '../../../services/auth_service.dart';
 import '../../../services/profile_service.dart';
 import '../../../widgets/video/video_item.dart';
@@ -152,65 +153,58 @@ class _PhotosTabState extends State<PhotosTab> with AutomaticKeepAliveClientMixi
     debugPrint('Image post clicked at index $index');
   }
 
-  void _openImageViewer(int index, Map<String, dynamic> post, List<Map<String, dynamic>> allPosts) {
-    // Extract post data
-    final username = post['post']?['author']?['handle'] as String? ?? 'username';
-    final authorDid = post['post']?['author']?['did'] as String? ?? '';
-    final profileImageUrl = post['post']?['author']?['avatar'] as String? ?? '';
-    final postUri = post['post']?['uri'] as String? ?? '';
-    final postCid = post['post']?['cid'] as String? ?? '';
-    final likeCount = post['post']?['likeCount'] as int? ?? 0;
-    final commentCount = post['post']?['replyCount'] as int? ?? 0;
-    final shareCount = post['post']?['repostCount'] as int? ?? 0;
+  void _openMediaViewer(int index, Map<String, dynamic> post, List<Map<String, dynamic>> allPosts) {
+    // Convert all posts to FeedPost format
+    final feedPosts =
+        allPosts.map((post) {
+          final embedType = post['post']?['embed']?['\$type'] as String?;
+          final isImage = embedType == 'so.sprk.embed.images#view';
 
-    String description = '';
-    if (post['post']?['record']?['text'] != null) {
-      description = post['post']['record']['text'] as String? ?? '';
-    } else if (post['post']?['text'] != null) {
-      description = post['post']['text'] as String? ?? '';
-    }
+          String description = '';
+          if (post['post']?['record']?['text'] != null) {
+            description = post['post']['record']['text'] as String? ?? '';
+          } else if (post['post']?['text'] != null) {
+            description = post['post']['text'] as String? ?? '';
+          }
 
-    final List<String> hashtags = [];
-    for (final word in description.split(' ')) {
-      if (word.startsWith('#') && word.length > 1) {
-        hashtags.add(word.substring(1));
-      }
-    }
+          final List<String> hashtags = [];
+          for (final word in description.split(' ')) {
+            if (word.startsWith('#') && word.length > 1) {
+              hashtags.add(word.substring(1));
+            }
+          }
 
-    final isSprk = postUri.contains('so.sprk.feed.post');
-
-    // Create a VideoItem but with empty videoUrl (ProfilePlayerScreen will handle it as an image)
-    final videoItem = VideoItem(
-      key: ValueKey('image_item_${postUri}_$index'),
-      index: index,
-      videoUrl: '', // Empty video URL for image posts
-      username: username,
-      description: description,
-      hashtags: hashtags,
-      likeCount: likeCount,
-      commentCount: commentCount,
-      bookmarkCount: 0,
-      shareCount: shareCount,
-      profileImageUrl: profileImageUrl,
-      authorDid: authorDid,
-      isLiked: false,
-      isSprk: isSprk,
-      postUri: postUri,
-      postCid: postCid,
-      disableBackgroundBlur: false,
-      onLikePressed: () {},
-      onBookmarkPressed: () {},
-      onSharePressed: () {},
-      onUsernameTap: () {},
-      onHashtagTap: (String hashtag) {},
-    );
+          return FeedPost(
+            username: post['post']?['author']?['handle'] as String? ?? 'username',
+            authorDid: post['post']?['author']?['did'] as String? ?? '',
+            profileImageUrl: post['post']?['author']?['avatar'] as String? ?? '',
+            description: description,
+            videoUrl: isImage ? null : (post['post']?['embed']?['playlist'] as String?),
+            imageUrls: isImage ? [post['post']?['embed']?['images']?[0]?['fullsize'] as String? ?? ''] : [],
+            likeCount: post['post']?['likeCount'] as int? ?? 0,
+            commentCount: post['post']?['replyCount'] as int? ?? 0,
+            shareCount: post['post']?['repostCount'] as int? ?? 0,
+            hashtags: hashtags,
+            uri: post['post']?['uri'] as String? ?? '',
+            cid: post['post']?['cid'] as String? ?? '',
+            isSprk: post['post']?['uri']?.contains('so.sprk.feed.post') ?? false,
+            hasMedia: true,
+            isReply: false,
+            imageAlts: [],
+            videoAlt: null,
+          );
+        }).toList();
 
     Navigator.of(context).push(
       PageRouteBuilder(
         opaque: true,
         pageBuilder:
-            (BuildContext context, _, __) =>
-                ProfilePlayerScreen(initialVideoItem: videoItem, allVideos: allPosts, initialIndex: index),
+            (BuildContext context, _, __) => FeedScreen(
+              feedType: 0, // Use a custom feed type for profile photos
+              initialPosts: feedPosts,
+              initialIndex: index,
+              showBackButton: true,
+            ),
         transitionsBuilder: (_, Animation<double> animation, __, Widget child) {
           const begin = Offset(0.0, 1.0);
           const end = Offset.zero;
@@ -275,7 +269,7 @@ class _PhotosTabState extends State<PhotosTab> with AutomaticKeepAliveClientMixi
     return SliverPadding(
       padding: const EdgeInsets.all(1),
       sliver: SliverGrid(
-        key: PageStorageKey<String>('photo_grid_${widget.did ?? 'current'}'),
+        key: PageStorageKey<String>('photos_grid_${widget.did ?? 'current'}_${DateTime.now().millisecondsSinceEpoch}'),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
           childAspectRatio: 2 / 3,
@@ -325,7 +319,7 @@ class _PhotosTabState extends State<PhotosTab> with AutomaticKeepAliveClientMixi
             index: index,
             isImage: true,
             likeCount: likeCount,
-            onTap: () => _openImageViewer(index, post, validPosts),
+            onTap: () => _openMediaViewer(index, post, validPosts),
             isSprk: isSprk,
           );
         }, childCount: itemCount),
