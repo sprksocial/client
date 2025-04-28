@@ -194,7 +194,7 @@ class _SearchScreenState extends State<SearchScreen> {
         final currentDid = authService.session?.did;
         final userDid = user['did'];
         final isCurrentUser = userDid == currentDid;
-        final viewer = user['viewer'] as Map<String, dynamic>?;
+        final viewer = user['viewer'] != null ? Map<String, dynamic>.from(user['viewer']) : null;
         final followUri = viewer != null ? viewer['following'] as String? : null;
         final isFollowing = followUri != null && followUri.isNotEmpty;
 
@@ -202,7 +202,9 @@ class _SearchScreenState extends State<SearchScreen> {
           try {
             final newFollowUri = await actionsService.toggleFollow(userDid, null);
             setState(() {
-              _searchResults[index]['viewer'] ??= {};
+              if (_searchResults[index]['viewer'] == null) {
+                _searchResults[index]['viewer'] = <String, dynamic>{};
+              }
               _searchResults[index]['viewer']['following'] = newFollowUri;
             });
           } catch (e) {
@@ -217,7 +219,9 @@ class _SearchScreenState extends State<SearchScreen> {
           try {
             await actionsService.toggleFollow(userDid, followUri);
             setState(() {
-              _searchResults[index]['viewer'] ??= {};
+              if (_searchResults[index]['viewer'] == null) {
+                _searchResults[index]['viewer'] = <String, dynamic>{};
+              }
               _searchResults[index]['viewer']['following'] = null;
             });
           } catch (e) {
