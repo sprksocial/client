@@ -4,6 +4,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../screens/profile_screen.dart';
 import '../services/auth_service.dart';
 import '../services/sprk_client.dart';
 import '../utils/app_colors.dart';
@@ -198,7 +199,11 @@ class _SearchScreenState extends State<SearchScreen> {
             handle: '@${user['handle'] ?? ''}',
             avatarUrl: user['avatar'] ?? '',
             description: user['description'] ?? '',
-            onTap: () {},
+            onTap: () {
+              if (userDid != null && userDid.isNotEmpty) {
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProfileScreen(did: userDid)));
+              }
+            },
             showFollowButton: !isCurrentUser,
           ),
         );
