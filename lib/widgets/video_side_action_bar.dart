@@ -11,23 +11,20 @@ import '../services/mod_service.dart';
 import '../services/auth_service.dart';
 import '../services/actions_service.dart';
 import '../widgets/dialogs/report_dialog.dart';
-import 'action_buttons/bookmark_action_button.dart';
+// import 'action_buttons/bookmark_action_button.dart';
 
 class VideoSideActionBar extends StatefulWidget {
   final VoidCallback? onProfilePressed;
   final VoidCallback? onLikePressed;
   final VoidCallback? onCommentPressed;
-  final VoidCallback? onBookmarkPressed;
   final VoidCallback? onSharePressed;
   final VoidCallback? onReportPressed;
   final VoidCallback? onPostDeleted;
 
   final String likeCount;
   final String commentCount;
-  final String bookmarkCount;
   final String shareCount;
   final bool isLiked;
-  final bool isBookmarked;
   final String? profileImageUrl;
 
   // Add post info for reporting
@@ -43,18 +40,15 @@ class VideoSideActionBar extends StatefulWidget {
     this.onProfilePressed,
     this.onLikePressed,
     this.onCommentPressed,
-    this.onBookmarkPressed,
     this.onSharePressed,
     this.onReportPressed,
     this.onPostDeleted,
 
     this.likeCount = '0',
     this.commentCount = '0',
-    this.bookmarkCount = '0',
     this.shareCount = '0',
 
     this.isLiked = false,
-    this.isBookmarked = false,
     this.profileImageUrl,
 
     this.postUri,
@@ -70,13 +64,11 @@ class VideoSideActionBar extends StatefulWidget {
 
 class _VideoSideActionBarState extends State<VideoSideActionBar> {
   bool _isLiked = false;
-  bool _isBookmarked = false;
 
   @override
   void initState() {
     super.initState();
     _isLiked = widget.isLiked;
-    _isBookmarked = widget.isBookmarked;
   }
 
   @override
@@ -85,11 +77,6 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
     if (oldWidget.isLiked != widget.isLiked) {
       setState(() {
         _isLiked = widget.isLiked;
-      });
-    }
-    if (oldWidget.isBookmarked != widget.isBookmarked) {
-      setState(() {
-        _isBookmarked = widget.isBookmarked;
       });
     }
   }
@@ -172,15 +159,6 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
     }
   }
 
-  void _handleBookmark() {
-    setState(() {
-      _isBookmarked = !_isBookmarked;
-    });
-    if (widget.onBookmarkPressed != null) {
-      widget.onBookmarkPressed!();
-    }
-  }
-
   void _handleReport(BuildContext context, AuthService authService) {
     if (widget.postUri == null || widget.postCid == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot report this content')));
@@ -196,6 +174,8 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
             postUri: widget.postUri!,
             postCid: widget.postCid!,
             onSubmit: (subject, reasonType, reason, service) async {
+              // Cache ScaffoldMessenger before await
+              final messenger = ScaffoldMessenger.of(context);
               try {
                 final result = await modService.createReport(
                   subject: subject,
@@ -204,15 +184,13 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
                   service: service,
                 );
 
-                // Check mounted before using context
-                if (!mounted) return;
+                // Use cached messenger
                 if (result) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+                  messenger.showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
                 }
               } catch (e) {
-                // Check mounted before using context
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+                // Use cached messenger
+                messenger.showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
               }
             },
           ),
@@ -224,6 +202,11 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot delete this post')));
       return;
     }
+
+    // Cache context-dependent objects *before* the first await (showDialog)
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final actionsService = Provider.of<ActionsService>(context, listen: false);
 
     // Confirm deletion
     final shouldDelete =
@@ -248,41 +231,36 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
     if (!shouldDelete || !mounted) return;
 
     try {
-      final actionsService = Provider.of<ActionsService>(context, listen: false);
       final result = await actionsService.deletePost(widget.postUri!);
 
-      // Check if mounted AFTER the await actionsService.deletePost
+      // Check mounted ONLY if further async operations depend on the widget state
       if (!mounted) return;
 
       if (result) {
-        // Use context ONLY AFTER checking mounted
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post deleted successfully')));
+        // Use cached messenger
+        messenger.showSnackBar(const SnackBar(content: Text('Post deleted successfully')));
 
         await Future.delayed(const Duration(milliseconds: 800));
 
-        // Check if mounted AFTER the await Future.delayed
+        // Check mounted again after delay, before potentially interacting with widget state or navigator
         if (!mounted) return;
 
         if (widget.onPostDeleted != null) {
           widget.onPostDeleted!();
         }
 
-        // Check mounted again right before potentially using context for Navigator
-        if (!mounted) return;
-        if (Navigator.canPop(context)) {
-          // Check mounted again right before using context for Navigator.pop
-          if (!mounted) return;
-          Navigator.of(context).pop(true);
+        // Use cached navigator
+        if (navigator.canPop()) {
+          navigator.pop(true);
         }
       } else {
-        // Check mounted before showing SnackBar in else block
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete post')));
+        // Use cached messenger
+        messenger.showSnackBar(const SnackBar(content: Text('Failed to delete post')));
       }
     } catch (e) {
-      // Check mounted before showing SnackBar in catch block
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error deleting post: $e')));
+      // Use cached messenger (check mounted only if error handling depends on widget state)
+      if (mounted) { // Keep this check if error handling logic might change based on state
+        messenger.showSnackBar(SnackBar(content: Text('Error deleting post: $e')));
       }
     }
   }
@@ -308,13 +286,6 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
           const SizedBox(height: 20),
         ],
 
-        BookmarkActionButton(
-          count: widget.bookmarkCount,
-          isBookmarked: _isBookmarked,
-          onPressed: _handleBookmark,
-          key: const ValueKey('bookmark_button'),
-        ),
-        const SizedBox(height: 20),
         MenuActionButton(
           onPressed: widget.onReportPressed ?? () => _handleReport(context, authService),
           onDeletePressed: () => _handleDelete(context),
