@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class PreloadedVideo {
   final VideoPlayerController controller;
   final bool isInitialized;
   final String? videoUrl;
+  final String? localPath;
 
-  PreloadedVideo({required this.controller, required this.isInitialized, required this.videoUrl});
+  PreloadedVideo({required this.controller, required this.isInitialized, required this.videoUrl, this.localPath});
 
   void dispose() {
     controller.dispose();
@@ -25,6 +30,95 @@ class MediaManager {
   // Track which image URLs have been preloaded
   final Set<String> _preloadedImageUrls = {};
 
+  // Track local video paths
+  final Map<int, String> _localVideoPaths = {};
+
+  // Cache manager for videos
+  final DefaultCacheManager _cacheManager = DefaultCacheManager();
+
+  Future<String?> _getPdsUrl(String did) async {
+    try {
+      // Resolve DID to get the DID document
+      final response = await http.get(Uri.parse('https://plc.directory/$did'));
+      if (response.statusCode == 200) {
+        final doc = jsonDecode(response.body);
+        // Find the PDS service in the service array
+        final services = doc['service'] as List?;
+        if (services != null) {
+          final pdsService = services.firstWhere((service) => service['type'] == 'AtprotoPersonalDataServer', orElse: () => null);
+          if (pdsService != null) {
+            return pdsService['serviceEndpoint'];
+          }
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Error resolving DID: $e');
+      return null;
+    }
+  }
+
+  Future<String?> _downloadAndCacheVideo(String videoUrl) async {
+    try {
+      // For Bluesky videos, we need to get the actual video file URL
+      if (videoUrl.contains('bsky.app') || videoUrl.contains('bluesky')) {
+        // Extract the video ID from the URL
+        final uri = Uri.parse(videoUrl);
+        final segments = uri.pathSegments;
+        if (segments.length >= 3) {
+          final did = segments[1];
+          final cid = segments[2];
+
+          // Get the PDS URL from the DID document
+          final pdsUrl = await _getPdsUrl(did);
+          if (pdsUrl != null) {
+            // Construct the direct video file URL using the PDS
+            final directVideoUrl = '$pdsUrl/xrpc/com.atproto.sync.getBlob?did=$did&cid=$cid';
+
+            // Cache the actual video file
+            final file = await _cacheManager.getSingleFile(directVideoUrl);
+            return file.path;
+          }
+        }
+      }
+
+      // For other videos, use the original URL
+      final file = await _cacheManager.getSingleFile(videoUrl);
+      return file.path;
+    } catch (e) {
+      print('Error caching video: $e');
+      return null;
+    }
+  }
+
+  String _normalizeVideoUrl(String url) {
+    try {
+      // Handle relative URLs (starting with '/')
+      if (url.startsWith('/')) {
+        // Construct full URL for Bluesky videos
+        return 'https://bsky.app$url';
+      }
+
+      final uri = Uri.parse(url);
+
+      // For Bluesky videos, use the path as the cache key
+      if (uri.host.contains('bsky.app') || uri.host.contains('bluesky')) {
+        return uri.path;
+      }
+
+      // For Spark videos, ensure consistent URL format
+      if (uri.host.contains('sprk.so')) {
+        return Uri(scheme: uri.scheme, host: uri.host, path: uri.path).toString();
+      }
+
+      // For other URLs, use as is
+      return url;
+    } catch (e) {
+      print('Error normalizing URL: $e');
+      return url;
+    }
+  }
+
   void dispose() {
     clearAllMedia();
   }
@@ -35,17 +129,31 @@ class MediaManager {
     for (final video in _preloadedVideos.values) {
       try {
         video.dispose();
+        if (video.localPath != null) {
+          try {
+            final file = File(video.localPath!);
+            if (file.existsSync()) {
+              file.deleteSync();
+            }
+          } catch (e) {
+            print('Error cleaning up cached video: $e');
+          }
+        }
       } catch (e) {
         // Silently handle any disposal errors
       }
     }
     _preloadedVideos.clear();
     _preloadedImageUrls.clear();
+    _localVideoPaths.clear();
+
+    // Clear the cache manager's cache
+    _cacheManager.emptyCache();
   }
 
-  void preloadMedia(int index, String? videoUrl, List<String> imageUrls, BuildContext context) {
+  Future<void> preloadMedia(int index, String? videoUrl, List<String> imageUrls, BuildContext context) async {
     if (videoUrl != null) {
-      _preloadVideo(index, videoUrl);
+      await _preloadVideo(index, videoUrl);
     } else if (imageUrls.isNotEmpty) {
       _preloadImages(imageUrls, context);
     }
@@ -67,14 +175,26 @@ class MediaManager {
       _preloadedVideos.remove(index);
     }
 
-    // Create a new controller
-    final controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
-    bool isRegistered = false;
+    // Try to download and cache the video
+    final localPath = await _downloadAndCacheVideo(videoUrl);
+    VideoPlayerController controller;
 
     try {
+      if (localPath != null) {
+        // Always use local file if available
+        controller = VideoPlayerController.file(File(localPath));
+      } else {
+        // Fall back to network only if caching fails
+        controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+      }
+
       // Register it as non-initialized first
-      _preloadedVideos[index] = PreloadedVideo(controller: controller, isInitialized: false, videoUrl: videoUrl);
-      isRegistered = true;
+      _preloadedVideos[index] = PreloadedVideo(
+        controller: controller,
+        isInitialized: false,
+        videoUrl: videoUrl,
+        localPath: localPath,
+      );
 
       // Set video to loop automatically
       controller.setLooping(true);
@@ -88,10 +208,20 @@ class MediaManager {
       // Only proceed if video is still needed and the URL hasn't changed
       if (_preloadedVideos.containsKey(index) && _preloadedVideos[index]!.videoUrl == videoUrl) {
         // Update the preloaded status
-        _preloadedVideos[index] = PreloadedVideo(controller: controller, isInitialized: true, videoUrl: videoUrl);
+        _preloadedVideos[index] = PreloadedVideo(
+          controller: controller,
+          isInitialized: true,
+          videoUrl: videoUrl,
+          localPath: localPath,
+        );
 
         // Set playback speed to 1.0 (normal)
         await controller.setPlaybackSpeed(1.0);
+
+        // Store the local path
+        if (localPath != null) {
+          _localVideoPaths[index] = localPath;
+        }
       } else {
         // If this video is no longer needed or URL changed, dispose it
         try {
@@ -101,30 +231,15 @@ class MediaManager {
         }
       }
     } catch (e) {
-      // Handle initialization error by cleaning up
-      if (isRegistered && _preloadedVideos.containsKey(index) && _preloadedVideos[index]!.videoUrl == videoUrl) {
+      print('Error preloading video: $e');
+      // Clean up if there was an error
+      if (_preloadedVideos.containsKey(index)) {
         try {
           _preloadedVideos[index]!.dispose();
         } catch (disposeError) {
           // Silently handle any disposal errors
         }
         _preloadedVideos.remove(index);
-      } else {
-        try {
-          controller.dispose();
-        } catch (disposeError) {
-          // Silently handle any disposal errors
-        }
-      }
-
-      // Try again after a short delay for network errors
-      if (e.toString().contains('network')) {
-        Future.delayed(const Duration(seconds: 2), () {
-          // Only retry if the index is not already loaded with a different URL
-          if (!_preloadedVideos.containsKey(index) || _preloadedVideos[index]!.videoUrl == videoUrl) {
-            _preloadVideo(index, videoUrl);
-          }
-        });
       }
     }
   }
@@ -142,6 +257,19 @@ class MediaManager {
     if (_preloadedVideos.containsKey(index)) {
       _preloadedVideos[index]!.dispose();
       _preloadedVideos.remove(index);
+      _localVideoPaths.remove(index);
+
+      // Clean up cached file if it exists
+      if (_preloadedVideos[index]?.localPath != null) {
+        try {
+          final file = File(_preloadedVideos[index]!.localPath!);
+          if (file.existsSync()) {
+            file.deleteSync();
+          }
+        } catch (e) {
+          print('Error cleaning up cached video: $e');
+        }
+      }
     }
   }
 
@@ -197,5 +325,9 @@ class MediaManager {
 
   PreloadedVideo? getPreloadedVideo(int index) {
     return _preloadedVideos[index];
+  }
+
+  String? getLocalVideoPath(int index) {
+    return _localVideoPaths[index];
   }
 }

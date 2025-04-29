@@ -49,8 +49,7 @@ class _FeedScreenState extends State<FeedScreen> {
         _isLoading = false;
         _currentIndex = widget.initialIndex ?? 0;
       });
-
-      // Set initial page position
+      _preloadInitialMedia();
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (_pageController.hasClients) {
           _pageController.jumpToPage(_currentIndex);
@@ -126,20 +125,35 @@ class _FeedScreenState extends State<FeedScreen> {
     });
   }
 
-  void _preloadInitialMedia() {
-    if (_feedPosts == null || _feedPosts!.isEmpty) return;
-
-    _preloadMedia(0);
-    for (int i = 1; i <= 5 && i < _feedPosts!.length; i++) {
-      _preloadMedia(i);
-    }
-  }
-
-  void _preloadMedia(int index) {
+  Future<void> _preloadMedia(int index) async {
     if (index < 0 || index >= (_feedPosts?.length ?? 0)) return;
 
     final post = _feedPosts![index];
-    _mediaManager.preloadMedia(index, post.videoUrl, post.imageUrls, context);
+    if (post.videoUrl != null) {
+      // Force preload for the first video
+      if (index == 0) {
+        await _mediaManager.preloadMedia(index, post.videoUrl, post.imageUrls, context);
+        if (mounted) {
+          setState(() {}); // Trigger rebuild to show preloaded video
+        }
+      } else {
+        _mediaManager.preloadMedia(index, post.videoUrl, post.imageUrls, context);
+      }
+    } else if (post.imageUrls.isNotEmpty) {
+      _mediaManager.preloadMedia(index, null, post.imageUrls, context);
+    }
+  }
+
+  Future<void> _preloadInitialMedia() async {
+    if (_feedPosts == null || _feedPosts!.isEmpty) return;
+
+    // Preload the first video immediately
+    await _preloadMedia(0);
+
+    // Preload next videos in the background
+    for (int i = 1; i <= 5 && i < _feedPosts!.length; i++) {
+      _preloadMedia(i);
+    }
   }
 
   @override
@@ -190,8 +204,18 @@ class _FeedScreenState extends State<FeedScreen> {
             _currentIndex = newIndex;
           });
 
-          if (newIndex + 3 >= (_feedPosts?.length ?? 0)) {
-            for (int i = newIndex + 1; i < (_feedPosts?.length ?? 0); i++) {
+          final totalPosts = _feedPosts?.length ?? 0;
+
+          // Unload videos that are more than 10 positions away
+          for (int i = 0; i < totalPosts; i++) {
+            if (i < newIndex - 10 || i > newIndex + 10) {
+              _mediaManager.unloadVideo(i);
+            }
+          }
+
+          // Preload videos within 5 positions
+          for (int i = newIndex - 5; i <= newIndex + 5; i++) {
+            if (i >= 0 && i < totalPosts) {
               _preloadMedia(i);
             }
           }
@@ -260,6 +284,8 @@ class _FeedScreenState extends State<FeedScreen> {
               index: index,
               videoUrl: post.videoUrl,
               videoAlt: post.videoAlt,
+              preloadedController: isPreloaded ? preloadedVideo?.controller : null,
+              localVideoPath: isPreloaded ? _mediaManager.getLocalVideoPath(index) : null,
               username: post.username,
               description: post.description,
               hashtags: post.hashtags,

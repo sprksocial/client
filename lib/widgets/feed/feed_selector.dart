@@ -58,7 +58,7 @@ class _FeedSelectorState extends State<FeedSelector> {
                 child: Text(
                   option.label,
                   style: TextStyle(
-                    color: isSelected ? AppColors.pink : AppColors.lightLavender,
+                    color: AppColors.lightLavender,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                     fontSize: 14,
                   ),
