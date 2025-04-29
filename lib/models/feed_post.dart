@@ -1,7 +1,6 @@
 import 'package:bluesky/app_bsky_embed_video.dart';
 import 'package:bluesky/bluesky.dart';
 import 'package:sparksocial/widgets/video_info/hashtag_list.dart';
-import 'package:sparksocial/config/app_config.dart';
 
 /// A unified model for handling feed posts from different sources
 class FeedPost {
@@ -102,10 +101,6 @@ class FeedPost {
     String? videoCid;
     String? videoAlt;
 
-    final unusedTest = "aaa";
-
-    final thisBreaks = ''
-
     // Extract alt text if available
     videoAlt = videoEmbed['alt'] as String?;
 
@@ -134,7 +129,7 @@ class FeedPost {
         if (blobRef != null && blobRef['ref'] != null) {
           final ref = blobRef['ref'] as Map<String, dynamic>?;
           if (ref != null && ref.containsKey('\$link')) {
-            videoCid = ref['\$link'] as String;
+            videoCid = ref['\$link'] as String?;
 
             // Construct a video URL from the URI and CID
             // Extract DID and CID from the postUri (format: at://did:plc:abc123/app.bsky.feed.post/cid123)
