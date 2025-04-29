@@ -69,13 +69,11 @@ class VideoSideActionBar extends StatefulWidget {
 
 class _VideoSideActionBarState extends State<VideoSideActionBar> {
   bool _isLiked = false;
-  bool _isBookmarked = false;
 
   @override
   void initState() {
     super.initState();
     _isLiked = widget.isLiked;
-    _isBookmarked = widget.isBookmarked;
   }
 
   @override
@@ -84,11 +82,6 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
     if (oldWidget.isLiked != widget.isLiked) {
       setState(() {
         _isLiked = widget.isLiked;
-      });
-    }
-    if (oldWidget.isBookmarked != widget.isBookmarked) {
-      setState(() {
-        _isBookmarked = widget.isBookmarked;
       });
     }
   }
@@ -187,18 +180,18 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
             postCid: widget.postCid!,
             onSubmit: (subject, reasonType, reason, service) async {
               try {
-                final result = await modService.createReport(
+                await modService.createReport(
                   subject: subject,
                   reasonType: reasonType,
                   reason: reason,
                   service: service,
                 );
 
-                if (result && context.mounted) {
+                if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
                 }
               } catch (e) {
-                if (context.mounted) {
+                if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
                 }
               }
@@ -235,8 +228,9 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
 
     if (!shouldDelete || !mounted) return;
 
+    final actionsService = Provider.of<ActionsService>(context, listen: false);
+
     try {
-      final actionsService = Provider.of<ActionsService>(context, listen: false);
       final result = await actionsService.deletePost(widget.postUri!);
 
       if (!mounted) return;
@@ -247,7 +241,6 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
         // Add a delay to ensure the server has processed the deletion
         await Future.delayed(const Duration(milliseconds: 800));
 
-        // Check if widget is still mounted after the delay
         if (!mounted) return;
 
         // Notify parent that post was deleted
@@ -256,12 +249,14 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
         }
 
         // Check if we can navigate back (for profile view)
-        if (Navigator.canPop(context)) {
+        if (mounted && Navigator.canPop(context)) {
           // Pop back to the previous screen with result=true to indicate post was deleted
           Navigator.of(context).pop(true);
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete post')));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete post')));
+        }
       }
     } catch (e) {
       if (mounted) {
