@@ -1,21 +1,13 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:provider/provider.dart';
 
-import '../models/feed_post.dart';
-import '../screens/profile_screen.dart';
-import '../services/actions_service.dart';
-import '../services/auth_service.dart';
-import '../services/feed_manager.dart';
 import '../services/feed_settings_service.dart';
-import '../services/media_manager.dart';
 import '../utils/app_colors.dart';
 import '../widgets/feed/feed_selector.dart';
 import '../widgets/feed_settings/feed_settings_sheet.dart';
-import '../widgets/image/image_post_item.dart';
-import '../widgets/video/preloaded_video_item.dart';
-import '../widgets/video/video_item.dart';
+import 'feed_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,128 +17,64 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final PageController _pageController = PageController();
-  final FeedManager _feedManager = FeedManager();
   final FeedSettingsService _feedSettings = FeedSettingsService();
-  final MediaManager _mediaManager = MediaManager();
-
-  List<FeedPost>? _feedPosts;
-  int _currentIndex = 0;
-  bool _isLoading = true;
-  String? _errorMessage;
+  final PageController _pageController = PageController();
+  int _selectedTabIndex = 0;
 
   @override
   void initState() {
     super.initState();
     _initializeScreen();
-  }
-
-  Future<void> _initializeScreen() async {
-    await _feedSettings.loadPreferences();
-    await _fetchFeed();
+    _feedSettings.addListener(_onFeedSettingsChanged);
   }
 
   @override
   void dispose() {
-    _mediaManager.dispose();
+    _pageController.removeListener(_onPageChanged);
+    _feedSettings.removeListener(_onFeedSettingsChanged);
     _pageController.dispose();
     super.dispose();
   }
 
-  Future<void> _fetchFeed() async {
-    if (!mounted) return;
-
-    try {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = null;
-        _currentIndex = 0; // Reset current index when changing feeds
-      });
-
-      // Clear all preloaded media to avoid mixing videos between feeds
-      _mediaManager.clearAllMedia();
-
-      // Get new feed content
-      final authService = context.read<AuthService>();
-      final posts = await _feedManager.fetchFeed(_feedSettings.selectedFeedType, authService);
-
-      if (!mounted) return;
-
-      // Filter out duplicate posts
-      final uniquePosts = _removeDuplicatePosts(posts);
-
-      setState(() {
-        _feedPosts = uniquePosts;
-        _isLoading = false;
-
-        // Reset page controller safely after new content is loaded
-        _resetPageController();
-
-        // Preload media for the current feed
-        _preloadInitialMedia();
-      });
-    } catch (e) {
-      if (!mounted) return;
-
-      setState(() {
-        _isLoading = false;
-        _errorMessage = e.toString();
-      });
+  void _onFeedSettingsChanged() {
+    if (mounted) {
+      setState(() {});
     }
   }
 
-  /// Remove duplicate posts from the feed while preserving order
-  List<FeedPost> _removeDuplicatePosts(List<FeedPost> posts) {
-    if (posts.isEmpty) return [];
+  Future<void> _initializeScreen() async {
+    await _feedSettings.loadPreferences();
+    _pageController.addListener(_onPageChanged);
 
-    final uniquePosts = <FeedPost>[];
-
-    for (final post in posts) {
-      // Check if this post is a duplicate of any post we've already added
-      final isDuplicate = uniquePosts.any((uniquePost) => uniquePost.isDuplicateOf(post));
-
-      if (!isDuplicate) {
-        uniquePosts.add(post);
-      }
+    // Initialize selected tab index and ensure page controller is at the correct position
+    final feedOptions = _buildFeedOptions();
+    _selectedTabIndex = feedOptions.indexWhere((option) => option.value == _feedSettings.selectedFeedType);
+    if (_selectedTabIndex == -1) {
+      _selectedTabIndex = 0; // Fallback to first tab if not found
     }
 
-    return uniquePosts;
-  }
-
-  void _resetPageController() {
-    // Schedule this for the next frame when the PageView will be built
+    // Ensure page controller is at the correct position
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_pageController.hasClients) {
-        _pageController.jumpToPage(0);
+        _pageController.jumpToPage(_selectedTabIndex);
       }
     });
   }
 
-  void _preloadInitialMedia() {
-    if (_feedPosts == null || _feedPosts!.isEmpty) return;
-
-    // Start with current item
-    _preloadMedia(0);
-
-    // Then preload the next few items
-    for (int i = 1; i <= 5 && i < _feedPosts!.length; i++) {
-      _preloadMedia(i);
+  void _onPageChanged() {
+    if (_pageController.page == null) return;
+    final currentPage = _pageController.page!.round();
+    final feedOptions = _buildFeedOptions();
+    if (currentPage < feedOptions.length) {
+      _selectedTabIndex = currentPage;
+      _feedSettings.setSelectedFeedType(feedOptions[currentPage].value);
     }
-  }
-
-  void _preloadMedia(int index) {
-    if (index < 0 || index >= (_feedPosts?.length ?? 0)) return;
-
-    final post = _feedPosts![index];
-    _mediaManager.preloadMedia(index, post.videoUrl, post.imageUrls, context);
   }
 
   @override
   Widget build(BuildContext context) {
     final topPadding = MediaQuery.of(context).padding.top;
     final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
-
-    // Get available feed options based on enabled status
     final List<FeedOption> feedOptions = _buildFeedOptions();
 
     return Scaffold(
@@ -174,17 +102,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildMainContent() {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height,
-      width: MediaQuery.of(context).size.width,
-      child:
-          _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _errorMessage != null
-              ? Center(child: Text('Error: $_errorMessage', style: const TextStyle(color: Colors.white)))
-              : _feedPosts == null || _feedPosts!.isEmpty
-              ? const Center(child: Text('No media available', style: TextStyle(color: Colors.white)))
-              : _buildFeedPageView(),
+    final feedOptions = _buildFeedOptions();
+    return PageView.builder(
+      controller: _pageController,
+      itemCount: feedOptions.length,
+      onPageChanged: (index) {
+        if (index < feedOptions.length) {
+          _feedSettings.setSelectedFeedType(feedOptions[index].value);
+        }
+      },
+      itemBuilder: (context, index) {
+        final feedType = feedOptions[index].value;
+        return ChangeNotifierProvider<FeedSettingsService>.value(value: _feedSettings, child: FeedScreen(feedType: feedType));
+      },
     );
   }
 
@@ -198,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(width: 30), // For balance
+            const SizedBox(width: 30),
             Expanded(
               child: Center(
                 child: Container(
@@ -208,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       feedOptions.isNotEmpty
                           ? FeedSelector(
                             options: feedOptions,
-                            selectedValue: _feedSettings.selectedFeedType,
+                            selectedValue: feedOptions[_selectedTabIndex].value,
                             onOptionSelected: _onFeedSelected,
                           )
                           : const SizedBox(),
@@ -228,227 +158,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _onFeedSelected(int value) async {
-    // Only jump to page if controller is attached
-    if (_pageController.hasClients) {
-      _pageController.jumpToPage(0);
-    }
-
-    await _feedSettings.setSelectedFeedType(value);
-    if (mounted) {
-      _fetchFeed();
-    }
-  }
-
-  Widget _buildFeedPageView() {
-    return PageView.builder(
-      controller: _pageController,
-      scrollDirection: Axis.vertical,
-      itemCount: _feedPosts?.length ?? 0,
-      onPageChanged: (newIndex) {
-        if (_currentIndex != newIndex) {
-          setState(() {
-            _mediaManager.updateLoadedMedia(newIndex, _currentIndex, _feedPosts?.length ?? 0);
-            _currentIndex = newIndex;
-          });
-
-          // Preload a few more items ahead if we're getting close to the end
-          if (newIndex + 3 >= (_feedPosts?.length ?? 0)) {
-            for (int i = newIndex + 1; i < (_feedPosts?.length ?? 0); i++) {
-              _preloadMedia(i);
-            }
-          }
-        }
-      },
-      itemBuilder: (context, index) {
-        final post = _feedPosts![index];
-        final isLiked = post.isLiked;
-
-        // For video posts
-        if (post.videoUrl != null) {
-          final isPreloaded = _mediaManager.isVideoPreloaded(index);
-          final preloadedVideo = _mediaManager.getPreloadedVideo(index);
-
-          if (isPreloaded && preloadedVideo != null) {
-            return PreloadedVideoItem(
-              key: ValueKey('video_$index'),
-              index: index,
-              controller: preloadedVideo.controller,
-              username: post.username,
-              description: post.description,
-              hashtags: post.hashtags,
-              likeCount: post.likeCount,
-              commentCount: post.commentCount,
-              bookmarkCount: 0,
-              shareCount: post.shareCount,
-              profileImageUrl: post.profileImageUrl,
-              authorDid: post.authorDid,
-              isVisible: index == _currentIndex,
-              isLiked: isLiked,
-              isSprk: post.isSprk,
-              postUri: post.uri,
-              postCid: post.cid,
-              disableBackgroundBlur: _feedSettings.disableVideoBackgroundBlur,
-              videoAlt: post.videoAlt,
-              onLikePressed: () => _handleLikePress(post),
-              onBookmarkPressed: () {},
-              onSharePressed: () {},
-              onProfilePressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
-                  error,
-                ) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
-                  return null;
-                });
-              },
-              onUsernameTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
-                  error,
-                ) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
-                  return null;
-                });
-              },
-              onHashtagTap: (String hashtag) {},
-              onPostDeleted: () {
-                _fetchFeed();
-              },
-            );
-          } else {
-            return VideoItem(
-              key: ValueKey('video_$index'),
-              index: index,
-              videoUrl: post.videoUrl,
-              videoAlt: post.videoAlt,
-              username: post.username,
-              description: post.description,
-              hashtags: post.hashtags,
-              likeCount: post.likeCount,
-              commentCount: post.commentCount,
-              bookmarkCount: 0,
-              shareCount: post.shareCount,
-              profileImageUrl: post.profileImageUrl,
-              authorDid: post.authorDid,
-              isLiked: isLiked,
-              isSprk: post.isSprk,
-              postUri: post.uri,
-              postCid: post.cid,
-              disableBackgroundBlur: _feedSettings.disableVideoBackgroundBlur,
-              onLikePressed: () => _handleLikePress(post),
-              onBookmarkPressed: () {},
-              onSharePressed: () {},
-              onProfilePressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
-                  error,
-                ) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
-                  return null;
-                });
-              },
-              onUsernameTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
-                  error,
-                ) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
-                  return null;
-                });
-              },
-              onHashtagTap: (String hashtag) {},
-              onPostDeleted: () {
-                _fetchFeed();
-              },
-            );
-          }
-        }
-        // For image posts
-        else if (post.imageUrls.isNotEmpty) {
-          return ImagePostItem(
-            key: ValueKey('image_$index'),
-            index: index,
-            imageUrls: post.imageUrls,
-            imageAlts: post.imageAlts,
-            username: post.username,
-            description: post.description,
-            hashtags: post.hashtags,
-            likeCount: post.likeCount,
-            commentCount: post.commentCount,
-            bookmarkCount: 0,
-            shareCount: post.shareCount,
-            profileImageUrl: post.profileImageUrl,
-            authorDid: post.authorDid,
-            isLiked: isLiked,
-            isSprk: post.isSprk,
-            postUri: post.uri,
-            postCid: post.cid,
-            isVisible: index == _currentIndex,
-            disableBackgroundBlur: _feedSettings.disableVideoBackgroundBlur,
-            onLikePressed: () => _handleLikePress(post),
-            onBookmarkPressed: () {},
-            onSharePressed: () {},
-            onUsernameTap: () {},
-            onHashtagTap: (String hashtag) {},
-          );
-        }
-        // Fallback for any other post type
-        else {
-          return const Center(child: Text('Unsupported media type', style: TextStyle(color: Colors.white)));
-        }
-      },
-    );
-  }
-
-  Future<void> _handleLikePress(FeedPost post) async {
-    final actionsService = Provider.of<ActionsService>(context, listen: false);
-
-    try {
-      final newLikeUri = await actionsService.toggleLike(post);
-
-      if (!mounted) return;
-
+    final feedOptions = _buildFeedOptions();
+    final index = feedOptions.indexWhere((option) => option.value == value);
+    if (index != -1) {
       setState(() {
-        final index = _feedPosts?.indexWhere((p) => p.uri == post.uri) ?? -1;
-        if (index >= 0 && _feedPosts != null) {
-          _feedPosts![index] = FeedPost(
-            username: post.username,
-            authorDid: post.authorDid,
-            profileImageUrl: post.profileImageUrl,
-            description: post.description,
-            videoUrl: post.videoUrl,
-            videoAlt: post.videoAlt,
-            likeCount:
-                post.likeCount +
-                (newLikeUri != null
-                    ? 1
-                    : post.isLiked
-                    ? -1
-                    : 0),
-            commentCount: post.commentCount,
-            shareCount: post.shareCount,
-            hashtags: post.hashtags,
-            uri: post.uri,
-            cid: post.cid,
-            imageAlts: post.imageAlts,
-            isSprk: post.isSprk,
-            likeUri: newLikeUri,
-            hasMedia: post.hasMedia,
-            isReply: post.isReply,
-            imageUrls: post.imageUrls,
-          );
-        }
+        _selectedTabIndex = index;
       });
-    } catch (e) {
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error liking post: ${e.toString()}'), backgroundColor: Colors.red));
+      await _feedSettings.setSelectedFeedType(value);
+      if (_pageController.hasClients) {
+        await _pageController.animateToPage(index, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+      }
     }
   }
 
@@ -501,9 +220,8 @@ class _HomeScreenState extends State<HomeScreen> {
     if (mounted) {
       setState(() {});
 
-      // If the current feed was disabled, fetch the new feed
       if (!isEnabled && _feedSettings.getFeedTypeFromSetting(settingType) == _feedSettings.selectedFeedType) {
-        _fetchFeed();
+        _pageController.jumpToPage(0);
       }
     }
   }
