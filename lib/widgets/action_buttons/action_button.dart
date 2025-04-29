@@ -7,6 +7,7 @@ class ActionButton extends StatelessWidget {
   final Color? color;
   final bool isAnimating;
   final double scale;
+  final bool showLabel;
 
   const ActionButton({
     super.key,
@@ -16,6 +17,7 @@ class ActionButton extends StatelessWidget {
     this.color,
     this.isAnimating = false,
     this.scale = 1.0,
+    this.showLabel = true,
   });
 
   @override
@@ -53,12 +55,13 @@ class ActionButton extends StatelessWidget {
             ),
           ],
         ),
-        Text(
-          label,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
-            shadows: <Shadow>[
+        if (showLabel)
+          Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              shadows: <Shadow>[
               Shadow(offset: Offset(0, 0), blurRadius: 20.0, color: Color(0xFF000000)),
               Shadow(offset: Offset(1, 1), blurRadius: 8.0, color: Colors.black87),
             ],
