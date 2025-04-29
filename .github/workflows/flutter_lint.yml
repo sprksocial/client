@@ -1,0 +1,42 @@
+name: Flutter Analyze Changed Files
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened] # Run when PR is opened, updated, or reopened
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          flutter-version: 3.29.2
+          cache: true
+
+      - name: Get changed Dart files
+        id: changed_files
+        uses: tj-actions/changed-files@v46
+        with:
+          files: |
+            **/*.dart
+
+      - name: Analyze Changed Files
+        if: steps.changed_files.outputs.all_changed_files != ''
+        run: |
+          echo "Found changed Dart files:"
+          echo "${{ steps.changed_files.outputs.all_changed_files }}" # Output the list for debugging
+          flutter analyze ${{ steps.changed_files.outputs.all_changed_files }}
+
+      - name: Check if no Dart files changed
+        if: steps.changed_files.outputs.all_changed_files == ''
+        run: |
+          echo "No Dart files were changed in this PR."
