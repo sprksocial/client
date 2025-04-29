@@ -10,6 +10,7 @@ import '../comments/comments_tray.dart';
 import '../dialogs/report_dialog.dart';
 import '../video_info/video_info_bar.dart';
 import '../video_side_action_bar.dart';
+import '../image/image_post_item.dart';
 
 /// Base class for post items (Video, Image, etc.) to handle common parameters.
 abstract class PostItemBase extends StatefulWidget {
@@ -292,6 +293,9 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
   }
 
   Widget buildSideActionBar() {
+    // Determine if we're dealing with an image post based on the widget type
+    final bool isImagePost = widget is ImagePostItem;
+    
     return Positioned(
       right: 16,
       bottom: 16,
@@ -299,19 +303,18 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
         // Consider renaming VideoSideActionBar later
         likeCount: TextFormatter.formatCount(widget.likeCount),
         commentCount: TextFormatter.formatCount(_commentCount), // Use local state
-        bookmarkCount: TextFormatter.formatCount(widget.bookmarkCount),
         shareCount: TextFormatter.formatCount(widget.shareCount),
         profileImageUrl: widget.profileImageUrl,
         isLiked: widget.isLiked,
         onLikePressed: widget.onLikePressed ?? () {},
         onCommentPressed: toggleComments, // Use the unified method
-        onBookmarkPressed: widget.onBookmarkPressed ?? () {},
         onSharePressed: widget.onSharePressed ?? () {},
         onProfilePressed: navigateToProfile, // Use the unified method
         postCid: widget.postCid,
         postUri: widget.postUri,
         authorDid: widget.authorDid,
         onPostDeleted: widget.onPostDeleted ?? () {},
+        isImage: isImagePost, // Pass whether this is an image post
       ),
     );
   }
