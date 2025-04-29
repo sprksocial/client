@@ -1,5 +1,6 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 
 import '../services/feed_settings_service.dart';
@@ -76,9 +77,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
     final List<FeedOption> feedOptions = _buildFeedOptions();
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(children: [_buildMainContent(), _buildTopBar(topPadding, isDarkMode, feedOptions)]),
+    return ChangeNotifierProvider.value(
+      value: _feedSettings,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(children: [_buildMainContent(), _buildTopBar(topPadding, isDarkMode, feedOptions)]),
+      ),
     );
   }
 
