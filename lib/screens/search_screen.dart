@@ -1,19 +1,16 @@
+import 'dart:async';
+
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../screens/profile_screen.dart';
+import '../services/actions_service.dart';
+import '../services/auth_service.dart';
+import '../services/sprk_client.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
-import '../widgets/common/development_overlay.dart';
-import '../widgets/search/category_chip.dart';
-import '../widgets/search/section_header.dart';
-import '../widgets/search/sound_card.dart';
-import '../widgets/search/story_circle.dart';
 import '../widgets/search/suggested_account_card.dart';
-import '../widgets/search/trending_video_card.dart';
-import '../services/actions_service.dart';
-import '../services/profile_service.dart';
-import '../screens/profile_screen.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -24,98 +21,105 @@ class SearchScreen extends StatefulWidget {
 
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
+  Timer? _debounce;
+  List<dynamic> _searchResults = [];
+  bool _isLoading = false;
+  String _error = '';
 
-  final List<Map<String, dynamic>> _stories = [
-    {'username': 'Your Story', 'imageUrl': 'https://randomuser.me/api/portraits/men/32.jpg', 'isYourStory': true},
-    {'username': 'Michelle', 'imageUrl': 'https://randomuser.me/api/portraits/women/44.jpg', 'isLive': true},
-    {'username': 'Frank Koo', 'imageUrl': 'https://randomuser.me/api/portraits/men/86.jpg'},
-    {
-      'username': 'itsdoggo',
-      'imageUrl': 'https://images.unsplash.com/photo-1552053831-71594a27632d?q=80&w=162&auto=format&fit=crop',
-    },
-    {
-      'username': 'catmeows',
-      'imageUrl': 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=150&auto=format&fit=crop',
-    },
-  ];
+  Future<void> _searchUsers(String query) async {
+    if (query.isEmpty) {
+      setState(() {
+        _searchResults = [];
+        _error = '';
+      });
+      return;
+    }
+    setState(() {
+      _isLoading = true;
+      _error = '';
+    });
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final sprkClient = SprkClient(authService);
+      final response = await sprkClient.actor.searchActors(query);
+      final actors = response.data['actors'] as List<dynamic>?;
+      setState(() {
+        _searchResults = actors ?? [];
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = 'Failed to search users';
+        _isLoading = false;
+      });
+    }
+  }
 
-  final List<Map<String, dynamic>> _trendingVideos = [
-    {
-      'thumbnailUrl': 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=200&auto=format&fit=crop',
-      'viewCount': 12000000,
-    },
-    {
-      'thumbnailUrl': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop',
-      'viewCount': 13000000,
-    },
-    {
-      'thumbnailUrl': 'https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?q=80&w=200&auto=format&fit=crop',
-      'viewCount': 5000000,
-    },
-  ];
+  void _onSearchChanged(String query) {
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 500), () {
+      _searchUsers(query);
+    });
+  }
 
-  final List<Map<String, dynamic>> _sounds = [
-    {'title': 'ANXIETY', 'artist': 'Sleepy Hallow', 'imageUrl': 'https://randomuser.me/api/portraits/men/40.jpg'},
-    {'title': 'Somebody', 'artist': 'feat. Kimbra', 'imageUrl': 'https://i.pravatar.cc/150?img=20'},
-    {'title': 'Good Luck, Babe!', 'artist': 'Chappell Roan', 'imageUrl': 'https://randomuser.me/api/portraits/women/25.jpg'},
-    {'title': 'Dancing Queen', 'artist': 'Sleepy Hallow', 'imageUrl': 'https://i.pravatar.cc/150?img=33'},
-  ];
+  // final List<Map<String, dynamic>> _stories = [
+  //   {'username': 'Your Story', 'imageUrl': 'https://randomuser.me/api/portraits/men/32.jpg', 'isYourStory': true},
+  //   {'username': 'Michelle', 'imageUrl': 'https://randomuser.me/api/portraits/women/44.jpg', 'isLive': true},
+  //   {'username': 'Frank Koo', 'imageUrl': 'https://randomuser.me/api/portraits/men/86.jpg'},
+  //   {
+  //     'username': 'itsdoggo',
+  //     'imageUrl': 'https://images.unsplash.com/photo-1552053831-71594a27632d?q=80&w=162&auto=format&fit=crop',
+  //   },
+  //   {
+  //     'username': 'catmeows',
+  //     'imageUrl': 'https://images.unsplash.com/photo-1573865526739-10659fec78a5?q=80&w=150&auto=format&fit=crop',
+  //   },
+  // ];
 
-  final List<String> _categories = ['Sports', 'Video Games', 'Anime', 'HopeCorp', 'CoreCore', 'Fashion', 'BookSpark', 'STEM'];
+  // final List<Map<String, dynamic>> _trendingVideos = [
+  //   {
+  //     'thumbnailUrl': 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?q=80&w=200&auto=format&fit=crop',
+  //     'viewCount': 12000000,
+  //   },
+  //   {
+  //     'thumbnailUrl': 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200&auto=format&fit=crop',
+  //     'viewCount': 13000000,
+  //   },
+  //   {
+  //     'thumbnailUrl': 'https://images.unsplash.com/photo-1522529599102-193c0d76b5b6?q=80&w=200&auto=format&fit=crop',
+  //     'viewCount': 5000000,
+  //   },
+  // ];
 
-  final List<Map<String, dynamic>> _suggestedAccounts = [
-    {
-      'username': 'Arlene McCoy',
-      'handle': '@yayformccoy.sprk.so',
-      'avatarUrl': 'https://randomuser.me/api/portraits/women/12.jpg',
-    },
-    {
-      'username': 'Esther Howard',
-      'handle': '@estherhoward.sprk.so',
-      'avatarUrl': 'https://randomuser.me/api/portraits/women/86.jpg',
-    },
-    {'username': 'Savannah Nguyen', 'handle': '@snguyen.sprk.so', 'avatarUrl': 'https://randomuser.me/api/portraits/men/54.jpg'},
-    {'username': 'Floyd Miles', 'handle': '@floydm.sprk.so', 'avatarUrl': 'https://randomuser.me/api/portraits/men/91.jpg'},
-  ];
+  // final List<Map<String, dynamic>> _sounds = [
+  //   {'title': 'ANXIETY', 'artist': 'Sleepy Hallow', 'imageUrl': 'https://randomuser.me/api/portraits/men/40.jpg'},
+  //   {'title': 'Somebody', 'artist': 'feat. Kimbra', 'imageUrl': 'https://i.pravatar.cc/150?img=20'},
+  //   {'title': 'Good Luck, Babe!', 'artist': 'Chappell Roan', 'imageUrl': 'https://randomuser.me/api/portraits/women/25.jpg'},
+  //   {'title': 'Dancing Queen', 'artist': 'Sleepy Hallow', 'imageUrl': 'https://i.pravatar.cc/150?img=33'},
+  // ];
+
+  // final List<String> _categories = ['Sports', 'Video Games', 'Anime', 'HopeCorp', 'CoreCore', 'Fashion', 'BookSpark', 'STEM'];
+
+  // final List<Map<String, dynamic>> _suggestedAccounts = [
+  //   {
+  //     'username': 'Arlene McCoy',
+  //     'handle': '@yayformccoy.sprk.so',
+  //     'avatarUrl': 'https://randomuser.me/api/portraits/women/12.jpg',
+  //   },
+  //   {
+  //     'username': 'Esther Howard',
+  //     'handle': '@estherhoward.sprk.so',
+  //     'avatarUrl': 'https://randomuser.me/api/portraits/women/86.jpg',
+  //   },
+  //   {'username': 'Savannah Nguyen', 'handle': '@snguyen.sprk.so', 'avatarUrl': 'https://randomuser.me/api/portraits/men/54.jpg'},
+  //   {'username': 'Floyd Miles', 'handle': '@floydm.sprk.so', 'avatarUrl': 'https://randomuser.me/api/portraits/men/91.jpg'},
+  // ];
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
-  }
-
-  Future<void> _handleFollow(String did) async {
-    if (!mounted) return;
-
-    final actionsService = Provider.of<ActionsService>(context, listen: false);
-    final profileService = Provider.of<ProfileService>(context, listen: false);
-
-    try {
-      // Get the current profile data to check if we're already following
-      final currentProfile = await profileService.getProfile(did);
-      if (currentProfile == null) {
-        throw Exception('Could not fetch profile data');
-      }
-
-      // Get the follow URI if we're following
-      final followUri = currentProfile.followUri;
-
-      // Toggle follow status
-      final newFollowUri = await actionsService.toggleFollow(did, followUri);
-
-      if (!mounted) return;
-
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(newFollowUri != null ? 'Followed successfully' : 'Unfollowed successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red));
-    }
   }
 
   @override
@@ -123,152 +127,130 @@ class _SearchScreenState extends State<SearchScreen> {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: isDarkMode ? Colors.black : AppTheme.getBackgroundColor(context),
-      body: SafeArea(
-        child: Stack(
-          children: [
-            SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: SearchBar(
-                      controller: _searchController,
-                      hintText: 'Explore',
-                      leading: Icon(FluentIcons.search_24_regular, color: AppTheme.getSecondaryTextColor(context)),
-                      padding: WidgetStateProperty.all(const EdgeInsets.symmetric(horizontal: 16.0)),
-                      elevation: WidgetStateProperty.all(0),
-                      backgroundColor: WidgetStateProperty.all(
-                        isDarkMode ? Colors.grey[900] : AppColors.lightLavender.withAlpha(50),
-                      ),
-                      onChanged: (value) {},
+    return DefaultTabController(
+      length: 1,
+      child: Scaffold(
+        backgroundColor: isDarkMode ? Colors.black : AppTheme.getBackgroundColor(context),
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (value) => _onSearchChanged(value.trim()),
+                  decoration: InputDecoration(
+                    hintText: 'Search users',
+                    prefixIcon: Icon(FluentIcons.search_24_regular, color: AppTheme.getSecondaryTextColor(context)),
+                    filled: true,
+                    fillColor: isDarkMode ? Colors.grey[900] : AppColors.lightLavender.withAlpha(50),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: AppColors.border),
                     ),
-                  ),
-
-                  SizedBox(
-                    height: 105,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _stories.length,
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
-                      itemBuilder: (context, index) {
-                        final story = _stories[index];
-                        return StoryCircle(
-                          username: story['username'],
-                          imageUrl: story['imageUrl'],
-                          isLive: story['isLive'] ?? false,
-                          isYourStory: story['isYourStory'] ?? false,
-                          onTap: () {},
-                        );
-                      },
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: AppColors.border),
                     ),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
                   ),
-
-                  SectionHeader(title: 'Trending', icon: FluentIcons.data_trending_24_regular, onViewAllTap: () {}),
-
-                  SizedBox(
-                    height: 180,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _trendingVideos.length,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemBuilder: (context, index) {
-                        final video = _trendingVideos[index];
-                        return Container(
-                          width: 160,
-                          margin: const EdgeInsets.only(right: 10),
-                          child: TrendingVideoCard(
-                            thumbnailUrl: video['thumbnailUrl'],
-                            viewCount: video['viewCount'],
-                            onTap: () {},
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  SectionHeader(title: 'Sounds', icon: FluentIcons.music_note_2_24_regular, onViewAllTap: () {}),
-
-                  SizedBox(
-                    height: 85,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _sounds.length,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemBuilder: (context, index) {
-                        final sound = _sounds[index];
-                        return Container(
-                          width: 240,
-                          margin: const EdgeInsets.only(right: 10),
-                          child: SoundCard(
-                            title: sound['title'],
-                            artist: sound['artist'],
-                            imageUrl: sound['imageUrl'],
-                            onTap: () {},
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  SectionHeader(title: 'Recommended Feeds', icon: FluentIcons.star_24_regular, onViewAllTap: () {}),
-
-                  SizedBox(
-                    height: 40,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: _categories.length,
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 8),
-                          child: CategoryChip(label: _categories[index], onTap: () {}),
-                        );
-                      },
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  SectionHeader(title: 'Suggested Accounts', icon: FluentIcons.person_24_regular, onViewAllTap: () {}),
-
-                  ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: _suggestedAccounts.length,
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemBuilder: (context, index) {
-                      final account = _suggestedAccounts[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: SuggestedAccountCard(
-                          username: account['username'],
-                          handle: account['handle'],
-                          avatarUrl: account['avatarUrl'],
-                          onTap: () {
-                            // Navigate to profile
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen(did: account['did'])));
-                          },
-                          onFollowTap: () => _handleFollow(account['did']),
-                        ),
-                      );
-                    },
-                  ),
-
-                  const SizedBox(height: 20),
-                ],
+                ),
               ),
-            ),
-            const DevelopmentOverlay(),
-          ],
+              Theme(
+                data: Theme.of(context).copyWith(tabBarTheme: const TabBarTheme(dividerColor: Colors.transparent)),
+                child: TabBar(
+                  tabs: const [Tab(text: 'Users')],
+                  indicatorColor: AppColors.pink,
+                  labelColor: AppTheme.getTextColor(context),
+                  unselectedLabelColor: AppTheme.getSecondaryTextColor(context),
+                ),
+              ),
+              Expanded(child: TabBarView(children: [_buildUserResults()])),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildUserResults() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error.isNotEmpty) {
+      return Center(child: Text(_error, style: const TextStyle(color: Colors.red)));
+    }
+    if (_searchController.text.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return ListView.builder(
+      itemCount: _searchResults.length,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      itemBuilder: (context, index) {
+        final user = _searchResults[index];
+        final authService = Provider.of<AuthService>(context, listen: false);
+        final actionsService = Provider.of<ActionsService>(context, listen: false);
+        final currentDid = authService.session?.did;
+        final userDid = user['did'];
+        final isCurrentUser = userDid == currentDid;
+        final viewer = user['viewer'] != null ? Map<String, dynamic>.from(user['viewer']) : null;
+        final followUri = viewer != null ? viewer['following'] as String? : null;
+        final isFollowing = followUri != null && followUri.isNotEmpty;
+
+        Future<void> handleFollow() async {
+          try {
+            final newFollowUri = await actionsService.toggleFollow(userDid, null);
+            setState(() {
+              if (_searchResults[index]['viewer'] == null) {
+                _searchResults[index]['viewer'] = <String, dynamic>{};
+              }
+              _searchResults[index]['viewer']['following'] = newFollowUri;
+            });
+          } catch (e) {
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Failed to follow: $e'), backgroundColor: Colors.red));
+          }
+        }
+
+        Future<void> handleUnfollow() async {
+          try {
+            await actionsService.toggleFollow(userDid, followUri);
+            setState(() {
+              if (_searchResults[index]['viewer'] == null) {
+                _searchResults[index]['viewer'] = <String, dynamic>{};
+              }
+              _searchResults[index]['viewer']['following'] = null;
+            });
+          } catch (e) {
+            if (!context.mounted) return;
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text('Failed to unfollow: $e'), backgroundColor: Colors.red));
+          }
+        }
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: SuggestedAccountCard(
+            username: user['displayName'] ?? user['handle'] ?? '',
+            handle: '@${user['handle'] ?? ''}',
+            avatarUrl: user['avatar'] ?? '',
+            description: user['description'] ?? '',
+            onTap: () {
+              if (userDid != null && userDid.isNotEmpty) {
+                Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProfileScreen(did: userDid)));
+              }
+            },
+            showFollowButton: !isCurrentUser,
+            isFollowing: isFollowing,
+            onFollowTap: handleFollow,
+            onUnfollowTap: handleUnfollow,
+          ),
+        );
+      },
     );
   }
 }
