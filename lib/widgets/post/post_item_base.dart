@@ -303,13 +303,11 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
         // Consider renaming VideoSideActionBar later
         likeCount: TextFormatter.formatCount(widget.likeCount),
         commentCount: TextFormatter.formatCount(_commentCount), // Use local state
-        bookmarkCount: TextFormatter.formatCount(widget.bookmarkCount),
         shareCount: TextFormatter.formatCount(widget.shareCount),
         profileImageUrl: widget.profileImageUrl,
         isLiked: widget.isLiked,
         onLikePressed: widget.onLikePressed ?? () {},
         onCommentPressed: toggleComments, // Use the unified method
-        onBookmarkPressed: widget.onBookmarkPressed ?? () {},
         onSharePressed: widget.onSharePressed ?? () {},
         onProfilePressed: navigateToProfile, // Use the unified method
         postCid: widget.postCid,
