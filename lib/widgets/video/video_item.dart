@@ -59,12 +59,13 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware, W
   bool _isVisible = false;
   bool _wasPlaying = false;
   final String _videoKey = UniqueKey().toString();
+  bool _isControllerDisposed = false;
 
   @override
   VideoPlayerController? get videoController => _controller;
 
   @override
-  bool get isInitialized => _isInitialized && _controller != null;
+  bool get isInitialized => _isInitialized && _controller != null && !_isControllerDisposed;
 
   @override
   bool get isVisible => widget.isVisible || _isVisible;
@@ -89,6 +90,7 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware, W
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     routeObserver.unsubscribe(this);
+    _isControllerDisposed = true;
     if (_controller != widget.preloadedController) {
       _controller?.dispose();
     }
@@ -97,37 +99,38 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware, W
 
   @override
   void didPushNext() {
-    pauseMedia();
+    if (!_isControllerDisposed) pauseMedia();
   }
 
   @override
   void didPopNext() {
-    if (_isVisible && isInitialized) {
+    if (_isVisible && isInitialized && !_isControllerDisposed) {
       playMedia();
     }
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!isInitialized) return;
+    if (!isInitialized || _isControllerDisposed) return;
 
     if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
       _wasPlaying = _controller?.value.isPlaying ?? false;
-      pauseMedia();
+      if (!_isControllerDisposed) pauseMedia();
     } else if (state == AppLifecycleState.resumed) {
-      // Reinitialize the controller when app resumes
-      _controller?.initialize().then((_) {
-        if (mounted && _wasPlaying && isVisible && !showComments) {
-          // Add a small delay to ensure the app is fully resumed
-          Future.delayed(const Duration(milliseconds: 200), () {
-            if (mounted && isVisible && !showComments) {
-              _controller?.seekTo(Duration.zero);
-              _controller?.setVolume(1.0);
-              playMedia();
-            }
-          });
-        }
-      });
+      if (!_isControllerDisposed) {
+        _controller?.initialize().then((_) {
+          if (mounted && _wasPlaying && isVisible && !showComments && !_isControllerDisposed) {
+            // Add a small delay to ensure the app is fully resumed
+            Future.delayed(const Duration(milliseconds: 200), () {
+              if (mounted && isVisible && !showComments && !_isControllerDisposed) {
+                _controller?.seekTo(Duration.zero);
+                _controller?.setVolume(1.0);
+                playMedia();
+              }
+            });
+          }
+        });
+      }
     }
   }
 
@@ -139,7 +142,7 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware, W
       _isVisible = visible;
     });
 
-    if (_isInitialized) {
+    if (_isInitialized && !_isControllerDisposed) {
       if (_isVisible) {
         // Only start playing if not already playing
         if (!(_controller?.value.isPlaying ?? false)) {
