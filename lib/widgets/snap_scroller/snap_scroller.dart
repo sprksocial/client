@@ -16,6 +16,7 @@ class SnapScroller extends StatefulWidget {
     this.swipePositionThreshold = 0.20,
     this.swipeVelocityThreshold = 1000,
     this.animationDuration = const Duration(milliseconds: 300),
+    this.animationCurve = Curves.easeOutCubic,
     this.controller,
     this.onIndexChanged,
   });
@@ -38,6 +39,9 @@ class SnapScroller extends StatefulWidget {
   /// The time the card will take to animate to either off the screen or its
   /// resting position,
   final Duration animationDuration;
+
+  /// The curve to use for the animation
+  final Curve animationCurve;
 
   /// An optional controller to request changes and to notify consumers of changes
   /// via an optional listener
@@ -202,7 +206,10 @@ class _SnapScrollerState extends State<SnapScroller> with SingleTickerProviderSt
         _end = 0;
     }
     _animation =
-        Tween<double>(begin: _cardOffset, end: _end).animate(_animationController)
+        Tween<double>(
+            begin: _cardOffset,
+            end: _end,
+          ).animate(CurvedAnimation(parent: _animationController, curve: widget.animationCurve))
           ..addListener(_animationListener)
           ..addStatusListener(_animationStatusListener);
     _animationController.forward();
