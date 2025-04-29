@@ -187,6 +187,30 @@ class ActorAPI {
       );
     });
   }
+
+  /// Search actors by query string.
+  ///
+  /// [query] The search query.
+  Future<dynamic> searchActors(String query) async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      return await atproto.get(
+        NSID.parse('so.sprk.actor.searchActors'),
+        parameters: {'q': query},
+        headers: {'atproto-proxy': _client._sprkDid},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+      );
+    });
+  }
 }
 
 /// Graph-related API endpoints
