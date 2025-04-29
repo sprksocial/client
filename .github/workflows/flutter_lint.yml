@@ -15,13 +15,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: "stable"
-          flutter-version: 3.29.2
-          cache: true
-
       - name: Get changed Dart files
         id: changed_files
         uses: tj-actions/changed-files@v46
@@ -29,14 +22,17 @@ jobs:
           files: |
             **/*.dart
 
+      - name: Set up Flutter
+        if: steps.changed_files.outputs.all_changed_files != ''
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          flutter-version: 3.29.2
+          cache: true
+
       - name: Analyze Changed Files
         if: steps.changed_files.outputs.all_changed_files != ''
         run: |
           echo "Found changed Dart files:"
           echo "${{ steps.changed_files.outputs.all_changed_files }}" # Output the list for debugging
           flutter analyze ${{ steps.changed_files.outputs.all_changed_files }}
-
-      - name: Check if no Dart files changed
-        if: steps.changed_files.outputs.all_changed_files == ''
-        run: |
-          echo "No Dart files were changed in this PR."
