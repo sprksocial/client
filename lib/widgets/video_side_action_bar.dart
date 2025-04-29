@@ -171,15 +171,6 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
     }
   }
 
-  void _handleBookmark() {
-    setState(() {
-      _isBookmarked = !_isBookmarked;
-    });
-    if (widget.onBookmarkPressed != null) {
-      widget.onBookmarkPressed!();
-    }
-  }
-
   void _handleReport(BuildContext context, AuthService authService) {
     if (widget.postUri == null || widget.postCid == null) {
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot report this content')));
@@ -203,11 +194,13 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
                   service: service,
                 );
 
-                if (result) {
+                if (result && context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
                 }
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+                }
               }
             },
           ),
@@ -246,31 +239,29 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
       final actionsService = Provider.of<ActionsService>(context, listen: false);
       final result = await actionsService.deletePost(widget.postUri!);
 
+      if (!mounted) return;
+
       if (result) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post deleted successfully')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post deleted successfully')));
 
-          // Add a delay to ensure the server has processed the deletion
-          await Future.delayed(const Duration(milliseconds: 800));
+        // Add a delay to ensure the server has processed the deletion
+        await Future.delayed(const Duration(milliseconds: 800));
 
-          // Check if widget is still mounted after the delay
-          if (!mounted) return;
+        // Check if widget is still mounted after the delay
+        if (!mounted) return;
 
-          // Notify parent that post was deleted
-          if (widget.onPostDeleted != null) {
-            widget.onPostDeleted!();
-          }
+        // Notify parent that post was deleted
+        if (widget.onPostDeleted != null) {
+          widget.onPostDeleted!();
+        }
 
-          // Check if we can navigate back (for profile view)
-          if (Navigator.of(context).canPop()) {
-            // Pop back to the previous screen with result=true to indicate post was deleted
-            Navigator.of(context).pop(true);
-          }
+        // Check if we can navigate back (for profile view)
+        if (Navigator.canPop(context)) {
+          // Pop back to the previous screen with result=true to indicate post was deleted
+          Navigator.of(context).pop(true);
         }
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete post')));
-        }
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete post')));
       }
     } catch (e) {
       if (mounted) {
@@ -324,11 +315,11 @@ class SharePanel extends StatefulWidget {
   final bool showEmbed;
   
   const SharePanel({
-    Key? key,
+    super.key,
     required this.shareUrl,
     required this.embedCode,
     this.showEmbed = true,
-  }) : super(key: key);
+  });
 
   @override
   State<SharePanel> createState() => _SharePanelState();
@@ -398,7 +389,7 @@ class _SharePanelState extends State<SharePanel> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withAlpha(51),
             blurRadius: 10,
             spreadRadius: 0,
           ),
@@ -490,7 +481,7 @@ class _SharePanelState extends State<SharePanel> {
                 text,
                 style: TextStyle(
                   fontFamily: 'monospace',
-                  color: textColor.withOpacity(0.8),
+                  color: textColor.withAlpha(204),
                   fontSize: 13,
                 ),
                 overflow: TextOverflow.ellipsis,

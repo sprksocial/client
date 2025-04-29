@@ -6,7 +6,11 @@ class ShareActionButton extends StatelessWidget {
   final String count;
   final VoidCallback? onPressed;
 
-  const ShareActionButton({super.key, required this.count, this.onPressed});
+  const ShareActionButton({
+    super.key, 
+    required this.count, 
+    this.onPressed
+  });
 
   @override
   Widget build(BuildContext context) {
