@@ -1,9 +1,9 @@
 import 'dart:developer';
 import 'dart:ui'; // For ImageFilter
-
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
+import 'dart:io';
 
 import '../../main.dart';
 import '../../utils/app_colors.dart';
@@ -14,12 +14,16 @@ class VideoItem extends VideoPlayerBase {
   final String? videoUrl;
   @override
   final String? videoAlt;
+  final VideoPlayerController? preloadedController;
+  final String? localVideoPath;
 
   const VideoItem({
     super.key,
     required super.index,
     required this.videoUrl,
     this.videoAlt,
+    this.preloadedController,
+    this.localVideoPath,
     super.username = '',
     super.description = '',
     super.hashtags = const [],
@@ -78,76 +82,106 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware {
   }
 
   @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    if (_controller != widget.preloadedController) {
+      _controller?.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
   void didPushNext() {
-    // Route was pushed on top of this one - pause the video
     pauseMedia();
   }
 
   @override
   void didPopNext() {
-    // Returned to this route - play video if visible
     if (_isVisible && isInitialized) {
       playMedia();
     }
   }
 
-  void _initializeVideoPlayer() {
-    if (widget.videoUrl == null) return;
+  Future<void> _initializeVideoPlayer() async {
+    if (widget.videoUrl == null && widget.localVideoPath == null) return;
 
-    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!))
-      ..initialize().then((_) {
-        if (!mounted) return;
+    if (widget.preloadedController != null) {
+      _controller = widget.preloadedController;
+      if (_controller!.value.isInitialized) {
         setState(() {
           _isInitialized = true;
-          if (isVisible) {
-            playMedia();
-          }
         });
+        if (_isVisible) {
+          playMedia();
+        }
+        return;
+      }
+    }
+
+    if (widget.localVideoPath != null) {
+      try {
+        _controller = VideoPlayerController.file(File(widget.localVideoPath!));
+        await _controller?.initialize();
+
+        if (!mounted) return;
+
+        _controller?.setLooping(true);
+        setState(() {
+          _isInitialized = true;
+        });
+
+        if (_isVisible) {
+          playMedia();
+        }
+        return;
+      } catch (e) {
+        log('Failed to load local video: $e');
+      }
+    }
+
+    if (widget.videoUrl != null) {
+      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
+      await _controller?.initialize();
+
+      if (!mounted) return;
+
+      _controller?.setLooping(true);
+      setState(() {
+        _isInitialized = true;
       });
 
-    _controller?.addListener(() {
-      if (_controller == null || !_controller!.value.isInitialized) return;
-      if (_controller!.value.position >= _controller!.value.duration) {
-        _controller?.seekTo(Duration.zero);
+      if (_isVisible) {
         playMedia();
       }
-    });
+    }
   }
 
-  @override
-  void dispose() {
-    routeObserver.unsubscribe(this);
-    _controller?.dispose();
-    super.dispose();
+  void _onVisibilityChanged(VisibilityInfo info) {
+    final visible = info.visibleFraction > 0.8;
+    if (!mounted || visible == _isVisible) return;
+
+    setState(() {
+      _isVisible = visible;
+    });
+
+    if (_isInitialized) {
+      if (_isVisible) {
+        playMedia();
+      } else {
+        pauseMedia();
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return VisibilityDetector(
       key: Key(_videoKey),
-      onVisibilityChanged: (visibilityInfo) {
-        log('visibilityInfo: $visibilityInfo');
-        final newVisibility = visibilityInfo.visibleFraction > 0.8;
-
-        if (newVisibility == _isVisible || !mounted) return;
-
-        setState(() {
-          _isVisible = newVisibility;
-        });
-
-        if (_isInitialized) {
-          if (_isVisible) {
-            playMedia();
-          } else {
-            pauseMedia();
-          }
-        }
-      },
+      onVisibilityChanged: _onVisibilityChanged,
       child: Stack(
         fit: StackFit.expand,
         children: [
           super.build(context),
-
           if (widget.videoUrl != null && !_isInitialized) const Center(child: CircularProgressIndicator(color: AppColors.white)),
         ],
       ),
@@ -162,52 +196,43 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware {
 
   @override
   Widget buildContent(BuildContext context) {
-    if (widget.videoUrl != null && _controller != null && _isInitialized) {
+    if (_controller != null && _isInitialized) {
       return _buildVideoContent();
     }
     return _buildPlaceholderContent(context);
   }
 
   Widget _buildBlurredBackground(bool isDarkMode) {
+    if (!_isInitialized || widget.disableBackgroundBlur) {
+      return Container(color: isDarkMode ? Colors.black : AppColors.darkBackground);
+    }
+
     return Container(
       color: isDarkMode ? Colors.black : AppColors.darkBackground,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (!widget.disableBackgroundBlur && _controller != null && _isInitialized)
-            ClipRect(
-              child: ImageFiltered(
-                imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-                child: Transform.scale(scale: 1.2, child: Opacity(opacity: 0.5, child: VideoPlayer(_controller!))),
-              ),
+          ClipRect(
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
+              child: Transform.scale(scale: 1.1, child: Opacity(opacity: 0.4, child: VideoPlayer(_controller!))),
             ),
-          Container(color: isDarkMode ? Colors.black.withAlpha(120) : AppColors.darkBackground.withAlpha(120)),
+          ),
+          Container(color: isDarkMode ? Colors.black.withAlpha(100) : AppColors.darkBackground.withAlpha(100)),
         ],
       ),
     );
   }
 
   Widget _buildVideoContent() {
-    if (_controller == null || !_isInitialized) {
-      return _buildPlaceholderContent(context);
-    }
-
     final videoSize = _controller!.value.size;
     if (videoSize.width <= 0 || videoSize.height <= 0) {
       return _buildPlaceholderContent(context);
     }
-    double aspectRatio = videoSize.width / videoSize.height;
-
-    if (aspectRatio > 1) {
-      return FittedBox(
-        fit: BoxFit.contain,
-        child: SizedBox(width: videoSize.width, height: videoSize.height, child: VideoPlayer(_controller!)),
-      );
-    }
 
     return SizedBox.expand(
       child: FittedBox(
-        fit: BoxFit.contain,
+        fit: BoxFit.cover,
         child: SizedBox(width: videoSize.width, height: videoSize.height, child: VideoPlayer(_controller!)),
       ),
     );
@@ -217,7 +242,7 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware {
     final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
     return Container(
       color:
-          widget.index % 2 == 0
+          widget.index.isEven
               ? (isDarkMode ? Colors.indigo.shade900 : Colors.indigo.shade200)
               : (isDarkMode ? Colors.purple.shade900 : Colors.purple.shade200),
       child: const SizedBox.shrink(),

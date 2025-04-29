@@ -9,7 +9,7 @@ class FeedOption {
   const FeedOption({required this.label, required this.value});
 }
 
-class FeedSelector extends StatelessWidget {
+class FeedSelector extends StatefulWidget {
   final List<FeedOption> options;
   final int selectedValue;
   final ValueChanged<int> onOptionSelected;
@@ -26,30 +26,39 @@ class FeedSelector extends StatelessWidget {
   });
 
   @override
+  State<FeedSelector> createState() => _FeedSelectorState();
+}
+
+class _FeedSelectorState extends State<FeedSelector> {
+  @override
   Widget build(BuildContext context) {
     return Container(
-      height: height,
+      height: widget.height,
       decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(20)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(options.length, (index) {
-          final option = options[index];
-          final isSelected = option.value == selectedValue;
+        children: List.generate(widget.options.length, (index) {
+          final option = widget.options[index];
+          final isSelected = option.value == widget.selectedValue;
 
           return Expanded(
             child: GestureDetector(
-              onTap: () => onOptionSelected(option.value),
+              onTap: () {
+                widget.onOptionSelected(option.value);
+                setState(() {}); // Force a rebuild when tapped
+              },
               child: Container(
-                height: height,
+                height: widget.height,
                 decoration: BoxDecoration(
-                  color: isSelected ? AppColors.white.withAlpha(100) : Colors.transparent,
+                  color: isSelected ? AppColors.pink.withOpacity(0.2) : Colors.transparent,
+                  border: isSelected ? Border.all(color: AppColors.pink, width: 1.5) : null,
                   borderRadius: BorderRadius.circular(50),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   option.label,
                   style: TextStyle(
-                    color: isSelected ? AppColors.white : AppColors.lightLavender,
+                    color: AppColors.lightLavender,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                     fontSize: 14,
                   ),

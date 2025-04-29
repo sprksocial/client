@@ -57,8 +57,9 @@ class FeedPost {
     String? videoAlt;
 
     if (post.embed?.data is EmbedVideoView) {
-      videoUrl = (post.embed?.data as EmbedVideoView).playlist;
-      videoAlt = (post.embed?.data as EmbedVideoView).alt;
+      final videoEmbed = post.embed?.data as EmbedVideoView;
+      videoUrl = videoEmbed.playlist;
+      videoAlt = videoEmbed.alt;
       hasMedia = true;
     } else if (post.embed?.data is EmbedViewImages) {
       hasMedia = true;
@@ -66,7 +67,6 @@ class FeedPost {
       imageUrls = embedImages.images.map((img) => img.fullsize).toList();
       imageAlts = embedImages.images.map((img) => img.alt).toList();
     }
-    if (!hasMedia) {}
 
     // Check if the post is a reply
     bool isReply = post.record.reply != null;

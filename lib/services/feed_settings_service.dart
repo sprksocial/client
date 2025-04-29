@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FeedType {
@@ -6,7 +7,7 @@ class FeedType {
   static const int latest = 2;
 }
 
-class FeedSettingsService {
+class FeedSettingsService extends ChangeNotifier {
   // Singleton instance
   static final FeedSettingsService _instance = FeedSettingsService._internal();
   factory FeedSettingsService() => _instance;
@@ -47,6 +48,7 @@ class FeedSettingsService {
       if (!isSelectedFeedEnabled()) {
         selectFirstEnabledFeed();
       }
+      notifyListeners();
     } catch (e) {
       // If preferences fail to load, use defaults
       resetToDefaults();
@@ -61,6 +63,7 @@ class FeedSettingsService {
       await prefs.setBool(_keyLatestFeed, _latestFeedEnabled);
       await prefs.setBool(_keyDisableBlur, _disableVideoBackgroundBlur);
       await prefs.setInt(_keySelectedFeed, _selectedFeedType);
+      notifyListeners();
     } catch (e) {
       // Silently handle preference save errors
     }
@@ -72,6 +75,7 @@ class FeedSettingsService {
     _latestFeedEnabled = true;
     _disableVideoBackgroundBlur = false;
     _selectedFeedType = FeedType.forYou;
+    notifyListeners();
   }
 
   bool isSelectedFeedEnabled() {
@@ -94,6 +98,7 @@ class FeedSettingsService {
       _forYouFeedEnabled = true;
       _selectedFeedType = FeedType.forYou;
     }
+    notifyListeners();
   }
 
   bool canDisableFeed(String settingType) {
@@ -126,16 +131,19 @@ class FeedSettingsService {
     }
 
     await savePreferences();
+    notifyListeners();
   }
 
   Future<void> setBackgroundBlur(bool disabled) async {
     _disableVideoBackgroundBlur = disabled;
     await savePreferences();
+    notifyListeners();
   }
 
   Future<void> setSelectedFeedType(int feedType) async {
     _selectedFeedType = feedType;
     await savePreferences();
+    notifyListeners();
   }
 
   int getFeedTypeFromSetting(String settingType) {
