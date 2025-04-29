@@ -8,6 +8,7 @@ import '../../../services/auth_service.dart';
 import '../../../services/profile_service.dart';
 import '../../../widgets/video/video_item.dart';
 import '../../profile/profile_video_tile.dart';
+import '../../../services/feed_settings_service.dart';
 
 class PhotosTab extends StatefulWidget {
   final String? did;
@@ -199,11 +200,14 @@ class _PhotosTabState extends State<PhotosTab> with AutomaticKeepAliveClientMixi
       PageRouteBuilder(
         opaque: true,
         pageBuilder:
-            (BuildContext context, _, __) => FeedScreen(
-              feedType: 0, // Use a custom feed type for profile photos
-              initialPosts: feedPosts,
-              initialIndex: index,
-              showBackButton: true,
+            (BuildContext context, _, __) => ChangeNotifierProvider<FeedSettingsService>.value(
+              value: FeedSettingsService(),
+              child: FeedScreen(
+                feedType: 0, // Use a custom feed type for profile photos
+                initialPosts: feedPosts,
+                initialIndex: index,
+                showBackButton: true,
+              ),
             ),
         transitionsBuilder: (_, Animation<double> animation, __, Widget child) {
           const begin = Offset(0.0, 1.0);

@@ -8,8 +8,8 @@ import '../screens/profile_screen.dart';
 import '../services/actions_service.dart';
 import '../services/auth_service.dart';
 import '../services/feed_manager.dart';
-import '../services/media_manager.dart';
 import '../services/feed_settings_service.dart';
+import '../services/media_manager.dart';
 
 import '../widgets/image/image_post_item.dart';
 import '../widgets/video/preloaded_video_item.dart';
@@ -159,36 +159,66 @@ class _FeedScreenState extends State<FeedScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final feedSettings = Provider.of<FeedSettingsService>(context);
-
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(children: [_buildFeedContent(feedSettings), if (widget.showBackButton) _buildBackButton()]),
+    return Material(
+      color: Colors.black,
+      child: Stack(
+        children: [
+          _buildMainContent(),
+          if (widget.showBackButton)
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 10,
+              left: 10,
+              child: IconButton(
+                icon: const Icon(FluentIcons.arrow_left_24_regular, color: Colors.white),
+                onPressed: () => Navigator.of(context).pop(),
+              ),
+            ),
+        ],
+      ),
     );
   }
 
-  Widget _buildFeedContent(FeedSettingsService feedSettings) {
+  Widget _buildMainContent() {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height,
+      width: MediaQuery.of(context).size.width,
+      child:
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _errorMessage != null
+              ? Center(child: Text('Error: $_errorMessage', style: const TextStyle(color: Colors.white)))
+              : _feedPosts == null || _feedPosts!.isEmpty
+              ? const Center(child: Text('No media available', style: TextStyle(color: Colors.white)))
+              : _buildFeedPageView(),
+    );
+  }
+
+  Widget _buildFeedPageView() {
+    final feedSettings = Provider.of<FeedSettingsService>(context);
+    final disableBackgroundBlur = feedSettings.disableVideoBackgroundBlur;
+
     return PageView.builder(
       controller: _pageController,
+      scrollDirection: Axis.vertical,
       itemCount: _feedPosts?.length ?? 0,
-      onPageChanged: (index) {
-        if (_currentIndex != index) {
+      onPageChanged: (newIndex) {
+        if (_currentIndex != newIndex) {
           setState(() {
-            _mediaManager.updateLoadedMedia(index, _currentIndex, _feedPosts?.length ?? 0);
-            _currentIndex = index;
+            _mediaManager.updateLoadedMedia(newIndex, _currentIndex, _feedPosts?.length ?? 0);
+            _currentIndex = newIndex;
           });
 
           final totalPosts = _feedPosts?.length ?? 0;
 
           // Unload videos that are more than 10 positions away
           for (int i = 0; i < totalPosts; i++) {
-            if (i < index - 10 || i > index + 10) {
+            if (i < newIndex - 10 || i > newIndex + 10) {
               _mediaManager.unloadVideo(i);
             }
           }
 
           // Preload videos within 5 positions
-          for (int i = index - 5; i <= index + 5; i++) {
+          for (int i = newIndex - 5; i <= newIndex + 5; i++) {
             if (i >= 0 && i < totalPosts) {
               _preloadMedia(i);
             }
@@ -222,7 +252,7 @@ class _FeedScreenState extends State<FeedScreen> {
               isSprk: post.isSprk,
               postUri: post.uri,
               postCid: post.cid,
-              disableBackgroundBlur: feedSettings.disableVideoBackgroundBlur,
+              disableBackgroundBlur: disableBackgroundBlur,
               videoAlt: post.videoAlt,
               onLikePressed: () => _handleLikePress(post),
               onBookmarkPressed: () {},
@@ -273,7 +303,7 @@ class _FeedScreenState extends State<FeedScreen> {
               isSprk: post.isSprk,
               postUri: post.uri,
               postCid: post.cid,
-              disableBackgroundBlur: feedSettings.disableVideoBackgroundBlur,
+              disableBackgroundBlur: disableBackgroundBlur,
               onLikePressed: () => _handleLikePress(post),
               onBookmarkPressed: () {},
               onSharePressed: () {},
@@ -323,7 +353,7 @@ class _FeedScreenState extends State<FeedScreen> {
             postUri: post.uri,
             postCid: post.cid,
             isVisible: index == _currentIndex,
-            disableBackgroundBlur: feedSettings.disableVideoBackgroundBlur,
+            disableBackgroundBlur: disableBackgroundBlur,
             onLikePressed: () => _handleLikePress(post),
             onBookmarkPressed: () {},
             onSharePressed: () {},
@@ -334,17 +364,6 @@ class _FeedScreenState extends State<FeedScreen> {
           return const Center(child: Text('Unsupported media type', style: TextStyle(color: Colors.white)));
         }
       },
-    );
-  }
-
-  Widget _buildBackButton() {
-    return Positioned(
-      top: MediaQuery.of(context).padding.top + 10,
-      left: 10,
-      child: IconButton(
-        icon: const Icon(FluentIcons.arrow_left_24_regular, color: Colors.white),
-        onPressed: () => Navigator.of(context).pop(),
-      ),
     );
   }
 
