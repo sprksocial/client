@@ -216,16 +216,23 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware, W
 
   @override
   Widget build(BuildContext context) {
-    return VisibilityDetector(
-      key: Key(_videoKey),
-      onVisibilityChanged: _onVisibilityChanged,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          super.build(context),
-          if (widget.videoUrl != null && !_isInitialized) const Center(child: CircularProgressIndicator(color: AppColors.white)),
-        ],
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SizedBox.expand(
+          child: VisibilityDetector(
+            key: Key(_videoKey),
+            onVisibilityChanged: _onVisibilityChanged,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                super.build(context),
+                if (widget.videoUrl != null && !_isInitialized)
+                  const Center(child: CircularProgressIndicator(color: AppColors.white)),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -283,25 +290,28 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware, W
     // Check if video is vertical or close to vertical
     final isVerticalVideo = videoAspectRatio <= verticalThreshold;
 
-    if (isVerticalVideo) {
-      // For vertical videos, fill the screen
-      return SizedBox.expand(
-        child: FittedBox(
-          fit: BoxFit.cover,
-          child: SizedBox(width: videoSize.width, height: videoSize.height, child: VideoPlayer(_controller!)),
-        ),
-      );
-    } else {
-      // For other videos, maintain original proportions
-      return Container(
-        width: screenSize.width,
-        height: screenSize.height,
-        child: FittedBox(
-          fit: BoxFit.contain,
-          child: SizedBox(width: videoSize.width, height: videoSize.height, child: VideoPlayer(_controller!)),
-        ),
-      );
-    }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final maxWidth = constraints.maxWidth;
+        final maxHeight = constraints.maxHeight;
+
+        if (isVerticalVideo) {
+          // For vertical videos, fill the screen while maintaining aspect ratio
+          return Center(
+            child: AspectRatio(
+              aspectRatio: videoAspectRatio,
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(width: videoSize.width, height: videoSize.height, child: VideoPlayer(_controller!)),
+              ),
+            ),
+          );
+        } else {
+          // For other videos, maintain original proportions
+          return Center(child: AspectRatio(aspectRatio: videoAspectRatio, child: VideoPlayer(_controller!)));
+        }
+      },
+    );
   }
 
   Widget _buildPlaceholderContent(BuildContext context) {
@@ -311,7 +321,6 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware, W
           widget.index.isEven
               ? (isDarkMode ? Colors.indigo.shade900 : Colors.indigo.shade200)
               : (isDarkMode ? Colors.purple.shade900 : Colors.purple.shade200),
-      child: const SizedBox.shrink(),
     );
   }
 }

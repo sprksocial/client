@@ -197,10 +197,10 @@ class _FeedScreenState extends State<FeedScreen> {
     return SnapScroller(
       contentSize: _feedPosts?.length ?? 0,
       controller: _scrollController,
-      swipePositionThreshold: 0.15,
-      swipeVelocityThreshold: 800,
-      animationDuration: const Duration(milliseconds: 200),
-      animationCurve: Curves.easeOutQuart,
+      swipePositionThreshold: 0.12,
+      swipeVelocityThreshold: 600,
+      animationDuration: const Duration(milliseconds: 150),
+      animationCurve: Curves.easeOutCubic,
       builder: (context, index) {
         final post = _feedPosts![index];
         final isLiked = post.isLiked;
