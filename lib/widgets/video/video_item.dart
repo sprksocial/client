@@ -141,16 +141,12 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware, W
 
     if (_isInitialized) {
       if (_isVisible) {
-        Future.delayed(const Duration(milliseconds: 50), () {
-          if (mounted && _isVisible) {
-            // Only seek to start if not already playing
-            if (!(_controller?.value.isPlaying ?? false)) {
-              _controller?.seekTo(Duration.zero);
-            }
-            _controller?.setVolume(1.0);
-            playMedia();
-          }
-        });
+        // Only start playing if not already playing
+        if (!(_controller?.value.isPlaying ?? false)) {
+          _controller?.seekTo(Duration.zero);
+          _controller?.setVolume(1.0);
+          playMedia();
+        }
       } else {
         _controller?.setVolume(0.0);
         pauseMedia();
@@ -169,6 +165,7 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware, W
         });
         if (isVisible) {
           _controller?.seekTo(Duration.zero);
+          _controller?.setVolume(1.0);
           playMedia();
         }
         return;
@@ -189,6 +186,7 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware, W
 
         if (isVisible) {
           _controller?.seekTo(Duration.zero);
+          _controller?.setVolume(1.0);
           playMedia();
         }
         return;
@@ -210,6 +208,7 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware, W
 
       if (isVisible) {
         _controller?.seekTo(Duration.zero);
+        _controller?.setVolume(1.0);
         playMedia();
       }
     }
