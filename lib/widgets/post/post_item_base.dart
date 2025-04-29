@@ -10,6 +10,7 @@ import '../comments/comments_tray.dart';
 import '../dialogs/report_dialog.dart';
 import '../video_info/video_info_bar.dart';
 import '../video_side_action_bar.dart';
+import '../image/image_post_item.dart';
 
 /// Base class for post items (Video, Image, etc.) to handle common parameters.
 abstract class PostItemBase extends StatefulWidget {
@@ -292,6 +293,9 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
   }
 
   Widget buildSideActionBar() {
+    // Determine if we're dealing with an image post based on the widget type
+    final bool isImagePost = widget is ImagePostItem;
+    
     return Positioned(
       right: 16,
       bottom: 16,
@@ -312,6 +316,7 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
         postUri: widget.postUri,
         authorDid: widget.authorDid,
         onPostDeleted: widget.onPostDeleted ?? () {},
+        isImage: isImagePost, // Pass whether this is an image post
       ),
     );
   }

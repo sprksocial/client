@@ -10,6 +10,6 @@ class ShareActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ActionButton(icon: FluentIcons.share_24_regular, label: count, onPressed: onPressed);
+    return ActionButton(icon: FluentIcons.share_24_regular, label: count, onPressed: onPressed, showLabel: false);
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:sparksocial/widgets/action_buttons/share_action_button.dart';
+import 'package:flutter/services.dart';
 
 import 'action_buttons/comment_action_button.dart';
 import 'action_buttons/like_action_button.dart';
@@ -31,6 +33,9 @@ class VideoSideActionBar extends StatefulWidget {
   final String? postUri;
   final String? postCid;
   final String? authorDid;
+  
+  // Add flag to identify image content
+  final bool isImage;
 
   const VideoSideActionBar({
     super.key,
@@ -54,6 +59,8 @@ class VideoSideActionBar extends StatefulWidget {
     this.postUri,
     this.postCid,
     this.authorDid,
+    
+    this.isImage = false,
   });
 
   @override
@@ -92,6 +99,75 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
     });
     if (widget.onLikePressed != null) {
       widget.onLikePressed!();
+    }
+  }
+
+  void _handleShare() {
+    if (widget.postUri == null) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Cannot share this content')));
+      return;
+    }
+    
+    String postUri = widget.postUri!;
+    String shareUrl;
+    String embedCode = '';
+    bool showEmbed = true;
+    
+    // Special case for Bluesky posts
+    if (postUri.contains('/app.bsky.feed.post/')) {
+      // Extract the DID and post ID for Bluesky format
+      // Format: at://did:plc:xxx/app.bsky.feed.post/yyy -> https://bsky.app/profile/did:plc:xxx/post/yyy
+      
+      // Remove 'at://' prefix if present
+      if (postUri.startsWith('at://')) {
+        postUri = postUri.substring(5);
+      }
+      
+      // Split to get DID and post ID
+      final parts = postUri.split('/app.bsky.feed.post/');
+      if (parts.length == 2) {
+        final did = parts[0];
+        final postId = parts[1];
+        
+        // Format as Bluesky URL
+        shareUrl = 'https://bsky.app/profile/$did/post/$postId';
+        
+        // Hide embed for Bluesky
+        showEmbed = false;
+      } else {
+        // Fallback if parsing fails
+        shareUrl = 'https://bsky.app';
+        showEmbed = false;
+      }
+    } else {
+      // Standard Spark format
+      // Remove 'at://' prefix if present
+      if (postUri.startsWith('at://')) {
+        postUri = postUri.substring(5);
+      }
+      
+      // Remove 'so.sprk.feed.post/' from the path if present
+      postUri = postUri.replaceAll('so.sprk.feed.post/', '');
+      
+      shareUrl = 'https://watch.sprk.so/?uri=$postUri';
+      embedCode = '<iframe src="embed.html?uri=$postUri" width="100%" height="400" frameborder="0" allowfullscreen></iframe>';
+    }
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return SharePanel(
+          shareUrl: shareUrl,
+          embedCode: embedCode,
+          showEmbed: showEmbed,
+        );
+      },
+    );
+    
+    if (widget.onSharePressed != null) {
+      widget.onSharePressed!();
     }
   }
 
@@ -218,6 +294,12 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
         CommentActionButton(count: widget.commentCount, onPressed: widget.onCommentPressed),
         const SizedBox(height: 20),
 
+        // Only show share button for videos, not for images
+        if (!widget.isImage) ...[
+          ShareActionButton(count: widget.shareCount, onPressed: _handleShare),
+          const SizedBox(height: 20),
+        ],
+
         // BookmarkActionButton(
         //   count: widget.bookmarkCount,
         //   isBookmarked: _isBookmarked,
@@ -232,6 +314,220 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
         ),
         const SizedBox(height: 20),
       ],
+    );
+  }
+}
+
+class SharePanel extends StatefulWidget {
+  final String shareUrl;
+  final String embedCode;
+  final bool showEmbed;
+  
+  const SharePanel({
+    Key? key,
+    required this.shareUrl,
+    required this.embedCode,
+    this.showEmbed = true,
+  }) : super(key: key);
+
+  @override
+  State<SharePanel> createState() => _SharePanelState();
+}
+
+class _SharePanelState extends State<SharePanel> {
+  bool _copiedLink = false;
+  bool _copiedEmbed = false;
+  
+  void _copyToClipboard(String text, BuildContext context, bool isLink) {
+    Clipboard.setData(ClipboardData(text: text));
+    
+    // Update state to show copied indicator
+    setState(() {
+      if (isLink) {
+        _copiedLink = true;
+      } else {
+        _copiedEmbed = true;
+      }
+    });
+    
+    // Show a more noticeable snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            const Icon(Icons.check_circle, color: Colors.white),
+            const SizedBox(width: 12),
+            Text(isLink ? 'Video link copied!' : 'Embed code copied!'),
+          ],
+        ),
+        backgroundColor: Colors.green.shade700,
+        behavior: SnackBarBehavior.floating,
+        width: MediaQuery.of(context).size.width * 0.9,
+        duration: const Duration(seconds: 2),
+      ),
+    );
+    
+    // Reset the copied state after 2 seconds
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted) {
+        setState(() {
+          if (isLink) {
+            _copiedLink = false;
+          } else {
+            _copiedEmbed = false;
+          }
+        });
+      }
+    });
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final backgroundColor = isDarkMode ? const Color(0xFF1F1F1F) : Colors.white;
+    final textColor = isDarkMode ? Colors.white : Colors.black87;
+    final fieldBgColor = isDarkMode ? const Color(0xFF2C2C2C) : const Color(0xFFF5F5F5);
+    final dividerColor = isDarkMode ? Colors.white24 : Colors.black12;
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 10,
+            spreadRadius: 0,
+          ),
+        ],
+      ),
+      child: DraggableScrollableSheet(
+        initialChildSize: 0.4,
+        minChildSize: 0.3,
+        maxChildSize: 0.6,
+        expand: false,
+        builder: (context, scrollController) {
+          return Column(
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                margin: const EdgeInsets.only(top: 12, bottom: 16),
+                decoration: BoxDecoration(
+                  color: dividerColor,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: Text(
+                  'Share Video',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Divider(color: dividerColor, height: 30),
+              Expanded(
+                child: ListView(
+                  controller: scrollController,
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                  children: [
+                    Text(
+                      'Video link',
+                      style: TextStyle(
+                        color: textColor,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    _buildCopyField(widget.shareUrl, context, fieldBgColor, textColor, true, _copiedLink),
+                    if (widget.showEmbed) ...[
+                      const SizedBox(height: 24),
+                      Text(
+                        'Video embed',
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildCopyField(widget.embedCode, context, fieldBgColor, textColor, false, _copiedEmbed),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+  
+  Widget _buildCopyField(String text, BuildContext context, Color bgColor, Color textColor, bool isLink, bool isCopied) {
+    final theme = Theme.of(context);
+    final accentColor = theme.colorScheme.primary;
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.transparent),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+              child: Text(
+                text,
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  color: textColor.withOpacity(0.8),
+                  fontSize: 13,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ),
+          Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => _copyToClipboard(text, context, isLink),
+              borderRadius: BorderRadius.circular(30),
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  transitionBuilder: (Widget child, Animation<double> animation) {
+                    return ScaleTransition(scale: animation, child: child);
+                  },
+                  child: isCopied 
+                    ? Icon(
+                        Icons.check_circle,
+                        key: const ValueKey('copied'),
+                        color: Colors.green,
+                        size: 20,
+                      )
+                    : Icon(
+                        Icons.content_copy_rounded,
+                        key: const ValueKey('copy'),
+                        color: accentColor,
+                        size: 20,
+                      ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
