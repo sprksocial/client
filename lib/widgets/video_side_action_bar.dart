@@ -11,6 +11,7 @@ import '../services/mod_service.dart';
 import '../services/auth_service.dart';
 import '../services/actions_service.dart';
 import '../widgets/dialogs/report_dialog.dart';
+import 'action_buttons/bookmark_action_button.dart';
 
 class VideoSideActionBar extends StatefulWidget {
   final VoidCallback? onProfilePressed;
@@ -203,10 +204,14 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
                   service: service,
                 );
 
+                // Check mounted before using context
+                if (!mounted) return;
                 if (result) {
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
                 }
               } catch (e) {
+                // Check mounted before using context
+                if (!mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
               }
             },
@@ -246,33 +251,36 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
       final actionsService = Provider.of<ActionsService>(context, listen: false);
       final result = await actionsService.deletePost(widget.postUri!);
 
+      // Check if mounted AFTER the await actionsService.deletePost
+      if (!mounted) return;
+
       if (result) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post deleted successfully')));
+        // Use context ONLY AFTER checking mounted
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Post deleted successfully')));
 
-          // Add a delay to ensure the server has processed the deletion
-          await Future.delayed(const Duration(milliseconds: 800));
+        await Future.delayed(const Duration(milliseconds: 800));
 
-          // Check if widget is still mounted after the delay
+        // Check if mounted AFTER the await Future.delayed
+        if (!mounted) return;
+
+        if (widget.onPostDeleted != null) {
+          widget.onPostDeleted!();
+        }
+
+        // Check mounted again right before potentially using context for Navigator
+        if (!mounted) return;
+        if (Navigator.canPop(context)) {
+          // Check mounted again right before using context for Navigator.pop
           if (!mounted) return;
-
-          // Notify parent that post was deleted
-          if (widget.onPostDeleted != null) {
-            widget.onPostDeleted!();
-          }
-
-          // Check if we can navigate back (for profile view)
-          if (Navigator.of(context).canPop()) {
-            // Pop back to the previous screen with result=true to indicate post was deleted
-            Navigator.of(context).pop(true);
-          }
+          Navigator.of(context).pop(true);
         }
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete post')));
-        }
+        // Check mounted before showing SnackBar in else block
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to delete post')));
       }
     } catch (e) {
+      // Check mounted before showing SnackBar in catch block
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error deleting post: $e')));
       }
@@ -300,12 +308,13 @@ class _VideoSideActionBarState extends State<VideoSideActionBar> {
           const SizedBox(height: 20),
         ],
 
-        // BookmarkActionButton(
-        //   count: widget.bookmarkCount,
-        //   isBookmarked: _isBookmarked,
-        //   onPressed: _handleBookmark,
-        //   key: const ValueKey('bookmark_button'), // Add a stable key
-        // ),
+        BookmarkActionButton(
+          count: widget.bookmarkCount,
+          isBookmarked: _isBookmarked,
+          onPressed: _handleBookmark,
+          key: const ValueKey('bookmark_button'),
+        ),
+        const SizedBox(height: 20),
         MenuActionButton(
           onPressed: widget.onReportPressed ?? () => _handleReport(context, authService),
           onDeletePressed: () => _handleDelete(context),
@@ -324,11 +333,11 @@ class SharePanel extends StatefulWidget {
   final bool showEmbed;
   
   const SharePanel({
-    Key? key,
+    super.key,
     required this.shareUrl,
     required this.embedCode,
     this.showEmbed = true,
-  }) : super(key: key);
+  });
 
   @override
   State<SharePanel> createState() => _SharePanelState();
@@ -398,7 +407,7 @@ class _SharePanelState extends State<SharePanel> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withAlpha(51),
             blurRadius: 10,
             spreadRadius: 0,
           ),
@@ -490,7 +499,7 @@ class _SharePanelState extends State<SharePanel> {
                 text,
                 style: TextStyle(
                   fontFamily: 'monospace',
-                  color: textColor.withOpacity(0.8),
+                  color: textColor.withAlpha(204),
                   fontSize: 13,
                 ),
                 overflow: TextOverflow.ellipsis,
