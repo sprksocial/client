@@ -36,28 +36,6 @@ class MediaManager {
   // Cache manager for videos
   final DefaultCacheManager _cacheManager = DefaultCacheManager();
 
-  Future<String?> _getPdsUrl(String did) async {
-    try {
-      // Resolve DID to get the DID document
-      final response = await http.get(Uri.parse('https://plc.directory/$did'));
-      if (response.statusCode == 200) {
-        final doc = jsonDecode(response.body);
-        // Find the PDS service in the service array
-        final services = doc['service'] as List?;
-        if (services != null) {
-          final pdsService = services.firstWhere((service) => service['type'] == 'AtprotoPersonalDataServer', orElse: () => null);
-          if (pdsService != null) {
-            return pdsService['serviceEndpoint'];
-          }
-        }
-      }
-      return null;
-    } catch (e) {
-      print('Error resolving DID: $e');
-      return null;
-    }
-  }
-
   Future<String?> _downloadAndCacheVideo(String videoUrl) async {
     try {
       // For Bluesky videos, we need to get the actual video file URL
@@ -68,17 +46,10 @@ class MediaManager {
         if (segments.length >= 3) {
           final did = segments[1];
           final cid = segments[2];
+          final directVideoUrl = 'https://media.sprk.so/video/$did/$cid';
 
-          // Get the PDS URL from the DID document
-          final pdsUrl = await _getPdsUrl(did);
-          if (pdsUrl != null) {
-            // Construct the direct video file URL using the PDS
-            final directVideoUrl = '$pdsUrl/xrpc/com.atproto.sync.getBlob?did=$did&cid=$cid';
-
-            // Cache the actual video file
-            final file = await _cacheManager.getSingleFile(directVideoUrl);
-            return file.path;
-          }
+          final file = await _cacheManager.getSingleFile(directVideoUrl);
+          return file.path;
         }
       }
 
