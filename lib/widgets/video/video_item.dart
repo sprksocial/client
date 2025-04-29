@@ -16,6 +16,7 @@ class VideoItem extends VideoPlayerBase {
   final String? videoAlt;
   final VideoPlayerController? preloadedController;
   final String? localVideoPath;
+  final bool isVisible;
 
   const VideoItem({
     super.key,
@@ -24,6 +25,7 @@ class VideoItem extends VideoPlayerBase {
     this.videoAlt,
     this.preloadedController,
     this.localVideoPath,
+    this.isVisible = false,
     super.username = '',
     super.description = '',
     super.hashtags = const [],
@@ -51,10 +53,11 @@ class VideoItem extends VideoPlayerBase {
   State<VideoItem> createState() => _VideoItemState();
 }
 
-class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware {
+class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware, WidgetsBindingObserver {
   VideoPlayerController? _controller;
   bool _isInitialized = false;
   bool _isVisible = false;
+  bool _wasPlaying = false;
   final String _videoKey = UniqueKey().toString();
 
   @override
@@ -64,11 +67,12 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware {
   bool get isInitialized => _isInitialized && _controller != null;
 
   @override
-  bool get isVisible => _isVisible;
+  bool get isVisible => widget.isVisible || _isVisible;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _initializeVideoPlayer();
   }
 
@@ -83,6 +87,7 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     routeObserver.unsubscribe(this);
     if (_controller != widget.preloadedController) {
       _controller?.dispose();
@@ -102,6 +107,57 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware {
     }
   }
 
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!isInitialized) return;
+
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _wasPlaying = _controller?.value.isPlaying ?? false;
+      pauseMedia();
+    } else if (state == AppLifecycleState.resumed) {
+      // Reinitialize the controller when app resumes
+      _controller?.initialize().then((_) {
+        if (mounted && _wasPlaying && isVisible && !showComments) {
+          // Add a small delay to ensure the app is fully resumed
+          Future.delayed(const Duration(milliseconds: 200), () {
+            if (mounted && isVisible && !showComments) {
+              _controller?.seekTo(Duration.zero);
+              _controller?.setVolume(1.0);
+              playMedia();
+            }
+          });
+        }
+      });
+    }
+  }
+
+  void _onVisibilityChanged(VisibilityInfo info) {
+    final visible = info.visibleFraction > 0.5;
+    if (!mounted || visible == _isVisible) return;
+
+    setState(() {
+      _isVisible = visible;
+    });
+
+    if (_isInitialized) {
+      if (_isVisible) {
+        Future.delayed(const Duration(milliseconds: 50), () {
+          if (mounted && _isVisible) {
+            // Only seek to start if not already playing
+            if (!(_controller?.value.isPlaying ?? false)) {
+              _controller?.seekTo(Duration.zero);
+            }
+            _controller?.setVolume(1.0);
+            playMedia();
+          }
+        });
+      } else {
+        _controller?.setVolume(0.0);
+        pauseMedia();
+      }
+    }
+  }
+
   Future<void> _initializeVideoPlayer() async {
     if (widget.videoUrl == null && widget.localVideoPath == null) return;
 
@@ -111,7 +167,8 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware {
         setState(() {
           _isInitialized = true;
         });
-        if (_isVisible) {
+        if (isVisible) {
+          _controller?.seekTo(Duration.zero);
           playMedia();
         }
         return;
@@ -130,7 +187,8 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware {
           _isInitialized = true;
         });
 
-        if (_isVisible) {
+        if (isVisible) {
+          _controller?.seekTo(Duration.zero);
           playMedia();
         }
         return;
@@ -150,25 +208,9 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware {
         _isInitialized = true;
       });
 
-      if (_isVisible) {
+      if (isVisible) {
+        _controller?.seekTo(Duration.zero);
         playMedia();
-      }
-    }
-  }
-
-  void _onVisibilityChanged(VisibilityInfo info) {
-    final visible = info.visibleFraction > 0.8;
-    if (!mounted || visible == _isVisible) return;
-
-    setState(() {
-      _isVisible = visible;
-    });
-
-    if (_isInitialized) {
-      if (_isVisible) {
-        playMedia();
-      } else {
-        pauseMedia();
       }
     }
   }
@@ -230,12 +272,37 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware {
       return _buildPlaceholderContent(context);
     }
 
-    return SizedBox.expand(
-      child: FittedBox(
-        fit: BoxFit.cover,
-        child: SizedBox(width: videoSize.width, height: videoSize.height, child: VideoPlayer(_controller!)),
-      ),
-    );
+    final screenSize = MediaQuery.of(context).size;
+    final videoAspectRatio = videoSize.width / videoSize.height;
+    final screenAspectRatio = screenSize.width / screenSize.height;
+
+    // Define aspect ratio thresholds
+    // 9:16 ≈ 0.5625, so we'll use 0.6 as our threshold
+    // This ensures vertical videos and similar aspect ratios fill the screen
+    const verticalThreshold = 0.6;
+
+    // Check if video is vertical or close to vertical
+    final isVerticalVideo = videoAspectRatio <= verticalThreshold;
+
+    if (isVerticalVideo) {
+      // For vertical videos, fill the screen
+      return SizedBox.expand(
+        child: FittedBox(
+          fit: BoxFit.cover,
+          child: SizedBox(width: videoSize.width, height: videoSize.height, child: VideoPlayer(_controller!)),
+        ),
+      );
+    } else {
+      // For other videos, maintain original proportions
+      return Container(
+        width: screenSize.width,
+        height: screenSize.height,
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: SizedBox(width: videoSize.width, height: videoSize.height, child: VideoPlayer(_controller!)),
+        ),
+      );
+    }
   }
 
   Widget _buildPlaceholderContent(BuildContext context) {

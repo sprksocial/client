@@ -10,10 +10,11 @@ import '../services/auth_service.dart';
 import '../services/feed_manager.dart';
 import '../services/feed_settings_service.dart';
 import '../services/media_manager.dart';
-
+import '../widgets/snap_scroller/snap_scroller.dart';
 import '../widgets/image/image_post_item.dart';
-import '../widgets/video/preloaded_video_item.dart';
 import '../widgets/video/video_item.dart';
+
+enum ScrollDirection { FORWARD, BACKWARDS }
 
 class FeedScreen extends StatefulWidget {
   final int feedType;
@@ -28,7 +29,7 @@ class FeedScreen extends StatefulWidget {
 }
 
 class _FeedScreenState extends State<FeedScreen> {
-  final PageController _pageController = PageController();
+  final Controller _scrollController = Controller();
   final FeedManager _feedManager = FeedManager();
   final MediaManager _mediaManager = MediaManager();
 
@@ -52,9 +53,7 @@ class _FeedScreenState extends State<FeedScreen> {
       });
       _preloadInitialMedia();
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (_pageController.hasClients) {
-          _pageController.jumpToPage(_currentIndex);
-        }
+        _scrollController.jumpToPosition(_currentIndex);
       });
     } else {
       await _fetchFeed();
@@ -64,7 +63,7 @@ class _FeedScreenState extends State<FeedScreen> {
   @override
   void dispose() {
     _mediaManager.dispose();
-    _pageController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -120,9 +119,7 @@ class _FeedScreenState extends State<FeedScreen> {
 
   void _resetPageController() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_pageController.hasClients) {
-        _pageController.jumpToPage(0);
-      }
+      _scrollController.jumpToPosition(0);
     });
   }
 
@@ -197,35 +194,13 @@ class _FeedScreenState extends State<FeedScreen> {
     final feedSettings = Provider.of<FeedSettingsService>(context);
     final disableBackgroundBlur = feedSettings.disableVideoBackgroundBlur;
 
-    return PageView.builder(
-      controller: _pageController,
-      scrollDirection: Axis.vertical,
-      itemCount: _feedPosts?.length ?? 0,
-      onPageChanged: (newIndex) {
-        if (_currentIndex != newIndex) {
-          setState(() {
-            _mediaManager.updateLoadedMedia(newIndex, _currentIndex, _feedPosts?.length ?? 0);
-            _currentIndex = newIndex;
-          });
-
-          final totalPosts = _feedPosts?.length ?? 0;
-
-          // Unload videos that are more than 10 positions away
-          for (int i = 0; i < totalPosts; i++) {
-            if (i < newIndex - 10 || i > newIndex + 10) {
-              _mediaManager.unloadVideo(i);
-            }
-          }
-
-          // Preload videos within 5 positions
-          for (int i = newIndex - 5; i <= newIndex + 5; i++) {
-            if (i >= 0 && i < totalPosts) {
-              _preloadMedia(i);
-            }
-          }
-        }
-      },
-      itemBuilder: (context, index) {
+    return SnapScroller(
+      contentSize: _feedPosts?.length ?? 0,
+      controller: _scrollController,
+      swipePositionThreshold: 0.15,
+      swipeVelocityThreshold: 800,
+      animationDuration: const Duration(milliseconds: 200),
+      builder: (context, index) {
         final post = _feedPosts![index];
         final isLiked = post.isLiked;
 
@@ -233,106 +208,52 @@ class _FeedScreenState extends State<FeedScreen> {
           final isPreloaded = _mediaManager.isVideoPreloaded(index);
           final preloadedVideo = _mediaManager.getPreloadedVideo(index);
 
-          if (isPreloaded && preloadedVideo != null) {
-            return PreloadedVideoItem(
-              key: ValueKey('video_$index'),
-              index: index,
-              controller: preloadedVideo.controller,
-              username: post.username,
-              description: post.description,
-              hashtags: post.hashtags,
-              likeCount: post.likeCount,
-              commentCount: post.commentCount,
-              bookmarkCount: 0,
-              shareCount: post.shareCount,
-              profileImageUrl: post.profileImageUrl,
-              authorDid: post.authorDid,
-              isVisible: index == _currentIndex,
-              isLiked: isLiked,
-              isSprk: post.isSprk,
-              postUri: post.uri,
-              postCid: post.cid,
-              disableBackgroundBlur: disableBackgroundBlur,
-              videoAlt: post.videoAlt,
-              onLikePressed: () => _handleLikePress(post),
-              onBookmarkPressed: () {},
-              onSharePressed: () {},
-              onProfilePressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
-                  error,
-                ) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
-                  return null;
-                });
-              },
-              onUsernameTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
-                  error,
-                ) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
-                  return null;
-                });
-              },
-              onHashtagTap: (String hashtag) {},
-              onPostDeleted: () {
-                _fetchFeed();
-              },
-            );
-          } else {
-            return VideoItem(
-              key: ValueKey('video_$index'),
-              index: index,
-              videoUrl: post.videoUrl,
-              videoAlt: post.videoAlt,
-              preloadedController: isPreloaded ? preloadedVideo?.controller : null,
-              localVideoPath: isPreloaded ? _mediaManager.getLocalVideoPath(index) : null,
-              username: post.username,
-              description: post.description,
-              hashtags: post.hashtags,
-              likeCount: post.likeCount,
-              commentCount: post.commentCount,
-              bookmarkCount: 0,
-              shareCount: post.shareCount,
-              profileImageUrl: post.profileImageUrl,
-              authorDid: post.authorDid,
-              isLiked: isLiked,
-              isSprk: post.isSprk,
-              postUri: post.uri,
-              postCid: post.cid,
-              disableBackgroundBlur: disableBackgroundBlur,
-              onLikePressed: () => _handleLikePress(post),
-              onBookmarkPressed: () {},
-              onSharePressed: () {},
-              onProfilePressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
-                  error,
-                ) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
-                  return null;
-                });
-              },
-              onUsernameTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
-                  error,
-                ) {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
-                  return null;
-                });
-              },
-              onHashtagTap: (String hashtag) {},
-              onPostDeleted: () {
-                _fetchFeed();
-              },
-            );
-          }
+          return VideoItem(
+            key: ValueKey('video_$index'),
+            index: index,
+            videoUrl: post.videoUrl,
+            videoAlt: post.videoAlt,
+            preloadedController: isPreloaded ? preloadedVideo?.controller : null,
+            localVideoPath: isPreloaded ? _mediaManager.getLocalVideoPath(index) : null,
+            username: post.username,
+            description: post.description,
+            hashtags: post.hashtags,
+            likeCount: post.likeCount,
+            commentCount: post.commentCount,
+            bookmarkCount: 0,
+            shareCount: post.shareCount,
+            profileImageUrl: post.profileImageUrl,
+            authorDid: post.authorDid,
+            isVisible: index == _currentIndex,
+            isLiked: isLiked,
+            isSprk: post.isSprk,
+            postUri: post.uri,
+            postCid: post.cid,
+            disableBackgroundBlur: disableBackgroundBlur,
+            onLikePressed: () => _handleLikePress(post),
+            onBookmarkPressed: () {},
+            onSharePressed: () {},
+            onProfilePressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((error) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
+                return null;
+              });
+            },
+            onUsernameTap: () {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((error) {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
+                return null;
+              });
+            },
+            onHashtagTap: (String hashtag) {},
+            onPostDeleted: () {
+              _fetchFeed();
+            },
+          );
         } else if (post.imageUrls.isNotEmpty) {
           return ImagePostItem(
             key: ValueKey('image_$index'),
@@ -361,7 +282,56 @@ class _FeedScreenState extends State<FeedScreen> {
             onHashtagTap: (String hashtag) {},
           );
         } else {
-          return const Center(child: Text('Unsupported media type', style: TextStyle(color: Colors.white)));
+          return const SizedBox.shrink();
+        }
+      },
+      onIndexChanged: (newIndex) {
+        if (_currentIndex != newIndex) {
+          final scrollDirection = newIndex > _currentIndex ? ScrollDirection.FORWARD : ScrollDirection.BACKWARDS;
+
+          setState(() {
+            // Update media manager first to handle audio transitions
+            _mediaManager.updateLoadedMedia(newIndex, _currentIndex, _feedPosts?.length ?? 0);
+            _currentIndex = newIndex;
+          });
+
+          final totalPosts = _feedPosts?.length ?? 0;
+
+          // Unload videos that are more than 10 positions away
+          for (int i = 0; i < totalPosts; i++) {
+            if (i < newIndex - 10 || i > newIndex + 10) {
+              _mediaManager.unloadVideo(i);
+            }
+          }
+
+          // Preload videos based on scroll direction
+          if (scrollDirection == ScrollDirection.FORWARD) {
+            // Preload more videos ahead when scrolling forward
+            for (int i = newIndex + 1; i <= newIndex + 5; i++) {
+              if (i < totalPosts) {
+                _preloadMedia(i);
+              }
+            }
+            // Preload fewer videos behind
+            for (int i = newIndex - 1; i >= newIndex - 3; i--) {
+              if (i >= 0) {
+                _preloadMedia(i);
+              }
+            }
+          } else {
+            // Preload more videos behind when scrolling backward
+            for (int i = newIndex - 1; i >= newIndex - 5; i--) {
+              if (i >= 0) {
+                _preloadMedia(i);
+              }
+            }
+            // Preload fewer videos ahead
+            for (int i = newIndex + 1; i <= newIndex + 3; i++) {
+              if (i < totalPosts) {
+                _preloadMedia(i);
+              }
+            }
+          }
         }
       },
     );
@@ -422,4 +392,28 @@ class PreloadedVideo {
   final String? videoUrl;
 
   PreloadedVideo({required this.controller, required this.isInitialized, required this.videoUrl});
+}
+
+class CustomPageViewPhysics extends ScrollPhysics {
+  const CustomPageViewPhysics({ScrollPhysics? parent}) : super(parent: parent);
+
+  @override
+  CustomPageViewPhysics applyTo(ScrollPhysics? ancestor) {
+    return CustomPageViewPhysics(parent: buildParent(ancestor));
+  }
+
+  @override
+  double applyPhysicsToUserOffset(ScrollMetrics position, double offset) {
+    return offset;
+  }
+
+  @override
+  double applyBoundaryConditions(ScrollMetrics position, double value) {
+    return 0.0;
+  }
+
+  @override
+  Simulation? createBallisticSimulation(ScrollMetrics position, double velocity) {
+    return null;
+  }
 }
