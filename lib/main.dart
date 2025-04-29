@@ -14,7 +14,6 @@ import 'screens/onboarding_screen.dart';
 import 'screens/profile_screen.dart';
 import 'screens/search_screen.dart';
 import 'screens/splash_screen.dart';
-import 'screens/test_actions_screen.dart';
 import 'services/actions_service.dart';
 import 'services/auth_service.dart';
 import 'services/comments_service.dart';
@@ -115,7 +114,6 @@ class MyApp extends StatelessWidget {
           '/login': (context) => const LoginScreen(),
           '/auth': (context) => const AuthPromptScreen(),
           '/onboarding': (context) => const OnboardingScreen(),
-          '/test': (context) => const TestActionsScreen(),
         },
         builder: (context, child) {
           return Stack(
