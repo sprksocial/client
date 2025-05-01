@@ -58,36 +58,8 @@ class MediaManager {
       final file = await _cacheManager.getSingleFile(videoUrl);
       return file.path;
     } catch (e) {
-      print('Error caching video: $e');
+      debugPrint('Error caching video: $e');
       return null;
-    }
-  }
-
-  String _normalizeVideoUrl(String url) {
-    try {
-      // Handle relative URLs (starting with '/')
-      if (url.startsWith('/')) {
-        // Construct full URL for Bluesky videos
-        return 'https://bsky.app$url';
-      }
-
-      final uri = Uri.parse(url);
-
-      // For Bluesky videos, use the path as the cache key
-      if (uri.host.contains('bsky.app') || uri.host.contains('bluesky')) {
-        return uri.path;
-      }
-
-      // For Spark videos, ensure consistent URL format
-      if (uri.host.contains('sprk.so')) {
-        return Uri(scheme: uri.scheme, host: uri.host, path: uri.path).toString();
-      }
-
-      // For other URLs, use as is
-      return url;
-    } catch (e) {
-      print('Error normalizing URL: $e');
-      return url;
     }
   }
 
@@ -108,7 +80,7 @@ class MediaManager {
               file.deleteSync();
             }
           } catch (e) {
-            print('Error cleaning up cached video: $e');
+            debugPrint('Error cleaning up cached video: $e');
           }
         }
       } catch (e) {
@@ -173,7 +145,7 @@ class MediaManager {
         await controller.dispose();
       }
     } catch (e) {
-      print('Error preloading video at index $index: $e');
+      debugPrint('Error preloading video at index $index: $e');
       _failedPreloads.add(index);
       // Clean up placeholder on failure
       _preloadedVideos.remove(index);
@@ -200,7 +172,7 @@ class MediaManager {
             file.deleteSync();
           }
         } catch (e) {
-          print('Error cleaning up cached video: $e');
+          debugPrint('Error cleaning up cached video: $e');
         }
       }
     }
