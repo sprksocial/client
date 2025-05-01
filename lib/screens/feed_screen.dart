@@ -299,6 +299,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
                 Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
                   error,
                 ) {
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(
                     context,
                   ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
@@ -309,6 +310,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
                 Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
                   error,
                 ) {
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(
                     context,
                   ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
@@ -350,6 +352,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
                 Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
                   error,
                 ) {
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(
                     context,
                   ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
@@ -360,6 +363,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
                 Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
                   error,
                 ) {
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(
                     context,
                   ).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));

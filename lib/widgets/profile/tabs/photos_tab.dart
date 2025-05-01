@@ -147,12 +147,6 @@ class _PhotosTabState extends State<PhotosTab> with AutomaticKeepAliveClientMixi
     }
   }
 
-  void _onImageTap(int index) {
-    // For now, just display a simple message
-    // This can be enhanced later to show a full-screen image viewer
-    debugPrint('Image post clicked at index $index');
-  }
-
   void _openMediaViewer(int index, Map<String, dynamic> post, List<Map<String, dynamic>> allPosts) {
     // Convert all posts to FeedPost format
     final feedPosts =
