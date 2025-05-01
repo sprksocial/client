@@ -5,10 +5,9 @@ import 'package:provider/provider.dart';
 import '../../../models/feed_post.dart';
 import '../../../screens/feed_screen.dart';
 import '../../../services/auth_service.dart';
-import '../../../services/profile_service.dart';
-import '../../../widgets/video/video_item.dart';
-import '../../profile/profile_video_tile.dart';
 import '../../../services/feed_settings_service.dart';
+import '../../../services/profile_service.dart';
+import '../../profile/profile_video_tile.dart';
 
 class PhotosTab extends StatefulWidget {
   final String? did;
@@ -207,6 +206,7 @@ class _PhotosTabState extends State<PhotosTab> with AutomaticKeepAliveClientMixi
                 initialPosts: feedPosts,
                 initialIndex: index,
                 showBackButton: true,
+                isParentFeedVisible: true, // FeedScreen is immediately visible when pushed
               ),
             ),
         transitionsBuilder: (_, Animation<double> animation, __, Widget child) {
