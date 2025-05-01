@@ -137,29 +137,46 @@ class MediaManager {
       return; // Already loaded/preloading or failed before
     }
 
-    // Mark as preloading (even if not fully initialized yet)
-    // Use a placeholder controller initially
+    // Mark as preloading with a placeholder controller
     final placeholderController = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
     _preloadedVideos[index] = PreloadedVideo(controller: placeholderController, isInitialized: false, videoUrl: videoUrl);
 
     try {
-      final controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
-      await controller.initialize();
+      // Download and cache the video, returning a local file path if successful
+      final localPath = await _downloadAndCacheVideo(videoUrl);
 
-      if (_preloadedVideos.containsKey(index)) {
-        // Check if still relevant
-        await controller.setLooping(true);
-        await controller.setVolume(0.0); // Start muted until visible
-        _preloadedVideos[index] = PreloadedVideo(controller: controller, isInitialized: true, videoUrl: videoUrl);
-        // Don't auto-play here, let the widget handle it based on visibility
+      VideoPlayerController controller;
+      if (localPath != null) {
+        // Use the cached local file
+        controller = VideoPlayerController.file(File(localPath));
+        _localVideoPaths[index] = localPath;
       } else {
-        // If the index is no longer in _preloadedVideos (e.g., unloaded), dispose the controller
+        // Fallback to network URL
+        controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+      }
+
+      await controller.initialize();
+      await controller.setLooping(true);
+      // Mute until visible
+      await controller.setVolume(0.0);
+
+      // Only update if this index is still relevant
+      if (_preloadedVideos.containsKey(index)) {
+        _preloadedVideos[index] = PreloadedVideo(
+          controller: controller,
+          isInitialized: true,
+          videoUrl: videoUrl,
+          localPath: localPath,
+        );
+      } else {
+        // If no longer needed, dispose
         await controller.dispose();
       }
     } catch (e) {
-      print("Error preloading video at index $index: $e");
+      print('Error preloading video at index $index: $e');
       _failedPreloads.add(index);
-      _preloadedVideos.remove(index); // Remove placeholder on failure
+      // Clean up placeholder on failure
+      _preloadedVideos.remove(index);
     }
   }
 
