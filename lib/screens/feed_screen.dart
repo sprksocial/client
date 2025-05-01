@@ -10,7 +10,6 @@ import '../services/auth_service.dart';
 import '../services/feed_manager.dart';
 import '../services/feed_settings_service.dart';
 import '../services/media_manager.dart';
-
 import '../widgets/image/image_post_item.dart';
 import '../widgets/video/preloaded_video_item.dart';
 import '../widgets/video/video_item.dart';
@@ -27,7 +26,7 @@ class FeedScreen extends StatefulWidget {
   State<FeedScreen> createState() => _FeedScreenState();
 }
 
-class _FeedScreenState extends State<FeedScreen> {
+class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMixin<FeedScreen> {
   final PageController _pageController = PageController();
   final FeedManager _feedManager = FeedManager();
   final MediaManager _mediaManager = MediaManager();
@@ -36,6 +35,9 @@ class _FeedScreenState extends State<FeedScreen> {
   int _currentIndex = 0;
   bool _isLoading = true;
   String? _errorMessage;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -159,6 +161,8 @@ class _FeedScreenState extends State<FeedScreen> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     return Material(
       color: Colors.black,
       child: Stack(
