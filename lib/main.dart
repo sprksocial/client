@@ -162,34 +162,23 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  final List<Widget?> _screens = List.filled(5, null);
+  final List<Widget> _screens = [];
 
-  Widget _getScreen(int index, BuildContext context) {
-    if (_screens[index] != null) {
-      return _screens[index]!;
-    }
+  @override
+  void initState() {
+    super.initState();
+    _initializeScreens();
+  }
 
+  void _initializeScreens() {
     final authService = Provider.of<AuthService>(context, listen: false);
-
-    switch (index) {
-      case 0:
-        _screens[0] = const HomeScreen();
-        break;
-      case 1:
-        _screens[1] = const SearchScreen();
-        break;
-      case 2:
-        _screens[2] = const SizedBox.shrink();
-        break;
-      case 3:
-        _screens[3] = const MessagesScreen();
-        break;
-      case 4:
-        _screens[4] = ProfileScreen(key: Key(authService.session?.did ?? ''), did: authService.session?.did);
-        break;
-    }
-
-    return _screens[index]!;
+    _screens.addAll([
+      const HomeScreen(),
+      const SearchScreen(),
+      const SizedBox.shrink(), // Placeholder for index 2 (Create)
+      const MessagesScreen(),
+      ProfileScreen(key: Key(authService.session?.did ?? ''), did: authService.session?.did),
+    ]);
   }
 
   @override
@@ -198,7 +187,8 @@ class _MainScreenState extends State<MainScreen> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      body: _getScreen(navigationProvider.currentIndex, context),
+      // Use IndexedStack to keep screens alive
+      body: IndexedStack(index: navigationProvider.currentIndex, children: _screens),
       bottomNavigationBar: NavigationBarTheme(
         data: NavigationBarThemeData(
           indicatorColor: Colors.transparent,
@@ -213,7 +203,7 @@ class _MainScreenState extends State<MainScreen> {
           }),
         ),
         child: NavigationBar(
-          selectedIndex: navigationProvider.currentIndex == 2 ? 0 : navigationProvider.currentIndex,
+          selectedIndex: navigationProvider.currentIndex,
           onDestinationSelected: (index) {
             if (index == 2) {
               Navigator.of(
