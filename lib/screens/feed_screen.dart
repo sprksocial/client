@@ -19,8 +19,16 @@ class FeedScreen extends StatefulWidget {
   final List<FeedPost>? initialPosts;
   final int? initialIndex;
   final bool showBackButton;
+  final bool isParentFeedVisible;
 
-  const FeedScreen({super.key, required this.feedType, this.initialPosts, this.initialIndex, this.showBackButton = false});
+  const FeedScreen({
+    super.key,
+    required this.feedType,
+    this.initialPosts,
+    this.initialIndex,
+    this.showBackButton = false,
+    required this.isParentFeedVisible,
+  });
 
   @override
   State<FeedScreen> createState() => _FeedScreenState();
@@ -35,6 +43,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
   int _currentIndex = 0;
   bool _isLoading = true;
   String? _errorMessage;
+  bool _wasPlayingBeforePause = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -43,6 +52,23 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
   void initState() {
     super.initState();
     _initializeScreen();
+  }
+
+  @override
+  void didUpdateWidget(FeedScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isParentFeedVisible != widget.isParentFeedVisible) {
+      if (!widget.isParentFeedVisible) {
+        final controller = _mediaManager.getPreloadedVideo(_currentIndex)?.controller;
+        _wasPlayingBeforePause = controller?.value.isPlaying ?? false;
+        _mediaManager.pauseVideo(_currentIndex);
+      } else {
+        if (_wasPlayingBeforePause) {
+          _mediaManager.resumeVideo(_currentIndex);
+        }
+        _wasPlayingBeforePause = false;
+      }
+    }
   }
 
   Future<void> _initializeScreen() async {
@@ -73,14 +99,14 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
   Future<void> _fetchFeed() async {
     if (!mounted) return;
 
+    _mediaManager.pauseVideo(_currentIndex);
+
     try {
       setState(() {
         _isLoading = true;
         _errorMessage = null;
         _currentIndex = 0;
       });
-
-      _mediaManager.clearAllMedia();
 
       final authService = context.read<AuthService>();
       final posts = await _feedManager.fetchFeed(widget.feedType, authService);
@@ -133,11 +159,10 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
 
     final post = _feedPosts![index];
     if (post.videoUrl != null) {
-      // Force preload for the first video
       if (index == 0) {
         await _mediaManager.preloadMedia(index, post.videoUrl, post.imageUrls, context);
         if (mounted) {
-          setState(() {}); // Trigger rebuild to show preloaded video
+          setState(() {});
         }
       } else {
         _mediaManager.preloadMedia(index, post.videoUrl, post.imageUrls, context);
@@ -150,10 +175,8 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
   Future<void> _preloadInitialMedia() async {
     if (_feedPosts == null || _feedPosts!.isEmpty) return;
 
-    // Preload the first video immediately
     await _preloadMedia(0);
 
-    // Preload next videos in the background
     for (int i = 1; i <= 5 && i < _feedPosts!.length; i++) {
       _preloadMedia(i);
     }
@@ -163,11 +186,15 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
   Widget build(BuildContext context) {
     super.build(context);
 
+    // Optimization: Check if feed posts are available and parent is visible
+    // before building the PageView. Reduces build calls when hidden.
+    bool canBuildPageView = _feedPosts != null && _feedPosts!.isNotEmpty && !_isLoading && _errorMessage == null;
+
     return Material(
       color: Colors.black,
       child: Stack(
         children: [
-          _buildMainContent(),
+          _buildMainContent(canBuildPageView),
           if (widget.showBackButton)
             Positioned(
               top: MediaQuery.of(context).padding.top + 10,
@@ -182,7 +209,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
     );
   }
 
-  Widget _buildMainContent() {
+  Widget _buildMainContent(bool canBuildPageView) {
     return SizedBox(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
@@ -193,7 +220,9 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
               ? Center(child: Text('Error: $_errorMessage', style: const TextStyle(color: Colors.white)))
               : _feedPosts == null || _feedPosts!.isEmpty
               ? const Center(child: Text('No media available', style: TextStyle(color: Colors.white)))
-              : _buildFeedPageView(),
+              : canBuildPageView
+              ? _buildFeedPageView()
+              : const SizedBox.shrink(),
     );
   }
 
@@ -204,9 +233,12 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
     return PageView.builder(
       controller: _pageController,
       scrollDirection: Axis.vertical,
+      physics: widget.isParentFeedVisible ? const PageScrollPhysics() : const NeverScrollableScrollPhysics(),
       itemCount: _feedPosts?.length ?? 0,
       onPageChanged: (newIndex) {
         if (_currentIndex != newIndex) {
+          _mediaManager.pauseVideo(_currentIndex);
+
           setState(() {
             _mediaManager.updateLoadedMedia(newIndex, _currentIndex, _feedPosts?.length ?? 0);
             _currentIndex = newIndex;
@@ -233,6 +265,8 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
         final post = _feedPosts![index];
         final isLiked = post.isLiked;
 
+        final bool isItemActuallyVisible = (index == _currentIndex) && widget.isParentFeedVisible;
+
         if (post.videoUrl != null) {
           final isPreloaded = _mediaManager.isVideoPreloaded(index);
           final preloadedVideo = _mediaManager.getPreloadedVideo(index);
@@ -242,6 +276,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
               key: ValueKey('video_$index'),
               index: index,
               controller: preloadedVideo.controller,
+              isVisible: isItemActuallyVisible,
               username: post.username,
               description: post.description,
               hashtags: post.hashtags,
@@ -251,7 +286,6 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
               shareCount: post.shareCount,
               profileImageUrl: post.profileImageUrl,
               authorDid: post.authorDid,
-              isVisible: index == _currentIndex,
               isLiked: isLiked,
               isSprk: post.isSprk,
               postUri: post.uri,
@@ -294,6 +328,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
               videoAlt: post.videoAlt,
               preloadedController: isPreloaded ? preloadedVideo?.controller : null,
               localVideoPath: isPreloaded ? _mediaManager.getLocalVideoPath(index) : null,
+              isVisible: isItemActuallyVisible,
               username: post.username,
               description: post.description,
               hashtags: post.hashtags,
@@ -343,6 +378,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
             index: index,
             imageUrls: post.imageUrls,
             imageAlts: post.imageAlts,
+            isVisible: isItemActuallyVisible,
             username: post.username,
             description: post.description,
             hashtags: post.hashtags,
@@ -356,8 +392,6 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
             isSprk: post.isSprk,
             postUri: post.uri,
             postCid: post.cid,
-            isVisible: index == _currentIndex,
-            disableBackgroundBlur: disableBackgroundBlur,
             onLikePressed: () => _handleLikePress(post),
             onBookmarkPressed: () {},
             onSharePressed: () {},

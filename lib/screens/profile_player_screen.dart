@@ -133,6 +133,7 @@ class _ProfilePlayerScreenState extends State<ProfilePlayerScreen> {
       key: ValueKey('video_item_$index'),
       index: index,
       videoUrl: videoUrl,
+      isVisible: index == _currentIndex,
       username: postData.username,
       description: postData.description,
       hashtags: postData.hashtags,

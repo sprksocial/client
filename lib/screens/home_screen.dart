@@ -1,7 +1,9 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import '../services/feed_settings_service.dart';
 import '../utils/app_colors.dart';
@@ -22,6 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedTabIndex = 0;
   List<FeedOption> _currentFeedOptions = [];
   List<Widget> _feedScreens = [];
+  bool _isHomeScreenVisible = true;
 
   @override
   void initState() {
@@ -43,12 +46,12 @@ class _HomeScreenState extends State<HomeScreen> {
       final oldSelectedFeedType = _currentFeedOptions.isNotEmpty ? _currentFeedOptions[_selectedTabIndex].value : -1;
       _buildFeedScreens();
       final newIndex = _currentFeedOptions.indexWhere((option) => option.value == oldSelectedFeedType);
+
+      int targetIndex = (newIndex != -1) ? newIndex : (_currentFeedOptions.isNotEmpty ? 0 : -1);
+
       setState(() {
-        // If the previously selected feed still exists, keep its index.
-        // Otherwise, default to the first available feed.
-        _selectedTabIndex = (newIndex != -1) ? newIndex : 0;
-        // Jump controller to the new index without animation if the page count changed
-        if (_pageController.hasClients) {
+        _selectedTabIndex = targetIndex;
+        if (_pageController.hasClients && targetIndex != -1) {
           _pageController.jumpToPage(_selectedTabIndex);
         }
       });
@@ -57,16 +60,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _initializeScreen() async {
     await _feedSettings.loadPreferences();
-    _buildFeedScreens(); // Build screens after loading preferences
+    _buildFeedScreens();
     _pageController.addListener(_onPageChanged);
 
-    // Initialize selected tab index and ensure page controller is at the correct position
     _selectedTabIndex = _currentFeedOptions.indexWhere((option) => option.value == _feedSettings.selectedFeedType);
     if (_selectedTabIndex == -1 && _currentFeedOptions.isNotEmpty) {
-      _selectedTabIndex = 0; // Fallback to first tab if not found or no options
+      _selectedTabIndex = 0;
     }
 
-    // Ensure page controller is at the correct position
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_pageController.hasClients) {
         _pageController.jumpToPage(_selectedTabIndex);
@@ -78,9 +79,6 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_pageController.page == null) return;
     final currentPage = _pageController.page!.round();
     if (currentPage < _currentFeedOptions.length && currentPage != _selectedTabIndex) {
-      setState(() {
-        _selectedTabIndex = currentPage;
-      });
       _feedSettings.setSelectedFeedType(_currentFeedOptions[currentPage].value);
     }
   }
@@ -90,64 +88,83 @@ class _HomeScreenState extends State<HomeScreen> {
     final topPadding = MediaQuery.of(context).padding.top;
     final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: Stack(children: [_buildMainContent(), _buildTopBar(topPadding, isDarkMode, _currentFeedOptions)]),
+    return VisibilityDetector(
+      key: const Key('home_screen_visibility'),
+      onVisibilityChanged: (visibilityInfo) {
+        final isVisible = visibilityInfo.visibleFraction > 0;
+        if (_isHomeScreenVisible != isVisible) {
+          setState(() {
+            _isHomeScreenVisible = isVisible;
+            _buildFeedScreens();
+          });
+        }
+      },
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(children: [_buildMainContent(), _buildTopBar(topPadding, isDarkMode, _currentFeedOptions)]),
+      ),
     );
   }
 
   void _buildFeedScreens() {
     final options = <FeedOption>[];
     final screens = <Widget>[];
+    int feedIndex = 0;
 
     if (_feedSettings.followingFeedEnabled) {
+      final bool isVisible = _isHomeScreenVisible && (_selectedTabIndex == feedIndex);
       options.add(const FeedOption(label: 'Following', value: 0));
       screens.add(
         ChangeNotifierProvider<FeedSettingsService>.value(
           key: const ValueKey('feed_0'),
           value: _feedSettings,
-          child: const FeedScreen(feedType: 0),
+          child: FeedScreen(feedType: 0, isParentFeedVisible: isVisible),
         ),
       );
+      feedIndex++;
     }
 
     if (_feedSettings.forYouFeedEnabled) {
+      final bool isVisible = _isHomeScreenVisible && (_selectedTabIndex == feedIndex);
       options.add(const FeedOption(label: 'For You', value: 1));
       screens.add(
         ChangeNotifierProvider<FeedSettingsService>.value(
           key: const ValueKey('feed_1'),
           value: _feedSettings,
-          child: const FeedScreen(feedType: 1),
+          child: FeedScreen(feedType: 1, isParentFeedVisible: isVisible),
         ),
       );
+      feedIndex++;
     }
 
     if (_feedSettings.latestFeedEnabled) {
+      final bool isVisible = _isHomeScreenVisible && (_selectedTabIndex == feedIndex);
       options.add(const FeedOption(label: 'Latest', value: 2));
       screens.add(
         ChangeNotifierProvider<FeedSettingsService>.value(
           key: const ValueKey('feed_2'),
           value: _feedSettings,
-          child: const FeedScreen(feedType: 2),
+          child: FeedScreen(feedType: 2, isParentFeedVisible: isVisible),
         ),
       );
+      feedIndex++;
     }
 
-    // Update the state variables
     _currentFeedOptions = options;
-    _feedScreens = screens;
+    if (!listEquals(_feedScreens, screens)) {
+      _feedScreens = screens;
+    }
   }
 
   Widget _buildMainContent() {
-    // Use PageView with the pre-built list of screens
     return PageView(
       controller: _pageController,
       children: _feedScreens,
       onPageChanged: (index) {
-        // Directly update state and settings here
         if (index < _currentFeedOptions.length) {
           setState(() {
             _selectedTabIndex = index;
+            _buildFeedScreens();
           });
           _feedSettings.setSelectedFeedType(_currentFeedOptions[index].value);
         }
@@ -175,10 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       feedOptions.isNotEmpty
                           ? FeedSelector(
                             options: feedOptions,
-                            selectedValue:
-                                feedOptions.isNotEmpty
-                                    ? feedOptions[_selectedTabIndex].value
-                                    : 0, // Ensure selectedValue is valid
+                            selectedValue: feedOptions.isNotEmpty ? feedOptions[_selectedTabIndex].value : 0,
                             onOptionSelected: _onFeedSelected,
                           )
                           : const SizedBox(),
@@ -200,11 +214,15 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _onFeedSelected(int value) async {
     final index = _currentFeedOptions.indexWhere((option) => option.value == value);
     if (index != -1 && index != _selectedTabIndex) {
-      // Animate to the selected page
+      setState(() {
+        _selectedTabIndex = index;
+      });
+      _buildFeedScreens();
+
       if (_pageController.hasClients) {
         await _pageController.animateToPage(index, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
       }
-      // The onPageChanged listener will handle updating the state and settings
+      await _feedSettings.setSelectedFeedType(value);
     }
   }
 
@@ -254,13 +272,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     await _feedSettings.toggleFeed(settingType, isEnabled);
 
-    if (mounted) {
-      setState(() {});
-
-      if (!isEnabled && _feedSettings.getFeedTypeFromSetting(settingType) == _feedSettings.selectedFeedType) {
-        _pageController.jumpToPage(0);
-      }
-    }
+    _onFeedSettingsChanged();
   }
 }
 
