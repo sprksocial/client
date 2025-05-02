@@ -396,6 +396,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
             isSprk: post.isSprk,
             postUri: post.uri,
             postCid: post.cid,
+            disableBackgroundBlur: disableBackgroundBlur,
             onLikePressed: () => _handleLikePress(post),
             onBookmarkPressed: () {},
             onSharePressed: () {},
