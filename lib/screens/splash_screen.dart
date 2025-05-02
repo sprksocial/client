@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:video_player/video_player.dart';
 
 import '../services/auth_service.dart';
 import '../services/onboarding_service.dart';
@@ -15,37 +14,31 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  late VideoPlayerController _videoController;
-  bool _isVideoInitialized = false;
+  final AssetImage _introImage = const AssetImage('assets/branding/intro.webp');
+  bool _isImageLoaded = false;
 
   @override
   void initState() {
     super.initState();
-
-    _videoController =
-        VideoPlayerController.asset('assets/branding/intro.mp4')
-          ..setVolume(0.0) // Mute the audio
-          ..setLooping(true) // Optional: loop the video if authentication takes time
-          ..initialize().then((_) {
-            setState(() {
-              _isVideoInitialized = true;
-            });
-            _videoController.play();
-          });
-
     _checkAuthentication();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_isImageLoaded) {
+      precacheImage(_introImage, context).then((_) {
+        if (!mounted) return;
+        setState(() => _isImageLoaded = true);
+      });
+    }
+  }
+
   Future<void> _checkAuthentication() async {
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (!mounted) return;
-
     final authService = Provider.of<AuthService>(context, listen: false);
 
     while (authService.isLoading) {
-      await Future.delayed(const Duration(milliseconds: 100));
-      if (!mounted) return;
+      await Future.delayed(const Duration(milliseconds: 10));
     }
 
     final bool isSessionValid = await authService.validateSession();
@@ -64,29 +57,12 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
-  void dispose() {
-    _videoController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return Scaffold(backgroundColor: Colors.black, body: _isVideoInitialized ? _buildVideoPlayer() : _buildLoadingIndicator());
+    return Scaffold(backgroundColor: Colors.black, body: _isImageLoaded ? _buildIntroImage() : _buildLoadingIndicator());
   }
 
-  Widget _buildVideoPlayer() {
-    final videoSize = _videoController.value.size;
-
-    return SizedBox.expand(
-      child: FittedBox(
-        fit: BoxFit.cover, // This ensures the video covers the whole screen
-        child: SizedBox(
-          width: videoSize.width,
-          height: videoSize.height,
-          child: AspectRatio(aspectRatio: _videoController.value.aspectRatio, child: VideoPlayer(_videoController)),
-        ),
-      ),
-    );
+  Widget _buildIntroImage() {
+    return SizedBox.expand(child: Image(image: _introImage, fit: BoxFit.cover));
   }
 
   Widget _buildLoadingIndicator() {

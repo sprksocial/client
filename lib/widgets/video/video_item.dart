@@ -1,29 +1,26 @@
 import 'dart:developer';
+import 'dart:io';
 import 'dart:ui'; // For ImageFilter
+
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:visibility_detector/visibility_detector.dart';
-import 'dart:io';
 
-import '../../main.dart';
 import '../../utils/app_colors.dart';
 import 'video_player_base.dart';
 
 class VideoItem extends VideoPlayerBase {
-  @override
-  final String? videoUrl;
-  @override
-  final String? videoAlt;
   final VideoPlayerController? preloadedController;
   final String? localVideoPath;
+  final bool isVisible;
 
   const VideoItem({
     super.key,
     required super.index,
-    required this.videoUrl,
-    this.videoAlt,
+    required super.videoUrl,
+    super.videoAlt,
     this.preloadedController,
     this.localVideoPath,
+    required this.isVisible,
     super.username = '',
     super.description = '',
     super.hashtags = const [],
@@ -51,11 +48,9 @@ class VideoItem extends VideoPlayerBase {
   State<VideoItem> createState() => _VideoItemState();
 }
 
-class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware {
+class _VideoItemState extends VideoPlayerBaseState<VideoItem> {
   VideoPlayerController? _controller;
   bool _isInitialized = false;
-  bool _isVisible = false;
-  final String _videoKey = UniqueKey().toString();
 
   @override
   VideoPlayerController? get videoController => _controller;
@@ -64,7 +59,7 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware {
   bool get isInitialized => _isInitialized && _controller != null;
 
   @override
-  bool get isVisible => _isVisible;
+  bool get isVisible => widget.isVisible;
 
   @override
   void initState() {
@@ -73,118 +68,106 @@ class _VideoItemState extends VideoPlayerBaseState<VideoItem> with RouteAware {
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    ModalRoute<void>? route = ModalRoute.of(context);
-    if (route != null) {
-      routeObserver.subscribe(this, route);
+  void didUpdateWidget(VideoItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isVisible != widget.isVisible) {
+      _updatePlayState();
+    }
+    if (oldWidget.preloadedController != widget.preloadedController ||
+        oldWidget.videoUrl != widget.videoUrl ||
+        oldWidget.localVideoPath != widget.localVideoPath) {
+      _initializeVideoPlayer();
     }
   }
 
   @override
   void dispose() {
-    routeObserver.unsubscribe(this);
-    if (_controller != widget.preloadedController) {
-      _controller?.dispose();
+    if (_controller != null && _controller != widget.preloadedController) {
+      _controller!.dispose();
     }
     super.dispose();
   }
 
-  @override
-  void didPushNext() {
-    pauseMedia();
-  }
-
-  @override
-  void didPopNext() {
-    if (_isVisible && isInitialized) {
-      playMedia();
-    }
-  }
-
   Future<void> _initializeVideoPlayer() async {
-    if (widget.videoUrl == null && widget.localVideoPath == null) return;
+    if (_controller != null && _controller != widget.preloadedController) {
+      await _controller!.dispose();
+      _controller = null;
+      _isInitialized = false;
+    }
+
+    if (widget.videoUrl == null && widget.localVideoPath == null) {
+      setStateIfMounted(() {});
+      return;
+    }
+
+    bool controllerNeedsInit = false;
 
     if (widget.preloadedController != null) {
       _controller = widget.preloadedController;
-      if (_controller!.value.isInitialized) {
-        setState(() {
-          _isInitialized = true;
-        });
-        if (_isVisible) {
-          playMedia();
-        }
-        return;
+      _isInitialized = _controller!.value.isInitialized;
+      if (!_isInitialized) {
+        debugPrint("VideoItem received uninitialized preloaded controller for index ${widget.index}");
       }
-    }
-
-    if (widget.localVideoPath != null) {
+    } else if (widget.localVideoPath != null) {
       try {
         _controller = VideoPlayerController.file(File(widget.localVideoPath!));
-        await _controller?.initialize();
-
-        if (!mounted) return;
-
-        _controller?.setLooping(true);
-        setState(() {
-          _isInitialized = true;
-        });
-
-        if (_isVisible) {
-          playMedia();
-        }
-        return;
+        controllerNeedsInit = true;
       } catch (e) {
-        log('Failed to load local video: $e');
+        log('Failed to create local video controller: $e');
+        _controller = null;
+      }
+    } else if (widget.videoUrl != null) {
+      try {
+        _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
+        controllerNeedsInit = true;
+      } catch (e) {
+        log('Failed to create network video controller: $e');
+        _controller = null;
       }
     }
 
-    if (widget.videoUrl != null) {
-      _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl!));
-      await _controller?.initialize();
-
-      if (!mounted) return;
-
-      _controller?.setLooping(true);
-      setState(() {
+    if (_controller != null && controllerNeedsInit) {
+      try {
+        await _controller!.initialize();
         _isInitialized = true;
-      });
-
-      if (_isVisible) {
-        playMedia();
+        _controller!.setLooping(true);
+      } catch (e) {
+        log('Failed to initialize video controller for index ${widget.index}: $e');
+        _isInitialized = false;
+        await _controller?.dispose();
+        _controller = null;
       }
+    }
+
+    setStateIfMounted(() {});
+    _updatePlayState();
+  }
+
+  void _updatePlayState() {
+    if (!mounted || !_isInitialized || _controller == null) return;
+
+    if (widget.isVisible) {
+      playMedia();
+    } else {
+      pauseMedia();
     }
   }
 
-  void _onVisibilityChanged(VisibilityInfo info) {
-    final visible = info.visibleFraction > 0.8;
-    if (!mounted || visible == _isVisible) return;
-
-    setState(() {
-      _isVisible = visible;
-    });
-
-    if (_isInitialized) {
-      if (_isVisible) {
-        playMedia();
-      } else {
-        pauseMedia();
-      }
+  void setStateIfMounted(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return VisibilityDetector(
-      key: Key(_videoKey),
-      onVisibilityChanged: _onVisibilityChanged,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          super.build(context),
-          if (widget.videoUrl != null && !_isInitialized) const Center(child: CircularProgressIndicator(color: AppColors.white)),
-        ],
-      ),
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        super.build(context),
+        if (widget.videoUrl != null && widget.localVideoPath == null && widget.preloadedController == null && !_isInitialized)
+          const Center(child: CircularProgressIndicator(color: AppColors.white)),
+      ],
     );
   }
 
