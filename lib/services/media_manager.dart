@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'dart:async';
 import 'dart:io';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'dart:math';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:video_player/video_player.dart';
 
 class PreloadedVideo {
   final VideoPlayerController controller;
@@ -20,10 +20,6 @@ class PreloadedVideo {
 }
 
 class MediaManager {
-  static final MediaManager _instance = MediaManager._internal();
-  factory MediaManager() => _instance;
-  MediaManager._internal();
-
   // Pre-initialized VideoPlayerControllers mapped by index
   final Map<int, PreloadedVideo> _preloadedVideos = {};
 
@@ -35,6 +31,11 @@ class MediaManager {
 
   // Cache manager for videos
   final DefaultCacheManager _cacheManager = DefaultCacheManager();
+
+  final Set<int> _failedPreloads = {};
+  final int _maxPreloadAhead = 5;
+  final int _maxPreloadBehind = 2;
+  final int _maxLoadedVideos = 10; // Max controllers to keep loaded
 
   Future<String?> _downloadAndCacheVideo(String videoUrl) async {
     try {
@@ -57,36 +58,8 @@ class MediaManager {
       final file = await _cacheManager.getSingleFile(videoUrl);
       return file.path;
     } catch (e) {
-      print('Error caching video: $e');
+      debugPrint('Error caching video: $e');
       return null;
-    }
-  }
-
-  String _normalizeVideoUrl(String url) {
-    try {
-      // Handle relative URLs (starting with '/')
-      if (url.startsWith('/')) {
-        // Construct full URL for Bluesky videos
-        return 'https://bsky.app$url';
-      }
-
-      final uri = Uri.parse(url);
-
-      // For Bluesky videos, use the path as the cache key
-      if (uri.host.contains('bsky.app') || uri.host.contains('bluesky')) {
-        return uri.path;
-      }
-
-      // For Spark videos, ensure consistent URL format
-      if (uri.host.contains('sprk.so')) {
-        return Uri(scheme: uri.scheme, host: uri.host, path: uri.path).toString();
-      }
-
-      // For other URLs, use as is
-      return url;
-    } catch (e) {
-      print('Error normalizing URL: $e');
-      return url;
     }
   }
 
@@ -107,7 +80,7 @@ class MediaManager {
               file.deleteSync();
             }
           } catch (e) {
-            print('Error cleaning up cached video: $e');
+            debugPrint('Error cleaning up cached video: $e');
           }
         }
       } catch (e) {
@@ -117,6 +90,7 @@ class MediaManager {
     _preloadedVideos.clear();
     _preloadedImageUrls.clear();
     _localVideoPaths.clear();
+    _failedPreloads.clear();
 
     // Clear the cache manager's cache
     _cacheManager.emptyCache();
@@ -126,101 +100,61 @@ class MediaManager {
     if (videoUrl != null) {
       await _preloadVideo(index, videoUrl);
     } else if (imageUrls.isNotEmpty) {
-      _preloadImages(imageUrls, context);
+      _preloadImages(index, imageUrls, context);
     }
   }
 
   Future<void> _preloadVideo(int index, String videoUrl) async {
-    // Skip if already preloaded with the same URL
-    if (_preloadedVideos.containsKey(index)) {
-      if (_preloadedVideos[index]!.videoUrl == videoUrl) {
-        return;
-      }
-
-      // If URL changed, dispose old controller first
-      try {
-        _preloadedVideos[index]!.dispose();
-      } catch (e) {
-        // Silently handle any disposal errors
-      }
-      _preloadedVideos.remove(index);
+    if (_preloadedVideos.containsKey(index) || _failedPreloads.contains(index)) {
+      return; // Already loaded/preloading or failed before
     }
 
-    // Try to download and cache the video
-    final localPath = await _downloadAndCacheVideo(videoUrl);
-    VideoPlayerController controller;
+    // Mark as preloading with a placeholder controller
+    final placeholderController = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+    _preloadedVideos[index] = PreloadedVideo(controller: placeholderController, isInitialized: false, videoUrl: videoUrl);
 
     try {
+      // Download and cache the video, returning a local file path if successful
+      final localPath = await _downloadAndCacheVideo(videoUrl);
+
+      VideoPlayerController controller;
       if (localPath != null) {
-        // Always use local file if available
+        // Use the cached local file
         controller = VideoPlayerController.file(File(localPath));
+        _localVideoPaths[index] = localPath;
       } else {
-        // Fall back to network only if caching fails
+        // Fallback to network URL
         controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
       }
 
-      // Register it as non-initialized first
-      _preloadedVideos[index] = PreloadedVideo(
-        controller: controller,
-        isInitialized: false,
-        videoUrl: videoUrl,
-        localPath: localPath,
-      );
-
-      // Set video to loop automatically
-      controller.setLooping(true);
-
-      // Set volume to zero initially
+      await controller.initialize();
+      await controller.setLooping(true);
+      // Mute until visible
       await controller.setVolume(0.0);
 
-      // Try to initialize
-      await controller.initialize();
-
-      // Only proceed if video is still needed and the URL hasn't changed
-      if (_preloadedVideos.containsKey(index) && _preloadedVideos[index]!.videoUrl == videoUrl) {
-        // Update the preloaded status
+      // Only update if this index is still relevant
+      if (_preloadedVideos.containsKey(index)) {
         _preloadedVideos[index] = PreloadedVideo(
           controller: controller,
           isInitialized: true,
           videoUrl: videoUrl,
           localPath: localPath,
         );
-
-        // Set playback speed to 1.0 (normal)
-        await controller.setPlaybackSpeed(1.0);
-
-        // Store the local path
-        if (localPath != null) {
-          _localVideoPaths[index] = localPath;
-        }
       } else {
-        // If this video is no longer needed or URL changed, dispose it
-        try {
-          controller.dispose();
-        } catch (e) {
-          // Silently handle any disposal errors
-        }
+        // If no longer needed, dispose
+        await controller.dispose();
       }
     } catch (e) {
-      print('Error preloading video: $e');
-      // Clean up if there was an error
-      if (_preloadedVideos.containsKey(index)) {
-        try {
-          _preloadedVideos[index]!.dispose();
-        } catch (disposeError) {
-          // Silently handle any disposal errors
-        }
-        _preloadedVideos.remove(index);
-      }
+      debugPrint('Error preloading video at index $index: $e');
+      _failedPreloads.add(index);
+      // Clean up placeholder on failure
+      _preloadedVideos.remove(index);
     }
   }
 
-  void _preloadImages(List<String> urls, BuildContext context) {
-    for (final url in urls) {
-      if (!_preloadedImageUrls.contains(url)) {
-        _preloadedImageUrls.add(url);
-        precacheImage(CachedNetworkImageProvider(url), context);
-      }
+  void _preloadImages(int index, List<String> imageUrls, BuildContext context) {
+    for (final url in imageUrls) {
+      precacheImage(NetworkImage(url), context);
     }
   }
 
@@ -238,55 +172,41 @@ class MediaManager {
             file.deleteSync();
           }
         } catch (e) {
-          print('Error cleaning up cached video: $e');
+          debugPrint('Error cleaning up cached video: $e');
         }
       }
     }
   }
 
-  void updateLoadedMedia(int newIndex, int currentIndex, int totalItems) {
-    if (newIndex != currentIndex) {
-      // Handle video playback for the current and previous video
-      if (_preloadedVideos.containsKey(currentIndex)) {
-        try {
-          // Mute and pause the previously playing video
-          _preloadedVideos[currentIndex]!.controller.setVolume(0.0);
-          _preloadedVideos[currentIndex]!.controller.pause();
-        } catch (e) {
-          // If there's an issue with the controller, clean it up
-          unloadVideo(currentIndex);
-        }
-      }
+  void updateLoadedMedia(int newIndex, int oldIndex, int totalPosts) {
+    final Set<int> indicesToKeep = {};
+    for (int i = max(0, newIndex - _maxPreloadBehind); i <= min(totalPosts - 1, newIndex + _maxPreloadAhead); i++) {
+      indicesToKeep.add(i);
+    }
 
-      if (_preloadedVideos.containsKey(newIndex)) {
-        try {
-          // Set volume and play the current video
-          _preloadedVideos[newIndex]!.controller.setVolume(1.0);
-          _preloadedVideos[newIndex]!.controller.play();
-        } catch (e) {
-          // If there's an issue with the controller, clean it up
-          unloadVideo(newIndex);
-        }
-      }
+    // Add currently playing video if it's outside the range (less likely but possible)
+    indicesToKeep.add(newIndex);
 
-      // Use a wider preloading range - 5 before and 5 after
-      final toLoad = <int>{};
+    // Unload videos outside the keep range
+    final indicesToUnload = _preloadedVideos.keys.where((idx) => !indicesToKeep.contains(idx)).toList();
+    for (final index in indicesToUnload) {
+      unloadVideo(index);
+    }
 
-      // Add 5 previous and 5 next items
-      for (int i = newIndex - 5; i <= newIndex + 5; i++) {
-        toLoad.add(i);
-      }
+    // Limit total loaded videos if necessary (unload furthest first)
+    if (_preloadedVideos.length > _maxLoadedVideos) {
+      _unloadFurthestVideos(newIndex);
+    }
+  }
 
-      // Remove indices that are out of bounds
-      final validToLoad = toLoad.where((idx) => idx >= 0 && idx < totalItems).toSet();
+  void _unloadFurthestVideos(int currentIndex) {
+    final loadedIndices = _preloadedVideos.keys.toList();
+    loadedIndices.sort((a, b) => (a - currentIndex).abs().compareTo((b - currentIndex).abs())); // Sort by distance
 
-      // Find videos to unload (current loaded videos that aren't in the new set)
-      final toUnload = _preloadedVideos.keys.toSet().difference(validToLoad);
-
-      // Unload videos no longer needed
-      for (final idx in toUnload) {
-        unloadVideo(idx);
-      }
+    // Keep the closest _maxLoadedVideos
+    final indicesToUnload = loadedIndices.sublist(min(_maxLoadedVideos, loadedIndices.length));
+    for (final index in indicesToUnload) {
+      unloadVideo(index);
     }
   }
 
@@ -300,5 +220,31 @@ class MediaManager {
 
   String? getLocalVideoPath(int index) {
     return _localVideoPaths[index];
+  }
+
+  Future<void> pauseVideo(int index) async {
+    final controller = _getVideoController(index);
+    if (controller != null && controller.value.isInitialized && controller.value.isPlaying) {
+      try {
+        await controller.pause();
+      } catch (e) {
+        debugPrint("Error pausing video at index $index: $e");
+      }
+    }
+  }
+
+  Future<void> resumeVideo(int index) async {
+    final controller = _getVideoController(index);
+    if (controller != null && controller.value.isInitialized && !controller.value.isPlaying) {
+      try {
+        await controller.play();
+      } catch (e) {
+        debugPrint("Error resuming video at index $index: $e");
+      }
+    }
+  }
+
+  VideoPlayerController? _getVideoController(int index) {
+    return _preloadedVideos[index]?.controller;
   }
 }
