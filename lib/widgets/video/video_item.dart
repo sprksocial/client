@@ -9,10 +9,6 @@ import '../../utils/app_colors.dart';
 import 'video_player_base.dart';
 
 class VideoItem extends VideoPlayerBase {
-  @override
-  final String? videoUrl;
-  @override
-  final String? videoAlt;
   final VideoPlayerController? preloadedController;
   final String? localVideoPath;
   final bool isVisible;
@@ -20,8 +16,8 @@ class VideoItem extends VideoPlayerBase {
   const VideoItem({
     super.key,
     required super.index,
-    required this.videoUrl,
-    this.videoAlt,
+    required super.videoUrl,
+    super.videoAlt,
     this.preloadedController,
     this.localVideoPath,
     required this.isVisible,
