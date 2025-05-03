@@ -35,6 +35,8 @@ class CommentItem extends StatefulWidget {
   final String? profileImageUrl;
   final String authorDid;
   final Function()? onCommentDeleted;
+  final bool isLiked;
+  final VoidCallback? onLikePressed;
 
   const CommentItem({
     super.key,
@@ -57,6 +59,8 @@ class CommentItem extends StatefulWidget {
     this.profileImageUrl,
     required this.authorDid,
     this.onCommentDeleted,
+    this.isLiked = false,
+    this.onLikePressed,
   });
 
   @override
@@ -73,6 +77,7 @@ class _CommentItemState extends State<CommentItem> {
   @override
   void initState() {
     super.initState();
+    _isLiked = widget.isLiked;
     if (widget.hasMedia && widget.mediaType == 'video' && widget.mediaUrl != null) {
       _initializeVideoPlayer();
     }
@@ -84,6 +89,16 @@ class _CommentItemState extends State<CommentItem> {
     if (widget.imageUrls.isNotEmpty && !_isFirstImagePrecached) {
       _preloadFirstImage();
       _isFirstImagePrecached = true;
+    }
+  }
+
+  @override
+  void didUpdateWidget(CommentItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isLiked != widget.isLiked) {
+      setState(() {
+        _isLiked = widget.isLiked;
+      });
     }
   }
 
@@ -113,6 +128,9 @@ class _CommentItemState extends State<CommentItem> {
     setState(() {
       _isLiked = !_isLiked;
     });
+    if (widget.onLikePressed != null) {
+      widget.onLikePressed!();
+    }
   }
 
   void _toggleReplies() {

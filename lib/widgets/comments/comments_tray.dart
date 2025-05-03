@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/comment.dart';
 import '../../services/comments_service.dart';
+import '../../services/actions_service.dart';
 import '../../utils/app_colors.dart';
 import 'comment_input.dart';
 import 'comment_item.dart';
@@ -213,7 +214,35 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     });
 
     // Refresh comments after a new comment is posted
-    _loadComments();
+    _loadComments().then((_) {
+      // Scroll to the bottom after comments are loaded
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToBottom();
+      });
+    });
+  }
+
+  Future<void> _handleLike(Comment comment) async {
+    try {
+      final actionsService = Provider.of<ActionsService>(context, listen: false);
+
+      if (comment.isLiked) {
+        // Unlike the comment
+        await actionsService.unlikePost(comment.likeUri!);
+      } else {
+        // Like the comment
+        await actionsService.likePost(comment.cid, comment.uri);
+      }
+
+      // Refresh comments to update like status
+      await _loadComments();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to ${comment.isLiked ? 'unlike' : 'like'} comment: $e')));
+      }
+    }
   }
 
   @override
@@ -380,6 +409,8 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
           cid: comment.cid,
           profileImageUrl: comment.profileImageUrl,
           authorDid: comment.authorDid,
+          isLiked: comment.isLiked,
+          onLikePressed: () => _handleLike(comment),
           onCommentDeleted: () {
             // Refresh the comments list after deletion
             _loadComments();
