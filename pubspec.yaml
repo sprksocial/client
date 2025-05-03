@@ -23,6 +23,7 @@ dependencies:
   atproto: ^0.13.3
   bluesky: ^0.18.10
   http: ^1.2.0
+  url_launcher: ^6.2.5
   dio: ^5.4.0
   shared_preferences: ^2.5.3
   visibility_detector: ^0.4.0+2
