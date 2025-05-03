@@ -55,7 +55,7 @@ class ATAccountInfoIcon extends StatelessWidget {
         content: const Padding(
           padding: EdgeInsets.only(top: 8, bottom: 8),
           child: Text(
-            'An ATaccount is your identity on the decentralized AT Protocol.\n\nUse it across Spark, Bluesky, and other ATmosphere apps with just one login.\n\nIt keeps your data safe, gives you control over your content, and ensures a seamless experience across platforms.',
+            'An ATAccount is your identity on the decentralized AT Protocol.\n\nUse it across Spark, Bluesky, and other ATmosphere apps with just one login.\n\nIt keeps your data safe, gives you control over your content, and ensures a seamless experience across platforms.',
             style: TextStyle(color: AppColors.lightLavender, fontSize: 16, height: 1.6),
             textAlign: TextAlign.center,
           ),
