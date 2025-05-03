@@ -214,7 +214,6 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
     final actionsService = Provider.of<ActionsService>(context, listen: false);
 
     try {
-      // Toggle follow status
       final newFollowUri = await actionsService.toggleFollow(_profile!.did, _profile!.followUri);
 
       if (!mounted) return;
@@ -273,14 +272,54 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
                 );
 
                 if (result) {
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
                 }
               } catch (e) {
+                if (!context.mounted) return;
                 ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
               }
             },
           ),
     );
+  }
+
+  /// Refreshes the profile by forcing a refetch from the server and clearing cache
+  Future<void> _refreshProfile() async {
+    if (!mounted) return;
+
+    final targetDid = widget.did ?? Provider.of<AuthService>(context, listen: false).session?.did;
+    if (targetDid == null) return;
+
+    try {
+      final profileService = Provider.of<ProfileService>(context, listen: false);
+
+      await profileService.clearProfileCache(targetDid);
+
+      final profile = await profileService.getProfile(targetDid, forceRefresh: true);
+
+      if (!mounted) return;
+
+      setState(() {
+        _profile = profile;
+      });
+
+      final isSupporter = await _checkEarlySupporter(targetDid);
+
+      if (!mounted) return;
+
+      setState(() {
+        _isEarlySupporter = isSupporter;
+      });
+    } catch (e) {
+      if (!mounted) return;
+
+      setState(() {
+        _error = e.toString();
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error refreshing profile: ${e.toString()}')));
+    }
   }
 
   @override
@@ -351,45 +390,48 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
               padding: const EdgeInsets.only(right: 8.0),
               child: MenuActionButton(
                 onPressed: _handleReportProfile,
-                backgroundColor: isDarkMode ? Colors.black.withOpacity(0.15) : Colors.grey.withOpacity(0.1),
+                backgroundColor: isDarkMode ? Colors.black.withValues(alpha: 0.15) : Colors.grey.withValues(alpha: 0.1),
                 isProfile: true,
               ),
             ),
         ],
       ),
       body: SafeArea(
-        child: CustomScrollView(
-          key: PageStorageKey<String>('profile_${widget.did ?? 'current'}'),
-          slivers: [
-            // Profile header
-            SliverToBoxAdapter(
-              child: ProfileHeader(
-                profile: _profile!,
-                isCurrentUser: isCurrentUser,
-                isEarlySupporter: _isEarlySupporter,
-                onEarlySupporterTap: () => _showEarlySupporterInfo(context),
-                onEditTap: () => _checkAuthAndProceed(_navigateToEdit),
-                onShareTap: () => debugPrint('Share profile tapped'),
-                onFollowTap: () => _checkAuthAndProceed(_handleFollow),
-                onSettingsTap: _handleSettingsTap,
-              ),
-            ),
-
-            // Tab bar (pinned)
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: StickyTabBarDelegate(
-                child: ProfileTabs(
-                  selectedIndex: _selectedTabIndex,
-                  onTabSelected: _handleTabChange,
-                  isAuthenticated: isAuthenticated,
+        child: RefreshIndicator(
+          onRefresh: _refreshProfile,
+          child: CustomScrollView(
+            key: PageStorageKey<String>('profile_${widget.did ?? 'current'}'),
+            slivers: [
+              // Profile header
+              SliverToBoxAdapter(
+                child: ProfileHeader(
+                  profile: _profile!,
+                  isCurrentUser: isCurrentUser,
+                  isEarlySupporter: _isEarlySupporter,
+                  onEarlySupporterTap: () => _showEarlySupporterInfo(context),
+                  onEditTap: () => _checkAuthAndProceed(_navigateToEdit),
+                  onShareTap: () => debugPrint('Share profile tapped'),
+                  onFollowTap: () => _checkAuthAndProceed(_handleFollow),
+                  onSettingsTap: _handleSettingsTap,
                 ),
               ),
-            ),
 
-            // Dynamic tab content
-            ...tabContent.getTabContent(),
-          ],
+              // Tab bar (pinned)
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: StickyTabBarDelegate(
+                  child: ProfileTabs(
+                    selectedIndex: _selectedTabIndex,
+                    onTabSelected: _handleTabChange,
+                    isAuthenticated: isAuthenticated,
+                  ),
+                ),
+              ),
+
+              // Dynamic tab content
+              ...tabContent.getTabContent(),
+            ],
+          ),
         ),
       ),
     );
