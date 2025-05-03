@@ -215,7 +215,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             ),
                             Padding(
                               padding: const EdgeInsets.only(right: 16),
-                              child: Text('.sprk.so', style: TextStyle(fontSize: 16, color: isDarkMode ? AppColors.white.withOpacity(0.7) : AppTheme.getSecondaryTextColor(context))),
+                              child: Text('.sprk.so', style: TextStyle(fontSize: 16, color: isDarkMode ? AppColors.white.withAlpha(100) : AppTheme.getSecondaryTextColor(context))),
                             ),
                           ],
                         ),
