@@ -8,6 +8,7 @@ import '../services/auth_service.dart';
 import '../services/onboarding_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
+import '../widgets/ataccount_dialog.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -82,214 +83,254 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context),
-      appBar: AppBar(
-        backgroundColor: isDarkMode ? AppColors.darkBackground.withAlpha(242) : AppColors.background,
-        elevation: 0,
-        leading: IconButton(
-          padding: EdgeInsets.zero,
-          onPressed: () => Navigator.of(context).pop(),
-          icon: Icon(FluentIcons.chevron_left_24_regular, color: AppTheme.getTextColor(context)),
-        ),
-        title: Text('Create Account', style: TextStyle(color: AppTheme.getTextColor(context), fontWeight: FontWeight.bold)),
-      ),
-      body: SafeArea(
-        child: GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          child: SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      margin: const EdgeInsets.only(bottom: 30, top: 10),
-                      child: SvgPicture.asset(
-                        isDarkMode ? 'assets/images/logo_dark_mode.svg' : 'assets/images/logo_light_mode.svg',
-                      ),
-                    ),
-                  ),
-
-                  if (AppConfig.signupsDisabled) ...[
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(color: AppColors.error.withAlpha(26), borderRadius: BorderRadius.circular(12)),
-                      child: Row(
-                        children: [
-                          const Icon(FluentIcons.warning_24_regular, color: AppColors.error),
-                          const SizedBox(width: 8),
-                          const Expanded(
-                            child: Text(
-                              'New account registration is currently disabled while we correct issues in our system. We will try to re-enable it as soon as possible.',
-                              style: TextStyle(color: AppColors.error),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                  _buildLabel('Email'),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: InputDecoration(
-                      hintText: 'Your email address',
-                      filled: true,
-                      fillColor: isDarkMode ? AppColors.deepPurple : Colors.grey[200],
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                      prefixIcon: const Icon(FluentIcons.mail_24_regular, color: AppColors.primary),
-                      contentPadding: const EdgeInsets.all(16),
-                    ),
-                    style: TextStyle(color: AppTheme.getTextColor(context)),
-                    onChanged: (_) => setState(() {}),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  _buildLabel('Username'),
-                  const SizedBox(height: 8),
-                  Container(
-                    decoration: BoxDecoration(
-                      color: isDarkMode ? AppColors.deepPurple : Colors.grey[200],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Row(
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.only(left: 16),
-                          child: Icon(FluentIcons.mention_24_regular, color: AppColors.primary),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/branding/gradient.webp',
+              fit: BoxFit.cover,
+            ),
+          ),
+          SafeArea(
+            child: GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                     
+                      Center(
+                        child: SvgPicture.asset(
+                          'assets/images/logo_dark_mode.svg',
+                          height: 140,
+                          width: 140,
                         ),
-                        Expanded(
-                          child: TextField(
-                            controller: _handleController,
-                            decoration: InputDecoration(
-                              hintText: 'username',
-                              border: InputBorder.none,
-                              filled: true,
-                              fillColor: Colors.transparent,
-                              contentPadding: const EdgeInsets.all(16),
-                            ),
-                            style: TextStyle(color: AppTheme.getTextColor(context)),
-                            onChanged: (_) => setState(() {}),
+                      ),
+                      const SizedBox(height: 21),
+                      Center(
+                        child: Text(
+                          'Create Account',
+                          style: TextStyle(color: AppColors.white, fontSize: 26, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Center(
+                        child: SizedBox(
+                          width: 340,
+                          child: Wrap(
+                            alignment: WrapAlignment.center,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [
+                              Text(
+                                'Create your new ',
+                                style: TextStyle(
+                                  color: AppColors.white,
+                                  fontSize: 20,
+                                  height: 1.7,
+                                ),
+                              ),
+                              SvgPicture.asset(
+                                'assets/images/ataccount.svg',
+                                height: 25,
+                                width: 100,
+                              ),
+                              const SizedBox(width: 4),
+                              const ATAccountInfoIcon(),
+                            ],
                           ),
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: Text('.sprk.so', style: TextStyle(fontSize: 16, color: AppTheme.getSecondaryTextColor(context))),
+                      ),
+                      
+                      const SizedBox(height: 30),
+
+                      if (AppConfig.signupsDisabled) ...[
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(color: AppColors.error.withAlpha(26), borderRadius: BorderRadius.circular(12)),
+                          child: Row(
+                            children: [
+                              const Icon(FluentIcons.warning_24_regular, color: AppColors.error),
+                              const SizedBox(width: 8),
+                              const Expanded(
+                                child: Text(
+                                  'New account registration is currently disabled while we correct issues in our system. We will try to re-enable it as soon as possible.',
+                                  style: TextStyle(color: AppColors.error),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                      _buildLabel('Email'),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: InputDecoration(
+                          hintText: 'Your email address',
+                          hintStyle: TextStyle(color: AppColors.hintText),
+                          filled: true,
+                          fillColor: AppColors.white.withAlpha(255),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                          prefixIcon: const Icon(FluentIcons.mail_24_regular, color: AppColors.primary),
+                          contentPadding: const EdgeInsets.all(16),
+                        ),
+                        style: TextStyle(color: AppTheme.getTextColor(context)),
+                        onChanged: (_) => setState(() {}),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      _buildLabel('Username'),
+                      const SizedBox(height: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: AppColors.white.withAlpha(255),
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            const Padding(
+                              padding: EdgeInsets.only(left: 16),
+                              child: Icon(FluentIcons.mention_24_regular, color: AppColors.primary),
+                            ),
+                            Expanded(
+                              child: TextField(
+                                controller: _handleController,
+                                decoration: InputDecoration(
+                                  hintText: 'username',
+                                  hintStyle: TextStyle(color: AppColors.hintText),
+                                  border: InputBorder.none,
+                                  filled: true,
+                                  fillColor: Colors.transparent,
+                                  contentPadding: const EdgeInsets.all(16),
+                                ),
+                                style: TextStyle(color: AppTheme.getTextColor(context)),
+                                onChanged: (_) => setState(() {}),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 16),
+                              child: Text('.sprk.so', style: TextStyle(fontSize: 16, color: isDarkMode ? AppColors.white.withOpacity(0.7) : AppTheme.getSecondaryTextColor(context))),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      _buildLabel('Password'),
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: _passwordController,
+                        obscureText: !_isPasswordVisible,
+                        decoration: InputDecoration(
+                          hintText: 'Your password',
+                          hintStyle: TextStyle(color: AppColors.hintText),
+                          filled: true,
+                          fillColor: AppColors.white.withAlpha(255),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                          prefixIcon: const Icon(FluentIcons.key_24_regular, color: AppColors.primary),
+                          suffixIcon: IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _isPasswordVisible = !_isPasswordVisible;
+                              });
+                            },
+                            icon: Icon(
+                              _isPasswordVisible ? FluentIcons.eye_off_24_regular : FluentIcons.eye_24_regular,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                          contentPadding: const EdgeInsets.all(16),
+                        ),
+                        style: TextStyle(color: AppTheme.getTextColor(context)),
+                        onChanged: (_) => setState(() {}),
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // _buildLabel('Invite Code (Optional)'),
+                      // const SizedBox(height: 8),
+                      // TextField(
+                      //   controller: _inviteCodeController,
+                      //   decoration: InputDecoration(
+                      //     hintText: 'Enter invite code if you have one',
+                      //     hintStyle: TextStyle(color: AppColors.hintText),
+                      //     filled: true,
+                      //     fillColor: AppColors.white.withAlpha(255),
+                      //     border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                      //     prefixIcon: const Icon(FluentIcons.tag_24_regular, color: AppColors.primary),
+                      //     contentPadding: const EdgeInsets.all(16),
+                      //   ),
+                      //   style: TextStyle(color: AppTheme.getTextColor(context)),
+                      // ),
+
+                      if (_errorMessage != null) ...[
+                        const SizedBox(height: 24),
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(color: AppColors.error.withAlpha(26), borderRadius: BorderRadius.circular(12)),
+                          child: Row(
+                            children: [
+                              const Icon(FluentIcons.warning_24_regular, color: AppColors.error),
+                              const SizedBox(width: 8),
+                              Expanded(child: Text(_errorMessage!, style: const TextStyle(color: AppColors.error))),
+                            ],
+                          ),
                         ),
                       ],
-                    ),
-                  ),
 
-                  const SizedBox(height: 24),
+                      const SizedBox(height: 40),
 
-                  _buildLabel('Password'),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _passwordController,
-                    obscureText: !_isPasswordVisible,
-                    decoration: InputDecoration(
-                      hintText: 'Your password',
-                      filled: true,
-                      fillColor: isDarkMode ? AppColors.deepPurple : Colors.grey[200],
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                      prefixIcon: const Icon(FluentIcons.key_24_regular, color: AppColors.primary),
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          setState(() {
-                            _isPasswordVisible = !_isPasswordVisible;
-                          });
-                        },
-                        icon: Icon(
-                          _isPasswordVisible ? FluentIcons.eye_off_24_regular : FluentIcons.eye_24_regular,
-                          color: AppColors.primary,
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            minimumSize: const Size(0, 60),
+                          ),
+                          onPressed: _isFormValid() && !_isRegistering ? _register : null,
+                          child:
+                              _isRegistering
+                                  ? const CircularProgressIndicator(color: AppColors.white)
+                                  : const Text(
+                                    'Create Account',
+                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal, color: AppColors.white),
+                                  ),
                         ),
                       ),
-                      contentPadding: const EdgeInsets.all(16),
-                    ),
-                    style: TextStyle(color: AppTheme.getTextColor(context)),
-                    onChanged: (_) => setState(() {}),
-                  ),
 
-                  const SizedBox(height: 24),
+                      const SizedBox(height: 24),
 
-                  _buildLabel('Invite Code (Optional)'),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: _inviteCodeController,
-                    decoration: InputDecoration(
-                      hintText: 'Enter invite code if you have one',
-                      filled: true,
-                      fillColor: isDarkMode ? AppColors.deepPurple : Colors.grey[200],
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                      prefixIcon: const Icon(FluentIcons.tag_24_regular, color: AppColors.primary),
-                      contentPadding: const EdgeInsets.all(16),
-                    ),
-                    style: TextStyle(color: AppTheme.getTextColor(context)),
-                  ),
-
-                  if (_errorMessage != null) ...[
-                    const SizedBox(height: 24),
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(color: AppColors.error.withAlpha(26), borderRadius: BorderRadius.circular(12)),
-                      child: Row(
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(FluentIcons.warning_24_regular, color: AppColors.error),
-                          const SizedBox(width: 8),
-                          Expanded(child: Text(_errorMessage!, style: const TextStyle(color: AppColors.error))),
+                          Text('Already have an account?', style: TextStyle(color: AppColors.white)),
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('Sign in', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
+                          ),
                         ],
-                      ),
-                    ),
-                  ],
-
-                  const SizedBox(height: 40),
-
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      onPressed: _isFormValid() && !_isRegistering ? _register : null,
-                      child:
-                          _isRegistering
-                              ? const CircularProgressIndicator(color: AppColors.white)
-                              : const Text(
-                                'Create Account',
-                                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: AppColors.white),
-                              ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text('Already have an account?', style: TextStyle(color: AppTheme.getSecondaryTextColor(context))),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('Sign in', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
 
   Widget _buildLabel(String text) {
-    return Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppTheme.getTextColor(context)));
+    return Text(text, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.white));
   }
 }
