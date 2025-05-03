@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 
+import '../main.dart';
 import '../services/feed_settings_service.dart';
 import '../utils/app_colors.dart';
 import '../widgets/feed/feed_selector.dart';
@@ -24,17 +25,35 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedTabIndex = 0;
   List<FeedOption> _currentFeedOptions = [];
   List<Widget> _feedScreens = [];
+  late final NavigationProvider _navProvider;
+  bool _isHomeScreenActive = true;
   bool _isHomeScreenVisible = true;
 
   @override
   void initState() {
     super.initState();
+    _navProvider = Provider.of<NavigationProvider>(context, listen: false);
+    _isHomeScreenActive = _navProvider.currentIndex == 0;
+    _navProvider.addListener(_onNavIndexChanged);
+
     _initializeScreen();
     _feedSettings.addListener(_onFeedSettingsChanged);
   }
 
+  /// Pause or resume media when home tab selection changes.
+  void _onNavIndexChanged() {
+    final isActive = _navProvider.currentIndex == 0;
+    if (isActive != _isHomeScreenActive) {
+      setState(() {
+        _isHomeScreenActive = isActive;
+        _buildFeedScreens();
+      });
+    }
+  }
+
   @override
   void dispose() {
+    _navProvider.removeListener(_onNavIndexChanged);
     _pageController.removeListener(_onPageChanged);
     _feedSettings.removeListener(_onFeedSettingsChanged);
     _pageController.dispose();
@@ -112,7 +131,7 @@ class _HomeScreenState extends State<HomeScreen> {
     int feedIndex = 0;
 
     if (_feedSettings.followingFeedEnabled) {
-      final bool isVisible = _isHomeScreenVisible && (_selectedTabIndex == feedIndex);
+      final bool isVisible = _isHomeScreenActive && _isHomeScreenVisible && (_selectedTabIndex == feedIndex);
       options.add(const FeedOption(label: 'Following', value: 0));
       screens.add(
         ChangeNotifierProvider<FeedSettingsService>.value(
@@ -125,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (_feedSettings.forYouFeedEnabled) {
-      final bool isVisible = _isHomeScreenVisible && (_selectedTabIndex == feedIndex);
+      final bool isVisible = _isHomeScreenActive && _isHomeScreenVisible && (_selectedTabIndex == feedIndex);
       options.add(const FeedOption(label: 'For You', value: 1));
       screens.add(
         ChangeNotifierProvider<FeedSettingsService>.value(
@@ -138,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
     }
 
     if (_feedSettings.latestFeedEnabled) {
-      final bool isVisible = _isHomeScreenVisible && (_selectedTabIndex == feedIndex);
+      final bool isVisible = _isHomeScreenActive && _isHomeScreenVisible && (_selectedTabIndex == feedIndex);
       options.add(const FeedOption(label: 'Latest', value: 2));
       screens.add(
         ChangeNotifierProvider<FeedSettingsService>.value(
