@@ -114,7 +114,7 @@ class _CommentItemState extends State<CommentItem> {
   }
 
   void _initializeVideoPlayer() {
-    _videoController = VideoPlayerController.network(widget.mediaUrl!)
+    _videoController = VideoPlayerController.networkUrl(Uri.parse(widget.mediaUrl!))
       ..initialize().then((_) {
         if (mounted) {
           setState(() {
