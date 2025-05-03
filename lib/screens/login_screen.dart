@@ -8,6 +8,7 @@ import '../services/auth_service.dart';
 import '../services/onboarding_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
+import '../widgets/ataccount_dialog.dart';
 
 class UpperCaseTextFormatter extends TextInputFormatter {
   @override
@@ -88,159 +89,190 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Form(
-              key: _formKey,
-              autovalidateMode: AutovalidateMode.onUserInteraction,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                    width: 100,
-                    height: 100,
-                    margin: const EdgeInsets.only(bottom: 40),
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(20)),
-                    child: SvgPicture.asset(
-                      isDarkMode ? 'assets/images/logo_dark_mode.svg' : 'assets/images/logo_light_mode.svg',
-                      width: 100,
-                      height: 100,
-                    ),
-                  ),
-
-                  Text(
-                    'Login to your account',
-                    style: TextStyle(color: AppTheme.getTextColor(context), fontSize: 24, fontWeight: FontWeight.bold),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 30),
-
-                  AutofillGroup(
-                    child: Column(
-                      children: [
-                        TextField(
-                          controller: _handleController,
-                          focusNode: _handleFocusNode,
-                          decoration: InputDecoration(
-                            hintText: 'Handle',
-                            prefixIcon: const Icon(FluentIcons.person_24_regular, color: AppColors.primary),
-                            filled: true,
-                            fillColor: isDarkMode ? AppColors.deepPurple : Colors.grey[200],
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                            contentPadding: const EdgeInsets.all(16),
-                          ),
-                          style: TextStyle(color: AppTheme.getTextColor(context)),
-                          textInputAction: TextInputAction.next,
-                          keyboardType: TextInputType.emailAddress,
-                          autofillHints: const [AutofillHints.username, AutofillHints.email],
-                          onEditingComplete: () => _passwordFocusNode.requestFocus(),
-                        ),
-                        const SizedBox(height: 16),
-
-                        TextField(
-                          controller: _passwordController,
-                          focusNode: _passwordFocusNode,
-                          decoration: InputDecoration(
-                            hintText: 'Password',
-                            prefixIcon: const Icon(FluentIcons.lock_closed_24_regular, color: AppColors.primary),
-                            suffixIcon: IconButton(
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                              icon: Icon(
-                                _obscurePassword ? FluentIcons.eye_24_regular : FluentIcons.eye_off_24_regular,
-                                color: AppColors.primary,
-                              ),
-                            ),
-                            filled: true,
-                            fillColor: isDarkMode ? AppColors.deepPurple : Colors.grey[200],
-                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                            contentPadding: const EdgeInsets.all(16),
-                          ),
-                          style: TextStyle(color: AppTheme.getTextColor(context)),
-                          obscureText: _obscurePassword,
-                          textInputAction: TextInputAction.done,
-                          keyboardType: TextInputType.visiblePassword,
-                          autofillHints: const [AutofillHints.password],
-                          onEditingComplete: () {
-                            if (_showAuthCodeField) {
-                              _authCodeFocusNode.requestFocus();
-                            } else {
-                              TextInput.finishAutofillContext();
-                              _login();
-                            }
-                          },
-                        ),
-
-                        if (_showAuthCodeField) ...[
-                          const SizedBox(height: 16),
-                          TextField(
-                            controller: _authCodeController,
-                            focusNode: _authCodeFocusNode,
-                            decoration: InputDecoration(
-                              hintText: 'Enter code (e.g., ABCD1-ZXC45)',
-                              helperText: 'Enter the code from your email',
-                              prefixIcon: const Icon(FluentIcons.key_24_regular, color: AppColors.primary),
-                              filled: true,
-                              fillColor: isDarkMode ? AppColors.deepPurple : Colors.grey[200],
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-                              contentPadding: const EdgeInsets.all(16),
-                            ),
-                            style: TextStyle(color: AppTheme.getTextColor(context)),
-                            textInputAction: TextInputAction.done,
-                            keyboardType: TextInputType.text,
-                            textCapitalization: TextCapitalization.characters,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\-]')),
-                              UpperCaseTextFormatter(),
-                            ],
-                            onEditingComplete: () {
-                              TextInput.finishAutofillContext();
-                              _login();
-                            },
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  if (authService.error != null)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child: Text(
-                        authService.error!,
-                        style: const TextStyle(color: AppColors.error, fontSize: 14),
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: Image.asset(
+              'assets/branding/gradient.webp',
+              fit: BoxFit.cover,
+            ),
+          ),
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(24.0),
+                child: Form(
+                  key: _formKey,
+                  autovalidateMode: AutovalidateMode.onUserInteraction,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SvgPicture.asset(
+                        isDarkMode ? 'assets/images/logo_dark_mode.svg' : 'assets/images/logo_dark_mode.svg',
+                        height: 140,
+                        width: 140,
+                      ),
+                      const SizedBox(height: 21),
+                      Text(
+                        'Login to your account',
+                        style: TextStyle(color: AppColors.white, fontSize: 26, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
                       ),
-                    ),
+                      const SizedBox(height: 5),
+                      SizedBox(
+                        width: 340,
+                        child: Wrap(
+                          alignment: WrapAlignment.center,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              'Login using your existing ',
+                              style: TextStyle(
+                                color: AppColors.white,
+                                fontSize: 20,
+                                height: 1.7,
+                              ),
+                            ),
+                            SvgPicture.asset(
+                              'assets/images/ataccount.svg',
+                              height: 25,
+                              width: 100,
+                            ),
+                            const SizedBox(width: 4),
+                            const ATAccountInfoIcon(),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 30),
 
-                  ElevatedButton(
-                    onPressed: authService.isLoading ? null : _login,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      disabledBackgroundColor: AppColors.primary.withAlpha(128),
-                    ),
-                    child:
-                        authService.isLoading
+                      AutofillGroup(
+                        child: Column(
+                          children: [
+                            TextField(
+                              controller: _handleController,
+                              focusNode: _handleFocusNode,
+                              decoration: InputDecoration(
+                                hintText: 'Handle',
+                                hintStyle: TextStyle(color: AppColors.hintText),
+                                prefixIcon: const Icon(FluentIcons.person_24_regular, color: AppColors.primary),
+                                filled: true,
+                                fillColor: AppColors.white.withAlpha(255),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                                contentPadding: const EdgeInsets.all(16),
+                              ),
+                              style: TextStyle(color: AppTheme.getTextColor(context)),
+                              textInputAction: TextInputAction.next,
+                              keyboardType: TextInputType.emailAddress,
+                              autofillHints: const [AutofillHints.username, AutofillHints.email],
+                              onEditingComplete: () => _passwordFocusNode.requestFocus(),
+                            ),
+                            const SizedBox(height: 16),
+
+                            TextField(
+                              controller: _passwordController,
+                              focusNode: _passwordFocusNode,
+                              decoration: InputDecoration(
+                                hintText: 'Password',
+                                hintStyle: TextStyle(color: AppColors.hintText),
+                                prefixIcon: const Icon(FluentIcons.lock_closed_24_regular, color: AppColors.primary),
+                                suffixIcon: IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      _obscurePassword = !_obscurePassword;
+                                    });
+                                  },
+                                  icon: Icon(
+                                    _obscurePassword ? FluentIcons.eye_24_regular : FluentIcons.eye_off_24_regular,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                                filled: true,
+                                fillColor: AppColors.white.withAlpha(255),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                                contentPadding: const EdgeInsets.all(16),
+                              ),
+                              style: TextStyle(color: AppTheme.getTextColor(context)),
+                              obscureText: _obscurePassword,
+                              textInputAction: TextInputAction.done,
+                              keyboardType: TextInputType.visiblePassword,
+                              autofillHints: const [AutofillHints.password],
+                              onEditingComplete: () {
+                                if (_showAuthCodeField) {
+                                  _authCodeFocusNode.requestFocus();
+                                } else {
+                                  TextInput.finishAutofillContext();
+                                  _login();
+                                }
+                              },
+                            ),
+
+                            if (_showAuthCodeField) ...[
+                              const SizedBox(height: 16),
+                              TextField(
+                                controller: _authCodeController,
+                                focusNode: _authCodeFocusNode,
+                                decoration: InputDecoration(
+                                  hintText: 'Enter code (e.g., ABCD1-ZXC45)',
+                                  helperText: 'Enter the code from your email',
+                                  prefixIcon: const Icon(FluentIcons.key_24_regular, color: AppColors.white),
+                                  filled: true,
+                                  fillColor: AppColors.white.withAlpha(100),
+                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                                  contentPadding: const EdgeInsets.all(16),
+                                ),
+                                style: TextStyle(color: AppTheme.getTextColor(context)),
+                                textInputAction: TextInputAction.done,
+                                keyboardType: TextInputType.text,
+                                textCapitalization: TextCapitalization.characters,
+                                inputFormatters: [
+                                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\-]')),
+                                  UpperCaseTextFormatter(),
+                                ],
+                                onEditingComplete: () {
+                                  TextInput.finishAutofillContext();
+                                  _login();
+                                },
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+
+                      if (authService.error != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Text(
+                            authService.error!,
+                            style: const TextStyle(color: AppColors.error, fontSize: 14),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+
+                      ElevatedButton(
+                        onPressed: authService.isLoading ? null : _login,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          minimumSize: const Size(320, 60),
+                          disabledBackgroundColor: AppColors.primary.withAlpha(128),
+                        ),
+                        child: authService.isLoading
                             ? const CircularProgressIndicator(color: AppColors.white)
                             : Text(
-                              _showAuthCodeField ? 'Verify Code' : 'Login',
-                              style: const TextStyle(fontWeight: FontWeight.bold, color: AppColors.white),
-                            ),
+                                _showAuthCodeField ? 'Verify Code' : 'Login',
+                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.normal, color: AppColors.white),
+                              ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

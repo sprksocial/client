@@ -17,6 +17,7 @@ class AppColors {
   static const Color green = Color(0xFF12DB59); // For comments
   static const Color red = Color(0xFFFF3A2C); // For likes
   static const Color orange = Color(0xFFFF7B00); // For alerts and danger
+  static const Color hintColor = Color(0xFF808080);
 
   static const Color primary = pink;
   static const Color secondary = brightPurple;
@@ -32,6 +33,7 @@ class AppColors {
   static const Color textSecondary = darkPurple;
   static const Color textLight = lightLavender;
   static const Color textOnDark = white;
+  static const Color hintText = hintColor;
 
   static const Color border = darkPurple;
   static const Color divider = lightLavender;
