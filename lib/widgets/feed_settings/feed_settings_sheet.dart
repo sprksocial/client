@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../services/settings_service.dart';
+import '../../services/labeler_manager.dart';
 import '../../utils/app_colors.dart';
 
 class FeedSettingsSheet extends StatefulWidget {
@@ -14,13 +15,94 @@ class FeedSettingsSheet extends StatefulWidget {
   State<FeedSettingsSheet> createState() => _FeedSettingsSheetState();
 }
 
-class _FeedSettingsSheetState extends State<FeedSettingsSheet> {
+class _FeedSettingsSheetState extends State<FeedSettingsSheet> with SingleTickerProviderStateMixin {
   late List<FeedSetting> _feedSettings;
+  late TabController _tabController;
+  Map<String, Map<String, dynamic>> _labelDefinitions = {};
+  bool _isLoadingLabels = false;
+  String? _labelsError;
 
   @override
   void initState() {
     super.initState();
     _feedSettings = List.from(widget.feedSettings);
+    _tabController = TabController(length: 2, vsync: this);
+    _loadLabelDefinitions();
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  // Load label definitions from the default labeler
+  Future<void> _loadLabelDefinitions() async {
+    // Use Future.microtask para o primeiro setState para evitar chamar durante o build
+    Future.microtask(() {
+      if (mounted) {
+        setState(() {
+          _isLoadingLabels = true;
+          _labelsError = null;
+        });
+      }
+    });
+
+    try {
+      final labelerManager = Provider.of<LabelerManager>(context, listen: false);
+      
+      // O LabelerManager agora trata erros internamente com fallbacks
+      await labelerManager.loadLabelerData(LabelerManager.defaultLabelerDid);
+      
+      // Get label definitions from the labeler manager
+      final definitions = labelerManager.getLabelDefinitions(LabelerManager.defaultLabelerDid);
+      
+      // Verificar se o widget ainda está na árvore antes de chamar setState
+      if (mounted) {
+        setState(() {
+          _labelDefinitions = definitions;
+          _isLoadingLabels = false;
+        });
+      }
+    } catch (e) {
+      // Verificar se o widget ainda está na árvore antes de chamar setState
+      if (mounted) {
+        setState(() {
+          _labelsError = 'Failed to load content labels: $e';
+          _isLoadingLabels = false;
+        });
+      }
+    }
+  }
+
+  // Update adult content label preferences based on hideAdultContent setting
+  Future<void> _updateAdultContentPreferences(bool hideAdultContent) async {
+    final settingsService = Provider.of<SettingsService>(context, listen: false);
+    
+    // For each label definition that has adultOnly: true
+    for (final entry in _labelDefinitions.entries) {
+      final labelValue = entry.key;
+      final definition = entry.value;
+      
+      // Check if this is an adult-only label
+      final bool isAdultOnly = definition['adultOnly'] as bool? ?? false;
+      
+      if (isAdultOnly) {
+        // Set the preference based on the hideAdultContent setting
+        final newPreference = hideAdultContent 
+          ? LabelPreference.hide 
+          : LabelPreference.show;
+        
+        await settingsService.setLabelPreference(
+          LabelerManager.defaultLabelerDid,
+          labelValue,
+          newPreference
+        );
+      }
+    }
+    
+    // Force rebuild
+    setState(() {});
   }
 
   @override
@@ -47,7 +129,29 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> {
             // Add extra padding at the top for the notch/camera hole
             SizedBox(height: topPadding),
             _buildHeader(context, textColor),
-            Expanded(child: _buildFeedList(isDark)),
+            
+            // Tab bar
+            TabBar(
+              controller: _tabController,
+              labelColor: textColor,
+              unselectedLabelColor: textColor.withOpacity(0.5),
+              tabs: const [
+                Tab(text: "Feed"),
+                Tab(text: "Content"),
+              ],
+            ),
+            
+            // Tab view
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildFeedList(isDark),
+                  _buildContentSettings(isDark, textColor),
+                ],
+              ),
+            ),
+
             // Bottom safe area
             SizedBox(height: MediaQuery.of(context).padding.bottom),
           ],
@@ -125,6 +229,341 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> {
         );
       },
     );
+  }
+
+  Widget _buildContentSettings(bool isDark, Color textColor) {
+    final itemColor = isDark ? Colors.grey.shade800 : Colors.grey.shade200;
+    
+    if (_isLoadingLabels) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    
+    if (_labelsError != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // TODO: normalized textstyle
+              Text(_labelsError!, style: TextStyle(color: AppColors.red, fontSize: 16)),
+              const SizedBox(height: 24),
+              // TODO: normalized button
+              ElevatedButton(
+                onPressed: _loadLabelDefinitions,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.pink,
+                  foregroundColor: Colors.white,
+                ),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    
+    if (_labelDefinitions.isEmpty) {
+      return Center(
+        child: Text(
+          'No content labels available',
+          style: TextStyle(color: textColor),
+        ),
+      );
+    }
+    
+    // Sort labels: adult content first, then regular content
+    List<String> sortedLabels = _labelDefinitions.keys.toList();
+    sortedLabels.sort((a, b) {
+      bool isAdultA = _labelDefinitions[a]?['adultOnly'] as bool? ?? false;
+      bool isAdultB = _labelDefinitions[b]?['adultOnly'] as bool? ?? false;
+      
+      // Adult labels first (true before false)
+      if (isAdultA && !isAdultB) return -1;
+      if (!isAdultA && isAdultB) return 1;
+      
+      // If both are adult or both are not adult, sort alphabetically
+      return a.compareTo(b);
+    });
+    
+    return ListView.builder(
+      itemCount: _labelDefinitions.length + 1, // +1 for the Adult Content switch
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemBuilder: (context, index) {
+        // Add the Adult Content switch at the top
+        if (index == 0) {
+          return Consumer<SettingsService>(
+            builder: (context, settingsService, _) {
+              final hideAdultContent = settingsService.hideAdultContent;
+              
+              return FeedSettingItem(
+                feedName: 'Hide Adult Content',
+                description: 'Hide all posts with adult content labels',
+                isEnabled: hideAdultContent,
+                itemColor: itemColor,
+                textColor: textColor,
+                onToggleChanged: (value) async {
+                  // Update the setting
+                  await settingsService.setHideAdultContent(value);
+                  
+                  // Update all adult-only label preferences
+                  await _updateAdultContentPreferences(value);
+                },
+              );
+            },
+          );
+        }
+        
+        // Adjust index for label definitions using our sorted list
+        final labelsIndex = index - 1;
+        final labelValue = sortedLabels[labelsIndex];
+        final definition = _labelDefinitions[labelValue];
+        
+        // Extract info from the updated label definition format
+        String displayName = labelValue;
+        String description = '';
+        
+        if (definition != null) {
+          // Check for the new format with locales
+          if (definition['locales'] != null) {
+            final locales = definition['locales'] as List<dynamic>;
+            if (locales.isNotEmpty) {
+              // Get the first locale (assumed to be English)
+              final enLocale = locales.first;
+              displayName = enLocale['name'] as String? ?? definition['displayName'] as String? ?? labelValue;
+              description = enLocale['description'] as String? ?? definition['description'] as String? ?? '';
+            }
+          } else {
+            // Fall back to the old format
+            displayName = definition['displayName'] as String? ?? labelValue;
+            description = definition['description'] as String? ?? '';
+          }
+        }
+        
+        return ContentLabelPreference(
+          labelValue: labelValue,
+          displayName: displayName,
+          description: description,
+          itemColor: itemColor,
+          textColor: textColor,
+        );
+      },
+    );
+  }
+}
+
+class ContentLabelPreference extends StatefulWidget {
+  final String labelValue;
+  final String displayName;
+  final String description;
+  final Color itemColor;
+  final Color textColor;
+
+  const ContentLabelPreference({
+    super.key,
+    required this.labelValue,
+    required this.displayName,
+    required this.description,
+    required this.itemColor,
+    required this.textColor,
+  });
+
+  @override
+  State<ContentLabelPreference> createState() => _ContentLabelPreferenceState();
+}
+
+class _ContentLabelPreferenceState extends State<ContentLabelPreference> {
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<SettingsService>(
+      builder: (context, settingsService, _) {
+        // Get the label definition to check if it's adult-only
+        final labelerManager = Provider.of<LabelerManager>(context);
+        final definitions = labelerManager.getLabelDefinitions(LabelerManager.defaultLabelerDid);
+        final definition = definitions[widget.labelValue];
+        
+        // Use defaultSetting from the label definition if no user preference is set
+        final preference = settingsService.getLabelPreferenceOrDefault(
+          LabelerManager.defaultLabelerDid, 
+          widget.labelValue, 
+          definition
+        );
+        final selectedValue = preference.name;
+        
+        // Get default setting to display in UI
+        String defaultSetting = 'warn'; // Fallback default
+        if (definition != null && definition.containsKey('defaultSetting')) {
+          defaultSetting = definition['defaultSetting'] as String;
+        }
+        
+        final bool isAdultOnly = definition?['adultOnly'] as bool? ?? false;
+        
+        // If adult content is hidden, disable adult-only labels
+        final hideAdultContent = settingsService.hideAdultContent;
+        final bool isDisabled = isAdultOnly && hideAdultContent;
+
+        // Check if user has an explicit preference
+        final hasExplicitPreference = settingsService.getLabelPreference(
+          LabelerManager.defaultLabelerDid, 
+          widget.labelValue
+        ) != null;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              decoration: BoxDecoration(
+                color: widget.itemColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          widget.displayName,
+                          style: TextStyle(
+                            color: widget.textColor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      if (isAdultOnly)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'Adult',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  if (widget.description.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      widget.description,
+                      style: TextStyle(
+                        color: widget.textColor.withOpacity(0.7),
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                  
+                  // Show default setting info
+                  Row(
+                    children: [
+                      Text(
+                        'Default: ',
+                        style: TextStyle(
+                          color: widget.textColor.withOpacity(0.7),
+                          fontSize: 12,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _getColorForSetting(defaultSetting).withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          defaultSetting.capitalize(),
+                          style: TextStyle(
+                            color: _getColorForSetting(defaultSetting),
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      const Spacer(),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // SegmentedButton for content preference
+                  SegmentedButton<String>(
+                    segments: [
+                      ButtonSegment<String>(
+                        value: 'show',
+                        label: const Text('Show'),
+                        icon: const Icon(Icons.visibility),
+                      ),
+                      ButtonSegment<String>(
+                        value: 'warn',
+                        label: const Text('Warn'),
+                        icon: const Icon(Icons.warning),
+                      ),
+                      ButtonSegment<String>(
+                        value: 'hide',
+                        label: const Text('Hide'),
+                        icon: const Icon(Icons.visibility_off),
+                      ),
+                    ],
+                    selected: {isDisabled ? 'hide' : selectedValue},
+                    onSelectionChanged: isDisabled 
+                      ? null  // Disable selection change if adult content is hidden
+                      : (selection) async {
+                          final newPreference = LabelPreference.values.firstWhere(
+                            (pref) => pref.name == selection.first,
+                          );
+                          
+                          await settingsService.setLabelPreference(
+                            LabelerManager.defaultLabelerDid, 
+                            widget.labelValue, 
+                            newPreference,
+                          );
+                          
+                          // Force rebuild to reflect the new selection
+                          setState(() {});
+                        },
+                    style: SegmentedButton.styleFrom(
+                      backgroundColor: widget.textColor.withOpacity(0.1),
+                      selectedBackgroundColor: AppColors.pink,
+                      selectedForegroundColor: Colors.white,
+                      foregroundColor: widget.textColor,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+  
+  // Helper to get color based on setting
+  Color _getColorForSetting(String setting) {
+    switch (setting) {
+      case 'show':
+        return Colors.green;
+      case 'warn':
+        return Colors.orange;
+      case 'hide':
+        return Colors.red;
+      default:
+        return Colors.grey;
+    }
+  }
+}
+
+// Extension to capitalize strings
+extension StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${substring(1)}";
   }
 }
 

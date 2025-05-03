@@ -49,6 +49,8 @@ class _ReportDialogState extends State<ReportDialog> {
 
     try {
       if (widget.onSubmit != null) {
+        // eventually this will be a ModerationService
+        // by default, ModService sends it to the user's PDS
         widget.onSubmit!(subject, _selectedReason, reason, null);
         if (mounted) {
           Navigator.of(context).pop();

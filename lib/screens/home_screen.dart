@@ -82,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _buildFeedScreens();
     _pageController.addListener(_onPageChanged);
 
-    _selectedTabIndex = _currentFeedOptions.indexWhere((option) => option.value == _feedSettings.selectedFeedType);
+    _selectedTabIndex = _currentFeedOptions.indexWhere((option) => option.value == _feedSettings.selectedFeedType.value);
     if (_selectedTabIndex == -1 && _currentFeedOptions.isNotEmpty) {
       _selectedTabIndex = 0;
     }
@@ -98,7 +98,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_pageController.page == null) return;
     final currentPage = _pageController.page!.round();
     if (currentPage < _currentFeedOptions.length && currentPage != _selectedTabIndex) {
-      _feedSettings.setSelectedFeedType(_currentFeedOptions[currentPage].value);
+      _feedSettings.setSelectedFeedType(FeedType.fromValue(_currentFeedOptions[currentPage].value));
     }
   }
 
@@ -120,6 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: Scaffold(
         backgroundColor: Colors.black,
+        // TODO: why is the topbar not a topbar bro what the hell are we doing
         body: Stack(children: [_buildMainContent(), _buildTopBar(topPadding, isDarkMode, _currentFeedOptions)]),
       ),
     );
@@ -185,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _selectedTabIndex = index;
             _buildFeedScreens();
           });
-          _feedSettings.setSelectedFeedType(_currentFeedOptions[index].value);
+          _feedSettings.setSelectedFeedType(FeedType.fromValue(_currentFeedOptions[index].value));
         }
       },
     );
@@ -241,7 +242,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (_pageController.hasClients) {
         await _pageController.animateToPage(index, duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
       }
-      await _feedSettings.setSelectedFeedType(value);
+      await _feedSettings.setSelectedFeedType(FeedType.fromValue(value));
     }
   }
 
@@ -274,7 +275,10 @@ class _HomeScreenState extends State<HomeScreen> {
             behavior: HitTestBehavior.opaque,
             child: FeedSettingsSheet(feedSettings: feedSettings, onToggleChanged: _handleSettingToggle),
           ),
-    );
+    ).then((_) {
+      // Rebuild feeds when the sheet is closed
+      _onFeedSettingsChanged();
+    });
   }
 
   Future<void> _handleSettingToggle(String settingType, bool isEnabled) async {
