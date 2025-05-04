@@ -73,11 +73,13 @@ class _CommentItemState extends State<CommentItem> {
   VideoPlayerController? _videoController;
   bool _isVideoInitialized = false;
   bool _isFirstImagePrecached = false;
+  int _likeCount = 0;
 
   @override
   void initState() {
     super.initState();
     _isLiked = widget.isLiked;
+    _likeCount = widget.likeCount;
     if (widget.hasMedia && widget.mediaType == 'video' && widget.mediaUrl != null) {
       _initializeVideoPlayer();
     }
@@ -98,6 +100,11 @@ class _CommentItemState extends State<CommentItem> {
     if (oldWidget.isLiked != widget.isLiked) {
       setState(() {
         _isLiked = widget.isLiked;
+      });
+    }
+    if (oldWidget.likeCount != widget.likeCount) {
+      setState(() {
+        _likeCount = widget.likeCount;
       });
     }
   }
@@ -127,6 +134,7 @@ class _CommentItemState extends State<CommentItem> {
   void _toggleLike() {
     setState(() {
       _isLiked = !_isLiked;
+      _likeCount += _isLiked ? 1 : -1;
     });
     if (widget.onLikePressed != null) {
       widget.onLikePressed!();
@@ -361,7 +369,7 @@ class _CommentItemState extends State<CommentItem> {
             color: _isLiked ? AppColors.red : secondaryTextColor,
           ),
           const SizedBox(width: 4),
-          Text(widget.likeCount.toString(), style: TextStyle(fontSize: 12, color: secondaryTextColor)),
+          Text(_likeCount.toString(), style: TextStyle(fontSize: 12, color: secondaryTextColor)),
         ],
       ),
     );
