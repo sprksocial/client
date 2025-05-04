@@ -402,12 +402,6 @@ class _ContentLabelPreferenceState extends State<ContentLabelPreference> {
         final hideAdultContent = settingsService.hideAdultContent;
         final bool isDisabled = isAdultOnly && hideAdultContent;
 
-        // Check if user has an explicit preference
-        final hasExplicitPreference = settingsService.getLabelPreference(
-          LabelerManager.defaultLabelerDid, 
-          widget.labelValue
-        ) != null;
-
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 12),
           child: Material(

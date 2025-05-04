@@ -1,10 +1,7 @@
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart';
-import 'package:provider/provider.dart';
-import 'package:flutter/material.dart';
 import 'package:sparksocial/services/label_service.dart';
 import 'package:sparksocial/services/labeler_manager.dart';
-
 import '../models/feed_post.dart';
 import 'auth_service.dart';
 import 'sprk_client.dart';
