@@ -1,10 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class FeedType {
-  static const int following = 0;
-  static const int forYou = 1;
-  static const int latest = 2;
+// this whole file will need to be refactored when we add modular feed types
+// for now, I just transformed the gambiarra enum class into an actual enum
+// when we add modular feed types, this enum will be replaced by a class
+enum FeedType {
+  following(0, 'Following'),
+  forYou(1, 'For You'),
+  latest(2, 'Latest');
+
+  final int value;
+  final String name;
+
+  const FeedType(this.value, this.name);
+
+  static FeedType fromValue(int value) {
+    return FeedType.values.firstWhere((feedType) => feedType.value == value, orElse: () => FeedType.forYou);
+  }
 }
 
 class FeedSettingsService extends ChangeNotifier {
@@ -19,20 +31,25 @@ class FeedSettingsService extends ChangeNotifier {
   static const String _keyLatestFeed = 'latest_feed_enabled';
   static const String _keyDisableBlur = 'disable_background_blur';
   static const String _keySelectedFeed = 'selected_feed_type';
+  static const String _keyDisableNsfwContent = 'disable_nsfw_content';
+  // there should be a key for each label of each labeler
+  // for now, we'll just use the default labels
 
   // Feed states
   bool _followingFeedEnabled = true;
   bool _forYouFeedEnabled = true;
   bool _latestFeedEnabled = true;
   bool _disableVideoBackgroundBlur = false;
-  int _selectedFeedType = FeedType.forYou;
+  FeedType _selectedFeedType = FeedType.forYou;
+  bool _disableNsfwContent = true;
 
   // Getters
   bool get followingFeedEnabled => _followingFeedEnabled;
   bool get forYouFeedEnabled => _forYouFeedEnabled;
   bool get latestFeedEnabled => _latestFeedEnabled;
   bool get disableVideoBackgroundBlur => _disableVideoBackgroundBlur;
-  int get selectedFeedType => _selectedFeedType;
+  FeedType get selectedFeedType => _selectedFeedType;
+  bool get disableNsfwContent => _disableNsfwContent;
 
   Future<void> loadPreferences() async {
     try {
@@ -42,7 +59,8 @@ class FeedSettingsService extends ChangeNotifier {
       _forYouFeedEnabled = prefs.getBool(_keyForYouFeed) ?? true;
       _latestFeedEnabled = prefs.getBool(_keyLatestFeed) ?? true;
       _disableVideoBackgroundBlur = prefs.getBool(_keyDisableBlur) ?? false;
-      _selectedFeedType = prefs.getInt(_keySelectedFeed) ?? FeedType.forYou;
+      _selectedFeedType = FeedType.values[prefs.getInt(_keySelectedFeed) ?? FeedType.forYou.value];
+      _disableNsfwContent = prefs.getBool(_keyDisableNsfwContent) ?? true;
 
       // Make sure selected feed is enabled
       if (!isSelectedFeedEnabled()) {
@@ -62,7 +80,8 @@ class FeedSettingsService extends ChangeNotifier {
       await prefs.setBool(_keyForYouFeed, _forYouFeedEnabled);
       await prefs.setBool(_keyLatestFeed, _latestFeedEnabled);
       await prefs.setBool(_keyDisableBlur, _disableVideoBackgroundBlur);
-      await prefs.setInt(_keySelectedFeed, _selectedFeedType);
+      await prefs.setInt(_keySelectedFeed, _selectedFeedType.value);
+      await prefs.setBool(_keyDisableNsfwContent, _disableNsfwContent);
       notifyListeners();
     } catch (e) {
       // Silently handle preference save errors
@@ -110,7 +129,7 @@ class FeedSettingsService extends ChangeNotifier {
 
     // Don't allow disabling the currently selected feed
     final feedTypeIndex = getFeedTypeFromSetting(settingType);
-    return feedTypeIndex != _selectedFeedType;
+    return feedTypeIndex != _selectedFeedType.value;
   }
 
   Future<void> toggleFeed(String settingType, bool isEnabled) async {
@@ -140,7 +159,7 @@ class FeedSettingsService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setSelectedFeedType(int feedType) async {
+  Future<void> setSelectedFeedType(FeedType feedType) async {
     _selectedFeedType = feedType;
     await savePreferences();
     notifyListeners();
@@ -149,26 +168,13 @@ class FeedSettingsService extends ChangeNotifier {
   int getFeedTypeFromSetting(String settingType) {
     switch (settingType) {
       case 'following_feed':
-        return FeedType.following;
+        return FeedType.following.value;
       case 'for_you_feed':
-        return FeedType.forYou;
+        return FeedType.forYou.value;
       case 'latest_feed':
-        return FeedType.latest;
+        return FeedType.latest.value;
       default:
-        return FeedType.forYou;
-    }
-  }
-
-  String getFeedNameFromType(int feedType) {
-    switch (feedType) {
-      case FeedType.following:
-        return 'Following';
-      case FeedType.forYou:
-        return 'For You';
-      case FeedType.latest:
-        return 'Latest';
-      default:
-        return 'For You';
+        return FeedType.forYou.value;
     }
   }
 }

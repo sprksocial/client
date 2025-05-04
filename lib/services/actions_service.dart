@@ -1,7 +1,5 @@
-import 'package:atproto/atproto.dart' as atp;
 import 'package:atproto/core.dart';
 import 'package:flutter/foundation.dart';
-import 'package:image/image.dart' as img;
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 
@@ -162,7 +160,7 @@ class ActionsService extends ChangeNotifier {
 
       return response.data;
     } catch (e) {
-      print('Error creating Spark image post record: $e');
+      debugPrint('Error creating Spark image post record: $e');
       rethrow;
     }
   }
