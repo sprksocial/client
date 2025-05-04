@@ -10,6 +10,8 @@ import '../services/auth_service.dart';
 import '../services/feed_manager.dart';
 import '../services/feed_settings_service.dart';
 import '../services/media_manager.dart';
+import '../services/labeler_manager.dart';
+import '../widgets/censorship/warn_builder.dart';
 import '../widgets/image/image_post_item.dart';
 import '../widgets/video/preloaded_video_item.dart';
 import '../widgets/video/video_item.dart';
@@ -109,6 +111,9 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
       });
 
       final authService = context.read<AuthService>();
+      final labelerManager = context.read<LabelerManager>();
+      _feedManager.setLabelerManager(labelerManager);
+      
       final posts = await _feedManager.fetchFeed(widget.feedType, authService);
 
       if (!mounted) return;
@@ -177,7 +182,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
 
     await _preloadMedia(0);
 
-    for (int i = 1; i <= 5 && i < _feedPosts!.length; i++) {
+    for (int i = 1; i <= 3 && i < _feedPosts!.length; i++) {
       _preloadMedia(i);
     }
   }
@@ -246,15 +251,15 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
 
           final totalPosts = _feedPosts?.length ?? 0;
 
-          // Unload videos that are more than 10 positions away
+          // Unload videos that are more than 6 positions away (reduced)
           for (int i = 0; i < totalPosts; i++) {
-            if (i < newIndex - 10 || i > newIndex + 10) {
+            if (i < newIndex - 6 || i > newIndex + 6) {
               _mediaManager.unloadVideo(i);
             }
           }
 
-          // Preload videos within 5 positions
-          for (int i = newIndex - 5; i <= newIndex + 5; i++) {
+          // Preload videos within 3 positions (reduced)
+          for (int i = newIndex - 3; i <= newIndex + 3; i++) {
             if (i >= 0 && i < totalPosts) {
               _preloadMedia(i);
             }
@@ -267,12 +272,27 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
 
         final bool isItemActuallyVisible = (index == _currentIndex) && widget.isParentFeedVisible;
 
+        // Check if the content should show a warning
+        final bool shouldWarn = _feedManager.shouldWarnContent(post);
+        
+        // Get warning message if needed
+        String? warningMessage;
+        if (shouldWarn) {
+          final warningMessages = _feedManager.getWarningMessages(post);
+          if (warningMessages.isNotEmpty) {
+            warningMessage = warningMessages.join(", ");
+          }
+        }
+
+        // Build the appropriate media widget based on the post type
+        Widget contentWidget;
+        
         if (post.videoUrl != null) {
           final isPreloaded = _mediaManager.isVideoPreloaded(index);
           final preloadedVideo = _mediaManager.getPreloadedVideo(index);
 
           if (isPreloaded && preloadedVideo != null) {
-            return PreloadedVideoItem(
+            contentWidget = PreloadedVideoItem(
               key: ValueKey('video_$index'),
               index: index,
               controller: preloadedVideo.controller,
@@ -323,7 +343,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
               },
             );
           } else {
-            return VideoItem(
+            contentWidget = VideoItem(
               key: ValueKey('video_$index'),
               index: index,
               videoUrl: post.videoUrl,
@@ -377,7 +397,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
             );
           }
         } else if (post.imageUrls.isNotEmpty) {
-          return ImagePostItem(
+          contentWidget = ImagePostItem(
             key: ValueKey('image_$index'),
             index: index,
             imageUrls: post.imageUrls,
@@ -404,8 +424,36 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
             onHashtagTap: (String hashtag) {},
           );
         } else {
-          return const Center(child: Text('Unsupported media type', style: TextStyle(color: Colors.white)));
+          contentWidget = const Center(child: Text('Unsupported media type', style: TextStyle(color: Colors.white)));
         }
+
+        // If content should show a warning, wrap it in a WarnBuilder
+        if (shouldWarn && post.labels.isNotEmpty) {
+          // Get the first label source (labelerDid) - in a more complete implementation,
+          // we might want to show warnings from multiple labelers
+          final labelerDid = Provider.of<LabelerManager>(context, listen: false).followedLabelers.firstOrNull ?? 'unknown';
+          
+          // Get the first label value - same comment as above about multiple labels
+          final labelValue = post.labels.first;
+          
+          // Get the blurType from the label definition
+          final labelDefinitions = Provider.of<LabelerManager>(context, listen: false)
+              .getLabelDefinitions(labelerDid);
+          final labelDefinition = labelDefinitions[labelValue];
+          final String blurType = labelDefinition?['blurs'] as String? ?? 'content';
+          
+          debugPrint("Content warning: $labelerDid, $labelValue, $warningMessage, blur: $blurType");
+          return WarnBuilder(
+            labelerDid: labelerDid,
+            labelValue: labelValue,
+            warningMessage: warningMessage,
+            blurType: blurType,
+            child: contentWidget,
+          );
+        }
+
+        // Otherwise, just return the content widget directly
+        return contentWidget;
       },
     );
   }

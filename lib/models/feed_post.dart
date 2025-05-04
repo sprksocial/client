@@ -13,6 +13,7 @@ class FeedPost {
   final int commentCount;
   final int shareCount;
   final List<String> hashtags;
+  List<String> labels;
   final List<String> imageUrls;
   final String uri; // Post URI for likes
   final String cid; // Post CID for likes
@@ -33,6 +34,7 @@ class FeedPost {
     this.commentCount = 0,
     this.shareCount = 0,
     this.hashtags = const [],
+    this.labels = const [],
     this.imageUrls = const [],
     required this.uri,
     required this.cid,
@@ -43,6 +45,11 @@ class FeedPost {
     this.imageAlts = const [],
     this.videoAlt,
   });
+
+  /// Set new labels for this post
+  void setLabels(List<String> newLabels) {
+    labels = List<String>.from(newLabels);
+  }
 
   /// Create a FeedPost from a Bluesky feed item
   static FeedPost fromBlueskyFeed(FeedView feedItem) {

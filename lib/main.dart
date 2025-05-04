@@ -25,6 +25,7 @@ import 'services/video_service.dart';
 import 'utils/app_colors.dart';
 import 'utils/app_theme.dart';
 import 'widgets/upload/upload_progress_indicator.dart';
+import 'services/labeler_manager.dart';
 
 // Global RouteObserver instance
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
@@ -80,6 +81,14 @@ class MyApp extends StatelessWidget {
         ProxyProvider<AuthService, VideoService>(
           create: (context) => VideoService(context.read<AuthService>()),
           update: (_, authService, previousVideoService) => previousVideoService ?? VideoService(authService),
+        ),
+        ChangeNotifierProxyProvider2<AuthService, SettingsService, LabelerManager>(
+          create: (context) => LabelerManager(
+            context.read<AuthService>(),
+            context.read<SettingsService>(),
+          ),
+          update: (_, authService, settingsService, previousLabelerManager) => 
+            previousLabelerManager ?? LabelerManager(authService, settingsService),
         ),
       ],
       child: MaterialApp(
