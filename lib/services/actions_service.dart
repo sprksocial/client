@@ -160,7 +160,7 @@ class ActionsService extends ChangeNotifier {
 
       return response.data;
     } catch (e) {
-      print('Error creating Spark image post record: $e');
+      debugPrint('Error creating Spark image post record: $e');
       rethrow;
     }
   }

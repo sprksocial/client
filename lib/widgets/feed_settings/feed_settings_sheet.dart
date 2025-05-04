@@ -134,7 +134,7 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> with SingleTicker
             TabBar(
               controller: _tabController,
               labelColor: textColor,
-              unselectedLabelColor: textColor.withOpacity(0.5),
+              unselectedLabelColor: textColor.withAlpha(127),
               tabs: const [
                 Tab(text: "Feed"),
                 Tab(text: "Content"),
@@ -431,7 +431,7 @@ class _ContentLabelPreferenceState extends State<ContentLabelPreference> {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                           decoration: BoxDecoration(
-                            color: Colors.red.withOpacity(0.2),
+                            color: Colors.red.withAlpha(51),
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
@@ -450,7 +450,7 @@ class _ContentLabelPreferenceState extends State<ContentLabelPreference> {
                     Text(
                       widget.description,
                       style: TextStyle(
-                        color: widget.textColor.withOpacity(0.7),
+                        color: widget.textColor.withAlpha(179),
                         fontSize: 12,
                       ),
                     ),
@@ -462,14 +462,14 @@ class _ContentLabelPreferenceState extends State<ContentLabelPreference> {
                       Text(
                         'Default: ',
                         style: TextStyle(
-                          color: widget.textColor.withOpacity(0.7),
+                          color: widget.textColor.withAlpha(179),
                           fontSize: 12,
                         ),
                       ),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: _getColorForSetting(defaultSetting).withOpacity(0.2),
+                          color: _getColorForSetting(defaultSetting).withAlpha(51),
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
@@ -524,7 +524,7 @@ class _ContentLabelPreferenceState extends State<ContentLabelPreference> {
                           setState(() {});
                         },
                     style: SegmentedButton.styleFrom(
-                      backgroundColor: widget.textColor.withOpacity(0.1),
+                      backgroundColor: widget.textColor.withAlpha(26),
                       selectedBackgroundColor: AppColors.pink,
                       selectedForegroundColor: Colors.white,
                       foregroundColor: widget.textColor,
@@ -600,7 +600,7 @@ class FeedSettingItem extends StatelessWidget {
             title: Text(feedName, style: TextStyle(color: textColor, fontSize: 16)),
             subtitle:
                 description != null
-                    ? Text(description!, style: TextStyle(color: textColor.withOpacity(0.7), fontSize: 12))
+                    ? Text(description!, style: TextStyle(color: textColor.withAlpha(179), fontSize: 12))
                     : null,
             trailing: Switch(
               value: isEnabled,

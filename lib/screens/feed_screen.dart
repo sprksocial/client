@@ -442,7 +442,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
           final labelDefinition = labelDefinitions[labelValue];
           final String blurType = labelDefinition?['blurs'] as String? ?? 'content';
           
-          print("Content warning: $labelerDid, $labelValue, $warningMessage, blur: $blurType");
+          debugPrint("Content warning: $labelerDid, $labelValue, $warningMessage, blur: $blurType");
           return WarnBuilder(
             labelerDid: labelerDid,
             labelValue: labelValue,

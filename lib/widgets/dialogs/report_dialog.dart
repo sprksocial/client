@@ -120,7 +120,7 @@ class _ReportDialogState extends State<ReportDialog> {
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.error.withOpacity(0.1),
+                    color: theme.colorScheme.error.withAlpha(25),
                     border: Border.all(color: theme.colorScheme.error),
                     borderRadius: BorderRadius.circular(4),
                   ),
@@ -159,7 +159,7 @@ class _ReportDialogState extends State<ReportDialog> {
         friendlyName,
         style: theme.textTheme.bodyMedium?.copyWith(color: textColor, fontWeight: FontWeight.w500, fontSize: 13),
       ),
-      subtitle: Text(description, style: theme.textTheme.bodySmall?.copyWith(color: textColor.withOpacity(0.7), fontSize: 10)),
+      subtitle: Text(description, style: theme.textTheme.bodySmall?.copyWith(color: textColor.withAlpha(179), fontSize: 10)),
       value: reason,
       groupValue: _selectedReason,
       activeColor: theme.colorScheme.primary,

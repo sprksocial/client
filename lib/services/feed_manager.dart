@@ -1,5 +1,6 @@
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sparksocial/services/label_service.dart';
 import 'package:sparksocial/services/labeler_manager.dart';
 import '../models/feed_post.dart';
@@ -162,14 +163,14 @@ class FeedManager {
           // or create a copy of the post with updated labels
           try {
             post.setLabels(labelValues);
-            print('Post ${post.uri} has labels: ${post.labels}');
+            debugPrint('Post ${post.uri} has labels: ${post.labels}');
           } catch (e) {
-            print('Could not update labels for post ${post.uri}: $e');
+            debugPrint('Could not update labels for post ${post.uri}: $e');
           }
         }
       }
     } catch (e) {
-      print('Error fetching labels for multiple posts: $e');
+      debugPrint('Error fetching labels for multiple posts: $e');
     }
   }
 
@@ -187,14 +188,14 @@ class FeedManager {
         
         // Special label '!hide' always hides the post regardless of other settings
         if (post.labels.contains('!hide')) {
-          print('Post ${post.uri} has !hide label and will be hidden');
+          debugPrint('Post ${post.uri} has !hide label and will be hidden');
           return false;
         }
         
         // Check if any label should hide this post based on preferences
         bool shouldHide = _labelerManager!.shouldHideContent(post.labels);
         if (shouldHide) {
-          print('Post ${post.uri} should be hidden based on label preferences');
+          debugPrint('Post ${post.uri} should be hidden based on label preferences');
         }
         return !shouldHide;
       }).toList();
@@ -203,7 +204,7 @@ class FeedManager {
       return visiblePosts;
     } catch (e) {
       // If there's any error, just return the original posts
-      print('Error applying label preferences: $e');
+      debugPrint('Error applying label preferences: $e');
       return posts;
     }
   }
@@ -220,7 +221,7 @@ class FeedManager {
       
       return _labelerManager!.shouldWarnContent(post.labels);
     } catch (e) {
-      print('Error checking if content should be warned: $e');
+      debugPrint('Error checking if content should be warned: $e');
       return false;
     }
   }
@@ -232,7 +233,7 @@ class FeedManager {
     try {
       return _labelerManager!.getWarningMessages(post.labels);
     } catch (e) {
-      print('Error getting warning messages: $e');
+      debugPrint('Error getting warning messages: $e');
       return [];
     }
   }
