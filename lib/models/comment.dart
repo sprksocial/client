@@ -1,8 +1,7 @@
 import 'package:bluesky/app_bsky_embed_video.dart';
 import 'package:bluesky/bluesky.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:sparksocial/services/identity_service.dart';
-import 'package:sparksocial/services/auth_service.dart';
 import 'package:sparksocial/services/profile_service.dart';
 
 class Comment {

@@ -84,7 +84,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
     _animation = CurvedAnimation(parent: _animationController, curve: Curves.easeOut);
     _animationController.forward();
-    _commentCount = widget.commentCount;
+    _commentCount = 0; // Start with 0 and update when comments are loaded
 
     // Add scroll listener for lazy loading
     _scrollController.addListener(_scrollListener);
@@ -124,21 +124,6 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     }
   }
 
-  Future<void> _addComment(String commentUri) async {
-    final commentsService = Provider.of<CommentsService>(context, listen: false);
-    if (widget.isSprk) {
-      final comment = await commentsService.getSparkComment(commentUri);
-      setState(() {
-        _comments?.insert(0, comment);
-      });
-    } else {
-      final comment = await commentsService.getBlueskyComment(commentUri);
-      setState(() {
-        _comments?.insert(0, comment);
-      });
-    }
-  }
-
   Future<void> _loadComments() async {
     if (_isLoading) return;
 
@@ -161,6 +146,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
       if (mounted) {
         setState(() {
           _comments = comments;
+          _commentCount = comments.length; // Update the count based on actual comments
           _isLoading = false;
           _hasMoreComments = false; // Currently we load all comments at once
         });
@@ -264,8 +250,25 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   void _handleCommentDeleted(String commentId) {
     setState(() {
       _comments?.removeWhere((comment) => comment.id == commentId);
-      _commentCount--;
+      _commentCount = (_comments?.length ?? 0); // Update count when removing comment
     });
+  }
+
+  Future<void> _addComment(String commentUri) async {
+    final commentsService = Provider.of<CommentsService>(context, listen: false);
+    if (widget.isSprk) {
+      final comment = await commentsService.getSparkComment(commentUri);
+      setState(() {
+        _comments?.insert(0, comment);
+        _commentCount = (_comments?.length ?? 0); // Update count when adding comment
+      });
+    } else {
+      final comment = await commentsService.getBlueskyComment(commentUri);
+      setState(() {
+        _comments?.insert(0, comment);
+        _commentCount = (_comments?.length ?? 0); // Update count when adding comment
+      });
+    }
   }
 
   @override

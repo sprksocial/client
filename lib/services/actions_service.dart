@@ -1,7 +1,6 @@
-import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
-import 'package:bluesky/bluesky.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 
@@ -25,7 +24,10 @@ class ActionsService extends ChangeNotifier {
   // Delete a post by its URI
   Future<bool> deletePost(String postUri) async {
     try {
-      final response = await _client.repo.deleteRecord(uri: AtUri.parse(postUri));
+      // Ensure the URI starts with 'at://'
+      final normalizedUri = postUri.startsWith('at://') ? postUri : 'at://$postUri';
+
+      final response = await _client.repo.deleteRecord(uri: AtUri.parse(normalizedUri));
 
       if (response.status.code != 200) {
         debugPrint('Failed to delete post: ${response.status.code} ${response.data}');

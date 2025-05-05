@@ -111,6 +111,7 @@ class _CommentInputState extends State<CommentInput> {
     const maxImages = 4;
     final currentImageCount = _selectedImages.length;
     if (currentImageCount >= maxImages) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('You can select up to $maxImages images.')));
       return;
     }
@@ -119,6 +120,8 @@ class _CommentInputState extends State<CommentInput> {
       final List<XFile> pickedFiles = await _picker.pickMultiImage(
         limit: maxImages - currentImageCount, // Limit selection based on remaining slots
       );
+
+      if (!mounted) return;
 
       if (pickedFiles.isNotEmpty) {
         setState(() {
@@ -131,6 +134,7 @@ class _CommentInputState extends State<CommentInput> {
       }
     } catch (e) {
       debugPrint('Error picking images: $e');
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to pick images: ${e.toString()}')));
     }
   }
@@ -151,6 +155,7 @@ class _CommentInputState extends State<CommentInput> {
 
     final text = _textController.text.trim();
     final imagesToUpload = List<XFile>.from(_selectedImages); // Copy list
+    final actionsService = Provider.of<ActionsService>(context, listen: false);
 
     // Get the target CID and URI for the comment
     final targetCid = widget.parentCid ?? widget.postCid;
@@ -161,8 +166,6 @@ class _CommentInputState extends State<CommentInput> {
     });
 
     try {
-      final actionsService = Provider.of<ActionsService>(context, listen: false);
-
       // Pass text and selected images to the service method
       final response = await actionsService.postComment(
         text,
@@ -173,6 +176,8 @@ class _CommentInputState extends State<CommentInput> {
         imageFiles: imagesToUpload,
         altTexts: _altTexts,
       );
+
+      if (!mounted) return;
 
       // Clear text and selected images on success
       _textController.clear();
@@ -193,6 +198,7 @@ class _CommentInputState extends State<CommentInput> {
 
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Comment posted successfully')));
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to post comment: ${e.toString()}')));
       debugPrint('Error posting comment: $e');
     } finally {
@@ -211,11 +217,15 @@ class _CommentInputState extends State<CommentInput> {
     final textColor = widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary;
     final placeholderColor =
         widget.isDarkMode ? AppColors.textLight.withValues(alpha: 128) : AppColors.textSecondary.withValues(alpha: 179);
-    final inputBackgroundColor =
-        widget.isDarkMode ? AppColors.deepPurple.withValues(alpha: 128) : AppColors.lightLavender.withValues(alpha: 77);
+    final inputBackgroundColor = widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender.withValues(alpha: 77);
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      padding: const EdgeInsets.only(
+        left: 16,
+        right: 16,
+        top: 8,
+        bottom: 32, // Add extra padding at bottom for home bar
+      ),
       decoration: BoxDecoration(color: backgroundColor, border: Border(top: BorderSide(color: borderColor, width: 0.5))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -224,37 +234,38 @@ class _CommentInputState extends State<CommentInput> {
           // Emoji Picker is always displayed at the top
           EmojiPicker(onEmojiSelected: _insertEmoji, isDarkMode: widget.isDarkMode),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 8),
 
           if (widget.replyingToUsername != null)
             Padding(
-              padding: const EdgeInsets.only(bottom: 12.0),
+              padding: const EdgeInsets.only(bottom: 8.0),
               child: _buildReplyingToNotice(inputBackgroundColor, borderColor, textColor),
             ),
 
           // Updated input row with centered alignment
           Container(
-            decoration: BoxDecoration(
-              color: inputBackgroundColor,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: borderColor, width: 0.5),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            margin: const EdgeInsets.symmetric(horizontal: 8),
+            decoration: BoxDecoration(color: const Color(0xFF1E1B20), borderRadius: BorderRadius.circular(28)),
+            padding: const EdgeInsets.only(left: 8, right: 2, top: 6, bottom: 6),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _buildUserAvatar(borderColor),
-                const SizedBox(width: 8),
-                _buildAttachmentButton(borderColor, textColor),
-                const SizedBox(width: 8),
+                _buildUserAvatar(textColor),
+                const SizedBox(width: 12),
                 Expanded(child: _buildTextField(textColor, placeholderColor)),
+                Container(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [_buildSendButton(textColor, placeholderColor), _buildAttachmentButton(borderColor, textColor)],
+                  ),
+                ),
               ],
             ),
           ),
 
           // Selected Images Preview (only show if images are selected)
           if (_selectedImages.isNotEmpty)
-            Padding(padding: const EdgeInsets.only(top: 12.0), child: _buildSelectedImagesPreview(borderColor)),
+            Padding(padding: const EdgeInsets.only(top: 8.0), child: _buildSelectedImagesPreview(borderColor)),
         ],
       ),
     );
@@ -282,22 +293,12 @@ class _CommentInputState extends State<CommentInput> {
     );
   }
 
-  Widget _buildUserAvatar(Color borderColor) {
+  Widget _buildUserAvatar(Color textColor) {
     return Container(
-      width: 32,
-      height: 32,
-      decoration: BoxDecoration(
-        color: AppColors.accent,
-        shape: BoxShape.circle,
-        border: Border.all(color: borderColor, width: 1),
-        boxShadow: [BoxShadow(color: AppColors.accent.withValues(alpha: 51), blurRadius: 4, spreadRadius: 1)],
-      ),
-      child: const Center(
-        child: Text(
-          'Y', // Current user's initial
-          style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 14),
-        ),
-      ),
+      width: 28,
+      height: 28,
+      decoration: const BoxDecoration(color: Color(0xFF330072), shape: BoxShape.circle),
+      child: const Center(child: Text('Y', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 14))),
     );
   }
 
@@ -314,31 +315,36 @@ class _CommentInputState extends State<CommentInput> {
       focusNode: widget.focusNode,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: placeholderColor, fontSize: 14),
+        hintStyle: TextStyle(color: Colors.grey[600], fontSize: 16),
         filled: false,
         isDense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
+        contentPadding: const EdgeInsets.symmetric(vertical: 8),
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
         focusedBorder: InputBorder.none,
-        suffixIcon:
-            _isPosting
-                ? Container(
-                  margin: const EdgeInsets.all(8),
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
-                )
-                : IconButton(
-                  icon: Icon(FluentIcons.send_24_filled, size: 20, color: _canSubmit ? AppColors.primary : placeholderColor),
-                  onPressed: _canSubmit ? _submitComment : null,
-                ),
       ),
-      style: TextStyle(color: textColor, fontSize: 14),
-      maxLines: 5,
-      minLines: 1,
+      style: TextStyle(color: textColor, fontSize: 16),
+      maxLines: 1,
       cursorColor: AppColors.primary,
       enabled: !_isPosting,
+    );
+  }
+
+  Widget _buildSendButton(Color textColor, Color placeholderColor) {
+    if (_isPosting) {
+      return Container(
+        margin: const EdgeInsets.all(2),
+        width: 16,
+        height: 16,
+        child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
+      );
+    }
+    return IconButton(
+      padding: EdgeInsets.zero,
+      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+      onPressed: _canSubmit ? _submitComment : null,
+      icon: Icon(FluentIcons.send_24_filled, size: 16, color: _canSubmit ? AppColors.primary : Colors.grey[600]),
     );
   }
 
@@ -348,10 +354,11 @@ class _CommentInputState extends State<CommentInput> {
 
     return IconButton(
       padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+      visualDensity: VisualDensity.compact,
+      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
       onPressed: enabled ? _pickImages : null,
       tooltip: enabled ? 'Add images (up to 4)' : (_isPosting ? 'Posting...' : 'Maximum images reached'),
-      icon: Icon(FluentIcons.image_24_regular, size: 20, color: enabled ? AppColors.primary : textColor.withValues(alpha: 128)),
+      icon: Icon(FluentIcons.image_24_regular, size: 16, color: AppColors.primary),
     );
   }
 
