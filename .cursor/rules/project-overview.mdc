@@ -1,0 +1,22 @@
+---
+description: 
+globs: *.dart
+alwaysApply: false
+---
+# Spark Social - Project Overview
+
+This is a Flutter application for a social media platform inspired by TikTok, integrated with the Bluesky/AT Protocol.
+
+## Main Entry Points
+- [lib/main.dart](mdc:lib/main.dart) - Main application entry point
+- [pubspec.yaml](mdc:pubspec.yaml) - Project dependencies and configuration
+
+## Project Structure
+- `/lib` - Contains all the Dart code for the application
+  - `/screens` - UI screens/pages
+  - `/services` - Business logic and API integrations
+  - `/models` - Data models
+  - `/widgets` - Reusable UI components
+  - `/utils` - Utility functions and constants
+  - `/config` - Configuration files
+

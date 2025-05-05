@@ -30,6 +30,8 @@ import 'services/labeler_manager.dart';
 // Global RouteObserver instance
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
 
+final bool useNewArchitecture = true;
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: ".env");
