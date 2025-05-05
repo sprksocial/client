@@ -248,7 +248,6 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
         });
       } else {
         final response = await actionsService.likePost(comment.cid, comment.uri);
-        print('Like response data: \\${response.data}');
         setState(() {
           comment.likeUri = response.data.uri.toString();
         });

@@ -209,8 +209,10 @@ class _CommentInputState extends State<CommentInput> {
     final backgroundColor = widget.isDarkMode ? AppColors.nearBlack : Colors.white;
     final borderColor = widget.isDarkMode ? AppColors.darkPurple : AppColors.lightLavender;
     final textColor = widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary;
-    final placeholderColor = widget.isDarkMode ? AppColors.textLight.withAlpha(128) : AppColors.textSecondary.withAlpha(179);
-    final inputBackgroundColor = widget.isDarkMode ? AppColors.deepPurple.withAlpha(128) : AppColors.lightLavender.withAlpha(77);
+    final placeholderColor =
+        widget.isDarkMode ? AppColors.textLight.withValues(alpha: 128) : AppColors.textSecondary.withValues(alpha: 179);
+    final inputBackgroundColor =
+        widget.isDarkMode ? AppColors.deepPurple.withValues(alpha: 128) : AppColors.lightLavender.withValues(alpha: 77);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -288,7 +290,7 @@ class _CommentInputState extends State<CommentInput> {
         color: AppColors.accent,
         shape: BoxShape.circle,
         border: Border.all(color: borderColor, width: 1),
-        boxShadow: [BoxShadow(color: AppColors.accent.withOpacity(0.2), blurRadius: 4, spreadRadius: 1)],
+        boxShadow: [BoxShadow(color: AppColors.accent.withValues(alpha: 51), blurRadius: 4, spreadRadius: 1)],
       ),
       child: const Center(
         child: Text(
@@ -349,7 +351,7 @@ class _CommentInputState extends State<CommentInput> {
       constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
       onPressed: enabled ? _pickImages : null,
       tooltip: enabled ? 'Add images (up to 4)' : (_isPosting ? 'Posting...' : 'Maximum images reached'),
-      icon: Icon(FluentIcons.image_24_regular, size: 20, color: enabled ? AppColors.primary : textColor.withOpacity(0.5)),
+      icon: Icon(FluentIcons.image_24_regular, size: 20, color: enabled ? AppColors.primary : textColor.withValues(alpha: 128)),
     );
   }
 
@@ -375,7 +377,7 @@ class _CommentInputState extends State<CommentInput> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: borderColor, width: 0.5),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 26), blurRadius: 4, offset: const Offset(0, 2))],
                     image: DecorationImage(image: FileImage(File(imageFile.path)), fit: BoxFit.cover),
                   ),
                 ),
@@ -384,7 +386,7 @@ class _CommentInputState extends State<CommentInput> {
                   bottom: 4,
                   right: 4,
                   child: Material(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 128),
                     borderRadius: BorderRadius.circular(8),
                     child: InkWell(
                       onTap: () async {
@@ -417,7 +419,7 @@ class _CommentInputState extends State<CommentInput> {
                   top: 4,
                   right: 4,
                   child: Material(
-                    color: Colors.black.withOpacity(0.5),
+                    color: Colors.black.withValues(alpha: 128),
                     shape: const CircleBorder(),
                     child: InkWell(
                       onTap: () => _removeImage(index),
