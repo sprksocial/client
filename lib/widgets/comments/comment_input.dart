@@ -253,11 +253,9 @@ class _CommentInputState extends State<CommentInput> {
                 _buildUserAvatar(textColor),
                 const SizedBox(width: 12),
                 Expanded(child: _buildTextField(textColor, placeholderColor)),
-                Container(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [_buildSendButton(textColor, placeholderColor), _buildAttachmentButton(borderColor, textColor)],
-                  ),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [_buildSendButton(textColor, placeholderColor), _buildAttachmentButton(borderColor, textColor)],
                 ),
               ],
             ),
