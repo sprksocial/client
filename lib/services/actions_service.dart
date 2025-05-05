@@ -1,5 +1,6 @@
-import 'package:atproto/atproto.dart' as atp;
+import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
+import 'package:bluesky/bluesky.dart';
 import 'package:flutter/foundation.dart';
 import 'package:image/image.dart' as img;
 import 'package:image/image.dart' as img;
@@ -77,8 +78,11 @@ class ActionsService extends ChangeNotifier {
     rootCid ??= parentCid;
     rootUri ??= parentUri;
 
+    final isSprk = RegExp(r'^at://[^/]+/so\.sprk\.feed\.post/[^/]+$').hasMatch(parentUri);
+    final postType = isSprk ? "so.sprk.feed.post" : "app.bsky.feed.post";
+
     final commentRecord = <String, dynamic>{
-      "\$type": "so.sprk.feed.post", // Spark feed post type
+      "\$type": postType,
       "text": text,
       "reply": {
         "root": {"cid": rootCid, "uri": rootUri},
@@ -93,7 +97,7 @@ class ActionsService extends ChangeNotifier {
     }
 
     // Use the correct NSID for Spark posts
-    final response = await _client.repo.createRecord(collection: NSID.parse('so.sprk.feed.post'), record: commentRecord);
+    final response = await _client.repo.createRecord(collection: NSID.parse(postType), record: commentRecord);
 
     // Check response status
     if (response.status.code != 200) {

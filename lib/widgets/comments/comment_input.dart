@@ -224,7 +224,7 @@ class _CommentInputState extends State<CommentInput> {
 
           const SizedBox(height: 16),
 
-          if (widget.replyingToUsername != null) 
+          if (widget.replyingToUsername != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 12.0),
               child: _buildReplyingToNotice(inputBackgroundColor, borderColor, textColor),
@@ -251,11 +251,8 @@ class _CommentInputState extends State<CommentInput> {
           ),
 
           // Selected Images Preview (only show if images are selected)
-          if (_selectedImages.isNotEmpty) 
-            Padding(
-              padding: const EdgeInsets.only(top: 12.0),
-              child: _buildSelectedImagesPreview(borderColor),
-            ),
+          if (_selectedImages.isNotEmpty)
+            Padding(padding: const EdgeInsets.only(top: 12.0), child: _buildSelectedImagesPreview(borderColor)),
         ],
       ),
     );
@@ -291,13 +288,7 @@ class _CommentInputState extends State<CommentInput> {
         color: AppColors.accent,
         shape: BoxShape.circle,
         border: Border.all(color: borderColor, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.accent.withOpacity(0.2),
-            blurRadius: 4,
-            spreadRadius: 1,
-          ),
-        ],
+        boxShadow: [BoxShadow(color: AppColors.accent.withOpacity(0.2), blurRadius: 4, spreadRadius: 1)],
       ),
       child: const Center(
         child: Text(
@@ -334,10 +325,7 @@ class _CommentInputState extends State<CommentInput> {
                   margin: const EdgeInsets.all(8),
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
                 )
                 : IconButton(
                   icon: Icon(FluentIcons.send_24_filled, size: 20, color: _canSubmit ? AppColors.primary : placeholderColor),
@@ -361,11 +349,7 @@ class _CommentInputState extends State<CommentInput> {
       constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
       onPressed: enabled ? _pickImages : null,
       tooltip: enabled ? 'Add images (up to 4)' : (_isPosting ? 'Posting...' : 'Maximum images reached'),
-      icon: Icon(
-        FluentIcons.image_24_regular,
-        size: 20,
-        color: enabled ? AppColors.primary : textColor.withOpacity(0.5),
-      ),
+      icon: Icon(FluentIcons.image_24_regular, size: 20, color: enabled ? AppColors.primary : textColor.withOpacity(0.5)),
     );
   }
 
@@ -391,13 +375,7 @@ class _CommentInputState extends State<CommentInput> {
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: borderColor, width: 0.5),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2))],
                     image: DecorationImage(image: FileImage(File(imageFile.path)), fit: BoxFit.cover),
                   ),
                 ),

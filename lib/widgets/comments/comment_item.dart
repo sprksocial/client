@@ -34,9 +34,9 @@ class CommentItem extends StatefulWidget {
   final String cid;
   final String? profileImageUrl;
   final String authorDid;
-  final Function()? onCommentDeleted;
   final bool isLiked;
   final VoidCallback? onLikePressed;
+  final VoidCallback? onDeleted;
 
   const CommentItem({
     super.key,
@@ -58,9 +58,9 @@ class CommentItem extends StatefulWidget {
     required this.cid,
     this.profileImageUrl,
     required this.authorDid,
-    this.onCommentDeleted,
     this.isLiked = false,
     this.onLikePressed,
+    this.onDeleted,
   });
 
   @override
@@ -239,10 +239,7 @@ class _CommentItemState extends State<CommentItem> {
                     final result = await actionsService.deletePost(widget.uri);
                     if (result && mounted) {
                       scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Comment deleted successfully')));
-                      // Notify parent to refresh comments
-                      if (widget.onCommentDeleted != null) {
-                        widget.onCommentDeleted!();
-                      }
+                      widget.onDeleted?.call();
                     }
                   } catch (e) {
                     if (mounted) {

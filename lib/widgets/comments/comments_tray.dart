@@ -124,6 +124,21 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     }
   }
 
+  Future<void> _addComment(String commentUri) async {
+    final commentsService = Provider.of<CommentsService>(context, listen: false);
+    if (widget.isSprk) {
+      final comment = await commentsService.getSparkComment(commentUri);
+      setState(() {
+        _comments?.insert(0, comment);
+      });
+    } else {
+      final comment = await commentsService.getBlueskyComment(commentUri);
+      setState(() {
+        _comments?.insert(0, comment);
+      });
+    }
+  }
+
   Future<void> _loadComments() async {
     if (_isLoading) return;
 
@@ -214,11 +229,11 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     });
 
     // Refresh comments after a new comment is posted
-    _loadComments().then((_) {
-      // Scroll to the bottom after comments are loaded
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _scrollToBottom();
-      });
+    _addComment(commentUri);
+
+    // Scroll to the bottom after comments are loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
     });
   }
 
@@ -227,15 +242,17 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
       final actionsService = Provider.of<ActionsService>(context, listen: false);
 
       if (comment.isLiked) {
-        // Unlike the comment
         await actionsService.unlikePost(comment.likeUri!);
+        setState(() {
+          comment.likeUri = null;
+        });
       } else {
-        // Like the comment
-        await actionsService.likePost(comment.cid, comment.uri);
+        final response = await actionsService.likePost(comment.cid, comment.uri);
+        print('Like response data: \\${response.data}');
+        setState(() {
+          comment.likeUri = response.data.uri.toString();
+        });
       }
-
-      // Refresh comments to update like status
-      await _loadComments();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(
@@ -243,6 +260,13 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
         ).showSnackBar(SnackBar(content: Text('Failed to ${comment.isLiked ? 'unlike' : 'like'} comment: $e')));
       }
     }
+  }
+
+  void _handleCommentDeleted(String commentId) {
+    setState(() {
+      _comments?.removeWhere((comment) => comment.id == commentId);
+      _commentCount--;
+    });
   }
 
   @override
@@ -348,8 +372,6 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
                 style: TextStyle(color: widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary, fontSize: 14),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
-              ElevatedButton(onPressed: _loadComments, child: const Text('Retry')),
             ],
           ),
         ),
@@ -411,14 +433,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
           authorDid: comment.authorDid,
           isLiked: comment.isLiked,
           onLikePressed: () => _handleLike(comment),
-          onCommentDeleted: () {
-            // Refresh the comments list after deletion
-            _loadComments();
-            // Update the comment count
-            setState(() {
-              _commentCount = _commentCount > 0 ? _commentCount - 1 : 0;
-            });
-          },
+          onDeleted: () => _handleCommentDeleted(comment.id),
         );
       },
     );
