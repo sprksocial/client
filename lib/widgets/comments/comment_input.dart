@@ -245,18 +245,17 @@ class _CommentInputState extends State<CommentInput> {
           // Updated input row with centered alignment
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(color: const Color(0xFF1E1B20), borderRadius: BorderRadius.circular(28)),
-            padding: const EdgeInsets.only(left: 8, right: 2, top: 6, bottom: 6),
+            decoration: BoxDecoration(
+              color: widget.isDarkMode ? const Color(0xFF171619) : const Color(0xFFE8E8EA),
+              borderRadius: BorderRadius.circular(32),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _buildUserAvatar(textColor),
                 const SizedBox(width: 12),
                 Expanded(child: _buildTextField(textColor, placeholderColor)),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [_buildSendButton(textColor, placeholderColor), _buildAttachmentButton(borderColor, textColor)],
-                ),
               ],
             ),
           ),
@@ -313,36 +312,32 @@ class _CommentInputState extends State<CommentInput> {
       focusNode: widget.focusNode,
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: TextStyle(color: Colors.grey[600], fontSize: 16),
+        hintStyle: TextStyle(color: placeholderColor, fontSize: 14),
         filled: false,
         isDense: true,
-        contentPadding: const EdgeInsets.symmetric(vertical: 8),
+        contentPadding: EdgeInsets.zero,
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
         focusedBorder: InputBorder.none,
+        suffixIcon:
+            _isPosting
+                ? Container(
+                  margin: const EdgeInsets.all(8),
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
+                )
+                : IconButton(
+                  icon: Icon(FluentIcons.send_24_filled, size: 20, color: _canSubmit ? AppColors.primary : placeholderColor),
+                  onPressed: _canSubmit ? _submitComment : null,
+                ),
       ),
-      style: TextStyle(color: textColor, fontSize: 16),
-      maxLines: 1,
+      style: TextStyle(color: textColor, fontSize: 14),
+      maxLines: 5,
+      minLines: 1,
+      textAlignVertical: TextAlignVertical.center,
       cursorColor: AppColors.primary,
       enabled: !_isPosting,
-    );
-  }
-
-  Widget _buildSendButton(Color textColor, Color placeholderColor) {
-    if (_isPosting) {
-      return Container(
-        margin: const EdgeInsets.all(2),
-        width: 16,
-        height: 16,
-        child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
-      );
-    }
-    return IconButton(
-      padding: EdgeInsets.zero,
-      visualDensity: VisualDensity.compact,
-      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-      onPressed: _canSubmit ? _submitComment : null,
-      icon: Icon(FluentIcons.send_24_filled, size: 16, color: _canSubmit ? AppColors.primary : Colors.grey[600]),
     );
   }
 
