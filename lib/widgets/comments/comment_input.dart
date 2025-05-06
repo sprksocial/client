@@ -254,9 +254,10 @@ class _CommentInputState extends State<CommentInput> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _buildUserAvatar(textColor),
-                const SizedBox(width: 12),
-                Expanded(child: _buildTextField(textColor, placeholderColor)),
+                const SizedBox(width: 5),
                 _buildAttachmentButton(borderColor, textColor),
+                const SizedBox(width: 5),
+                Expanded(child: _buildTextField(textColor, placeholderColor)),
               ],
             ),
           ),
