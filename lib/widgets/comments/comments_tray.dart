@@ -228,21 +228,33 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
       final actionsService = Provider.of<ActionsService>(context, listen: false);
 
       if (comment.isLiked) {
-        await actionsService.unlikePost(comment.likeUri!);
-        setState(() {
-          comment.likeUri = null;
-        });
+        final likeUri = comment.likeUri;
+        if (likeUri == null) {
+          throw Exception('Cannot unlike comment: like URI is null');
+        }
+        await actionsService.unlikePost(likeUri);
+        if (mounted) {
+          setState(() {
+            comment.likeUri = null;
+          });
+        }
       } else {
         final response = await actionsService.likePost(comment.cid, comment.uri);
-        setState(() {
-          comment.likeUri = response.data.uri.toString();
-        });
+        if (mounted) {
+          setState(() {
+            comment.likeUri = response.data.uri.toString();
+          });
+        }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to ${comment.isLiked ? 'unlike' : 'like'} comment: $e')));
+        // Revert the optimistic update since the operation failed
+        setState(() {
+          comment.likeUri = comment.isLiked ? null : comment.likeUri;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to ${comment.isLiked ? 'unlike' : 'like'} comment: $e'), backgroundColor: Colors.red),
+        );
       }
     }
   }

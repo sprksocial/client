@@ -74,6 +74,7 @@ class _CommentItemState extends State<CommentItem> {
   bool _isVideoInitialized = false;
   bool _isFirstImagePrecached = false;
   int _likeCount = 0;
+  bool _isLikeLoading = false;
 
   @override
   void initState() {
@@ -132,13 +133,26 @@ class _CommentItemState extends State<CommentItem> {
   }
 
   void _toggleLike() {
+    if (_isLikeLoading) return; // Don't allow multiple simultaneous like operations
+
     setState(() {
+      _isLikeLoading = true;
       _isLiked = !_isLiked;
       _likeCount += _isLiked ? 1 : -1;
     });
+
     if (widget.onLikePressed != null) {
       widget.onLikePressed!();
     }
+
+    // Reset loading state after a short delay to ensure smooth animation
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() {
+          _isLikeLoading = false;
+        });
+      }
+    });
   }
 
   void _toggleReplies() {
@@ -357,11 +371,17 @@ class _CommentItemState extends State<CommentItem> {
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      onPressed: _toggleLike,
+      onPressed: _isLikeLoading ? null : _toggleLike,
       child: Row(
         children: [
           Icon(
-            _isLiked ? FluentIcons.heart_24_filled : FluentIcons.heart_24_regular,
+            (_isLikeLoading && !_isLiked)
+                ? FluentIcons.heart_24_regular
+                : (_isLikeLoading && _isLiked)
+                ? FluentIcons.heart_24_filled
+                : _isLiked
+                ? FluentIcons.heart_24_filled
+                : FluentIcons.heart_24_regular,
             size: 16,
             color: _isLiked ? AppColors.red : secondaryTextColor,
           ),
