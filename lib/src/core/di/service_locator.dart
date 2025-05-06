@@ -1,4 +1,5 @@
 import 'package:get_it/get_it.dart';
+import '../storage/storage.dart';
 
 /// Global ServiceLocator instance
 final GetIt sl = GetIt.instance;
@@ -15,7 +16,6 @@ Future<void> initServiceLocator() async {
   _registerStorage();
   
   // As features are migrated, their dependencies will be registered here
-
 }
 
 /// Registers core dependencies
@@ -31,7 +31,14 @@ void _registerNetwork() {
 }
 
 /// Registers storage dependencies
-void _registerStorage() {
-  // Register storage services
-  // sl.registerSingleton<StorageService>(StorageServiceImpl());
+void _registerStorage() async {
+  // Initialize storage manager
+  final storageManager = StorageManager.instance;
+  await storageManager.init();
+  
+  // Register storage manager
+  sl.registerSingleton<StorageManager>(storageManager);
+  
+  // Register cache manager
+  sl.registerSingleton<AppCacheManager>(AppCacheManager.instance);
 } 

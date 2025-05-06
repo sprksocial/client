@@ -5,6 +5,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:fvp/fvp.dart' as fvp;
 import 'package:provider/provider.dart';
 
+import 'src/sprk_app.dart';
+import 'src/core/theme/colors.dart';
+import 'src/core/theme/app_theme.dart';
 import 'screens/auth_prompt_screen.dart';
 import 'screens/create_video_screen.dart';
 import 'screens/home_screen.dart';
@@ -22,8 +25,6 @@ import 'services/profile_service.dart';
 import 'services/settings_service.dart';
 import 'services/upload_service.dart';
 import 'services/video_service.dart';
-import 'utils/app_colors.dart';
-import 'utils/app_theme.dart';
 import 'widgets/upload/upload_progress_indicator.dart';
 import 'services/labeler_manager.dart';
 
@@ -42,18 +43,18 @@ void main() async {
   // VESDK.unlockWithLicense("assets/licenses/vesdk_license");
 
   // Force dark status bar and navigation bar
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      statusBarBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.black,
-      systemNavigationBarIconBrightness: Brightness.light,
-    ),
-  );
+  SystemChrome.setSystemUIOverlayStyle(AppTheme.darkSystemUiStyle);
 
   fvp.registerWith();
-  runApp(const MyApp());
+  
+  if (useNewArchitecture) {
+    // Initialize dependencies for new architecture
+    await configureDependencies();
+    runApp(SprkApp());
+  } else {
+    // Run the legacy app
+    runApp(const MyApp());
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -95,28 +96,8 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Spark',
-        theme: ThemeData(
-          primaryColor: AppColors.primary,
-          scaffoldBackgroundColor: Colors.black,
-          colorScheme: ColorScheme.light(primary: AppColors.primary, secondary: AppColors.accent, surface: Colors.black),
-          textTheme: Typography.blackMountainView.apply(bodyColor: AppColors.textPrimary, displayColor: AppColors.textPrimary),
-          useMaterial3: true,
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          hoverColor: Colors.transparent,
-          splashFactory: NoSplash.splashFactory,
-        ),
-        darkTheme: ThemeData(
-          primaryColor: AppColors.primary,
-          scaffoldBackgroundColor: Colors.black,
-          colorScheme: ColorScheme.dark(primary: AppColors.primary, secondary: AppColors.accent, surface: Colors.black),
-          textTheme: Typography.whiteMountainView.apply(bodyColor: AppColors.textLight, displayColor: AppColors.textLight),
-          useMaterial3: true,
-          splashColor: Colors.transparent,
-          highlightColor: Colors.transparent,
-          hoverColor: Colors.transparent,
-          splashFactory: NoSplash.splashFactory,
-        ),
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
         navigatorObservers: [routeObserver],
         home: const SplashScreen(),
@@ -200,62 +181,48 @@ class _MainScreenState extends State<MainScreen> {
       backgroundColor: Colors.black,
       // Use IndexedStack to keep screens alive
       body: IndexedStack(index: navigationProvider.currentIndex, children: _screens),
-      bottomNavigationBar: NavigationBarTheme(
-        data: NavigationBarThemeData(
-          indicatorColor: Colors.transparent,
-          backgroundColor: AppTheme.getNavBackgroundColor(context),
-          height: 60,
-          labelBehavior: NavigationDestinationLabelBehavior.alwaysHide,
-          iconTheme: WidgetStateProperty.resolveWith((states) {
-            if (states.contains(WidgetState.selected)) {
-              return IconThemeData(color: AppTheme.getSelectedIconColor(context), size: 26);
-            }
-            return IconThemeData(color: AppTheme.getUnselectedIconColor(context), size: 26);
-          }),
-        ),
-        child: NavigationBar(
-          selectedIndex: navigationProvider.currentIndex,
-          onDestinationSelected: (index) {
-            if (index == 2) {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(fullscreenDialog: true, builder: (context) => const CreateVideoScreen()));
-            } else {
-              navigationProvider.updateIndex(index);
-            }
-          },
-          destinations: [
-            const NavigationDestination(
-              icon: Icon(FluentIcons.home_24_regular),
-              selectedIcon: Icon(FluentIcons.home_24_filled),
-              label: 'Home',
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: navigationProvider.currentIndex,
+        onDestinationSelected: (index) {
+          if (index == 2) {
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(fullscreenDialog: true, builder: (context) => const CreateVideoScreen()));
+          } else {
+            navigationProvider.updateIndex(index);
+          }
+        },
+        destinations: [
+          const NavigationDestination(
+            icon: Icon(FluentIcons.home_24_regular),
+            selectedIcon: Icon(FluentIcons.home_24_filled),
+            label: 'Home',
+          ),
+          const NavigationDestination(
+            icon: Icon(FluentIcons.compass_northwest_24_regular),
+            selectedIcon: Icon(FluentIcons.compass_northwest_24_filled),
+            label: 'Discover',
+          ),
+          NavigationDestination(
+            icon: Container(
+              width: 48,
+              height: 36,
+              decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(10)),
+              child: const Center(child: Icon(FluentIcons.add_24_filled, color: AppColors.white, size: 24)),
             ),
-            const NavigationDestination(
-              icon: Icon(FluentIcons.compass_northwest_24_regular),
-              selectedIcon: Icon(FluentIcons.compass_northwest_24_filled),
-              label: 'Discover',
-            ),
-            NavigationDestination(
-              icon: Container(
-                width: 48,
-                height: 36,
-                decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(10)),
-                child: const Center(child: Icon(FluentIcons.add_24_filled, color: AppColors.white, size: 24)),
-              ),
-              label: 'Create',
-            ),
-            const NavigationDestination(
-              icon: Icon(FluentIcons.mail_inbox_all_24_regular),
-              selectedIcon: Icon(FluentIcons.mail_inbox_all_24_filled),
-              label: 'Inbox',
-            ),
-            const NavigationDestination(
-              icon: Icon(FluentIcons.person_24_regular),
-              selectedIcon: Icon(FluentIcons.person_24_filled),
-              label: 'Profile',
-            ),
-          ],
-        ),
+            label: 'Create',
+          ),
+          const NavigationDestination(
+            icon: Icon(FluentIcons.mail_inbox_all_24_regular),
+            selectedIcon: Icon(FluentIcons.mail_inbox_all_24_filled),
+            label: 'Inbox',
+          ),
+          const NavigationDestination(
+            icon: Icon(FluentIcons.person_24_regular),
+            selectedIcon: Icon(FluentIcons.person_24_filled),
+            label: 'Profile',
+          ),
+        ],
       ),
     );
   }

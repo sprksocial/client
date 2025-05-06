@@ -1,7 +1,7 @@
 ---
 description: 
-globs: *.dart
-alwaysApply: false
+globs: 
+alwaysApply: true
 ---
 # Spark Social - Project Overview
 
@@ -13,10 +13,12 @@ This is a Flutter application for a social media platform inspired by TikTok, in
 
 ## Project Structure
 - `/lib` - Contains all the Dart code for the application
+  - `/src` - New feature-first architecture the project is currently being migrated to
   - `/screens` - UI screens/pages
   - `/services` - Business logic and API integrations
   - `/models` - Data models
   - `/widgets` - Reusable UI components
   - `/utils` - Utility functions and constants
   - `/config` - Configuration files
+  - `main.dart` - Main entry point
 

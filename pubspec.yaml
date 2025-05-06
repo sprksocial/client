@@ -37,6 +37,7 @@ dependencies:
   mime: ^1.0.6
   image: ^4.5.4
   flutter_cache_manager: ^3.3.1
+  synchronized: ^3.1.0
   # New architecture dependencies
   flutter_riverpod: ^2.4.9
   riverpod_annotation: ^2.3.3
@@ -45,6 +46,8 @@ dependencies:
   json_annotation: ^4.8.1
   get_it: ^7.6.7
   auto_route: ^7.8.4
+  flutter_native_splash: ^2.4.6
+  flutter_secure_storage: ^4.2.1
 
 dev_dependencies:
   flutter_test:

@@ -1,9 +1,9 @@
 ---
 description: 
-globs: *.dart,*.yaml
-alwaysApply: false
+globs: 
+alwaysApply: true
 ---
-You are a senior Dart programmer with experience in the Flutter framework and a preference for clean programming and design patterns.
+You are a senior Dart programmer with experience in the Flutter framework.
 
 Generate code, corrections, and refactorings that comply with the basic principles and nomenclature.
 
@@ -88,31 +88,45 @@ Generate code, corrections, and refactorings that comply with the basic principl
 - Use the following architecture structure:
   ```
   lib/
-  ├── core/                       # Shared code across features
-  │   ├── network/                # ATProto client, API base
-  │   ├── storage/                # Local storage utilities
-  │   ├── widgets/                # Common widgets
-  │   └── utils/                  # Shared utilities
-  ├── features/                   # Feature modules
-  │   └── feature/                   
-  │       ├── data/               # Data layer for this feature
-  │       │   ├── repositories/   
-  │       │   └── models/
-  │       ├── providers/          # Riverpod providers
-  │       └── ui/                 # UI components
-  │           ├── pages/
-  │           └── widgets/
-  └── main.dart                  # App entry point
-  ```
+  ├── main.dart                  # App entry point
+  └── src/
+      ├── sprk_app.dart          # Main MaterialApp
+      ├── core/                  # Shared code across features
+      │   ├── config/            # Application-wide configurations
+      │   ├── di/                # Dependency injection setup
+      │   ├── network/           # ATProto client, API base
+      │   ├── routing/           # AutoRoute setup
+      │   ├── storage/           # Local storage utilities
+      │   ├── theme/             # Theme definitions
+      │   ├── l10n/              # Localization
+      │   ├── widgets/           # Common widgets
+      │   └── utils/             # Shared utilities
+      └── features/              # Feature modules
+          └── feature/                   
+              ├── data/          # Data layer for this feature
+              │   ├── repositories/   
+              │   └── models/
+              ├── providers/     # Riverpod providers
+              └── ui/            # UI components
+                  ├── pages/
+                  └── widgets/
+    ```
+
 
   Folder structure explanation:
-  - `lib/core/`: Contains all shared code that's used across multiple features.
+  - `lib/src/core/`: Contains all shared code that's used across multiple features.
+    - `config/`: Holds application-wide configurations, such as environment settings, API keys, or feature flags.
+    - `di/`: Manages dependency injection setup, typically using a library like GetIt to register and resolve dependencies.
     - `network/`: Handles all network-related functionality, including the ATProto client, API base classes, HTTP interceptors, and connection management. Use only methods included in the ATProto API.
+    - `routing/`: Contains the AutoRoute setup, including route definitions, guards, and navigation helpers.
     - `storage/`: Contains utilities for local storage, such as secure storage, shared preferences, and other persistence mechanisms.
+    - `theme/`: Defines the application's themes, including colors, typography, and component styles for different modes (e.g., light/dark).
+    - `l10n/`: Manages localization and internationalization, including translation files and setup.
     - `widgets/`: Houses reusable UI components that are used across multiple features, like custom buttons, text fields, loading indicators, etc.
     - `utils/`: Includes utility functions and helpers that are used throughout the app, such as date formatters, string manipulators, and common constants.
+
   
-  - `lib/features/`: Contains feature-specific modules, where each feature is a self-contained unit.
+  - `lib/src/features/`: Contains feature-specific modules, where each feature is a self-contained unit.
     - `feature/`: A specific feature module (e.g., auth, feed, profile).
       - `data/`: Handles all data-related concerns for the feature.
         - `repositories/`: Implements data access logic, combining remote and local data sources.
@@ -122,7 +136,8 @@ Generate code, corrections, and refactorings that comply with the basic principl
         - `pages/`: Defines complete screens or pages within the feature.
         - `widgets/`: Contains feature-specific reusable UI components.
   
-  - `main.dart`: The entry point of the application that initializes the app, sets up providers, and defines the root widget.
+  - `lib/main.dart`: The entry point of the application that initializes the app, sets up providers, and defines the root widget.
+  - `lib/src/sprk_app.dart`: The MaterialApp.
 
 - The backend is using AT Protocol. Any interfacing between frontend and backend will use the AT Protocol API
 - Use repository pattern for data persistence
@@ -147,14 +162,8 @@ Generate code, corrections, and refactorings that comply with the basic principl
 - Break down large widgets into smaller, focused widgets
 - Utilize const constructors wherever possible to reduce rebuilds
 - Use Flutter 3.x features.
-
-### Testing
-
-- Use the standard widget testing for flutter
-- Use integration tests for each api module.
-
-
-
+- Always use withAlpha instead of withOpacity
+- Never use relative paths in imports
 
 
 
