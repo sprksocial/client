@@ -38,6 +38,7 @@ dependencies:
   image: ^4.5.4
   flutter_cache_manager: ^3.3.1
   synchronized: ^3.1.0
+  logger: ^2.0.2
   # New architecture dependencies
   flutter_riverpod: ^2.4.9
   riverpod_annotation: ^2.3.3

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart'; // For TapGestureRecognizer
 import '../theme/colors.dart';
+import '../widgets/mentioned_text.dart';
 
 /// Utility class for text formatting and processing
 class TextFormatter {
@@ -71,64 +71,27 @@ class TextFormatter {
     return urls;
   }
 
-  /// Builds rich text with clickable @mentions
-  static RichText buildRichTextWithMentions(
+  /// Builds text with clickable @mentions using the MentionedText widget
+  static Widget buildTextWithMentions(
     BuildContext context,
     String text,
     bool expandDescription,
     Function(String) onUsernameTap,
   ) {
-    final usernameMatches = findUsernameMatches(text);
-    final theme = Theme.of(context);
-
-    final TextSpan textSpan = TextSpan(
-      children: _buildTextSpans(context, text, usernameMatches, onUsernameTap),
-      style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 14),
-    );
-
-    return RichText(
-      text: textSpan,
+    return MentionedText(
+      text: text,
+      onUsernameTap: onUsernameTap,
+      expandText: expandDescription,
       maxLines: expandDescription ? null : 2,
-      overflow: expandDescription ? TextOverflow.visible : TextOverflow.ellipsis,
+      overflow: TextOverflow.ellipsis,
+      textStyle: TextStyle(
+        color: Theme.of(context).colorScheme.onSurface,
+        fontSize: 14,
+      ),
+      mentionStyle: const TextStyle(
+        color: AppColors.primary,
+        fontWeight: FontWeight.bold,
+      ),
     );
-  }
-
-  /// Helper method to build text spans for mentions
-  static List<InlineSpan> _buildTextSpans(
-    BuildContext context,
-    String text,
-    List<Match> usernameMatches,
-    Function(String) onUsernameTap,
-  ) {
-    final List<InlineSpan> spans = [];
-    int lastEnd = 0;
-
-    usernameMatches.sort((a, b) => a.start.compareTo(b.start));
-
-    for (final match in usernameMatches) {
-      if (match.start > lastEnd) {
-        spans.add(TextSpan(text: text.substring(lastEnd, match.start)));
-      }
-
-      final username = match.group(0)!;
-      spans.add(
-        TextSpan(
-          text: username,
-          style: const TextStyle(
-            color: AppColors.primary, // Primary color for usernames
-            fontWeight: FontWeight.bold,
-          ),
-          recognizer: TapGestureRecognizer()..onTap = () => onUsernameTap(username),
-        ),
-      );
-
-      lastEnd = match.end;
-    }
-
-    if (lastEnd < text.length) {
-      spans.add(TextSpan(text: text.substring(lastEnd)));
-    }
-
-    return spans;
   }
 } 

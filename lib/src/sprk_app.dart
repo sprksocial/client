@@ -5,6 +5,7 @@ import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:flutter/services.dart';
 
 import 'core/theme/app_theme.dart';
+import 'core/theme/theme_provider.dart';
 
 /// SprkApp is the root widget of the new architecture.
 /// As features are migrated, they will be integrated here.
@@ -18,13 +19,15 @@ class SprkApp extends ConsumerWidget {
     // Force dark status bar and navigation bar
     SystemChrome.setSystemUIOverlayStyle(AppTheme.darkSystemUiStyle);
     
+    // Watch theme mode from the provider
+    final themeMode = ref.watch(themeModeProvider);
+    
     return MaterialApp.router(
       title: 'Spark',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        // Configure theme according to the app's design system
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      debugShowCheckedModeBanner: false,
+      themeMode: themeMode,      
       routerDelegate: _appRouter.delegate(),
       routeInformationParser: _appRouter.defaultRouteParser(),
     );

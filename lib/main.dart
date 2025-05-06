@@ -1,13 +1,18 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fvp/fvp.dart' as fvp;
 import 'package:provider/provider.dart';
 
 import 'src/sprk_app.dart';
 import 'src/core/theme/colors.dart';
 import 'src/core/theme/app_theme.dart';
+import 'src/core/di/service_locator.dart';
+import 'src/core/utils/logging/logging.dart';
+import 'src/core/utils/logging/riverpod_logger.dart';
 import 'screens/auth_prompt_screen.dart';
 import 'screens/create_video_screen.dart';
 import 'screens/home_screen.dart';
@@ -50,10 +55,30 @@ void main() async {
   if (useNewArchitecture) {
     // Initialize dependencies for new architecture
     await configureDependencies();
-    runApp(SprkApp());
+    
+    // Setup logging for production/debug
+    _setupLogging();
+    
+    // Create a ProviderContainer with the Riverpod logger
+    final container = ProviderContainer(observers: [SparkRiverpodLogger()]);
+    runApp(UncontrolledProviderScope(container: container, child: SprkApp()));
   } else {
     // Run the legacy app
     runApp(const MyApp());
+  }
+}
+
+/// Setup logging framework based on environment
+void _setupLogging() {
+  final logService = sl<LogService>();
+  
+  // Set log level based on debug mode
+  if (kDebugMode) {
+    logService.setGlobalLogLevel(LogLevel.debug);
+    logService.appLogger.i('Debug logging enabled');
+  } else {
+    logService.setGlobalLogLevel(LogLevel.info);
+    logService.appLogger.i('Production logging enabled');
   }
 }
 

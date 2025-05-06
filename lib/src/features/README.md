@@ -196,6 +196,5 @@ If you encounter circular dependencies between providers, consider:
 ## Examples
 
 For reference implementations, check:
-- `lib/src/features/auth` - Authentication feature
 - `lib/src/features/profile` - User profile feature
 

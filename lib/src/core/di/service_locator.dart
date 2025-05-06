@@ -1,5 +1,9 @@
 import 'package:get_it/get_it.dart';
 import '../storage/storage.dart';
+import '../theme/theme_provider.dart';
+import '../network/auth_service.dart';
+import '../network/sprk_client.dart';
+import '../utils/logging/log_service.dart';
 
 /// Global ServiceLocator instance
 final GetIt sl = GetIt.instance;
@@ -13,25 +17,33 @@ Future<void> initServiceLocator() async {
   _registerNetwork();
   
   // Register storage dependencies
-  _registerStorage();
+  await _registerStorage();
+  
+  // Register logging dependencies
+  _registerLogging();
   
   // As features are migrated, their dependencies will be registered here
 }
 
 /// Registers core dependencies
 void _registerCore() {
-  // Register utilities
-  // sl.registerSingleton<SomeUtility>(SomeUtilityImpl());
+  // Register theme notifier
+  sl.registerSingleton<ThemeNotifier>(
+    ThemeNotifier(sl<StorageManager>())
+  );
 }
 
 /// Registers network dependencies
 void _registerNetwork() {
-  // Register network clients and repositories
-  // sl.registerSingleton<ApiClient>(ApiClientImpl());
+  // Register AuthService
+  sl.registerSingleton<AuthService>(AuthService());
+  
+  // Register SprkClient
+  sl.registerSingleton<SprkClient>(SprkClient(sl<AuthService>()));
 }
 
 /// Registers storage dependencies
-void _registerStorage() async {
+Future<void> _registerStorage() async {
   // Initialize storage manager
   final storageManager = StorageManager.instance;
   await storageManager.init();
@@ -41,4 +53,10 @@ void _registerStorage() async {
   
   // Register cache manager
   sl.registerSingleton<AppCacheManager>(AppCacheManager.instance);
+}
+
+/// Registers logging dependencies
+void _registerLogging() {
+  // Register LogService
+  sl.registerSingleton<LogService>(LogService());
 } 
