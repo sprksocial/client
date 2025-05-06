@@ -211,7 +211,7 @@ class _CommentInputState extends State<CommentInput> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(_) {
     final backgroundColor = widget.isDarkMode ? AppColors.nearBlack : Colors.white;
     final borderColor = widget.isDarkMode ? AppColors.darkPurple : AppColors.lightLavender;
     final textColor = widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary;
@@ -256,6 +256,7 @@ class _CommentInputState extends State<CommentInput> {
                 _buildUserAvatar(textColor),
                 const SizedBox(width: 12),
                 Expanded(child: _buildTextField(textColor, placeholderColor)),
+                _buildAttachmentButton(borderColor, textColor),
               ],
             ),
           ),
