@@ -226,8 +226,11 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   Future<void> _handleLike(Comment comment) async {
     try {
       final actionsService = Provider.of<ActionsService>(context, listen: false);
+      final wasLiked = comment.isLiked;
+      final index = _comments?.indexWhere((c) => c.id == comment.id) ?? -1;
+      if (index == -1) return;
 
-      if (comment.isLiked) {
+      if (wasLiked) {
         final likeUri = comment.likeUri;
         if (likeUri == null) {
           throw Exception('Cannot unlike comment: like URI is null');
@@ -235,23 +238,85 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
         await actionsService.unlikePost(likeUri);
         if (mounted) {
           setState(() {
-            comment.likeUri = null;
+            _comments![index] = Comment(
+              id: comment.id,
+              uri: comment.uri,
+              cid: comment.cid,
+              authorDid: comment.authorDid,
+              username: comment.username,
+              profileImageUrl: comment.profileImageUrl,
+              text: comment.text,
+              createdAt: comment.createdAt,
+              likeCount: comment.likeCount,
+              replyCount: comment.replyCount,
+              hashtags: comment.hashtags,
+              hasMedia: comment.hasMedia,
+              mediaType: comment.mediaType,
+              mediaUrl: comment.mediaUrl,
+              likeUri: null,
+              isSprk: comment.isSprk,
+              replies: comment.replies,
+              imageUrls: comment.imageUrls,
+            );
           });
         }
       } else {
         final response = await actionsService.likePost(comment.cid, comment.uri);
         if (mounted) {
           setState(() {
-            comment.likeUri = response.data.uri.toString();
+            _comments![index] = Comment(
+              id: comment.id,
+              uri: comment.uri,
+              cid: comment.cid,
+              authorDid: comment.authorDid,
+              username: comment.username,
+              profileImageUrl: comment.profileImageUrl,
+              text: comment.text,
+              createdAt: comment.createdAt,
+              likeCount: comment.likeCount + 1,
+              replyCount: comment.replyCount,
+              hashtags: comment.hashtags,
+              hasMedia: comment.hasMedia,
+              mediaType: comment.mediaType,
+              mediaUrl: comment.mediaUrl,
+              likeUri: response.data.uri.toString(),
+              isSprk: comment.isSprk,
+              replies: comment.replies,
+              imageUrls: comment.imageUrls,
+            );
           });
         }
       }
     } catch (e) {
       if (mounted) {
-        // Revert the optimistic update since the operation failed
-        setState(() {
-          comment.likeUri = comment.isLiked ? null : comment.likeUri;
-        });
+        // On error, revert the optimistic update by refreshing the comment
+        final index = _comments?.indexWhere((c) => c.id == comment.id) ?? -1;
+        if (index != -1) {
+          final currentComment = _comments![index];
+          setState(() {
+            _comments![index] = Comment(
+              id: currentComment.id,
+              uri: currentComment.uri,
+              cid: currentComment.cid,
+              authorDid: currentComment.authorDid,
+              username: currentComment.username,
+              profileImageUrl: currentComment.profileImageUrl,
+              text: currentComment.text,
+              createdAt: currentComment.createdAt,
+              likeCount: currentComment.likeCount,
+              replyCount: currentComment.replyCount,
+              hashtags: currentComment.hashtags,
+              hasMedia: currentComment.hasMedia,
+              mediaType: currentComment.mediaType,
+              mediaUrl: currentComment.mediaUrl,
+              likeUri: currentComment.likeUri,
+              isSprk: currentComment.isSprk,
+              replies: currentComment.replies,
+              imageUrls: currentComment.imageUrls,
+            );
+          });
+        }
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to ${comment.isLiked ? 'unlike' : 'like'} comment: $e'), backgroundColor: Colors.red),
         );

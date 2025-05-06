@@ -73,14 +73,14 @@ class _CommentItemState extends State<CommentItem> {
   VideoPlayerController? _videoController;
   bool _isVideoInitialized = false;
   bool _isFirstImagePrecached = false;
-  int _likeCount = 0;
+  int _originalCount = 0;
   bool _isLikeLoading = false;
 
   @override
   void initState() {
     super.initState();
     _isLiked = widget.isLiked;
-    _likeCount = widget.likeCount;
+    _originalCount = widget.likeCount;
     if (widget.hasMedia && widget.mediaType == 'video' && widget.mediaUrl != null) {
       _initializeVideoPlayer();
     }
@@ -98,14 +98,9 @@ class _CommentItemState extends State<CommentItem> {
   @override
   void didUpdateWidget(CommentItem oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.isLiked != widget.isLiked) {
+    if (!_isLikeLoading && oldWidget.isLiked != widget.isLiked) {
       setState(() {
         _isLiked = widget.isLiked;
-      });
-    }
-    if (oldWidget.likeCount != widget.likeCount) {
-      setState(() {
-        _likeCount = widget.likeCount;
       });
     }
   }
@@ -133,12 +128,11 @@ class _CommentItemState extends State<CommentItem> {
   }
 
   void _toggleLike() {
-    if (_isLikeLoading) return; // Don't allow multiple simultaneous like operations
+    if (_isLikeLoading) return;
 
     setState(() {
       _isLikeLoading = true;
       _isLiked = !_isLiked;
-      _likeCount += _isLiked ? 1 : -1;
     });
 
     if (widget.onLikePressed != null) {
@@ -365,6 +359,8 @@ class _CommentItemState extends State<CommentItem> {
   }
 
   Widget _buildLikeButton(Color secondaryTextColor) {
+    final displayCount = _isLiked ? _originalCount + 1 : _originalCount;
+
     return TextButton(
       style: TextButton.styleFrom(
         padding: EdgeInsets.zero,
@@ -386,7 +382,7 @@ class _CommentItemState extends State<CommentItem> {
             color: _isLiked ? AppColors.red : secondaryTextColor,
           ),
           const SizedBox(width: 4),
-          Text(_likeCount.toString(), style: TextStyle(fontSize: 12, color: secondaryTextColor)),
+          Text(displayCount.toString(), style: TextStyle(fontSize: 12, color: secondaryTextColor)),
         ],
       ),
     );
