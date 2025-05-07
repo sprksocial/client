@@ -17,6 +17,7 @@ void showCommentsTray({
   required String postCid,
   required int commentCount,
   required Function(int) onClose,
+  required Function(int) onCountUpdate,
   required bool isDarkMode,
   required bool isSprk,
 }) {
@@ -34,6 +35,7 @@ void showCommentsTray({
             Navigator.pop(context);
             onClose(updatedCount);
           },
+          onCountUpdate: onCountUpdate,
           isDarkMode: isDarkMode,
           isSprk: isSprk,
         ),
@@ -45,6 +47,7 @@ class CommentsTray extends StatefulWidget {
   final String postCid;
   final int commentCount;
   final Function(int) onClose;
+  final Function(int) onCountUpdate;
   final bool isDarkMode;
   final bool isSprk;
 
@@ -54,6 +57,7 @@ class CommentsTray extends StatefulWidget {
     required this.postCid,
     required this.commentCount,
     required this.onClose,
+    required this.onCountUpdate,
     this.isDarkMode = true,
     required this.isSprk,
   });
@@ -76,7 +80,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   bool _isLoading = false;
   String? _error;
   bool _hasMoreComments = true;
-  late int _commentCount;
+  int _commentCount = 0;
 
   @override
   void initState() {
@@ -84,7 +88,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
     _animation = CurvedAnimation(parent: _animationController, curve: Curves.easeOut);
     _animationController.forward();
-    _commentCount = 0; // Start with 0 and update when comments are loaded
+    _commentCount = widget.commentCount;
 
     // Add scroll listener for lazy loading
     _scrollController.addListener(_scrollListener);
@@ -94,6 +98,16 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
 
     // Load comments
     _loadComments();
+  }
+
+  @override
+  void didUpdateWidget(CommentsTray oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.commentCount != widget.commentCount) {
+      setState(() {
+        _commentCount = widget.commentCount;
+      });
+    }
   }
 
   @override
@@ -133,7 +147,6 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     });
 
     try {
-      // Get the service but don't listen to it here
       final commentsService = Provider.of<CommentsService>(context, listen: false);
 
       final List<Comment> comments;
@@ -146,10 +159,13 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
       if (mounted) {
         setState(() {
           _comments = comments;
-          _commentCount = comments.length; // Update the count based on actual comments
+          _commentCount = comments.length;
           _isLoading = false;
-          _hasMoreComments = false; // Currently we load all comments at once
+          _hasMoreComments = false;
         });
+
+        // Update parent with new count without closing
+        widget.onCountUpdate(_commentCount);
       }
     } catch (e) {
       if (mounted) {
@@ -209,7 +225,6 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   }
 
   void _onCommentPosted(String commentUri) {
-    // Increment the comment count
     setState(() {
       _commentCount++;
     });
@@ -327,7 +342,9 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   void _handleCommentDeleted(String commentId) {
     setState(() {
       _comments?.removeWhere((comment) => comment.id == commentId);
-      _commentCount = (_comments?.length ?? 0); // Update count when removing comment
+      _commentCount = (_comments?.length ?? 0);
+      // Update parent with new count without closing
+      widget.onCountUpdate(_commentCount);
     });
   }
 
@@ -337,13 +354,17 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
       final comment = await commentsService.getSparkComment(commentUri);
       setState(() {
         _comments?.insert(0, comment);
-        _commentCount = (_comments?.length ?? 0); // Update count when adding comment
+        _commentCount = (_comments?.length ?? 0);
+        // Update parent with new count without closing
+        widget.onCountUpdate(_commentCount);
       });
     } else {
       final comment = await commentsService.getBlueskyComment(commentUri);
       setState(() {
         _comments?.insert(0, comment);
-        _commentCount = (_comments?.length ?? 0); // Update count when adding comment
+        _commentCount = (_comments?.length ?? 0);
+        // Update parent with new count without closing
+        widget.onCountUpdate(_commentCount);
       });
     }
   }
