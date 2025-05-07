@@ -17,7 +17,6 @@ dependencies:
   cached_network_image: ^3.3.1
   camera: ^0.10.5+9
   path_provider: ^2.1.2
-  provider: ^6.1.1
   flutter_launcher_icons: ^0.14.3
   flutter_svg: ^2.0.7
   atproto: ^0.13.3
@@ -37,9 +36,9 @@ dependencies:
   mime: ^1.0.6
   image: ^4.5.4
   flutter_cache_manager: ^3.3.1
+  # New architecture dependencies
   synchronized: ^3.1.0
   logger: ^2.0.2
-  # New architecture dependencies
   flutter_riverpod: ^2.4.9
   riverpod_annotation: ^2.3.3
   freezed: ^2.4.6
@@ -49,6 +48,8 @@ dependencies:
   auto_route: ^7.8.4
   flutter_native_splash: ^2.4.6
   flutter_secure_storage: ^4.2.1
+  # Old architecture dependencies
+  provider: ^6.1.1
 
 dev_dependencies:
   flutter_test:

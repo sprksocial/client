@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import '../storage/storage_manager.dart';
+import 'package:sparksocial/src/core/storage/storage.dart';
 
 /// ThemeMode enum extension for serialization
 extension ThemeModeExtension on ThemeMode {
@@ -45,7 +45,6 @@ class ThemeState {
 /// Theme notifier that manages theme state
 class ThemeNotifier extends StateNotifier<ThemeState> {
   final StorageManager _storageManager;
-  static const String _themeKey = 'app_theme_mode';
   
   ThemeNotifier(this._storageManager) 
     : super(const ThemeState(themeMode: ThemeMode.system)) {
@@ -54,7 +53,7 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
   
   /// Load the saved theme from storage
   Future<void> _loadSavedTheme() async {
-    final savedTheme = await _storageManager.preferences.getString(_themeKey);
+    final savedTheme = await _storageManager.preferences.getString(StorageKeys.themeKey);
     if (savedTheme != null) {
       state = state.copyWith(themeMode: ThemeModeExtension.fromValue(savedTheme));
     }
@@ -62,7 +61,7 @@ class ThemeNotifier extends StateNotifier<ThemeState> {
   
   /// Change theme and persist the choice
   Future<void> setThemeMode(ThemeMode themeMode) async {
-    await _storageManager.preferences.setString(_themeKey, themeMode.value);
+    await _storageManager.preferences.setString(StorageKeys.themeKey, themeMode.value);
     state = state.copyWith(themeMode: themeMode);
   }
   

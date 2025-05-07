@@ -2,9 +2,10 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:sparksocial/src/core/storage/cache_manager_interface.dart';
 
 /// Manages temporary cache files for the application
-class AppCacheManager {
+class AppCacheManager implements CacheManagerInterface {
   /// Singleton instance
   static final AppCacheManager _instance = AppCacheManager._();
   
@@ -20,6 +21,7 @@ class AppCacheManager {
   static AppCacheManager get instance => _instance;
   
   /// Get a cached file or download it if not available
+  @override
   Future<File> getFile(String url) async {
     final fileInfo = await defaultCacheManager.getFileFromCache(url);
     
@@ -33,6 +35,7 @@ class AppCacheManager {
   }
   
   /// Store a file in the cache with the given key
+  @override
   Future<void> putFile(String url, List<int> fileBytes) async {
     await defaultCacheManager.putFile(
       url, 
@@ -42,17 +45,20 @@ class AppCacheManager {
   }
   
   /// Remove a specific file from cache
+  @override
   Future<void> removeFile(String url) async {
     await defaultCacheManager.removeFile(url);
   }
   
   /// Calculate the total size of the cache in bytes
+  @override
   Future<int> getCacheSize() async {
     final cacheDir = await getTemporaryDirectory();
     return await _calculateDirSize(cacheDir);
   }
   
   /// Clear all cached files
+  @override
   Future<void> clearCache() async {
     await defaultCacheManager.emptyCache();
     

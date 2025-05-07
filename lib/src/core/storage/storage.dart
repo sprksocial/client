@@ -9,4 +9,5 @@ export 'shared_prefs_storage.dart';
 export 'secure_storage.dart';
 export 'storage_manager.dart';
 export 'storage_constants.dart';
-export 'cache_manager.dart'; 
+export 'cache_manager_impl.dart'; 
+export 'cache_manager_interface.dart';

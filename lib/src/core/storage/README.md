@@ -17,7 +17,7 @@ This directory contains utilities for handling local storage operations in the S
 
 ```dart
 // Access the storage manager
-final storageManager = StorageManager.instance;
+final storageManager = GetIt.instance<StorageManager>();
 
 // Store a value in preferences (non-sensitive data)
 await storageManager.preferences.setString(StorageKeys.username, 'johndoe');
@@ -35,29 +35,16 @@ final token = await storageManager.secure.getString(StorageKeys.authToken);
 ### Storing Complex Objects
 
 ```dart
-// Define a User class with fromJson and toJson methods
-class User {
-  final String id;
-  final String name;
-  final String email;
+// Define a User class with freezed
+@freezed
+class User with _$User {
+  const factory User({
+    required String id,
+    required String name,
+    required String email,
+  }) = _User;
 
-  User({required this.id, required this.name, required this.email});
-
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      email: json['email'] as String,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'email': email,
-    };
-  }
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
 }
 
 // Store a user object
@@ -79,7 +66,7 @@ final retrievedUser = await storageManager.preferences.getObject<User>(
 
 ```dart
 // Access the cache manager
-final cacheManager = AppCacheManager.instance;
+final cacheManager = GetIt.instance<CacheManagerInterface>();
 
 // Get a file (from cache if available, or download it)
 final file = await cacheManager.getFile('https://example.com/image.jpg');

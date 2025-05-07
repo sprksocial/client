@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 
-import '../../../screens/auth_prompt_screen.dart';
 import '../../../screens/create_video_screen.dart';
 import '../../../screens/login_screen.dart';
 import '../../../screens/messages_screen.dart';
@@ -11,8 +10,10 @@ import '../../../screens/search_screen.dart';
 import '../../../screens/splash_screen.dart';
 import '../../../main.dart';
 
-// Define route pages for AutoRoute
-// Each page should correspond to a screen in the app
+// Here's where we add the pages for the router
+export 'package:sparksocial/src/core/auth/ui/pages/auth_prompt_page.dart';
+
+// These pages are temporary and will be replaced with the actual pages when they are implemented in the new architecture
 
 @RoutePage()
 class SplashPage extends StatelessWidget {
@@ -41,16 +42,6 @@ class LoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const LoginScreen();
-  }
-}
-
-@RoutePage()
-class AuthPromptPage extends StatelessWidget {
-  const AuthPromptPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const AuthPromptScreen();
   }
 }
 

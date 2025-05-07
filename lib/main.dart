@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:fvp/fvp.dart' as fvp;
 import 'package:provider/provider.dart';
 
@@ -60,8 +60,8 @@ void main() async {
     _setupLogging();
     
     // Create a ProviderContainer with the Riverpod logger
-    final container = ProviderContainer(observers: [SparkRiverpodLogger()]);
-    runApp(UncontrolledProviderScope(container: container, child: SprkApp()));
+    final container = riverpod.ProviderContainer(observers: [SparkRiverpodLogger()]);
+    runApp(riverpod.UncontrolledProviderScope(container: container, child: SprkApp()));
   } else {
     // Run the legacy app
     runApp(const MyApp());

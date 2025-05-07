@@ -142,7 +142,7 @@ Generate code, corrections, and refactorings that comply with the basic principl
 - The backend is using AT Protocol. Any interfacing between frontend and backend will use the AT Protocol API
 - Use repository pattern for data persistence
   - see cache if you need to cache data
-  - use the cache manager in `lib/src/storage/cache_manager.dart`
+  - use the cache manager in `@lib/src/storage/cache_manager.dart`
 - Use Riverpod to manage state
   - see keepAlive if you need to keep the state alive
 - Use freezed to manage UI states
@@ -156,7 +156,7 @@ Generate code, corrections, and refactorings that comply with the basic principl
 - Use ThemeData to manage themes
 - Use AppLocalizations to manage translations
 - Use constants to manage constants values
-- Use `lib/src/core/storage/storage_manager.dart` to manage storage
+- Use `@lib/src/core/storage/storage_manager.dart` to manage storage
 - When a widget tree becomes too deep, it can lead to longer build times and increased memory usage. Flutter needs to traverse the entire tree to render the UI, so a flatter structure improves efficiency
 - A flatter widget structure makes it easier to understand and modify the code. Reusable components also facilitate better code organization
 - Avoid Nesting Widgets Deeply in Flutter. Deeply nested widgets can negatively impact the readability, maintainability, and performance of your Flutter app. Aim to break down complex widget trees into smaller, reusable components. This not only makes your code cleaner but also enhances the performance by reducing the build complexity
@@ -166,12 +166,12 @@ Generate code, corrections, and refactorings that comply with the basic principl
 - Use Flutter 3.x features.
 - Always use withAlpha instead of withOpacity
 - Never use relative paths in imports
-- Register providers in `lib/src/core/di/service_locator.dart`
-- Register pages in `lib/src/core/routing/pages.dart` and routes in `lib/src/core/routing/app_router.dart`
+- Register providers in `@lib/src/core/di/service_locator.dart`
+- Register pages in `@lib/src/core/routing/pages.dart` and routes in `@lib/src/core/routing/app_router.dart`
 - Avoid functions that return widgets
-- Use `lib/src/core/logging/` for logging
-
-
+- Use `@lib/src/core/utils/logging/` for logging
+- Storage keys are always stored at `@lib/src/storage/storage_constants.dart`
+- Repositories should always have an interface and an implementation
 
 
 

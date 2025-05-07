@@ -13,6 +13,8 @@ class StorageKeys {
   static const String locale = 'app_locale';
   static const String isFirstLaunch = 'is_first_launch';
   static const String hasCompletedOnboarding = 'has_completed_onboarding';
+  static const String themeKey = 'app_theme_mode';
+
   
   /// User preferences
   static const String notificationsEnabled = 'notifications_enabled';

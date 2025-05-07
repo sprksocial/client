@@ -2,6 +2,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// AppConfig manages application-wide configuration settings
 /// loaded from environment variables or .env files.
+/// Not to be confused with the settings feature, which is a separate feature that manages user settings.
 ///
 /// All app configuration should be accessed through this class 
 /// to maintain a single source of truth for application settings.
