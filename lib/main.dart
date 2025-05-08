@@ -8,8 +8,8 @@ import 'package:fvp/fvp.dart' as fvp;
 import 'package:provider/provider.dart';
 
 import 'src/sprk_app.dart';
-import 'src/core/theme/colors.dart';
-import 'src/core/theme/app_theme.dart';
+import 'src/core/theme/data/models/colors.dart';
+import 'src/core/theme/data/models/app_theme.dart';
 import 'src/core/di/service_locator.dart';
 import 'src/core/utils/logging/logging.dart';
 import 'src/core/utils/logging/riverpod_logger.dart';

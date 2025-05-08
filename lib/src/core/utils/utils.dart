@@ -1,4 +1,4 @@
-// Barrel file for exporting all utilities
+library;
 
 export 'text_formatter.dart'; 
 export 'logging/logging.dart';

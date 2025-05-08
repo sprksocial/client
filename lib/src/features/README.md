@@ -7,9 +7,9 @@ This directory contains feature modules organized according to the feature-first
 - **Dependency Injection (DI)**: A technique where one object supplies the dependencies of another object. In this app, GetIt is used to provide instances of services and repositories where needed without tight coupling.
 - **Data Layer**: The part of the app that manages data operations, including API calls, local storage, and data transformations. It contains repositories and models.
 - **Models**: Classes that represent data structures used throughout the app. In this project, models are created using Freezed for immutability and type safety.
-- **Repository**: The class that manages data operations for a specific feature. It abstracts the data source (API, local storage, etc.) from the rest of the app, making it easier to change the data source without affecting other parts.
+- **Repository**: The class that manages data operations for a specific feature. It abstracts the data source (API, local storage, etc.) from the rest of the app, making it easier to change the data source without affecting other parts. Basically, it's the part that handles the data directly.
 
-- **Provider**: In Riverpod, a container for a piece of state that can be accessed and observed by UI components. Providers can depend on other providers to create a reactive graph.
+- **Provider**: In Riverpod, a container for a piece of state that can be accessed and observed by UI components. Providers can depend on other providers to create a reactive graph. Providers use repositories to get data. Widgets use providers to manage state. Widgets are not supposed to use repositories directly.
 - **Riverpod**: A state management library that provides reactive programming patterns. It offers better type safety and dependency management than the original Provider package.
 - **FutureProvider**: A Riverpod provider specifically for handling asynchronous data like API calls. It manages loading, error, and success states automatically.
 - **StateNotifier**: A class that holds and mutates state in a controlled way, notifying listeners of changes.

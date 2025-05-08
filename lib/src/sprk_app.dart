@@ -4,18 +4,30 @@ import 'package:sparksocial/src/core/di/service_locator.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:flutter/services.dart';
 
-import 'core/theme/app_theme.dart';
-import 'core/theme/theme_provider.dart';
+import 'core/theme/data/models/app_theme.dart';
+import 'core/theme/providers/theme_provider.dart';
 
 /// SprkApp is the root widget of the new architecture.
 /// As features are migrated, they will be integrated here.
-class SprkApp extends ConsumerWidget {
-  SprkApp({super.key}) : _appRouter = AppRouter();
+class SprkApp extends ConsumerStatefulWidget {
+  const SprkApp({super.key});
   
-  final AppRouter _appRouter;
+  @override
+  ConsumerState<SprkApp> createState() => _SprkAppState();
+}
+
+class _SprkAppState extends ConsumerState<SprkApp> {
+  final _appRouter = AppRouter();
+  
+  @override
+  void initState() {
+    super.initState();
+    // Initialize theme provider
+    ref.read(themeProvider.notifier).initialize();
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     // Force dark status bar and navigation bar
     SystemChrome.setSystemUIOverlayStyle(AppTheme.darkSystemUiStyle);
     

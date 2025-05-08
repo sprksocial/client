@@ -145,6 +145,7 @@ Generate code, corrections, and refactorings that comply with the basic principl
   - use the cache manager in `@lib/src/storage/cache_manager.dart`
 - Use Riverpod to manage state
   - see keepAlive if you need to keep the state alive
+  - use riverpod annotations
 - Use freezed to manage UI states
 - Use getIt to manage dependencies
   - Use singleton for services and repositories

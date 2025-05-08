@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../theme/colors.dart';
+import '../theme/data/models/colors.dart';
 import '../widgets/mentioned_text.dart';
 
 /// Utility class for text formatting and processing

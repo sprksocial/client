@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import '../theme/colors.dart';
+import '../theme/data/models/colors.dart';
 import '../utils/text_formatter.dart';
 
 /// A widget that displays text with clickable @mentions
