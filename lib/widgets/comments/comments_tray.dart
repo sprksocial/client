@@ -382,34 +382,35 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
       builder: (context, child) {
         return Transform.translate(offset: Offset(0, height * (1 - _animation.value)), child: child);
       },
-      child: Container(
-        height: height,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
-          border: Border.all(color: borderColor),
-        ),
-        child: Column(
-          children: [
-            _buildHeader(borderColor, textColor),
-            Expanded(child: _buildCommentsList()),
-
-            Padding(
-              padding: EdgeInsets.only(bottom: keyboardHeight),
-              child: CommentInput(
-                videoId: widget.postUri,
-                replyingToUsername: _replyingToUsername,
-                replyingToId: _replyingToId,
-                onCancelReply: _cancelReply,
-                isDarkMode: widget.isDarkMode,
-                postCid: widget.postCid,
-                postUri: widget.postUri,
-                parentCid: _replyingToCid,
-                parentUri: _replyingToUri,
-                onCommentPosted: _onCommentPosted,
+      child: SafeArea(
+        child: Container(
+          height: height,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+            border: Border.all(color: borderColor),
+          ),
+          child: Column(
+            children: [
+              _buildHeader(borderColor, textColor),
+              Expanded(child: _buildCommentsList()),
+              Padding(
+                padding: EdgeInsets.only(bottom: keyboardHeight),
+                child: CommentInput(
+                  videoId: widget.postUri,
+                  replyingToUsername: _replyingToUsername,
+                  replyingToId: _replyingToId,
+                  onCancelReply: _cancelReply,
+                  isDarkMode: widget.isDarkMode,
+                  postCid: widget.postCid,
+                  postUri: widget.postUri,
+                  parentCid: _replyingToCid,
+                  parentUri: _replyingToUri,
+                  onCommentPosted: _onCommentPosted,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

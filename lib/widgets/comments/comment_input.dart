@@ -224,7 +224,7 @@ class _CommentInputState extends State<CommentInput> {
         left: 16,
         right: 16,
         top: 8,
-        bottom: 32, // Add extra padding at bottom for home bar
+        bottom: 16,
       ),
       decoration: BoxDecoration(color: backgroundColor, border: Border(top: BorderSide(color: borderColor, width: 0.5))),
       child: Column(
@@ -353,7 +353,7 @@ class _CommentInputState extends State<CommentInput> {
       constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
       onPressed: enabled ? _pickImages : null,
       tooltip: enabled ? 'Add images (up to 4)' : (_isPosting ? 'Posting...' : 'Maximum images reached'),
-      icon: Icon(FluentIcons.image_24_regular, size: 16, color: AppColors.primary),
+      icon: Icon(FluentIcons.image_24_regular, size: 24, color: AppColors.primary),
     );
   }
 
