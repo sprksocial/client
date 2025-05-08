@@ -51,6 +51,10 @@ class _VideoDescriptionState extends State<VideoDescription> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
+    if (widget.text.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return GestureDetector(
       onTap: _toggleExpanded,
       child: AnimatedBuilder(
