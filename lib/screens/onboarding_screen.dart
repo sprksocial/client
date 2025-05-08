@@ -32,14 +32,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.initState();
     _displayNameController = TextEditingController();
     _descriptionController = TextEditingController();
+    _displayNameController.addListener(_onCredentialsChanged);
+    _descriptionController.addListener(_onCredentialsChanged);
     _loadBskyProfile();
   }
 
   @override
   void dispose() {
+    _displayNameController.removeListener(_onCredentialsChanged);
+    _descriptionController.removeListener(_onCredentialsChanged);
     _displayNameController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  void _onCredentialsChanged() {
+    setState(() {});
   }
 
   Future<void> _loadBskyProfile() async {
@@ -159,6 +167,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ? NetworkImage(avatarUrl) as ImageProvider<Object>
             : null;
 
+    final originalDisplayName = _bskyProfile?['value']?['displayName'] as String?;
+    final originalDescription = _bskyProfile?['value']?['description'] as String?;
+
+    final bool canUndoDisplayName =
+        originalDisplayName != null && originalDisplayName.isNotEmpty && _displayNameController.text != originalDisplayName;
+
+    final bool canUndoDescription =
+        originalDescription != null && originalDescription.isNotEmpty && _descriptionController.text != originalDescription;
+
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
@@ -222,12 +239,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       controller: _displayNameController,
                       hintText: 'Display Name',
                       fillColor: backgroundColor,
-                      onUndo: () {
-                        if (_bskyProfile != null) {
-                          final value = _bskyProfile!['value'] as Map<String, dynamic>?;
-                          setState(() => _displayNameController.text = value?['displayName'] as String? ?? '');
-                        }
-                      },
+                      onUndo:
+                          canUndoDisplayName
+                              ? () {
+                                setState(() => _displayNameController.text = originalDisplayName);
+                              }
+                              : null,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) return 'Display Name is required';
                         return null;
@@ -239,12 +256,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       hintText: 'Bio',
                       fillColor: backgroundColor,
                       maxLines: 3,
-                      onUndo: () {
-                        if (_bskyProfile != null) {
-                          final value = _bskyProfile!['value'] as Map<String, dynamic>?;
-                          setState(() => _descriptionController.text = value?['description'] as String? ?? '');
-                        }
-                      },
+                      onUndo:
+                          canUndoDescription
+                              ? () {
+                                setState(() => _descriptionController.text = originalDescription);
+                              }
+                              : null,
                     ),
                     const SizedBox(height: 24),
                     Align(
