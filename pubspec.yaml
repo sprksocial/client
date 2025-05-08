@@ -2,7 +2,7 @@ name: sparksocial
 description: "A new Flutter project."
 publish_to: 'none'
 # The number after + should stay fixed, the android workflow will change it on every build
-version: 0.1.7
+version: 0.2.0+1
 
 environment:
   sdk: ^3.7.2
