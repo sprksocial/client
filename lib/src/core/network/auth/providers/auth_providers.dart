@@ -2,26 +2,41 @@ import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/network/auth/models/auth_state.dart';
-import 'package:sparksocial/src/core/network/auth/models/login_result.dart';
-import 'package:sparksocial/src/core/network/auth/repositories/auth_repository.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sparksocial/src/core/network/auth/data/models/auth_state.dart';
+import 'package:sparksocial/src/core/network/auth/data/models/login_result.dart';
+import 'package:sparksocial/src/core/network/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
+
+part 'auth_providers.g.dart';
+
+/// Repository provider for authentication operations
+@riverpod
+AuthRepository authRepository(Ref ref) {
+  return GetIt.instance<AuthRepository>();
+}
 
 /// Authentication notifier for the application
 /// Provides higher-level authentication operations and state management
-class AuthNotifier extends StateNotifier<AuthState> {
-  final AuthRepository _authRepository;
-  final _logger = GetIt.instance<LogService>().getLogger('AuthNotifier');
+@riverpod
+class Auth extends _$Auth {
+  late final AuthRepository _authRepository;
+  late final LogService _logService;
 
-  /// Creates a new instance of AuthNotifier
-  /// 
-  /// [authRepository] - The repository to use for authentication operations
-  AuthNotifier(this._authRepository) 
-      : super(AuthState(
-          isAuthenticated: _authRepository.isAuthenticated,
-          session: _authRepository.session,
-          atproto: _authRepository.atproto,
-        ));
+  @override
+  AuthState build() {
+    _authRepository = ref.watch(authRepositoryProvider);
+    _logService = GetIt.instance<LogService>();
+    
+    return AuthState(
+      isAuthenticated: _authRepository.isAuthenticated,
+      session: _authRepository.session,
+      atproto: _authRepository.atproto,
+    );
+  }
+
+  SparkLogger get _logger => _logService.getLogger('AuthNotifier');
 
   /// Updates the state based on repository values
   void _updateState() {
@@ -83,31 +98,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 }
 
-/// Provider for the AuthRepository
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return GetIt.instance<AuthRepository>();
-});
-
-/// StateNotifierProvider for authentication state and operations
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final repository = ref.watch(authRepositoryProvider);
-  return AuthNotifier(repository);
-});
-
 /// Convenience provider for checking if the user is authenticated
-final isAuthenticatedProvider = Provider<bool>((ref) {
+@riverpod
+bool isAuthenticated(Ref ref) {
   final authState = ref.watch(authProvider);
   return authState.isAuthenticated;
-});
+}
 
 /// Convenience provider for accessing the current session
-final sessionProvider = Provider<Session?>((ref) {
+@riverpod
+Session? session(Ref ref) {
   final authState = ref.watch(authProvider);
   return authState.session;
-});
+}
 
 /// Convenience provider for accessing the ATProto client
-final atprotoProvider = Provider<ATProto?>((ref) {
+@riverpod
+ATProto? atproto(Ref ref) {
   final authState = ref.watch(authProvider);
   return authState.atproto;
-}); 
+} 

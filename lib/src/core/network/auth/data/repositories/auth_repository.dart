@@ -1,6 +1,6 @@
 import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
-import 'package:sparksocial/src/core/network/auth/models/login_result.dart';
+import 'package:sparksocial/src/core/network/auth/data/models/login_result.dart';
 
 /// Authentication repository interface for AT Protocol
 abstract class AuthRepository {

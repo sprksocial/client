@@ -10,7 +10,7 @@ import '../../../screens/splash_screen.dart';
 import '../../../main.dart';
 
 // Here's where we add the pages for the router
-export 'package:sparksocial/src/features/auth/ui/pages/auth_prompt_page.dart';
+export 'package:sparksocial/src/features/onboarding/ui/pages/auth_prompt_page.dart';
 
 // These pages are temporary and will be replaced with the actual pages when they are implemented in the new architecture
 

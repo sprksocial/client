@@ -6,7 +6,7 @@ import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_rep
 import 'package:sparksocial/src/core/network/atproto/data/repositories/label_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/network/auth/repositories/auth_repository.dart';
+import 'package:sparksocial/src/core/network/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/features/content/data/repositories/repo_repository_impl.dart';
 import 'package:sparksocial/src/features/feed/data/repositories/feed_repository_impl.dart';

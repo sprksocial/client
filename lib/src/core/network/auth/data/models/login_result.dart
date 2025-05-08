@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sparksocial/src/core/network/auth/models/login_status.dart';
+import 'package:sparksocial/src/core/network/auth/data/models/login_status.dart';
 
 part 'login_result.freezed.dart';
 part 'login_result.g.dart';

@@ -1,9 +1,8 @@
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/network/auth/repositories/auth_repository_impl.dart';
+import 'package:sparksocial/src/core/network/auth/data/repositories/auth_repository_impl.dart';
 import 'package:sparksocial/src/core/storage/cache/cache_manager_impl.dart';
 import 'package:sparksocial/src/core/theme/data/repositories/theme_repository.dart';
 import 'package:sparksocial/src/core/theme/data/repositories/theme_repository_impl.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/settings/data/repositories/settings_repository.dart';
 import 'package:sparksocial/src/core/network/auth/auth.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
@@ -71,10 +70,6 @@ Future<void> _registerCore() async {
     ThemeRepositoryImpl(sl<StorageManager>())
   );
   
-  // TODO: this should not exist
-  sl.registerSingleton<AuthNotifier>(
-    AuthNotifier(sl<AuthRepository>())
-  );
 }
 
 /// Registers settings dependencies

@@ -2,11 +2,12 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:atproto/atproto.dart';
-import 'package:flutter/foundation.dart';
+import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 
-import 'package:sparksocial/src/core/network/auth/repositories/identity_repository.dart';
+import 'package:sparksocial/src/core/network/auth/data/repositories/identity_repository.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
+import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 
 /// Implementation of [IdentityRepository] with caching capabilities
 class IdentityRepositoryImpl implements IdentityRepository {
@@ -17,6 +18,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
   static const Duration _cacheExpiration = Duration(hours: 2);
   
   final StorageManager _storageManager;
+  final _logger = GetIt.instance<LogService>().getLogger('IdentityRepository');
 
   /// Creates a new [IdentityRepositoryImpl] instance and loads the cache
   IdentityRepositoryImpl(this._storageManager) {
@@ -47,7 +49,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
         _loadDidDocCache(didDocJson);
       }
     } catch (e) {
-      debugPrint('Error loading identity cache: $e');
+      _logger.e('Error loading identity cache', error: e);
       await clearCache();
     }
   }
@@ -107,7 +109,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
         json.encode(_didDocCache)
       );
     } catch (e) {
-      debugPrint('Error saving identity cache: $e');
+      _logger.e('Error saving identity cache', error: e);
     }
   }
 
@@ -123,7 +125,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
       await _storageManager.preferences.remove(StorageKeys.didDocCache);
       await _storageManager.preferences.remove(StorageKeys.identityCacheTtl);
     } catch (e) {
-      debugPrint('Error clearing identity cache: $e');
+      _logger.e('Error clearing identity cache', error: e);
     }
   }
 
@@ -136,7 +138,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
     try {
       return await _fetchAndCacheHandle(did);
     } catch (e) {
-      debugPrint('Error resolving DID to handle: $e');
+      _logger.e('Error resolving DID to handle', error: e);
       return null;
     }
   }
@@ -144,13 +146,13 @@ class IdentityRepositoryImpl implements IdentityRepository {
   Future<String?> _fetchAndCacheHandle(String did) async {
     final didDoc = await resolveDidToDidDoc(did);
     if (didDoc == null || !didDoc.containsKey('alsoKnownAs')) {
-      debugPrint('Could not resolve handle for DID: $did');
+      _logger.w('Could not resolve handle for DID: $did');
       return null;
     }
 
     final alsoKnownAs = didDoc['alsoKnownAs'];
     if (alsoKnownAs is! List || alsoKnownAs.isEmpty) {
-      debugPrint('Could not resolve handle for DID: $did');
+      _logger.w('Could not resolve handle for DID: $did');
       return null;
     }
 
@@ -166,7 +168,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
       }
     }
 
-    debugPrint('Could not resolve handle for DID: $did');
+    _logger.w('Could not resolve handle for DID: $did');
     return null;
   }
 
@@ -179,7 +181,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
     try {
       return await _fetchAndCacheDidDoc(did);
     } catch (e) {
-      debugPrint('Error resolving DID document: $e');
+      _logger.e('Error resolving DID document', error: e);
       return null;
     }
   }
@@ -189,7 +191,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
     final response = await http.get(url);
 
     if (response.statusCode != 200) {
-      debugPrint('Failed to resolve DID document. Status: ${response.statusCode}');
+      _logger.w('Failed to resolve DID document. Status: ${response.statusCode}');
       return null;
     }
 
@@ -223,7 +225,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
     try {
       return await _fetchAndCacheDid(handle);
     } catch (e) {
-      debugPrint('Error resolving handle to DID: $e');
+      _logger.e('Error resolving handle to DID', error: e);
       return null;
     }
   }
