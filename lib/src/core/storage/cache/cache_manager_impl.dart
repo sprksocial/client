@@ -5,20 +5,20 @@ import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:sparksocial/src/core/storage/cache/cache_manager_interface.dart';
 
 /// Manages temporary cache files for the application
-class AppCacheManager implements CacheManagerInterface {
+class CacheManagerImpl implements CacheManagerInterface {
   /// Singleton instance
-  static final AppCacheManager _instance = AppCacheManager._();
+  static final CacheManagerImpl _instance = CacheManagerImpl._();
   
   /// Default cache manager for most files
   late final DefaultCacheManager defaultCacheManager;
   
   /// Private constructor
-  AppCacheManager._() {
+  CacheManagerImpl._() {
     defaultCacheManager = DefaultCacheManager();
   }
   
   /// Get the singleton instance
-  static AppCacheManager get instance => _instance;
+  static CacheManagerImpl get instance => _instance;
   
   /// Get a cached file or download it if not available
   @override

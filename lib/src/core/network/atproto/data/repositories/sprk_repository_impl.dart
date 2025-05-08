@@ -8,13 +8,13 @@ import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repo
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/network/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/features/content/data/repositories/repo_repository_impl.dart';
-import 'package:sparksocial/src/features/feed/data/repositories/feed_repository_impl.dart';
-import 'package:sparksocial/src/features/profile/data/repositories/actor_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository_impl.dart';
 
 // Feature-specific repositories
-import 'package:sparksocial/src/features/profile/data/repositories/graph_repository_impl.dart';
-import 'package:sparksocial/src/features/moderation/data/repositories/label_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/label_repository_impl.dart';
 
 /// Client for interacting with Spark API endpoints
 class SprkRepositoryImpl implements SprkRepository {

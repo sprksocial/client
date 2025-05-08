@@ -4,6 +4,8 @@ globs:
 alwaysApply: false
 ---
 - When migrating from the old architecture to the new one, always remember:
+    - If necessary, split services into repositories and providers
+    - All ATProto endpoints are in `@lib/lexicons/`, create models if needed
     - For storage, get a storage manager from the get it
     - For cache, get a cache manager interface from the get it
     - For logging, use the logging framework
