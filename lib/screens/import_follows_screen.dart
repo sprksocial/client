@@ -153,12 +153,6 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 16),
                     ),
-                    const SizedBox(height: 4),
-                    TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(foregroundColor: AppColors.pink),
-                      child: const Text('How it works'),
-                    ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: _searchController,
