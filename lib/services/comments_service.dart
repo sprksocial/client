@@ -5,9 +5,11 @@ import 'package:sparksocial/services/sprk_client.dart';
 
 import '../models/comment.dart';
 import 'auth_service.dart';
+import 'profile_service.dart';
 
 class CommentsService extends ChangeNotifier {
   final AuthService _authService;
+  final ProfileService _profileService;
 
   bool _isLoading = false;
   String? _error;
@@ -17,7 +19,7 @@ class CommentsService extends ChangeNotifier {
   String? get error => _error;
   List<Comment>? get comments => _comments;
 
-  CommentsService(this._authService);
+  CommentsService(this._authService, this._profileService);
 
   /// Fetch comments for a post from Bluesky
   Future<List<Comment>> getBlueskyComments(String postUri) async {
@@ -97,6 +99,34 @@ class CommentsService extends ChangeNotifier {
       notifyListeners();
       throw Exception(_error);
     }
+  }
+
+  Future<Comment> getSparkComment(String commentUri) async {
+    if (!_authService.isAuthenticated) {
+      throw Exception('Not authenticated');
+    }
+
+    final sprkClient = SprkClient(_authService);
+
+    final response = await sprkClient.repo.getRecord(uri: AtUri.parse(commentUri));
+
+    return Comment.fromSparkCommentRecord(response.data.value, commentUri, _profileService);
+  }
+
+  Future<Comment> getBlueskyComment(String commentUri) async {
+    if (!_authService.isAuthenticated) {
+      throw Exception('Not authenticated');
+    }
+
+    final bsky = Bluesky.fromSession(_authService.session!);
+    final response = await bsky.feed.getPostThread(uri: AtUri.parse(commentUri));
+    final post = response.data.thread.whenOrNull(record: (rec) => rec.post);
+
+    if (post == null) {
+      throw Exception('Failed to get comment: Post not found');
+    }
+
+    return Comment.fromBlueskyComment(post);
   }
 
   /// Extract replies from a Bluesky thread

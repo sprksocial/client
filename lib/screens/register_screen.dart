@@ -159,7 +159,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           prefixIcon: const Icon(FluentIcons.mail_24_regular, color: AppColors.primary),
                           contentPadding: const EdgeInsets.all(16),
                         ),
-                        style: TextStyle(color: isDarkMode ? AppColors.textPrimary : AppTheme.getTextColor(context)),
+                        style: const TextStyle(color: Colors.black),
                         onChanged: (_) => setState(() {}),
                       ),
 
@@ -186,7 +186,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   fillColor: Colors.transparent,
                                   contentPadding: const EdgeInsets.all(16),
                                 ),
-                                style: TextStyle(color: isDarkMode ? AppColors.textPrimary : AppTheme.getTextColor(context)),
+                                style: const TextStyle(color: Colors.black),
                                 onChanged: (_) => setState(() {}),
                               ),
                             ),
@@ -231,7 +231,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           contentPadding: const EdgeInsets.all(16),
                         ),
-                        style: TextStyle(color: isDarkMode ? AppColors.textPrimary : AppTheme.getTextColor(context)),
+                        style: const TextStyle(color: Colors.black),
                         onChanged: (_) => setState(() {}),
                       ),
 
@@ -250,7 +250,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       //     prefixIcon: const Icon(FluentIcons.tag_24_regular, color: AppColors.primary),
                       //     contentPadding: const EdgeInsets.all(16),
                       //   ),
-                      //   style: TextStyle(color: AppTheme.getTextColor(context)),
+                      //   style: const TextStyle(color: Colors.black),
                       // ),
                       if (_errorMessage != null) ...[
                         const SizedBox(height: 24),
