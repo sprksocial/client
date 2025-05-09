@@ -93,6 +93,7 @@ class MyApp extends StatelessWidget {
       ],
       child: MaterialApp(
         title: 'Spark',
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primaryColor: AppColors.primary,
           scaffoldBackgroundColor: Colors.black,
