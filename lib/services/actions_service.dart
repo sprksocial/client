@@ -23,7 +23,10 @@ class ActionsService extends ChangeNotifier {
   // Delete a post by its URI
   Future<bool> deletePost(String postUri) async {
     try {
-      final response = await _client.repo.deleteRecord(uri: AtUri.parse(postUri));
+      // Ensure the URI starts with 'at://'
+      final normalizedUri = postUri.startsWith('at://') ? postUri : 'at://$postUri';
+
+      final response = await _client.repo.deleteRecord(uri: AtUri.parse(normalizedUri));
 
       if (response.status.code != 200) {
         debugPrint('Failed to delete post: ${response.status.code} ${response.data}');
@@ -75,8 +78,11 @@ class ActionsService extends ChangeNotifier {
     rootCid ??= parentCid;
     rootUri ??= parentUri;
 
+    final isSprk = RegExp(r'^at://[^/]+/so\.sprk\.feed\.post/[^/]+$').hasMatch(parentUri);
+    final postType = isSprk ? "so.sprk.feed.post" : "app.bsky.feed.post";
+
     final commentRecord = <String, dynamic>{
-      "\$type": "so.sprk.feed.post", // Spark feed post type
+      "\$type": postType,
       "text": text,
       "reply": {
         "root": {"cid": rootCid, "uri": rootUri},
@@ -91,7 +97,7 @@ class ActionsService extends ChangeNotifier {
     }
 
     // Use the correct NSID for Spark posts
-    final response = await _client.repo.createRecord(collection: NSID.parse('so.sprk.feed.post'), record: commentRecord);
+    final response = await _client.repo.createRecord(collection: NSID.parse(postType), record: commentRecord);
 
     // Check response status
     if (response.status.code != 200) {
