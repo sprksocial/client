@@ -75,7 +75,7 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
   bool isVisible = true;
   bool showComments = false;
   bool _isDescriptionExpanded = false;
-  late int _commentCount;
+  int _commentCount = 0;
 
   @override
   void initState() {
@@ -157,6 +157,13 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
     });
   }
 
+  void _updateCommentCount(int count) {
+    if (!mounted) return;
+    setState(() {
+      _commentCount = count;
+    });
+  }
+
   /// Toggle comments tray.
   void toggleComments() {
     // Allow overriding via widget callback first
@@ -187,22 +194,17 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
       commentCount: _commentCount,
       onClose: (updatedCount) {
         if (!mounted) return;
-        if (updatedCount != _commentCount) {
-          setState(() {
-            showComments = false;
-            _commentCount = updatedCount; // Update local comment count
-          });
-        } else {
-          setState(() {
-            showComments = false;
-          });
-        }
+        setState(() {
+          showComments = false;
+          _commentCount = updatedCount;
+        });
 
         // Resume media only if the item is still visible
         if (isVisible) {
           playMedia();
         }
       },
+      onCountUpdate: _updateCommentCount,
       isDarkMode: isDarkMode,
       isSprk: widget.isSprk,
     );
@@ -295,26 +297,26 @@ abstract class PostItemBaseState<T extends PostItemBase> extends State<T> {
   Widget buildSideActionBar() {
     // Determine if we're dealing with an image post based on the widget type
     final bool isImagePost = widget is ImagePostItem;
-    
+
     return Positioned(
       right: 16,
       bottom: 16,
       child: VideoSideActionBar(
         // Consider renaming VideoSideActionBar later
         likeCount: TextFormatter.formatCount(widget.likeCount),
-        commentCount: TextFormatter.formatCount(_commentCount), // Use local state
+        commentCount: TextFormatter.formatCount(_commentCount),
         shareCount: TextFormatter.formatCount(widget.shareCount),
         profileImageUrl: widget.profileImageUrl,
         isLiked: widget.isLiked,
         onLikePressed: widget.onLikePressed ?? () {},
-        onCommentPressed: toggleComments, // Use the unified method
+        onCommentPressed: toggleComments,
         onSharePressed: widget.onSharePressed ?? () {},
-        onProfilePressed: navigateToProfile, // Use the unified method
+        onProfilePressed: navigateToProfile,
         postCid: widget.postCid,
         postUri: widget.postUri,
         authorDid: widget.authorDid,
         onPostDeleted: widget.onPostDeleted ?? () {},
-        isImage: isImagePost, // Pass whether this is an image post
+        isImage: isImagePost,
       ),
     );
   }
