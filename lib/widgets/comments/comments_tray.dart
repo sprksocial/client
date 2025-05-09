@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../models/comment.dart';
+import '../../screens/profile_screen.dart';
 import '../../services/comments_service.dart';
 import '../../utils/app_colors.dart';
 import 'comment_input.dart';
@@ -216,6 +217,16 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     _loadComments();
   }
 
+  void _navigateToUserProfile(String did) {
+    if (!mounted) return;
+
+    Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: did))).catchError((error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Could not load profile: ${error.toString()}')));
+      return null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.of(context).size.height * 0.75;
@@ -388,6 +399,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
               _commentCount = _commentCount > 0 ? _commentCount - 1 : 0;
             });
           },
+          onUsernameTap: _navigateToUserProfile,
         );
       },
     );
