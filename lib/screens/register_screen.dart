@@ -85,12 +85,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       backgroundColor: AppTheme.getBackgroundColor(context),
       body: Stack(
         children: [
-          Positioned.fill(
-            child: Image.asset(
-              'assets/branding/gradient.webp',
-              fit: BoxFit.cover,
-            ),
-          ),
+          Positioned.fill(child: Image.asset('assets/branding/gradient.webp', fit: BoxFit.cover)),
           SafeArea(
             child: GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
@@ -100,14 +95,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                     
-                      Center(
-                        child: SvgPicture.asset(
-                          'assets/images/logo_dark_mode.svg',
-                          height: 140,
-                          width: 140,
-                        ),
-                      ),
+                      Center(child: SvgPicture.asset('assets/images/logo_dark_mode.svg', height: 140, width: 140)),
                       const SizedBox(height: 21),
                       Center(
                         child: Text(
@@ -124,32 +112,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             alignment: WrapAlignment.center,
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
-                              Text(
-                                'Create your new ',
-                                style: TextStyle(
-                                  color: AppColors.white,
-                                  fontSize: 20,
-                                  height: 1.7,
-                                ),
-                              ),
-                              SvgPicture.asset(
-                                'assets/images/ataccount.svg',
-                                height: 25,
-                                width: 100,
-                              ),
+                              Text('Create your new ', style: TextStyle(color: AppColors.white, fontSize: 20, height: 1.7)),
+                              SvgPicture.asset('assets/images/ataccount.svg', height: 25, width: 100),
                               const SizedBox(width: 4),
                               const ATAccountInfoIcon(),
                             ],
                           ),
                         ),
                       ),
-                      
+
                       const SizedBox(height: 30),
 
                       if (AppConfig.signupsDisabled) ...[
                         Container(
                           padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(color: AppColors.error.withAlpha(26), borderRadius: BorderRadius.circular(12)),
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withAlpha(26),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           child: Row(
                             children: [
                               const Icon(FluentIcons.warning_24_regular, color: AppColors.error),
@@ -179,7 +159,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           prefixIcon: const Icon(FluentIcons.mail_24_regular, color: AppColors.primary),
                           contentPadding: const EdgeInsets.all(16),
                         ),
-                        style: TextStyle(color: AppTheme.getTextColor(context)),
+                        style: TextStyle(color: isDarkMode ? AppColors.textPrimary : AppTheme.getTextColor(context)),
                         onChanged: (_) => setState(() {}),
                       ),
 
@@ -188,10 +168,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       _buildLabel('Username'),
                       const SizedBox(height: 8),
                       Container(
-                        decoration: BoxDecoration(
-                          color: AppColors.white.withAlpha(255),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
+                        decoration: BoxDecoration(color: AppColors.white.withAlpha(255), borderRadius: BorderRadius.circular(16)),
                         child: Row(
                           children: [
                             const Padding(
@@ -209,13 +186,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   fillColor: Colors.transparent,
                                   contentPadding: const EdgeInsets.all(16),
                                 ),
-                                style: TextStyle(color: AppTheme.getTextColor(context)),
+                                style: TextStyle(color: isDarkMode ? AppColors.textPrimary : AppTheme.getTextColor(context)),
                                 onChanged: (_) => setState(() {}),
                               ),
                             ),
                             Padding(
                               padding: const EdgeInsets.only(right: 16),
-                              child: Text('.sprk.so', style: TextStyle(fontSize: 16, color: isDarkMode ? AppColors.white.withAlpha(100) : AppTheme.getSecondaryTextColor(context))),
+                              child: Text(
+                                '.sprk.so',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: isDarkMode ? AppColors.textPrimary : AppTheme.getSecondaryTextColor(context),
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -248,7 +231,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ),
                           contentPadding: const EdgeInsets.all(16),
                         ),
-                        style: TextStyle(color: AppTheme.getTextColor(context)),
+                        style: TextStyle(color: isDarkMode ? AppColors.textPrimary : AppTheme.getTextColor(context)),
                         onChanged: (_) => setState(() {}),
                       ),
 
@@ -269,12 +252,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       //   ),
                       //   style: TextStyle(color: AppTheme.getTextColor(context)),
                       // ),
-
                       if (_errorMessage != null) ...[
                         const SizedBox(height: 24),
                         Container(
                           padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(color: AppColors.error.withAlpha(26), borderRadius: BorderRadius.circular(12)),
+                          decoration: BoxDecoration(
+                            color: AppColors.error.withAlpha(26),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           child: Row(
                             children: [
                               const Icon(FluentIcons.warning_24_regular, color: AppColors.error),
