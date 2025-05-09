@@ -108,7 +108,21 @@ class AuthPromptScreen extends StatelessWidget {
                       onPressed: () {
                         Navigator.of(context).push(MaterialPageRoute(builder: (context) => const RegisterScreen()));
                       },
-                      child: const Text('Register', style: TextStyle(color: AppColors.white, fontSize: 20, fontWeight: FontWeight.normal)),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            'Create an ',
+                            style: TextStyle(fontWeight: FontWeight.normal, fontSize: 20, color: AppColors.white),
+                          ),
+                          SvgPicture.asset(
+                            'assets/images/ataccount.svg',
+                            height: 22,
+                            width: 100,
+                          ),
+                        ],
+                      ),
                     ),
                     if (onClose != null) ...[
                       const SizedBox(height: 24),
