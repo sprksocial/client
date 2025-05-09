@@ -315,6 +315,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
               onLikePressed: () => _handleLikePress(post),
               onBookmarkPressed: () {},
               onSharePressed: () {},
+              onRefresh: index == 0 ? _fetchFeed : null,
               onProfilePressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
                   error,
@@ -368,6 +369,7 @@ class _FeedScreenState extends State<FeedScreen> with AutomaticKeepAliveClientMi
               onLikePressed: () => _handleLikePress(post),
               onBookmarkPressed: () {},
               onSharePressed: () {},
+              onRefresh: index == 0 ? _fetchFeed : null,
               onProfilePressed: () {
                 Navigator.push(context, MaterialPageRoute(builder: (_) => ProfileScreen(did: post.authorDid))).catchError((
                   error,

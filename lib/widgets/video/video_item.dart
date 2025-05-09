@@ -42,6 +42,7 @@ class VideoItem extends VideoPlayerBase {
     super.postUri,
     super.postCid,
     super.disableBackgroundBlur = false,
+    super.onRefresh,
   });
 
   @override

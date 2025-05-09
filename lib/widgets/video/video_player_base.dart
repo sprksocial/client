@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import '../../mixins/refresh_mixin.dart';
 import '../post/post_item_base.dart';
 import '../video_controls/video_controller_overlay.dart';
 
@@ -8,6 +9,7 @@ import '../video_controls/video_controller_overlay.dart';
 abstract class VideoPlayerBase extends PostItemBase {
   // Most props are now inherited from PostItemBase
   final String? videoUrl; // Specific to video items that initialize their own controller
+  final VoidCallback? onRefresh; // Callback for refresh functionality
 
   const VideoPlayerBase({
     super.key,
@@ -36,11 +38,13 @@ abstract class VideoPlayerBase extends PostItemBase {
     super.disableBackgroundBlur,
     super.videoAlt, // Add super.videoAlt here
     super.onPostDeleted,
+    this.onRefresh, // Add refresh callback
   });
 }
 
 /// Base state class for video players, extending PostItemBaseState.
-abstract class VideoPlayerBaseState<T extends VideoPlayerBase> extends PostItemBaseState<T> {
+abstract class VideoPlayerBaseState<T extends VideoPlayerBase> extends PostItemBaseState<T> 
+  with SingleTickerProviderStateMixin, RefreshMixin<T> implements RefreshableState {
   /// Get the current video player controller (still needed for video specifics).
   VideoPlayerController? get videoController;
 
@@ -51,7 +55,13 @@ abstract class VideoPlayerBaseState<T extends VideoPlayerBase> extends PostItemB
   @override
   bool get isVisible;
 
-  /// Pause the video player - implements abstract method from base.
+  // Implementation for RefreshableState
+  @override
+  VoidCallback? get onRefreshCallback => widget.onRefresh;
+
+  @override
+  int get itemIndex => widget.index;
+
   @override
   void pauseMedia() {
     // Check if controller exists and is initialized before pausing
@@ -60,7 +70,6 @@ abstract class VideoPlayerBaseState<T extends VideoPlayerBase> extends PostItemB
     }
   }
 
-  /// Play the video player - implements abstract method from base.
   @override
   void playMedia() {
     // Only play if initialized and not showing comments (handled by base toggleComments logic)
@@ -68,6 +77,41 @@ abstract class VideoPlayerBaseState<T extends VideoPlayerBase> extends PostItemB
     if (isInitialized && !showComments && videoController?.value.isInitialized == true) {
       videoController?.play();
     }
+  }
+
+  @override
+  bool get isMediaVisible => isVisible; // Already implemented by subclasses via `isVisible` getter
+
+  @override
+  void refreshSetState(VoidCallback fn) {
+    if (mounted) {
+      setState(fn);
+    }
+  }
+
+  @override
+  bool get mountedState => mounted;
+
+  @override
+  TickerProvider get vsyncProvider => this;
+
+  @override
+  void initState() {
+    super.initState();
+    initRefreshState(); // Initialize RefreshMixin state
+  }
+  
+  @override
+  void dispose() {
+    disposeRefreshState(); // Dispose RefreshMixin state
+    super.dispose();
+  }
+
+  /// Public method to trigger refresh programmatically - now uses the mixin's method.
+  Future<void> refresh() async {
+    // This now calls the mixin's triggerRefresh, which handles the logic.
+    // Ensure widget.onRefresh is used by the mixin via onRefreshCallback.
+    await triggerRefresh(); 
   }
 
   /// Handle tap on the video overlay
@@ -79,18 +123,35 @@ abstract class VideoPlayerBaseState<T extends VideoPlayerBase> extends PostItemB
   /// Override to add the VideoControllerOverlay on top of the video content.
   @override
   List<Widget> buildContentOverlays(BuildContext context) {
-    // Only add the overlay if the controller exists and is initialized
+    final overlays = <Widget>[];
+    
+    // Add refresh indicator using the mixin
+    final refreshIndicator = buildRefreshIndicator();
+    if (refreshIndicator != null) {
+      overlays.add(refreshIndicator);
+    }
+    
+    // Only add the video controller overlay if the controller exists and is initialized
     final currentController = videoController;
     if (currentController != null && isInitialized) {
-      return [
+      overlays.add(
         VideoControllerOverlay(
           controller: currentController,
           onLikePressed: widget.onLikePressed,
           isLiked: widget.isLiked,
           onTap: _handleVideoTap,
         ),
-      ];
+      );
     }
-    return []; // Return empty list if not initialized
+    
+    return overlays;
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    // Wrap the content with the refresh listener from the mixin
+    return buildRefreshListener(
+      child: super.build(context),
+    );
   }
 }

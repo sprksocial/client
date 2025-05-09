@@ -40,6 +40,7 @@ class PreloadedVideoItem extends VideoPlayerBase {
     super.postCid,
     super.disableBackgroundBlur = false,
     this.videoAlt,
+    super.onRefresh,
   }) : super(videoUrl: null);
 
   @override
