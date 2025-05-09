@@ -30,6 +30,9 @@ class VideoInfoBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final hasDescription = description.isNotEmpty;
+    final hasHashtags = hashtags.isNotEmpty;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -41,13 +44,15 @@ class VideoInfoBar extends StatelessWidget {
           ],
         ),
 
-        const SizedBox(height: 10),
-
+        if (hasDescription) const SizedBox(height: 10),
+        
         VideoDescription(text: description, onExpandToggle: onDescriptionExpandToggle),
 
-        const SizedBox(height: 6),
+        if (hasDescription && hasHashtags) const SizedBox(height: 6),
+        
+        if (hasHashtags) SizedBox(height: 25, child: HashtagList(hashtags: hashtags, onHashtagTap: onHashtagTap)),
 
-        SizedBox(height: 30, child: HashtagList(hashtags: hashtags, onHashtagTap: onHashtagTap)),
+        const SizedBox(height: 25),
       ],
     );
   }
