@@ -171,7 +171,7 @@ Generate code, corrections, and refactorings that comply with the basic principl
 - Avoid functions that return widgets
 - Use `@lib/src/core/utils/logging/` for logging
 - Storage keys are always stored at `@lib/src/storage/storage_constants.dart`
-- Repositories should always have an interface and an implementation
+- Repositories should always have an interface and an implementation (thing_repository.dart, thing_repository_impl.dart)
 - All ATProto endpoints are in `@lib/lexicons/`, create models if needed
 - For storage, get a storage manager from the get it
 - For cache, get a cache manager interface from the get it

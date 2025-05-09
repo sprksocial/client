@@ -16,8 +16,14 @@ import 'package:sparksocial/src/features/onboarding/data/repositories/onboarding
 import 'package:sparksocial/src/features/onboarding/data/repositories/onboarding_repository_impl.dart';
 import 'package:sparksocial/src/features/profile/data/repositories/profile_repository.dart';
 import 'package:sparksocial/src/features/profile/data/repositories/profile_repository_impl.dart';
-import 'package:sparksocial/src/features/video/data/repositories/video_repository.dart';
-import 'package:sparksocial/src/features/video/data/repositories/video_repository_impl.dart';
+import 'package:sparksocial/src/features/video/data/repositories/upload_repository.dart';
+import 'package:sparksocial/src/features/video/data/repositories/upload_repository_impl.dart';
+import 'package:sparksocial/src/features/camera/data/repositories/camera_repository.dart';
+import 'package:sparksocial/src/features/camera/data/repositories/camera_repository_interface.dart';
+import 'package:sparksocial/src/features/moderation/data/repositories/moderation_repository.dart';
+import 'package:sparksocial/src/features/moderation/data/repositories/moderation_repository_impl.dart';
+import 'package:sparksocial/src/features/feed/data/repositories/media_repository.dart';
+import 'package:sparksocial/src/features/feed/data/repositories/media_repository_impl.dart';
 
 // This is the ONLY PLACE IN THE ENTIRE APP where implementations are imported
 // All the other files should import interfaces only (polymorphism) to keep everything decoupled
@@ -48,6 +54,12 @@ Future<void> _registerFeatures() async {
   
   // Register video dependencies
   await _registerVideo();
+  
+  // Register moderation dependencies
+  await _registerModeration();
+  
+  // Register feed dependencies
+  await _registerFeed();
 }
 
 /// Registers core dependencies
@@ -126,10 +138,36 @@ Future<void> _registerProfile() async {
 /// Registers video dependencies
 Future<void> _registerVideo() async {
   // Register VideoRepository
-  sl.registerLazySingleton<VideoRepository>(
-    () => VideoRepositoryImpl(
+  sl.registerLazySingleton<UploadRepository>(
+    () => UploadRepositoryImpl(
       authRepository: sl<AuthRepository>(),
     ),
   );
+}
+
+/// Registers moderation dependencies
+Future<void> _registerModeration() async {
+  // Register ModerationRepository
+  sl.registerLazySingleton<ModerationRepository>(
+    () => ModerationRepositoryImpl(
+      authRepository: sl<AuthRepository>(),
+    ),
+  );
+}
+
+/// Registers feed dependencies
+Future<void> _registerFeed() async {
+  // Register MediaRepository
+  sl.registerLazySingleton<MediaRepository>(
+    () => MediaRepositoryImpl(
+      cacheManager: sl<CacheManagerInterface>(),
+      logService: sl<LogService>(),
+    ),
+  );
+}
+
+void setupDependencies() {
+  // Camera
+  GetIt.instance.registerLazySingleton<CameraRepositoryInterface>(() => CameraRepository());
 }
 

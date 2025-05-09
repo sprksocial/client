@@ -1,8 +1,8 @@
 import 'package:atproto/atproto.dart';
 import 'package:sparksocial/src/features/video/data/models/models.dart';
 
-/// Interface for video-related operations
-abstract class VideoRepository {
+/// Interface for video-related API operations
+abstract class UploadRepository {
   /// Process and upload a video file
   /// 
   /// [videoPath] The path to the video file

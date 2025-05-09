@@ -6,26 +6,26 @@ part of 'video_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$videoRepositoryHash() => r'd6d6385878ce63a4e42e763905362fb7bb02f7a3';
+String _$uploadRepositoryHash() => r'2e262a1e3760b321e69a2964292c5645d44b635e';
 
-/// Provider for the video repository
+/// Provider for the upload repository
 ///
-/// Copied from [videoRepository].
-@ProviderFor(videoRepository)
-final videoRepositoryProvider = Provider<VideoRepository>.internal(
-  videoRepository,
-  name: r'videoRepositoryProvider',
+/// Copied from [uploadRepository].
+@ProviderFor(uploadRepository)
+final uploadRepositoryProvider = Provider<UploadRepository>.internal(
+  uploadRepository,
+  name: r'uploadRepositoryProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$videoRepositoryHash,
+      : _$uploadRepositoryHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef VideoRepositoryRef = ProviderRef<VideoRepository>;
-String _$processVideoHash() => r'a89765b19bd73841cd29de6b3b90c511fbd61838';
+typedef UploadRepositoryRef = ProviderRef<UploadRepository>;
+String _$processVideoHash() => r'51f61feb9dd1e585d21437c6bf90a58b2abaa8a5';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -189,7 +189,7 @@ class _ProcessVideoProviderElement
   String get videoPath => (origin as ProcessVideoProvider).videoPath;
 }
 
-String _$postVideoHash() => r'7f7d4c5ec08f96eb2d275b511c7d8af3ff2e8a14';
+String _$postVideoHash() => r'33e561580f26d0d35f6fc34523418faec31c005a';
 
 /// Provider for posting a video
 ///
@@ -363,7 +363,7 @@ class _PostVideoProviderElement
   String get videoAltText => (origin as PostVideoProvider).videoAltText;
 }
 
-String _$postVideoWithPostHash() => r'493295d63a14b28f898cf9b8b127b88f3c511791';
+String _$postVideoWithPostHash() => r'41a165da9f2a772107ce83a2cd62f030e5f8b66a';
 
 /// Provider for posting a video with a prepared VideoPost
 ///

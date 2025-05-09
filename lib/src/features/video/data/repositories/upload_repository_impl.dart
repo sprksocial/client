@@ -10,13 +10,13 @@ import 'package:sparksocial/src/core/config/app_config.dart';
 import 'package:sparksocial/src/core/network/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/features/video/data/models/models.dart';
-import 'package:sparksocial/src/features/video/data/repositories/video_repository.dart';
+import 'package:sparksocial/src/features/video/data/repositories/upload_repository.dart';
 
-class VideoRepositoryImpl implements VideoRepository {
+class UploadRepositoryImpl implements UploadRepository {
   final AuthRepository _authRepository;
   final _logger = GetIt.instance<LogService>().getLogger('VideoRepository');
 
-  VideoRepositoryImpl({
+  UploadRepositoryImpl({
     required AuthRepository authRepository,
   }) : _authRepository = authRepository;
 
