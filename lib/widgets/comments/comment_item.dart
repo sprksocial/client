@@ -140,7 +140,7 @@ class _CommentItemState extends State<CommentItem> {
 
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.85),
+      barrierColor: Colors.black.withValues(alpha: 0.85),
       builder: (BuildContext context) {
         return Dialog(
           backgroundColor: Colors.transparent,
@@ -154,7 +154,7 @@ class _CommentItemState extends State<CommentItem> {
                 child: IconButton(
                   icon: const Icon(FluentIcons.dismiss_24_filled, color: Colors.white, size: 30),
                   onPressed: () => Navigator.of(context).pop(),
-                  style: IconButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.3)),
+                  style: IconButton.styleFrom(backgroundColor: Colors.black.withValues(alpha: 0.3)),
                 ),
               ),
             ],
@@ -166,6 +166,7 @@ class _CommentItemState extends State<CommentItem> {
 
   void _handleReportComment() {
     final modService = ModService(Provider.of<AuthService>(context, listen: false));
+    final messenger = ScaffoldMessenger.of(context);
 
     showDialog(
       context: context,
@@ -183,10 +184,10 @@ class _CommentItemState extends State<CommentItem> {
                 );
 
                 if (result) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+                  messenger.showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
                 }
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+                messenger.showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
               }
             },
           ),
@@ -195,7 +196,7 @@ class _CommentItemState extends State<CommentItem> {
 
   void _handleDeleteComment() {
     final actionsService = Provider.of<ActionsService>(context, listen: false);
-
+    final messenger = ScaffoldMessenger.of(context);
     // Confirm deletion
     showDialog(
       context: context,
@@ -211,17 +212,15 @@ class _CommentItemState extends State<CommentItem> {
                   Navigator.of(context).pop();
                   try {
                     final result = await actionsService.deletePost(widget.uri);
-                    if (result && mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Comment deleted successfully')));
+                    if (result) {
+                      messenger.showSnackBar(const SnackBar(content: Text('Comment deleted successfully')));
                       // Notify parent to refresh comments
                       if (widget.onCommentDeleted != null) {
                         widget.onCommentDeleted!();
                       }
                     }
                   } catch (e) {
-                    if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete comment: $e')));
-                    }
+                    messenger.showSnackBar(SnackBar(content: Text('Failed to delete comment: $e')));
                   }
                 },
                 child: const Text('Delete'),
@@ -310,7 +309,7 @@ class _CommentItemState extends State<CommentItem> {
                 _handleDeleteComment();
               },
               isCompact: true,
-              backgroundColor: widget.isDarkMode ? Colors.black.withOpacity(0.2) : Colors.grey.withOpacity(0.1),
+              backgroundColor: widget.isDarkMode ? Colors.black.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.1),
               isProfile: false,
               authorDid: widget.authorDid,
             ),
@@ -470,7 +469,7 @@ class _CommentItemState extends State<CommentItem> {
               fit: BoxFit.cover,
               placeholder:
                   (context, url) => Container(
-                    color: Colors.grey[850]?.withOpacity(0.5),
+                    color: Colors.grey[850]?.withValues(alpha: 0.5),
                     child: const Center(
                       child: SizedBox(
                         width: 20,
@@ -492,7 +491,7 @@ class _CommentItemState extends State<CommentItem> {
                 right: 4,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(10)),
+                  decoration: BoxDecoration(color: Colors.black.withValues(alpha: 0.7), borderRadius: BorderRadius.circular(10)),
                   child: Text(
                     '+${imageCount - 1}',
                     style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
