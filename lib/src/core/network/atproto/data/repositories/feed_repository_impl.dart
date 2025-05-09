@@ -102,8 +102,8 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<AuthorFeedResponse> getAuthorFeed(String actor) async {
-    _logger.d('Getting author feed for actor: $actor');
+  Future<AuthorFeedResponse> getAuthorFeed(String actor, {int limit = 50, String? cursor}) async {
+    _logger.d('Getting author feed for actor: $actor, limit: $limit, cursor: $cursor');
     return _client.executeWithRetry(() async {
       if (!_client.authService.isAuthenticated) {
         _logger.w('Not authenticated');
@@ -116,9 +116,18 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
+      final parameters = <String, dynamic>{
+        'actor': actor,
+        'limit': limit,
+      };
+      
+      if (cursor != null) {
+        parameters['cursor'] = cursor;
+      }
+
       final result = await atproto.get(
         NSID.parse('so.sprk.feed.getAuthorFeed'),
-        parameters: {'actor': actor},
+        parameters: parameters,
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) => jsonMap,
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),

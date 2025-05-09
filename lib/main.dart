@@ -7,12 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:fvp/fvp.dart' as fvp;
 import 'package:provider/provider.dart';
 
-import 'src/sprk_app.dart';
-import 'src/core/theme/data/models/colors.dart';
-import 'src/core/theme/data/models/app_theme.dart';
-import 'src/core/di/service_locator.dart';
-import 'src/core/utils/logging/logging.dart';
-import 'src/core/utils/logging/riverpod_logger.dart';
 import 'screens/auth_prompt_screen.dart';
 import 'screens/create_video_screen.dart';
 import 'screens/home_screen.dart';
@@ -26,12 +20,18 @@ import 'services/actions_service.dart';
 import 'services/auth_service.dart';
 import 'services/comments_service.dart';
 import 'services/identity_service.dart';
+import 'services/labeler_manager.dart';
 import 'services/profile_service.dart';
 import 'services/settings_service.dart';
 import 'services/upload_service.dart';
 import 'services/video_service.dart';
+import 'src/core/di/service_locator.dart';
+import 'src/core/theme/data/models/app_theme.dart';
+import 'src/core/theme/data/models/colors.dart';
+import 'src/core/utils/logging/logging.dart';
+import 'src/core/utils/logging/riverpod_logger.dart';
+import 'src/sprk_app.dart';
 import 'widgets/upload/upload_progress_indicator.dart';
-import 'services/labeler_manager.dart';
 
 // Global RouteObserver instance
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();

@@ -14,6 +14,8 @@ import 'package:sparksocial/src/features/settings/data/repositories/labeler_repo
 import 'package:sparksocial/src/features/settings/data/repositories/labeler_repository_impl.dart';
 import 'package:sparksocial/src/features/onboarding/data/repositories/onboarding_repository.dart';
 import 'package:sparksocial/src/features/onboarding/data/repositories/onboarding_repository_impl.dart';
+import 'package:sparksocial/src/features/profile/data/repositories/profile_repository.dart';
+import 'package:sparksocial/src/features/profile/data/repositories/profile_repository_impl.dart';
 
 // This is the ONLY PLACE IN THE ENTIRE APP where implementations are imported
 // All the other files should import interfaces only (polymorphism) to keep everything decoupled
@@ -38,6 +40,9 @@ Future<void> _registerFeatures() async {
   
   // Register onboarding dependencies
   await _registerOnboarding();
+  
+  // Register profile dependencies
+  await _registerProfile();
 }
 
 /// Registers core dependencies
@@ -97,6 +102,18 @@ Future<void> _registerOnboarding() async {
       repoRepository: sl<SprkRepository>().repo,
       session: sl<AuthRepository>().session,
       atproto: sl<AuthRepository>().atproto,
+    ),
+  );
+}
+
+/// Registers profile dependencies
+Future<void> _registerProfile() async {
+  // Register ProfileRepository
+  sl.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepositoryImpl(
+      authRepository: sl<AuthRepository>(),
+      sprkRepository: sl<SprkRepository>(),
+      cacheManager: sl<CacheManagerInterface>(),
     ),
   );
 }

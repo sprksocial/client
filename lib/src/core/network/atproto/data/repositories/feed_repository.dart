@@ -23,7 +23,9 @@ abstract class FeedRepository {
   /// Get an author's feed
   ///
   /// [actor] The DID of the author
-  Future<AuthorFeedResponse> getAuthorFeed(String actor);
+  /// [limit] The number of items to return (default 50)
+  /// [cursor] Pagination cursor for the next set of results
+  Future<AuthorFeedResponse> getAuthorFeed(String actor, {int limit = 50, String? cursor});
 
   /// Like a post
   ///
