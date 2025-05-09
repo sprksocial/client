@@ -16,6 +16,8 @@ import 'package:sparksocial/src/features/onboarding/data/repositories/onboarding
 import 'package:sparksocial/src/features/onboarding/data/repositories/onboarding_repository_impl.dart';
 import 'package:sparksocial/src/features/profile/data/repositories/profile_repository.dart';
 import 'package:sparksocial/src/features/profile/data/repositories/profile_repository_impl.dart';
+import 'package:sparksocial/src/features/video/data/repositories/video_repository.dart';
+import 'package:sparksocial/src/features/video/data/repositories/video_repository_impl.dart';
 
 // This is the ONLY PLACE IN THE ENTIRE APP where implementations are imported
 // All the other files should import interfaces only (polymorphism) to keep everything decoupled
@@ -43,6 +45,9 @@ Future<void> _registerFeatures() async {
   
   // Register profile dependencies
   await _registerProfile();
+  
+  // Register video dependencies
+  await _registerVideo();
 }
 
 /// Registers core dependencies
@@ -114,6 +119,16 @@ Future<void> _registerProfile() async {
       authRepository: sl<AuthRepository>(),
       sprkRepository: sl<SprkRepository>(),
       cacheManager: sl<CacheManagerInterface>(),
+    ),
+  );
+}
+
+/// Registers video dependencies
+Future<void> _registerVideo() async {
+  // Register VideoRepository
+  sl.registerLazySingleton<VideoRepository>(
+    () => VideoRepositoryImpl(
+      authRepository: sl<AuthRepository>(),
     ),
   );
 }
