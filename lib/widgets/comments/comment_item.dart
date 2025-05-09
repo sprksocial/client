@@ -34,7 +34,9 @@ class CommentItem extends StatefulWidget {
   final String cid;
   final String? profileImageUrl;
   final String authorDid;
-  final Function()? onCommentDeleted;
+  final bool isLiked;
+  final VoidCallback? onLikePressed;
+  final VoidCallback? onDeleted;
 
   const CommentItem({
     super.key,
@@ -56,7 +58,9 @@ class CommentItem extends StatefulWidget {
     required this.cid,
     this.profileImageUrl,
     required this.authorDid,
-    this.onCommentDeleted,
+    this.isLiked = false,
+    this.onLikePressed,
+    this.onDeleted,
   });
 
   @override
@@ -69,10 +73,14 @@ class _CommentItemState extends State<CommentItem> {
   VideoPlayerController? _videoController;
   bool _isVideoInitialized = false;
   bool _isFirstImagePrecached = false;
+  int _originalCount = 0;
+  bool _isLikeLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _isLiked = widget.isLiked;
+    _originalCount = widget.likeCount;
     if (widget.hasMedia && widget.mediaType == 'video' && widget.mediaUrl != null) {
       _initializeVideoPlayer();
     }
@@ -88,6 +96,16 @@ class _CommentItemState extends State<CommentItem> {
   }
 
   @override
+  void didUpdateWidget(CommentItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!_isLikeLoading && oldWidget.isLiked != widget.isLiked) {
+      setState(() {
+        _isLiked = widget.isLiked;
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _videoController?.dispose();
     super.dispose();
@@ -99,7 +117,7 @@ class _CommentItemState extends State<CommentItem> {
   }
 
   void _initializeVideoPlayer() {
-    _videoController = VideoPlayerController.network(widget.mediaUrl!)
+    _videoController = VideoPlayerController.networkUrl(Uri.parse(widget.mediaUrl!))
       ..initialize().then((_) {
         if (mounted) {
           setState(() {
@@ -110,8 +128,24 @@ class _CommentItemState extends State<CommentItem> {
   }
 
   void _toggleLike() {
+    if (_isLikeLoading) return;
+
     setState(() {
+      _isLikeLoading = true;
       _isLiked = !_isLiked;
+    });
+
+    if (widget.onLikePressed != null) {
+      widget.onLikePressed!();
+    }
+
+    // Reset loading state after a short delay to ensure smooth animation
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        setState(() {
+          _isLikeLoading = false;
+        });
+      }
     });
   }
 
@@ -138,7 +172,7 @@ class _CommentItemState extends State<CommentItem> {
 
     showDialog(
       context: context,
-      barrierColor: Colors.black.withOpacity(0.85),
+      barrierColor: Colors.black.withValues(alpha: 217),
       builder: (BuildContext context) {
         return Dialog(
           backgroundColor: Colors.transparent,
@@ -152,7 +186,7 @@ class _CommentItemState extends State<CommentItem> {
                 child: IconButton(
                   icon: const Icon(FluentIcons.dismiss_24_filled, color: Colors.white, size: 30),
                   onPressed: () => Navigator.of(context).pop(),
-                  style: IconButton.styleFrom(backgroundColor: Colors.black.withOpacity(0.3)),
+                  style: IconButton.styleFrom(backgroundColor: Colors.black.withValues(alpha: 77)),
                 ),
               ),
             ],
@@ -164,6 +198,7 @@ class _CommentItemState extends State<CommentItem> {
 
   void _handleReportComment() {
     final modService = ModService(Provider.of<AuthService>(context, listen: false));
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     showDialog(
       context: context,
@@ -181,10 +216,10 @@ class _CommentItemState extends State<CommentItem> {
                 );
 
                 if (result) {
-                  ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+                  scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
                 }
               } catch (e) {
-                ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+                scaffoldMessenger.showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
               }
             },
           ),
@@ -193,6 +228,7 @@ class _CommentItemState extends State<CommentItem> {
 
   void _handleDeleteComment() {
     final actionsService = Provider.of<ActionsService>(context, listen: false);
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
 
     // Confirm deletion
     showDialog(
@@ -210,15 +246,12 @@ class _CommentItemState extends State<CommentItem> {
                   try {
                     final result = await actionsService.deletePost(widget.uri);
                     if (result && mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Comment deleted successfully')));
-                      // Notify parent to refresh comments
-                      if (widget.onCommentDeleted != null) {
-                        widget.onCommentDeleted!();
-                      }
+                      scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Comment deleted successfully')));
+                      widget.onDeleted?.call();
                     }
                   } catch (e) {
                     if (mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to delete comment: $e')));
+                      scaffoldMessenger.showSnackBar(SnackBar(content: Text('Failed to delete comment: $e')));
                     }
                   }
                 },
@@ -232,8 +265,8 @@ class _CommentItemState extends State<CommentItem> {
   @override
   Widget build(BuildContext context) {
     final textColor = widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary;
-    final secondaryTextColor = widget.isDarkMode ? AppColors.textLight.withAlpha(179) : AppColors.textSecondary;
-    final dividerColor = widget.isDarkMode ? AppColors.deepPurple.withAlpha(128) : AppColors.lightLavender;
+    final secondaryTextColor = widget.isDarkMode ? AppColors.textLight.withValues(alpha: 179) : AppColors.textSecondary;
+    final dividerColor = widget.isDarkMode ? AppColors.deepPurple.withValues(alpha: 128) : AppColors.lightLavender;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,7 +327,7 @@ class _CommentItemState extends State<CommentItem> {
                 _handleDeleteComment();
               },
               isCompact: true,
-              backgroundColor: widget.isDarkMode ? Colors.black.withOpacity(0.2) : Colors.grey.withOpacity(0.1),
+              backgroundColor: widget.isDarkMode ? Colors.black.withValues(alpha: 51) : Colors.grey.withValues(alpha: 26),
               isProfile: false,
               authorDid: widget.authorDid,
             ),
@@ -326,22 +359,30 @@ class _CommentItemState extends State<CommentItem> {
   }
 
   Widget _buildLikeButton(Color secondaryTextColor) {
+    final displayCount = _isLiked ? _originalCount + 1 : _originalCount;
+
     return TextButton(
       style: TextButton.styleFrom(
         padding: EdgeInsets.zero,
         minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       ),
-      onPressed: _toggleLike,
+      onPressed: _isLikeLoading ? null : _toggleLike,
       child: Row(
         children: [
           Icon(
-            _isLiked ? FluentIcons.heart_24_filled : FluentIcons.heart_24_regular,
+            (_isLikeLoading && !_isLiked)
+                ? FluentIcons.heart_24_regular
+                : (_isLikeLoading && _isLiked)
+                ? FluentIcons.heart_24_filled
+                : _isLiked
+                ? FluentIcons.heart_24_filled
+                : FluentIcons.heart_24_regular,
             size: 16,
             color: _isLiked ? AppColors.red : secondaryTextColor,
           ),
           const SizedBox(width: 4),
-          Text(widget.likeCount.toString(), style: TextStyle(fontSize: 12, color: secondaryTextColor)),
+          Text(displayCount.toString(), style: TextStyle(fontSize: 12, color: secondaryTextColor)),
         ],
       ),
     );
@@ -443,7 +484,7 @@ class _CommentItemState extends State<CommentItem> {
         decoration: BoxDecoration(
           borderRadius: borderRadius,
           border: Border.all(color: widget.isDarkMode ? AppColors.deepPurple : AppColors.lightLavender, width: 0.5),
-          color: widget.isDarkMode ? AppColors.deepPurple.withAlpha(50) : AppColors.lightLavender.withAlpha(50),
+          color: widget.isDarkMode ? AppColors.deepPurple.withValues(alpha: 50) : AppColors.lightLavender.withValues(alpha: 50),
         ),
         child: Stack(
           fit: StackFit.expand,
@@ -453,7 +494,7 @@ class _CommentItemState extends State<CommentItem> {
               fit: BoxFit.cover,
               placeholder:
                   (context, url) => Container(
-                    color: Colors.grey[850]?.withOpacity(0.5),
+                    color: Colors.grey[850]?.withValues(alpha: 128),
                     child: const Center(
                       child: SizedBox(
                         width: 20,
@@ -464,7 +505,7 @@ class _CommentItemState extends State<CommentItem> {
                   ),
               errorWidget:
                   (context, url, error) => Container(
-                    color: AppColors.darkPurple.withAlpha(26),
+                    color: AppColors.darkPurple.withValues(alpha: 26),
                     child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 24, color: Colors.white70)),
                   ),
             ),
@@ -475,7 +516,7 @@ class _CommentItemState extends State<CommentItem> {
                 right: 4,
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: Colors.black.withOpacity(0.7), borderRadius: BorderRadius.circular(10)),
+                  decoration: BoxDecoration(color: Colors.black.withValues(alpha: 179), borderRadius: BorderRadius.circular(10)),
                   child: Text(
                     '+${imageCount - 1}',
                     style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
@@ -512,7 +553,7 @@ class _CommentItemState extends State<CommentItem> {
               Container(
                 width: 60,
                 height: 60,
-                decoration: BoxDecoration(color: Colors.black.withAlpha(128), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: Colors.black.withValues(alpha: 128), shape: BoxShape.circle),
                 child: const Icon(FluentIcons.play_24_filled, size: 24, color: Colors.white),
               ),
           ],
