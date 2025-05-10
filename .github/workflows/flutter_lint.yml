@@ -54,10 +54,11 @@ jobs:
           fi
 
           echo "::debug::Starting annotation processing and error checking from flutter_analyze_output.txt"
-          found_error="false" # Flag to track if any errors are found
+          found_any_issue="false" # Flag to track if any issues (info, warning, error) are found
 
           while IFS= read -r line; do
             if [[ "$line" =~ ^[[:space:]]*(info|warning|error)[[:space:]]+•[[:space:]]+(.+)[[:space:]]+•[[:space:]]+([^:]+):([0-9]+):([0-9]+)[[:space:]]+•[[:space:]]+(.+)$ ]]; then
+              found_any_issue="true" # Set flag if any issue is found
               type="${BASH_REMATCH[1]}"
               message_body="${BASH_REMATCH[2]}"
               file_path="${BASH_REMATCH[3]}"
@@ -70,7 +71,6 @@ jobs:
                 github_level="warning"
               elif [ "$type" = "error" ]; then
                 github_level="error"
-                found_error="true" # Set flag if an error is found
               fi
 
               message_body_escaped="${message_body//'%'/'%25'}"
@@ -86,9 +86,9 @@ jobs:
           done < flutter_analyze_output.txt
           echo "::debug::Finished annotation processing."
 
-          if [ "$found_error" = "true" ]; then
-            echo "::error::Flutter analyze reported errors. See annotations for details. Failing workflow."
+          if [ "$found_any_issue" = "true" ]; then
+            echo "::error::Flutter analyze reported issues. See annotations for details. Failing workflow."
             exit 1
           else
-            echo "::debug::No flutter analyze errors found. Workflow will proceed."
+            echo "::debug::No flutter analyze issues found. Workflow will pass."
           fi
