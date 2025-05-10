@@ -1,15 +1,15 @@
 import 'package:camera/camera.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/features/camera/data/repositories/camera_repository_interface.dart';
+import 'package:sparksocial/src/features/camera/data/repositories/camera_repository.dart';
 
 part 'camera_provider.g.dart';
 
 @riverpod
 class Camera extends _$Camera {
   @override
-  CameraRepositoryInterface build() {
-    final repository = GetIt.instance<CameraRepositoryInterface>();
+  CameraRepository build() {
+    final repository = GetIt.instance<CameraRepository>();
     
     ref.onDispose(() {
       repository.dispose();

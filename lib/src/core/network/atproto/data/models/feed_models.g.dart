@@ -310,3 +310,126 @@ Map<String, dynamic> _$$CommentImplToJson(_$CommentImpl instance) =>
       'replies': instance.replies,
       'imageUrls': instance.imageUrls,
     };
+
+_$BlobReferenceImpl _$$BlobReferenceImplFromJson(Map<String, dynamic> json) =>
+    _$BlobReferenceImpl(
+      type: json[r'$type'] as String,
+      mimeType: json['mimeType'] as String,
+      size: (json['size'] as num).toInt(),
+      ref: json['ref'] as String,
+      createdAt: json['createdAt'] as String?,
+    );
+
+Map<String, dynamic> _$$BlobReferenceImplToJson(_$BlobReferenceImpl instance) =>
+    <String, dynamic>{
+      r'$type': instance.type,
+      'mimeType': instance.mimeType,
+      'size': instance.size,
+      'ref': instance.ref,
+      'createdAt': instance.createdAt,
+    };
+
+_$FacetIndexImpl _$$FacetIndexImplFromJson(Map<String, dynamic> json) =>
+    _$FacetIndexImpl(
+      byteStart: (json['byteStart'] as num).toInt(),
+      byteEnd: (json['byteEnd'] as num).toInt(),
+    );
+
+Map<String, dynamic> _$$FacetIndexImplToJson(_$FacetIndexImpl instance) =>
+    <String, dynamic>{
+      'byteStart': instance.byteStart,
+      'byteEnd': instance.byteEnd,
+    };
+
+_$MentionFeatureImpl _$$MentionFeatureImplFromJson(Map<String, dynamic> json) =>
+    _$MentionFeatureImpl(
+      did: json['did'] as String,
+      $type: json['runtimeType'] as String?,
+    );
+
+Map<String, dynamic> _$$MentionFeatureImplToJson(
+        _$MentionFeatureImpl instance) =>
+    <String, dynamic>{
+      'did': instance.did,
+      'runtimeType': instance.$type,
+    };
+
+_$LinkFeatureImpl _$$LinkFeatureImplFromJson(Map<String, dynamic> json) =>
+    _$LinkFeatureImpl(
+      uri: json['uri'] as String,
+      $type: json['runtimeType'] as String?,
+    );
+
+Map<String, dynamic> _$$LinkFeatureImplToJson(_$LinkFeatureImpl instance) =>
+    <String, dynamic>{
+      'uri': instance.uri,
+      'runtimeType': instance.$type,
+    };
+
+_$TagFeatureImpl _$$TagFeatureImplFromJson(Map<String, dynamic> json) =>
+    _$TagFeatureImpl(
+      tag: json['tag'] as String,
+      $type: json['runtimeType'] as String?,
+    );
+
+Map<String, dynamic> _$$TagFeatureImplToJson(_$TagFeatureImpl instance) =>
+    <String, dynamic>{
+      'tag': instance.tag,
+      'runtimeType': instance.$type,
+    };
+
+_$FacetImpl _$$FacetImplFromJson(Map<String, dynamic> json) => _$FacetImpl(
+      index: FacetIndex.fromJson(json['index'] as Map<String, dynamic>),
+      features: (json['features'] as List<dynamic>)
+          .map((e) => FacetFeature.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$$FacetImplToJson(_$FacetImpl instance) =>
+    <String, dynamic>{
+      'index': instance.index,
+      'features': instance.features,
+    };
+
+_$VideoEmbedImpl _$$VideoEmbedImplFromJson(Map<String, dynamic> json) =>
+    _$VideoEmbedImpl(
+      type: json[r'$type'] as String,
+      video: BlobReference.fromJson(json['video'] as Map<String, dynamic>),
+      alt: json['alt'] as String?,
+    );
+
+Map<String, dynamic> _$$VideoEmbedImplToJson(_$VideoEmbedImpl instance) =>
+    <String, dynamic>{
+      r'$type': instance.type,
+      'video': instance.video,
+      'alt': instance.alt,
+    };
+
+_$VideoPostImpl _$$VideoPostImplFromJson(Map<String, dynamic> json) =>
+    _$VideoPostImpl(
+      type: json[r'$type'] as String,
+      text: json['text'] as String? ?? '',
+      embed: VideoEmbed.fromJson(json['embed'] as Map<String, dynamic>),
+      createdAt: json['createdAt'] as String,
+      langs:
+          (json['langs'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      labels: (json['labels'] as List<dynamic>?)
+          ?.map((e) => LabelDetail.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      tags: (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      facets: (json['facets'] as List<dynamic>?)
+          ?.map((e) => Facet.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$$VideoPostImplToJson(_$VideoPostImpl instance) =>
+    <String, dynamic>{
+      r'$type': instance.type,
+      'text': instance.text,
+      'embed': instance.embed,
+      'createdAt': instance.createdAt,
+      'langs': instance.langs,
+      'labels': instance.labels,
+      'tags': instance.tags,
+      'facets': instance.facets,
+    };

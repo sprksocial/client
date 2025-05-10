@@ -1,7 +1,10 @@
 import 'dart:typed_data';
+import 'dart:convert';
 
 import 'package:atproto/core.dart';
+import 'package:atproto/atproto.dart';
 import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
@@ -180,6 +183,105 @@ class RepoRepositoryImpl implements RepoRepository {
         records: records,
         cursor: result.data.cursor,
       );
+    });
+  }
+  
+  @override
+  Future<bool> createReport({
+    required ReportSubject subject,
+    required ModerationReasonType reasonType,
+    String? reason,
+    ModerationService? service,
+  }) async {
+    _logger.i('Creating moderation report for reason: ${reasonType.value}');
+    
+    return _client.executeWithRetry(() async {
+      if (!_client.authService.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+      
+      final atproto = _client.authService.atproto;
+      if (atproto == null || atproto.session == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      } else if (service != null) {
+        _logger.d('Using provided moderation service');
+        try {
+          final report = await service.createReport(
+            subject: subject, 
+            reasonType: reasonType, 
+            reason: reason
+          );
+          return report.status.code == 200;
+        } catch (e) {
+          _logger.e('Error creating report with service', error: e);
+          throw Exception('Failed to create report: $e');
+        }
+      } else {
+        _logger.d('Using direct API call for moderation report');
+        final endpoint = NSID.parse('com.atproto.moderation.createReport');
+        final subjectData = subject.data;
+
+        Map<String, dynamic> body;
+
+        if (subjectData is StrongRef) {
+          final strongRef = subjectData.toJson();
+          body = {
+            'subject': {
+              '\$type': 'com.atproto.repo.strongRef', 
+              'uri': strongRef['uri'], 
+              'cid': strongRef['cid']
+            },
+            'reasonType': reasonType.value,
+          };
+        } else if (subjectData is RepoRef) {
+          body = {
+            'subject': {
+              '\$type': 'com.atproto.admin.defs.repoRef', 
+              'did': subjectData.did
+            },
+            'reasonType': reasonType.value,
+          };
+        } else {
+          _logger.e('Invalid subject data type: ${subjectData.runtimeType}');
+          throw Exception('Invalid subject data');
+        }
+
+        if (reason != null) {
+          body['reason'] = reason;
+        }
+
+        // Send to Spark's PDS (don't use the user's PDS as it might be different)
+        // TODO: send to a chosen labeler's PDS
+        final uri = Uri.parse('https://pds.sprk.so/xrpc/$endpoint');
+        final headers = {
+          'Authorization': 'Bearer ${atproto.session!.accessJwt}', 
+          'Content-Type': 'application/json'
+        };
+
+        _logger.d('Sending report to: $uri');
+        
+        try {
+          final response = await http.post(
+            uri, 
+            headers: headers, 
+            body: jsonEncode(body)
+          );
+
+          if (response.statusCode != 200) {
+            _logger.e('Failed to create report: ${response.body}', 
+              error: 'HTTP ${response.statusCode}');
+            throw Exception('Failed to create report: ${response.body}');
+          }
+
+          _logger.i('Report created successfully');
+          return true;
+        } catch (e) {
+          _logger.e('Error creating report', error: e);
+          throw Exception('Failed to create report: $e');
+        }
+      }
     });
   }
 } 

@@ -31,9 +31,7 @@ class FeedSettingsService extends ChangeNotifier {
   static const String _keyLatestFeed = 'latest_feed_enabled';
   static const String _keyDisableBlur = 'disable_background_blur';
   static const String _keySelectedFeed = 'selected_feed_type';
-  static const String _keyDisableNsfwContent = 'disable_nsfw_content';
-  // there should be a key for each label of each labeler
-  // for now, we'll just use the default labels
+
 
   // Feed states
   bool _followingFeedEnabled = true;
@@ -41,7 +39,6 @@ class FeedSettingsService extends ChangeNotifier {
   bool _latestFeedEnabled = true;
   bool _disableVideoBackgroundBlur = false;
   FeedType _selectedFeedType = FeedType.forYou;
-  bool _disableNsfwContent = true;
 
   // Getters
   bool get followingFeedEnabled => _followingFeedEnabled;
@@ -49,7 +46,6 @@ class FeedSettingsService extends ChangeNotifier {
   bool get latestFeedEnabled => _latestFeedEnabled;
   bool get disableVideoBackgroundBlur => _disableVideoBackgroundBlur;
   FeedType get selectedFeedType => _selectedFeedType;
-  bool get disableNsfwContent => _disableNsfwContent;
 
   Future<void> loadPreferences() async {
     try {
@@ -60,7 +56,6 @@ class FeedSettingsService extends ChangeNotifier {
       _latestFeedEnabled = prefs.getBool(_keyLatestFeed) ?? true;
       _disableVideoBackgroundBlur = prefs.getBool(_keyDisableBlur) ?? false;
       _selectedFeedType = FeedType.values[prefs.getInt(_keySelectedFeed) ?? FeedType.forYou.value];
-      _disableNsfwContent = prefs.getBool(_keyDisableNsfwContent) ?? true;
 
       // Make sure selected feed is enabled
       if (!isSelectedFeedEnabled()) {
@@ -81,7 +76,6 @@ class FeedSettingsService extends ChangeNotifier {
       await prefs.setBool(_keyLatestFeed, _latestFeedEnabled);
       await prefs.setBool(_keyDisableBlur, _disableVideoBackgroundBlur);
       await prefs.setInt(_keySelectedFeed, _selectedFeedType.value);
-      await prefs.setBool(_keyDisableNsfwContent, _disableNsfwContent);
       notifyListeners();
     } catch (e) {
       // Silently handle preference save errors

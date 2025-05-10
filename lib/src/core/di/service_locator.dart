@@ -16,12 +16,10 @@ import 'package:sparksocial/src/features/onboarding/data/repositories/onboarding
 import 'package:sparksocial/src/features/onboarding/data/repositories/onboarding_repository_impl.dart';
 import 'package:sparksocial/src/features/profile/data/repositories/profile_repository.dart';
 import 'package:sparksocial/src/features/profile/data/repositories/profile_repository_impl.dart';
-import 'package:sparksocial/src/features/video/data/repositories/upload_repository.dart';
-import 'package:sparksocial/src/features/video/data/repositories/upload_repository_impl.dart';
+import 'package:sparksocial/src/features/upload/data/repositories/upload_repository.dart';
+import 'package:sparksocial/src/features/upload/data/repositories/upload_repository_impl.dart';
+import 'package:sparksocial/src/features/camera/data/repositories/camera_repository_impl.dart';
 import 'package:sparksocial/src/features/camera/data/repositories/camera_repository.dart';
-import 'package:sparksocial/src/features/camera/data/repositories/camera_repository_interface.dart';
-import 'package:sparksocial/src/features/moderation/data/repositories/moderation_repository.dart';
-import 'package:sparksocial/src/features/moderation/data/repositories/moderation_repository_impl.dart';
 import 'package:sparksocial/src/features/feed/data/repositories/media_repository.dart';
 import 'package:sparksocial/src/features/feed/data/repositories/media_repository_impl.dart';
 
@@ -54,9 +52,6 @@ Future<void> _registerFeatures() async {
   
   // Register video dependencies
   await _registerVideo();
-  
-  // Register moderation dependencies
-  await _registerModeration();
   
   // Register feed dependencies
   await _registerFeed();
@@ -139,21 +134,10 @@ Future<void> _registerProfile() async {
 Future<void> _registerVideo() async {
   // Register VideoRepository
   sl.registerLazySingleton<UploadRepository>(
-    () => UploadRepositoryImpl(
-      authRepository: sl<AuthRepository>(),
-    ),
+    () => UploadRepositoryImpl(),
   );
 }
 
-/// Registers moderation dependencies
-Future<void> _registerModeration() async {
-  // Register ModerationRepository
-  sl.registerLazySingleton<ModerationRepository>(
-    () => ModerationRepositoryImpl(
-      authRepository: sl<AuthRepository>(),
-    ),
-  );
-}
 
 /// Registers feed dependencies
 Future<void> _registerFeed() async {
@@ -168,6 +152,6 @@ Future<void> _registerFeed() async {
 
 void setupDependencies() {
   // Camera
-  GetIt.instance.registerLazySingleton<CameraRepositoryInterface>(() => CameraRepository());
+  GetIt.instance.registerLazySingleton<CameraRepository>(() => CameraRepositoryImpl());
 }
 

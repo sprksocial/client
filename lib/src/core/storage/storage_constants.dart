@@ -14,6 +14,7 @@ class StorageKeys {
 
   /// Labelers
   static const String followedLabelers = 'followed_labelers';
+  static const String labelerPrefix = 'labeler_';
   static const String labelPreferencePrefix = 'label_pref_';
 
   /// Identity cache

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:atproto/core.dart';
+import 'package:atproto/atproto.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
@@ -395,6 +396,68 @@ class FeedRepositoryImpl implements FeedRepository {
         _logger.e('Error deleting post', error: e);
         return false;
       }
+    });
+  }
+
+  @override
+  Future<StrongRef> postVideo(BlobReference? videoData, {String description = '', String videoAltText = ''}) async {
+    _logger.d('Posting video with description: $description');
+    
+    return _client.executeWithRetry(() async {
+      if (!_client.authService.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+      
+      if (videoData == null) {
+        _logger.e('Video data is null');
+        throw Exception('Video data is null');
+      }
+      
+      // Create a VideoPost object with the provided data
+      final videoPost = VideoPost.create(
+        text: description,
+        videoData: videoData.toJson(),
+        videoAltText: videoAltText,
+      );
+      
+      // Use the common implementation
+      return postVideoWithPost(videoPost);
+    });
+  }
+  
+  @override
+  Future<StrongRef> postVideoWithPost(VideoPost videoPost) async {
+    _logger.d('Posting video with prepared VideoPost');
+    
+    return _client.executeWithRetry(() async {
+      if (!_client.authService.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+      
+      final atproto = _client.authService.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      // Convert the VideoPost to its raw format for the API
+      final postRecord = videoPost.toJson();
+
+      // Create the post record
+      final recordRes = await atproto.repo.createRecord(
+        collection: NSID.parse('so.sprk.feed.post'), 
+        record: postRecord
+      );
+
+      if (recordRes.status != HttpStatus.ok) {
+        _logger.e('Failed to post video: ${recordRes.status} ${recordRes.data}');
+        throw Exception('Failed to post video: ${recordRes.status} ${recordRes.data}');
+      }
+      
+      _logger.i('Video posted successfully: ${recordRes.data.uri}');
+      return recordRes.data;
     });
   }
 } 

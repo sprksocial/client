@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/repo_models.dart';
 
@@ -39,5 +40,20 @@ abstract class RepoRepository {
     String? cursor,
     int? limit,
     bool? reverse,
+  });
+  
+  /// Creates a report for content or an account
+  /// 
+  /// [subject] The subject of the report (content or account)
+  /// [reasonType] The reason for the report
+  /// [reason] Optional additional context about the violation
+  /// [service] Optional moderation service to use
+  /// 
+  /// Returns true if the report was successfully created
+  Future<bool> createReport({
+    required ReportSubject subject,
+    required ModerationReasonType reasonType,
+    String? reason,
+    ModerationService? service,
   });
 } 

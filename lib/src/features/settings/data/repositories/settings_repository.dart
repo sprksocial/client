@@ -1,4 +1,4 @@
-import '../models/label_preference.dart';
+import 'package:sparksocial/src/features/settings/data/models/label_preference.dart';
 
 abstract class SettingsRepository {
   Future<bool> getFeedBlurEnabled();

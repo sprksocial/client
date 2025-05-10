@@ -1,4 +1,5 @@
 import 'package:image_picker/image_picker.dart';
+import 'package:atproto/atproto.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/repo_models.dart';
 
@@ -69,4 +70,20 @@ abstract class FeedRepository {
   /// [imageFiles] List of image files to attach
   /// [altTexts] Map of file paths to alt texts
   Future<RecordResponse> postImageFeed(String text, List<XFile> imageFiles, Map<String, String> altTexts);
+  
+  /// Post a video to the user's feed
+  /// 
+  /// [videoData] The blob reference data for the video
+  /// [description] The text description for the post
+  /// [videoAltText] The alt text for the video
+  Future<StrongRef> postVideo(
+    BlobReference? videoData, {
+    String description = '', 
+    String videoAltText = ''
+  });
+  
+  /// Post a video using a prepared VideoPost object
+  /// 
+  /// [videoPost] The prepared video post data
+  Future<StrongRef> postVideoWithPost(VideoPost videoPost);
 } 

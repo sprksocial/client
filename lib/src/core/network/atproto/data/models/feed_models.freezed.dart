@@ -3555,3 +3555,1871 @@ abstract class _Comment implements Comment {
   _$$CommentImplCopyWith<_$CommentImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
+
+BlobReference _$BlobReferenceFromJson(Map<String, dynamic> json) {
+  return _BlobReference.fromJson(json);
+}
+
+/// @nodoc
+mixin _$BlobReference {
+  /// The type of the blob, usually 'blob'
+  @JsonKey(name: '\$type')
+  String get type => throw _privateConstructorUsedError;
+
+  /// The MIME type of the blob
+  String get mimeType => throw _privateConstructorUsedError;
+
+  /// Size of the blob in bytes
+  int get size => throw _privateConstructorUsedError;
+
+  /// Content reference (CID)
+  String get ref => throw _privateConstructorUsedError;
+
+  /// Creation time in ISO 8601 format
+  String? get createdAt => throw _privateConstructorUsedError;
+
+  /// Serializes this BlobReference to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of BlobReference
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $BlobReferenceCopyWith<BlobReference> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $BlobReferenceCopyWith<$Res> {
+  factory $BlobReferenceCopyWith(
+          BlobReference value, $Res Function(BlobReference) then) =
+      _$BlobReferenceCopyWithImpl<$Res, BlobReference>;
+  @useResult
+  $Res call(
+      {@JsonKey(name: '\$type') String type,
+      String mimeType,
+      int size,
+      String ref,
+      String? createdAt});
+}
+
+/// @nodoc
+class _$BlobReferenceCopyWithImpl<$Res, $Val extends BlobReference>
+    implements $BlobReferenceCopyWith<$Res> {
+  _$BlobReferenceCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of BlobReference
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? type = null,
+    Object? mimeType = null,
+    Object? size = null,
+    Object? ref = null,
+    Object? createdAt = freezed,
+  }) {
+    return _then(_value.copyWith(
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String,
+      mimeType: null == mimeType
+          ? _value.mimeType
+          : mimeType // ignore: cast_nullable_to_non_nullable
+              as String,
+      size: null == size
+          ? _value.size
+          : size // ignore: cast_nullable_to_non_nullable
+              as int,
+      ref: null == ref
+          ? _value.ref
+          : ref // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$BlobReferenceImplCopyWith<$Res>
+    implements $BlobReferenceCopyWith<$Res> {
+  factory _$$BlobReferenceImplCopyWith(
+          _$BlobReferenceImpl value, $Res Function(_$BlobReferenceImpl) then) =
+      __$$BlobReferenceImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {@JsonKey(name: '\$type') String type,
+      String mimeType,
+      int size,
+      String ref,
+      String? createdAt});
+}
+
+/// @nodoc
+class __$$BlobReferenceImplCopyWithImpl<$Res>
+    extends _$BlobReferenceCopyWithImpl<$Res, _$BlobReferenceImpl>
+    implements _$$BlobReferenceImplCopyWith<$Res> {
+  __$$BlobReferenceImplCopyWithImpl(
+      _$BlobReferenceImpl _value, $Res Function(_$BlobReferenceImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of BlobReference
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? type = null,
+    Object? mimeType = null,
+    Object? size = null,
+    Object? ref = null,
+    Object? createdAt = freezed,
+  }) {
+    return _then(_$BlobReferenceImpl(
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String,
+      mimeType: null == mimeType
+          ? _value.mimeType
+          : mimeType // ignore: cast_nullable_to_non_nullable
+              as String,
+      size: null == size
+          ? _value.size
+          : size // ignore: cast_nullable_to_non_nullable
+              as int,
+      ref: null == ref
+          ? _value.ref
+          : ref // ignore: cast_nullable_to_non_nullable
+              as String,
+      createdAt: freezed == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$BlobReferenceImpl extends _BlobReference {
+  const _$BlobReferenceImpl(
+      {@JsonKey(name: '\$type') required this.type,
+      required this.mimeType,
+      required this.size,
+      required this.ref,
+      this.createdAt})
+      : super._();
+
+  factory _$BlobReferenceImpl.fromJson(Map<String, dynamic> json) =>
+      _$$BlobReferenceImplFromJson(json);
+
+  /// The type of the blob, usually 'blob'
+  @override
+  @JsonKey(name: '\$type')
+  final String type;
+
+  /// The MIME type of the blob
+  @override
+  final String mimeType;
+
+  /// Size of the blob in bytes
+  @override
+  final int size;
+
+  /// Content reference (CID)
+  @override
+  final String ref;
+
+  /// Creation time in ISO 8601 format
+  @override
+  final String? createdAt;
+
+  @override
+  String toString() {
+    return 'BlobReference(type: $type, mimeType: $mimeType, size: $size, ref: $ref, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$BlobReferenceImpl &&
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.mimeType, mimeType) ||
+                other.mimeType == mimeType) &&
+            (identical(other.size, size) || other.size == size) &&
+            (identical(other.ref, ref) || other.ref == ref) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, type, mimeType, size, ref, createdAt);
+
+  /// Create a copy of BlobReference
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$BlobReferenceImplCopyWith<_$BlobReferenceImpl> get copyWith =>
+      __$$BlobReferenceImplCopyWithImpl<_$BlobReferenceImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$BlobReferenceImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _BlobReference extends BlobReference {
+  const factory _BlobReference(
+      {@JsonKey(name: '\$type') required final String type,
+      required final String mimeType,
+      required final int size,
+      required final String ref,
+      final String? createdAt}) = _$BlobReferenceImpl;
+  const _BlobReference._() : super._();
+
+  factory _BlobReference.fromJson(Map<String, dynamic> json) =
+      _$BlobReferenceImpl.fromJson;
+
+  /// The type of the blob, usually 'blob'
+  @override
+  @JsonKey(name: '\$type')
+  String get type;
+
+  /// The MIME type of the blob
+  @override
+  String get mimeType;
+
+  /// Size of the blob in bytes
+  @override
+  int get size;
+
+  /// Content reference (CID)
+  @override
+  String get ref;
+
+  /// Creation time in ISO 8601 format
+  @override
+  String? get createdAt;
+
+  /// Create a copy of BlobReference
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$BlobReferenceImplCopyWith<_$BlobReferenceImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+FacetIndex _$FacetIndexFromJson(Map<String, dynamic> json) {
+  return _FacetIndex.fromJson(json);
+}
+
+/// @nodoc
+mixin _$FacetIndex {
+  /// Start index (inclusive)
+  int get byteStart => throw _privateConstructorUsedError;
+
+  /// End index (exclusive)
+  int get byteEnd => throw _privateConstructorUsedError;
+
+  /// Serializes this FacetIndex to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of FacetIndex
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $FacetIndexCopyWith<FacetIndex> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $FacetIndexCopyWith<$Res> {
+  factory $FacetIndexCopyWith(
+          FacetIndex value, $Res Function(FacetIndex) then) =
+      _$FacetIndexCopyWithImpl<$Res, FacetIndex>;
+  @useResult
+  $Res call({int byteStart, int byteEnd});
+}
+
+/// @nodoc
+class _$FacetIndexCopyWithImpl<$Res, $Val extends FacetIndex>
+    implements $FacetIndexCopyWith<$Res> {
+  _$FacetIndexCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of FacetIndex
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? byteStart = null,
+    Object? byteEnd = null,
+  }) {
+    return _then(_value.copyWith(
+      byteStart: null == byteStart
+          ? _value.byteStart
+          : byteStart // ignore: cast_nullable_to_non_nullable
+              as int,
+      byteEnd: null == byteEnd
+          ? _value.byteEnd
+          : byteEnd // ignore: cast_nullable_to_non_nullable
+              as int,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$FacetIndexImplCopyWith<$Res>
+    implements $FacetIndexCopyWith<$Res> {
+  factory _$$FacetIndexImplCopyWith(
+          _$FacetIndexImpl value, $Res Function(_$FacetIndexImpl) then) =
+      __$$FacetIndexImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({int byteStart, int byteEnd});
+}
+
+/// @nodoc
+class __$$FacetIndexImplCopyWithImpl<$Res>
+    extends _$FacetIndexCopyWithImpl<$Res, _$FacetIndexImpl>
+    implements _$$FacetIndexImplCopyWith<$Res> {
+  __$$FacetIndexImplCopyWithImpl(
+      _$FacetIndexImpl _value, $Res Function(_$FacetIndexImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of FacetIndex
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? byteStart = null,
+    Object? byteEnd = null,
+  }) {
+    return _then(_$FacetIndexImpl(
+      byteStart: null == byteStart
+          ? _value.byteStart
+          : byteStart // ignore: cast_nullable_to_non_nullable
+              as int,
+      byteEnd: null == byteEnd
+          ? _value.byteEnd
+          : byteEnd // ignore: cast_nullable_to_non_nullable
+              as int,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$FacetIndexImpl extends _FacetIndex {
+  const _$FacetIndexImpl({required this.byteStart, required this.byteEnd})
+      : super._();
+
+  factory _$FacetIndexImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FacetIndexImplFromJson(json);
+
+  /// Start index (inclusive)
+  @override
+  final int byteStart;
+
+  /// End index (exclusive)
+  @override
+  final int byteEnd;
+
+  @override
+  String toString() {
+    return 'FacetIndex(byteStart: $byteStart, byteEnd: $byteEnd)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$FacetIndexImpl &&
+            (identical(other.byteStart, byteStart) ||
+                other.byteStart == byteStart) &&
+            (identical(other.byteEnd, byteEnd) || other.byteEnd == byteEnd));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, byteStart, byteEnd);
+
+  /// Create a copy of FacetIndex
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$FacetIndexImplCopyWith<_$FacetIndexImpl> get copyWith =>
+      __$$FacetIndexImplCopyWithImpl<_$FacetIndexImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$FacetIndexImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _FacetIndex extends FacetIndex {
+  const factory _FacetIndex(
+      {required final int byteStart,
+      required final int byteEnd}) = _$FacetIndexImpl;
+  const _FacetIndex._() : super._();
+
+  factory _FacetIndex.fromJson(Map<String, dynamic> json) =
+      _$FacetIndexImpl.fromJson;
+
+  /// Start index (inclusive)
+  @override
+  int get byteStart;
+
+  /// End index (exclusive)
+  @override
+  int get byteEnd;
+
+  /// Create a copy of FacetIndex
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$FacetIndexImplCopyWith<_$FacetIndexImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+FacetFeature _$FacetFeatureFromJson(Map<String, dynamic> json) {
+  switch (json['runtimeType']) {
+    case 'mention':
+      return _MentionFeature.fromJson(json);
+    case 'link':
+      return _LinkFeature.fromJson(json);
+    case 'tag':
+      return _TagFeature.fromJson(json);
+
+    default:
+      throw CheckedFromJsonException(json, 'runtimeType', 'FacetFeature',
+          'Invalid union type "${json['runtimeType']}"!');
+  }
+}
+
+/// @nodoc
+mixin _$FacetFeature {
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String did) mention,
+    required TResult Function(String uri) link,
+    required TResult Function(String tag) tag,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String did)? mention,
+    TResult? Function(String uri)? link,
+    TResult? Function(String tag)? tag,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String did)? mention,
+    TResult Function(String uri)? link,
+    TResult Function(String tag)? tag,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_MentionFeature value) mention,
+    required TResult Function(_LinkFeature value) link,
+    required TResult Function(_TagFeature value) tag,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_MentionFeature value)? mention,
+    TResult? Function(_LinkFeature value)? link,
+    TResult? Function(_TagFeature value)? tag,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_MentionFeature value)? mention,
+    TResult Function(_LinkFeature value)? link,
+    TResult Function(_TagFeature value)? tag,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+
+  /// Serializes this FacetFeature to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $FacetFeatureCopyWith<$Res> {
+  factory $FacetFeatureCopyWith(
+          FacetFeature value, $Res Function(FacetFeature) then) =
+      _$FacetFeatureCopyWithImpl<$Res, FacetFeature>;
+}
+
+/// @nodoc
+class _$FacetFeatureCopyWithImpl<$Res, $Val extends FacetFeature>
+    implements $FacetFeatureCopyWith<$Res> {
+  _$FacetFeatureCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of FacetFeature
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+abstract class _$$MentionFeatureImplCopyWith<$Res> {
+  factory _$$MentionFeatureImplCopyWith(_$MentionFeatureImpl value,
+          $Res Function(_$MentionFeatureImpl) then) =
+      __$$MentionFeatureImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String did});
+}
+
+/// @nodoc
+class __$$MentionFeatureImplCopyWithImpl<$Res>
+    extends _$FacetFeatureCopyWithImpl<$Res, _$MentionFeatureImpl>
+    implements _$$MentionFeatureImplCopyWith<$Res> {
+  __$$MentionFeatureImplCopyWithImpl(
+      _$MentionFeatureImpl _value, $Res Function(_$MentionFeatureImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of FacetFeature
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? did = null,
+  }) {
+    return _then(_$MentionFeatureImpl(
+      did: null == did
+          ? _value.did
+          : did // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$MentionFeatureImpl extends _MentionFeature {
+  const _$MentionFeatureImpl({required this.did, final String? $type})
+      : $type = $type ?? 'mention',
+        super._();
+
+  factory _$MentionFeatureImpl.fromJson(Map<String, dynamic> json) =>
+      _$$MentionFeatureImplFromJson(json);
+
+  @override
+  final String did;
+
+  @JsonKey(name: 'runtimeType')
+  final String $type;
+
+  @override
+  String toString() {
+    return 'FacetFeature.mention(did: $did)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$MentionFeatureImpl &&
+            (identical(other.did, did) || other.did == did));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, did);
+
+  /// Create a copy of FacetFeature
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$MentionFeatureImplCopyWith<_$MentionFeatureImpl> get copyWith =>
+      __$$MentionFeatureImplCopyWithImpl<_$MentionFeatureImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String did) mention,
+    required TResult Function(String uri) link,
+    required TResult Function(String tag) tag,
+  }) {
+    return mention(did);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String did)? mention,
+    TResult? Function(String uri)? link,
+    TResult? Function(String tag)? tag,
+  }) {
+    return mention?.call(did);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String did)? mention,
+    TResult Function(String uri)? link,
+    TResult Function(String tag)? tag,
+    required TResult orElse(),
+  }) {
+    if (mention != null) {
+      return mention(did);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_MentionFeature value) mention,
+    required TResult Function(_LinkFeature value) link,
+    required TResult Function(_TagFeature value) tag,
+  }) {
+    return mention(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_MentionFeature value)? mention,
+    TResult? Function(_LinkFeature value)? link,
+    TResult? Function(_TagFeature value)? tag,
+  }) {
+    return mention?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_MentionFeature value)? mention,
+    TResult Function(_LinkFeature value)? link,
+    TResult Function(_TagFeature value)? tag,
+    required TResult orElse(),
+  }) {
+    if (mention != null) {
+      return mention(this);
+    }
+    return orElse();
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$MentionFeatureImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _MentionFeature extends FacetFeature {
+  const factory _MentionFeature({required final String did}) =
+      _$MentionFeatureImpl;
+  const _MentionFeature._() : super._();
+
+  factory _MentionFeature.fromJson(Map<String, dynamic> json) =
+      _$MentionFeatureImpl.fromJson;
+
+  String get did;
+
+  /// Create a copy of FacetFeature
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$MentionFeatureImplCopyWith<_$MentionFeatureImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$LinkFeatureImplCopyWith<$Res> {
+  factory _$$LinkFeatureImplCopyWith(
+          _$LinkFeatureImpl value, $Res Function(_$LinkFeatureImpl) then) =
+      __$$LinkFeatureImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String uri});
+}
+
+/// @nodoc
+class __$$LinkFeatureImplCopyWithImpl<$Res>
+    extends _$FacetFeatureCopyWithImpl<$Res, _$LinkFeatureImpl>
+    implements _$$LinkFeatureImplCopyWith<$Res> {
+  __$$LinkFeatureImplCopyWithImpl(
+      _$LinkFeatureImpl _value, $Res Function(_$LinkFeatureImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of FacetFeature
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? uri = null,
+  }) {
+    return _then(_$LinkFeatureImpl(
+      uri: null == uri
+          ? _value.uri
+          : uri // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$LinkFeatureImpl extends _LinkFeature {
+  const _$LinkFeatureImpl({required this.uri, final String? $type})
+      : $type = $type ?? 'link',
+        super._();
+
+  factory _$LinkFeatureImpl.fromJson(Map<String, dynamic> json) =>
+      _$$LinkFeatureImplFromJson(json);
+
+  @override
+  final String uri;
+
+  @JsonKey(name: 'runtimeType')
+  final String $type;
+
+  @override
+  String toString() {
+    return 'FacetFeature.link(uri: $uri)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$LinkFeatureImpl &&
+            (identical(other.uri, uri) || other.uri == uri));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, uri);
+
+  /// Create a copy of FacetFeature
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$LinkFeatureImplCopyWith<_$LinkFeatureImpl> get copyWith =>
+      __$$LinkFeatureImplCopyWithImpl<_$LinkFeatureImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String did) mention,
+    required TResult Function(String uri) link,
+    required TResult Function(String tag) tag,
+  }) {
+    return link(uri);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String did)? mention,
+    TResult? Function(String uri)? link,
+    TResult? Function(String tag)? tag,
+  }) {
+    return link?.call(uri);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String did)? mention,
+    TResult Function(String uri)? link,
+    TResult Function(String tag)? tag,
+    required TResult orElse(),
+  }) {
+    if (link != null) {
+      return link(uri);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_MentionFeature value) mention,
+    required TResult Function(_LinkFeature value) link,
+    required TResult Function(_TagFeature value) tag,
+  }) {
+    return link(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_MentionFeature value)? mention,
+    TResult? Function(_LinkFeature value)? link,
+    TResult? Function(_TagFeature value)? tag,
+  }) {
+    return link?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_MentionFeature value)? mention,
+    TResult Function(_LinkFeature value)? link,
+    TResult Function(_TagFeature value)? tag,
+    required TResult orElse(),
+  }) {
+    if (link != null) {
+      return link(this);
+    }
+    return orElse();
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$LinkFeatureImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _LinkFeature extends FacetFeature {
+  const factory _LinkFeature({required final String uri}) = _$LinkFeatureImpl;
+  const _LinkFeature._() : super._();
+
+  factory _LinkFeature.fromJson(Map<String, dynamic> json) =
+      _$LinkFeatureImpl.fromJson;
+
+  String get uri;
+
+  /// Create a copy of FacetFeature
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$LinkFeatureImplCopyWith<_$LinkFeatureImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$TagFeatureImplCopyWith<$Res> {
+  factory _$$TagFeatureImplCopyWith(
+          _$TagFeatureImpl value, $Res Function(_$TagFeatureImpl) then) =
+      __$$TagFeatureImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String tag});
+}
+
+/// @nodoc
+class __$$TagFeatureImplCopyWithImpl<$Res>
+    extends _$FacetFeatureCopyWithImpl<$Res, _$TagFeatureImpl>
+    implements _$$TagFeatureImplCopyWith<$Res> {
+  __$$TagFeatureImplCopyWithImpl(
+      _$TagFeatureImpl _value, $Res Function(_$TagFeatureImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of FacetFeature
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? tag = null,
+  }) {
+    return _then(_$TagFeatureImpl(
+      tag: null == tag
+          ? _value.tag
+          : tag // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$TagFeatureImpl extends _TagFeature {
+  const _$TagFeatureImpl({required this.tag, final String? $type})
+      : $type = $type ?? 'tag',
+        super._();
+
+  factory _$TagFeatureImpl.fromJson(Map<String, dynamic> json) =>
+      _$$TagFeatureImplFromJson(json);
+
+  @override
+  final String tag;
+
+  @JsonKey(name: 'runtimeType')
+  final String $type;
+
+  @override
+  String toString() {
+    return 'FacetFeature.tag(tag: $tag)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$TagFeatureImpl &&
+            (identical(other.tag, tag) || other.tag == tag));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, tag);
+
+  /// Create a copy of FacetFeature
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$TagFeatureImplCopyWith<_$TagFeatureImpl> get copyWith =>
+      __$$TagFeatureImplCopyWithImpl<_$TagFeatureImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String did) mention,
+    required TResult Function(String uri) link,
+    required TResult Function(String tag) tag,
+  }) {
+    return tag(this.tag);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String did)? mention,
+    TResult? Function(String uri)? link,
+    TResult? Function(String tag)? tag,
+  }) {
+    return tag?.call(this.tag);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String did)? mention,
+    TResult Function(String uri)? link,
+    TResult Function(String tag)? tag,
+    required TResult orElse(),
+  }) {
+    if (tag != null) {
+      return tag(this.tag);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_MentionFeature value) mention,
+    required TResult Function(_LinkFeature value) link,
+    required TResult Function(_TagFeature value) tag,
+  }) {
+    return tag(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_MentionFeature value)? mention,
+    TResult? Function(_LinkFeature value)? link,
+    TResult? Function(_TagFeature value)? tag,
+  }) {
+    return tag?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_MentionFeature value)? mention,
+    TResult Function(_LinkFeature value)? link,
+    TResult Function(_TagFeature value)? tag,
+    required TResult orElse(),
+  }) {
+    if (tag != null) {
+      return tag(this);
+    }
+    return orElse();
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$TagFeatureImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _TagFeature extends FacetFeature {
+  const factory _TagFeature({required final String tag}) = _$TagFeatureImpl;
+  const _TagFeature._() : super._();
+
+  factory _TagFeature.fromJson(Map<String, dynamic> json) =
+      _$TagFeatureImpl.fromJson;
+
+  String get tag;
+
+  /// Create a copy of FacetFeature
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$TagFeatureImplCopyWith<_$TagFeatureImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+Facet _$FacetFromJson(Map<String, dynamic> json) {
+  return _Facet.fromJson(json);
+}
+
+/// @nodoc
+mixin _$Facet {
+  /// Index range for the facet in the text
+  FacetIndex get index => throw _privateConstructorUsedError;
+
+  /// Features represented by this facet (mention, link, hashtag, etc.)
+  List<FacetFeature> get features => throw _privateConstructorUsedError;
+
+  /// Serializes this Facet to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of Facet
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $FacetCopyWith<Facet> get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $FacetCopyWith<$Res> {
+  factory $FacetCopyWith(Facet value, $Res Function(Facet) then) =
+      _$FacetCopyWithImpl<$Res, Facet>;
+  @useResult
+  $Res call({FacetIndex index, List<FacetFeature> features});
+
+  $FacetIndexCopyWith<$Res> get index;
+}
+
+/// @nodoc
+class _$FacetCopyWithImpl<$Res, $Val extends Facet>
+    implements $FacetCopyWith<$Res> {
+  _$FacetCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of Facet
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? index = null,
+    Object? features = null,
+  }) {
+    return _then(_value.copyWith(
+      index: null == index
+          ? _value.index
+          : index // ignore: cast_nullable_to_non_nullable
+              as FacetIndex,
+      features: null == features
+          ? _value.features
+          : features // ignore: cast_nullable_to_non_nullable
+              as List<FacetFeature>,
+    ) as $Val);
+  }
+
+  /// Create a copy of Facet
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $FacetIndexCopyWith<$Res> get index {
+    return $FacetIndexCopyWith<$Res>(_value.index, (value) {
+      return _then(_value.copyWith(index: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$FacetImplCopyWith<$Res> implements $FacetCopyWith<$Res> {
+  factory _$$FacetImplCopyWith(
+          _$FacetImpl value, $Res Function(_$FacetImpl) then) =
+      __$$FacetImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({FacetIndex index, List<FacetFeature> features});
+
+  @override
+  $FacetIndexCopyWith<$Res> get index;
+}
+
+/// @nodoc
+class __$$FacetImplCopyWithImpl<$Res>
+    extends _$FacetCopyWithImpl<$Res, _$FacetImpl>
+    implements _$$FacetImplCopyWith<$Res> {
+  __$$FacetImplCopyWithImpl(
+      _$FacetImpl _value, $Res Function(_$FacetImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of Facet
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? index = null,
+    Object? features = null,
+  }) {
+    return _then(_$FacetImpl(
+      index: null == index
+          ? _value.index
+          : index // ignore: cast_nullable_to_non_nullable
+              as FacetIndex,
+      features: null == features
+          ? _value._features
+          : features // ignore: cast_nullable_to_non_nullable
+              as List<FacetFeature>,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$FacetImpl extends _Facet {
+  const _$FacetImpl(
+      {required this.index, required final List<FacetFeature> features})
+      : _features = features,
+        super._();
+
+  factory _$FacetImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FacetImplFromJson(json);
+
+  /// Index range for the facet in the text
+  @override
+  final FacetIndex index;
+
+  /// Features represented by this facet (mention, link, hashtag, etc.)
+  final List<FacetFeature> _features;
+
+  /// Features represented by this facet (mention, link, hashtag, etc.)
+  @override
+  List<FacetFeature> get features {
+    if (_features is EqualUnmodifiableListView) return _features;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_features);
+  }
+
+  @override
+  String toString() {
+    return 'Facet(index: $index, features: $features)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$FacetImpl &&
+            (identical(other.index, index) || other.index == index) &&
+            const DeepCollectionEquality().equals(other._features, _features));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, index, const DeepCollectionEquality().hash(_features));
+
+  /// Create a copy of Facet
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$FacetImplCopyWith<_$FacetImpl> get copyWith =>
+      __$$FacetImplCopyWithImpl<_$FacetImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$FacetImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _Facet extends Facet {
+  const factory _Facet(
+      {required final FacetIndex index,
+      required final List<FacetFeature> features}) = _$FacetImpl;
+  const _Facet._() : super._();
+
+  factory _Facet.fromJson(Map<String, dynamic> json) = _$FacetImpl.fromJson;
+
+  /// Index range for the facet in the text
+  @override
+  FacetIndex get index;
+
+  /// Features represented by this facet (mention, link, hashtag, etc.)
+  @override
+  List<FacetFeature> get features;
+
+  /// Create a copy of Facet
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$FacetImplCopyWith<_$FacetImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+VideoEmbed _$VideoEmbedFromJson(Map<String, dynamic> json) {
+  return _VideoEmbed.fromJson(json);
+}
+
+/// @nodoc
+mixin _$VideoEmbed {
+  /// The type of embed, typically 'so.sprk.embed.video'
+  @JsonKey(name: '\$type')
+  String get type => throw _privateConstructorUsedError;
+
+  /// The video blob reference
+  BlobReference get video => throw _privateConstructorUsedError;
+
+  /// Optional alt text for accessibility
+  String? get alt => throw _privateConstructorUsedError;
+
+  /// Serializes this VideoEmbed to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of VideoEmbed
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $VideoEmbedCopyWith<VideoEmbed> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $VideoEmbedCopyWith<$Res> {
+  factory $VideoEmbedCopyWith(
+          VideoEmbed value, $Res Function(VideoEmbed) then) =
+      _$VideoEmbedCopyWithImpl<$Res, VideoEmbed>;
+  @useResult
+  $Res call(
+      {@JsonKey(name: '\$type') String type, BlobReference video, String? alt});
+
+  $BlobReferenceCopyWith<$Res> get video;
+}
+
+/// @nodoc
+class _$VideoEmbedCopyWithImpl<$Res, $Val extends VideoEmbed>
+    implements $VideoEmbedCopyWith<$Res> {
+  _$VideoEmbedCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of VideoEmbed
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? type = null,
+    Object? video = null,
+    Object? alt = freezed,
+  }) {
+    return _then(_value.copyWith(
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String,
+      video: null == video
+          ? _value.video
+          : video // ignore: cast_nullable_to_non_nullable
+              as BlobReference,
+      alt: freezed == alt
+          ? _value.alt
+          : alt // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
+  }
+
+  /// Create a copy of VideoEmbed
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $BlobReferenceCopyWith<$Res> get video {
+    return $BlobReferenceCopyWith<$Res>(_value.video, (value) {
+      return _then(_value.copyWith(video: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$VideoEmbedImplCopyWith<$Res>
+    implements $VideoEmbedCopyWith<$Res> {
+  factory _$$VideoEmbedImplCopyWith(
+          _$VideoEmbedImpl value, $Res Function(_$VideoEmbedImpl) then) =
+      __$$VideoEmbedImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {@JsonKey(name: '\$type') String type, BlobReference video, String? alt});
+
+  @override
+  $BlobReferenceCopyWith<$Res> get video;
+}
+
+/// @nodoc
+class __$$VideoEmbedImplCopyWithImpl<$Res>
+    extends _$VideoEmbedCopyWithImpl<$Res, _$VideoEmbedImpl>
+    implements _$$VideoEmbedImplCopyWith<$Res> {
+  __$$VideoEmbedImplCopyWithImpl(
+      _$VideoEmbedImpl _value, $Res Function(_$VideoEmbedImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of VideoEmbed
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? type = null,
+    Object? video = null,
+    Object? alt = freezed,
+  }) {
+    return _then(_$VideoEmbedImpl(
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String,
+      video: null == video
+          ? _value.video
+          : video // ignore: cast_nullable_to_non_nullable
+              as BlobReference,
+      alt: freezed == alt
+          ? _value.alt
+          : alt // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$VideoEmbedImpl extends _VideoEmbed {
+  const _$VideoEmbedImpl(
+      {@JsonKey(name: '\$type') required this.type,
+      required this.video,
+      this.alt})
+      : super._();
+
+  factory _$VideoEmbedImpl.fromJson(Map<String, dynamic> json) =>
+      _$$VideoEmbedImplFromJson(json);
+
+  /// The type of embed, typically 'so.sprk.embed.video'
+  @override
+  @JsonKey(name: '\$type')
+  final String type;
+
+  /// The video blob reference
+  @override
+  final BlobReference video;
+
+  /// Optional alt text for accessibility
+  @override
+  final String? alt;
+
+  @override
+  String toString() {
+    return 'VideoEmbed(type: $type, video: $video, alt: $alt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$VideoEmbedImpl &&
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.video, video) || other.video == video) &&
+            (identical(other.alt, alt) || other.alt == alt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, type, video, alt);
+
+  /// Create a copy of VideoEmbed
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$VideoEmbedImplCopyWith<_$VideoEmbedImpl> get copyWith =>
+      __$$VideoEmbedImplCopyWithImpl<_$VideoEmbedImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$VideoEmbedImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _VideoEmbed extends VideoEmbed {
+  const factory _VideoEmbed(
+      {@JsonKey(name: '\$type') required final String type,
+      required final BlobReference video,
+      final String? alt}) = _$VideoEmbedImpl;
+  const _VideoEmbed._() : super._();
+
+  factory _VideoEmbed.fromJson(Map<String, dynamic> json) =
+      _$VideoEmbedImpl.fromJson;
+
+  /// The type of embed, typically 'so.sprk.embed.video'
+  @override
+  @JsonKey(name: '\$type')
+  String get type;
+
+  /// The video blob reference
+  @override
+  BlobReference get video;
+
+  /// Optional alt text for accessibility
+  @override
+  String? get alt;
+
+  /// Create a copy of VideoEmbed
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$VideoEmbedImplCopyWith<_$VideoEmbedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+VideoPost _$VideoPostFromJson(Map<String, dynamic> json) {
+  return _VideoPost.fromJson(json);
+}
+
+/// @nodoc
+mixin _$VideoPost {
+  /// The type of post, typically 'so.sprk.feed.post'
+  @JsonKey(name: r'$type')
+  String get type => throw _privateConstructorUsedError;
+
+  /// Post text/description
+  String get text => throw _privateConstructorUsedError;
+
+  /// Video embed containing the actual video data
+  VideoEmbed get embed => throw _privateConstructorUsedError;
+
+  /// When the post was created (ISO 8601 format)
+  String get createdAt => throw _privateConstructorUsedError;
+
+  /// Optional language tags
+  List<String>? get langs => throw _privateConstructorUsedError;
+
+  /// Optional content warning labels
+  @JsonKey(name: 'labels')
+  List<LabelDetail>? get labels => throw _privateConstructorUsedError;
+
+  /// Optional tags for discovery
+  List<String>? get tags => throw _privateConstructorUsedError;
+
+  /// Optional facets for rich text formatting
+  List<Facet>? get facets => throw _privateConstructorUsedError;
+
+  /// Serializes this VideoPost to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of VideoPost
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $VideoPostCopyWith<VideoPost> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $VideoPostCopyWith<$Res> {
+  factory $VideoPostCopyWith(VideoPost value, $Res Function(VideoPost) then) =
+      _$VideoPostCopyWithImpl<$Res, VideoPost>;
+  @useResult
+  $Res call(
+      {@JsonKey(name: r'$type') String type,
+      String text,
+      VideoEmbed embed,
+      String createdAt,
+      List<String>? langs,
+      @JsonKey(name: 'labels') List<LabelDetail>? labels,
+      List<String>? tags,
+      List<Facet>? facets});
+
+  $VideoEmbedCopyWith<$Res> get embed;
+}
+
+/// @nodoc
+class _$VideoPostCopyWithImpl<$Res, $Val extends VideoPost>
+    implements $VideoPostCopyWith<$Res> {
+  _$VideoPostCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of VideoPost
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? type = null,
+    Object? text = null,
+    Object? embed = null,
+    Object? createdAt = null,
+    Object? langs = freezed,
+    Object? labels = freezed,
+    Object? tags = freezed,
+    Object? facets = freezed,
+  }) {
+    return _then(_value.copyWith(
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String,
+      text: null == text
+          ? _value.text
+          : text // ignore: cast_nullable_to_non_nullable
+              as String,
+      embed: null == embed
+          ? _value.embed
+          : embed // ignore: cast_nullable_to_non_nullable
+              as VideoEmbed,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      langs: freezed == langs
+          ? _value.langs
+          : langs // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      labels: freezed == labels
+          ? _value.labels
+          : labels // ignore: cast_nullable_to_non_nullable
+              as List<LabelDetail>?,
+      tags: freezed == tags
+          ? _value.tags
+          : tags // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      facets: freezed == facets
+          ? _value.facets
+          : facets // ignore: cast_nullable_to_non_nullable
+              as List<Facet>?,
+    ) as $Val);
+  }
+
+  /// Create a copy of VideoPost
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $VideoEmbedCopyWith<$Res> get embed {
+    return $VideoEmbedCopyWith<$Res>(_value.embed, (value) {
+      return _then(_value.copyWith(embed: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$VideoPostImplCopyWith<$Res>
+    implements $VideoPostCopyWith<$Res> {
+  factory _$$VideoPostImplCopyWith(
+          _$VideoPostImpl value, $Res Function(_$VideoPostImpl) then) =
+      __$$VideoPostImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {@JsonKey(name: r'$type') String type,
+      String text,
+      VideoEmbed embed,
+      String createdAt,
+      List<String>? langs,
+      @JsonKey(name: 'labels') List<LabelDetail>? labels,
+      List<String>? tags,
+      List<Facet>? facets});
+
+  @override
+  $VideoEmbedCopyWith<$Res> get embed;
+}
+
+/// @nodoc
+class __$$VideoPostImplCopyWithImpl<$Res>
+    extends _$VideoPostCopyWithImpl<$Res, _$VideoPostImpl>
+    implements _$$VideoPostImplCopyWith<$Res> {
+  __$$VideoPostImplCopyWithImpl(
+      _$VideoPostImpl _value, $Res Function(_$VideoPostImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of VideoPost
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? type = null,
+    Object? text = null,
+    Object? embed = null,
+    Object? createdAt = null,
+    Object? langs = freezed,
+    Object? labels = freezed,
+    Object? tags = freezed,
+    Object? facets = freezed,
+  }) {
+    return _then(_$VideoPostImpl(
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String,
+      text: null == text
+          ? _value.text
+          : text // ignore: cast_nullable_to_non_nullable
+              as String,
+      embed: null == embed
+          ? _value.embed
+          : embed // ignore: cast_nullable_to_non_nullable
+              as VideoEmbed,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as String,
+      langs: freezed == langs
+          ? _value._langs
+          : langs // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      labels: freezed == labels
+          ? _value._labels
+          : labels // ignore: cast_nullable_to_non_nullable
+              as List<LabelDetail>?,
+      tags: freezed == tags
+          ? _value._tags
+          : tags // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      facets: freezed == facets
+          ? _value._facets
+          : facets // ignore: cast_nullable_to_non_nullable
+              as List<Facet>?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$VideoPostImpl extends _VideoPost {
+  const _$VideoPostImpl(
+      {@JsonKey(name: r'$type') required this.type,
+      this.text = '',
+      required this.embed,
+      required this.createdAt,
+      final List<String>? langs,
+      @JsonKey(name: 'labels') final List<LabelDetail>? labels,
+      final List<String>? tags,
+      final List<Facet>? facets})
+      : _langs = langs,
+        _labels = labels,
+        _tags = tags,
+        _facets = facets,
+        super._();
+
+  factory _$VideoPostImpl.fromJson(Map<String, dynamic> json) =>
+      _$$VideoPostImplFromJson(json);
+
+  /// The type of post, typically 'so.sprk.feed.post'
+  @override
+  @JsonKey(name: r'$type')
+  final String type;
+
+  /// Post text/description
+  @override
+  @JsonKey()
+  final String text;
+
+  /// Video embed containing the actual video data
+  @override
+  final VideoEmbed embed;
+
+  /// When the post was created (ISO 8601 format)
+  @override
+  final String createdAt;
+
+  /// Optional language tags
+  final List<String>? _langs;
+
+  /// Optional language tags
+  @override
+  List<String>? get langs {
+    final value = _langs;
+    if (value == null) return null;
+    if (_langs is EqualUnmodifiableListView) return _langs;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  /// Optional content warning labels
+  final List<LabelDetail>? _labels;
+
+  /// Optional content warning labels
+  @override
+  @JsonKey(name: 'labels')
+  List<LabelDetail>? get labels {
+    final value = _labels;
+    if (value == null) return null;
+    if (_labels is EqualUnmodifiableListView) return _labels;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  /// Optional tags for discovery
+  final List<String>? _tags;
+
+  /// Optional tags for discovery
+  @override
+  List<String>? get tags {
+    final value = _tags;
+    if (value == null) return null;
+    if (_tags is EqualUnmodifiableListView) return _tags;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  /// Optional facets for rich text formatting
+  final List<Facet>? _facets;
+
+  /// Optional facets for rich text formatting
+  @override
+  List<Facet>? get facets {
+    final value = _facets;
+    if (value == null) return null;
+    if (_facets is EqualUnmodifiableListView) return _facets;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
+  String toString() {
+    return 'VideoPost(type: $type, text: $text, embed: $embed, createdAt: $createdAt, langs: $langs, labels: $labels, tags: $tags, facets: $facets)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$VideoPostImpl &&
+            (identical(other.type, type) || other.type == type) &&
+            (identical(other.text, text) || other.text == text) &&
+            (identical(other.embed, embed) || other.embed == embed) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            const DeepCollectionEquality().equals(other._langs, _langs) &&
+            const DeepCollectionEquality().equals(other._labels, _labels) &&
+            const DeepCollectionEquality().equals(other._tags, _tags) &&
+            const DeepCollectionEquality().equals(other._facets, _facets));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      type,
+      text,
+      embed,
+      createdAt,
+      const DeepCollectionEquality().hash(_langs),
+      const DeepCollectionEquality().hash(_labels),
+      const DeepCollectionEquality().hash(_tags),
+      const DeepCollectionEquality().hash(_facets));
+
+  /// Create a copy of VideoPost
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$VideoPostImplCopyWith<_$VideoPostImpl> get copyWith =>
+      __$$VideoPostImplCopyWithImpl<_$VideoPostImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$VideoPostImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _VideoPost extends VideoPost {
+  const factory _VideoPost(
+      {@JsonKey(name: r'$type') required final String type,
+      final String text,
+      required final VideoEmbed embed,
+      required final String createdAt,
+      final List<String>? langs,
+      @JsonKey(name: 'labels') final List<LabelDetail>? labels,
+      final List<String>? tags,
+      final List<Facet>? facets}) = _$VideoPostImpl;
+  const _VideoPost._() : super._();
+
+  factory _VideoPost.fromJson(Map<String, dynamic> json) =
+      _$VideoPostImpl.fromJson;
+
+  /// The type of post, typically 'so.sprk.feed.post'
+  @override
+  @JsonKey(name: r'$type')
+  String get type;
+
+  /// Post text/description
+  @override
+  String get text;
+
+  /// Video embed containing the actual video data
+  @override
+  VideoEmbed get embed;
+
+  /// When the post was created (ISO 8601 format)
+  @override
+  String get createdAt;
+
+  /// Optional language tags
+  @override
+  List<String>? get langs;
+
+  /// Optional content warning labels
+  @override
+  @JsonKey(name: 'labels')
+  List<LabelDetail>? get labels;
+
+  /// Optional tags for discovery
+  @override
+  List<String>? get tags;
+
+  /// Optional facets for rich text formatting
+  @override
+  List<Facet>? get facets;
+
+  /// Create a copy of VideoPost
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$VideoPostImplCopyWith<_$VideoPostImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}

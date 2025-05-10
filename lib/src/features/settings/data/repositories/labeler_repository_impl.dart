@@ -85,6 +85,13 @@ class LabelerRepositoryImpl implements LabelerRepository {
       labelers.add(labelerDid);
       await prefs.setStringList(StorageKeys.followedLabelers, labelers);
     }
+
+    // TODO: there needs to be all followed labelers in the storage
+    // as well as all label values for each labeler
+
+    // add all label values to the local storage
+    final labelValues = await getLabelerLabelValues(labelerDid);
+    await prefs.setStringList(StorageKeys.labelerPrefix + labelerDid, labelValues);
   }
   
   @override

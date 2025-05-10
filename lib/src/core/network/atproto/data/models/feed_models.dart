@@ -2,6 +2,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:sparksocial/src/core/network/auth/data/repositories/identity_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/label_models.dart';
 
 part 'feed_models.freezed.dart';
 part 'feed_models.g.dart';
@@ -570,5 +571,194 @@ class Comment with _$Comment {
     } else {
       return 'now';
     }
+  }
+}
+
+/// Represents a blob reference in the AT Protocol
+@freezed
+class BlobReference with _$BlobReference {
+  const BlobReference._();
+  
+  const factory BlobReference({
+    /// The type of the blob, usually 'blob'
+    @JsonKey(name: '\$type') required String type,
+    
+    /// The MIME type of the blob
+    required String mimeType,
+    
+    /// Size of the blob in bytes
+    required int size,
+    
+    /// Content reference (CID)
+    required String ref,
+    
+    /// Creation time in ISO 8601 format
+    String? createdAt,
+  }) = _BlobReference;
+  
+  /// Create a BlobReference from JSON
+  factory BlobReference.fromJson(Map<String, dynamic> json) => 
+      _$BlobReferenceFromJson(json);
+      
+  /// Create an empty BlobReference
+  factory BlobReference.empty() => const BlobReference(
+    type: 'blob',
+    mimeType: 'video/mp4',
+    size: 0,
+    ref: '',
+  );
+}
+
+/// Represents the index range for a facet in the text
+@freezed
+class FacetIndex with _$FacetIndex {
+  const FacetIndex._();
+  
+  const factory FacetIndex({
+    /// Start index (inclusive)
+    required int byteStart,
+    
+    /// End index (exclusive)
+    required int byteEnd,
+  }) = _FacetIndex;
+  
+  /// Create a FacetIndex from JSON
+  factory FacetIndex.fromJson(Map<String, dynamic> json) => 
+      _$FacetIndexFromJson(json);
+}
+
+/// Represents a feature of a facet (mention, link, hashtag, etc.)
+@freezed
+class FacetFeature with _$FacetFeature {
+  const FacetFeature._();
+  
+  /// Mention feature for referencing a user
+  const factory FacetFeature.mention({
+    required String did,
+  }) = _MentionFeature;
+  
+  /// Link feature for URLs
+  const factory FacetFeature.link({
+    required String uri,
+  }) = _LinkFeature;
+  
+  /// Tag feature for hashtags
+  const factory FacetFeature.tag({
+    required String tag,
+  }) = _TagFeature;
+  
+  /// Create a FacetFeature from JSON
+  factory FacetFeature.fromJson(Map<String, dynamic> json) => 
+      _$FacetFeatureFromJson(json);
+}
+
+/// Represents a richtext facet for text formatting, mentions, links, etc.
+@freezed
+class Facet with _$Facet {
+  const Facet._();
+  
+  const factory Facet({
+    /// Index range for the facet in the text
+    required FacetIndex index,
+    
+    /// Features represented by this facet (mention, link, hashtag, etc.)
+    required List<FacetFeature> features,
+  }) = _Facet;
+  
+  /// Create a Facet from JSON
+  factory Facet.fromJson(Map<String, dynamic> json) => 
+      _$FacetFromJson(json);
+}
+
+/// Represents a video embed in a post
+@freezed
+class VideoEmbed with _$VideoEmbed {
+  const VideoEmbed._();
+  
+  const factory VideoEmbed({
+    /// The type of embed, typically 'so.sprk.embed.video'
+    @JsonKey(name: '\$type') required String type,
+    
+    /// The video blob reference
+    required BlobReference video,
+    
+    /// Optional alt text for accessibility
+    String? alt,
+  }) = _VideoEmbed;
+  
+  /// Create a VideoEmbed from JSON
+  factory VideoEmbed.fromJson(Map<String, dynamic> json) => 
+      _$VideoEmbedFromJson(json);
+      
+  /// Create an empty VideoEmbed
+  factory VideoEmbed.empty() => VideoEmbed(
+    type: 'so.sprk.embed.video',
+    video: BlobReference.empty(),
+  );
+}
+
+/// Represents a post containing a video
+@freezed
+class VideoPost with _$VideoPost {
+  const VideoPost._();
+  
+  const factory VideoPost({
+    /// The type of post, typically 'so.sprk.feed.post'
+    @JsonKey(name: r'$type') required String type,
+    
+    /// Post text/description
+    @Default('') String text,
+    
+    /// Video embed containing the actual video data
+    required VideoEmbed embed,
+    
+    /// When the post was created (ISO 8601 format)
+    required String createdAt,
+    
+    /// Optional language tags
+    List<String>? langs,
+    
+    /// Optional content warning labels
+    @JsonKey(name: 'labels') List<LabelDetail>? labels,
+    
+    /// Optional tags for discovery
+    List<String>? tags,
+    
+    /// Optional facets for rich text formatting
+    List<Facet>? facets,
+  }) = _VideoPost;
+  
+  /// Create a VideoPost from JSON
+  factory VideoPost.fromJson(Map<String, dynamic> json) => 
+      _$VideoPostFromJson(json);
+  
+  /// Create a new empty VideoPost
+  factory VideoPost.create({
+    required String text,
+    required Map<String, dynamic> videoData,
+    String? videoAltText,
+    List<String>? tags,
+    List<LabelDetail>? labels,
+    List<Facet>? facets,
+  }) {
+    final videoEmbed = {
+      r'$type': 'so.sprk.embed.video',
+      'video': videoData,
+    };
+    
+    // Add alt text if provided
+    if (videoAltText != null && videoAltText.isNotEmpty) {
+      videoEmbed['alt'] = videoAltText;
+    }
+    
+    return VideoPost(
+      type: 'so.sprk.feed.post',
+      text: text,
+      embed: VideoEmbed.fromJson(videoEmbed),
+      createdAt: DateTime.now().toUtc().toIso8601String(),
+      tags: tags,
+      labels: labels,
+      facets: facets,
+    );
   }
 } 
