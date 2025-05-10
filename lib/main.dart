@@ -102,27 +102,48 @@ class MyApp extends StatelessWidget {
           create: (context) => ActionsService(context.read<AuthService>()),
           update: (_, authService, previousActionsService) => previousActionsService ?? ActionsService(authService),
         ),
-        ChangeNotifierProxyProvider<AuthService, CommentsService>(
-          create: (context) => CommentsService(context.read<AuthService>()),
-          update: (_, authService, previousCommentsService) => previousCommentsService ?? CommentsService(authService),
+        ChangeNotifierProxyProvider2<AuthService, ProfileService, CommentsService>(
+          create: (context) => CommentsService(context.read<AuthService>(), context.read<ProfileService>()),
+          update:
+              (_, authService, profileService, previousCommentsService) =>
+                  previousCommentsService ?? CommentsService(authService, profileService),
         ),
         ProxyProvider<AuthService, VideoService>(
           create: (context) => VideoService(context.read<AuthService>()),
           update: (_, authService, previousVideoService) => previousVideoService ?? VideoService(authService),
         ),
         ChangeNotifierProxyProvider2<AuthService, SettingsService, LabelerManager>(
-          create: (context) => LabelerManager(
-            context.read<AuthService>(),
-            context.read<SettingsService>(),
-          ),
-          update: (_, authService, settingsService, previousLabelerManager) => 
-            previousLabelerManager ?? LabelerManager(authService, settingsService),
+          create: (context) => LabelerManager(context.read<AuthService>(), context.read<SettingsService>()),
+          update:
+              (_, authService, settingsService, previousLabelerManager) =>
+                  previousLabelerManager ?? LabelerManager(authService, settingsService),
         ),
       ],
       child: MaterialApp(
         title: 'Spark',
-        theme: AppTheme.lightTheme,
-        darkTheme: AppTheme.darkTheme,
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          primaryColor: AppColors.primary,
+          scaffoldBackgroundColor: Colors.black,
+          colorScheme: ColorScheme.light(primary: AppColors.primary, secondary: AppColors.accent, surface: Colors.black),
+          textTheme: Typography.blackMountainView.apply(bodyColor: AppColors.textPrimary, displayColor: AppColors.textPrimary),
+          useMaterial3: true,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          splashFactory: NoSplash.splashFactory,
+        ),
+        darkTheme: ThemeData(
+          primaryColor: AppColors.primary,
+          scaffoldBackgroundColor: Colors.black,
+          colorScheme: ColorScheme.dark(primary: AppColors.primary, secondary: AppColors.accent, surface: Colors.black),
+          textTheme: Typography.whiteMountainView.apply(bodyColor: AppColors.textLight, displayColor: AppColors.textLight),
+          useMaterial3: true,
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          splashFactory: NoSplash.splashFactory,
+        ),
         themeMode: ThemeMode.system,
         navigatorObservers: [routeObserver],
         home: const SplashScreen(),

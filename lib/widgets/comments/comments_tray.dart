@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../models/comment.dart';
 import '../../services/comments_service.dart';
+import '../../services/actions_service.dart';
 import '../../utils/app_colors.dart';
 import 'comment_input.dart';
 import 'comment_item.dart';
@@ -16,6 +17,7 @@ void showCommentsTray({
   required String postCid,
   required int commentCount,
   required Function(int) onClose,
+  required Function(int) onCountUpdate,
   required bool isDarkMode,
   required bool isSprk,
 }) {
@@ -33,6 +35,7 @@ void showCommentsTray({
             Navigator.pop(context);
             onClose(updatedCount);
           },
+          onCountUpdate: onCountUpdate,
           isDarkMode: isDarkMode,
           isSprk: isSprk,
         ),
@@ -44,6 +47,7 @@ class CommentsTray extends StatefulWidget {
   final String postCid;
   final int commentCount;
   final Function(int) onClose;
+  final Function(int) onCountUpdate;
   final bool isDarkMode;
   final bool isSprk;
 
@@ -53,6 +57,7 @@ class CommentsTray extends StatefulWidget {
     required this.postCid,
     required this.commentCount,
     required this.onClose,
+    required this.onCountUpdate,
     this.isDarkMode = true,
     required this.isSprk,
   });
@@ -75,7 +80,7 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   bool _isLoading = false;
   String? _error;
   bool _hasMoreComments = true;
-  late int _commentCount;
+  int _commentCount = 0;
 
   @override
   void initState() {
@@ -93,6 +98,16 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
 
     // Load comments
     _loadComments();
+  }
+
+  @override
+  void didUpdateWidget(CommentsTray oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.commentCount != widget.commentCount) {
+      setState(() {
+        _commentCount = widget.commentCount;
+      });
+    }
   }
 
   @override
@@ -132,7 +147,6 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
     });
 
     try {
-      // Get the service but don't listen to it here
       final commentsService = Provider.of<CommentsService>(context, listen: false);
 
       final List<Comment> comments;
@@ -145,9 +159,13 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
       if (mounted) {
         setState(() {
           _comments = comments;
+          _commentCount = comments.length;
           _isLoading = false;
-          _hasMoreComments = false; // Currently we load all comments at once
+          _hasMoreComments = false;
         });
+
+        // Update parent with new count without closing
+        widget.onCountUpdate(_commentCount);
       }
     } catch (e) {
       if (mounted) {
@@ -207,13 +225,148 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
   }
 
   void _onCommentPosted(String commentUri) {
-    // Increment the comment count
     setState(() {
       _commentCount++;
     });
 
     // Refresh comments after a new comment is posted
-    _loadComments();
+    _addComment(commentUri);
+
+    // Scroll to the bottom after comments are loaded
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToBottom();
+    });
+  }
+
+  Future<void> _handleLike(Comment comment) async {
+    try {
+      final actionsService = Provider.of<ActionsService>(context, listen: false);
+      final wasLiked = comment.isLiked;
+      final index = _comments?.indexWhere((c) => c.id == comment.id) ?? -1;
+      if (index == -1) return;
+
+      if (wasLiked) {
+        final likeUri = comment.likeUri;
+        if (likeUri == null) {
+          throw Exception('Cannot unlike comment: like URI is null');
+        }
+        await actionsService.unlikePost(likeUri);
+        if (mounted) {
+          setState(() {
+            _comments![index] = Comment(
+              id: comment.id,
+              uri: comment.uri,
+              cid: comment.cid,
+              authorDid: comment.authorDid,
+              username: comment.username,
+              profileImageUrl: comment.profileImageUrl,
+              text: comment.text,
+              createdAt: comment.createdAt,
+              likeCount: comment.likeCount,
+              replyCount: comment.replyCount,
+              hashtags: comment.hashtags,
+              hasMedia: comment.hasMedia,
+              mediaType: comment.mediaType,
+              mediaUrl: comment.mediaUrl,
+              likeUri: null,
+              isSprk: comment.isSprk,
+              replies: comment.replies,
+              imageUrls: comment.imageUrls,
+            );
+          });
+        }
+      } else {
+        final response = await actionsService.likePost(comment.cid, comment.uri);
+        if (mounted) {
+          setState(() {
+            _comments![index] = Comment(
+              id: comment.id,
+              uri: comment.uri,
+              cid: comment.cid,
+              authorDid: comment.authorDid,
+              username: comment.username,
+              profileImageUrl: comment.profileImageUrl,
+              text: comment.text,
+              createdAt: comment.createdAt,
+              likeCount: comment.likeCount + 1,
+              replyCount: comment.replyCount,
+              hashtags: comment.hashtags,
+              hasMedia: comment.hasMedia,
+              mediaType: comment.mediaType,
+              mediaUrl: comment.mediaUrl,
+              likeUri: response.data.uri.toString(),
+              isSprk: comment.isSprk,
+              replies: comment.replies,
+              imageUrls: comment.imageUrls,
+            );
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        // On error, revert the optimistic update by refreshing the comment
+        final index = _comments?.indexWhere((c) => c.id == comment.id) ?? -1;
+        if (index != -1) {
+          final currentComment = _comments![index];
+          setState(() {
+            _comments![index] = Comment(
+              id: currentComment.id,
+              uri: currentComment.uri,
+              cid: currentComment.cid,
+              authorDid: currentComment.authorDid,
+              username: currentComment.username,
+              profileImageUrl: currentComment.profileImageUrl,
+              text: currentComment.text,
+              createdAt: currentComment.createdAt,
+              likeCount: currentComment.likeCount,
+              replyCount: currentComment.replyCount,
+              hashtags: currentComment.hashtags,
+              hasMedia: currentComment.hasMedia,
+              mediaType: currentComment.mediaType,
+              mediaUrl: currentComment.mediaUrl,
+              likeUri: currentComment.likeUri,
+              isSprk: currentComment.isSprk,
+              replies: currentComment.replies,
+              imageUrls: currentComment.imageUrls,
+            );
+          });
+        }
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to ${comment.isLiked ? 'unlike' : 'like'} comment: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  void _handleCommentDeleted(String commentId) {
+    setState(() {
+      _comments?.removeWhere((comment) => comment.id == commentId);
+      _commentCount = (_comments?.length ?? 0);
+      // Update parent with new count without closing
+      widget.onCountUpdate(_commentCount);
+    });
+  }
+
+  Future<void> _addComment(String commentUri) async {
+    final commentsService = Provider.of<CommentsService>(context, listen: false);
+    if (widget.isSprk) {
+      final comment = await commentsService.getSparkComment(commentUri);
+      setState(() {
+        _comments?.insert(0, comment);
+        _commentCount = (_comments?.length ?? 0);
+        // Update parent with new count without closing
+        widget.onCountUpdate(_commentCount);
+      });
+    } else {
+      final comment = await commentsService.getBlueskyComment(commentUri);
+      setState(() {
+        _comments?.insert(0, comment);
+        _commentCount = (_comments?.length ?? 0);
+        // Update parent with new count without closing
+        widget.onCountUpdate(_commentCount);
+      });
+    }
   }
 
   @override
@@ -229,34 +382,35 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
       builder: (context, child) {
         return Transform.translate(offset: Offset(0, height * (1 - _animation.value)), child: child);
       },
-      child: Container(
-        height: height,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
-          border: Border.all(color: borderColor),
-        ),
-        child: Column(
-          children: [
-            _buildHeader(borderColor, textColor),
-            Expanded(child: _buildCommentsList()),
-
-            Padding(
-              padding: EdgeInsets.only(bottom: keyboardHeight),
-              child: CommentInput(
-                videoId: widget.postUri,
-                replyingToUsername: _replyingToUsername,
-                replyingToId: _replyingToId,
-                onCancelReply: _cancelReply,
-                isDarkMode: widget.isDarkMode,
-                postCid: widget.postCid,
-                postUri: widget.postUri,
-                parentCid: _replyingToCid,
-                parentUri: _replyingToUri,
-                onCommentPosted: _onCommentPosted,
+      child: SafeArea(
+        child: Container(
+          height: height,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+            border: Border.all(color: borderColor),
+          ),
+          child: Column(
+            children: [
+              _buildHeader(borderColor, textColor),
+              Expanded(child: _buildCommentsList()),
+              Padding(
+                padding: EdgeInsets.only(bottom: keyboardHeight),
+                child: CommentInput(
+                  videoId: widget.postUri,
+                  replyingToUsername: _replyingToUsername,
+                  replyingToId: _replyingToId,
+                  onCancelReply: _cancelReply,
+                  isDarkMode: widget.isDarkMode,
+                  postCid: widget.postCid,
+                  postUri: widget.postUri,
+                  parentCid: _replyingToCid,
+                  parentUri: _replyingToUri,
+                  onCommentPosted: _onCommentPosted,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -319,8 +473,6 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
                 style: TextStyle(color: widget.isDarkMode ? AppColors.textLight : AppColors.textPrimary, fontSize: 14),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 16),
-              ElevatedButton(onPressed: _loadComments, child: const Text('Retry')),
             ],
           ),
         ),
@@ -380,14 +532,9 @@ class _CommentsTrayState extends State<CommentsTray> with SingleTickerProviderSt
           cid: comment.cid,
           profileImageUrl: comment.profileImageUrl,
           authorDid: comment.authorDid,
-          onCommentDeleted: () {
-            // Refresh the comments list after deletion
-            _loadComments();
-            // Update the comment count
-            setState(() {
-              _commentCount = _commentCount > 0 ? _commentCount - 1 : 0;
-            });
-          },
+          isLiked: comment.isLiked,
+          onLikePressed: () => _handleLike(comment),
+          onDeleted: () => _handleCommentDeleted(comment.id),
         );
       },
     );
