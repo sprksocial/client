@@ -38,6 +38,12 @@ abstract class FeedRepository {
   /// [likeUri] The URI of the like to delete
   Future<void> unlikePost(String likeUri);
 
+  /// Delete a post by its URI
+  ///
+  /// [postUri] The URI of the post to delete
+  /// Returns true if the post was successfully deleted, false otherwise
+  Future<bool> deletePost(String postUri);
+
   /// Post a comment to a post
   ///
   /// [text] The text content of the comment

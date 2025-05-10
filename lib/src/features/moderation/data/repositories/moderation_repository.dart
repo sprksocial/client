@@ -1,5 +1,4 @@
 import 'package:atproto/atproto.dart';
-import 'package:atproto/core.dart';
 
 /// Repository for handling moderation actions
 abstract class ModerationRepository {

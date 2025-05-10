@@ -69,6 +69,18 @@ class Profile with _$Profile {
   
   /// Create a Profile from a Bluesky actor
   factory Profile.fromBlueskyActor(Map<String, dynamic> actor) {
+    // Using pattern matching to extract data and check conditions
+    final isFollowing = switch (actor) {
+      {'viewer': {'following': String _}} => true,
+      {'viewer': Map<String, dynamic> viewerData} => viewerData.containsKey('following'),
+      _ => false
+    };
+    
+    final followUri = switch (actor) {
+      {'viewer': {'following': String uri}} => uri,
+      _ => null
+    };
+    
     return Profile(
       handle: actor['handle'] as String,
       did: actor['did'] as String,
@@ -76,44 +88,59 @@ class Profile with _$Profile {
       description: actor['description'] as String?,
       avatar: actor['avatar'] as String?,
       banner: null, // Bluesky doesn't have banner
-      isFollowing: actor['viewer'] != null && 
-                  (actor['viewer'] as Map<String, dynamic>).containsKey('following'),
-      followUri: actor['viewer'] != null && 
-                (actor['viewer'] as Map<String, dynamic>).containsKey('following') ?
-                (actor['viewer'] as Map<String, dynamic>)['following'] as String? : null,
+      isFollowing: isFollowing,
+      followUri: followUri,
     );
   }
 
   /// Create a Profile from a Spark profile
   factory Profile.fromSparkProfile(Map<String, dynamic> profileData) {
-    final actor = profileData['actor'] as Map<String, dynamic>;
-    final viewer = profileData['viewer'] as Map<dynamic, dynamic>?;
-
+    // Using pattern matching to extract and transform the data
+    final (actorData, viewerData) = switch (profileData) {
+      {'actor': Map<String, dynamic> actor, 'viewer': Map<dynamic, dynamic>? viewer} => (actor, viewer),
+      {'actor': Map<String, dynamic> actor} => (actor, null),
+      _ => (<String, dynamic>{}, null)
+    };
+    
     return Profile(
-      handle: actor['handle'] as String? ?? '',
-      did: actor['did'] as String? ?? '',
-      displayName: actor['displayName'] as String?,
-      description: actor['description'] as String?,
-      avatar: actor['avatar'] as String?,
-      banner: actor['banner'] as String?,
-      followersCount: actor['followersCount'] as int? ?? 0,
-      followingCount: actor['followingCount'] as int? ?? 0,
-      postsCount: actor['postsCount'] as int? ?? 0,
+      handle: switch (actorData) {
+        {'handle': String handle} => handle,
+        _ => ''
+      },
+      did: switch (actorData) {
+        {'did': String did} => did,
+        _ => ''
+      },
+      displayName: actorData['displayName'] as String?,
+      description: actorData['description'] as String?,
+      avatar: actorData['avatar'] as String?,
+      banner: actorData['banner'] as String?,
+      followersCount: switch (actorData) {
+        {'followersCount': int count} => count,
+        _ => 0
+      },
+      followingCount: switch (actorData) {
+        {'followingCount': int count} => count,
+        _ => 0
+      },
+      postsCount: switch (actorData) {
+        {'postsCount': int count} => count,
+        _ => 0
+      },
       isSprk: true,
-      isFollowing: viewer?['following'] != null,
-      followUri: viewer?['following'] as String?,
+      isFollowing: viewerData?['following'] != null,
+      followUri: viewerData?['following'] as String?,
     );
   }
 
   /// Create a Profile from any profile data (either Bluesky or Spark)
   factory Profile.fromAny(dynamic profileData) {
-    if (profileData is Map<String, dynamic>) {
-      return Profile.fromSparkProfile(profileData);
-    } else {
-      // Convert non-map object to map first
-      final jsonData = Map<String, dynamic>.from(
-          profileData as Map<dynamic, dynamic>);
-      return Profile.fromBlueskyActor(jsonData);
-    }
+    return switch (profileData) {
+      Map<String, dynamic> data => Profile.fromSparkProfile(data),
+      Map<dynamic, dynamic> data => Profile.fromBlueskyActor(
+        Map<String, dynamic>.from(data)
+      ),
+      _ => throw ArgumentError('Unsupported profile data format')
+    };
   }
 } 

@@ -40,8 +40,7 @@ class _SprkAppState extends ConsumerState<SprkApp> {
       darkTheme: AppTheme.darkTheme,
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,      
-      routerDelegate: _appRouter.delegate(),
-      routeInformationParser: _appRouter.defaultRouteParser(),
+      routerConfig: _appRouter.config(),
     );
   }
 }

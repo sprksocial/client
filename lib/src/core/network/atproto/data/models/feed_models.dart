@@ -1,4 +1,7 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
+import 'package:sparksocial/src/core/network/auth/data/repositories/identity_repository.dart';
 
 part 'feed_models.freezed.dart';
 part 'feed_models.g.dart';
@@ -189,60 +192,73 @@ class Comment with _$Comment {
   
   /// Create a Comment from a Bluesky comment
   factory Comment.fromBlueskyComment(Map<String, dynamic> post) {
-    final author = post['author'] as Map<String, dynamic>;
-    final record = post['record'] as Map<String, dynamic>;
+    // Use pattern matching to extract author and record data
+    final (authorData, recordData) = switch (post) {
+      {'author': Map<String, dynamic> author, 'record': Map<String, dynamic> record} => (author, record),
+      _ => (<String, dynamic>{}, <String, dynamic>{})
+    };
     
-    // Extract hashtags from text
-    final text = record['text'] as String? ?? '';
+    // Extract text and hashtags using pattern matching
+    final text = recordData['text'] as String? ?? '';
     final hashtags = _extractHashtags(text);
 
-    // Extract media if available
+    // Extract media information using pattern matching
     bool hasMedia = false;
     String? mediaType;
     String? mediaUrl;
     List<String> imageUrls = [];
 
-    if (post['embed'] != null) {
-      final embed = post['embed'] as Map<String, dynamic>;
-      final embedType = embed['\$type'] as String?;
-
-      if (embedType == 'app.bsky.embed.images#view') {
-        hasMedia = true;
-        mediaType = 'image';
-        
-        final embedImages = embed['images'] as List<dynamic>?;
-        if (embedImages != null && embedImages.isNotEmpty) {
-          mediaUrl = embedImages[0]['thumbnail'] as String?;
+    // Pattern match the embed structure
+    if (post case {'embed': Map<String, dynamic> embed}) {
+      // Match the embed type
+      switch (embed) {
+        case {r'$type': 'app.bsky.embed.images#view', 'images': List images} when images.isNotEmpty:
+          hasMedia = true;
+          mediaType = 'image';
           
-          for (final image in embedImages) {
-            final fullsize = image['fullsize'] as String?;
-            if (fullsize != null) {
+          // Extract thumbnail for the first image
+          if (images.first case {'thumbnail': String thumb}) {
+            mediaUrl = thumb;
+          }
+          
+          // Extract all fullsize images
+          for (final image in images) {
+            if (image case {'fullsize': String fullsize}) {
               imageUrls.add(fullsize);
             }
           }
-        }
-      } else if (embedType == 'app.bsky.embed.video#view') {
-        hasMedia = true;
-        mediaType = 'video';
-        mediaUrl = embed['playlist'] as String?;
+          
+        case {r'$type': 'app.bsky.embed.video#view', 'playlist': String playlist}:
+          hasMedia = true;
+          mediaType = 'video';
+          mediaUrl = playlist;
       }
     }
 
-    // Extract like URI from viewer object if available
+    // Extract like URI using pattern matching
     String? likeUri;
-    if (post.containsKey('viewer') && post['viewer'] is Map<String, dynamic>) {
-      likeUri = (post['viewer'] as Map<String, dynamic>)['like'] as String?;
+    if (post case {'viewer': {'like': String like}}) {
+      likeUri = like;
     }
 
     return Comment(
       id: post['uri'] as String? ?? '',
       uri: post['uri'] as String? ?? '',
       cid: post['cid'] as String? ?? '',
-      authorDid: author['did'] as String? ?? '',
-      username: author['handle'] as String? ?? '',
-      profileImageUrl: author['avatar'] as String?,
+      authorDid: switch (authorData) {
+        {'did': String did} => did,
+        _ => ''
+      },
+      username: switch (authorData) {
+        {'handle': String handle} => handle,
+        _ => ''
+      },
+      profileImageUrl: authorData['avatar'] as String?,
       text: text,
-      createdAt: _formatTimeAgo(record['createdAt'] as String? ?? DateTime.now().toIso8601String()),
+      createdAt: _formatTimeAgo(switch (recordData) {
+        {'createdAt': String date} => date,
+        _ => DateTime.now().toIso8601String()
+      }),
       likeCount: post['likeCount'] as int? ?? 0,
       replyCount: post['replyCount'] as int? ?? 0,
       hashtags: hashtags,
@@ -257,60 +273,75 @@ class Comment with _$Comment {
 
   /// Create a Comment from a Spark comment
   factory Comment.fromSparkComment(Map<String, dynamic> post) {
-    final author = post['author'] as Map<String, dynamic>;
-    final record = post['record'] as Map<String, dynamic>;
-
-    // Extract hashtags from text
-    final text = record['text'] as String? ?? '';
+    // Use pattern matching to extract author and record data
+    final (authorData, recordData) = switch (post) {
+      {'author': Map<String, dynamic> author, 'record': Map<String, dynamic> record} => (author, record),
+      _ => (<String, dynamic>{}, <String, dynamic>{})
+    };
+    
+    // Extract text and hashtags using pattern matching
+    final text = recordData['text'] as String? ?? '';
     final hashtags = _extractHashtags(text);
 
-    // Extract media if available
+    // Extract media information using pattern matching
     bool hasMedia = false;
     String? mediaType;
     String? mediaUrl;
     List<String> imageUrls = [];
 
-    if (post['embed'] != null) {
-      final embedType = post['embed']['\$type'] as String?;
-      if (embedType == 'so.sprk.embed.images#view') {
-        hasMedia = true;
-        mediaType = 'image';
-
-        // Extract all image URLs
-        final images = post['embed']['images'] as List<dynamic>?;
-        if (images != null && images.isNotEmpty) {
-          mediaUrl = images[0]['thumb'] as String?;
-
-          // Add all fullsize images to imageUrls
+    // Pattern match the embed structure
+    if (post case {'embed': Map<String, dynamic> embed}) {
+      // Match the embed type
+      switch (embed) {
+        case {r'$type': 'so.sprk.embed.images#view', 'images': List images} when images.isNotEmpty:
+          hasMedia = true;
+          mediaType = 'image';
+          
+          // Extract thumb for the first image
+          if (images.first case {'thumb': String thumb}) {
+            mediaUrl = thumb;
+          }
+          
+          // Extract all fullsize images
           for (final image in images) {
-            final fullsize = image['fullsize'] as String?;
-            if (fullsize != null) {
+            if (image case {'fullsize': String fullsize}) {
               imageUrls.add(fullsize);
             }
           }
-        }
-      } else if (embedType == 'so.sprk.embed.video#view') {
-        hasMedia = true;
-        mediaType = 'video';
-        mediaUrl = post['embed']['playlist'] as String?;
+          
+        case {r'$type': 'so.sprk.embed.video#view', 'playlist': String playlist}:
+          hasMedia = true;
+          mediaType = 'video';
+          mediaUrl = playlist;
       }
     }
 
-    // Extract like URI from viewer object if available
+    // Extract like URI using pattern matching
     String? likeUri;
-    if (post.containsKey('viewer') && post['viewer'] is Map<String, dynamic>) {
-      likeUri = (post['viewer'] as Map<String, dynamic>)['like'] as String?;
+    if (post case {'viewer': {'like': String like}}) {
+      likeUri = like;
     }
     
     return Comment(
       id: post['uri'] as String? ?? '',
       uri: post['uri'] as String? ?? '',
       cid: post['cid'] as String? ?? '',
-      authorDid: author['did'] as String? ?? '',
-      username: author['handle'] as String? ?? '',
-      profileImageUrl: author['avatar'] as String?,
+      authorDid: switch (authorData) {
+        {'did': String did} => did,
+        _ => ''
+      },
+      username: switch (authorData) {
+        {'handle': String handle} => handle,
+        _ => ''
+      },
+      profileImageUrl: authorData['avatar'] as String?,
       text: text,
-      createdAt: _formatTimeAgo(post['indexedAt'] as String? ?? DateTime.now().toIso8601String()),
+      createdAt: _formatTimeAgo(
+        switch (post) {
+          {'indexedAt': String date} => date,
+          _ => DateTime.now().toIso8601String()
+        }
+      ),
       likeCount: post['likeCount'] as int? ?? 0,
       replyCount: post['replyCount'] as int? ?? 0,
       hashtags: hashtags,
@@ -319,6 +350,191 @@ class Comment with _$Comment {
       mediaUrl: mediaUrl,
       likeUri: likeUri,
       isSprk: true,
+      imageUrls: imageUrls,
+    );
+  }
+  
+  /// Create a Comment from a Spark record (not a full post object)
+  static Future<Comment> fromSparkCommentRecord(Map<String, dynamic> record, String uri) async {
+    // Use pattern matching to extract data from record
+    final text = record['text'] as String? ?? '';
+    final hashtags = _extractHashtags(text);
+
+    // Extract media information using pattern matching
+    bool hasMedia = false;
+    String? mediaType;
+    String? mediaUrl;
+    List<String> imageUrls = [];
+
+    // Pattern match the embed structure
+    if (record case {'embed': Map<String, dynamic> embed}) {
+      // Match the embed type
+      switch (embed) {
+        case {r'$type': 'so.sprk.embed.images#view', 'images': List images} when images.isNotEmpty:
+          hasMedia = true;
+          mediaType = 'image';
+          
+          // Extract thumb for the first image
+          if (images.first case {'thumb': String thumb}) {
+            mediaUrl = thumb;
+          }
+          
+          // Extract all fullsize images
+          for (final image in images) {
+            if (image case {'fullsize': String fullsize}) {
+              imageUrls.add(fullsize);
+            }
+          }
+          
+        case {r'$type': 'so.sprk.embed.video#view', 'playlist': String playlist}:
+          hasMedia = true;
+          mediaType = 'video';
+          mediaUrl = playlist;
+      }
+    }
+
+    // Extract like URI using pattern matching
+    String? likeUri;
+    if (record case {'viewer': {'like': String like}}) {
+      likeUri = like;
+    }
+
+    // Extract authorDid from uri
+    String authorDid = '';
+    if (uri case String uri when RegExp(r'at://([^/]+)/').hasMatch(uri)) {
+      final match = RegExp(r'at://([^/]+)/').firstMatch(uri);
+      if (match != null && match.groupCount >= 1) {
+        authorDid = match.group(1)!;
+      }
+    }
+    
+    // Get repositories from service locator
+    final identityRepository = GetIt.instance<IdentityRepository>();
+    final actorRepository = GetIt.instance<ActorRepository>();
+    
+    // Get handle from identity repository
+    final handle = await identityRepository.resolveDidToHandle(authorDid);
+    if (handle == null) {
+      throw Exception('No handle found for author did: $authorDid');
+    }
+
+    // Get profile information
+    final profileResponse = await actorRepository.getProfile(authorDid);
+
+    // Create comment with extracted data
+    return Comment(
+      id: uri,
+      uri: uri,
+      cid: record['cid'] as String? ?? '',
+      authorDid: authorDid,
+      username: profileResponse.displayName ?? profileResponse.handle,
+      profileImageUrl: profileResponse.avatar,
+      text: text,
+      createdAt: _formatTimeAgo(
+        switch (record) {
+          {'indexedAt': String date} => date,
+          {'createdAt': String date} => date,
+          _ => DateTime.now().toIso8601String()
+        },
+      ),
+      likeCount: record['likeCount'] as int? ?? 0,
+      replyCount: record['replyCount'] as int? ?? 0,
+      hashtags: hashtags,
+      hasMedia: hasMedia,
+      mediaType: mediaType,
+      mediaUrl: mediaUrl,
+      likeUri: likeUri,
+      isSprk: true,
+      replies: [],
+      imageUrls: imageUrls,
+    );
+  }
+
+  /// Create a Comment from a Bluesky record (not a full post object)
+  static Future<Comment> fromBlueskyCommentRecord(Map<String, dynamic> record, String uri) async {
+    // Use pattern matching to extract data from record
+    final text = record['text'] as String? ?? '';
+    final hashtags = _extractHashtags(text);
+
+    // Extract media information using pattern matching
+    bool hasMedia = false;
+    String? mediaType;
+    String? mediaUrl;
+    List<String> imageUrls = [];
+
+    // Pattern match the embed structure
+    if (record case {'embed': Map<String, dynamic> embed}) {
+      // Match the embed type
+      switch (embed) {
+        case {r'$type': 'app.bsky.embed.images#view', 'images': List images} when images.isNotEmpty:
+          hasMedia = true;
+          mediaType = 'image';
+          
+          // Extract thumbnail for the first image
+          if (images.first case {'thumbnail': String thumb}) {
+            mediaUrl = thumb;
+          }
+          
+          // Extract all fullsize images
+          for (final image in images) {
+            if (image case {'fullsize': String fullsize}) {
+              imageUrls.add(fullsize);
+            }
+          }
+          
+        case {r'$type': 'app.bsky.embed.video#view', 'playlist': String playlist}:
+          hasMedia = true;
+          mediaType = 'video';
+          mediaUrl = playlist;
+      }
+    }
+
+    // Extract like URI using pattern matching
+    String? likeUri;
+    if (record case {'viewer': {'like': String like}}) {
+      likeUri = like;
+    }
+
+    // Extract authorDid from uri
+    String authorDid = '';
+    if (uri case String uri when RegExp(r'at://([^/]+)/').hasMatch(uri)) {
+      final match = RegExp(r'at://([^/]+)/').firstMatch(uri);
+      if (match != null && match.groupCount >= 1) {
+        authorDid = match.group(1)!;
+      }
+    }
+
+    // Get repositories from service locator
+    final actorRepository = GetIt.instance<ActorRepository>();
+    
+    // Get profile information
+    final profileResponse = await actorRepository.getProfile(authorDid);
+    
+    // Create comment with extracted data
+    return Comment(
+      id: uri,
+      uri: uri,
+      cid: record['cid'] as String? ?? '',
+      authorDid: authorDid,
+      username: profileResponse.displayName ?? profileResponse.handle,
+      profileImageUrl: profileResponse.avatar,
+      text: text,
+      createdAt: _formatTimeAgo(
+        switch (record) {
+          {'indexedAt': String date} => date,
+          {'createdAt': String date} => date,
+          _ => DateTime.now().toIso8601String()
+        },
+      ),
+      likeCount: record['likeCount'] as int? ?? 0,
+      replyCount: record['replyCount'] as int? ?? 0,
+      hashtags: hashtags,
+      hasMedia: hasMedia,
+      mediaType: mediaType,
+      mediaUrl: mediaUrl,
+      likeUri: likeUri,
+      isSprk: false,
+      replies: [],
       imageUrls: imageUrls,
     );
   }

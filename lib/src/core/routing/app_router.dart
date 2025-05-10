@@ -8,7 +8,11 @@ part 'app_router.gr.dart';
 /// 
 /// As features are migrated, new routes will be added here
 @AutoRouterConfig()
-class AppRouter extends _$AppRouter {
+class AppRouter extends RootStackRouter {
+
+  @override
+  RouteType get defaultRouteType => RouteType.adaptive();
+
   @override
   List<AutoRoute> get routes => [
     // Main screens

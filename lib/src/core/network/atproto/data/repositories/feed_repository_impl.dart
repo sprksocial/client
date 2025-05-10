@@ -219,6 +219,9 @@ class FeedRepositoryImpl implements FeedRepository {
       // If root isn't provided, use parent as root
       rootCid ??= parentCid;
       rootUri ??= parentUri;
+
+      final isSprk = RegExp(r'^at://[^/]+/so\.sprk\.feed\.post/[^/]+$').hasMatch(parentUri);
+      final postType = isSprk ? "so.sprk.feed.post" : "app.bsky.feed.post";
       
       // Upload images and prepare embed JSON if provided
       Map<String, dynamic>? embedJson;
@@ -229,7 +232,7 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       final commentRecord = <String, dynamic>{
-        "\$type": "so.sprk.feed.post",
+        "\$type": postType,
         "text": text,
         "reply": {
           "root": {"cid": rootCid, "uri": rootUri},
@@ -244,7 +247,7 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       final result = await atproto.repo.createRecord(
-        collection: NSID.parse('so.sprk.feed.post'),
+        collection: NSID.parse(postType),
         record: commentRecord
       );
       
@@ -357,5 +360,41 @@ class FeedRepositoryImpl implements FeedRepository {
     
     _logger.d('Successfully processed and uploaded ${uploadedImageMaps.length} images');
     return uploadedImageMaps;
+  }
+  
+  @override
+  Future<bool> deletePost(String postUri) async {
+    _logger.d('Deleting post with URI: $postUri');
+    
+    return _client.executeWithRetry(() async {
+      if (!_client.authService.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authService.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      // Ensure the URI starts with 'at://'
+      final normalizedUri = postUri.startsWith('at://') ? postUri : 'at://$postUri';
+
+      try {
+        final response = await atproto.repo.deleteRecord(uri: AtUri.parse(normalizedUri));
+
+        if (response.status.code != 200) {
+          _logger.e('Failed to delete post: ${response.status.code}');
+          return false;
+        }
+
+        _logger.i('Post deleted successfully: $normalizedUri');
+        return true;
+      } catch (e) {
+        _logger.e('Error deleting post', error: e);
+        return false;
+      }
+    });
   }
 } 

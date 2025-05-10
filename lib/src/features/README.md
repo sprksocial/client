@@ -96,15 +96,18 @@ Create Riverpod providers for your feature:
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/repositories/feature_repository.dart';
 import '../data/models/feature_model.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-final featureRepositoryProvider = Provider<FeatureRepository>((ref) {
+@riverpod
+Future<FeatureRepository> featureRepository(FeatureRepositoryRef ref) {
   return FeatureRepositoryImpl();
-});
+}
 
-final featuresProvider = FutureProvider<List<FeatureModel>>((ref) {
+@riverpod
+Future<List<FeatureModel>> features(FeaturesRef ref) {
   final repository = ref.watch(featureRepositoryProvider);
   return repository.getFeatures();
-});
+}
 ```
 
 ### 3. UI Components
@@ -200,8 +203,8 @@ If you encounter circular dependencies between providers, consider:
 
 ### Provider Lifecycle
 
-- Use `.autoDispose` for providers that should be re-created when no longer used
-- Use `.family` for providers that need parameters
+- Use `@riverpod` for providers that should be re-created when no longer used
+- Use `@riverpod(keepAlive: true)` for providers that need to be kept alive
 
 ### Navigation
 
