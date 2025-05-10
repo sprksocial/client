@@ -64,7 +64,7 @@ class AuthPromptScreen extends StatelessWidget {
                         'Add an account to create videos, connect with friends, and more.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: AppColors.white.withOpacity(0.8),
+                          color: AppColors.white,
                           fontSize: 20,
                           height: 1.5,
                         ),
