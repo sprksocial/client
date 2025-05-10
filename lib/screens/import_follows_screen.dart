@@ -106,6 +106,10 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
     setState(() {});
   }
 
+  void _unused() {
+    final something = 'something';
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;

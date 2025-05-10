@@ -91,7 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppTheme.getBackgroundColor(context),
       body: Stack(
         children: [
-          Positioned.fill(
+          Positioned.fill( broken
             child: Image.asset(
               'assets/branding/gradient.webp',
               fit: BoxFit.cover,
