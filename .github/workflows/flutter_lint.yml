@@ -45,18 +45,18 @@ jobs:
           cat flutter_analyze_output.txt
           echo "------------------------------------"
 
-      - name: Create GitHub Annotations
-        if: steps.changed_files.outputs.all_changed_files != '' # Only run if there were changed files to analyze
+      - name: Process Analyze Output, Annotate & Check Errors
+        if: steps.changed_files.outputs.all_changed_files != ''
         run: |
           if [ ! -s flutter_analyze_output.txt ]; then
-            echo "::debug::flutter_analyze_output.txt not found or is empty. No annotations to create."
+            echo "::debug::flutter_analyze_output.txt not found or is empty. No annotations to create or errors to check."
             exit 0
           fi
 
-          echo "::debug::Starting annotation processing from flutter_analyze_output.txt"
+          echo "::debug::Starting annotation processing and error checking from flutter_analyze_output.txt"
+          found_error="false" # Flag to track if any errors are found
+
           while IFS= read -r line; do
-            # Regex to capture: level, message, file, line, col, rule_id
-            # Example line format:   info • 'message text' • path/to/file.dart:123:45 • rule_name
             if [[ "$line" =~ ^[[:space:]]*(info|warning|error)[[:space:]]+•[[:space:]]+(.+)[[:space:]]+•[[:space:]]+([^:]+):([0-9]+):([0-9]+)[[:space:]]+•[[:space:]]+(.+)$ ]]; then
               type="${BASH_REMATCH[1]}"
               message_body="${BASH_REMATCH[2]}"
@@ -70,21 +70,25 @@ jobs:
                 github_level="warning"
               elif [ "$type" = "error" ]; then
                 github_level="error"
+                found_error="true" # Set flag if an error is found
               fi
 
-              # Escape problematic characters for the workflow command message part
-              # % -> %25, \r -> %0D, \n -> %0A
               message_body_escaped="${message_body//'%'/'%25'}"
               message_body_escaped="${message_body_escaped//$'\r'/'%0D'}"
               message_body_escaped="${message_body_escaped//$'\n'/'%0A'}"
 
               echo "::$github_level file=$file_path,line=$line_num,col=$col_num,title=$rule_id::$message_body_escaped"
             elif [[ "$line" =~ issues\ found\.|\ Analyzing\ |^$|No\ issues\ found!|Looking\ for\ direct\ dependencies\ of|Running\ \"flutter\ pub\ get\"\ in ]]; then
-              # Skip summary lines, "Analyzing..." line, empty lines, "No issues found!", and other flutter command noise
               echo "::debug::Skipping known non-issue line: $line"
             else
-              # Log unparseable lines for debugging, but don't make them workflow errors/warnings
               echo "::debug::Skipping unparseable line from flutter_analyze_output.txt: $line"
             fi
           done < flutter_analyze_output.txt
           echo "::debug::Finished annotation processing."
+
+          if [ "$found_error" = "true" ]; then
+            echo "::error::Flutter analyze reported errors. See annotations for details. Failing workflow."
+            exit 1
+          else
+            echo "::debug::No flutter analyze errors found. Workflow will proceed."
+          fi
