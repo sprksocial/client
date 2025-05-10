@@ -30,9 +30,61 @@ jobs:
           flutter-version: 3.29.2
           cache: true
 
-      - name: Analyze Changed Files
+      - name: Run Flutter Analyze # Renamed and modified (was 'Analyze Changed Files')
+        id: analyze_step
         if: steps.changed_files.outputs.all_changed_files != ''
         run: |
-          echo "Found changed Dart files:"
-          echo "${{ steps.changed_files.outputs.all_changed_files }}" # Output the list for debugging
-          flutter analyze ${{ steps.changed_files.outputs.all_changed_files }}
+          echo "Analyzing the following Dart files:"
+          echo "${{ steps.changed_files.outputs.all_changed_files }}"
+          # Run analyze and save output. Redirect stderr to stdout for capture.
+          # Continue with '|| true' so the workflow doesn't stop if issues are found,
+          # as we want to report them as annotations.
+          flutter analyze ${{ steps.changed_files.outputs.all_changed_files }} > flutter_analyze_output.txt 2>&1 || true
+
+          echo "--- Flutter Analyze Output (raw) ---"
+          cat flutter_analyze_output.txt
+          echo "------------------------------------"
+
+      - name: Create GitHub Annotations
+        if: steps.changed_files.outputs.all_changed_files != '' # Only run if there were changed files to analyze
+        run: |
+          if [ ! -s flutter_analyze_output.txt ]; then
+            echo "::debug::flutter_analyze_output.txt not found or is empty. No annotations to create."
+            exit 0
+          fi
+
+          echo "::debug::Starting annotation processing from flutter_analyze_output.txt"
+          while IFS= read -r line; do
+            # Regex to capture: level, message, file, line, col, rule_id
+            # Example line format:   info • 'message text' • path/to/file.dart:123:45 • rule_name
+            if [[ "$line" =~ ^[[:space:]]*(info|warning|error)[[:space:]]+•[[:space:]]+(.+)[[:space:]]+•[[:space:]]+([^:]+):([0-9]+):([0-9]+)[[:space:]]+•[[:space:]]+(.+)$ ]]; then
+              type="${BASH_REMATCH[1]}"
+              message_body="${BASH_REMATCH[2]}"
+              file_path="${BASH_REMATCH[3]}"
+              line_num="${BASH_REMATCH[4]}"
+              col_num="${BASH_REMATCH[5]}"
+              rule_id="${BASH_REMATCH[6]}"
+
+              github_level="notice" # Default for 'info'
+              if [ "$type" = "warning" ]; then
+                github_level="warning"
+              elif [ "$type" = "error" ]; then
+                github_level="error"
+              fi
+
+              # Escape problematic characters for the workflow command message part
+              # % -> %25, \r -> %0D, \n -> %0A
+              message_body_escaped="${message_body//'%'/'%25'}"
+              message_body_escaped="${message_body_escaped//$'\r'/'%0D'}"
+              message_body_escaped="${message_body_escaped//$'\n'/'%0A'}"
+
+              echo "::$github_level file=$file_path,line=$line_num,col=$col_num,title=$rule_id::$message_body_escaped"
+            elif [[ "$line" =~ issues\ found\.|\ Analyzing\ |^$|No\ issues\ found!|Looking\ for\ direct\ dependencies\ of|Running\ \"flutter\ pub\ get\"\ in ]]; then
+              # Skip summary lines, "Analyzing..." line, empty lines, "No issues found!", and other flutter command noise
+              echo "::debug::Skipping known non-issue line: $line"
+            else
+              # Log unparseable lines for debugging, but don't make them workflow errors/warnings
+              echo "::debug::Skipping unparseable line from flutter_analyze_output.txt: $line"
+            fi
+          done < flutter_analyze_output.txt
+          echo "::debug::Finished annotation processing."
