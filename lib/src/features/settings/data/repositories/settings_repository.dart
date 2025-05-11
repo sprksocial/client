@@ -1,5 +1,5 @@
 import 'package:sparksocial/src/features/settings/data/models/label_preference.dart';
-import 'package:sparksocial/src/features/settings/data/models/settings_state.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 
 abstract class SettingsRepository {
   Future<bool> getFeedBlurEnabled();

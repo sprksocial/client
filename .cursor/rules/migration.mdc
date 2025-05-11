@@ -5,6 +5,12 @@ alwaysApply: false
 ---
 - When migrating from the old architecture to the new one, always remember:
     - If necessary, split services into repositories, freezed models and providers
+    - If necessary, split widgets into state models, providers and stateless widgets
+    - Don't use relative paths in imports
+    - Aim to break down complex widget trees into smaller, reusable components
+    - If there's any methods that return widgets, transform them into smaller widgets instead of methods
+    - AppColors are located in `@lib/src/core/theme/data/models/colors.dart`
+    - Get all theme information from the context
     - All ATProto endpoints are in `@lib/lexicons/`, create models if needed
     - For storage, get a storage manager from the get it
     - For cache, get a cache manager interface from the get it
@@ -13,4 +19,5 @@ alwaysApply: false
     - For API calls, check if `@lib/src/core/network/sprk_repository_interface.dart` already has that method in its contract
         - If it does, get it from the get it
     - Don't forget to add repositories to the service locator at `@lib/src/core/di/service_locator.dart`
+    - For navigation, use the AutoRoute package and register routes at `@lib/src/core/routing/app_router.dart`
     - DO NOT import ANYTHING from the old architecture

@@ -20,6 +20,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: MainRoute.page, path: '/home'),
     AutoRoute(page: LoginRoute.page, path: '/login'),
     AutoRoute(page: OnboardingRoute.page, path: '/onboarding'),
+    AutoRoute(page: AuthPromptRoute.page, path: '/auth-prompt'),
     
     // Individual screens
     AutoRoute(page: CreateVideoRoute.page, path: '/create'),

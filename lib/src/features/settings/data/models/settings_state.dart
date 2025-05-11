@@ -1,22 +1,9 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 
 part 'settings_state.freezed.dart';
 part 'settings_state.g.dart';
 
-enum FeedType {
-  following(0, 'Following'),
-  forYou(1, 'For You'),
-  latest(2, 'Latest');
-
-  final int value;
-  final String name;
-
-  const FeedType(this.value, this.name);
-
-  static FeedType fromValue(int value) {
-    return FeedType.values.firstWhere((feedType) => feedType.value == value, orElse: () => FeedType.forYou);
-  }
-}
 
 // Settings currently loaded
 @freezed

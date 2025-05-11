@@ -7,6 +7,21 @@ import 'package:sparksocial/src/core/network/atproto/data/models/label_models.da
 part 'feed_models.freezed.dart';
 part 'feed_models.g.dart';
 
+enum FeedType {
+  following(0, 'Following'),
+  forYou(1, 'For You'),
+  latest(2, 'Latest');
+
+  final int value;
+  final String name;
+
+  const FeedType(this.value, this.name);
+
+  static FeedType fromValue(int value) {
+    return FeedType.values.firstWhere((feedType) => feedType.value == value, orElse: () => FeedType.forYou);
+  }
+}
+
 @freezed
 class PostThreadResponse with _$PostThreadResponse {
   const factory PostThreadResponse({

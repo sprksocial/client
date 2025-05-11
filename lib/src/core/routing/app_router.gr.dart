@@ -15,6 +15,17 @@ abstract class _$AppRouter extends RootStackRouter {
 
   @override
   final Map<String, PageFactory> pagesMap = {
+    AuthPromptRoute.name: (routeData) {
+      final args = routeData.argsAs<AuthPromptRouteArgs>(
+          orElse: () => const AuthPromptRouteArgs());
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: AuthPromptPage(
+          key: args.key,
+          onClose: args.onClose,
+        ),
+      );
+    },
     CreateVideoRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -70,6 +81,44 @@ abstract class _$AppRouter extends RootStackRouter {
       );
     },
   };
+}
+
+/// generated route for
+/// [AuthPromptPage]
+class AuthPromptRoute extends PageRouteInfo<AuthPromptRouteArgs> {
+  AuthPromptRoute({
+    Key? key,
+    void Function()? onClose,
+    List<PageRouteInfo>? children,
+  }) : super(
+          AuthPromptRoute.name,
+          args: AuthPromptRouteArgs(
+            key: key,
+            onClose: onClose,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'AuthPromptRoute';
+
+  static const PageInfo<AuthPromptRouteArgs> page =
+      PageInfo<AuthPromptRouteArgs>(name);
+}
+
+class AuthPromptRouteArgs {
+  const AuthPromptRouteArgs({
+    this.key,
+    this.onClose,
+  });
+
+  final Key? key;
+
+  final void Function()? onClose;
+
+  @override
+  String toString() {
+    return 'AuthPromptRouteArgs{key: $key, onClose: $onClose}';
+  }
 }
 
 /// generated route for
