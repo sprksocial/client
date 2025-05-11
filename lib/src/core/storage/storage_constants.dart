@@ -7,6 +7,10 @@ class StorageKeys {
   /// Settings
   static const String feedBlurKey = 'feed_blur_enabled';
   static const String hideAdultContentKey = 'hide_adult_content';
+  static const String followingFeedEnabledKey = 'following_feed_enabled';
+  static const String forYouFeedEnabledKey = 'for_you_feed_enabled';
+  static const String latestFeedEnabledKey = 'latest_feed_enabled';
+  static const String selectedFeedTypeKey = 'selected_feed_type';
 
   /// Profile cache keys
   static const String bskyProfileCachePrefix = 'bsky_profile_';

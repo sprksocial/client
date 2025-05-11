@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:sparksocial/src/features/settings/data/repositories/settings_repository.dart';
 
 import '../models/label_preference.dart';
+import '../models/settings_state.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
@@ -114,5 +115,47 @@ class SettingsRepositoryImpl implements SettingsRepository {
     
     prefs.remove(labelerDid);
     await saveLabelPreferences(prefs);
+  }
+
+  // Feed settings implementations
+  @override
+  Future<bool> getFollowingFeedEnabled() async {
+    return await _storageManager.preferences.getBool(StorageKeys.followingFeedEnabledKey) ?? true;
+  }
+
+  @override
+  Future<void> setFollowingFeedEnabled(bool value) async {
+    await _storageManager.preferences.setBool(StorageKeys.followingFeedEnabledKey, value);
+  }
+
+  @override
+  Future<bool> getForYouFeedEnabled() async {
+    return await _storageManager.preferences.getBool(StorageKeys.forYouFeedEnabledKey) ?? true;
+  }
+
+  @override
+  Future<void> setForYouFeedEnabled(bool value) async {
+    await _storageManager.preferences.setBool(StorageKeys.forYouFeedEnabledKey, value);
+  }
+
+  @override
+  Future<bool> getLatestFeedEnabled() async {
+    return await _storageManager.preferences.getBool(StorageKeys.latestFeedEnabledKey) ?? true;
+  }
+
+  @override
+  Future<void> setLatestFeedEnabled(bool value) async {
+    await _storageManager.preferences.setBool(StorageKeys.latestFeedEnabledKey, value);
+  }
+
+  @override
+  Future<FeedType> getSelectedFeedType() async {
+    final value = await _storageManager.preferences.getInt(StorageKeys.selectedFeedTypeKey);
+    return value != null ? FeedType.fromValue(value) : FeedType.forYou;
+  }
+
+  @override
+  Future<void> setSelectedFeedType(FeedType value) async {
+    await _storageManager.preferences.setInt(StorageKeys.selectedFeedTypeKey, value.value);
   }
 } 

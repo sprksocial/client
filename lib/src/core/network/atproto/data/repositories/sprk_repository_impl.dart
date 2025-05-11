@@ -74,11 +74,11 @@ class SprkRepositoryImpl implements SprkRepository {
   RepoRepository get repo => RepoRepositoryImpl(this);
 
   @override
-  FeedRepository get feed => FeedRepositoryImpl(this);
-
-  @override
   GraphRepository get graph => GraphRepositoryImpl(this);
 
   @override
   LabelRepository get label => LabelRepositoryImpl(this);
+
+  @override
+  FeedRepository get feed => FeedRepositoryImpl(this, label);
 }

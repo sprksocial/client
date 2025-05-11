@@ -1,4 +1,5 @@
 import 'package:sparksocial/src/features/settings/data/models/label_preference.dart';
+import 'package:sparksocial/src/features/settings/data/models/settings_state.dart';
 
 abstract class SettingsRepository {
   Future<bool> getFeedBlurEnabled();
@@ -22,4 +23,17 @@ abstract class SettingsRepository {
   
   Future<void> removeLabelPreference(String labelerDid, String labelValue);
   Future<void> clearLabelerPreferences(String labelerDid);
+  
+  // New feed settings methods
+  Future<bool> getFollowingFeedEnabled();
+  Future<void> setFollowingFeedEnabled(bool value);
+  
+  Future<bool> getForYouFeedEnabled();
+  Future<void> setForYouFeedEnabled(bool value);
+  
+  Future<bool> getLatestFeedEnabled();
+  Future<void> setLatestFeedEnabled(bool value);
+  
+  Future<FeedType> getSelectedFeedType();
+  Future<void> setSelectedFeedType(FeedType value);
 }

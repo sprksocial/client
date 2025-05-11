@@ -1,28 +1,28 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/models/label_preference.dart';
 import '../data/models/settings_state.dart';
 import '../data/repositories/settings_repository.dart';
 
-/// Provider for the SettingsRepository instance
-final settingsRepositoryProvider = Provider<SettingsRepository>((ref) {
-  // Get the repository from the service locator
-  return GetIt.instance<SettingsRepository>();
-});
+part 'settings_provider.g.dart';
 
-/// StateNotifierProvider for settings state
-final settingsProvider =
-    StateNotifierProvider<SettingsNotifier, SettingsState>((ref) {
-  final repository = ref.watch(settingsRepositoryProvider);
-  return SettingsNotifier(repository);
-});
+/// Provider for the SettingsRepository instance
+@riverpod
+SettingsRepository settingsRepository(Ref ref) {
+  return GetIt.instance<SettingsRepository>();
+}
 
 /// StateNotifier for managing settings state
-class SettingsNotifier extends StateNotifier<SettingsState> {
-  final SettingsRepository _repository;
+@Riverpod(keepAlive: true)
+class Settings extends _$Settings {
+  late final SettingsRepository _repository;
 
-  SettingsNotifier(this._repository) : super(const SettingsState(isLoading: true)) {
+  @override
+  SettingsState build() {
+    _repository = ref.watch(settingsRepositoryProvider);
     _loadSettings();
+    return const SettingsState(isLoading: true);
   }
 
   /// Loads all settings from persistent storage
@@ -31,14 +31,29 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
     final hideAdultContent = await _repository.getHideAdultContent();
     final followedLabelers = await _repository.getFollowedLabelers();
     final labelPreferences = await _repository.getLabelPreferences();
+    
+    // Load new feed settings
+    final followingFeedEnabled = await _repository.getFollowingFeedEnabled();
+    final forYouFeedEnabled = await _repository.getForYouFeedEnabled();
+    final latestFeedEnabled = await _repository.getLatestFeedEnabled();
+    final selectedFeedType = await _repository.getSelectedFeedType();
 
     state = state.copyWith(
       feedBlurEnabled: feedBlurEnabled,
       hideAdultContent: hideAdultContent,
       followedLabelers: followedLabelers,
       labelPreferences: labelPreferences,
+      followingFeedEnabled: followingFeedEnabled,
+      forYouFeedEnabled: forYouFeedEnabled,
+      latestFeedEnabled: latestFeedEnabled,
+      selectedFeedType: selectedFeedType,
       isLoading: false,
     );
+    
+    // Make sure selected feed is enabled
+    if (!isSelectedFeedEnabled()) {
+      await selectFirstEnabledFeed();
+    }
   }
 
   /// Sets feed blur setting
@@ -51,6 +66,107 @@ class SettingsNotifier extends StateNotifier<SettingsState> {
   Future<void> setHideAdultContent(bool value) async {
     await _repository.setHideAdultContent(value);
     state = state.copyWith(hideAdultContent: value);
+  }
+  
+  /// Sets following feed enabled setting
+  Future<void> setFollowingFeedEnabled(bool value) async {
+    await _repository.setFollowingFeedEnabled(value);
+    state = state.copyWith(followingFeedEnabled: value);
+  }
+  
+  /// Sets for you feed enabled setting
+  Future<void> setForYouFeedEnabled(bool value) async {
+    await _repository.setForYouFeedEnabled(value);
+    state = state.copyWith(forYouFeedEnabled: value);
+  }
+  
+  /// Sets latest feed enabled setting
+  Future<void> setLatestFeedEnabled(bool value) async {
+    await _repository.setLatestFeedEnabled(value);
+    state = state.copyWith(latestFeedEnabled: value);
+  }
+  
+  /// Sets selected feed type
+  Future<void> setSelectedFeedType(FeedType value) async {
+    await _repository.setSelectedFeedType(value);
+    state = state.copyWith(selectedFeedType: value);
+  }
+
+  /// Checks if the currently selected feed is enabled
+  bool isSelectedFeedEnabled() {
+    return state.selectedFeedType == FeedType.following
+        ? state.followingFeedEnabled
+        : state.selectedFeedType == FeedType.forYou
+            ? state.forYouFeedEnabled
+            : state.latestFeedEnabled;
+  }
+
+  /// Selects the first enabled feed
+  Future<void> selectFirstEnabledFeed() async {
+    FeedType feedType;
+    if (state.followingFeedEnabled) {
+      feedType = FeedType.following;
+    } else if (state.forYouFeedEnabled) {
+      feedType = FeedType.forYou;
+    } else if (state.latestFeedEnabled) {
+      feedType = FeedType.latest;
+    } else {
+      // If somehow all feeds are disabled, enable For You
+      await setForYouFeedEnabled(true);
+      feedType = FeedType.forYou;
+    }
+    
+    if (feedType != state.selectedFeedType) {
+      await setSelectedFeedType(feedType);
+    }
+  }
+
+  /// Checks if a feed can be disabled
+  bool canDisableFeed(String settingType) {
+    // Get the number of active feeds
+    final int activeFeeds = (state.followingFeedEnabled ? 1 : 0) + 
+                           (state.forYouFeedEnabled ? 1 : 0) + 
+                           (state.latestFeedEnabled ? 1 : 0);
+
+    // Don't allow disabling if it's the last enabled feed
+    if (activeFeeds <= 1) return false;
+
+    // Don't allow disabling the currently selected feed
+    final feedType = getFeedTypeFromSetting(settingType);
+    return feedType != state.selectedFeedType;
+  }
+
+  /// Toggles a feed by its setting type
+  Future<void> toggleFeed(String settingType, bool isEnabled) async {
+    if (!isEnabled && !canDisableFeed(settingType)) {
+      return;
+    }
+
+    switch (settingType) {
+      case 'following_feed':
+        await setFollowingFeedEnabled(isEnabled);
+        break;
+      case 'for_you_feed':
+        await setForYouFeedEnabled(isEnabled);
+        break;
+      case 'latest_feed':
+        await setLatestFeedEnabled(isEnabled);
+        break;
+    }
+  }
+
+  /// Gets the feed type from a setting name
+  FeedType getFeedTypeFromSetting(String settingType) {
+    switch (settingType) {
+      case 'following_feed':
+        return FeedType.following;
+      case 'for_you_feed':
+        return FeedType.forYou;
+      case 'latest_feed':
+        return FeedType.latest;
+      default:
+        return FeedType.forYou;
+    }
   }
 
   /// Sets followed labelers list

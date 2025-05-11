@@ -6,7 +6,7 @@ import 'package:sparksocial/src/features/settings/data/models/label_preference.d
 import 'package:sparksocial/src/features/settings/data/models/labeler.dart';
 import 'package:sparksocial/src/features/settings/data/repositories/labeler_repository.dart';
 
-part 'labeler_providers.g.dart';
+part 'labeler_provider.g.dart';
 
 /// Provider for the Labeler Repository
 @riverpod

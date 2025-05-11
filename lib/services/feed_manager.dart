@@ -12,10 +12,8 @@ class FeedManager {
   factory FeedManager() => _instance;
   FeedManager._internal();
   
-  // Referência ao LabelerManager
   LabelerManager? _labelerManager;
   
-  /// Define o LabelerManager a ser usado para filtrar conteúdo
   void setLabelerManager(LabelerManager labelerManager) {
     _labelerManager = labelerManager;
   }
@@ -141,8 +139,8 @@ class FeedManager {
       // Collect all URIs for a single query
       final uriPatterns = posts.map((post) => post.uri).toList();
       
-      // Obter a lista de labelers seguidos pelo usuário
-      // Se _labelerManager for nulo, use o labeler padrão como fallback
+      // Get the list of followed labelers by the user
+      // If _labelerManager is null, use the default labeler as fallback
       List<String> labelerSources = _labelerManager?.followedLabelers ?? [LabelerManager.defaultLabelerDid];
       
       // Use the LabelService to get detailed label information grouped by URI

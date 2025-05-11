@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/label_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
@@ -317,6 +318,55 @@ class LabelRepositoryImpl implements LabelRepository {
       }
       
       return result;
+    }
+  }
+  
+  @override
+  Future<List<FeedPost>> fetchLabelsForPosts(
+    List<FeedPost> posts, {
+    List<String>? sources,
+    String? labelerDid,
+  }) async {
+    // If no posts provided, return empty list
+    if (posts.isEmpty) {
+      return [];
+    }
+    
+    _logger.d('Fetching labels for ${posts.length} posts');
+    
+    try {
+      // Collect all post URIs for a single query
+      final uriPatterns = posts.map((post) => post.uri).toList();
+      
+      // Get labels for all posts in a single query
+      final labelResponse = await queryLabels(
+        uriPatterns: uriPatterns,
+        sources: sources,
+        limit: 250, // Maximum limit to ensure we get all labels
+        labelerDid: labelerDid,
+      );
+      
+      // Group labels by URI for easier processing
+      final labelsByUri = <String, List<String>>{};
+      for (final label in labelResponse.labels) {
+        labelsByUri.putIfAbsent(label.uri, () => []).add(label.val);
+            }
+      
+      _logger.d('Found labels for ${labelsByUri.length} posts');
+      
+      // Create new FeedPost instances with updated labels
+      return posts.map((post) {
+        // If we have labels for this post, create a new instance with updated labels
+        if (post.uri.isNotEmpty && labelsByUri.containsKey(post.uri)) {
+          return post.copyWith(labels: labelsByUri[post.uri]!);
+        }
+        // Otherwise, return the original post
+        return post;
+      }).toList();
+    } catch (e) {
+      _logger.e('Error fetching labels for posts', error: e);
+      // If there's an error, return the original posts
+      return posts;
     }
   }
   

@@ -20,6 +20,12 @@ _$SettingsStateImpl _$$SettingsStateImplFromJson(Map<String, dynamic> json) =>
               ) ??
               const {},
       isLoading: json['isLoading'] as bool? ?? false,
+      followingFeedEnabled: json['followingFeedEnabled'] as bool? ?? true,
+      forYouFeedEnabled: json['forYouFeedEnabled'] as bool? ?? true,
+      latestFeedEnabled: json['latestFeedEnabled'] as bool? ?? true,
+      selectedFeedType: json['selectedFeedType'] == null
+          ? FeedType.forYou
+          : _feedTypeFromJson((json['selectedFeedType'] as num).toInt()),
     );
 
 Map<String, dynamic> _$$SettingsStateImplToJson(_$SettingsStateImpl instance) =>
@@ -29,4 +35,8 @@ Map<String, dynamic> _$$SettingsStateImplToJson(_$SettingsStateImpl instance) =>
       'followedLabelers': instance.followedLabelers,
       'labelPreferences': instance.labelPreferences,
       'isLoading': instance.isLoading,
+      'followingFeedEnabled': instance.followingFeedEnabled,
+      'forYouFeedEnabled': instance.forYouFeedEnabled,
+      'latestFeedEnabled': instance.latestFeedEnabled,
+      'selectedFeedType': _feedTypeToJson(instance.selectedFeedType),
     };

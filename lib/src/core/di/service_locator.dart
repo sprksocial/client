@@ -22,6 +22,8 @@ import 'package:sparksocial/src/features/camera/data/repositories/camera_reposit
 import 'package:sparksocial/src/features/camera/data/repositories/camera_repository.dart';
 import 'package:sparksocial/src/features/feed/data/repositories/media_repository.dart';
 import 'package:sparksocial/src/features/feed/data/repositories/media_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/label_repository_impl.dart';
 
 // This is the ONLY PLACE IN THE ENTIRE APP where implementations are imported
 // All the other files should import interfaces only (polymorphism) to keep everything decoupled
@@ -91,6 +93,15 @@ Future<void> _registerCore() async {
     ThemeRepositoryImpl(sl<StorageManager>())
   );
   
+  // Register LabelRepository
+  sl.registerSingleton<LabelRepository>(
+    LabelRepositoryImpl(sl.get<SprkRepositoryImpl>())
+  );
+  
+  // Register FeedRepository
+  sl.registerSingleton<FeedRepository>(
+    FeedRepositoryImpl(sl.get<SprkRepositoryImpl>(), sl.get<LabelRepository>())
+  );
 }
 
 /// Registers settings dependencies
@@ -104,6 +115,7 @@ Future<void> _registerSettings() async {
   sl.registerLazySingleton<LabelerRepository>(
     () => LabelerRepositoryImpl(sl<SprkRepository>(), StorageManager.instance),
   );
+  
 }
 
 /// Registers onboarding dependencies

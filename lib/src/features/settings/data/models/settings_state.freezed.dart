@@ -26,6 +26,11 @@ mixin _$SettingsState {
   Map<String, Map<String, String>> get labelPreferences =>
       throw _privateConstructorUsedError;
   bool get isLoading => throw _privateConstructorUsedError;
+  bool get followingFeedEnabled => throw _privateConstructorUsedError;
+  bool get forYouFeedEnabled => throw _privateConstructorUsedError;
+  bool get latestFeedEnabled => throw _privateConstructorUsedError;
+  @JsonKey(fromJson: _feedTypeFromJson, toJson: _feedTypeToJson)
+  FeedType get selectedFeedType => throw _privateConstructorUsedError;
 
   /// Serializes this SettingsState to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -48,7 +53,12 @@ abstract class $SettingsStateCopyWith<$Res> {
       bool hideAdultContent,
       List<String> followedLabelers,
       Map<String, Map<String, String>> labelPreferences,
-      bool isLoading});
+      bool isLoading,
+      bool followingFeedEnabled,
+      bool forYouFeedEnabled,
+      bool latestFeedEnabled,
+      @JsonKey(fromJson: _feedTypeFromJson, toJson: _feedTypeToJson)
+      FeedType selectedFeedType});
 }
 
 /// @nodoc
@@ -71,6 +81,10 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
     Object? followedLabelers = null,
     Object? labelPreferences = null,
     Object? isLoading = null,
+    Object? followingFeedEnabled = null,
+    Object? forYouFeedEnabled = null,
+    Object? latestFeedEnabled = null,
+    Object? selectedFeedType = null,
   }) {
     return _then(_value.copyWith(
       feedBlurEnabled: null == feedBlurEnabled
@@ -93,6 +107,22 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
           ? _value.isLoading
           : isLoading // ignore: cast_nullable_to_non_nullable
               as bool,
+      followingFeedEnabled: null == followingFeedEnabled
+          ? _value.followingFeedEnabled
+          : followingFeedEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+      forYouFeedEnabled: null == forYouFeedEnabled
+          ? _value.forYouFeedEnabled
+          : forYouFeedEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+      latestFeedEnabled: null == latestFeedEnabled
+          ? _value.latestFeedEnabled
+          : latestFeedEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+      selectedFeedType: null == selectedFeedType
+          ? _value.selectedFeedType
+          : selectedFeedType // ignore: cast_nullable_to_non_nullable
+              as FeedType,
     ) as $Val);
   }
 }
@@ -110,7 +140,12 @@ abstract class _$$SettingsStateImplCopyWith<$Res>
       bool hideAdultContent,
       List<String> followedLabelers,
       Map<String, Map<String, String>> labelPreferences,
-      bool isLoading});
+      bool isLoading,
+      bool followingFeedEnabled,
+      bool forYouFeedEnabled,
+      bool latestFeedEnabled,
+      @JsonKey(fromJson: _feedTypeFromJson, toJson: _feedTypeToJson)
+      FeedType selectedFeedType});
 }
 
 /// @nodoc
@@ -131,6 +166,10 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
     Object? followedLabelers = null,
     Object? labelPreferences = null,
     Object? isLoading = null,
+    Object? followingFeedEnabled = null,
+    Object? forYouFeedEnabled = null,
+    Object? latestFeedEnabled = null,
+    Object? selectedFeedType = null,
   }) {
     return _then(_$SettingsStateImpl(
       feedBlurEnabled: null == feedBlurEnabled
@@ -153,6 +192,22 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
           ? _value.isLoading
           : isLoading // ignore: cast_nullable_to_non_nullable
               as bool,
+      followingFeedEnabled: null == followingFeedEnabled
+          ? _value.followingFeedEnabled
+          : followingFeedEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+      forYouFeedEnabled: null == forYouFeedEnabled
+          ? _value.forYouFeedEnabled
+          : forYouFeedEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+      latestFeedEnabled: null == latestFeedEnabled
+          ? _value.latestFeedEnabled
+          : latestFeedEnabled // ignore: cast_nullable_to_non_nullable
+              as bool,
+      selectedFeedType: null == selectedFeedType
+          ? _value.selectedFeedType
+          : selectedFeedType // ignore: cast_nullable_to_non_nullable
+              as FeedType,
     ));
   }
 }
@@ -165,7 +220,12 @@ class _$SettingsStateImpl implements _SettingsState {
       this.hideAdultContent = true,
       final List<String> followedLabelers = const [],
       final Map<String, Map<String, String>> labelPreferences = const {},
-      this.isLoading = false})
+      this.isLoading = false,
+      this.followingFeedEnabled = true,
+      this.forYouFeedEnabled = true,
+      this.latestFeedEnabled = true,
+      @JsonKey(fromJson: _feedTypeFromJson, toJson: _feedTypeToJson)
+      this.selectedFeedType = FeedType.forYou})
       : _followedLabelers = followedLabelers,
         _labelPreferences = labelPreferences;
 
@@ -200,10 +260,22 @@ class _$SettingsStateImpl implements _SettingsState {
   @override
   @JsonKey()
   final bool isLoading;
+  @override
+  @JsonKey()
+  final bool followingFeedEnabled;
+  @override
+  @JsonKey()
+  final bool forYouFeedEnabled;
+  @override
+  @JsonKey()
+  final bool latestFeedEnabled;
+  @override
+  @JsonKey(fromJson: _feedTypeFromJson, toJson: _feedTypeToJson)
+  final FeedType selectedFeedType;
 
   @override
   String toString() {
-    return 'SettingsState(feedBlurEnabled: $feedBlurEnabled, hideAdultContent: $hideAdultContent, followedLabelers: $followedLabelers, labelPreferences: $labelPreferences, isLoading: $isLoading)';
+    return 'SettingsState(feedBlurEnabled: $feedBlurEnabled, hideAdultContent: $hideAdultContent, followedLabelers: $followedLabelers, labelPreferences: $labelPreferences, isLoading: $isLoading, followingFeedEnabled: $followingFeedEnabled, forYouFeedEnabled: $forYouFeedEnabled, latestFeedEnabled: $latestFeedEnabled, selectedFeedType: $selectedFeedType)';
   }
 
   @override
@@ -220,7 +292,15 @@ class _$SettingsStateImpl implements _SettingsState {
             const DeepCollectionEquality()
                 .equals(other._labelPreferences, _labelPreferences) &&
             (identical(other.isLoading, isLoading) ||
-                other.isLoading == isLoading));
+                other.isLoading == isLoading) &&
+            (identical(other.followingFeedEnabled, followingFeedEnabled) ||
+                other.followingFeedEnabled == followingFeedEnabled) &&
+            (identical(other.forYouFeedEnabled, forYouFeedEnabled) ||
+                other.forYouFeedEnabled == forYouFeedEnabled) &&
+            (identical(other.latestFeedEnabled, latestFeedEnabled) ||
+                other.latestFeedEnabled == latestFeedEnabled) &&
+            (identical(other.selectedFeedType, selectedFeedType) ||
+                other.selectedFeedType == selectedFeedType));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -231,7 +311,11 @@ class _$SettingsStateImpl implements _SettingsState {
       hideAdultContent,
       const DeepCollectionEquality().hash(_followedLabelers),
       const DeepCollectionEquality().hash(_labelPreferences),
-      isLoading);
+      isLoading,
+      followingFeedEnabled,
+      forYouFeedEnabled,
+      latestFeedEnabled,
+      selectedFeedType);
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -255,7 +339,12 @@ abstract class _SettingsState implements SettingsState {
       final bool hideAdultContent,
       final List<String> followedLabelers,
       final Map<String, Map<String, String>> labelPreferences,
-      final bool isLoading}) = _$SettingsStateImpl;
+      final bool isLoading,
+      final bool followingFeedEnabled,
+      final bool forYouFeedEnabled,
+      final bool latestFeedEnabled,
+      @JsonKey(fromJson: _feedTypeFromJson, toJson: _feedTypeToJson)
+      final FeedType selectedFeedType}) = _$SettingsStateImpl;
 
   factory _SettingsState.fromJson(Map<String, dynamic> json) =
       _$SettingsStateImpl.fromJson;
@@ -270,6 +359,15 @@ abstract class _SettingsState implements SettingsState {
   Map<String, Map<String, String>> get labelPreferences;
   @override
   bool get isLoading;
+  @override
+  bool get followingFeedEnabled;
+  @override
+  bool get forYouFeedEnabled;
+  @override
+  bool get latestFeedEnabled;
+  @override
+  @JsonKey(fromJson: _feedTypeFromJson, toJson: _feedTypeToJson)
+  FeedType get selectedFeedType;
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
