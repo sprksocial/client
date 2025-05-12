@@ -4,7 +4,7 @@ import 'package:camera/camera.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/camera/data/repositories/camera_repository.dart';
+import 'package:sparksocial/src/features/upload/data/repositories/camera_repository.dart';
 
 class CameraRepositoryImpl implements CameraRepository {
   CameraRepositoryImpl() {

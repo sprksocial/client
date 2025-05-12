@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/features/camera/data/models/content_warning_style.dart';
+import 'package:sparksocial/src/features/upload/data/models/content_warning_style.dart';
 
 class WarningOverlay extends StatelessWidget {
   final ContentWarningStyle style;

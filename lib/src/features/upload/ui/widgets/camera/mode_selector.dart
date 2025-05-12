@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/features/camera/ui/models/camera_mode.dart';
+import 'package:sparksocial/src/features/upload/ui/widgets/camera/models/camera_mode.dart';
 
 class ModeSelector extends StatelessWidget {
   final CameraMode selectedMode;

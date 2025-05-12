@@ -18,8 +18,8 @@ import 'package:sparksocial/src/features/profile/data/repositories/profile_repos
 import 'package:sparksocial/src/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:sparksocial/src/features/upload/data/repositories/upload_repository.dart';
 import 'package:sparksocial/src/features/upload/data/repositories/upload_repository_impl.dart';
-import 'package:sparksocial/src/features/camera/data/repositories/camera_repository_impl.dart';
-import 'package:sparksocial/src/features/camera/data/repositories/camera_repository.dart';
+import 'package:sparksocial/src/features/upload/data/repositories/camera_repository_impl.dart';
+import 'package:sparksocial/src/features/upload/data/repositories/camera_repository.dart';
 import 'package:sparksocial/src/features/feed/data/repositories/media_repository.dart';
 import 'package:sparksocial/src/features/feed/data/repositories/media_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository_impl.dart';

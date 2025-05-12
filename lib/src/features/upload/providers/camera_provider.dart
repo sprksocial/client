@@ -1,7 +1,7 @@
 import 'package:camera/camera.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/features/camera/data/repositories/camera_repository.dart';
+import 'package:sparksocial/src/features/upload/data/repositories/camera_repository.dart';
 
 part 'camera_provider.g.dart';
 

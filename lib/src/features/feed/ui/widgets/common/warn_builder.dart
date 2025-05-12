@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/features/camera/data/models/content_warning_style.dart';
+import 'package:sparksocial/src/features/upload/data/models/content_warning_style.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/common/blurred_content.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/common/warning_overlay.dart';
 
