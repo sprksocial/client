@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_type_provider.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/feed_selector.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/feed/feed_selector.dart';
 
 /// A widget that allows the user to select between different feed types
 /// and automatically connects to the FeedTypeProvider.
