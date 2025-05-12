@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element
+
 import 'dart:async';
 
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
