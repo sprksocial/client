@@ -16,7 +16,7 @@ alwaysApply: false
     - For cache, get a cache manager interface from the get it
     - For logging, use the logging framework
     - For auth, get a AuthRepository from the get it
-    - For API calls, check if `@lib/src/core/network/sprk_repository_interface.dart` already has that method in its contract
+    - For API calls, check if `@lib/src/core/network/atproto/data/repositories/sprk_repository.dart` already has that method in its contract
         - If it does, get it from the get it
     - Don't forget to add repositories to the service locator at `@lib/src/core/di/service_locator.dart`
     - For navigation, use the AutoRoute package and register routes at `@lib/src/core/routing/app_router.dart`
