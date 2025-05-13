@@ -17,11 +17,11 @@ import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
 import '../widgets/profile/early_supporter_sheet.dart';
 import '../widgets/profile/profile_header.dart';
-import '../widgets/profile/profile_menu_sheet.dart';
 import '../widgets/profile/profile_tab_content.dart';
 import '../widgets/profile/profile_tabs.dart';
 import 'auth_prompt_screen.dart';
 import 'edit_profile_screen.dart';
+import 'profile_settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String? did;
@@ -145,23 +145,6 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
       backgroundColor: Colors.transparent,
       builder: (context) => SafeArea(child: Padding(padding: const EdgeInsets.only(top: 20), child: EarlySupporterSheet())),
     );
-  }
-
-  void _showProfileMenu(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder:
-          (context) =>
-              SafeArea(child: Padding(padding: const EdgeInsets.only(top: 20), child: ProfileMenuSheet(onLogout: _handleLogout))),
-    );
-  }
-
-  void _handleLogout() {
-    final authService = Provider.of<AuthService>(context, listen: false);
-    authService.logout();
-    debugPrint('User logged out');
   }
 
   void _handleSettingsTap() {
@@ -381,8 +364,10 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
               padding: const EdgeInsets.only(right: 8.0),
               child: IconButton(
                 padding: EdgeInsets.zero,
-                onPressed: () => _showProfileMenu(context),
-                icon: Icon(FluentIcons.more_horizontal_24_regular, color: AppTheme.getTextColor(context)),
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(builder: (context) => const ProfileSettingsScreen()));
+                },
+                icon: Icon(FluentIcons.options_24_regular, color: AppTheme.getTextColor(context)),
               ),
             )
           else
