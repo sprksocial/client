@@ -42,18 +42,4 @@ class HashtagList extends StatelessWidget {
           }).toList(),
     );
   }
-
-  /// Extract hashtags from a text string
-  static List<String> extractFromText(String text) {
-    if (text.isEmpty) {
-      return [];
-    }
-
-    final matches = RegExp(r'#(\w+)').allMatches(text);
-    if (matches.isEmpty) {
-      return [];
-    }
-
-    return matches.map((m) => m.group(1)!).toList();
-  }
 } 
