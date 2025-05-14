@@ -26,58 +26,28 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
-    CreateVideoRoute.name: (routeData) {
+    ContentSettingsTabRoute.name: (routeData) {
+      final args = routeData.argsAs<ContentSettingsTabRouteArgs>();
       return AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const CreateVideoPage(),
-      );
-    },
-    LoginRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const LoginPage(),
-      );
-    },
-    MainRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const MainPage(),
-      );
-    },
-    MessagesRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const MessagesPage(),
-      );
-    },
-    OnboardingRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const OnboardingPage(),
-      );
-    },
-    ProfileRoute.name: (routeData) {
-      final pathParams = routeData.inheritedPathParams;
-      final args = routeData.argsAs<ProfileRouteArgs>(
-          orElse: () => ProfileRouteArgs(did: pathParams.getString('did')));
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: ProfilePage(
+        child: ContentSettingsTabPage(
           key: args.key,
-          did: args.did,
+          isLoadingLabels: args.isLoadingLabels,
+          labelsError: args.labelsError,
+          onRetryLabels: args.onRetryLabels,
+          onUpdateAdultContentPreferences: args.onUpdateAdultContentPreferences,
         ),
       );
     },
-    SearchRoute.name: (routeData) {
+    FeedSettingsTabRoute.name: (routeData) {
+      final args = routeData.argsAs<FeedSettingsTabRouteArgs>();
       return AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const SearchPage(),
-      );
-    },
-    SplashRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const SplashPage(),
+        child: FeedSettingsTabPage(
+          key: args.key,
+          feedSettings: args.feedSettings,
+          onToggleChanged: args.onToggleChanged,
+        ),
       );
     },
   };
@@ -122,138 +92,104 @@ class AuthPromptRouteArgs {
 }
 
 /// generated route for
-/// [CreateVideoPage]
-class CreateVideoRoute extends PageRouteInfo<void> {
-  const CreateVideoRoute({List<PageRouteInfo>? children})
-      : super(
-          CreateVideoRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'CreateVideoRoute';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [LoginPage]
-class LoginRoute extends PageRouteInfo<void> {
-  const LoginRoute({List<PageRouteInfo>? children})
-      : super(
-          LoginRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'LoginRoute';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [MainPage]
-class MainRoute extends PageRouteInfo<void> {
-  const MainRoute({List<PageRouteInfo>? children})
-      : super(
-          MainRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'MainRoute';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [MessagesPage]
-class MessagesRoute extends PageRouteInfo<void> {
-  const MessagesRoute({List<PageRouteInfo>? children})
-      : super(
-          MessagesRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'MessagesRoute';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [OnboardingPage]
-class OnboardingRoute extends PageRouteInfo<void> {
-  const OnboardingRoute({List<PageRouteInfo>? children})
-      : super(
-          OnboardingRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'OnboardingRoute';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [ProfilePage]
-class ProfileRoute extends PageRouteInfo<ProfileRouteArgs> {
-  ProfileRoute({
+/// [ContentSettingsTabPage]
+class ContentSettingsTabRoute
+    extends PageRouteInfo<ContentSettingsTabRouteArgs> {
+  ContentSettingsTabRoute({
     Key? key,
-    required String did,
+    required bool isLoadingLabels,
+    String? labelsError,
+    required dynamic Function() onRetryLabels,
+    required dynamic Function(bool) onUpdateAdultContentPreferences,
     List<PageRouteInfo>? children,
   }) : super(
-          ProfileRoute.name,
-          args: ProfileRouteArgs(
+          ContentSettingsTabRoute.name,
+          args: ContentSettingsTabRouteArgs(
             key: key,
-            did: did,
+            isLoadingLabels: isLoadingLabels,
+            labelsError: labelsError,
+            onRetryLabels: onRetryLabels,
+            onUpdateAdultContentPreferences: onUpdateAdultContentPreferences,
           ),
-          rawPathParams: {'did': did},
           initialChildren: children,
         );
 
-  static const String name = 'ProfileRoute';
+  static const String name = 'ContentSettingsTabRoute';
 
-  static const PageInfo<ProfileRouteArgs> page =
-      PageInfo<ProfileRouteArgs>(name);
+  static const PageInfo<ContentSettingsTabRouteArgs> page =
+      PageInfo<ContentSettingsTabRouteArgs>(name);
 }
 
-class ProfileRouteArgs {
-  const ProfileRouteArgs({
+class ContentSettingsTabRouteArgs {
+  const ContentSettingsTabRouteArgs({
     this.key,
-    required this.did,
+    required this.isLoadingLabels,
+    this.labelsError,
+    required this.onRetryLabels,
+    required this.onUpdateAdultContentPreferences,
   });
 
   final Key? key;
 
-  final String did;
+  final bool isLoadingLabels;
+
+  final String? labelsError;
+
+  final dynamic Function() onRetryLabels;
+
+  final dynamic Function(bool) onUpdateAdultContentPreferences;
 
   @override
   String toString() {
-    return 'ProfileRouteArgs{key: $key, did: $did}';
+    return 'ContentSettingsTabRouteArgs{key: $key, isLoadingLabels: $isLoadingLabels, labelsError: $labelsError, onRetryLabels: $onRetryLabels, onUpdateAdultContentPreferences: $onUpdateAdultContentPreferences}';
   }
 }
 
 /// generated route for
-/// [SearchPage]
-class SearchRoute extends PageRouteInfo<void> {
-  const SearchRoute({List<PageRouteInfo>? children})
-      : super(
-          SearchRoute.name,
+/// [FeedSettingsTabPage]
+class FeedSettingsTabRoute extends PageRouteInfo<FeedSettingsTabRouteArgs> {
+  FeedSettingsTabRoute({
+    Key? key,
+    required List<FeedSetting> feedSettings,
+    required dynamic Function(
+      String,
+      bool,
+    ) onToggleChanged,
+    List<PageRouteInfo>? children,
+  }) : super(
+          FeedSettingsTabRoute.name,
+          args: FeedSettingsTabRouteArgs(
+            key: key,
+            feedSettings: feedSettings,
+            onToggleChanged: onToggleChanged,
+          ),
           initialChildren: children,
         );
 
-  static const String name = 'SearchRoute';
+  static const String name = 'FeedSettingsTabRoute';
 
-  static const PageInfo<void> page = PageInfo<void>(name);
+  static const PageInfo<FeedSettingsTabRouteArgs> page =
+      PageInfo<FeedSettingsTabRouteArgs>(name);
 }
 
-/// generated route for
-/// [SplashPage]
-class SplashRoute extends PageRouteInfo<void> {
-  const SplashRoute({List<PageRouteInfo>? children})
-      : super(
-          SplashRoute.name,
-          initialChildren: children,
-        );
+class FeedSettingsTabRouteArgs {
+  const FeedSettingsTabRouteArgs({
+    this.key,
+    required this.feedSettings,
+    required this.onToggleChanged,
+  });
 
-  static const String name = 'SplashRoute';
+  final Key? key;
 
-  static const PageInfo<void> page = PageInfo<void>(name);
+  final List<FeedSetting> feedSettings;
+
+  final dynamic Function(
+    String,
+    bool,
+  ) onToggleChanged;
+
+  @override
+  String toString() {
+    return 'FeedSettingsTabRouteArgs{key: $key, feedSettings: $feedSettings, onToggleChanged: $onToggleChanged}';
+  }
 }

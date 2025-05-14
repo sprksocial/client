@@ -1,4 +1,4 @@
-import 'package:sparksocial/src/core/network/atproto/data/models/label_models.dart';
+import 'package:sparksocial/src/core/network/data/models/label_models.dart';
 import 'package:sparksocial/src/features/settings/data/models/labeler.dart';
 
 /// Repository interface for handling labeler-related operations in the app local storage

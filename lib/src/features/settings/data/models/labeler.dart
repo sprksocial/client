@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/label_models.dart';
+import 'package:sparksocial/src/core/network/data/models/label_models.dart';
 
 part 'labeler.freezed.dart';
 part 'labeler.g.dart';

@@ -2,10 +2,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
-import 'package:sparksocial/src/core/network/auth/data/repositories/auth_repository.dart';
+import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
+import 'package:sparksocial/src/core/network/data/repositories/repo_repository.dart';
+import 'package:sparksocial/src/features/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/features/feed/data/models/video_action_state.dart';
 
 part 'video_action_provider.g.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/core/widgets/common/fading_list_view.dart';
+import 'package:sparksocial/src/core/widgets/fading_list_view.dart';
 
 class HashtagList extends StatelessWidget {
   final List<String> hashtags;

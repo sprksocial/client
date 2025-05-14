@@ -1,3 +1,3 @@
 library;
 
-export 'atproto/atproto.dart';
+export 'atproto.dart';

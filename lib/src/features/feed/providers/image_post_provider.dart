@@ -1,7 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/features/feed/data/models/image_post_state.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
+import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
 
 part 'image_post_provider.g.dart';
 

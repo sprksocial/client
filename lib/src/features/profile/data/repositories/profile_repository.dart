@@ -1,5 +1,5 @@
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 
 /// Interface for profile-related operations
 abstract class ProfileRepository {

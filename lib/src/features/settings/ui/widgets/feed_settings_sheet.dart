@@ -1,14 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/storage_constants.dart';
 import 'package:sparksocial/src/features/settings/data/models/feed_setting.dart';
 import 'package:sparksocial/src/features/settings/data/models/label_preference.dart';
 import 'package:sparksocial/src/features/settings/providers/labeler_provider.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
-import 'package:sparksocial/src/features/settings/ui/widgets/content_settings_list.dart';
 import 'package:sparksocial/src/features/settings/ui/widgets/feed_settings_header.dart';
-import 'package:sparksocial/src/features/settings/ui/widgets/feed_settings_list.dart';
 
 class FeedSettingsSheet extends ConsumerStatefulWidget {
   final List<FeedSetting> feedSettings;
@@ -24,9 +23,8 @@ class FeedSettingsSheet extends ConsumerStatefulWidget {
   ConsumerState<FeedSettingsSheet> createState() => _FeedSettingsSheetState();
 }
 
-class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> with SingleTickerProviderStateMixin {
+class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> {
   late List<FeedSetting> _feedSettings;
-  late TabController _tabController;
   bool _isLoadingLabels = false;
   String? _labelsError;
 
@@ -34,14 +32,7 @@ class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> with Sing
   void initState() {
     super.initState();
     _feedSettings = List.from(widget.feedSettings);
-    _tabController = TabController(length: 2, vsync: this);
     _loadLabelDefinitions();
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
   }
 
   // Load label definitions from the default labeler
@@ -105,6 +96,33 @@ class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> with Sing
     setState(() {});
   }
 
+  // Handle setting changes
+  void _onSettingChanged(String settingType, bool value) {
+    final index = _feedSettings.indexWhere(
+      (setting) => setting.settingType == settingType
+    );
+    
+    if (index != -1) {
+      setState(() {
+        final setting = _feedSettings[index];
+        _feedSettings[index] = FeedSetting(
+          feedName: setting.feedName,
+          description: setting.description,
+          settingType: setting.settingType,
+          isEnabled: value,
+        );
+      });
+      
+      // If this is the feed blur setting, update settings
+      if (settingType == StorageKeys.feedBlurKey) {
+        ref.read(settingsProvider.notifier).setFeedBlur(value);
+      }
+      
+      // Call the parent callback
+      widget.onToggleChanged(settingType, value);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -133,53 +151,41 @@ class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> with Sing
               onClose: () => context.router.maybePop(),
             ),
             
-            // Tab bar for switching between feed and content settings
-            TabBar(
-              controller: _tabController,
-              labelColor: colorScheme.onSurface,
-              unselectedLabelColor: colorScheme.onSurface.withAlpha(127),
-              tabs: const [
-                Tab(text: "Feed"),
-                Tab(text: "Content"),
-              ],
-            ),
-            
-            // Tab view
+            // Using AutoTabsRouter.tabBar for navigation
             Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  FeedSettingsList(
+              child: AutoTabsRouter.tabBar(
+                routes: [
+                  // Feed Settings Tab
+                  FeedSettingsTabRoute(
                     feedSettings: _feedSettings,
-                    onSettingChanged: (index, value) {
-                      // Update local state first
-                      setState(() {
-                        final setting = _feedSettings[index];
-                        _feedSettings[index] = FeedSetting(
-                          feedName: setting.feedName,
-                          description: setting.description,
-                          settingType: setting.settingType,
-                          isEnabled: value,
-                        );
-                      });
-
-                      // If this is the feed blur setting, update settings
-                      final setting = _feedSettings[index];
-                      if (setting.settingType == StorageKeys.feedBlurKey) {
-                        ref.read(settingsProvider.notifier).setFeedBlur(value);
-                      }
-
-                      // Then call the parent callback
-                      widget.onToggleChanged(setting.settingType, value);
-                    },
+                    onToggleChanged: _onSettingChanged,
                   ),
-                  ContentSettingsList(
-                    onUpdateAdultContentPreferences: _updateAdultContentPreferences,
+                  // Content Settings Tab
+                  ContentSettingsTabRoute(
                     isLoadingLabels: _isLoadingLabels,
                     labelsError: _labelsError,
                     onRetryLabels: _loadLabelDefinitions,
+                    onUpdateAdultContentPreferences: _updateAdultContentPreferences,
                   ),
                 ],
+                builder: (context, child, controller) {
+                  return Column(
+                    children: [
+                      // Tab bar
+                      TabBar(
+                        controller: controller,
+                        labelColor: colorScheme.onSurface,
+                        unselectedLabelColor: colorScheme.onSurface.withAlpha(127),
+                        tabs: const [
+                          Tab(text: "Feed"),
+                          Tab(text: "Content"),
+                        ],
+                      ),
+                      // Tab content
+                      Expanded(child: child),
+                    ],
+                  );
+                },
               ),
             ),
 

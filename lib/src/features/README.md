@@ -20,6 +20,12 @@ This directory contains feature modules organized according to the feature-first
 - **Page**: A page is a screen that is a part of a feature. It is registered in `core/router/pages.dart`.
 - **Route**: A definition of a page in the app and how to navigate to it. It is registered in `core/router/app_router.dart`.
 
+External data (API, local storage, etc.) -> Repository -> Provider -> Widget
+
+Repositories get the data directly
+Providers get repositories from the DI container (GetIt)
+Widgets use ref.watch(provider) (or ref.read(provider)) to get and manipulate the data
+
 ## Feature Structure
 
 Each feature should follow this structure:
@@ -194,6 +200,18 @@ After creating your feature page, add it to the router configuration:
    ```
 
 ## Common Issues and Solutions
+
+### Annoying generated files
+
+Add this to your VSCode settings.json:
+
+```json
+"explorer.fileNesting.patterns": {
+    "*.dart": "${capture}.freezed.dart, ${capture}.g.dart, ${capture}.gr.dart",
+},
+"explorer.fileNesting.enabled": true,
+"explorer.fileNesting.expand": false
+```
 
 ### Circular Dependencies
 

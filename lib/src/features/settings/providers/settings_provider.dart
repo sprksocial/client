@@ -4,7 +4,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../data/models/label_preference.dart';
 import '../data/models/settings_state.dart';
 import '../data/repositories/settings_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 
 part 'settings_provider.g.dart';
 

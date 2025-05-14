@@ -2,8 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/network/atproto/utils/comment_utils.dart';
+import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/utils/comment_utils.dart';
 import 'package:sparksocial/src/features/feed/data/models/image_post_state.dart';
 import 'package:sparksocial/src/features/feed/providers/image_post_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';

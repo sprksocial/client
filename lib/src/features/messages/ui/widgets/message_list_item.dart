@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/core/widgets/common/user_avatar.dart';
+import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 
 /// A list item that displays a message preview with user avatar
 class MessageListItem extends StatelessWidget {

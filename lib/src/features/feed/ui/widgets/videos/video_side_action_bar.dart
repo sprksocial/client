@@ -5,7 +5,7 @@ import 'package:auto_route/auto_route.dart';
 
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/menu_action_button.dart';
-import 'package:sparksocial/src/core/widgets/common/report_dialog.dart';
+import 'package:sparksocial/src/core/widgets/report_dialog.dart';
 import 'package:sparksocial/src/features/feed/providers/video_action_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/profile_action_button.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/like_action_button.dart';

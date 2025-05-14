@@ -4,10 +4,8 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/features/settings/data/models/label_preference.dart';
 import 'package:sparksocial/src/features/settings/providers/labeler_provider.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
-import 'package:sparksocial/src/features/settings/utils/string_extensions.dart';
 
 class ContentLabelPreference extends ConsumerWidget {
-
   final String labelValue;
   final String displayName;
   final String description;
@@ -126,9 +124,9 @@ class ContentLabelPreference extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
                           color: switch (defaultSetting) {
-                            'show' => Colors.green.withAlpha(51),
-                            'warn' => Colors.orange.withAlpha(51),
-                            'hide' => Colors.red.withAlpha(51),
+                            'show' => AppColors.green.withAlpha(51),
+                            'warn' => AppColors.orange.withAlpha(51),
+                            'hide' => AppColors.red.withAlpha(51),
                             _ => Colors.grey.withAlpha(51),
                           },
                           borderRadius: BorderRadius.circular(4),
@@ -137,9 +135,9 @@ class ContentLabelPreference extends ConsumerWidget {
                           defaultSetting.capitalize(),
                           style: TextStyle(
                             color: switch (defaultSetting) {
-                              'show' => Colors.green,
-                              'warn' => Colors.orange,
-                              'hide' => Colors.red,
+                              'show' => AppColors.green,
+                              'warn' => AppColors.orange,
+                              'hide' => AppColors.red,
                               _ => Colors.grey,
                             },
                             fontSize: 12,
@@ -202,3 +200,9 @@ class ContentLabelPreference extends ConsumerWidget {
     );
   }
 } 
+
+extension _StringExtension on String {
+  String capitalize() {
+    return "${this[0].toUpperCase()}${substring(1)}";
+  }
+}
