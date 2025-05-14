@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart' as bs;
 
@@ -60,6 +62,24 @@ class OnboardingService {
     if (response.status.code != 200) {
       throw Exception('Failed to create Spark profile: ${response.status.code} ${response.data}');
     }
+  }
+
+  /// Finalizes the profile creation process including avatar upload.
+  Future<void> finalizeProfileCreation({
+    required String displayName,
+    required String description,
+    dynamic avatar, // This can be Uint8List or existing profile data
+  }) async {
+    dynamic avatarToSend = avatar;
+    if (avatar is List<int>) {
+      final resp = await _sprkClient.repo.uploadBlob(avatar as Uint8List);
+      if (resp.status.code != 200) {
+        throw Exception('Failed to upload avatar blob: ${resp.status.code}');
+      }
+      avatarToSend = resp.data.blob.toJson();
+    }
+
+    await importCustomProfile(displayName: displayName, description: description, avatar: avatarToSend);
   }
 
   /// Fetches the list of DIDs that the user follows on Bluesky

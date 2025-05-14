@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:bluesky/bluesky.dart' as bs;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -9,7 +7,6 @@ import 'package:provider/provider.dart';
 
 import '../services/auth_service.dart';
 import '../services/onboarding_service.dart';
-import '../services/sprk_client.dart';
 import '../utils/app_colors.dart';
 
 class ImportFollowsScreen extends StatefulWidget {
@@ -211,22 +208,30 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
   }
 
   Future<void> _finishOnboarding() async {
-    setState(() => _loading = true);
-    final authService = Provider.of<AuthService>(context, listen: false);
-    dynamic avatarToSend = widget.avatar;
-    if (widget.avatar is Uint8List) {
-      final sprkClient = SprkClient(authService);
-      final resp = await sprkClient.repo.uploadBlob(widget.avatar as Uint8List);
-      if (resp.status.code != 200) throw Exception('Failed to upload avatar blob');
-      avatarToSend = resp.data.blob.toJson();
-    }
-    final onboardingService = OnboardingService(authService);
-    await onboardingService.importCustomProfile(
-      displayName: widget.displayName,
-      description: widget.description,
-      avatar: avatarToSend,
-    );
     if (!mounted) return;
-    Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+    setState(() => _loading = true);
+
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final onboardingService = OnboardingService(authService);
+
+    try {
+      // The avatar (widget.avatar) is passed directly.
+      // finalizeProfileCreation will handle if it's Uint8List or existing data.
+      await onboardingService.finalizeProfileCreation(
+        displayName: widget.displayName,
+        description: widget.description,
+        avatar: widget.avatar,
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error finishing onboarding: ${e.toString()}')));
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
   }
 }

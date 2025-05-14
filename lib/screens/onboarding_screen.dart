@@ -8,7 +8,7 @@ import '../services/auth_service.dart';
 import '../services/onboarding_service.dart';
 import '../utils/app_colors.dart';
 import '../widgets/common/custom_text_field.dart';
-import 'import_follows_screen.dart';
+import 'follow_mode_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -74,7 +74,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder:
-            (context) => ImportFollowsScreen(
+            (context) => FollowModeScreen(
               displayName: _displayNameController.text.trim(),
               description: _descriptionController.text.trim(),
               avatar: _localAvatar,
