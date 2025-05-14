@@ -91,12 +91,7 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppTheme.getBackgroundColor(context),
       body: Stack(
         children: [
-          Positioned.fill(
-            child: Image.asset(
-              'assets/branding/gradient.webp',
-              fit: BoxFit.cover,
-            ),
-          ),
+          Positioned.fill(child: Image.asset('assets/branding/gradient.webp', fit: BoxFit.cover)),
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -128,17 +123,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           children: [
                             Text(
                               'Login using your existing ',
-                              style: TextStyle(
-                                color: AppColors.white,
-                                fontSize: 20,
-                                height: 1.7,
-                              ),
+                              style: TextStyle(color: AppColors.white, fontSize: 20, height: 1.7),
                             ),
-                            SvgPicture.asset(
-                              'assets/images/ataccount.svg',
-                              height: 25,
-                              width: 100,
-                            ),
+                            SvgPicture.asset('assets/images/ataccount.svg', height: 25, width: 100),
                             const SizedBox(width: 4),
                             const ATAccountInfoIcon(),
                           ],
@@ -218,7 +205,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   prefixIcon: const Icon(FluentIcons.key_24_regular, color: AppColors.white),
                                   filled: true,
                                   fillColor: AppColors.white.withAlpha(100),
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: BorderSide.none,
+                                  ),
                                   contentPadding: const EdgeInsets.all(16),
                                 ),
                                 style: const TextStyle(color: Colors.black),
@@ -259,12 +249,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           minimumSize: const Size(320, 60),
                           disabledBackgroundColor: AppColors.primary.withAlpha(128),
                         ),
-                        child: authService.isLoading
-                            ? const CircularProgressIndicator(color: AppColors.white)
-                            : Text(
-                                _showAuthCodeField ? 'Verify Code' : 'Login',
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.normal, color: AppColors.white),
-                              ),
+                        child:
+                            authService.isLoading
+                                ? const CircularProgressIndicator(color: AppColors.white)
+                                : Text(
+                                  _showAuthCodeField ? 'Verify Code' : 'Login',
+                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.normal, color: AppColors.white),
+                                ),
                       ),
                     ],
                   ),
