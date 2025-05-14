@@ -1,31 +1,31 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'media_provider.dart';
+part of 'preload_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$mediaRepositoryHash() => r'40f5b76af04d262960173fbb61c2f6a66a844435';
+String _$preloadRepositoryHash() => r'06ddda50ab43a45ecc0f672335a17222f0f5df5b';
 
 /// Provider for the media repository
 ///
-/// Copied from [mediaRepository].
-@ProviderFor(mediaRepository)
-final mediaRepositoryProvider = Provider<MediaRepository>.internal(
-  mediaRepository,
-  name: r'mediaRepositoryProvider',
+/// Copied from [preloadRepository].
+@ProviderFor(preloadRepository)
+final preloadRepositoryProvider = Provider<PreloadRepository>.internal(
+  preloadRepository,
+  name: r'preloadRepositoryProvider',
   debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
       ? null
-      : _$mediaRepositoryHash,
+      : _$preloadRepositoryHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef MediaRepositoryRef = ProviderRef<MediaRepository>;
-String _$isVideoPreloadedHash() => r'8a73e84e140a1680c488b7bccdc2b64bd97716a2';
+typedef PreloadRepositoryRef = ProviderRef<PreloadRepository>;
+String _$isVideoPreloadedHash() => r'aa583f78a35be1c9d6ea1ac1833ce51c1b5bfc95';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -188,7 +188,7 @@ class _IsVideoPreloadedProviderElement extends AutoDisposeProviderElement<bool>
   int get index => (origin as IsVideoPreloadedProvider).index;
 }
 
-String _$localVideoPathHash() => r'5ffe68df1db90e71982dac400a2aa7ae2045ef27';
+String _$localVideoPathHash() => r'd516a88b66824705c5009ca8eb410a733359b537';
 
 /// Provider for getting a local video path
 ///
@@ -330,7 +330,7 @@ class _LocalVideoPathProviderElement extends AutoDisposeProviderElement<String?>
   int get index => (origin as LocalVideoPathProvider).index;
 }
 
-String _$preloadMediaHash() => r'fda58f2819e54a52cca5f58475e7bf0d3e03f54a';
+String _$preloadMediaHash() => r'91115d85a5bab881d26ce467d7f09f2e89741f32';
 
 /// Provider for getting a preloaded video
 ///

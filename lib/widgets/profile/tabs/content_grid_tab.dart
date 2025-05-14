@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../utils/app_colors.dart';
-import '../video_thumbnail.dart';
+import '../profile_content_thumbnail.dart';
 
 class ContentGridTab extends StatelessWidget {
   final IconData icon;
@@ -50,7 +50,7 @@ class ContentGridTab extends StatelessWidget {
             backgroundColor = AppColors.primary.withAlpha(120);
         }
 
-        return VideoThumbnail(index: index, backgroundColor: backgroundColor, icon: icon, viewCount: '${(index + 1) * 1000}');
+        return ProfileContentThumbnail(index: index, backgroundColor: backgroundColor, icon: icon, viewCount: '${(index + 1) * 1000}');
       }, childCount: itemCount),
     );
   }

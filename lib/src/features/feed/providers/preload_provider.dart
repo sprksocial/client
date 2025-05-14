@@ -4,38 +4,38 @@ import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/storage/cache/cache_manager_interface.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/features/feed/data/repositories/media_repository.dart';
-import 'package:sparksocial/src/features/feed/data/repositories/media_repository_impl.dart';
+import 'package:sparksocial/src/features/feed/data/repositories/preload_repository.dart';
+import 'package:sparksocial/src/features/feed/data/repositories/preload_repository_impl.dart';
 
-part 'media_provider.g.dart';
+part 'preload_provider.g.dart';
 
 /// Provider for the media repository
 @Riverpod(keepAlive: true)
-MediaRepository mediaRepository(Ref ref) {
-  final mediaRepository = MediaRepositoryImpl(
+PreloadRepository preloadRepository(Ref ref) {
+  final preloadRepository = PreloadRepositoryImpl(
     cacheManager: GetIt.instance<CacheManagerInterface>(),
     logService: GetIt.instance<LogService>(),
   );
   
   ref.onDispose(() {
-    mediaRepository.dispose();
+    preloadRepository.dispose();
   });
   
-  return mediaRepository;
+  return preloadRepository;
 }
 
 /// Provider for checking if a video is preloaded
 @riverpod
 bool isVideoPreloaded(Ref ref, int index) {
-  final mediaRepository = ref.watch(mediaRepositoryProvider);
-  return mediaRepository.isVideoPreloaded(index);
+  final preloadRepository = ref.watch(preloadRepositoryProvider);
+  return preloadRepository.isVideoPreloaded(index);
 }
 
 /// Provider for getting a local video path
 @riverpod
 String? localVideoPath(Ref ref, int index) {
-  final mediaRepository = ref.watch(mediaRepositoryProvider);
-  return mediaRepository.getLocalVideoPath(index);
+  final preloadRepository = ref.watch(preloadRepositoryProvider);
+  return preloadRepository.getLocalVideoPath(index);
 }
 
 /// Provider for getting a preloaded video
@@ -47,6 +47,6 @@ Future<void> preloadMedia(
   required List<String> imageUrls,
   required BuildContext context,
 }) async {
-  final mediaRepository = ref.watch(mediaRepositoryProvider);
-  await mediaRepository.preloadMedia(index, videoUrl, imageUrls, context);
+  final preloadRepository = ref.watch(preloadRepositoryProvider);
+  await preloadRepository.preloadMedia(index, videoUrl, imageUrls, context);
 } 

@@ -20,8 +20,8 @@ import 'package:sparksocial/src/features/upload/data/repositories/upload_reposit
 import 'package:sparksocial/src/features/upload/data/repositories/upload_repository_impl.dart';
 import 'package:sparksocial/src/features/upload/data/repositories/camera_repository_impl.dart';
 import 'package:sparksocial/src/features/upload/data/repositories/camera_repository.dart';
-import 'package:sparksocial/src/features/feed/data/repositories/media_repository.dart';
-import 'package:sparksocial/src/features/feed/data/repositories/media_repository_impl.dart';
+import 'package:sparksocial/src/features/feed/data/repositories/preload_repository.dart';
+import 'package:sparksocial/src/features/feed/data/repositories/preload_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/label_repository_impl.dart';
 
@@ -154,8 +154,8 @@ Future<void> _registerVideo() async {
 /// Registers feed dependencies
 Future<void> _registerFeed() async {
   // Register MediaRepository
-  sl.registerLazySingleton<MediaRepository>(
-    () => MediaRepositoryImpl(
+  sl.registerLazySingleton<PreloadRepository>(
+    () => PreloadRepositoryImpl(
       cacheManager: sl<CacheManagerInterface>(),
       logService: sl<LogService>(),
     ),

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sparksocial/src/features/feed/data/models/preloaded_video.dart';
 
 /// Repository for handling media preloading and caching for feeds
-abstract class MediaRepository {
+abstract class PreloadRepository {
   /// Preload media (video or images) for a specific post index
   Future<void> preloadMedia(int index, String? videoUrl, List<String> imageUrls, BuildContext context);
   

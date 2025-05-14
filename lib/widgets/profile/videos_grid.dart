@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../../utils/app_colors.dart';
-import 'video_thumbnail.dart';
+import 'profile_content_thumbnail.dart';
 
 class VideosGrid extends StatelessWidget {
   final int itemCount;
@@ -53,7 +53,7 @@ class VideosGrid extends StatelessWidget {
                   : AppColors.primary.withAlpha(179);
         }
 
-        return VideoThumbnail(index: index, backgroundColor: backgroundColor, icon: iconType, viewCount: '${(index + 1) * 1000}');
+        return ProfileContentThumbnail(index: index, backgroundColor: backgroundColor, icon: iconType, viewCount: '${(index + 1) * 1000}');
       },
     );
   }

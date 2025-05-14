@@ -8,9 +8,9 @@ import 'package:video_player/video_player.dart';
 import 'package:sparksocial/src/core/storage/cache/cache_manager_interface.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import '../models/preloaded_video.dart';
-import 'media_repository.dart';
+import 'preload_repository.dart';
 
-class MediaRepositoryImpl implements MediaRepository {
+class PreloadRepositoryImpl implements PreloadRepository {
   final CacheManagerInterface _cacheManager;
   final SparkLogger _logger;
 
@@ -28,7 +28,7 @@ class MediaRepositoryImpl implements MediaRepository {
   final int _maxPreloadBehind = 2;
   final int _maxLoadedVideos = 10; // Max controllers to keep loaded
 
-  MediaRepositoryImpl({
+  PreloadRepositoryImpl({
     required CacheManagerInterface cacheManager,
     required LogService logService,
   }) : _cacheManager = cacheManager,

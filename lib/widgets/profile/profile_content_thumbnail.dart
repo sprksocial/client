@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import '../../utils/app_colors.dart';
 
-class VideoThumbnail extends StatelessWidget {
+class ProfileContentThumbnail extends StatelessWidget {
   final int index;
   final Color backgroundColor;
   final IconData icon;
   final String viewCount;
   final String? duration;
 
-  const VideoThumbnail({
+  const ProfileContentThumbnail({
     super.key,
     required this.index,
     required this.backgroundColor,
