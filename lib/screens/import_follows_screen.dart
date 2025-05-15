@@ -153,12 +153,6 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 16),
                     ),
-                    const SizedBox(height: 4),
-                    TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(foregroundColor: AppColors.pink),
-                      child: const Text('How it works'),
-                    ),
                     const SizedBox(height: 16),
                     TextField(
                       controller: _searchController,
@@ -190,12 +184,14 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
                           return ListTile(
                             leading: CircleAvatar(backgroundImage: CachedNetworkImageProvider(did.avatar ?? '')),
                             title: Text(did.displayName ?? ''),
-                            subtitle: Text(did.handle),
+                            subtitle: Text(did.handle, style: TextStyle(color: AppColors.hintText)),
                             trailing: OutlinedButton(
                               onPressed: isFollowed ? null : () => _follow(did.did),
                               style: OutlinedButton.styleFrom(
                                 side: BorderSide(color: AppColors.pink),
                                 foregroundColor: AppColors.pink,
+                                disabledForegroundColor: AppColors.pink.withValues(alpha: 0.5),
+                                disabledBackgroundColor: AppColors.pink.withValues(alpha: 0.05),
                               ),
                               child: Text(isFollowed ? 'Following' : 'Follow'),
                             ),
