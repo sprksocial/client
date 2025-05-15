@@ -161,7 +161,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(backgroundColor: backgroundColor, elevation: 0, title: const Text('Complete your profile')),
+      appBar: AppBar(
+        backgroundColor: backgroundColor,
+        elevation: 0,
+        title: const Text('Complete your profile'),
+        centerTitle: true,
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16),
