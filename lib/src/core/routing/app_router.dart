@@ -17,7 +17,9 @@ class AppRouter extends RootStackRouter {
   @override
   List<AutoRoute> get routes => [
     // Main screens
-    
+    AutoRoute(page: LoginRoute.page, path: '/login'),
+    AutoRoute(page: OnboardingRoute.page, path: '/onboarding/profile'),
+    AutoRoute(page: ImportFollowsRoute.page, path: '/onboarding/import-follows'),
     
     // Feed Settings tabs
     AutoRoute(page: FeedSettingsTabRoute.page, path: '/settings/feed'),

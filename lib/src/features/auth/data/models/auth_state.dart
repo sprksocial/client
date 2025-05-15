@@ -11,6 +11,8 @@ class AuthState with _$AuthState {
     @Default(false) bool isAuthenticated,
     Session? session,
     ATProto? atproto,
+    @Default(false) bool isLoading,
+    String? error,
   }) = _AuthState;
   
   const AuthState._();

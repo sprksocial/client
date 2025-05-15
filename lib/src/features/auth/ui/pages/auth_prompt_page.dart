@@ -78,8 +78,7 @@ class AuthPromptPage extends StatelessWidget {
                         minimumSize: const Size(320, 60),
                       ),
                       onPressed: () {
-                        // TODO: LoginRoute
-                        context.router.push();
+                        context.router.push(const LoginRoute());
                       },
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -106,8 +105,7 @@ class AuthPromptPage extends StatelessWidget {
                         minimumSize: const Size(320, 60),
                       ),
                       onPressed: () {
-                        // TODO: OnboardingRoute
-                        context.router.push();
+                        context.router.push(const OnboardingRoute());
                       },
                       child: Row(
                         mainAxisSize: MainAxisSize.min,

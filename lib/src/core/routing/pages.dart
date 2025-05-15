@@ -1,4 +1,7 @@
 library;
 export 'package:sparksocial/src/features/auth/ui/pages/auth_prompt_page.dart';
+export 'package:sparksocial/src/features/auth/ui/pages/login_page.dart';
+export 'package:sparksocial/src/features/auth/ui/pages/import_follows_page.dart';
+export 'package:sparksocial/src/features/auth/ui/pages/onboarding_page.dart';
 export 'package:sparksocial/src/features/settings/ui/pages/feed_settings_tab_page.dart';
 export 'package:sparksocial/src/features/settings/ui/pages/content_settings_tab_page.dart';

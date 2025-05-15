@@ -6,12 +6,12 @@ alwaysApply: false
 - When migrating from the old architecture to the new one, ALWAYS remember (and refactor the file to meet these requirements):
     - If necessary, split services into repositories, freezed models and providers
     - If necessary, split widgets into state models, providers and stateless widgets
+    - Widgets never use repositories directly, they use providers
     - Don't use relative paths in imports
     - Aim to break down complex widget trees into smaller, reusable components
     - If there's any methods that return widgets, transform them into smaller widgets instead of methods
     - AppColors are located in `@lib/src/core/theme/data/models/colors.dart`
     - Get all theming information from the context
-    - All ATProto endpoints are in `@lib/lexicons/`, create models if needed
     - For storage, get a storage manager from the get it
     - For cache, get a cache manager interface from the get it
     - For logging, use the logging framework

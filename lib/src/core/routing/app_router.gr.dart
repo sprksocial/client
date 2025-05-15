@@ -50,6 +50,30 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    ImportFollowsRoute.name: (routeData) {
+      final args = routeData.argsAs<ImportFollowsRouteArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: ImportFollowsPage(
+          key: args.key,
+          displayName: args.displayName,
+          description: args.description,
+          avatar: args.avatar,
+        ),
+      );
+    },
+    LoginRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const LoginPage(),
+      );
+    },
+    OnboardingRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const OnboardingPage(),
+      );
+    },
   };
 }
 
@@ -192,4 +216,80 @@ class FeedSettingsTabRouteArgs {
   String toString() {
     return 'FeedSettingsTabRouteArgs{key: $key, feedSettings: $feedSettings, onToggleChanged: $onToggleChanged}';
   }
+}
+
+/// generated route for
+/// [ImportFollowsPage]
+class ImportFollowsRoute extends PageRouteInfo<ImportFollowsRouteArgs> {
+  ImportFollowsRoute({
+    Key? key,
+    required String displayName,
+    required String description,
+    required dynamic avatar,
+    List<PageRouteInfo>? children,
+  }) : super(
+          ImportFollowsRoute.name,
+          args: ImportFollowsRouteArgs(
+            key: key,
+            displayName: displayName,
+            description: description,
+            avatar: avatar,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'ImportFollowsRoute';
+
+  static const PageInfo<ImportFollowsRouteArgs> page =
+      PageInfo<ImportFollowsRouteArgs>(name);
+}
+
+class ImportFollowsRouteArgs {
+  const ImportFollowsRouteArgs({
+    this.key,
+    required this.displayName,
+    required this.description,
+    required this.avatar,
+  });
+
+  final Key? key;
+
+  final String displayName;
+
+  final String description;
+
+  final dynamic avatar;
+
+  @override
+  String toString() {
+    return 'ImportFollowsRouteArgs{key: $key, displayName: $displayName, description: $description, avatar: $avatar}';
+  }
+}
+
+/// generated route for
+/// [LoginPage]
+class LoginRoute extends PageRouteInfo<void> {
+  const LoginRoute({List<PageRouteInfo>? children})
+      : super(
+          LoginRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'LoginRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [OnboardingPage]
+class OnboardingRoute extends PageRouteInfo<void> {
+  const OnboardingRoute({List<PageRouteInfo>? children})
+      : super(
+          OnboardingRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'OnboardingRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
 }

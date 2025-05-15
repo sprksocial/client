@@ -80,7 +80,7 @@ final atprotoProvider = AutoDisposeProvider<ATProto?>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef AtprotoRef = AutoDisposeProviderRef<ATProto?>;
-String _$authHash() => r'de1ced25cf0eddf540039b5ffa5945118b51da13';
+String _$authHash() => r'13f420467b5fe2001adb4397ad3ab21a064f7ebf';
 
 /// Authentication notifier for the application
 /// Provides higher-level authentication operations and state management
