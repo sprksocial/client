@@ -16,12 +16,6 @@ class ProfileSettingsScreen extends StatefulWidget {
 class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   final Map<String, String> _followModeMap = {'Spark exclusive': 'sprk', 'Bluesky synced': 'bsky'};
 
-  String _getDisplayMode(String internalMode) {
-    return _followModeMap.entries
-        .firstWhere((entry) => entry.value == internalMode, orElse: () => _followModeMap.entries.first)
-        .key;
-  }
-
   void _handleLogout() {
     final authService = Provider.of<AuthService>(context, listen: false);
     authService.logout();
@@ -73,7 +67,10 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
                       child: Material(
                         color: Colors.transparent,
                         child: Container(
-                          decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(12)),
+                          decoration: BoxDecoration(
+                            color: Colors.red.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
                           child: ListTile(
                             title: Text('Logout', style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold)),
                             trailing: Icon(FluentIcons.sign_out_24_regular, color: Colors.red),
@@ -119,54 +116,72 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
     required Color textColor,
     required SettingsService settingsService,
   }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: Material(
-        color: Colors.transparent,
-        child: Container(
-          decoration: BoxDecoration(color: itemColor, borderRadius: BorderRadius.circular(12)),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Follow Mode', style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 4),
-              Text(
-                'Choose how you want to manage your follows across Spark and Bluesky',
-                style: TextStyle(color: textColor.withAlpha(179), fontSize: 12),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(color: textColor.withAlpha(26), borderRadius: BorderRadius.circular(8)),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _getDisplayMode(settingsService.followMode),
-                    isExpanded: true,
-                    dropdownColor: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
-                    icon: Icon(FluentIcons.chevron_down_24_regular, color: textColor),
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        // Convert selected display string back to internal key
-                        final internalMode = _followModeMap[newValue];
-                        if (internalMode != null) {
-                          settingsService.setFollowMode(internalMode);
-                        }
-                      }
-                    },
-                    items:
-                        _followModeMap.keys.map<DropdownMenuItem<String>>((String displayValue) {
-                          return DropdownMenuItem<String>(
-                            value: displayValue,
-                            child: Text(displayValue, style: TextStyle(color: textColor)),
-                          );
-                        }).toList(),
-                    style: TextStyle(color: textColor),
-                  ),
-                ),
-              ),
-            ],
+    final currentMode = settingsService.followMode;
+    final displayValues = _followModeMap.keys.toList(); // ['Spark exclusive', 'Bluesky synced']
+    final internalValues = _followModeMap.values.toList(); // ['sprk', 'bsky']
+
+    Widget buildModeButton(String displayValue, String internalValue) {
+      final bool isSelected = currentMode == internalValue;
+      return Expanded(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+          child: ElevatedButton(
+            onPressed: () {
+              if (!isSelected) {
+                settingsService.setFollowMode(internalValue);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: isSelected ? AppColors.pink : (isDark ? Colors.grey.shade700 : Colors.grey.shade300),
+              foregroundColor: isSelected ? Colors.white : textColor,
+              padding: const EdgeInsets.symmetric(vertical: 12),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              elevation: isSelected ? 2 : 0,
+              side:
+                  isSelected
+                      ? BorderSide.none
+                      : BorderSide(color: isDark ? Colors.grey.shade600 : Colors.grey.shade400, width: 0.5),
+            ),
+            child: Text(displayValue, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600)),
           ),
+        ),
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Container(
+        decoration: BoxDecoration(
+          color: itemColor, // This is the overall card background
+          borderRadius: BorderRadius.circular(16),
+        ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Follow Mode', style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 6),
+            Text(
+              'Choose how your follows are managed across Spark.',
+              style: TextStyle(color: textColor.withValues(alpha: 0.7), fontSize: 13),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                buildModeButton(displayValues[0], internalValues[0]), // Spark exclusive
+                buildModeButton(displayValues[1], internalValues[1]), // Bluesky synced
+              ],
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                currentMode == 'sprk' ? 'You are managing follows within Spark only.' : 'Your follows are synced with Bluesky.',
+                style: TextStyle(fontSize: 12, color: textColor.withValues(alpha: 0.6)),
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
         ),
       ),
     );
