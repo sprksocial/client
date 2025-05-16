@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
@@ -9,10 +10,10 @@ import 'package:sparksocial/src/features/profile/ui/widgets/profile_text_field.d
 import 'package:get_it/get_it.dart';
 
 /// Edit profile page that allows users to update their profile information
+@RoutePage()
 class EditProfilePage extends ConsumerWidget {
   final Profile profile;
   
-  /// Create a page to edit a profile
   const EditProfilePage({
     super.key,
     required this.profile,
@@ -22,14 +23,11 @@ class EditProfilePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final logger = GetIt.instance<LogService>().getLogger('EditProfilePage');
     
-    // Using AsyncValue to handle the profile edit state
     final editProfileState = ref.watch(editProfileProvider(profile));
     final editProfileNotifier = ref.read(editProfileProvider(profile).notifier);
     
-    // Create a form key to validate the form
     final formKey = GlobalKey<FormState>();
     
-    // Get the theme data
     final theme = Theme.of(context);
     final bgColor = theme.scaffoldBackgroundColor;
     

@@ -9,6 +9,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:sparksocial/src/core/network/data/repositories/repo_repository.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/features/auth/data/models/bsky_follows.dart';
@@ -314,8 +315,7 @@ class _ImportFollowsPageState extends ConsumerState<ImportFollowsPage> {
 
       if (!mounted) return;
 
-      // TODO: Replace with AutoRoute navigation when Home route is migrated
-      // context.router.navigate(const HomeRoute());
+      context.router.navigate(const HomeRoute());
     } catch (e, stackTrace) {
       _logger.e('Failed to finish onboarding', error: e, stackTrace: stackTrace);
       if (mounted) {

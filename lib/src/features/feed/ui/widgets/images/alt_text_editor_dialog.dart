@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
@@ -88,10 +89,10 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                  TextButton(onPressed: () => context.router.maybePop(), child: const Text('Cancel')),
                   const SizedBox(width: 8),
                   ElevatedButton(
-                    onPressed: () => Navigator.pop(context, _controller.text),
+                    onPressed: () => context.router.maybePop(_controller.text),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: AppColors.white,

@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
@@ -40,7 +41,7 @@ class ProfileSaveButton extends StatelessWidget {
                 try {
                   final result = await notifier.saveProfile();
                   if (result && context.mounted) {
-                    Navigator.of(context).pop(true);
+                    context.router.maybePop(true);
                   } else if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Failed to update profile'))

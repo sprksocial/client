@@ -4,8 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-// TODO: Migrate FeedScreen and uncomment navigation
-// import 'package:sparksocial/src/features/feed/ui/pages/feed_screen.dart'; 
+import 'package:sparksocial/src/features/feed/ui/pages/feed_page.dart'; 
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_video_tile.dart';
 import 'package:auto_route/auto_route.dart';
@@ -230,17 +229,13 @@ class _VideosTabState extends ConsumerState<VideosTab> with AutomaticKeepAliveCl
       );
     }).toList();
 
-    // TODO: Migrate FeedScreen and uncomment navigation
-    /*
     AutoRouter.of(context).push(FeedRoute(
-        feedType: FeedType.latest, // Placeholder
+        feedType: FeedType.latest.value, // Placeholder
         initialPosts: feedPosts,
         initialIndex: index,
         showBackButton: true,
         isParentFeedVisible: true,
     ));
-    */
-    _logger.i('Navigation to FeedScreen (media viewer) for videos requested. Currently commented out pending FeedScreen migration.');
   }
 
   @override

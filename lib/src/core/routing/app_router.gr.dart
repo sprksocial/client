@@ -39,6 +39,16 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    EditProfileRoute.name: (routeData) {
+      final args = routeData.argsAs<EditProfileRouteArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: EditProfilePage(
+          key: args.key,
+          profile: args.profile,
+        ),
+      );
+    },
     FeedRoute.name: (routeData) {
       final args = routeData.argsAs<FeedRouteArgs>();
       return AutoRoutePage<dynamic>(
@@ -62,6 +72,12 @@ abstract class _$AppRouter extends RootStackRouter {
           feedSettings: args.feedSettings,
           onToggleChanged: args.onToggleChanged,
         ),
+      );
+    },
+    HomeRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const HomePage(),
       );
     },
     ImportFollowsRoute.name: (routeData) {
@@ -104,6 +120,12 @@ abstract class _$AppRouter extends RootStackRouter {
           did: args.did,
           key: args.key,
         ),
+      );
+    },
+    SplashRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const SplashPage(),
       );
     },
   };
@@ -198,6 +220,44 @@ class ContentSettingsTabRouteArgs {
   @override
   String toString() {
     return 'ContentSettingsTabRouteArgs{key: $key, isLoadingLabels: $isLoadingLabels, labelsError: $labelsError, onRetryLabels: $onRetryLabels, onUpdateAdultContentPreferences: $onUpdateAdultContentPreferences}';
+  }
+}
+
+/// generated route for
+/// [EditProfilePage]
+class EditProfileRoute extends PageRouteInfo<EditProfileRouteArgs> {
+  EditProfileRoute({
+    Key? key,
+    required Profile profile,
+    List<PageRouteInfo>? children,
+  }) : super(
+          EditProfileRoute.name,
+          args: EditProfileRouteArgs(
+            key: key,
+            profile: profile,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'EditProfileRoute';
+
+  static const PageInfo<EditProfileRouteArgs> page =
+      PageInfo<EditProfileRouteArgs>(name);
+}
+
+class EditProfileRouteArgs {
+  const EditProfileRouteArgs({
+    this.key,
+    required this.profile,
+  });
+
+  final Key? key;
+
+  final Profile profile;
+
+  @override
+  String toString() {
+    return 'EditProfileRouteArgs{key: $key, profile: $profile}';
   }
 }
 
@@ -305,6 +365,20 @@ class FeedSettingsTabRouteArgs {
   String toString() {
     return 'FeedSettingsTabRouteArgs{key: $key, feedSettings: $feedSettings, onToggleChanged: $onToggleChanged}';
   }
+}
+
+/// generated route for
+/// [HomePage]
+class HomeRoute extends PageRouteInfo<void> {
+  const HomeRoute({List<PageRouteInfo>? children})
+      : super(
+          HomeRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'HomeRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
 }
 
 /// generated route for
@@ -434,4 +508,18 @@ class ProfileRouteArgs {
   String toString() {
     return 'ProfileRouteArgs{did: $did, key: $key}';
   }
+}
+
+/// generated route for
+/// [SplashPage]
+class SplashRoute extends PageRouteInfo<void> {
+  const SplashRoute({List<PageRouteInfo>? children})
+      : super(
+          SplashRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'SplashRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
 }

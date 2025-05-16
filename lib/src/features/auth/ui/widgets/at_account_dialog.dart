@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -83,10 +84,10 @@ class _ATAccountDialog extends StatelessWidget {
       actions: [
         _ATAccountDialogActions(
           onLearnMore: () async {
-            Navigator.of(context).pop();
+            context.router.maybePop();
             await launchUrl(Uri.parse('https://atproto.com/specs/account'));
           },
-          onGotIt: () => Navigator.of(context).pop(),
+          onGotIt: () => context.router.maybePop(),
         ),
       ],
     );

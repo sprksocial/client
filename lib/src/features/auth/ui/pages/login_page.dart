@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
 
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
@@ -69,11 +70,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         if (!mounted) return;
         
         if (hasSparkProfile) {
-          // TODO: Replace with AutoRoute navigation to home page
-          // context.router.replace(const HomeRoute());
+          context.router.replace(const HomeRoute());
         } else {
-          // TODO: Replace with AutoRoute navigation to onboarding page
-          // context.router.replace(const OnboardingRoute());
+          context.router.replace(const OnboardingRoute());
         }
       } else if (result.isCodeRequired) {
         setState(() {

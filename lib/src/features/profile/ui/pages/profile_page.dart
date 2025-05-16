@@ -21,7 +21,6 @@ import 'package:atproto/atproto.dart' as atp; // For ModerationReasonType
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_tab_content.dart';
 
-
 @RoutePage()
 class ProfilePage extends ConsumerWidget {
   final String? did;
@@ -43,18 +42,20 @@ class ProfilePage extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (bContext) => SafeArea( // Use bContext to avoid context conflict
-        child: Padding(
-          padding: const EdgeInsets.only(top: 20), 
-          child: ProfileMenuSheet(
-            onLogout: () {
-              context.router.maybePop(bContext); // Close sheet first
-              ref.read(profileNotifierProvider(did: did).notifier).logout();
-               AutoRouter.of(context).replaceAll([const SplashRoute()]); // Navigate to splash or home after logout
-            }
-          )
-        )
-      ),
+      builder:
+          (bContext) => SafeArea(
+            // Use bContext to avoid context conflict
+            child: Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: ProfileMenuSheet(
+                onLogout: () {
+                  context.router.maybePop(bContext); // Close sheet first
+                  ref.read(profileNotifierProvider(did: did).notifier).logout();
+                  AutoRouter.of(context).replaceAll([const SplashRoute()]); // Navigate to splash or home after logout
+                },
+              ),
+            ),
+          ),
     );
   }
 
@@ -62,33 +63,34 @@ class ProfilePage extends ConsumerWidget {
     final notifier = ref.read(profileNotifierProvider(did: did).notifier);
     showDialog(
       context: context,
-      builder: (dContext) => ReportDialog(
-        // postUri & postCid for profiles are a bit different.
-        // For profiles, the subject is the DID itself.
-        postUri: 'at://${profile.did}/app.bsky.actor.profile/self', // Or just profile.did
-        postCid: profile.did, // Using DID as a placeholder, actual CID not usually needed for profile report subject
-        onSubmit: (subject, reasonType, reason, service) async {
-          try {
-            // The ReportDialog gives reasonType as atp.ModerationReasonType
-            // String reasonTypeString = (reasonType as dynamic).value; // Adapt if ReportDialog gives different type
-            
-            final success = await notifier.createReport(
-              did: profile.did,
-              reasonType: reasonType, // Pass the enum directly
-              reason: reason,
-            );
-            if (success) {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+      builder:
+          (dContext) => ReportDialog(
+            // postUri & postCid for profiles are a bit different.
+            // For profiles, the subject is the DID itself.
+            postUri: 'at://${profile.did}/app.bsky.actor.profile/self', // Or just profile.did
+            postCid: profile.did, // Using DID as a placeholder, actual CID not usually needed for profile report subject
+            onSubmit: (subject, reasonType, reason, service) async {
+              try {
+                // The ReportDialog gives reasonType as atp.ModerationReasonType
+                // String reasonTypeString = (reasonType as dynamic).value; // Adapt if ReportDialog gives different type
+
+                final success = await notifier.createReport(
+                  did: profile.did,
+                  reasonType: reasonType, // Pass the enum directly
+                  reason: reason,
+                );
+                if (success) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+                  }
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+                }
               }
-            }
-          } catch (e) {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
-            }
-          }
-        },
-      ),
+            },
+          ),
     );
   }
 
@@ -114,11 +116,17 @@ class ProfilePage extends ConsumerWidget {
           // This case should ideally be handled by error state if loading failed and profile is null
           // Or if initial state is null and loading hasn't completed (covered by loading state)
           // If profile is null after successful load but no error, it's profile not found.
-           return _buildErrorOrNotFoundScreen(context, 'Profile not found', null, () => notifier.refreshProfile(), theme);
+          return ErrorScreen(
+            context: context,
+            message: 'Profile not found',
+            stackTrace: null,
+            onRetry: () => notifier.refreshProfile(),
+            theme: theme,
+          );
         }
 
         final bool isCurrentUser = notifier.isCurrentUser();
-        
+
         // TODO: Refactor ProfileTabContent if it uses `getTabContent()`
         // For now, assuming it works or can be adapted.
         // The old ProfileTabContent took isAuthenticated and onLoginPressed.
@@ -142,7 +150,8 @@ class ProfilePage extends ConsumerWidget {
               profile.displayName ?? profile.handle, // handle is not nullable in core Profile model
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.textTheme.titleLarge?.color),
             ),
-            backgroundColor: theme.brightness == Brightness.dark ? colorScheme.surfaceContainerHighest : colorScheme.surface, // Example colors
+            backgroundColor:
+                theme.brightness == Brightness.dark ? colorScheme.surfaceContainerHighest : colorScheme.surface, // Example colors
             elevation: 0,
             actions: [
               if (isCurrentUser)
@@ -157,7 +166,8 @@ class ProfilePage extends ConsumerWidget {
               else
                 Padding(
                   padding: const EdgeInsets.only(right: 8.0),
-                  child: MenuActionButton( // Assuming this widget is fine
+                  child: MenuActionButton(
+                    // Assuming this widget is fine
                     onPressed: () => _handleReportProfile(context, ref, profile),
                     backgroundColor: colorScheme.onSurface.withAlpha(30), // Example adaptive color
                     isProfile: true,
@@ -180,19 +190,21 @@ class ProfilePage extends ConsumerWidget {
                       onEditTap: () {
                         final authRepository = ref.read(authRepositoryProvider);
                         if (authRepository.isAuthenticated) {
-                           context.router.push(EditProfileRoute(profile: profile)).then((updated) {
+                          context.router.push(EditProfileRoute(profile: profile)).then((updated) {
                             if (updated == true) {
-                               notifier.refreshProfile();
-                               if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Profile updated successfully')));
-                               }
+                              notifier.refreshProfile();
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(
+                                  context,
+                                ).showSnackBar(const SnackBar(content: Text('Profile updated successfully')));
+                              }
                             }
-                           });
+                          });
                         } else {
-                           notifier.triggerAuthPrompt(); 
+                          notifier.triggerAuthPrompt();
                         }
                       },
-                      onShareTap: () => _logger.i('Share profile tapped for ${profile.did}'), 
+                      onShareTap: () => _logger.i('Share profile tapped for ${profile.did}'),
                       onFollowTap: () async {
                         final initialFollowingStateForSnackbar = profile.isFollowing; // Capture before action
                         try {
@@ -200,15 +212,19 @@ class ProfilePage extends ConsumerWidget {
                           // Read the latest state AFTER the toggleFollow has completed and updated the state.
                           final latestProfileState = ref.read(profileNotifierProvider(did: did)).asData?.value;
 
-                          // Only show snackbar if an actual follow/unfollow action occurred 
+                          // Only show snackbar if an actual follow/unfollow action occurred
                           // and auth prompt was not the primary outcome.
-                          if (latestProfileState != null && 
-                              !latestProfileState.showAuthPrompt && 
+                          if (latestProfileState != null &&
+                              !latestProfileState.showAuthPrompt &&
                               latestProfileState.profile?.isFollowing != initialFollowingStateForSnackbar) {
                             if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
+                              ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(latestProfileState.profile?.isFollowing == true ? 'Followed successfully' : 'Unfollowed successfully'),
+                                  content: Text(
+                                    latestProfileState.profile?.isFollowing == true
+                                        ? 'Followed successfully'
+                                        : 'Unfollowed successfully',
+                                  ),
                                   backgroundColor: Colors.green,
                                 ),
                               );
@@ -216,7 +232,9 @@ class ProfilePage extends ConsumerWidget {
                           }
                         } catch (e) {
                           if (context.mounted) {
-                             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red));
+                            ScaffoldMessenger.of(
+                              context,
+                            ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red));
                           }
                         }
                       },
@@ -225,7 +243,7 @@ class ProfilePage extends ConsumerWidget {
                   ),
                   SliverPersistentHeader(
                     pinned: true,
-                    delegate: StickyTabBarDelegate( // This delegate needs to be defined or imported
+                    delegate: StickyTabBarDelegate(
                       child: ProfileTabs(
                         selectedIndex: state.selectedTabIndex,
                         onTabSelected: (index) => notifier.setSelectedTabIndex(index),
@@ -233,30 +251,54 @@ class ProfilePage extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  SliverToBoxAdapter(
-                    child: tabContentWidget,
-                  ),
+                  SliverToBoxAdapter(child: tabContentWidget),
                 ],
               ),
             ),
           ),
         );
       },
-      loading: () => Scaffold(
-        backgroundColor: theme.scaffoldBackgroundColor,
-        body: const Center(child: CircularProgressIndicator()),
-      ),
-      error: (error, stackTrace) => _buildErrorOrNotFoundScreen(context, error.toString(), stackTrace, () => notifier.refreshProfile(), theme),
+      loading:
+          () => Scaffold(backgroundColor: theme.scaffoldBackgroundColor, body: const Center(child: CircularProgressIndicator())),
+      error:
+          (error, stackTrace) => ErrorScreen(
+            context: context,
+            message: error.toString(),
+            stackTrace: stackTrace,
+            onRetry: () => notifier.refreshProfile(),
+            theme: theme,
+          ),
     );
   }
+}
 
-  Widget _buildErrorOrNotFoundScreen(BuildContext context, String message, StackTrace? stackTrace, VoidCallback onRetry, ThemeData theme) {
-    _logger.e('Displaying error/not found screen: $message', stackTrace: stackTrace);
+class ErrorScreen extends StatelessWidget {
+  const ErrorScreen({
+    super.key,
+    required this.context,
+    required this.message,
+    required this.stackTrace,
+    required this.onRetry,
+    required this.theme,
+  });
+
+  final BuildContext context;
+  final String message;
+  final StackTrace? stackTrace;
+  final VoidCallback onRetry;
+  final ThemeData theme;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: Text('Profile', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.textTheme.titleLarge?.color)),
-        backgroundColor: theme.brightness == Brightness.dark ? theme.colorScheme.surfaceContainerHighest : theme.colorScheme.surface,
+        title: Text(
+          'Profile',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.textTheme.titleLarge?.color),
+        ),
+        backgroundColor:
+            theme.brightness == Brightness.dark ? theme.colorScheme.surfaceContainerHighest : theme.colorScheme.surface,
         elevation: 0,
       ),
       body: Center(
@@ -277,8 +319,6 @@ class ProfilePage extends ConsumerWidget {
   }
 }
 
-// This was part of the old file, ensure it's defined or imported correctly.
-// If it's simple, it can stay here. If complex or reused, move to a common widgets location.
 class StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
   final Widget child;
 
@@ -298,4 +338,4 @@ class StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(SliverPersistentHeaderDelegate oldDelegate) => true; // Or compare child
-} 
+}

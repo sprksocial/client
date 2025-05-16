@@ -67,8 +67,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
         return;
       }
       if (mounted) {
-        // TODO: Uncomment and use correct ProfileRoute once defined in app_router.dart
-        _logger.i('Navigation to profile for $didRes requested. Route not implemented yet.');
+        context.router.push(ProfileRoute(did: didRes));
       }
     } catch (e, s) {
       _logger.e('Error resolving handle: $e', error: e, stackTrace: s);
