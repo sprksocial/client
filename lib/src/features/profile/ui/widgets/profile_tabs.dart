@@ -1,6 +1,5 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart'; // Updated AppColors import
 
 class ProfileTabs extends StatelessWidget {
   final int selectedIndex;

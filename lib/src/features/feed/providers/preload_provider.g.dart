@@ -330,7 +330,7 @@ class _LocalVideoPathProviderElement extends AutoDisposeProviderElement<String?>
   int get index => (origin as LocalVideoPathProvider).index;
 }
 
-String _$preloadMediaHash() => r'91115d85a5bab881d26ce467d7f09f2e89741f32';
+String _$preloadMediaHash() => r'2c92fa3d376764701553411eee8966333323ff4b';
 
 /// Provider for getting a preloaded video
 ///
@@ -354,13 +354,11 @@ class PreloadMediaFamily extends Family<AsyncValue<void>> {
     required int index,
     required String? videoUrl,
     required List<String> imageUrls,
-    required BuildContext context,
   }) {
     return PreloadMediaProvider(
       index: index,
       videoUrl: videoUrl,
       imageUrls: imageUrls,
-      context: context,
     );
   }
 
@@ -372,7 +370,6 @@ class PreloadMediaFamily extends Family<AsyncValue<void>> {
       index: provider.index,
       videoUrl: provider.videoUrl,
       imageUrls: provider.imageUrls,
-      context: provider.context,
     );
   }
 
@@ -402,14 +399,12 @@ class PreloadMediaProvider extends AutoDisposeFutureProvider<void> {
     required int index,
     required String? videoUrl,
     required List<String> imageUrls,
-    required BuildContext context,
   }) : this._internal(
           (ref) => preloadMedia(
             ref as PreloadMediaRef,
             index: index,
             videoUrl: videoUrl,
             imageUrls: imageUrls,
-            context: context,
           ),
           from: preloadMediaProvider,
           name: r'preloadMediaProvider',
@@ -423,7 +418,6 @@ class PreloadMediaProvider extends AutoDisposeFutureProvider<void> {
           index: index,
           videoUrl: videoUrl,
           imageUrls: imageUrls,
-          context: context,
         );
 
   PreloadMediaProvider._internal(
@@ -436,13 +430,11 @@ class PreloadMediaProvider extends AutoDisposeFutureProvider<void> {
     required this.index,
     required this.videoUrl,
     required this.imageUrls,
-    required this.context,
   }) : super.internal();
 
   final int index;
   final String? videoUrl;
   final List<String> imageUrls;
-  final BuildContext context;
 
   @override
   Override overrideWith(
@@ -460,7 +452,6 @@ class PreloadMediaProvider extends AutoDisposeFutureProvider<void> {
         index: index,
         videoUrl: videoUrl,
         imageUrls: imageUrls,
-        context: context,
       ),
     );
   }
@@ -475,8 +466,7 @@ class PreloadMediaProvider extends AutoDisposeFutureProvider<void> {
     return other is PreloadMediaProvider &&
         other.index == index &&
         other.videoUrl == videoUrl &&
-        other.imageUrls == imageUrls &&
-        other.context == context;
+        other.imageUrls == imageUrls;
   }
 
   @override
@@ -485,7 +475,6 @@ class PreloadMediaProvider extends AutoDisposeFutureProvider<void> {
     hash = _SystemHash.combine(hash, index.hashCode);
     hash = _SystemHash.combine(hash, videoUrl.hashCode);
     hash = _SystemHash.combine(hash, imageUrls.hashCode);
-    hash = _SystemHash.combine(hash, context.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -502,9 +491,6 @@ mixin PreloadMediaRef on AutoDisposeFutureProviderRef<void> {
 
   /// The parameter `imageUrls` of this provider.
   List<String> get imageUrls;
-
-  /// The parameter `context` of this provider.
-  BuildContext get context;
 }
 
 class _PreloadMediaProviderElement
@@ -517,8 +503,6 @@ class _PreloadMediaProviderElement
   String? get videoUrl => (origin as PreloadMediaProvider).videoUrl;
   @override
   List<String> get imageUrls => (origin as PreloadMediaProvider).imageUrls;
-  @override
-  BuildContext get context => (origin as PreloadMediaProvider).context;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -157,7 +157,7 @@ Generate code, corrections, and refactorings that comply with the basic principl
 - Use ThemeData to manage themes
 - Use AppLocalizations to manage translations
 - Use constants to manage constants values
-- Use `@lib/src/core/storage/storage_manager.dart` to manage storage
+- Use `@lib/src/core/storage/local/storage_manager.dart` to manage storage
 - When a widget tree becomes too deep, it can lead to longer build times and increased memory usage. Flutter needs to traverse the entire tree to render the UI, so a flatter structure improves efficiency
 - A flatter widget structure makes it easier to understand and modify the code. Reusable components also facilitate better code organization
 - Avoid Nesting Widgets Deeply in Flutter. Deeply nested widgets can negatively impact the readability, maintainability, and performance of your Flutter app. Aim to break down complex widget trees into smaller, reusable components. This not only makes your code cleaner but also enhances the performance by reducing the build complexity

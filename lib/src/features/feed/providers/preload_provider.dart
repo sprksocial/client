@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -45,8 +44,7 @@ Future<void> preloadMedia(
   required int index,
   required String? videoUrl,
   required List<String> imageUrls,
-  required BuildContext context,
 }) async {
   final preloadRepository = ref.watch(preloadRepositoryProvider);
-  await preloadRepository.preloadMedia(index, videoUrl, imageUrls, context);
+  await preloadRepository.preloadMedia(index, videoUrl, imageUrls);
 } 

@@ -7,13 +7,13 @@ import 'package:sparksocial/src/features/profile/ui/widgets/tabs/content_grid_ta
 import 'package:sparksocial/src/features/profile/ui/widgets/tabs/photos_tab.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/tabs/videos_tab.dart';
 
-class ProfileTabContentWidget extends StatelessWidget {
+class ProfileTabContent extends StatelessWidget {
   final int selectedIndex;
   final bool isAuthenticated;
   final VoidCallback onLoginPressed;
   final String? did;
 
-  const ProfileTabContentWidget({
+  const ProfileTabContent({
     super.key,
     required this.selectedIndex,
     required this.isAuthenticated,

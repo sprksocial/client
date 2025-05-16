@@ -38,4 +38,9 @@ abstract class ProfileRepository {
   /// 
   /// [did] The DID to clear the cache for
   Future<void> clearProfileCache(String did);
+
+  /// Check if a user is an early supporter
+  ///
+  /// [did] The DID of the user to check
+  Future<bool> isEarlySupporter(String did);
 } 

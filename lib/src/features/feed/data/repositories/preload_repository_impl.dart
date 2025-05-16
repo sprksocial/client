@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import 'package:get_it/get_it.dart';
 
 import 'package:sparksocial/src/core/storage/cache/cache_manager_interface.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
@@ -96,11 +96,11 @@ class PreloadRepositoryImpl implements PreloadRepository {
   }
 
   @override
-  Future<void> preloadMedia(int index, String? videoUrl, List<String> imageUrls, BuildContext context) async {
+  Future<void> preloadMedia(int index, String? videoUrl, List<String> imageUrls) async {
     if (videoUrl != null) {
       await _preloadVideo(index, videoUrl);
     } else if (imageUrls.isNotEmpty) {
-      _preloadImages(index, imageUrls, context);
+      _preloadImages(index, imageUrls);
     }
   }
 
@@ -156,11 +156,13 @@ class PreloadRepositoryImpl implements PreloadRepository {
     }
   }
 
-  void _preloadImages(int index, List<String> imageUrls, BuildContext context) {
+  void _preloadImages(int index, List<String> imageUrls) {
+    final cacheManager = GetIt.instance<CacheManagerInterface>();
+    
     for (final url in imageUrls) {
       if (!_preloadedImageUrls.contains(url)) {
         _preloadedImageUrls.add(url);
-        precacheImage(NetworkImage(url), context);
+        cacheManager.getFile(url); // This downloads and caches the file
       }
     }
   }

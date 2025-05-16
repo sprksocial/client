@@ -39,6 +39,20 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    FeedRoute.name: (routeData) {
+      final args = routeData.argsAs<FeedRouteArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: FeedPage(
+          key: args.key,
+          feedType: args.feedType,
+          initialPosts: args.initialPosts,
+          initialIndex: args.initialIndex,
+          showBackButton: args.showBackButton,
+          isParentFeedVisible: args.isParentFeedVisible,
+        ),
+      );
+    },
     FeedSettingsTabRoute.name: (routeData) {
       final args = routeData.argsAs<FeedSettingsTabRouteArgs>();
       return AutoRoutePage<dynamic>(
@@ -68,10 +82,28 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const LoginPage(),
       );
     },
+    MessagesRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const MessagesPage(),
+      );
+    },
     OnboardingRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const OnboardingPage(),
+      );
+    },
+    ProfileRoute.name: (routeData) {
+      final pathParams = routeData.inheritedPathParams;
+      final args = routeData.argsAs<ProfileRouteArgs>(
+          orElse: () => ProfileRouteArgs(did: pathParams.optString('did')));
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: ProfilePage(
+          did: args.did,
+          key: args.key,
+        ),
       );
     },
   };
@@ -166,6 +198,63 @@ class ContentSettingsTabRouteArgs {
   @override
   String toString() {
     return 'ContentSettingsTabRouteArgs{key: $key, isLoadingLabels: $isLoadingLabels, labelsError: $labelsError, onRetryLabels: $onRetryLabels, onUpdateAdultContentPreferences: $onUpdateAdultContentPreferences}';
+  }
+}
+
+/// generated route for
+/// [FeedPage]
+class FeedRoute extends PageRouteInfo<FeedRouteArgs> {
+  FeedRoute({
+    Key? key,
+    required int feedType,
+    List<FeedPost>? initialPosts,
+    int? initialIndex,
+    bool showBackButton = false,
+    required bool isParentFeedVisible,
+    List<PageRouteInfo>? children,
+  }) : super(
+          FeedRoute.name,
+          args: FeedRouteArgs(
+            key: key,
+            feedType: feedType,
+            initialPosts: initialPosts,
+            initialIndex: initialIndex,
+            showBackButton: showBackButton,
+            isParentFeedVisible: isParentFeedVisible,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'FeedRoute';
+
+  static const PageInfo<FeedRouteArgs> page = PageInfo<FeedRouteArgs>(name);
+}
+
+class FeedRouteArgs {
+  const FeedRouteArgs({
+    this.key,
+    required this.feedType,
+    this.initialPosts,
+    this.initialIndex,
+    this.showBackButton = false,
+    required this.isParentFeedVisible,
+  });
+
+  final Key? key;
+
+  final int feedType;
+
+  final List<FeedPost>? initialPosts;
+
+  final int? initialIndex;
+
+  final bool showBackButton;
+
+  final bool isParentFeedVisible;
+
+  @override
+  String toString() {
+    return 'FeedRouteArgs{key: $key, feedType: $feedType, initialPosts: $initialPosts, initialIndex: $initialIndex, showBackButton: $showBackButton, isParentFeedVisible: $isParentFeedVisible}';
   }
 }
 
@@ -281,6 +370,20 @@ class LoginRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [MessagesPage]
+class MessagesRoute extends PageRouteInfo<void> {
+  const MessagesRoute({List<PageRouteInfo>? children})
+      : super(
+          MessagesRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'MessagesRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
 /// [OnboardingPage]
 class OnboardingRoute extends PageRouteInfo<void> {
   const OnboardingRoute({List<PageRouteInfo>? children})
@@ -292,4 +395,43 @@ class OnboardingRoute extends PageRouteInfo<void> {
   static const String name = 'OnboardingRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [ProfilePage]
+class ProfileRoute extends PageRouteInfo<ProfileRouteArgs> {
+  ProfileRoute({
+    String? did,
+    Key? key,
+    List<PageRouteInfo>? children,
+  }) : super(
+          ProfileRoute.name,
+          args: ProfileRouteArgs(
+            did: did,
+            key: key,
+          ),
+          rawPathParams: {'did': did},
+          initialChildren: children,
+        );
+
+  static const String name = 'ProfileRoute';
+
+  static const PageInfo<ProfileRouteArgs> page =
+      PageInfo<ProfileRouteArgs>(name);
+}
+
+class ProfileRouteArgs {
+  const ProfileRouteArgs({
+    this.did,
+    this.key,
+  });
+
+  final String? did;
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'ProfileRouteArgs{did: $did, key: $key}';
+  }
 }

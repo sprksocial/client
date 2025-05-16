@@ -5,3 +5,7 @@ export 'package:sparksocial/src/features/auth/ui/pages/import_follows_page.dart'
 export 'package:sparksocial/src/features/auth/ui/pages/onboarding_page.dart';
 export 'package:sparksocial/src/features/settings/ui/pages/feed_settings_tab_page.dart';
 export 'package:sparksocial/src/features/settings/ui/pages/content_settings_tab_page.dart';
+export 'package:sparksocial/src/features/profile/ui/pages/profile_page.dart';
+export 'package:sparksocial/src/features/profile/ui/pages/edit_profile_page.dart';
+export 'package:sparksocial/src/features/feed/ui/pages/feed_page.dart';
+export 'package:sparksocial/src/features/messages/ui/pages/messages_page.dart';
