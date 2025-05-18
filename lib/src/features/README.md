@@ -175,12 +175,12 @@ Future<List<FeatureModel>> features(FeaturesRef ref) {
 
 After creating your feature page, add it to the router configuration:
 
-1. First, add your page to core/router/pages.dart
+1. First, add your page to `lib/src/core/routing/pages.dart`:
    ```dart
    export 'package:sparksocial/src/features/feature_name/ui/pages/feature_page.dart';
    ```
 
-2. Add the route to `lib/src/core/router/app_router.dart`:
+2. Add the route to `lib/src/core/routing/app_router.dart`:
    ```dart
    @AutoRouterConfig()
    class AppRouter extends _$AppRouter {

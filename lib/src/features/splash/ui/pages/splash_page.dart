@@ -63,7 +63,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     if (!mounted) return;
 
     if (hasSpark) {
-      context.router.replaceAll([const HomeRoute()]);
+      context.router.replaceAll([const MainRoute()]);
     } else {
       context.router.replaceAll([const OnboardingRoute()]);
     }

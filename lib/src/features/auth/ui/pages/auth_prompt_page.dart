@@ -105,7 +105,7 @@ class AuthPromptPage extends StatelessWidget {
                         minimumSize: const Size(320, 60),
                       ),
                       onPressed: () {
-                        context.router.push(const OnboardingRoute());
+                        context.router.push(const RegisterRoute());
                       },
                       child: Row(
                         mainAxisSize: MainAxisSize.min,

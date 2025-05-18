@@ -36,7 +36,7 @@ import 'widgets/upload/upload_progress_indicator.dart';
 // Global RouteObserver instance
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
 
-final bool useNewArchitecture = true;
+const bool useNewArchitecture = true;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -4,7 +4,8 @@ import 'package:sparksocial/src/core/routing/pages.dart';
 import 'package:sparksocial/src/features/settings/data/models/feed_setting.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
-
+import 'package:image_picker/image_picker.dart';
+import 'package:video_player/video_player.dart';
 part 'app_router.gr.dart';
 
 /// Router configuration for the application
@@ -22,10 +23,14 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: SplashRoute.page, path: '/', initial: true),
     
     // Main screens
+    AutoRoute(page: MainRoute.page, path: '/main'),
+    AutoRoute(page: EmptyRoute.page, path: '/empty'),
     AutoRoute(page: LoginRoute.page, path: '/login'),
+    AutoRoute(page: RegisterRoute.page, path: '/register'),
     AutoRoute(page: HomeRoute.page, path: '/home'),
     AutoRoute(page: FeedRoute.page, path: '/feed'),
     AutoRoute(page: MessagesRoute.page, path: '/messages'),
+    AutoRoute(page: SearchRoute.page, path: '/search'),
 
     // Onboarding routes
     AutoRoute(page: OnboardingRoute.page, path: '/onboarding/profile'),
@@ -38,5 +43,11 @@ class AppRouter extends RootStackRouter {
     // Feed Settings tabs
     AutoRoute(page: FeedSettingsTabRoute.page, path: '/settings/feed'),
     AutoRoute(page: ContentSettingsTabRoute.page, path: '/settings/content'),
+    
+    // Upload feature routes
+    AutoRoute(page: CreateVideoRoute.page, path: '/upload/create'),
+    AutoRoute(page: VideoReviewRoute.page, path: '/upload/video-review'),
+    AutoRoute(page: VideoPlaybackRoute.page, path: '/upload/video-playback'),
+    AutoRoute(page: ImageReviewRoute.page, path: '/upload/image-review'),
   ];
 } 

@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/feed/ui/pages/feed_page.dart'; 
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_video_tile.dart';
 import 'package:auto_route/auto_route.dart';
