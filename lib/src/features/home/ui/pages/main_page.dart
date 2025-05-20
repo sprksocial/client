@@ -85,14 +85,3 @@ class _MainPageState extends ConsumerState<MainPage> {
     );
   }
 }
-
-// Empty route for the Create tab placeholder
-@RoutePage()
-class EmptyPage extends StatelessWidget {
-  const EmptyPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const SizedBox.shrink();
-  }
-} 

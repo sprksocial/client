@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
@@ -15,7 +16,10 @@ import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 class AuthRepositoryImpl implements AuthRepository {
   Session? _session;
   ATProto? _atProto;
-  final _logger = GetIt.instance<LogService>().getLogger('AuthService');
+  final _logger = GetIt.instance<LogService>().getLogger('AuthRepository');
+
+  final Completer<void> _initCompleter = Completer<void>();
+  Future<void> get initializationComplete => _initCompleter.future;
 
   @override
   bool get isAuthenticated => _session != null;
@@ -27,8 +31,22 @@ class AuthRepositoryImpl implements AuthRepository {
   ATProto? get atproto => _atProto;
 
   AuthRepositoryImpl() {
-    _logger.i('Initializing AuthService');
-    _loadSavedSession();
+    _logger.i('Initializing AuthRepository');
+    _initialize();
+  }
+
+  Future<void> _initialize() async {
+    try {
+      await _loadSavedSession();
+      if (!_initCompleter.isCompleted) {
+        _initCompleter.complete();
+      }
+    } catch (e) {
+      _logger.e('AuthRepository initialization failed', error: e);
+      if (!_initCompleter.isCompleted) {
+        _initCompleter.completeError(e);
+      }
+    }
   }
 
   Future<void> _loadSavedSession() async {
@@ -57,7 +75,7 @@ class AuthRepositoryImpl implements AuthRepository {
       _logger.i('Session loaded successfully for user: ${_session!.handle}');
     } catch (e) {
       _logger.e('Error loading saved session', error: e);
-      // Session loading failed, continue with no session
+      rethrow;
     }
   }
 

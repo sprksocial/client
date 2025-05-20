@@ -7,7 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
-import 'package:sparksocial/src/core/network/data/repositories/sprk_repository_impl.dart';
+import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/models/repo_models.dart';
@@ -15,7 +15,7 @@ import 'package:sparksocial/src/core/network/data/repositories/label_repository.
 
 /// Implementation of Feed-related API endpoints
 class FeedRepositoryImpl implements FeedRepository {
-  final SprkRepositoryImpl _client;
+  final SprkRepository _client;
   final _logger = GetIt.instance<LogService>().getLogger('FeedRepository');
   final LabelRepository _labelRepository;
 
@@ -27,12 +27,12 @@ class FeedRepositoryImpl implements FeedRepository {
   Future<PostThreadResponse> getPostThread(String postUri) async {
     _logger.d('Getting post thread for URI: $postUri');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -54,12 +54,12 @@ class FeedRepositoryImpl implements FeedRepository {
   Future<FeedSkeletonResponse> getFeedSkeleton(String feed, {int limit = 30}) async {
     _logger.d('Getting feed skeleton for feed: $feed, limit: $limit');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -81,12 +81,12 @@ class FeedRepositoryImpl implements FeedRepository {
   Future<PostsResponse> getPosts(List<String> uris) async {
     _logger.d('Getting posts for URIs: ${uris.length} URIs');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -105,15 +105,15 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<AuthorFeedResponse> getAuthorFeed(String actor, {int limit = 50, String? cursor}) async {
+  Future<AuthorFeedResponse> getAuthorFeed(String actor, {int limit = 30, String? cursor}) async {
     _logger.d('Getting author feed for actor: $actor, limit: $limit, cursor: $cursor');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -144,12 +144,12 @@ class FeedRepositoryImpl implements FeedRepository {
   Future<LikePostResponse> likePost(String postCid, String postUri) async {
     _logger.d('Liking post with CID: $postCid, URI: $postUri');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -179,12 +179,12 @@ class FeedRepositoryImpl implements FeedRepository {
   Future<void> unlikePost(String likeUri) async {
     _logger.d('Unliking post with like URI: $likeUri');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -208,12 +208,12 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Posting comment to parent: $parentUri');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      switch (_client.authService.atproto) {
+      switch (_client.authRepository.atproto) {
         case null:
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -281,12 +281,12 @@ class FeedRepositoryImpl implements FeedRepository {
       throw ArgumentError('At least one image is required for an image post.');
       default:
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-          if (_client.authService.atproto case final atproto?) {
+          if (_client.authRepository.atproto case final atproto?) {
       final List<Map<String, dynamic>> uploadedImageMaps = await _uploadImages(imageFiles, altTexts);
       final embed = {"\$type": "so.sprk.embed.images", 'images': uploadedImageMaps};
 
@@ -338,7 +338,7 @@ class FeedRepositoryImpl implements FeedRepository {
         final processedBytes = Uint8List.fromList(img.encodeJpg(decodedImage, quality: 85));
         
         // Upload the processed image
-            switch (_client.authService.atproto) {
+            switch (_client.authRepository.atproto) {
               case null:
           _logger.e('AtProto not initialized');
           throw Exception('AtProto not initialized');
@@ -377,12 +377,12 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Deleting post with URI: $postUri');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -417,7 +417,7 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Posting video with description: $description');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
@@ -445,12 +445,12 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Posting video with prepared VideoPost');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
       
-      switch (_client.authService.atproto) {
+      switch (_client.authRepository.atproto) {
         case null:
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -477,7 +477,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<List<FeedPost>> fetchFeed(int feedType, {int limit = 100}) async {
+  Future<List<FeedPost>> fetchFeed(int feedType, {int limit = 30}) async {
     _logger.d('Fetching feed type: $feedType, limit: $limit');
     
     return switch (feedType) {
@@ -489,16 +489,16 @@ class FeedRepositoryImpl implements FeedRepository {
   }
   
   @override
-  Future<List<FeedPost>> fetchFollowingFeed({int limit = 100}) async {
+  Future<List<FeedPost>> fetchFollowingFeed({int limit = 30}) async {
     _logger.d('Fetching following feed with limit: $limit');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      switch (_client.authService.atproto) {
+      switch (_client.authRepository.atproto) {
         case null:
           _logger.e('AtProto not initialized');
           throw Exception('AtProto not initialized');
@@ -532,16 +532,16 @@ class FeedRepositoryImpl implements FeedRepository {
   }
   
   @override
-  Future<List<FeedPost>> fetchForYouFeed({int limit = 100}) async {
+  Future<List<FeedPost>> fetchForYouFeed({int limit = 30}) async {
     _logger.d('Fetching For You feed with limit: $limit');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      switch (_client.authService.atproto) {
+      switch (_client.authRepository.atproto) {
         case null:
           _logger.e('AtProto not initialized');
           throw Exception('AtProto not initialized');
@@ -582,7 +582,7 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Fetching Spark New feed with limit: $limit');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
@@ -766,12 +766,12 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Getting Bluesky comments for post: $postUri');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -807,12 +807,12 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Getting Spark comments for post: $postUri');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -851,12 +851,12 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Getting Spark comment: $commentUri');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -881,12 +881,12 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Getting Bluesky comment: $commentUri');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');

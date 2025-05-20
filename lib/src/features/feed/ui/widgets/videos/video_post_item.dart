@@ -127,14 +127,24 @@ class _VideoItemState extends ConsumerState<VideoPostItem> {
     
     // Update visibility if it changed
     if (oldWidget.isVisible != widget.isVisible) {
-      videoStateNotifier.setVisibility(widget.isVisible);
+      // Delay visibility update to avoid modifying provider during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) { // Ensure the widget is still in the tree
+          videoStateNotifier.setVisibility(widget.isVisible);
+        }
+      });
     }
     
     // Reinitialize if video source changed
     if (oldWidget.preloadedController != widget.preloadedController ||
         oldWidget.videoUrl != widget.videoUrl ||
         oldWidget.localVideoPath != widget.localVideoPath) {
-      _initializeVideoState();
+      // Delay initialization to avoid modifying provider during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) { // Ensure the widget is still in the tree
+          _initializeVideoState();
+        }
+      });
     }
   }
 

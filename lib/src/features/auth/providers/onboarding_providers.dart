@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../core/network/data/models/actor_models.dart';
-import '../../../core/network/data/repositories/repo_repository.dart';
+import '../../../core/network/data/repositories/sprk_repository.dart';
 import '../data/repositories/auth_repository.dart';
 import '../data/models/bsky_follows.dart';
 import '../data/repositories/onboarding_repository_impl.dart';
@@ -13,13 +13,12 @@ part 'onboarding_providers.g.dart';
 /// Provider for OnboardingRepository
 @riverpod
 OnboardingRepository onboardingRepository(Ref ref) {
-  final repoRepository = GetIt.instance<RepoRepository>();
+  final repoRepository = GetIt.instance<SprkRepository>().repo;
   final authRepository = GetIt.instance<AuthRepository>();
   
   return OnboardingRepositoryImpl(
     repoRepository: repoRepository,
-    session: authRepository.session,
-    atproto: authRepository.atproto,
+    authRepository: authRepository,
   );
 }
 

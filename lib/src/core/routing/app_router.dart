@@ -12,7 +12,7 @@ part 'app_router.gr.dart';
 /// 
 /// As features are migrated, new routes will be added here
 @AutoRouterConfig()
-class AppRouter extends RootStackRouter {
+class AppRouter extends _$AppRouter {
 
   @override
   RouteType get defaultRouteType => RouteType.adaptive();
@@ -23,21 +23,23 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: SplashRoute.page, path: '/', initial: true),
     
     // Main screens
-    AutoRoute(page: MainRoute.page, path: '/main'),
+    AutoRoute(page: MainRoute.page, path: '/main', children: [
+      AutoRoute(page: HomeRoute.page, path: 'home', initial: true),
+      AutoRoute(page: SearchRoute.page, path: 'search'),
+      AutoRoute(page: EmptyRoute.page, path: 'create'), // Placeholder for create action
+      AutoRoute(page: MessagesRoute.page, path: 'messages'),
+      AutoRoute(page: ProfileRoute.page, path: 'profile/:did'),
+    ]),
     AutoRoute(page: EmptyRoute.page, path: '/empty'),
     AutoRoute(page: LoginRoute.page, path: '/login'),
     AutoRoute(page: RegisterRoute.page, path: '/register'),
-    AutoRoute(page: HomeRoute.page, path: '/home'),
     AutoRoute(page: FeedRoute.page, path: '/feed'),
-    AutoRoute(page: MessagesRoute.page, path: '/messages'),
-    AutoRoute(page: SearchRoute.page, path: '/search'),
 
     // Onboarding routes
     AutoRoute(page: OnboardingRoute.page, path: '/onboarding/profile'),
     AutoRoute(page: ImportFollowsRoute.page, path: '/onboarding/import-follows'),
     
     // Profile routes
-    AutoRoute(page: ProfileRoute.page, path: '/profile/:did'),
     AutoRoute(page: EditProfileRoute.page, path: '/profile/edit'),
 
     // Feed Settings tabs

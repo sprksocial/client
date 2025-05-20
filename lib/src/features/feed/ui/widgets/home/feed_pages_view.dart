@@ -54,16 +54,20 @@ class FeedPagesView extends ConsumerWidget {
       controller: pageController,
       children: pages,
       onPageChanged: (index) {
-        // Get enabled feeds in order
-        final enabledFeeds = <FeedType>[];
-        if (settings.followingFeedEnabled) enabledFeeds.add(FeedType.following);
-        if (settings.forYouFeedEnabled) enabledFeeds.add(FeedType.forYou);
-        if (settings.latestFeedEnabled) enabledFeeds.add(FeedType.latest);
-        
-        // Set the feed type based on index
-        if (index < enabledFeeds.length) {
-          ref.read(feedTypeNotifierProvider.notifier).setFeedType(enabledFeeds[index]);
-        }
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          // Get enabled feeds in order
+          final enabledFeeds = <FeedType>[];
+          if (settings.followingFeedEnabled) enabledFeeds.add(FeedType.following);
+          if (settings.forYouFeedEnabled) enabledFeeds.add(FeedType.forYou);
+          if (settings.latestFeedEnabled) enabledFeeds.add(FeedType.latest);
+          
+          // Set the feed type based on index
+          if (index < enabledFeeds.length) {
+            if (ref.exists(feedTypeNotifierProvider)) {
+              ref.read(feedTypeNotifierProvider.notifier).setFeedType(enabledFeeds[index]);
+            }
+          }
+        });
       },
     );
   }

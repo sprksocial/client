@@ -26,18 +26,19 @@ class FeedPageStateNotifier extends _$FeedPageStateNotifier {
     // If we have initial posts, use them and skip loading
     if (initialPosts != null) {
       final initIndex = initialIndex ?? 0;
-      _preloadInitialMedia(initialPosts, initIndex);
+      // Schedule preloading after the build completes
+      Future.microtask(() => _preloadInitialMedia(initialPosts, initIndex));
       
       return FeedPageState(
-        isLoading: false,
+        isLoading: false, // Not loading because we have initial posts
         posts: initialPosts,
         currentIndex: initIndex,
       );
     }
     
-    // Otherwise fetch the feed
-    _fetchFeed(feedType);
-    return FeedPageState.initial();
+    // Schedule fetching the feed after the build completes
+    Future.microtask(() => _fetchFeed(feedType));
+    return FeedPageState.initial(); // Return an initial loading state
   }
   
   /// Fetch the feed based on feed type

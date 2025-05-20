@@ -24,6 +24,8 @@ import 'package:sparksocial/src/features/feed/data/repositories/preload_reposito
 import 'package:sparksocial/src/features/feed/data/repositories/preload_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/label_repository_impl.dart';
+import 'package:sparksocial/src/core/network/data/repositories/actor_repository_impl.dart';
+import 'package:sparksocial/src/core/network/data/repositories/graph_repository_impl.dart';
 
 // This is the ONLY PLACE IN THE ENTIRE APP where implementations are imported
 // All the other files should import interfaces only (polymorphism) to keep everything decoupled
@@ -95,12 +97,22 @@ Future<void> _registerCore() async {
   
   // Register LabelRepository
   sl.registerSingleton<LabelRepository>(
-    LabelRepositoryImpl(sl.get<SprkRepositoryImpl>())
+    LabelRepositoryImpl(sl.get<SprkRepository>())
   );
   
   // Register FeedRepository
   sl.registerSingleton<FeedRepository>(
-    FeedRepositoryImpl(sl.get<SprkRepositoryImpl>(), sl.get<LabelRepository>())
+    FeedRepositoryImpl(sl.get<SprkRepository>(), sl.get<LabelRepository>())
+  );
+  
+  // Register ActorRepository
+  sl.registerSingleton<ActorRepository>(
+    ActorRepositoryImpl(sl.get<SprkRepository>())
+  );
+
+  // Register GraphRepository
+  sl.registerSingleton<GraphRepository>(
+    GraphRepositoryImpl(sl.get<SprkRepository>())
   );
 }
 
@@ -124,8 +136,7 @@ Future<void> _registerOnboarding() async {
   sl.registerLazySingleton<OnboardingRepository>(
     () => OnboardingRepositoryImpl(
       repoRepository: sl<SprkRepository>().repo,
-      session: sl<AuthRepository>().session,
-      atproto: sl<AuthRepository>().atproto,
+      authRepository: sl<AuthRepository>(),
     ),
   );
 }

@@ -18,19 +18,19 @@ import 'package:sparksocial/src/core/network/data/repositories/label_repository_
 
 /// Client for interacting with Spark API endpoints
 class SprkRepositoryImpl implements SprkRepository {
-  final AuthRepository _authService;
+  final AuthRepository _authRepository;
   final String _sprkDid;
   final _logger = GetIt.instance<LogService>().getLogger('SprkRepository');
 
   /// Get the authentication service
   @override
-  AuthRepository get authService => _authService;
+  AuthRepository get authRepository => _authRepository;
 
   /// Get the Spark DID
   @override
   String get sprkDid => _sprkDid;
 
-  SprkRepositoryImpl(this._authService) : _sprkDid = _getSprkDid() {
+  SprkRepositoryImpl(this._authRepository) : _sprkDid = _getSprkDid() {
     _logger.d('SprkRepository initialized with DID: $_sprkDid');
   }
 
@@ -50,7 +50,7 @@ class SprkRepositoryImpl implements SprkRepository {
       if (errorStr.contains('400') && (errorStr.contains('expired'))) {
         _logger.i('Token expired, attempting to refresh');
         // Try to refresh the token
-        final refreshed = await _authService.refreshToken();
+        final refreshed = await _authRepository.refreshToken();
         if (!refreshed) {
           _logger.e('Failed to refresh expired token');
           throw Exception('Failed to refresh expired token');

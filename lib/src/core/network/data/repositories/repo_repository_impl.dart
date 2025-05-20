@@ -23,11 +23,11 @@ class RepoRepositoryImpl implements RepoRepository {
   Future<RecordResponse> getRecord({required AtUri uri}) async {
     _logger.d('Getting record for URI: $uri');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -47,11 +47,11 @@ class RepoRepositoryImpl implements RepoRepository {
   Future<RecordResponse> editRecord({required AtUri uri, required Map<String, dynamic> record}) async {
     _logger.d('Editing record at URI: $uri');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -70,12 +70,12 @@ class RepoRepositoryImpl implements RepoRepository {
   Future<RecordResponse> createRecord({required NSID collection, required Map<String, dynamic> record, String? rkey}) async {
     _logger.d('Creating record in collection: $collection');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -95,12 +95,12 @@ class RepoRepositoryImpl implements RepoRepository {
   Future<void> deleteRecord({required AtUri uri}) async {
     _logger.d('Deleting record at URI: $uri');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -115,12 +115,12 @@ class RepoRepositoryImpl implements RepoRepository {
   Future<BlobResponse> uploadBlob(Uint8List data) async {
     _logger.d('Uploading blob of size: ${data.length} bytes');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -152,12 +152,12 @@ class RepoRepositoryImpl implements RepoRepository {
   }) async {
     _logger.d('Listing records in repo: $repo, collection: $collection');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -196,12 +196,12 @@ class RepoRepositoryImpl implements RepoRepository {
     _logger.i('Creating moderation report for reason: ${reasonType.value}');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
       
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null || atproto.session == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');

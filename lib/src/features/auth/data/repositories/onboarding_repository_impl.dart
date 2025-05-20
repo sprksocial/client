@@ -6,29 +6,31 @@ import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/features/auth/data/models/bsky_follows.dart';
+import 'package:sparksocial/src/features/auth/data/repositories/auth_repository.dart';
 import 'onboarding_repository.dart';
 
 class OnboardingRepositoryImpl implements OnboardingRepository {
   final RepoRepository _repoRepository;
-  final Session? _session;
-  final ATProto? _atproto;
+  final AuthRepository _authRepository;
   final _logger = GetIt.instance<LogService>().getLogger('OnboardingRepository');
   
   OnboardingRepositoryImpl({
     required RepoRepository repoRepository,
-    required Session? session,
-    required ATProto? atproto,
+    required AuthRepository authRepository,
   }) : _repoRepository = repoRepository,
-       _session = session,
-       _atproto = atproto;
+       _authRepository = authRepository;
+
+  Session? get _session => _authRepository.session;
+  ATProto? get _atproto => _authRepository.atproto;
 
   @override
   Future<bool> hasSparkProfile() async {
     if (_session == null) return false;
 
-    final uri = AtUri.parse('at://${_session.did}/so.sprk.actor.profile/self');
+    final uri = AtUri.parse('at://${_session!.did}/so.sprk.actor.profile/self');
     try {
       final response = await _repoRepository.getRecord(uri: uri);
+      _logger.i('Spark profile found: ${response.value}');
       return response.value.isNotEmpty;
     } catch (e) {
       // Treat 404 and 'Could not locate record' 400 errors as no profile
@@ -46,7 +48,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     if (_session == null) return null;
 
     try {
-      final uri = AtUri.parse('at://${_session.did}/app.bsky.actor.profile/self');
+      final uri = AtUri.parse('at://${_session!.did}/app.bsky.actor.profile/self');
       final response = await _repoRepository.getRecord(uri: uri);
       return response.value;
     } catch (e) {
@@ -81,8 +83,8 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       throw Exception('Not authenticated');
     }
 
-    final bsky = bs.Bluesky.fromSession(_session);
-    final did = _session.did;
+    final bsky = bs.Bluesky.fromSession(_session!);
+    final did = _session!.did;
     final response = await bsky.graph.getFollows(actor: did, limit: 100, cursor: cursor);
     
     // Convert raw data to our structured model

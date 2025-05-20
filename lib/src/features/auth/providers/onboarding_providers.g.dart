@@ -7,7 +7,7 @@ part of 'onboarding_providers.dart';
 // **************************************************************************
 
 String _$onboardingRepositoryHash() =>
-    r'b63f55973f89f765575b90899e587d3e5a9a0b79';
+    r'6e0b3aa7ff0b6a0ca9c683cc8918f178fadba422';
 
 /// Provider for OnboardingRepository
 ///

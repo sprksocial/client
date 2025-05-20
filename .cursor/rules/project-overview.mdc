@@ -12,13 +12,28 @@ This is a Flutter application for a social media platform inspired by TikTok, in
 - [pubspec.yaml](mdc:pubspec.yaml) - Project dependencies and configuration
 
 ## Project Structure
-- `/lib` - Contains all the Dart code for the application
-  - `/src` - New feature-first architecture the project is currently being migrated to
-  - `/screens` - UI screens/pages
-  - `/services` - Business logic and API integrations
-  - `/models` - Data models
-  - `/widgets` - Reusable UI components
-  - `/utils` - Utility functions and constants
-  - `/config` - Configuration files
-  - `main.dart` - Main entry point
-
+```
+  lib/
+  ├── main.dart                  # App entry point
+  └── src/
+      ├── sprk_app.dart          # Main MaterialApp
+      ├── core/                  # Shared code across features
+      │   ├── config/            # Application-wide configurations
+      │   ├── di/                # Dependency injection setup
+      │   ├── network/           # ATProto client, API base
+      │   ├── routing/           # AutoRoute setup
+      │   ├── storage/           # Local storage utilities
+      │   ├── theme/             # Theme definitions
+      │   ├── l10n/              # Localization
+      │   ├── widgets/           # Common widgets
+      │   └── utils/             # Shared utilities
+      └── features/              # Feature modules
+          └── feature/                   
+              ├── data/          # Data layer for this feature
+              │   ├── repositories/   
+              │   └── models/
+              ├── providers/     # Riverpod providers
+              └── ui/            # UI components
+                  ├── pages/
+                  └── widgets/
+```

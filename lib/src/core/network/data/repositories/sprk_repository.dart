@@ -14,7 +14,7 @@ abstract class SprkRepository {
   Future<T> executeWithRetry<T>(Future<T> Function() apiCall);
 
   /// Get the authentication service
-  AuthRepository get authService;
+  AuthRepository get authRepository;
 
   /// Get the Sprk DID
   String get sprkDid;

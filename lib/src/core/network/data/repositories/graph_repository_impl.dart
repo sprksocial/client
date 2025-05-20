@@ -20,12 +20,12 @@ class GraphRepositoryImpl implements GraphRepository {
   Future<FollowersResponse> getFollowers(String did) async {
     _logger.d('Getting followers for DID: $did');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -47,12 +47,12 @@ class GraphRepositoryImpl implements GraphRepository {
   Future<FollowsResponse> getFollows(String did) async {
     _logger.d('Getting follows for DID: $did');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -74,12 +74,12 @@ class GraphRepositoryImpl implements GraphRepository {
   Future<FollowUserResponse> followUser(String did) async {
     _logger.d('Following user with DID: $did');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -90,7 +90,7 @@ class GraphRepositoryImpl implements GraphRepository {
         _logger.d('Checking if already following user: $did');
         // Query existing follow records
         final existingFollows = await atproto.repo.listRecords(
-          repo: _client.authService.session!.did,
+          repo: _client.authRepository.session!.did,
           collection: NSID.parse('so.sprk.graph.follow'),
         );
 
@@ -131,12 +131,12 @@ class GraphRepositoryImpl implements GraphRepository {
   Future<void> unfollowUser(String followUri) async {
     _logger.d('Unfollowing user with follow URI: $followUri');
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');

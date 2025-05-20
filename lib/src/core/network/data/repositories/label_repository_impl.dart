@@ -5,12 +5,12 @@ import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/repositories/label_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/network/data/repositories/sprk_repository_impl.dart';
+import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/network/data/models/label_models.dart';
 
 /// Implementation of Label-related API endpoints
 class LabelRepositoryImpl implements LabelRepository {
-  final SprkRepositoryImpl _client;
+  final SprkRepository _client;
   final _logger = GetIt.instance<LogService>().getLogger('LabelRepository');
   
   // Default labeler DID
@@ -30,12 +30,12 @@ class LabelRepositoryImpl implements LabelRepository {
     _logger.d('Fetching label values from labeler: $targetDid');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -86,12 +86,12 @@ class LabelRepositoryImpl implements LabelRepository {
     _logger.d('Fetching label value definitions from labeler: $targetDid');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -143,12 +143,12 @@ class LabelRepositoryImpl implements LabelRepository {
     _logger.d('Getting info for labeler: $targetDid');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
@@ -208,12 +208,12 @@ class LabelRepositoryImpl implements LabelRepository {
     _logger.d('Querying labels for ${uriPatterns.length} URI patterns from labeler: $targetDid');
     
     return _client.executeWithRetry(() async {
-      if (!_client.authService.isAuthenticated) {
+      if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final atproto = _client.authService.atproto;
+      final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');

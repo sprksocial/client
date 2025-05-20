@@ -53,11 +53,13 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
     
     if (oldWidget.isParentFeedVisible != widget.isParentFeedVisible) {
       // Handle parent visibility changes
-      ref.read(feedPageStateNotifierProvider(
-        widget.feedType, 
-        initialPosts: widget.initialPosts, 
-        initialIndex: widget.initialIndex
-      ).notifier).handleParentVisibilityChange(widget.isParentFeedVisible);
+      Future.microtask(() {
+        ref.read(feedPageStateNotifierProvider(
+          widget.feedType, 
+          initialPosts: widget.initialPosts, 
+          initialIndex: widget.initialIndex
+        ).notifier).handleParentVisibilityChange(widget.isParentFeedVisible);
+      });
     }
   }
   

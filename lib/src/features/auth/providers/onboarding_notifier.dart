@@ -10,7 +10,7 @@ import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
 
-part 'onboarding_provider.g.dart';
+part 'onboarding_notifier.g.dart';
 
 @riverpod
 class OnboardingNotifier extends _$OnboardingNotifier {
