@@ -3,8 +3,20 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'auth_service.dart';
+import 'sprk_client.dart';
+
 /// Enum to represent the user's preference for a specific label
 enum LabelPreference { show, warn, hide }
+
+/// Enum to represent follow mode options
+enum FollowMode {
+  sprk,
+  bsky;
+
+  @override
+  String toString() => name;
+}
 
 class SettingsService extends ChangeNotifier {
   static const String _feedBlurKey = 'feed_blur_enabled';
@@ -18,13 +30,15 @@ class SettingsService extends ChangeNotifier {
   bool _feedBlurEnabled = false;
   bool _hideAdultContent = true;
   List<String> _followedLabelers = [];
-  String _followMode = 'sprk';
+  FollowMode _followMode = FollowMode.sprk;
+
+  final SprkClient _sprkClient;
 
   /// Stores label preferences for each labeler
   /// Format: {labelerDid: {labelValue: preferenceValue}}
   Map<String, Map<String, String>> _labelPreferences = {};
 
-  SettingsService() {
+  SettingsService({required AuthService authService}) : _sprkClient = SprkClient(authService) {
     _loadSettings();
   }
 
@@ -32,7 +46,7 @@ class SettingsService extends ChangeNotifier {
   bool get feedBlurEnabled => _feedBlurEnabled;
   bool get hideAdultContent => _hideAdultContent;
   List<String> get followedLabelers => List.unmodifiable(_followedLabelers);
-  String get followMode => _followMode; // Getter for follow mode
+  FollowMode get followMode => _followMode;
 
   /// Returns an immutable copy of all labeler preferences
   Map<String, Map<String, String>> get labelPreferences => Map.unmodifiable(_labelPreferences);
@@ -44,7 +58,8 @@ class SettingsService extends ChangeNotifier {
     _followedLabelers = _prefs?.getStringList(_followedLabelersKey) ?? [];
 
     // Load follow mode
-    _followMode = _prefs?.getString(_keyFollowMode) ?? 'sprk';
+    final savedMode = _prefs?.getString(_keyFollowMode) ?? 'sprk';
+    _followMode = savedMode == 'bsky' ? FollowMode.bsky : FollowMode.sprk;
 
     // Load label preferences
     final prefsJson = _prefs?.getString(_labelerPreferencesKey);
@@ -208,16 +223,21 @@ class SettingsService extends ChangeNotifier {
   }
 
   /// Sets the profile follow mode, saves it, and notifies listeners.
-  /// Expects internal keys like 'sprk' or 'bsky'.
-  Future<void> setFollowMode(String mode) async {
+  Future<void> setFollowMode(FollowMode mode) async {
     if (_isLoading) await _loadSettings();
-    // Basic validation using internal keys
-    if (mode == 'sprk' || mode == 'bsky') {
-      if (_followMode != mode) {
-        _followMode = mode;
-        await _prefs?.setString(_keyFollowMode, _followMode);
-        notifyListeners();
+
+    if (_followMode != mode) {
+      _followMode = mode;
+      await _prefs?.setString(_keyFollowMode, mode.name);
+
+      // Call the API to update the server-side preference
+      try {
+        await _sprkClient.actor.putPreferences(followMode: mode);
+      } catch (e) {
+        debugPrint('Failed to update server preference: $e');
       }
+
+      notifyListeners();
     }
   }
 }

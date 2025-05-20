@@ -18,6 +18,7 @@ import 'services/actions_service.dart';
 import 'services/auth_service.dart';
 import 'services/comments_service.dart';
 import 'services/identity_service.dart';
+import 'services/labeler_manager.dart';
 import 'services/profile_service.dart';
 import 'services/settings_service.dart';
 import 'services/upload_service.dart';
@@ -25,7 +26,6 @@ import 'services/video_service.dart';
 import 'utils/app_colors.dart';
 import 'utils/app_theme.dart';
 import 'widgets/upload/upload_progress_indicator.dart';
-import 'services/labeler_manager.dart';
 
 // Global RouteObserver instance
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
@@ -62,9 +62,12 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => NavigationProvider()),
-        ChangeNotifierProvider(create: (_) => AuthService()),
+        ChangeNotifierProvider<AuthService>(create: (_) => AuthService()),
         ChangeNotifierProvider(create: (_) => CachedIdentityService()),
-        ChangeNotifierProvider(create: (_) => SettingsService()),
+        ChangeNotifierProxyProvider<AuthService, SettingsService>(
+          create: (context) => SettingsService(authService: Provider.of<AuthService>(context, listen: false)),
+          update: (context, auth, previous) => previous ?? SettingsService(authService: auth),
+        ),
         ChangeNotifierProvider(create: (_) => UploadService()),
         ChangeNotifierProxyProvider<AuthService, ProfileService>(
           create: (context) => ProfileService(context.read<AuthService>()),

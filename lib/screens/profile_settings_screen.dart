@@ -14,7 +14,7 @@ class ProfileSettingsScreen extends StatefulWidget {
 }
 
 class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
-  final Map<String, String> _followModeMap = {'Spark exclusive': 'sprk', 'Bluesky synced': 'bsky'};
+  final Map<String, FollowMode> _followModeMap = {'Spark exclusive': FollowMode.sprk, 'Bluesky synced': FollowMode.bsky};
 
   void _handleLogout() {
     final authService = Provider.of<AuthService>(context, listen: false);
@@ -118,17 +118,17 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
   }) {
     final currentMode = settingsService.followMode;
     final displayValues = _followModeMap.keys.toList(); // ['Spark exclusive', 'Bluesky synced']
-    final internalValues = _followModeMap.values.toList(); // ['sprk', 'bsky']
+    final modeValues = _followModeMap.values.toList(); // [FollowMode.sprk, FollowMode.bsky]
 
-    Widget buildModeButton(String displayValue, String internalValue) {
-      final bool isSelected = currentMode == internalValue;
+    Widget buildModeButton(String displayValue, FollowMode modeValue) {
+      final bool isSelected = currentMode == modeValue;
       return Expanded(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 4.0),
           child: ElevatedButton(
             onPressed: () {
               if (!isSelected) {
-                settingsService.setFollowMode(internalValue);
+                settingsService.setFollowMode(modeValue);
               }
             },
             style: ElevatedButton.styleFrom(
@@ -169,14 +169,16 @@ class _ProfileSettingsScreenState extends State<ProfileSettingsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                buildModeButton(displayValues[0], internalValues[0]), // Spark exclusive
-                buildModeButton(displayValues[1], internalValues[1]), // Bluesky synced
+                buildModeButton(displayValues[0], modeValues[0]), // Spark exclusive
+                buildModeButton(displayValues[1], modeValues[1]), // Bluesky synced
               ],
             ),
             const SizedBox(height: 8),
             Center(
               child: Text(
-                currentMode == 'sprk' ? 'You are managing follows within Spark only.' : 'Your follows are synced with Bluesky.',
+                currentMode == FollowMode.sprk
+                    ? 'You are managing follows within Spark only.'
+                    : 'Your follows are synced with Bluesky.',
                 style: TextStyle(fontSize: 12, color: textColor.withValues(alpha: 0.6)),
                 textAlign: TextAlign.center,
               ),

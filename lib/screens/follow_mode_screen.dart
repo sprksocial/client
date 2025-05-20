@@ -26,7 +26,7 @@ class _FollowModeScreenState extends State<FollowModeScreen> {
     setState(() => _isLoading = true);
 
     final settingsService = Provider.of<SettingsService>(context, listen: false);
-    await settingsService.setFollowMode('sprk');
+    await settingsService.setFollowMode(FollowMode.sprk);
 
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
@@ -47,7 +47,7 @@ class _FollowModeScreenState extends State<FollowModeScreen> {
     final onboardingService = OnboardingService(authService);
 
     try {
-      await settingsService.setFollowMode('bsky');
+      await settingsService.setFollowMode(FollowMode.bsky);
       await onboardingService.finalizeProfileCreation(
         displayName: widget.displayName,
         description: widget.description,
