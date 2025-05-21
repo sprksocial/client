@@ -234,6 +234,29 @@ class ActorAPI {
       );
     });
   }
+
+  /// Get user preferences
+  ///
+  /// Returns the user's preferences, including followMode
+  Future<dynamic> getPreferences() async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      return await atproto.get(
+        NSID.parse('so.sprk.actor.getPreferences'),
+        headers: {'atproto-proxy': _client._sprkDid},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+      );
+    });
+  }
 }
 
 /// Graph-related API endpoints

@@ -31,15 +31,33 @@ class SettingsService extends ChangeNotifier {
   bool _hideAdultContent = true;
   List<String> _followedLabelers = [];
   FollowMode _followMode = FollowMode.sprk;
-
+  final AuthService _authService;
   final SprkClient _sprkClient;
 
   /// Stores label preferences for each labeler
   /// Format: {labelerDid: {labelValue: preferenceValue}}
   Map<String, Map<String, String>> _labelPreferences = {};
 
-  SettingsService({required AuthService authService}) : _sprkClient = SprkClient(authService) {
+  SettingsService({required AuthService authService}) : _authService = authService, _sprkClient = SprkClient(authService) {
     _loadSettings();
+    // Listen for auth state changes to clear cached values on logout
+    _authService.addListener(_handleAuthStateChange);
+  }
+
+  @override
+  void dispose() {
+    _authService.removeListener(_handleAuthStateChange);
+    super.dispose();
+  }
+
+  void _handleAuthStateChange() {
+    if (!_authService.isAuthenticated) {
+      _clearCachedFollowMode();
+    }
+  }
+
+  void _clearCachedFollowMode() {
+    _prefs?.remove(_keyFollowMode);
   }
 
   bool get isLoading => _isLoading;
@@ -57,7 +75,7 @@ class SettingsService extends ChangeNotifier {
     _hideAdultContent = _prefs?.getBool(_hideAdultContentKey) ?? true; // Default to true if not set
     _followedLabelers = _prefs?.getStringList(_followedLabelersKey) ?? [];
 
-    // Load follow mode
+    // Load the cached follow mode as a temporary value
     final savedMode = _prefs?.getString(_keyFollowMode) ?? 'sprk';
     _followMode = savedMode == 'bsky' ? FollowMode.bsky : FollowMode.sprk;
 
@@ -220,6 +238,23 @@ class SettingsService extends ChangeNotifier {
     _labelPreferences.remove(labelerDid);
     await _saveLabelPreferences();
     notifyListeners();
+  }
+
+  /// Fetch and sync the follow mode from the backend, store locally, and notify listeners if changed.
+  Future<void> syncFollowModeFromServer() async {
+    if (_isLoading) await _loadSettings();
+    try {
+      final response = await _sprkClient.actor.getPreferences();
+      final serverMode = response.data['followMode'] ?? 'sprk';
+      final mode = serverMode == 'bsky' ? FollowMode.bsky : FollowMode.sprk;
+      if (_followMode != mode) {
+        _followMode = mode;
+        await _prefs?.setString(_keyFollowMode, mode.name);
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Failed to sync follow mode from server: $e');
+    }
   }
 
   /// Sets the profile follow mode, saves it, and notifies listeners.

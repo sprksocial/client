@@ -80,7 +80,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     try {
       if (_bskyProfile == null) {
         final settingsService = Provider.of<SettingsService>(context, listen: false);
-        await settingsService.setFollowMode('sprk');
+        await settingsService.setFollowMode(FollowMode.sprk);
         if (!mounted) return;
         final authService = Provider.of<AuthService>(context, listen: false);
         final onboardingService = OnboardingService(authService);

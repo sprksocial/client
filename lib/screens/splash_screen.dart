@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 
 import '../services/auth_service.dart';
 import '../services/onboarding_service.dart';
+import '../services/settings_service.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -36,6 +37,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _checkAuthentication() async {
     final authService = Provider.of<AuthService>(context, listen: false);
+    final settingsService = Provider.of<SettingsService>(context, listen: false);
 
     while (authService.isLoading) {
       await Future.delayed(const Duration(milliseconds: 10));
@@ -48,6 +50,8 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.of(context).pushReplacementNamed('/auth');
       return;
     }
+    // Sync follow mode from server after session is valid
+    await settingsService.syncFollowModeFromServer();
     // Check if Spark profile exists
     final onboardingService = OnboardingService(authService);
     final hasSpark = await onboardingService.hasSparkProfile();
