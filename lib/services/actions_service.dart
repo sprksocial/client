@@ -5,13 +5,15 @@ import 'package:image_picker/image_picker.dart';
 
 import '../models/feed_post.dart';
 import 'auth_service.dart';
+import 'settings_service.dart';
 import 'sprk_client.dart';
 
 class ActionsService extends ChangeNotifier {
   final AuthService _authService;
+  final SettingsService _settingsService;
   late final SprkClient _client;
 
-  ActionsService(this._authService) {
+  ActionsService(this._authService, this._settingsService) {
     _client = SprkClient(_authService);
   }
 
@@ -205,36 +207,53 @@ class ActionsService extends ChangeNotifier {
   }
 
   Future<dynamic> followUser(String did) async {
-    // Check if already following
     try {
-      // Query existing follow records
-      final existingFollows = await _client.repo.listRecords(
-        repo: _authService.session!.did,
-        collection: NSID.parse('so.sprk.graph.follow'),
-      );
-
-      // Check if we're already following this specific user
-      for (final record in existingFollows.data.records) {
-        if (record.value['subject'] == did) {
-          throw Exception('Already following this user');
+      final mode = _settingsService.followMode;
+      if (mode == FollowMode.sprk) {
+        // Check if already following in Spark
+        final existingFollows = await _client.repo.listRecords(
+          repo: _authService.session!.did,
+          collection: NSID.parse('so.sprk.graph.follow'),
+        );
+        for (final record in existingFollows.data.records) {
+          if (record.value['subject'] == did) {
+            throw Exception('Already following this user');
+          }
         }
+        final followRecord = {
+          "\$type": "so.sprk.graph.follow",
+          "subject": did,
+          "createdAt": DateTime.now().toUtc().toIso8601String(),
+        };
+        final response = await _client.repo.createRecord(collection: NSID.parse('so.sprk.graph.follow'), record: followRecord);
+        if (response.status.code != 200) {
+          throw Exception('Failed to follow user: \\${response.status.code} \\${response.data}');
+        }
+        notifyListeners();
+        return response;
+      } else {
+        // Bluesky mode
+        final session = _authService.session;
+        if (session == null) throw Exception('Not authenticated');
+        // Check if already following in Bluesky
+        final followsRes = await _client.repo.listRecords(repo: session.did, collection: NSID.parse('app.bsky.graph.follow'));
+        for (final record in followsRes.data.records) {
+          if (record.value['subject'] == did) {
+            throw Exception('Already following this user');
+          }
+        }
+        final followRecord = {
+          "\$type": "app.bsky.graph.follow",
+          "subject": did,
+          "createdAt": DateTime.now().toUtc().toIso8601String(),
+        };
+        final response = await _client.repo.createRecord(collection: NSID.parse('app.bsky.graph.follow'), record: followRecord);
+        if (response.status.code != 200) {
+          throw Exception('Failed to follow user (bsky): \\${response.status.code} \\${response.data}');
+        }
+        notifyListeners();
+        return response;
       }
-
-      // If not already following, create new follow record
-      final followRecord = {
-        "\$type": "so.sprk.graph.follow",
-        "subject": did,
-        "createdAt": DateTime.now().toUtc().toIso8601String(),
-      };
-
-      final response = await _client.repo.createRecord(collection: NSID.parse('so.sprk.graph.follow'), record: followRecord);
-
-      if (response.status.code != 200) {
-        throw Exception('Failed to follow user: ${response.status.code} ${response.data}');
-      }
-
-      notifyListeners();
-      return response;
     } catch (e) {
       debugPrint('Error in followUser: $e');
       rethrow;

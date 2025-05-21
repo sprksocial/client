@@ -73,9 +73,11 @@ class MyApp extends StatelessWidget {
           create: (context) => ProfileService(context.read<AuthService>()),
           update: (_, authService, previousProfileService) => previousProfileService ?? ProfileService(authService),
         ),
-        ChangeNotifierProxyProvider<AuthService, ActionsService>(
-          create: (context) => ActionsService(context.read<AuthService>()),
-          update: (_, authService, previousActionsService) => previousActionsService ?? ActionsService(authService),
+        ChangeNotifierProxyProvider2<AuthService, SettingsService, ActionsService>(
+          create: (context) => ActionsService(context.read<AuthService>(), context.read<SettingsService>()),
+          update:
+              (_, authService, settingsService, previousActionsService) =>
+                  previousActionsService ?? ActionsService(authService, settingsService),
         ),
         ChangeNotifierProxyProvider2<AuthService, ProfileService, CommentsService>(
           create: (context) => CommentsService(context.read<AuthService>(), context.read<ProfileService>()),
