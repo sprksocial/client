@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../services/auth_service.dart';
 import '../services/onboarding_service.dart';
+import '../services/settings_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
 import '../widgets/ataccount_dialog.dart';
@@ -68,8 +69,13 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (result == LoginStatus.success) {
         TextInput.finishAutofillContext(shouldSave: true);
+
+        final settingsService = Provider.of<SettingsService>(context, listen: false);
+        await settingsService.syncFollowModeFromServer();
+
         final onboardingService = OnboardingService(authService);
         final hasSpark = await onboardingService.hasSparkProfile();
+
         if (!mounted) return;
         Navigator.of(context).pushNamedAndRemoveUntil(hasSpark ? '/home' : '/onboarding', (Route<dynamic> route) => false);
       } else if (result == LoginStatus.codeRequired) {
