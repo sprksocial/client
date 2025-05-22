@@ -235,13 +235,20 @@ class OnboardingService {
     }
 
     // Prepare delete operations for duplicate records
-    // For each subject, keep the first record and mark the rest for deletion
+    // For each subject, sort by createdAt (oldest first) and keep the oldest record
     final deleteWrites = <Map<String, dynamic>>[];
 
     for (final entry in subjectToRecords.entries) {
       final records = entry.value;
       if (records.length > 1) {
-        // Skip the first one (keep it) and mark others for deletion
+        // Sort records by createdAt timestamp (oldest first)
+        records.sort((a, b) {
+          final aTimestamp = a['value']['createdAt'] as String;
+          final bTimestamp = b['value']['createdAt'] as String;
+          return aTimestamp.compareTo(bTimestamp);
+        });
+
+        // Keep the oldest one (first after sorting) and mark others for deletion
         for (int i = 1; i < records.length; i++) {
           deleteWrites.add({
             '\$type': 'com.atproto.repo.applyWrites#delete',
