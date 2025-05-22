@@ -21,6 +21,8 @@ class ImportFollowsScreen extends StatefulWidget {
 
 class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
   bool _loading = true;
+  bool _followingAll = false;
+  String? _statusMessage;
   List<bs.Actor> _filteredFollows = [];
   List<bs.Actor> _allActors = [];
   final Set<String> _followed = {};
@@ -93,7 +95,12 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
   }
 
   Future<void> _followAll() async {
-    setState(() => _loading = true);
+    if (_followingAll) return; // Prevent multiple follow all operations
+
+    setState(() {
+      _followingAll = true;
+      _statusMessage = 'Following accounts...';
+    });
 
     try {
       final service = OnboardingService(Provider.of(context, listen: false));
@@ -101,22 +108,37 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
       // Filter out already followed accounts
       final toFollow = _allActors.map((actor) => actor.did).where((did) => !_followed.contains(did)).toList();
 
-      if (toFollow.isNotEmpty) {
-        // Use batch follows to follow all at once
-        final followed = await service.createBatchFollows(toFollow);
-
-        // Update the UI only once after all follows are complete
+      if (toFollow.isEmpty) {
         setState(() {
-          _followed.addAll(followed);
-          _loading = false;
+          _followingAll = false;
+          _statusMessage = null;
         });
-      } else {
-        setState(() => _loading = false);
+        return;
       }
+
+      // Use batch follows to follow accounts
+      final followed = await service.createBatchFollows(toFollow);
+
+      // Update followed status for each account
+      setState(() {
+        _followed.addAll(followed);
+        _followingAll = false;
+        _statusMessage = null;
+      });
+
+      // Show success message
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Successfully followed ${followed.length} accounts')));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error following accounts: ${e.toString()}')));
-      setState(() => _loading = false);
+    } finally {
+      if (mounted) {
+        setState(() {
+          _followingAll = false;
+          _statusMessage = null;
+        });
+      }
     }
   }
 
@@ -154,10 +176,10 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body:
-          _loading
-              ? const Center(child: CircularProgressIndicator(color: Colors.white))
-              : Padding(
+      body: SafeArea(
+        child: _loading
+            ? const Center(child: CircularProgressIndicator(color: Colors.white))
+            : Padding(
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -186,6 +208,17 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
+                    if (_statusMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: Row(
+                          children: [
+                            const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                            const SizedBox(width: 12),
+                            Expanded(child: Text(_statusMessage!)),
+                          ],
+                        ),
+                      ),
                     Expanded(
                       child: ListView.separated(
                         addAutomaticKeepAlives: false,
@@ -214,13 +247,17 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
                       ),
                     ),
                     ElevatedButton(
-                      onPressed: _followAll,
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.pink),
-                      child: const Text('Follow all', style: TextStyle(color: Colors.white)),
+                      onPressed: _followingAll ? null : _followAll,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.pink,
+                        disabledBackgroundColor: AppColors.pink.withValues(alpha: 0.5),
+                      ),
+                      child: Text(_followingAll ? 'Following...' : 'Follow all', style: const TextStyle(color: Colors.white)),
                     ),
                   ],
                 ),
               ),
+      ),
     );
   }
 

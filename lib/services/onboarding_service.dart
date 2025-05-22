@@ -11,6 +11,9 @@ class OnboardingService {
   final AuthService _authService;
   final SprkClient _sprkClient;
 
+  /// Maximum number of writes allowed in a single applyWrites request
+  static const int _maxWritesPerRequest = 200;
+
   OnboardingService(this._authService) : _sprkClient = SprkClient(_authService);
 
   Future<bool> hasSparkProfile() async {
@@ -108,15 +111,31 @@ class OnboardingService {
     }
   }
 
-  /// Creates multiple follow records in a single transaction using applyWrites
+  /// Helper function to apply writes in chunks of 200 (max allowed per request)
+  Future<void> _applyWritesInChunks(List<Map<String, dynamic>> writes, String did) async {
+    final atproto = _authService.atproto;
+    if (atproto == null) throw Exception('Not authenticated');
+
+    // Split writes into chunks of max 200 items
+    for (int i = 0; i < writes.length; i += _maxWritesPerRequest) {
+      final end = (i + _maxWritesPerRequest < writes.length) ? i + _maxWritesPerRequest : writes.length;
+      final chunk = writes.sublist(i, end);
+
+      final response = await atproto.post(NSID.parse('com.atproto.repo.applyWrites'), body: {'repo': did, 'writes': chunk});
+
+      if (response.status.code != 200) {
+        throw Exception('Failed to apply writes: ${response.status.code}');
+      }
+    }
+  }
+
+  /// Creates multiple follow records in chunks using applyWrites
   /// Returns a list of DIDs that were successfully followed
   Future<List<String>> createBatchFollows(List<String> subjects) async {
     if (subjects.isEmpty) return [];
 
     final session = _authService.session;
-    final atproto = _authService.atproto;
-
-    if (session == null || atproto == null) throw Exception('Not authenticated');
+    if (session == null) throw Exception('Not authenticated');
 
     // Create write operations for each follow
     final writes =
@@ -132,15 +151,8 @@ class OnboardingService {
           };
         }).toList();
 
-    // Apply all writes in a single transaction
-    final response = await atproto.post(
-      NSID.parse('com.atproto.repo.applyWrites'),
-      body: {'repo': session.did, 'writes': writes},
-    );
-
-    if (response.status.code != 200) {
-      throw Exception('Failed to create batch follows: ${response.status.code}');
-    }
+    // Apply writes in chunks
+    await _applyWritesInChunks(writes, session.did);
 
     return subjects;
   }
@@ -206,15 +218,8 @@ class OnboardingService {
     // If no duplicates found, return early
     if (deleteWrites.isEmpty) return 0;
 
-    // Apply all deletes in a single transaction
-    final response = await atproto.post(
-      NSID.parse('com.atproto.repo.applyWrites'),
-      body: {'repo': session.did, 'writes': deleteWrites},
-    );
-
-    if (response.status.code != 200) {
-      throw Exception('Failed to delete duplicate follows: ${response.status.code}');
-    }
+    // Apply delete operations in chunks
+    await _applyWritesInChunks(deleteWrites, session.did);
 
     return deleteWrites.length;
   }
