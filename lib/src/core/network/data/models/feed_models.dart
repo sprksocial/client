@@ -24,20 +24,14 @@ enum FeedType {
 
 @freezed
 class PostThreadResponse with _$PostThreadResponse {
-  const factory PostThreadResponse({
-    required PostThread thread,
-  }) = _PostThreadResponse;
+  const factory PostThreadResponse({required PostThread thread}) = _PostThreadResponse;
 
   factory PostThreadResponse.fromJson(Map<String, dynamic> json) => _$PostThreadResponseFromJson(json);
 }
 
 @freezed
 class PostThread with _$PostThread {
-  const factory PostThread({
-    required Post post,
-    List<Post>? parent,
-    List<Post>? replies,
-  }) = _PostThread;
+  const factory PostThread({required Post post, List<Post>? parent, List<Post>? replies}) = _PostThread;
 
   factory PostThread.fromJson(Map<String, dynamic> json) => _$PostThreadFromJson(json);
 }
@@ -76,80 +70,57 @@ class PostAuthor with _$PostAuthor {
 
 @freezed
 class Label with _$Label {
-  const factory Label({
-    required String val,
-    String? src,
-  }) = _Label;
+  const factory Label({required String val, String? src}) = _Label;
 
   factory Label.fromJson(Map<String, dynamic> json) => _$LabelFromJson(json);
 }
 
 @freezed
 class FeedSkeletonResponse with _$FeedSkeletonResponse {
-  const factory FeedSkeletonResponse({
-    required List<FeedItem> feed,
-    String? cursor,
-  }) = _FeedSkeletonResponse;
+  const factory FeedSkeletonResponse({required List<FeedItem> feed, String? cursor}) = _FeedSkeletonResponse;
 
   factory FeedSkeletonResponse.fromJson(Map<String, dynamic> json) => _$FeedSkeletonResponseFromJson(json);
 }
 
 @freezed
 class FeedItem with _$FeedItem {
-  const factory FeedItem({
-    required String post,
-    String? reason,
-  }) = _FeedItem;
+  const factory FeedItem({required String post, String? reason}) = _FeedItem;
 
   factory FeedItem.fromJson(Map<String, dynamic> json) => _$FeedItemFromJson(json);
 }
 
 @freezed
 class PostsResponse with _$PostsResponse {
-  const factory PostsResponse({
-    required List<Post> posts,
-  }) = _PostsResponse;
+  const factory PostsResponse({required List<Post> posts}) = _PostsResponse;
 
   factory PostsResponse.fromJson(Map<String, dynamic> json) => _$PostsResponseFromJson(json);
 }
 
 @freezed
 class AuthorFeedResponse with _$AuthorFeedResponse {
-  const factory AuthorFeedResponse({
-    required List<Post> feed,
-    String? cursor,
-  }) = _AuthorFeedResponse;
+  const factory AuthorFeedResponse({required List<Post> feed, String? cursor}) = _AuthorFeedResponse;
 
   factory AuthorFeedResponse.fromJson(Map<String, dynamic> json) => _$AuthorFeedResponseFromJson(json);
 }
 
 @freezed
 class LikePostResponse with _$LikePostResponse {
-  const factory LikePostResponse({
-    required String uri,
-    required String cid,
-  }) = _LikePostResponse;
+  const factory LikePostResponse({required String uri, required String cid}) = _LikePostResponse;
 
   factory LikePostResponse.fromJson(Map<String, dynamic> json) => _$LikePostResponseFromJson(json);
 }
 
 @freezed
 class CommentPostResponse with _$CommentPostResponse {
-  const factory CommentPostResponse({
-    required String uri,
-    required String cid,
-  }) = _CommentPostResponse;
+  const factory CommentPostResponse({required String uri, required String cid}) = _CommentPostResponse;
 
   factory CommentPostResponse.fromJson(Map<String, dynamic> json) => _$CommentPostResponseFromJson(json);
 }
 
 @freezed
 class ImageUploadResult with _$ImageUploadResult {
-  const factory ImageUploadResult({
-    required String fullsize,
-    required String alt,
-    required Map<String, dynamic> image,
-  }) = _ImageUploadResult;
+  const factory ImageUploadResult({required String fullsize, required String alt, required Map<String, dynamic> image}) =
+      _ImageUploadResult;
 
   factory ImageUploadResult.fromJson(Map<String, dynamic> json) => _$ImageUploadResultFromJson(json);
 }
@@ -205,15 +176,15 @@ class Comment with _$Comment {
   }) = _Comment;
 
   factory Comment.fromJson(Map<String, dynamic> json) => _$CommentFromJson(json);
-  
+
   /// Create a Comment from a Bluesky comment
   factory Comment.fromBlueskyComment(Map<String, dynamic> post) {
     // Use pattern matching to extract author and record data
     final (authorData, recordData) = switch (post) {
       {'author': Map<String, dynamic> author, 'record': Map<String, dynamic> record} => (author, record),
-      _ => (<String, dynamic>{}, <String, dynamic>{})
+      _ => (<String, dynamic>{}, <String, dynamic>{}),
     };
-    
+
     // Extract text and hashtags using pattern matching
     final text = recordData['text'] as String? ?? '';
     final hashtags = _extractHashtags(text);
@@ -231,19 +202,19 @@ class Comment with _$Comment {
         case {r'$type': 'app.bsky.embed.images#view', 'images': List images} when images.isNotEmpty:
           hasMedia = true;
           mediaType = 'image';
-          
+
           // Extract thumbnail for the first image
           if (images.first case {'thumbnail': String thumb}) {
             mediaUrl = thumb;
           }
-          
+
           // Extract all fullsize images
           for (final image in images) {
             if (image case {'fullsize': String fullsize}) {
               imageUrls.add(fullsize);
             }
           }
-          
+
         case {r'$type': 'app.bsky.embed.video#view', 'playlist': String playlist}:
           hasMedia = true;
           mediaType = 'video';
@@ -263,17 +234,17 @@ class Comment with _$Comment {
       cid: post['cid'] as String? ?? '',
       authorDid: switch (authorData) {
         {'did': String did} => did,
-        _ => ''
+        _ => '',
       },
       username: switch (authorData) {
         {'handle': String handle} => handle,
-        _ => ''
+        _ => '',
       },
       profileImageUrl: authorData['avatar'] as String?,
       text: text,
       createdAt: _formatTimeAgo(switch (recordData) {
         {'createdAt': String date} => date,
-        _ => DateTime.now().toIso8601String()
+        _ => DateTime.now().toIso8601String(),
       }),
       likeCount: post['likeCount'] as int? ?? 0,
       replyCount: post['replyCount'] as int? ?? 0,
@@ -290,13 +261,8 @@ class Comment with _$Comment {
   /// Create a Comment from a Spark comment
   factory Comment.fromSparkComment(Map<String, dynamic> post) {
     // Use pattern matching to extract author and record data
-    final (authorData, recordData) = switch (post) {
-      {'author': Map<String, dynamic> author, 'record': Map<String, dynamic> record} => (author, record),
-      _ => (<String, dynamic>{}, <String, dynamic>{})
-    };
-    
-    // Extract text and hashtags using pattern matching
-    final text = recordData['text'] as String? ?? '';
+    final {'author': Map<String, dynamic> authorData, 'record': Map<String, dynamic> recordData} = post;
+    final {'text': String text} = recordData;
     final hashtags = _extractHashtags(text);
 
     // Extract media information using pattern matching
@@ -312,19 +278,19 @@ class Comment with _$Comment {
         case {r'$type': 'so.sprk.embed.images#view', 'images': List images} when images.isNotEmpty:
           hasMedia = true;
           mediaType = 'image';
-          
+
           // Extract thumb for the first image
           if (images.first case {'thumb': String thumb}) {
             mediaUrl = thumb;
           }
-          
+
           // Extract all fullsize images
           for (final image in images) {
             if (image case {'fullsize': String fullsize}) {
               imageUrls.add(fullsize);
             }
           }
-          
+
         case {r'$type': 'so.sprk.embed.video#view', 'playlist': String playlist}:
           hasMedia = true;
           mediaType = 'video';
@@ -337,27 +303,25 @@ class Comment with _$Comment {
     if (post case {'viewer': {'like': String like}}) {
       likeUri = like;
     }
-    
+
     return Comment(
       id: post['uri'] as String? ?? '',
       uri: post['uri'] as String? ?? '',
       cid: post['cid'] as String? ?? '',
       authorDid: switch (authorData) {
         {'did': String did} => did,
-        _ => ''
+        _ => '',
       },
       username: switch (authorData) {
         {'handle': String handle} => handle,
-        _ => ''
+        _ => '',
       },
       profileImageUrl: authorData['avatar'] as String?,
       text: text,
-      createdAt: _formatTimeAgo(
-        switch (post) {
-          {'indexedAt': String date} => date,
-          _ => DateTime.now().toIso8601String()
-        }
-      ),
+      createdAt: _formatTimeAgo(switch (post) {
+        {'indexedAt': String date} => date,
+        _ => DateTime.now().toIso8601String(),
+      }),
       likeCount: post['likeCount'] as int? ?? 0,
       replyCount: post['replyCount'] as int? ?? 0,
       hashtags: hashtags,
@@ -369,7 +333,7 @@ class Comment with _$Comment {
       imageUrls: imageUrls,
     );
   }
-  
+
   /// Create a Comment from a Spark record (not a full post object)
   static Future<Comment> fromSparkCommentRecord(Map<String, dynamic> record, String uri) async {
     // Use pattern matching to extract data from record
@@ -389,19 +353,19 @@ class Comment with _$Comment {
         case {r'$type': 'so.sprk.embed.images#view', 'images': List images} when images.isNotEmpty:
           hasMedia = true;
           mediaType = 'image';
-          
+
           // Extract thumb for the first image
           if (images.first case {'thumb': String thumb}) {
             mediaUrl = thumb;
           }
-          
+
           // Extract all fullsize images
           for (final image in images) {
             if (image case {'fullsize': String fullsize}) {
               imageUrls.add(fullsize);
             }
           }
-          
+
         case {r'$type': 'so.sprk.embed.video#view', 'playlist': String playlist}:
           hasMedia = true;
           mediaType = 'video';
@@ -423,11 +387,11 @@ class Comment with _$Comment {
         authorDid = match.group(1)!;
       }
     }
-    
+
     // Get repositories from service locator
     final identityRepository = GetIt.instance<IdentityRepository>();
     final actorRepository = GetIt.instance<ActorRepository>();
-    
+
     // Get handle from identity repository
     final handle = await identityRepository.resolveDidToHandle(authorDid);
     if (handle == null) {
@@ -446,13 +410,11 @@ class Comment with _$Comment {
       username: profileResponse.displayName ?? profileResponse.handle,
       profileImageUrl: profileResponse.avatar,
       text: text,
-      createdAt: _formatTimeAgo(
-        switch (record) {
-          {'indexedAt': String date} => date,
-          {'createdAt': String date} => date,
-          _ => DateTime.now().toIso8601String()
-        },
-      ),
+      createdAt: _formatTimeAgo(switch (record) {
+        {'indexedAt': String date} => date,
+        {'createdAt': String date} => date,
+        _ => DateTime.now().toIso8601String(),
+      }),
       likeCount: record['likeCount'] as int? ?? 0,
       replyCount: record['replyCount'] as int? ?? 0,
       hashtags: hashtags,
@@ -485,19 +447,19 @@ class Comment with _$Comment {
         case {r'$type': 'app.bsky.embed.images#view', 'images': List images} when images.isNotEmpty:
           hasMedia = true;
           mediaType = 'image';
-          
+
           // Extract thumbnail for the first image
           if (images.first case {'thumbnail': String thumb}) {
             mediaUrl = thumb;
           }
-          
+
           // Extract all fullsize images
           for (final image in images) {
             if (image case {'fullsize': String fullsize}) {
               imageUrls.add(fullsize);
             }
           }
-          
+
         case {r'$type': 'app.bsky.embed.video#view', 'playlist': String playlist}:
           hasMedia = true;
           mediaType = 'video';
@@ -522,10 +484,10 @@ class Comment with _$Comment {
 
     // Get repositories from service locator
     final actorRepository = GetIt.instance<ActorRepository>();
-    
+
     // Get profile information
     final profileResponse = await actorRepository.getProfile(authorDid);
-    
+
     // Create comment with extracted data
     return Comment(
       id: uri,
@@ -535,13 +497,11 @@ class Comment with _$Comment {
       username: profileResponse.displayName ?? profileResponse.handle,
       profileImageUrl: profileResponse.avatar,
       text: text,
-      createdAt: _formatTimeAgo(
-        switch (record) {
-          {'indexedAt': String date} => date,
-          {'createdAt': String date} => date,
-          _ => DateTime.now().toIso8601String()
-        },
-      ),
+      createdAt: _formatTimeAgo(switch (record) {
+        {'indexedAt': String date} => date,
+        {'createdAt': String date} => date,
+        _ => DateTime.now().toIso8601String(),
+      }),
       likeCount: record['likeCount'] as int? ?? 0,
       replyCount: record['replyCount'] as int? ?? 0,
       hashtags: hashtags,
@@ -554,10 +514,10 @@ class Comment with _$Comment {
       imageUrls: imageUrls,
     );
   }
-  
+
   /// Helper method to check if a comment is liked based on whether there's a likeUri
   static bool isLiked(Comment comment) => comment.likeUri != null;
-  
+
   /// Extract hashtags from text
   static List<String> _extractHashtags(String text) {
     final matches = RegExp(r'#(\w+)').allMatches(text);
@@ -566,7 +526,7 @@ class Comment with _$Comment {
     }
     return [];
   }
-  
+
   /// Parse a relative datetime string like "2023-11-19T12:34:56.789Z" and return a user-friendly string
   static String _formatTimeAgo(String dateTimeString) {
     final dateTime = DateTime.parse(dateTimeString);
@@ -593,160 +553,140 @@ class Comment with _$Comment {
 @freezed
 class BlobReference with _$BlobReference {
   const BlobReference._();
-  
+
   const factory BlobReference({
     /// The type of the blob, usually 'blob'
     @JsonKey(name: '\$type') required String type,
-    
+
     /// The MIME type of the blob
     required String mimeType,
-    
+
     /// Size of the blob in bytes
     required int size,
-    
+
     /// Content reference (CID)
     required String ref,
-    
+
     /// Creation time in ISO 8601 format
     String? createdAt,
   }) = _BlobReference;
-  
+
   /// Create a BlobReference from JSON
-  factory BlobReference.fromJson(Map<String, dynamic> json) => 
-      _$BlobReferenceFromJson(json);
-      
+  factory BlobReference.fromJson(Map<String, dynamic> json) => _$BlobReferenceFromJson(json);
+
   /// Create an empty BlobReference
-  factory BlobReference.empty() => const BlobReference(
-    type: 'blob',
-    mimeType: 'video/mp4',
-    size: 0,
-    ref: '',
-  );
+  factory BlobReference.empty() => const BlobReference(type: 'blob', mimeType: 'video/mp4', size: 0, ref: '');
 }
 
 /// Represents the index range for a facet in the text
 @freezed
 class FacetIndex with _$FacetIndex {
   const FacetIndex._();
-  
+
   const factory FacetIndex({
     /// Start index (inclusive)
     required int byteStart,
-    
+
     /// End index (exclusive)
     required int byteEnd,
   }) = _FacetIndex;
-  
+
   /// Create a FacetIndex from JSON
-  factory FacetIndex.fromJson(Map<String, dynamic> json) => 
-      _$FacetIndexFromJson(json);
+  factory FacetIndex.fromJson(Map<String, dynamic> json) => _$FacetIndexFromJson(json);
 }
 
 /// Represents a feature of a facet (mention, link, hashtag, etc.)
 @freezed
 class FacetFeature with _$FacetFeature {
   const FacetFeature._();
-  
+
   /// Mention feature for referencing a user
-  const factory FacetFeature.mention({
-    required String did,
-  }) = _MentionFeature;
-  
+  const factory FacetFeature.mention({required String did}) = _MentionFeature;
+
   /// Link feature for URLs
-  const factory FacetFeature.link({
-    required String uri,
-  }) = _LinkFeature;
-  
+  const factory FacetFeature.link({required String uri}) = _LinkFeature;
+
   /// Tag feature for hashtags
-  const factory FacetFeature.tag({
-    required String tag,
-  }) = _TagFeature;
-  
+  const factory FacetFeature.tag({required String tag}) = _TagFeature;
+
   /// Create a FacetFeature from JSON
-  factory FacetFeature.fromJson(Map<String, dynamic> json) => 
-      _$FacetFeatureFromJson(json);
+  factory FacetFeature.fromJson(Map<String, dynamic> json) => _$FacetFeatureFromJson(json);
 }
 
 /// Represents a richtext facet for text formatting, mentions, links, etc.
 @freezed
 class Facet with _$Facet {
   const Facet._();
-  
+
   const factory Facet({
     /// Index range for the facet in the text
     required FacetIndex index,
-    
+
     /// Features represented by this facet (mention, link, hashtag, etc.)
     required List<FacetFeature> features,
   }) = _Facet;
-  
+
   /// Create a Facet from JSON
-  factory Facet.fromJson(Map<String, dynamic> json) => 
-      _$FacetFromJson(json);
+  factory Facet.fromJson(Map<String, dynamic> json) => _$FacetFromJson(json);
 }
 
 /// Represents a video embed in a post
 @freezed
 class VideoEmbed with _$VideoEmbed {
   const VideoEmbed._();
-  
+
   const factory VideoEmbed({
     /// The type of embed, typically 'so.sprk.embed.video'
     @JsonKey(name: '\$type') required String type,
-    
+
     /// The video blob reference
     required BlobReference video,
-    
+
     /// Optional alt text for accessibility
     String? alt,
   }) = _VideoEmbed;
-  
+
   /// Create a VideoEmbed from JSON
-  factory VideoEmbed.fromJson(Map<String, dynamic> json) => 
-      _$VideoEmbedFromJson(json);
-      
+  factory VideoEmbed.fromJson(Map<String, dynamic> json) => _$VideoEmbedFromJson(json);
+
   /// Create an empty VideoEmbed
-  factory VideoEmbed.empty() => VideoEmbed(
-    type: 'so.sprk.embed.video',
-    video: BlobReference.empty(),
-  );
+  factory VideoEmbed.empty() => VideoEmbed(type: 'so.sprk.embed.video', video: BlobReference.empty());
 }
 
 /// Represents a post containing a video
 @freezed
 class VideoPost with _$VideoPost {
   const VideoPost._();
-  
+
   const factory VideoPost({
     /// The type of post, typically 'so.sprk.feed.post'
     @JsonKey(name: r'$type') required String type,
-    
+
     /// Post text/description
     @Default('') String text,
-    
+
     /// Video embed containing the actual video data
     required VideoEmbed embed,
-    
+
     /// When the post was created (ISO 8601 format)
     required String createdAt,
-    
+
     /// Optional language tags
     List<String>? langs,
-    
+
     /// Optional content warning labels
     @JsonKey(name: 'labels') List<LabelDetail>? labels,
-    
+
     /// Optional tags for discovery
     List<String>? tags,
-    
+
     /// Optional facets for rich text formatting
     List<Facet>? facets,
   }) = _VideoPost;
-  
+
   /// Create a VideoPost from JSON
-  factory VideoPost.fromJson(Map<String, dynamic> json) => 
-      _$VideoPostFromJson(json);
-  
+  factory VideoPost.fromJson(Map<String, dynamic> json) => _$VideoPostFromJson(json);
+
   /// Create a new empty VideoPost
   factory VideoPost.create({
     required String text,
@@ -756,16 +696,13 @@ class VideoPost with _$VideoPost {
     List<LabelDetail>? labels,
     List<Facet>? facets,
   }) {
-    final videoEmbed = {
-      r'$type': 'so.sprk.embed.video',
-      'video': videoData,
-    };
-    
+    final videoEmbed = {r'$type': 'so.sprk.embed.video', 'video': videoData};
+
     // Add alt text if provided
     if (videoAltText != null && videoAltText.isNotEmpty) {
       videoEmbed['alt'] = videoAltText;
     }
-    
+
     return VideoPost(
       type: 'so.sprk.feed.post',
       text: text,
@@ -776,4 +713,4 @@ class VideoPost with _$VideoPost {
       facets: facets,
     );
   }
-} 
+}

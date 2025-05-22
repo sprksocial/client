@@ -24,7 +24,6 @@ class _HomePageState extends ConsumerState<HomePage> {
   void initState() {
     super.initState();
     _feedTypeHelper = FeedTypeHelper(ref, _pageController);
-    _feedTypeHelper.initializePageController();
   }
   
   @override
@@ -35,6 +34,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {    
+    _feedTypeHelper.initializePageController();
     return VisibilityDetector(
       key: const Key('home_screen_visibility'),
       onVisibilityChanged: (visibilityInfo) {
@@ -47,24 +47,26 @@ class _HomePageState extends ConsumerState<HomePage> {
       },
       child: Scaffold(
         backgroundColor: Colors.black,
-        body: Stack(
-          children: [
-            FeedPagesView(
-              pageController: _pageController,
-              isHomeScreenVisible: _isHomeScreenVisible,
-            ),
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: HomeAppBar(
-                onSettingsTap: () {
-                  final settingsHandler = FeedSettingsHandler(context, ref);
-                  settingsHandler.showFeedSettingsSheet();
-                },
+        body: SafeArea(
+          child: Stack(
+            children: [
+              FeedPagesView(
+                pageController: _pageController,
+                isHomeScreenVisible: _isHomeScreenVisible,
               ),
-            ),
-          ],
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: HomeAppBar(
+                  onSettingsTap: () {
+                    final settingsHandler = FeedSettingsHandler(context, ref);
+                    settingsHandler.showFeedSettingsSheet();
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

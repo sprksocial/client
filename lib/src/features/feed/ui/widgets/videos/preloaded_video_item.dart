@@ -124,7 +124,12 @@ class _PreloadedVideoItemState extends ConsumerState<PreloadedVideoItem> with Wi
 
     // Update visibility if it changed
     if (oldWidget.isVisible != widget.isVisible) {
-      videoStateNotifier.setVisibility(widget.isVisible);
+      // Defer state update to after the build cycle
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) { // Ensure widget is still in the tree
+          videoStateNotifier.setVisibility(widget.isVisible);
+        }
+      });
     }
     
     // If controller changed, we'd need to recreate the provider

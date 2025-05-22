@@ -158,9 +158,12 @@ class _ImagePostItemState extends ConsumerState<ImagePostItem> {
     if (oldWidget.commentCount != widget.commentCount) {
       ref.read(_imagePostProvider.notifier).updateCommentCount(widget.commentCount);
     }
-    
     if (oldWidget.isVisible != widget.isVisible) {
-      ref.read(_imagePostProvider.notifier).setVisible(widget.isVisible);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          ref.read(_imagePostProvider.notifier).setVisible(widget.isVisible);
+        }
+      });
     }
   }
 

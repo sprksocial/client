@@ -1,10 +1,8 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/storage_constants.dart';
-import 'package:sparksocial/src/features/settings/data/models/feed_setting.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:sparksocial/src/features/settings/ui/widgets/feed_settings_sheet.dart';
 
 class FeedSettingsHandler {
   final BuildContext context;
@@ -13,37 +11,13 @@ class FeedSettingsHandler {
   FeedSettingsHandler(this.context, this.ref);
 
   void showFeedSettingsSheet() {
-    final settings = ref.read(settingsProvider);
-    
-    final feedSettings = [
-      FeedSetting(
-        feedName: 'Following', 
-        settingType: StorageKeys.followingFeedEnabledKey, 
-        isEnabled: settings.followingFeedEnabled
-      ),
-      FeedSetting(
-        feedName: 'For You', 
-        settingType: StorageKeys.forYouFeedEnabledKey, 
-        isEnabled: settings.forYouFeedEnabled
-      ),
-      FeedSetting(
-        feedName: 'Latest', 
-        settingType: StorageKeys.latestFeedEnabledKey, 
-        isEnabled: settings.latestFeedEnabled
-      ),
-      FeedSetting(
-        feedName: 'Disable Background Blur',
-        settingType: StorageKeys.feedBlurKey,
-        description: 'Turn off the background blur effect on media',
-        isEnabled: !settings.feedBlurEnabled,
-      ),
-    ];
-
-    context.router.push(
-      FeedSettingsTabRoute(
-        feedSettings: feedSettings,
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Important for full height sheet
+      backgroundColor: Colors.transparent, // Let the sheet handle its own background
+      builder: (context) => FeedSettingsSheet(
         onToggleChanged: _handleSettingToggle,
-      )
+      ),
     );
   }
   

@@ -6,47 +6,54 @@ import 'package:sparksocial/src/features/settings/providers/settings_provider.da
 import 'package:sparksocial/src/features/settings/ui/widgets/feed_setting_item.dart';
 
 class FeedSettingsList extends ConsumerWidget {
-  final List<FeedSetting> feedSettings;
-  final Function(int, bool) onSettingChanged;
+  final Function(String, bool) onSettingChanged;
 
   const FeedSettingsList({
     super.key,
-    required this.feedSettings,
     required this.onSettingChanged, 
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsState = ref.watch(settingsProvider);
-    final updatedSettings = List<FeedSetting>.from(feedSettings);
-
-    // Update feed blur settings from provider state
-    for (int i = 0; i < updatedSettings.length; i++) {
-      final setting = updatedSettings[i];
-      if (setting.settingType == StorageKeys.feedBlurKey) {
-        final isBlurEnabled = settingsState.feedBlurEnabled;
-        if (setting.isEnabled != isBlurEnabled) {
-          updatedSettings[i] = FeedSetting(
-            feedName: setting.feedName,
-            description: setting.description,
-            settingType: setting.settingType,
-            isEnabled: isBlurEnabled,
-          );
-        }
-      }
-    }
+    final List<FeedSetting> displayableSettings = [
+      FeedSetting(
+        feedName: 'Following',
+        settingType: StorageKeys.followingFeedEnabledKey,
+        isEnabled: settingsState.followingFeedEnabled,
+      ),
+      FeedSetting(
+        feedName: 'For You',
+        settingType: StorageKeys.forYouFeedEnabledKey,
+        isEnabled: settingsState.forYouFeedEnabled,
+      ),
+      FeedSetting(
+        feedName: 'Latest',
+        settingType: StorageKeys.latestFeedEnabledKey,
+        isEnabled: settingsState.latestFeedEnabled,
+      ),
+      FeedSetting(
+        feedName: 'Disable Background Blur',
+        settingType: StorageKeys.feedBlurKey,
+        description: 'Turn off the background blur effect on media',
+        // Note: isEnabled for this specific setting is inverted in the UI
+        // The provider stores feedBlurEnabled (true if blur is on)
+        // The UI shows "Disable Background Blur" (true if blur is off)
+        isEnabled: !settingsState.feedBlurEnabled,
+      ),
+    ];
 
     return ListView.builder(
-      itemCount: updatedSettings.length,
+      itemCount: displayableSettings.length,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       itemBuilder: (context, index) {
-        final setting = updatedSettings[index];
+        final setting = displayableSettings[index];
 
         return FeedSettingItem(
           feedName: setting.feedName,
           description: setting.description,
           isEnabled: setting.isEnabled,
-          onToggleChanged: (value) => onSettingChanged(index, value),
+          onToggleChanged: (value) => onSettingChanged(setting.settingType, value),
         );
       },
     );

@@ -1,38 +1,35 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/storage/storage_constants.dart';
-import 'package:sparksocial/src/features/settings/data/models/feed_setting.dart';
 import 'package:sparksocial/src/features/settings/data/models/label_preference.dart';
 import 'package:sparksocial/src/features/settings/providers/labeler_provider.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 import 'package:sparksocial/src/features/settings/ui/widgets/feed_settings_header.dart';
+import 'package:sparksocial/src/features/settings/ui/widgets/content_settings_list.dart';
+import 'package:sparksocial/src/features/settings/ui/widgets/feed_settings_list.dart';
 
 class FeedSettingsSheet extends ConsumerStatefulWidget {
-  final List<FeedSetting> feedSettings;
   final Function(String, bool) onToggleChanged;
 
   const FeedSettingsSheet({
-    super.key, 
-    required this.feedSettings, 
-    required this.onToggleChanged
+    super.key,
+    required this.onToggleChanged,
   });
 
   @override
   ConsumerState<FeedSettingsSheet> createState() => _FeedSettingsSheetState();
 }
 
-class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> {
-  late List<FeedSetting> _feedSettings;
+class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> with SingleTickerProviderStateMixin {
   bool _isLoadingLabels = false;
   String? _labelsError;
+  late TabController _tabController;
 
   @override
   void initState() {
     super.initState();
-    _feedSettings = List.from(widget.feedSettings);
     _loadLabelDefinitions();
+    _tabController = TabController(length: 2, vsync: this);
   }
 
   // Load label definitions from the default labeler
@@ -49,9 +46,9 @@ class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> {
       // Request labeler details using provider
       await ref.read(labelerDetailsProvider(labelerDid).future);
       
-      setState(() {
-        _isLoadingLabels = false;
-      });
+      if (mounted) {
+        setState(() => _isLoadingLabels = false);
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -96,40 +93,14 @@ class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> {
     setState(() {});
   }
 
-  // Handle setting changes
-  void _onSettingChanged(String settingType, bool value) {
-    final index = _feedSettings.indexWhere(
-      (setting) => setting.settingType == settingType
-    );
-    
-    if (index != -1) {
-      setState(() {
-        final setting = _feedSettings[index];
-        _feedSettings[index] = FeedSetting(
-          feedName: setting.feedName,
-          description: setting.description,
-          settingType: setting.settingType,
-          isEnabled: value,
-        );
-      });
-      
-      // If this is the feed blur setting, update settings
-      if (settingType == StorageKeys.feedBlurKey) {
-        ref.read(settingsProvider.notifier).setFeedBlur(value);
-      }
-      
-      // Call the parent callback
-      widget.onToggleChanged(settingType, value);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final backgroundColor = colorScheme.surface;
+    final textColor = colorScheme.onSurface;
 
     // Make sure we have adequate padding for the notch/dynamic island
-    final topPadding = MediaQuery.of(context).padding.top + 24.0;
+    final topPadding = MediaQuery.of(context).padding.top;
 
     return Material(
       type: MaterialType.transparency,
@@ -146,51 +117,42 @@ class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> {
         child: Column(
           children: [
             // Add extra padding at the top for the notch/camera hole
-            SizedBox(height: topPadding),
+            SizedBox(height: topPadding + 8),
             FeedSettingsHeader(
               onClose: () => context.router.maybePop(),
             ),
-            
-            // Using AutoTabsRouter.tabBar for navigation
             Expanded(
-              child: AutoTabsRouter.tabBar(
-                routes: [
-                  // Feed Settings Tab
-                  FeedSettingsTabRoute(
-                    feedSettings: _feedSettings,
-                    onToggleChanged: _onSettingChanged,
+              child: Column(
+                children: [
+                  TabBar(
+                    controller: _tabController,
+                    labelColor: textColor,
+                    unselectedLabelColor: textColor.withAlpha(127),
+                    tabs: const [
+                      Tab(text: "Feed"),
+                      Tab(text: "Content"),
+                    ],
                   ),
-                  // Content Settings Tab
-                  ContentSettingsTabRoute(
-                    isLoadingLabels: _isLoadingLabels,
-                    labelsError: _labelsError,
-                    onRetryLabels: _loadLabelDefinitions,
-                    onUpdateAdultContentPreferences: _updateAdultContentPreferences,
+                  Expanded(
+                    child: TabBarView(
+                      controller: _tabController,
+                      children: [
+                        FeedSettingsList(
+                            onSettingChanged: widget.onToggleChanged),
+                        ContentSettingsList(
+                            isLoadingLabels: _isLoadingLabels,
+                            labelsError: _labelsError,
+                            onRetryLabels: _loadLabelDefinitions,
+                            onUpdateAdultContentPreferences: _updateAdultContentPreferences),
+                      ],
+                    ),
                   ),
                 ],
-                builder: (context, child, controller) {
-                  return Column(
-                    children: [
-                      // Tab bar
-                      TabBar(
-                        controller: controller,
-                        labelColor: colorScheme.onSurface,
-                        unselectedLabelColor: colorScheme.onSurface.withAlpha(127),
-                        tabs: const [
-                          Tab(text: "Feed"),
-                          Tab(text: "Content"),
-                        ],
-                      ),
-                      // Tab content
-                      Expanded(child: child),
-                    ],
-                  );
-                },
               ),
             ),
-
             // Bottom safe area
-            SizedBox(height: MediaQuery.of(context).padding.bottom),
+            if (MediaQuery.of(context).padding.bottom > 0)
+              SizedBox(height: MediaQuery.of(context).padding.bottom),
           ],
         ),
       ),
