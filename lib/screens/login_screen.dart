@@ -76,6 +76,11 @@ class _LoginScreenState extends State<LoginScreen> {
         final onboardingService = OnboardingService(authService);
         final hasSpark = await onboardingService.hasSparkProfile();
 
+        if (hasSpark) {
+          // Fix duplicate follows if any exist, might remove this in the future
+          await onboardingService.gambiarraFixDuplicates();
+        }
+
         if (!mounted) return;
         Navigator.of(context).pushNamedAndRemoveUntil(hasSpark ? '/home' : '/onboarding', (Route<dynamic> route) => false);
       } else if (result == LoginStatus.codeRequired) {

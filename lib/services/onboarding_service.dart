@@ -144,4 +144,78 @@ class OnboardingService {
 
     return subjects;
   }
+
+  /// Cleanup duplicate follow records to ensure unique subject values
+  /// This function detects and removes duplicate follow records from the user's PDS
+  Future<int> gambiarraFixDuplicates() async {
+    final session = _authService.session;
+    final atproto = _authService.atproto;
+
+    if (session == null || atproto == null) throw Exception('Not authenticated');
+
+    // Fetch all follow records
+    final allFollows = <Map<String, dynamic>>[];
+    String? cursor;
+
+    do {
+      final response = await atproto.repo.listRecords(
+        repo: session.did,
+        collection: NSID.parse('so.sprk.graph.follow'),
+        cursor: cursor,
+        limit: 100,
+      );
+
+      if (response.status.code != 200) {
+        throw Exception('Failed to list follow records: ${response.status.code}');
+      }
+
+      for (final record in response.data.records) {
+        allFollows.add(record.toJson());
+      }
+
+      cursor = response.data.cursor;
+    } while (cursor != null);
+
+    // Find duplicates: group by subject and keep track of records to delete
+    final subjectToRecords = <String, List<Map<String, dynamic>>>{};
+
+    for (final record in allFollows) {
+      final subject = record['value']['subject'] as String;
+      subjectToRecords[subject] ??= [];
+      subjectToRecords[subject]!.add(record);
+    }
+
+    // Prepare delete operations for duplicate records
+    // For each subject, keep the first record and mark the rest for deletion
+    final deleteWrites = <Map<String, dynamic>>[];
+
+    for (final entry in subjectToRecords.entries) {
+      final records = entry.value;
+      if (records.length > 1) {
+        // Skip the first one (keep it) and mark others for deletion
+        for (int i = 1; i < records.length; i++) {
+          deleteWrites.add({
+            '\$type': 'com.atproto.repo.applyWrites#delete',
+            'collection': 'so.sprk.graph.follow',
+            'rkey': records[i]['uri'].toString().split('/').last,
+          });
+        }
+      }
+    }
+
+    // If no duplicates found, return early
+    if (deleteWrites.isEmpty) return 0;
+
+    // Apply all deletes in a single transaction
+    final response = await atproto.post(
+      NSID.parse('com.atproto.repo.applyWrites'),
+      body: {'repo': session.did, 'writes': deleteWrites},
+    );
+
+    if (response.status.code != 200) {
+      throw Exception('Failed to delete duplicate follows: ${response.status.code}');
+    }
+
+    return deleteWrites.length;
+  }
 }
