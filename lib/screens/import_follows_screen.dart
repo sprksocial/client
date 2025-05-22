@@ -68,8 +68,6 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
       });
     } catch (e) {
       if (!mounted) return;
-      // Just log the error, we can still continue
-      print('Error loading existing Spark follows: $e');
       setState(() {
         _loadingExistingFollows = false;
       });
