@@ -261,18 +261,16 @@ class SettingsService extends ChangeNotifier {
   Future<void> setFollowMode(FollowMode mode) async {
     if (_isLoading) await _loadSettings();
 
-    if (_followMode != mode) {
-      _followMode = mode;
-      await _prefs?.setString(_keyFollowMode, mode.name);
+    _followMode = mode;
+    await _prefs?.setString(_keyFollowMode, mode.name);
 
-      // Call the API to update the server-side preference
-      try {
-        await _sprkClient.actor.putPreferences(followMode: mode);
-      } catch (e) {
-        debugPrint('Failed to update server preference: $e');
-      }
-
-      notifyListeners();
+    // Call the API to update the server-side preference
+    try {
+      await _sprkClient.actor.putPreferences(followMode: mode);
+    } catch (e) {
+      debugPrint('Failed to update server preference: $e');
     }
+
+    notifyListeners();
   }
 }
