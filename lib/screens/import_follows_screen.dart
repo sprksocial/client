@@ -25,13 +25,14 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
   String? _statusMessage;
   List<bs.Actor> _filteredFollows = [];
   List<bs.Actor> _allActors = [];
-  final Set<String> _followed = {};
+  Set<String> _followed = {}; // DIDs the user already follows in Spark
+  bool _loadingExistingFollows = false;
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadFollows();
+    _initialize();
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -42,27 +43,63 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
     super.dispose();
   }
 
-  Future<void> _loadFollows() async {
-    final service = OnboardingService(Provider.of(context, listen: false));
+  // Initialize by loading both existing Spark follows and Bluesky follows
+  Future<void> _initialize() async {
+    await _loadExistingSparkFollows();
+    await _loadBlueskyFollows();
+  }
+
+  // Load existing follows in Spark from PDS
+  Future<void> _loadExistingSparkFollows() async {
+    if (!mounted) return;
+
+    setState(() {
+      _loadingExistingFollows = true;
+    });
+
+    try {
+      final service = OnboardingService(Provider.of<AuthService>(context, listen: false));
+      final sparkFollows = await service.getCurrentSparkFollows();
+
+      if (!mounted) return;
+      setState(() {
+        _followed = sparkFollows;
+        _loadingExistingFollows = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      // Just log the error, we can still continue
+      print('Error loading existing Spark follows: $e');
+      setState(() {
+        _loadingExistingFollows = false;
+      });
+    }
+  }
+
+  Future<void> _loadBlueskyFollows() async {
+    final service = OnboardingService(Provider.of<AuthService>(context, listen: false));
     final follows = await service.getBskyFollows();
     if (!mounted) return;
+
     // If there are no follows, skip import and finish onboarding immediately
     if (follows.follows.isEmpty) {
       await _finishOnboarding();
       return;
     }
+
     setState(() {
       _allActors = List.from(follows.follows);
       _filteredFollows = _allActors;
       _loading = false;
     });
+
     // Load remaining pages in background
     _prefetchRemainingFollows(follows.cursor);
   }
 
   Future<void> _prefetchRemainingFollows(String? cursor) async {
     if (cursor == null) return;
-    final service = OnboardingService(Provider.of(context, listen: false));
+    final service = OnboardingService(Provider.of<AuthService>(context, listen: false));
     String? nextCursor = cursor;
     while (mounted && nextCursor != null) {
       try {
@@ -89,7 +126,7 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
   }
 
   Future<void> _follow(String did) async {
-    final service = OnboardingService(Provider.of(context, listen: false));
+    final service = OnboardingService(Provider.of<AuthService>(context, listen: false));
     await service.createSparkFollow(did);
     setState(() => _followed.add(did));
   }
@@ -103,7 +140,7 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
     });
 
     try {
-      final service = OnboardingService(Provider.of(context, listen: false));
+      final service = OnboardingService(Provider.of<AuthService>(context, listen: false));
 
       // Filter out already followed accounts
       final toFollow = _allActors.map((actor) => actor.did).where((did) => !_followed.contains(did)).toList();
@@ -177,86 +214,98 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
         ],
       ),
       body: SafeArea(
-        child: _loading
-            ? const Center(child: CircularProgressIndicator(color: Colors.white))
-            : Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'Follow the same accounts you follow on Bluesky?',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        hintText: 'Search',
-                        prefixIcon: const Icon(Icons.search),
-                        filled: true,
-                        fillColor: isDark ? Colors.grey[800] : Colors.grey[200],
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppColors.border),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppColors.border),
-                        ),
+        child:
+            _loading
+                ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                : Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Follow the same accounts you follow on Bluesky?',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    if (_statusMessage != null)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: Row(
-                          children: [
-                            const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-                            const SizedBox(width: 12),
-                            Expanded(child: Text(_statusMessage!)),
-                          ],
-                        ),
-                      ),
-                    Expanded(
-                      child: ListView.separated(
-                        addAutomaticKeepAlives: false,
-                        addRepaintBoundaries: false,
-                        itemCount: _filteredFollows.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 8),
-                        itemBuilder: (context, index) {
-                          final did = _filteredFollows[index];
-                          final isFollowed = _followed.contains(did.did);
-                          return ListTile(
-                            leading: CircleAvatar(backgroundImage: CachedNetworkImageProvider(did.avatar ?? '')),
-                            title: Text(did.displayName ?? ''),
-                            subtitle: Text(did.handle, style: TextStyle(color: AppColors.hintText)),
-                            trailing: OutlinedButton(
-                              onPressed: isFollowed ? null : () => _follow(did.did),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: AppColors.pink),
-                                foregroundColor: AppColors.pink,
-                                disabledForegroundColor: AppColors.pink.withValues(alpha: 0.5),
-                                disabledBackgroundColor: AppColors.pink.withValues(alpha: 0.05),
-                              ),
-                              child: Text(isFollowed ? 'Following' : 'Follow'),
+                      const SizedBox(height: 8),
+                      if (_loadingExistingFollows)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 4),
+                          child: Center(
+                            child: Text(
+                              'Loading your existing follows...',
+                              style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
                             ),
-                          );
-                        },
+                          ),
+                        ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Search',
+                          prefixIcon: const Icon(Icons.search),
+                          filled: true,
+                          fillColor: isDark ? Colors.grey[800] : Colors.grey[200],
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: AppColors.border),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: AppColors.border),
+                          ),
+                        ),
                       ),
-                    ),
-                    ElevatedButton(
-                      onPressed: _followingAll ? null : _followAll,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.pink,
-                        disabledBackgroundColor: AppColors.pink.withValues(alpha: 0.5),
+                      const SizedBox(height: 16),
+                      if (_statusMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                              const SizedBox(width: 12),
+                              Expanded(child: Text(_statusMessage!)),
+                            ],
+                          ),
+                        ),
+                      Expanded(
+                        child: ListView.separated(
+                          addAutomaticKeepAlives: false,
+                          addRepaintBoundaries: false,
+                          itemCount: _filteredFollows.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final actor = _filteredFollows[index];
+                            final isFollowed = _followed.contains(actor.did);
+                            return ListTile(
+                              leading: CircleAvatar(backgroundImage: CachedNetworkImageProvider(actor.avatar ?? '')),
+                              title: Text(actor.displayName ?? ''),
+                              subtitle: Text(actor.handle, style: TextStyle(color: AppColors.hintText)),
+                              trailing: OutlinedButton(
+                                onPressed: isFollowed ? null : () => _follow(actor.did),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: AppColors.pink),
+                                  foregroundColor: AppColors.pink,
+                                  disabledForegroundColor: AppColors.pink.withValues(alpha: 0.5),
+                                  disabledBackgroundColor: AppColors.pink.withValues(alpha: 0.05),
+                                ),
+                                child: Text(isFollowed ? 'Following' : 'Follow'),
+                              ),
+                            );
+                          },
+                        ),
                       ),
-                      child: Text(_followingAll ? 'Following...' : 'Follow all', style: const TextStyle(color: Colors.white)),
-                    ),
-                  ],
+                      ElevatedButton(
+                        onPressed: _followingAll ? null : _followAll,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.pink,
+                          disabledBackgroundColor: AppColors.pink.withValues(alpha: 0.5),
+                        ),
+                        child: Text(_followingAll ? 'Following...' : 'Follow all', style: const TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
       ),
     );
   }

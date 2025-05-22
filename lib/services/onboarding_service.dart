@@ -157,6 +157,43 @@ class OnboardingService {
     return subjects;
   }
 
+  /// Fetches the user's current Spark follows from their PDS
+  /// Returns a set of DIDs that the user follows
+  Future<Set<String>> getCurrentSparkFollows() async {
+    final session = _authService.session;
+    final atproto = _authService.atproto;
+
+    if (session == null || atproto == null) throw Exception('Not authenticated');
+
+    final followedDids = <String>{};
+    String? cursor;
+
+    do {
+      final response = await atproto.repo.listRecords(
+        repo: session.did,
+        collection: NSID.parse('so.sprk.graph.follow'),
+        cursor: cursor,
+        limit: 100,
+      );
+
+      if (response.status.code != 200) {
+        throw Exception('Failed to list Spark follows: ${response.status.code}');
+      }
+
+      for (final record in response.data.records) {
+        // Convert to a Map to access the value field
+        final recordMap = record.toJson();
+        final value = recordMap['value'] as Map<String, dynamic>;
+        final subject = value['subject'] as String;
+        followedDids.add(subject);
+      }
+
+      cursor = response.data.cursor;
+    } while (cursor != null);
+
+    return followedDids;
+  }
+
   /// Cleanup duplicate follow records to ensure unique subject values
   /// This function detects and removes duplicate follow records from the user's PDS
   Future<int> gambiarraFixDuplicates() async {
