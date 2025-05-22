@@ -93,14 +93,31 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
   }
 
   Future<void> _followAll() async {
-    final service = OnboardingService(Provider.of(context, listen: false));
-    for (var actor in _allActors) {
-      if (_followed.contains(actor.did)) continue;
-      await service.createSparkFollow(actor.did);
-      _followed.add(actor.did);
+    setState(() => _loading = true);
+
+    try {
+      final service = OnboardingService(Provider.of(context, listen: false));
+
+      // Filter out already followed accounts
+      final toFollow = _allActors.map((actor) => actor.did).where((did) => !_followed.contains(did)).toList();
+
+      if (toFollow.isNotEmpty) {
+        // Use batch follows to follow all at once
+        final followed = await service.createBatchFollows(toFollow);
+
+        // Update the UI only once after all follows are complete
+        setState(() {
+          _followed.addAll(followed);
+          _loading = false;
+        });
+      } else {
+        setState(() => _loading = false);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error following accounts: ${e.toString()}')));
+      setState(() => _loading = false);
     }
-    if (!mounted) return;
-    setState(() {});
   }
 
   @override

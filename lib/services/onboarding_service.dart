@@ -107,4 +107,41 @@ class OnboardingService {
       throw Exception('Failed to create Spark follow: ${response.status.code}');
     }
   }
+
+  /// Creates multiple follow records in a single transaction using applyWrites
+  /// Returns a list of DIDs that were successfully followed
+  Future<List<String>> createBatchFollows(List<String> subjects) async {
+    if (subjects.isEmpty) return [];
+
+    final session = _authService.session;
+    final atproto = _authService.atproto;
+
+    if (session == null || atproto == null) throw Exception('Not authenticated');
+
+    // Create write operations for each follow
+    final writes =
+        subjects.map((subject) {
+          return {
+            '\$type': 'com.atproto.repo.applyWrites#create',
+            'collection': 'so.sprk.graph.follow',
+            'value': {
+              '\$type': 'so.sprk.graph.follow',
+              'subject': subject,
+              'createdAt': DateTime.now().toUtc().toIso8601String(),
+            },
+          };
+        }).toList();
+
+    // Apply all writes in a single transaction
+    final response = await atproto.post(
+      NSID.parse('com.atproto.repo.applyWrites'),
+      body: {'repo': session.did, 'writes': writes},
+    );
+
+    if (response.status.code != 200) {
+      throw Exception('Failed to create batch follows: ${response.status.code}');
+    }
+
+    return subjects;
+  }
 }
