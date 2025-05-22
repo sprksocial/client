@@ -275,4 +275,4 @@ class _VideoControllerOverlayState extends State<VideoControllerOverlay> with Ti
       ),
     );
   }
-} 
+}

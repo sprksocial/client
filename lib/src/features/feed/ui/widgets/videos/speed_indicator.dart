@@ -12,18 +12,8 @@ class SpeedIndicator extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: AppColors.black.withAlpha(179), 
-        borderRadius: BorderRadius.circular(16)
-      ),
-      child: const Text(
-        '2x', 
-        style: TextStyle(
-          color: AppColors.white, 
-          fontWeight: FontWeight.bold, 
-          fontSize: 16
-        )
-      ),
+      decoration: BoxDecoration(color: AppColors.black.withAlpha(179), borderRadius: BorderRadius.circular(16)),
+      child: const Text('2x', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 16)),
     );
   }
-} 
+}

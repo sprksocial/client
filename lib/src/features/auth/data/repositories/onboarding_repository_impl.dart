@@ -13,12 +13,10 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
   final RepoRepository _repoRepository;
   final AuthRepository _authRepository;
   final _logger = GetIt.instance<LogService>().getLogger('OnboardingRepository');
-  
-  OnboardingRepositoryImpl({
-    required RepoRepository repoRepository,
-    required AuthRepository authRepository,
-  }) : _repoRepository = repoRepository,
-       _authRepository = authRepository;
+
+  OnboardingRepositoryImpl({required RepoRepository repoRepository, required AuthRepository authRepository})
+    : _repoRepository = repoRepository,
+      _authRepository = authRepository;
 
   Session? get _session => _authRepository.session;
   ATProto? get _atproto => _authRepository.atproto;
@@ -65,13 +63,13 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       'description': description,
       if (avatar != null) 'avatar': avatar,
     };
-    
+
     final response = await _repoRepository.createRecord(
       collection: NSID.parse('so.sprk.actor.profile'),
       record: record,
       rkey: 'self',
     );
-    
+
     if (response.uri.isEmpty) {
       throw Exception('Failed to create Spark profile');
     }
@@ -86,26 +84,26 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     final bsky = bs.Bluesky.fromSession(_session!);
     final did = _session!.did;
     final response = await bsky.graph.getFollows(actor: did, limit: 100, cursor: cursor);
-    
+
     // Convert raw data to our structured model
     final rawData = response.data.toJson();
     final List<dynamic> rawFollows = rawData['follows'] as List<dynamic>;
-    
-    final follows = rawFollows.map((followData) => BskyFollow(
-      did: followData['did'] as String,
-      handle: followData['handle'] as String,
-      displayName: followData['displayName'] as String?,
-      avatar: followData['avatar'] as String?,
-      description: followData['description'] as String?,
-      indexedAt: followData['indexedAt'] != null 
-        ? DateTime.parse(followData['indexedAt'] as String) 
-        : null,
-    )).toList();
-    
-    return BskyFollows(
-      follows: follows,
-      cursor: rawData['cursor'] as String?,
-    );
+
+    final follows =
+        rawFollows
+            .map(
+              (followData) => BskyFollow(
+                did: followData['did'] as String,
+                handle: followData['handle'] as String,
+                displayName: followData['displayName'] as String?,
+                avatar: followData['avatar'] as String?,
+                description: followData['description'] as String?,
+                indexedAt: followData['indexedAt'] != null ? DateTime.parse(followData['indexedAt'] as String) : null,
+              ),
+            )
+            .toList();
+
+    return BskyFollows(follows: follows, cursor: rawData['cursor'] as String?);
   }
 
   @override
@@ -115,14 +113,11 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       'subject': subject,
       'createdAt': DateTime.now().toUtc().toIso8601String(),
     };
-    
-    final response = await _repoRepository.createRecord(
-      collection: NSID.parse('so.sprk.graph.follow'), 
-      record: record
-    );
-    
+
+    final response = await _repoRepository.createRecord(collection: NSID.parse('so.sprk.graph.follow'), record: record);
+
     if (response.uri.isEmpty) {
       throw Exception('Failed to create Spark follow');
     }
   }
-} 
+}

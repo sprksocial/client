@@ -54,7 +54,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _login() async {
     if (_formKey.currentState?.validate() ?? false) {
       final authNotifier = ref.read(authProvider.notifier);
-      
+
       final result = await authNotifier.login(
         _handleController.text.trim(),
         _passwordController.text,
@@ -66,9 +66,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (result.isSuccess) {
         TextInput.finishAutofillContext(shouldSave: true);
         final hasSparkProfile = await ref.read(onboardingRepositoryProvider).hasSparkProfile();
-        
+
         if (!mounted) return;
-        
+
         if (hasSparkProfile) {
           context.router.replace(const HomeRoute());
         } else {
@@ -87,7 +87,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     final isLoading = ref.watch(authProvider.select((state) => state.isLoading));
     final error = ref.watch(authProvider.select((state) => state.error));
-    
+
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
 
@@ -95,12 +95,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
-          Positioned.fill(
-            child: Image.asset(
-              'assets/branding/gradient.webp',
-              fit: BoxFit.cover,
-            ),
-          ),
+          Positioned.fill(child: Image.asset('assets/branding/gradient.webp', fit: BoxFit.cover)),
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -132,17 +127,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           children: [
                             Text(
                               'Login using your existing ',
-                              style: TextStyle(
-                                color: AppColors.white,
-                                fontSize: 20,
-                                height: 1.7,
-                              ),
+                              style: TextStyle(color: AppColors.white, fontSize: 20, height: 1.7),
                             ),
-                            SvgPicture.asset(
-                              'assets/images/ataccount.svg',
-                              height: 25,
-                              width: 100,
-                            ),
+                            SvgPicture.asset('assets/images/ataccount.svg', height: 25, width: 100),
                             const SizedBox(width: 4),
                             const ATAccountInfoIcon(),
                           ],
@@ -222,7 +209,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                   prefixIcon: const Icon(FluentIcons.key_24_regular, color: AppColors.white),
                                   filled: true,
                                   fillColor: AppColors.white.withAlpha(100),
-                                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                    borderSide: BorderSide.none,
+                                  ),
                                   contentPadding: const EdgeInsets.all(16),
                                 ),
                                 style: const TextStyle(color: Colors.black),
@@ -263,12 +253,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           minimumSize: const Size(320, 60),
                           disabledBackgroundColor: AppColors.primary.withAlpha(128),
                         ),
-                        child: isLoading
-                            ? const CircularProgressIndicator(color: AppColors.white)
-                            : Text(
-                                _showAuthCodeField ? 'Verify Code' : 'Login',
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.normal, color: AppColors.white),
-                              ),
+                        child:
+                            isLoading
+                                ? const CircularProgressIndicator(color: AppColors.white)
+                                : Text(
+                                  _showAuthCodeField ? 'Verify Code' : 'Login',
+                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.normal, color: AppColors.white),
+                                ),
                       ),
                     ],
                   ),
@@ -280,4 +271,4 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       ),
     );
   }
-} 
+}

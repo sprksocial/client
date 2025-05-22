@@ -38,7 +38,7 @@ final GetIt sl = GetIt.instance;
 Future<void> initServiceLocator() async {
   // Register core dependencies
   await _registerCore();
-  
+
   // Register features dependencies
   await _registerFeatures();
 }
@@ -47,16 +47,16 @@ Future<void> initServiceLocator() async {
 Future<void> _registerFeatures() async {
   // Register settings dependencies
   await _registerSettings();
-  
+
   // Register onboarding dependencies
   await _registerOnboarding();
-  
+
   // Register profile dependencies
   await _registerProfile();
-  
+
   // Register video dependencies
   await _registerVideo();
-  
+
   // Register feed dependencies
   await _registerFeed();
 }
@@ -67,77 +67,57 @@ Future<void> _registerCore() async {
   // Initialize storage manager
   final storageManager = StorageManager.instance;
   await storageManager.init();
-  
+
   // Register storage manager
   sl.registerSingleton<StorageManager>(storageManager);
-  
+
   // Register cache manager
   sl.registerSingleton<CacheManagerInterface>(CacheManagerImpl.instance);
-  
+
   // Register logging dependencies
   // Register LogService
   sl.registerSingleton<LogService>(LogService());
-  
+
   // Register network dependencies
   // Register AuthRepository
   sl.registerSingleton<AuthRepository>(AuthRepositoryImpl());
-  
+
   // Register SprkRepository with its interface
   sl.registerSingleton<SprkRepository>(SprkRepositoryImpl(sl<AuthRepository>()));
-  
+
   // Register identity repository
-  sl.registerSingleton<IdentityRepository>(
-    IdentityRepositoryImpl(sl<StorageManager>())
-  );
+  sl.registerSingleton<IdentityRepository>(IdentityRepositoryImpl(sl<StorageManager>()));
 
   // Register theme repository
-  sl.registerSingleton<ThemeRepository>(
-    ThemeRepositoryImpl(sl<StorageManager>())
-  );
-  
+  sl.registerSingleton<ThemeRepository>(ThemeRepositoryImpl(sl<StorageManager>()));
+
   // Register LabelRepository
-  sl.registerSingleton<LabelRepository>(
-    LabelRepositoryImpl(sl.get<SprkRepository>())
-  );
-  
+  sl.registerSingleton<LabelRepository>(LabelRepositoryImpl(sl.get<SprkRepository>()));
+
   // Register FeedRepository
-  sl.registerSingleton<FeedRepository>(
-    FeedRepositoryImpl(sl.get<SprkRepository>(), sl.get<LabelRepository>())
-  );
-  
+  sl.registerSingleton<FeedRepository>(FeedRepositoryImpl(sl.get<SprkRepository>(), sl.get<LabelRepository>()));
+
   // Register ActorRepository
-  sl.registerSingleton<ActorRepository>(
-    ActorRepositoryImpl(sl.get<SprkRepository>())
-  );
+  sl.registerSingleton<ActorRepository>(ActorRepositoryImpl(sl.get<SprkRepository>()));
 
   // Register GraphRepository
-  sl.registerSingleton<GraphRepository>(
-    GraphRepositoryImpl(sl.get<SprkRepository>())
-  );
+  sl.registerSingleton<GraphRepository>(GraphRepositoryImpl(sl.get<SprkRepository>()));
 }
 
 /// Registers settings dependencies
 Future<void> _registerSettings() async {
   // Register SettingsRepository
-  sl.registerSingleton<SettingsRepository>(
-    SettingsRepositoryImpl(sl<StorageManager>())
-  );
-  
+  sl.registerSingleton<SettingsRepository>(SettingsRepositoryImpl(sl<StorageManager>()));
+
   // Register labeler repository
-  sl.registerLazySingleton<LabelerRepository>(
-    () => LabelerRepositoryImpl(sl<SprkRepository>(), StorageManager.instance),
-  );
-  
+  sl.registerLazySingleton<LabelerRepository>(() => LabelerRepositoryImpl(sl<SprkRepository>(), StorageManager.instance));
 }
 
 /// Registers onboarding dependencies
 Future<void> _registerOnboarding() async {
   // Register OnboardingRepository
   sl.registerLazySingleton<OnboardingRepository>(
-    () => OnboardingRepositoryImpl(
-      repoRepository: sl<SprkRepository>().repo,
-      authRepository: sl<AuthRepository>(),
-    ),
+    () => OnboardingRepositoryImpl(repoRepository: sl<SprkRepository>().repo, authRepository: sl<AuthRepository>()),
   );
 }
 
@@ -156,20 +136,14 @@ Future<void> _registerProfile() async {
 /// Registers video dependencies
 Future<void> _registerVideo() async {
   // Register VideoRepository
-  sl.registerLazySingleton<UploadRepository>(
-    () => UploadRepositoryImpl(),
-  );
+  sl.registerLazySingleton<UploadRepository>(() => UploadRepositoryImpl());
 }
-
 
 /// Registers feed dependencies
 Future<void> _registerFeed() async {
   // Register MediaRepository
   sl.registerLazySingleton<PreloadRepository>(
-    () => PreloadRepositoryImpl(
-      cacheManager: sl<CacheManagerInterface>(),
-      logService: sl<LogService>(),
-    ),
+    () => PreloadRepositoryImpl(cacheManager: sl<CacheManagerInterface>(), logService: sl<LogService>()),
   );
 }
 
@@ -177,4 +151,3 @@ void setupDependencies() {
   // Camera
   GetIt.instance.registerLazySingleton<CameraRepository>(() => CameraRepositoryImpl());
 }
-

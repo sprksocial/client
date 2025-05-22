@@ -6,11 +6,7 @@ class UsernameLabel extends StatelessWidget {
   final String username;
   final bool isSprk;
 
-  const UsernameLabel({
-    super.key,
-    required this.username,
-    this.isSprk = false,
-  });
+  const UsernameLabel({super.key, required this.username, this.isSprk = false});
 
   @override
   Widget build(BuildContext context) {
@@ -20,11 +16,7 @@ class UsernameLabel extends StatelessWidget {
         Flexible(
           child: Text(
             '@$username',
-            style: const TextStyle(
-              color: AppColors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
+            style: const TextStyle(color: AppColors.white, fontSize: 16, fontWeight: FontWeight.bold),
             overflow: TextOverflow.ellipsis,
           ),
         ),
@@ -35,20 +27,16 @@ class UsernameLabel extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(42),
               boxShadow: [
-                BoxShadow(
-                  color: AppColors.black.withAlpha(30),
-                  blurRadius: 4,
-                  spreadRadius: 1,
-                  offset: const Offset(0, 0),
-                ),
+                BoxShadow(color: AppColors.black.withAlpha(30), blurRadius: 4, spreadRadius: 1, offset: const Offset(0, 0)),
               ],
             ),
-            child: isSprk
-              ? SvgPicture.asset('assets/images/sprk.svg', width: 14, height: 14)
-              : SvgPicture.asset('assets/images/bsky.svg', width: 14, height: 14),
+            child:
+                isSprk
+                    ? SvgPicture.asset('assets/images/sprk.svg', width: 14, height: 14)
+                    : SvgPicture.asset('assets/images/bsky.svg', width: 14, height: 14),
           ),
         ],
       ],
     );
   }
-} 
+}

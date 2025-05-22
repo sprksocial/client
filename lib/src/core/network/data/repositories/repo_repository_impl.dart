@@ -35,11 +35,7 @@ class RepoRepositoryImpl implements RepoRepository {
       final result = await atproto.repo.getRecord(uri: uri);
       _logger.d('Record retrieved successfully');
       final value = result.data.value;
-      return RecordResponse(
-        uri: result.data.uri.toString(),
-        cid: result.data.cid ?? '',
-        value: value,
-      );
+      return RecordResponse(uri: result.data.uri.toString(), cid: result.data.cid ?? '', value: value);
     });
   }
 
@@ -58,11 +54,7 @@ class RepoRepositoryImpl implements RepoRepository {
       }
       final result = await atproto.repo.putRecord(uri: uri, record: record);
       _logger.d('Record edited successfully');
-      return RecordResponse(
-        uri: result.data.uri.toString(),
-        cid: result.data.cid,
-        value: record,
-      );
+      return RecordResponse(uri: result.data.uri.toString(), cid: result.data.cid, value: record);
     });
   }
 
@@ -83,11 +75,7 @@ class RepoRepositoryImpl implements RepoRepository {
 
       final result = await atproto.repo.createRecord(collection: collection, record: record, rkey: rkey);
       _logger.d('Record created successfully');
-      return RecordResponse(
-        uri: result.data.uri.toString(),
-        cid: result.data.cid,
-        value: record,
-      );
+      return RecordResponse(uri: result.data.uri.toString(), cid: result.data.cid, value: record);
     });
   }
 
@@ -128,27 +116,24 @@ class RepoRepositoryImpl implements RepoRepository {
 
       final result = await atproto.repo.uploadBlob(data);
       _logger.d('Blob uploaded successfully');
-      
+
       // Create blobRef map
       final Map<String, dynamic> blobRef = {};
       blobRef['\$type'] = 'blob';
       blobRef['ref'] = result.data.blob.ref;
       blobRef['mimeType'] = result.data.blob.mimeType;
-      
-      return BlobResponse(
-        blob: result.data.blob.toString(),
-        blobRef: blobRef,
-      );
+
+      return BlobResponse(blob: result.data.blob.toString(), blobRef: blobRef);
     });
   }
 
   @override
   Future<RecordsListResponse> listRecords({
-    required String repo, 
-    required NSID collection, 
-    String? cursor, 
-    int? limit, 
-    bool? reverse
+    required String repo,
+    required NSID collection,
+    String? cursor,
+    int? limit,
+    bool? reverse,
   }) async {
     _logger.d('Listing records in repo: $repo, collection: $collection');
     return _client.executeWithRetry(() async {
@@ -164,28 +149,24 @@ class RepoRepositoryImpl implements RepoRepository {
       }
 
       final result = await atproto.repo.listRecords(
-        repo: repo, 
-        collection: collection, 
-        cursor: cursor, 
-        limit: limit, 
-        reverse: reverse
+        repo: repo,
+        collection: collection,
+        cursor: cursor,
+        limit: limit,
+        reverse: reverse,
       );
-      
+
       _logger.d('Records listed successfully');
-      
-      final records = result.data.records.map((record) => RecordItem(
-        uri: record.uri.toString(),
-        cid: record.cid ?? '',
-        value: record.value,
-      )).toList();
-      
-      return RecordsListResponse(
-        records: records,
-        cursor: result.data.cursor,
-      );
+
+      final records =
+          result.data.records
+              .map((record) => RecordItem(uri: record.uri.toString(), cid: record.cid ?? '', value: record.value))
+              .toList();
+
+      return RecordsListResponse(records: records, cursor: result.data.cursor);
     });
   }
-  
+
   @override
   Future<bool> createReport({
     required ReportSubject subject,
@@ -194,13 +175,13 @@ class RepoRepositoryImpl implements RepoRepository {
     ModerationService? service,
   }) async {
     _logger.i('Creating moderation report for reason: ${reasonType.value}');
-    
+
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
-      
+
       final atproto = _client.authRepository.atproto;
       if (atproto == null || atproto.session == null) {
         _logger.e('AtProto not initialized');
@@ -208,11 +189,7 @@ class RepoRepositoryImpl implements RepoRepository {
       } else if (service != null) {
         _logger.d('Using provided moderation service');
         try {
-          final report = await service.createReport(
-            subject: subject, 
-            reasonType: reasonType, 
-            reason: reason
-          );
+          final report = await service.createReport(subject: subject, reasonType: reasonType, reason: reason);
           return report.status.code == 200;
         } catch (e) {
           _logger.e('Error creating report with service', error: e);
@@ -228,19 +205,12 @@ class RepoRepositoryImpl implements RepoRepository {
         if (subjectData is StrongRef) {
           final strongRef = subjectData.toJson();
           body = {
-            'subject': {
-              '\$type': 'com.atproto.repo.strongRef', 
-              'uri': strongRef['uri'], 
-              'cid': strongRef['cid']
-            },
+            'subject': {'\$type': 'com.atproto.repo.strongRef', 'uri': strongRef['uri'], 'cid': strongRef['cid']},
             'reasonType': reasonType.value,
           };
         } else if (subjectData is RepoRef) {
           body = {
-            'subject': {
-              '\$type': 'com.atproto.admin.defs.repoRef', 
-              'did': subjectData.did
-            },
+            'subject': {'\$type': 'com.atproto.admin.defs.repoRef', 'did': subjectData.did},
             'reasonType': reasonType.value,
           };
         } else {
@@ -255,23 +225,15 @@ class RepoRepositoryImpl implements RepoRepository {
         // Send to Spark's PDS (don't use the user's PDS as it might be different)
         // TODO: send to a chosen labeler's PDS
         final uri = Uri.parse('https://pds.sprk.so/xrpc/$endpoint');
-        final headers = {
-          'Authorization': 'Bearer ${atproto.session!.accessJwt}', 
-          'Content-Type': 'application/json'
-        };
+        final headers = {'Authorization': 'Bearer ${atproto.session!.accessJwt}', 'Content-Type': 'application/json'};
 
         _logger.d('Sending report to: $uri');
-        
+
         try {
-          final response = await http.post(
-            uri, 
-            headers: headers, 
-            body: jsonEncode(body)
-          );
+          final response = await http.post(uri, headers: headers, body: jsonEncode(body));
 
           if (response.statusCode != 200) {
-            _logger.e('Failed to create report: ${response.body}', 
-              error: 'HTTP ${response.statusCode}');
+            _logger.e('Failed to create report: ${response.body}', error: 'HTTP ${response.statusCode}');
             throw Exception('Failed to create report: ${response.body}');
           }
 
@@ -284,4 +246,4 @@ class RepoRepositoryImpl implements RepoRepository {
       }
     });
   }
-} 
+}

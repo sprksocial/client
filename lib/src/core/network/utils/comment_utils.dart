@@ -31,7 +31,7 @@ class CommentUtils {
     }
     return [];
   }
-  
+
   /// Check if a comment is liked based on whether there's a likeUri
   static bool isLiked(Comment comment) => comment.likeUri != null;
-} 
+}

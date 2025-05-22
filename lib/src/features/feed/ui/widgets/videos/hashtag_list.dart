@@ -25,21 +25,14 @@ class HashtagList extends StatelessWidget {
               onTap: onHashtagTap != null ? () => onHashtagTap!(tag) : null,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                decoration: BoxDecoration(
-                  color: AppColors.white.withAlpha(50), 
-                  borderRadius: BorderRadius.circular(12.0)
-                ),
+                decoration: BoxDecoration(color: AppColors.white.withAlpha(50), borderRadius: BorderRadius.circular(12.0)),
                 child: Text(
                   '#$tag',
-                  style: style ?? const TextStyle(
-                    color: AppColors.white, 
-                    fontWeight: FontWeight.w500, 
-                    fontSize: 13
-                  ),
+                  style: style ?? const TextStyle(color: AppColors.white, fontWeight: FontWeight.w500, fontSize: 13),
                 ),
               ),
             );
           }).toList(),
     );
   }
-} 
+}

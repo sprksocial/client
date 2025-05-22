@@ -69,7 +69,7 @@ class GraphRepositoryImpl implements GraphRepository {
       return FollowsResponse.fromJson(result.data as Map<String, dynamic>);
     });
   }
-  
+
   @override
   Future<FollowUserResponse> followUser(String did) async {
     _logger.d('Following user with DID: $did');
@@ -109,24 +109,18 @@ class GraphRepositoryImpl implements GraphRepository {
           "createdAt": DateTime.now().toUtc().toIso8601String(),
         };
 
-        final result = await atproto.repo.createRecord(
-          collection: NSID.parse('so.sprk.graph.follow'),
-          record: followRecord
-        );
-        
+        final result = await atproto.repo.createRecord(collection: NSID.parse('so.sprk.graph.follow'), record: followRecord);
+
         _logger.i('User followed successfully: ${result.data.uri}');
-        
-        return FollowUserResponse(
-          uri: result.data.uri.toString(),
-          cid: result.data.cid,
-        );
+
+        return FollowUserResponse(uri: result.data.uri.toString(), cid: result.data.cid);
       } catch (e) {
         _logger.e('Error in followUser', error: e);
         rethrow;
       }
     });
   }
-  
+
   @override
   Future<void> unfollowUser(String followUri) async {
     _logger.d('Unfollowing user with follow URI: $followUri');
@@ -146,4 +140,4 @@ class GraphRepositoryImpl implements GraphRepository {
       _logger.i('User unfollowed successfully');
     });
   }
-} 
+}

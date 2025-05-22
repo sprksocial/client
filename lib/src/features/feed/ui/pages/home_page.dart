@@ -19,13 +19,13 @@ class _HomePageState extends ConsumerState<HomePage> {
   final PageController _pageController = PageController();
   bool _isHomeScreenVisible = true;
   late final FeedTypeHelper _feedTypeHelper;
-  
+
   @override
   void initState() {
     super.initState();
     _feedTypeHelper = FeedTypeHelper(ref, _pageController);
   }
-  
+
   @override
   void dispose() {
     _pageController.dispose();
@@ -33,7 +33,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   }
 
   @override
-  Widget build(BuildContext context) {    
+  Widget build(BuildContext context) {
     _feedTypeHelper.initializePageController();
     return VisibilityDetector(
       key: const Key('home_screen_visibility'),
@@ -50,10 +50,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         body: SafeArea(
           child: Stack(
             children: [
-              FeedPagesView(
-                pageController: _pageController,
-                isHomeScreenVisible: _isHomeScreenVisible,
-              ),
+              FeedPagesView(pageController: _pageController, isHomeScreenVisible: _isHomeScreenVisible),
               Positioned(
                 top: 0,
                 left: 0,
@@ -71,4 +68,4 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
     );
   }
-} 
+}

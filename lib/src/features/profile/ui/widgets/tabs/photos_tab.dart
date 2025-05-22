@@ -99,13 +99,12 @@ class _PhotosTabState extends ConsumerState<PhotosTab> with AutomaticKeepAliveCl
       }
 
       final Profile profileNotifier = ref.read(profileProvider(targetDid).notifier);
-      
+
       // Concurrently fetch from Spark and Bluesky for initial load
       // For "load more", only Bluesky is typically paginated with a cursor in this context.
       // The old logic only fetched sprk if not isLoadingMore.
       final AuthorFeedResponse? resultBsky = await profileNotifier.getProfileVideosBsky(cursor: isLoadingMore ? _cursor : null);
       final AuthorFeedResponse? resultSprk = isLoadingMore ? null : await profileNotifier.getProfileVideosSprk();
-
 
       if (!mounted) return;
 
@@ -115,13 +114,14 @@ class _PhotosTabState extends ConsumerState<PhotosTab> with AutomaticKeepAliveCl
 
       List<Post> newPosts = [...fetchedSprkPosts, ...fetchedBskyPosts];
 
-      newPosts = newPosts.where((post) {
-        if (post.embed case {'\$type': final String typeString}) {
-           return typeString == 'so.sprk.embed.images#view' || typeString == 'app.bsky.embed.images#view';
-        }
-        return false;
-      }).toList();
-      
+      newPosts =
+          newPosts.where((post) {
+            if (post.embed case {'\$type': final String typeString}) {
+              return typeString == 'so.sprk.embed.images#view' || typeString == 'app.bsky.embed.images#view';
+            }
+            return false;
+          }).toList();
+
       // Sort by indexedAt, newest first. Handle null indexedAt.
       newPosts.sort((a, b) {
         final DateTime? dateA = a.indexedAt;
@@ -131,7 +131,6 @@ class _PhotosTabState extends ConsumerState<PhotosTab> with AutomaticKeepAliveCl
         if (dateB == null) return -1; // Nulls last
         return dateB.compareTo(dateA); // Newest first
       });
-
 
       setState(() {
         if (isLoadingMore) {
@@ -157,87 +156,91 @@ class _PhotosTabState extends ConsumerState<PhotosTab> with AutomaticKeepAliveCl
   }
 
   void _openMediaViewer(int index, List<Post> allPosts) {
-      final List<FeedPost> feedPosts = allPosts.map((post) {
-      final bool isImage = switch(post.embed) {
-        {'\$type': 'so.sprk.embed.images#view'} => true,
-        {'\$type': 'app.bsky.embed.images#view'} => true,
-        _ => false,
-      };
+    final List<FeedPost> feedPosts =
+        allPosts.map((post) {
+          final bool isImage = switch (post.embed) {
+            {'\$type': 'so.sprk.embed.images#view'} => true,
+            {'\$type': 'app.bsky.embed.images#view'} => true,
+            _ => false,
+          };
 
-      List<String> imageUrls = [];
-      List<String> imageAlts = [];
+          List<String> imageUrls = [];
+          List<String> imageAlts = [];
 
-      if (isImage && post.embed != null) { // Added null check for post.embed for safety before accessing non-pattern matched parts
-        if (post.embed case {'images': List imagesList}) {
-          for (final element in imagesList) {
-            if (element case {'fullsize': final String fs}) {
-              imageUrls.add(fs);
-              if (element case {'alt': final String altS}) {
-                imageAlts.add(altS);
+          if (isImage && post.embed != null) {
+            // Added null check for post.embed for safety before accessing non-pattern matched parts
+            if (post.embed case {'images': List imagesList}) {
+              for (final element in imagesList) {
+                if (element case {'fullsize': final String fs}) {
+                  imageUrls.add(fs);
+                  if (element case {'alt': final String altS}) {
+                    imageAlts.add(altS);
+                  }
+                }
               }
             }
           }
-        }
-      }
-      
-      final String description = switch(post.record) {
-        {'text': final String textString} => textString,
-        _ => ''
-      };
 
-      final List<String> hashtags = [];
-      for (final word in description.split(' ')) {
-        if (word.startsWith('#') && word.length > 1) {
-          hashtags.add(word.substring(1));
-        }
-      }
+          final String description = switch (post.record) {
+            {'text': final String textString} => textString,
+            _ => '',
+          };
 
-      final int likeCount = switch(post.record) {
-        {'likeCount': final int count} => count,
-        _ => 0
-      };
-      final int commentCount = switch(post.record) {
-        {'replyCount': final int count} => count,
-        _ => 0
-      };
-      final int shareCount = switch(post.record) {
-        {'repostCount': final int count} => count,
-        _ => 0
-      };
-      final bool isReply = post.record['reply'] != null; // Keep as is, direct null check is fine
-      final String? likeUri = post.viewer['like'] as String?; // Keep as is, direct cast is fine for nullable
+          final List<String> hashtags = [];
+          for (final word in description.split(' ')) {
+            if (word.startsWith('#') && word.length > 1) {
+              hashtags.add(word.substring(1));
+            }
+          }
 
-      return FeedPost(
-        username: post.author.handle,
-        authorDid: post.author.did,
-        profileImageUrl: post.author.avatar,
-        description: description,
-        videoUrl: null, // PhotosTab, so no video URL direct from post
-        imageUrls: imageUrls,
-        likeCount: likeCount,
-        commentCount: commentCount,
-        shareCount: shareCount,
-        hashtags: hashtags,
-        uri: post.uri,
-        cid: post.cid,
-        isSprk: post.uri.contains('so.sprk.feed.post'), // Check if URI indicates Spark post
-        hasMedia: true,
-        isReply: isReply,
-        imageAlts: imageAlts,
-        videoAlt: null, // No video alt in PhotosTab
-        likeUri: likeUri,
-      );
-    }).toList();
+          final int likeCount = switch (post.record) {
+            {'likeCount': final int count} => count,
+            _ => 0,
+          };
+          final int commentCount = switch (post.record) {
+            {'replyCount': final int count} => count,
+            _ => 0,
+          };
+          final int shareCount = switch (post.record) {
+            {'repostCount': final int count} => count,
+            _ => 0,
+          };
+          final bool isReply = post.record['reply'] != null; // Keep as is, direct null check is fine
+          final String? likeUri = post.viewer['like'] as String?; // Keep as is, direct cast is fine for nullable
+
+          return FeedPost(
+            username: post.author.handle,
+            authorDid: post.author.did,
+            profileImageUrl: post.author.avatar,
+            description: description,
+            videoUrl: null, // PhotosTab, so no video URL direct from post
+            imageUrls: imageUrls,
+            likeCount: likeCount,
+            commentCount: commentCount,
+            shareCount: shareCount,
+            hashtags: hashtags,
+            uri: post.uri,
+            cid: post.cid,
+            isSprk: post.uri.contains('so.sprk.feed.post'), // Check if URI indicates Spark post
+            hasMedia: true,
+            isReply: isReply,
+            imageAlts: imageAlts,
+            videoAlt: null, // No video alt in PhotosTab
+            likeUri: likeUri,
+          );
+        }).toList();
 
     // Navigate using AutoRoute
     // Assuming FeedScreen is registered in AppRouter as FeedRoute
-    AutoRouter.of(context).push(FeedRoute(
+    AutoRouter.of(context).push(
+      FeedRoute(
         feedType: FeedType.latest.value, // Using latest as a placeholder for custom profile view.
         initialPosts: feedPosts,
         initialIndex: index,
         showBackButton: true,
         isParentFeedVisible: true,
-    ));
+      ),
+    );
   }
 
   @override
@@ -304,30 +307,31 @@ class _PhotosTabState extends ConsumerState<PhotosTab> with AutomaticKeepAliveCl
           }
 
           final Post post = _posts[index];
-          
+
           String thumbnailUrl = '';
           if (post.embed case {'images': List imagesList} when imagesList.isNotEmpty) {
             if (imagesList.first case {'thumb': final String thumbStr}) {
               thumbnailUrl = thumbStr;
-            } else if (imagesList.first case {'thumbnail': final String thumbStr}) { // Fallback for bsky
+            } else if (imagesList.first case {'thumbnail': final String thumbStr}) {
+              // Fallback for bsky
               thumbnailUrl = thumbStr;
             }
           }
-          
+
           // Skip if no thumbnail - this should ideally be filtered out in _fetchPosts
           if (thumbnailUrl.isEmpty) {
-             _logger.w('Post with URI ${post.uri} has no thumbnail, skipping render.');
+            _logger.w('Post with URI ${post.uri} has no thumbnail, skipping render.');
             return const SizedBox.shrink();
           }
 
           final String username = post.author.handle;
-          final String descriptionTile = switch(post.record) {
+          final String descriptionTile = switch (post.record) {
             {'text': final String textString} => textString,
-            _ => ''
+            _ => '',
           };
-          final int likeCountTile = switch(post.record) {
+          final int likeCountTile = switch (post.record) {
             {'likeCount': final int count} => count,
-            _ => 0
+            _ => 0,
           };
 
           final List<String> hashtagsTile = [];
@@ -336,7 +340,7 @@ class _PhotosTabState extends ConsumerState<PhotosTab> with AutomaticKeepAliveCl
               hashtagsTile.add(word.substring(1));
             }
           }
-          
+
           final bool isSprk = post.uri.contains('so.sprk.feed.post');
 
           return ProfileVideoTile(

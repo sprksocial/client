@@ -20,7 +20,8 @@ class CommentsTray extends StatefulWidget {
     String? rootUri,
     List<XFile>? imageFiles,
     Map<String, String>? altTexts,
-  }) postComment;
+  })
+  postComment;
   final Future<void> Function(String uri) likeComment;
   final Future<void> Function(String uri) unlikeComment;
   final Future<void> Function(String uri) deleteComment;
@@ -37,7 +38,7 @@ class CommentsTray extends StatefulWidget {
     required this.postComment,
     required this.likeComment,
     required this.unlikeComment,
-    required this.deleteComment, 
+    required this.deleteComment,
     required this.reportComment,
     this.scrollController,
     this.onLoadMore,
@@ -66,7 +67,7 @@ class _CommentsTrayState extends State<CommentsTray> {
       _replyingToId = userId;
       _replyingToUsername = username;
     });
-    
+
     // Give focus to the text field
     _focusNode.requestFocus();
   }
@@ -78,18 +79,18 @@ class _CommentsTrayState extends State<CommentsTray> {
       _replyingToUsername = null;
     });
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final backgroundColor = Theme.of(context).colorScheme.surface;
-    
+
     return Container(
       color: backgroundColor,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           const _CommentsHeader(),
-          
+
           Expanded(
             child: _CommentsListView(
               comments: widget.comments,
@@ -102,7 +103,7 @@ class _CommentsTrayState extends State<CommentsTray> {
               reportComment: widget.reportComment,
             ),
           ),
-          
+
           // Comments input
           CommentInput(
             postUri: widget.postUri,
@@ -127,7 +128,7 @@ class _CommentsHeader extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     final textColor = colorScheme.onSurface;
     final dividerColor = colorScheme.onSurfaceVariant.withAlpha(26);
-    
+
     return Column(
       children: [
         Padding(
@@ -135,18 +136,8 @@ class _CommentsHeader extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Comments', 
-                style: TextStyle(
-                  fontSize: 16, 
-                  fontWeight: FontWeight.w500, 
-                  color: textColor,
-                ),
-              ),
-              IconButton(
-                icon: Icon(Icons.close, color: textColor),
-                onPressed: () => context.router.maybePop(),
-              ),
+              Text('Comments', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: textColor)),
+              IconButton(icon: Icon(Icons.close, color: textColor), onPressed: () => context.router.maybePop()),
             ],
           ),
         ),
@@ -182,7 +173,7 @@ class _CommentsListView extends StatelessWidget {
     if (comments.isEmpty && !isLoading) {
       return const _EmptyCommentsState();
     }
-    
+
     return ListView.builder(
       controller: scrollController,
       physics: const AlwaysScrollableScrollPhysics(),
@@ -190,16 +181,11 @@ class _CommentsListView extends StatelessWidget {
       itemCount: comments.length + (isLoading ? 1 : 0),
       itemBuilder: (context, index) {
         if (index == comments.length) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: CircularProgressIndicator(),
-            ),
-          );
+          return const Center(child: Padding(padding: EdgeInsets.all(16.0), child: CircularProgressIndicator()));
         }
-        
+
         final comment = comments[index];
-        
+
         return CommentItem(
           id: comment.id,
           userId: comment.authorDid,
@@ -247,36 +233,25 @@ class _EmptyCommentsState extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textColor = colorScheme.onSurface.withAlpha(179);
-    
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 40),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
-              Icons.chat_bubble_outline,
-              size: 48,
-              color: AppColors.primary,
-            ),
+            const Icon(Icons.chat_bubble_outline, size: 48, color: AppColors.primary),
             const SizedBox(height: 16),
             Text(
               'No comments yet',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: textColor,
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: textColor),
             ),
             const SizedBox(height: 8),
             Text(
               'Be the first to comment on this post!',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                color: textColor,
-              ),
+              style: TextStyle(fontSize: 14, color: textColor),
             ),
           ],
         ),

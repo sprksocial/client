@@ -85,18 +85,18 @@ class ImagePostItem extends ConsumerStatefulWidget {
     final username = post.author.handle;
     final description = post.record['text'] as String? ?? '';
     final hashtags = CommentUtils.extractHashtags(description);
-    
+
     final likeCount = post.record['likeCount'] as int? ?? 0;
     final commentCount = post.record['replyCount'] as int? ?? 0;
     final shareCount = post.record['repostCount'] as int? ?? 0;
-    
+
     final profileImageUrl = post.author.avatar;
     final authorDid = post.author.did;
     final isLiked = post.viewer['like'] != null;
-    
+
     // Assume it's a Spark post if it has certain elements (customize as needed)
     final isSprk = post.record['app']?.toString().contains('spark') ?? false;
-    
+
     return ImagePostItem(
       index: index,
       imageUrls: imageUrls,
@@ -172,7 +172,7 @@ class _ImagePostItemState extends ConsumerState<ImagePostItem> {
       widget.onLikePressed!();
       return;
     }
-    
+
     final notifier = ref.read(_imagePostProvider.notifier);
     notifier.toggleLike();
   }
@@ -182,7 +182,7 @@ class _ImagePostItemState extends ConsumerState<ImagePostItem> {
       widget.onCommentPressed!();
       return;
     }
-    
+
     final notifier = ref.read(_imagePostProvider.notifier);
     notifier.toggleComments();
   }
@@ -193,25 +193,16 @@ class _ImagePostItemState extends ConsumerState<ImagePostItem> {
     return Stack(
       fit: StackFit.expand,
       children: [
-        IgnorePointer(
-          ignoring: true, 
-          child: _PostBackground(
-            state: state, 
-            theme: Theme.of(context),
-          ),
-        ),
+        IgnorePointer(ignoring: true, child: _PostBackground(state: state, theme: Theme.of(context))),
         Center(
           child: _PostContent(
-            state: state, 
+            state: state,
             onPageChanged: (index) {
               ref.read(_imagePostProvider.notifier).updateCarouselIndex(index);
             },
           ),
         ),
-        IgnorePointer(
-          ignoring: true, 
-          child: _GradientOverlay(isDescriptionExpanded: state.isDescriptionExpanded),
-        ),
+        IgnorePointer(ignoring: true, child: _GradientOverlay(isDescriptionExpanded: state.isDescriptionExpanded)),
         _InfoBar(state: state),
         _SideActionBar(
           state: state,
@@ -230,10 +221,7 @@ class _PostBackground extends StatelessWidget {
   final ImagePostState state;
   final ThemeData theme;
 
-  const _PostBackground({
-    required this.state,
-    required this.theme,
-  });
+  const _PostBackground({required this.state, required this.theme});
 
   @override
   Widget build(BuildContext context) {
@@ -275,10 +263,7 @@ class _PostContent extends StatelessWidget {
   final ImagePostState state;
   final Function(int) onPageChanged;
 
-  const _PostContent({
-    required this.state,
-    required this.onPageChanged,
-  });
+  const _PostContent({required this.state, required this.onPageChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -294,9 +279,7 @@ class _PostContent extends StatelessWidget {
 class _GradientOverlay extends StatelessWidget {
   final bool isDescriptionExpanded;
 
-  const _GradientOverlay({
-    required this.isDescriptionExpanded,
-  });
+  const _GradientOverlay({required this.isDescriptionExpanded});
 
   @override
   Widget build(BuildContext context) {
@@ -315,9 +298,7 @@ class _GradientOverlay extends StatelessWidget {
             Colors.black.withAlpha(isDescriptionExpanded ? 150 : 80),
             Colors.black.withAlpha(isDescriptionExpanded ? 200 : 160),
           ],
-          stops: isDescriptionExpanded 
-              ? const [0.0, 0.4, 0.5, 0.6, 0.75, 0.9] 
-              : const [0.0, 0.5, 0.65, 0.75, 0.85, 0.95],
+          stops: isDescriptionExpanded ? const [0.0, 0.4, 0.5, 0.6, 0.75, 0.9] : const [0.0, 0.5, 0.65, 0.75, 0.85, 0.95],
         ),
       ),
     );
@@ -327,24 +308,20 @@ class _GradientOverlay extends StatelessWidget {
 class _InfoBar extends StatelessWidget {
   final ImagePostState state;
 
-  const _InfoBar({
-    required this.state,
-  });
+  const _InfoBar({required this.state});
 
   @override
   Widget build(BuildContext context) {
     String? alt;
-    
+
     if (state.imageUrls.length > 1) {
-      final candidate = state.imageAlts.length > state.currentCarouselIndex 
-          ? state.imageAlts[state.currentCarouselIndex] 
-          : null;
+      final candidate = state.imageAlts.length > state.currentCarouselIndex ? state.imageAlts[state.currentCarouselIndex] : null;
       if (candidate?.trim().isNotEmpty ?? false) alt = candidate;
     } else {
       final candidate = state.imageAlts.isNotEmpty ? state.imageAlts.first : null;
       if (candidate?.trim().isNotEmpty ?? false) alt = candidate;
     }
-    
+
     return Positioned(
       bottom: 20,
       left: 10,
@@ -400,4 +377,4 @@ class _SideActionBar extends StatelessWidget {
       ),
     );
   }
-} 
+}

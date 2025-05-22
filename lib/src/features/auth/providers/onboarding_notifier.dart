@@ -9,7 +9,6 @@ import 'package:sparksocial/src/features/auth/data/repositories/onboarding_repos
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
-
 part 'onboarding_notifier.g.dart';
 
 @riverpod
@@ -23,7 +22,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     _logger = GetIt.instance<LogService>().getLogger('OnboardingNotifier');
     _onboardingRepository = GetIt.instance<OnboardingRepository>();
     _authRepository = GetIt.instance<AuthRepository>();
-    
+
     return _fetchInitialProfileData();
   }
 
@@ -33,7 +32,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
       if (session == null || session.did.isEmpty) {
         _logger.e("User not authenticated or DID is missing.");
         return const OnboardingScreenState(
-          isLoading: false, 
+          isLoading: false,
           errorMessage: "User not authenticated",
           displayName: '',
           description: '',
@@ -42,7 +41,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
       final userDid = session.did;
 
       final profileDataMap = await _onboardingRepository.getBskyProfile();
-      
+
       String? displayName;
       String? descriptionValue;
       String? avatarCid;
@@ -57,7 +56,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
           avatarUrl = avatarData;
         } else if (avatarData is Map) {
           if (avatarData.containsKey('ref') && avatarData['ref'] is Map) {
-             avatarCid = avatarData['ref']['\$link'] as String?;
+            avatarCid = avatarData['ref']['\$link'] as String?;
           } else if (avatarData.containsKey('cid')) {
             avatarCid = avatarData['cid'] as String?;
           }
@@ -76,24 +75,19 @@ class OnboardingNotifier extends _$OnboardingNotifier {
       );
     } catch (e, s) {
       _logger.e('Failed to load Bsky profile', error: e, stackTrace: s);
-      return OnboardingScreenState(
-        isLoading: false, 
-        errorMessage: "Failed to load profile.",
-        displayName: '',
-        description: '',
-      );
+      return OnboardingScreenState(isLoading: false, errorMessage: "Failed to load profile.", displayName: '', description: '');
     }
   }
-  
+
   // Public method to reload profile if needed
   Future<void> reloadProfile() async {
     state = const AsyncValue.loading();
     try {
       final newState = await _fetchInitialProfileData();
       state = AsyncValue.data(newState);
-    } catch (e,s) {
-       _logger.e('Error reloading profile', error: e, stackTrace: s);
-       state = AsyncValue.error(e,s);
+    } catch (e, s) {
+      _logger.e('Error reloading profile', error: e, stackTrace: s);
+      state = AsyncValue.error(e, s);
     }
   }
 
@@ -142,9 +136,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
 
   void clearAvatarSelection() {
     if (state.hasValue) {
-      state = AsyncValue.data(state.value!.copyWith(
-        localAvatarBytes: null, 
-      ));
+      state = AsyncValue.data(state.value!.copyWith(localAvatarBytes: null));
     }
   }
 
@@ -153,23 +145,24 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     if (currentVal == null) return null;
 
     if (currentVal.localAvatarBytes != null) {
-      return null; 
+      return null;
     }
-    
+
     if (currentVal.initialAvatarUrl != null && currentVal.initialAvatarUrl!.isNotEmpty) {
       return currentVal.initialAvatarUrl;
     }
 
-    if (currentVal.initialAvatarCid != null && 
+    if (currentVal.initialAvatarCid != null &&
         currentVal.initialAvatarCid!.isNotEmpty &&
-        currentVal.userDid != null && 
+        currentVal.userDid != null &&
         currentVal.userDid!.isNotEmpty) {
       return 'https://media.sprk.so/img/tiny/${currentVal.userDid}/${currentVal.initialAvatarCid}';
     }
     return null;
   }
-  
-  ({String displayName, String description, Uint8List? avatarBytes, String? initialAvatarUrl, String? initialAvatarCid})? getOnboardingDataForNextStep() {
+
+  ({String displayName, String description, Uint8List? avatarBytes, String? initialAvatarUrl, String? initialAvatarCid})?
+  getOnboardingDataForNextStep() {
     if (!state.hasValue) return null;
     final current = state.value!;
     return (
@@ -177,7 +170,7 @@ class OnboardingNotifier extends _$OnboardingNotifier {
       description: current.description,
       avatarBytes: current.localAvatarBytes,
       initialAvatarUrl: current.initialAvatarUrl,
-      initialAvatarCid: current.initialAvatarCid
+      initialAvatarCid: current.initialAvatarCid,
     );
   }
-} 
+}

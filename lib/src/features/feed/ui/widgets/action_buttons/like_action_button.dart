@@ -9,12 +9,7 @@ class LikeActionButton extends StatefulWidget {
   final bool isLiked;
   final VoidCallback? onPressed;
 
-  const LikeActionButton({
-    super.key, 
-    required this.count, 
-    this.isLiked = false, 
-    this.onPressed
-  });
+  const LikeActionButton({super.key, required this.count, this.isLiked = false, this.onPressed});
 
   @override
   State<LikeActionButton> createState() => _LikeActionButtonState();
@@ -30,18 +25,12 @@ class _LikeActionButtonState extends State<LikeActionButton> with SingleTickerPr
     super.initState();
     _isLiked = widget.isLiked;
 
-    _animationController = AnimationController(
-      duration: const Duration(milliseconds: 400), 
-      vsync: this
-    );
+    _animationController = AnimationController(duration: const Duration(milliseconds: 400), vsync: this);
 
     _scaleAnimation = TweenSequence([
       TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.4), weight: 50),
       TweenSequenceItem(tween: Tween<double>(begin: 1.4, end: 1.0), weight: 50),
-    ]).animate(CurvedAnimation(
-      parent: _animationController, 
-      curve: Curves.easeInOut
-    ));
+    ]).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
   }
 
   @override
@@ -78,15 +67,11 @@ class _LikeActionButtonState extends State<LikeActionButton> with SingleTickerPr
     return AnimatedBuilder(
       animation: _animationController,
       builder: (context, child) {
-        final scale = _isLiked && _animationController.isAnimating 
-            ? _scaleAnimation.value 
-            : 1.0;
+        final scale = _isLiked && _animationController.isAnimating ? _scaleAnimation.value : 1.0;
 
         return ActionButton(
           key: ValueKey('like_button_${widget.count}'),
-          icon: _isLiked 
-              ? FluentIcons.heart_24_filled 
-              : FluentIcons.heart_24_regular,
+          icon: _isLiked ? FluentIcons.heart_24_filled : FluentIcons.heart_24_regular,
           color: _isLiked ? AppColors.red : null,
           label: widget.count,
           onPressed: _handleTap,
@@ -95,4 +80,4 @@ class _LikeActionButtonState extends State<LikeActionButton> with SingleTickerPr
       },
     );
   }
-} 
+}

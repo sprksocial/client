@@ -18,7 +18,6 @@ import 'profile_description.dart';
 import 'profile_links.dart'; // Placeholder will be created
 import 'profile_stat_item.dart'; // Placeholder will be created
 
-
 class ProfileHeader extends StatefulWidget {
   final actor_models.Profile profile;
   final bool isCurrentUser;
@@ -88,14 +87,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
     final Widget avatarWidget;
     if (widget.profile.avatar case final String av when av.isNotEmpty) {
-      avatarWidget = ClipOval(
-        child: UserAvatar(
-          imageUrl: av,
-          username: displayNameForAvatar,
-          size: 90,
-          borderWidth: 0,
-        ),
-      );
+      avatarWidget = ClipOval(child: UserAvatar(imageUrl: av, username: displayNameForAvatar, size: 90, borderWidth: 0));
     } else {
       avatarWidget = Icon(
         FluentIcons.person_24_regular,
@@ -139,9 +131,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                       shape: BoxShape.circle,
                       border: Border.all(color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender, width: 2),
                     ),
-                    child: Center(
-                      child: avatarWidget,
-                    ),
+                    child: Center(child: avatarWidget),
                   ),
                   if (widget.isCurrentUser)
                     Positioned(
@@ -179,9 +169,10 @@ class _ProfileHeaderState extends State<ProfileHeader> {
               Text(
                 headerDisplayName,
                 style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: theme.textTheme.titleLarge?.color ?? theme.colorScheme.onSurface),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: theme.textTheme.titleLarge?.color ?? theme.colorScheme.onSurface,
+                ),
               ),
               if (widget.isEarlySupporter) ...[
                 const SizedBox(width: 8),
@@ -214,18 +205,19 @@ class _ProfileHeaderState extends State<ProfileHeader> {
             ],
           ),
           const SizedBox(height: 4),
-          Text('@$handle',
-              style: TextStyle(
-                  color: theme.textTheme.bodyMedium?.color?.withAlpha(128) ?? theme.colorScheme.onSurfaceVariant,
-                  fontSize: 14)),
+          Text(
+            '@$handle',
+            style: TextStyle(
+              color: theme.textTheme.bodyMedium?.color?.withAlpha(128) ?? theme.colorScheme.onSurfaceVariant,
+              fontSize: 14,
+            ),
+          ),
           if (description.isNotEmpty || uniqueLinks.isNotEmpty) ...[
             const SizedBox(height: 8),
             if (description.isNotEmpty)
               ProfileDescription(
                 text: description,
-                style: TextStyle(
-                    color: theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface,
-                    fontSize: 14),
+                style: TextStyle(color: theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface, fontSize: 14),
                 onMentionTap: _handleUsernameTap,
               ),
             if (uniqueLinks.isNotEmpty)
@@ -258,13 +250,12 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                     child: ElevatedButton(
                       onPressed: widget.onFollowTap,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: widget.profile.isFollowing ? theme.colorScheme.surfaceContainerHighest : AppColors.primary,
+                        backgroundColor:
+                            widget.profile.isFollowing ? theme.colorScheme.surfaceContainerHighest : AppColors.primary,
                         foregroundColor: widget.profile.isFollowing ? theme.colorScheme.onSurfaceVariant : AppColors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
-                          side: widget.profile.isFollowing
-                              ? BorderSide(color: theme.colorScheme.outline)
-                              : BorderSide.none,
+                          side: widget.profile.isFollowing ? BorderSide(color: theme.colorScheme.outline) : BorderSide.none,
                         ),
                       ),
                       child: Text(
@@ -274,7 +265,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                     ),
                   ),
                 ),
-                 const SizedBox(width: 8),
+                const SizedBox(width: 8),
               ],
               Material(
                 color: Colors.transparent,
@@ -288,14 +279,10 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                       shape: BoxShape.circle,
                       border: Border.all(color: theme.colorScheme.outline.withAlpha(128)),
                     ),
-                    child: Icon(
-                      FluentIcons.settings_24_regular,
-                      size: 20,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
+                    child: Icon(FluentIcons.settings_24_regular, size: 20, color: theme.colorScheme.onSurfaceVariant),
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ],

@@ -31,7 +31,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
     // Listen to description changes
     _descriptionController.addListener(_onDescriptionChanged);
   }
-  
+
   void _onDescriptionChanged() {
     _notifier.setDescription(_descriptionController.text);
   }
@@ -47,7 +47,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
     try {
       // Upload using the provider
       await _notifier.uploadVideo();
-      
+
       // Navigate to home screen after successful upload
       if (mounted) {
         context.router.replaceAll([const HomeRoute()]);
@@ -55,12 +55,9 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
     } catch (e) {
       if (mounted) {
         // Show error without blocking UI
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to upload video: ${e.toString()}'), 
-            backgroundColor: Colors.red
-          )
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to upload video: ${e.toString()}'), backgroundColor: Colors.red));
       }
     }
   }
@@ -69,10 +66,8 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final textColor = theme.textTheme.bodyLarge?.color;
-    final inputBackgroundColor = theme.brightness == Brightness.dark 
-        ? Colors.grey.shade800 
-        : Colors.grey.shade200;
-    
+    final inputBackgroundColor = theme.brightness == Brightness.dark ? Colors.grey.shade800 : Colors.grey.shade200;
+
     final controller = _state.controller;
     final isUploading = _state.isUploading;
 
@@ -81,10 +76,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
       appBar: AppBar(
         backgroundColor: theme.appBarTheme.backgroundColor,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(FluentIcons.arrow_left_24_regular),
-          onPressed: () => context.router.maybePop(),
-        ),
+        leading: IconButton(icon: Icon(FluentIcons.arrow_left_24_regular), onPressed: () => context.router.maybePop()),
         title: Text('Review Video'),
       ),
       body: SafeArea(
@@ -102,29 +94,30 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                         builder: (context, constraints) {
                           final maxWidth = constraints.maxWidth;
                           final maxHeight = 320.0;
-                          
+
                           if (controller == null || !controller.value.isInitialized) {
                             return SizedBox(
                               height: maxHeight,
                               width: double.infinity,
-                              child: controller?.value.hasError ?? false
-                                ? Container(
-                                    color: Colors.grey.shade900,
-                                    alignment: Alignment.center,
-                                    child: Text(
-                                      'Video preview unavailable',
-                                      style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold),
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  )
-                                : Container(
-                                    color: Colors.grey,
-                                    alignment: Alignment.center,
-                                    child: const CircularProgressIndicator(),
-                                  ),
+                              child:
+                                  controller?.value.hasError ?? false
+                                      ? Container(
+                                        color: Colors.grey.shade900,
+                                        alignment: Alignment.center,
+                                        child: Text(
+                                          'Video preview unavailable',
+                                          style: TextStyle(color: textColor, fontSize: 16, fontWeight: FontWeight.bold),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      )
+                                      : Container(
+                                        color: Colors.grey,
+                                        alignment: Alignment.center,
+                                        child: const CircularProgressIndicator(),
+                                      ),
                             );
                           }
-                          
+
                           final aspectRatio = controller.value.aspectRatio;
                           double width = maxWidth;
                           double height = width / aspectRatio;
@@ -132,7 +125,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                             height = maxHeight;
                             width = height * aspectRatio;
                           }
-                          
+
                           return SizedBox(
                             height: height,
                             width: width,
@@ -141,8 +134,11 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
                                   child: AspectRatio(
-                                    aspectRatio: aspectRatio, 
-                                    child: VideoThumbnail(controller: controller, onFullscreen: () => context.router.push(VideoPlaybackRoute(controller: controller)),)
+                                    aspectRatio: aspectRatio,
+                                    child: VideoThumbnail(
+                                      controller: controller,
+                                      onFullscreen: () => context.router.push(VideoPlaybackRoute(controller: controller)),
+                                    ),
                                   ),
                                 ),
                                 // ALT button overlay (bottom right)
@@ -158,10 +154,8 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                                         controller.pause();
                                         final result = await showDialog<String>(
                                           context: context,
-                                          builder: (context) => AltTextEditorDialog(
-                                            imageFile: null, 
-                                            initialAltText: _state.altText
-                                          ),
+                                          builder:
+                                              (context) => AltTextEditorDialog(imageFile: null, initialAltText: _state.altText),
                                         );
                                         if (result != null) {
                                           _notifier.setAltText(result.trim());
@@ -201,10 +195,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                       // Description field
                       Container(
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: inputBackgroundColor, 
-                          borderRadius: BorderRadius.circular(8)
-                        ),
+                        decoration: BoxDecoration(color: inputBackgroundColor, borderRadius: BorderRadius.circular(8)),
                         child: TextField(
                           controller: _descriptionController,
                           style: TextStyle(color: textColor),
@@ -223,10 +214,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                       if (_state.error != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 16.0),
-                          child: Text(
-                            _state.error!,
-                            style: TextStyle(color: Colors.red),
-                          ),
+                          child: Text(_state.error!, style: TextStyle(color: Colors.red)),
                         ),
                     ],
                   ),
@@ -245,16 +233,14 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     disabledBackgroundColor: AppColors.primary.withAlpha(128),
                   ),
-                  child: isUploading
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                      )
-                    : const Text(
-                        'Post', 
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)
-                      ),
+                  child:
+                      isUploading
+                          ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                          )
+                          : const Text('Post', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ),
@@ -263,4 +249,4 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
       ),
     );
   }
-} 
+}

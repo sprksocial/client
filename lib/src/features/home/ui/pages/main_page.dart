@@ -20,17 +20,8 @@ class _MainPageState extends ConsumerState<MainPage> {
   Widget build(BuildContext context) {
     return AutoTabsRouter(
       key: const ValueKey('mainTabsRouter'),
-      routes: [
-        const HomeRoute(),
-        const SearchRoute(),
-        const EmptyRoute(),
-        const MessagesRoute(),
-        ProfileRoute(),
-      ],
-      transitionBuilder: (context, child, animation) => FadeTransition(
-        opacity: animation,
-        child: child,
-      ),
+      routes: [const HomeRoute(), const SearchRoute(), const EmptyRoute(), const MessagesRoute(), ProfileRoute()],
+      transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
 

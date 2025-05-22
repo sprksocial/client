@@ -13,21 +13,21 @@ class UploadNotifier extends _$UploadNotifier {
   late final LogService _logService;
   final Map<String, UploadTask> _tasks = {};
   Timer? _completedTasksTimer;
-  
+
   @override
   AsyncValue<void> build() {
     _logService = GetIt.instance<LogService>();
     final logger = _logService.getLogger('UploadNotifier');
     logger.d('UploadNotifier initialized');
-    
+
     ref.onDispose(() {
       _completedTasksTimer?.cancel();
       logger.d('UploadNotifier disposed');
     });
-    
+
     return const AsyncData(null);
   }
-  
+
   /// Register a new upload task
   String registerTask(String type) {
     final logger = _logService.getLogger('UploadNotifier');
@@ -68,10 +68,7 @@ class UploadNotifier extends _$UploadNotifier {
     final logger = _logService.getLogger('UploadNotifier');
     if (_tasks.containsKey(id)) {
       logger.e('Failed upload task: $id, error: $errorMessage');
-      _tasks[id] = _tasks[id]!.copyWith(
-        status: UploadStatus.error,
-        errorMessage: errorMessage
-      );
+      _tasks[id] = _tasks[id]!.copyWith(status: UploadStatus.error, errorMessage: errorMessage);
       state = const AsyncData(null);
     } else {
       logger.w('Attempted to fail non-existent task: $id');
@@ -87,12 +84,10 @@ class UploadNotifier extends _$UploadNotifier {
   }
 
   /// Check if any task is active
-  bool get isAnyTaskActive => 
-    _tasks.values.any((task) => task.status == UploadStatus.uploading);
+  bool get isAnyTaskActive => _tasks.values.any((task) => task.status == UploadStatus.uploading);
 
   /// Check if any task is completed
-  bool get isAnyTaskCompleted => 
-    _tasks.values.any((task) => task.status == UploadStatus.completed);
+  bool get isAnyTaskCompleted => _tasks.values.any((task) => task.status == UploadStatus.completed);
 
   void _setupCompletedTasksCleanup() {
     final logger = _logService.getLogger('UploadNotifier');
@@ -105,4 +100,4 @@ class UploadNotifier extends _$UploadNotifier {
       clearCompletedTasks();
     });
   }
-} 
+}

@@ -9,17 +9,13 @@ class FeedPagesView extends ConsumerWidget {
   final PageController pageController;
   final bool isHomeScreenVisible;
 
-  const FeedPagesView({
-    super.key,
-    required this.pageController,
-    required this.isHomeScreenVisible,
-  });
+  const FeedPagesView({super.key, required this.pageController, required this.isHomeScreenVisible});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
     final pages = <Widget>[];
-    
+
     if (settings.followingFeedEnabled) {
       pages.add(
         FeedPage(
@@ -29,27 +25,19 @@ class FeedPagesView extends ConsumerWidget {
         ),
       );
     }
-    
+
     if (settings.forYouFeedEnabled) {
       pages.add(
-        FeedPage(
-          key: const ValueKey('feed_for_you'),
-          feedType: FeedType.forYou.value,
-          isParentFeedVisible: isHomeScreenVisible,
-        ),
+        FeedPage(key: const ValueKey('feed_for_you'), feedType: FeedType.forYou.value, isParentFeedVisible: isHomeScreenVisible),
       );
     }
-    
+
     if (settings.latestFeedEnabled) {
       pages.add(
-        FeedPage(
-          key: const ValueKey('feed_latest'),
-          feedType: FeedType.latest.value,
-          isParentFeedVisible: isHomeScreenVisible,
-        ),
+        FeedPage(key: const ValueKey('feed_latest'), feedType: FeedType.latest.value, isParentFeedVisible: isHomeScreenVisible),
       );
     }
-    
+
     return PageView(
       controller: pageController,
       children: pages,
@@ -60,7 +48,7 @@ class FeedPagesView extends ConsumerWidget {
           if (settings.followingFeedEnabled) enabledFeeds.add(FeedType.following);
           if (settings.forYouFeedEnabled) enabledFeeds.add(FeedType.forYou);
           if (settings.latestFeedEnabled) enabledFeeds.add(FeedType.latest);
-          
+
           // Set the feed type based on index
           if (index < enabledFeeds.length) {
             if (ref.exists(feedTypeNotifierProvider)) {
@@ -71,4 +59,4 @@ class FeedPagesView extends ConsumerWidget {
       },
     );
   }
-} 
+}

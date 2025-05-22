@@ -15,9 +15,9 @@ class WarnBuilder extends StatefulWidget {
   final String severity;
 
   const WarnBuilder({
-    super.key, 
-    required this.child, 
-    required this.labelerDid, 
+    super.key,
+    required this.child,
+    required this.labelerDid,
     required this.labelValue,
     this.warningMessage,
     this.blurType = 'content',
@@ -37,18 +37,15 @@ class _WarnBuilderState extends State<WarnBuilder> {
     if (!_showWarning) {
       return widget.child;
     }
-    
+
     _logger.d('Showing warning for content: ${widget.labelValue} with severity: ${widget.severity}');
-    
+
     final style = ContentWarningStyle.fromSeverity(widget.severity);
 
     return Stack(
       children: [
-        BlurredContent(
-          blurType: widget.blurType,
-          child: widget.child,
-        ),
-        
+        BlurredContent(blurType: widget.blurType, child: widget.child),
+
         WarningOverlay(
           style: style,
           labelValue: widget.labelValue,
@@ -63,4 +60,4 @@ class _WarnBuilderState extends State<WarnBuilder> {
       ],
     );
   }
-} 
+}

@@ -51,14 +51,14 @@ void main() async {
   SystemChrome.setSystemUIOverlayStyle(AppTheme.darkSystemUiStyle);
 
   fvp.registerWith();
-  
+
   if (useNewArchitecture) {
     // Initialize dependencies for new architecture
     await configureDependencies();
-    
+
     // Setup logging for production/debug
     _setupLogging();
-    
+
     // Create a ProviderContainer with the Riverpod logger
     final container = riverpod.ProviderContainer(observers: [SparkRiverpodLogger()]);
     runApp(riverpod.UncontrolledProviderScope(container: container, child: SprkApp()));
@@ -71,7 +71,7 @@ void main() async {
 /// Setup logging framework based on environment
 void _setupLogging() {
   final logService = sl<LogService>();
-  
+
   // Set log level based on debug mode
   if (kDebugMode) {
     logService.setGlobalLogLevel(LogLevel.debug);

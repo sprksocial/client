@@ -11,10 +11,7 @@ import 'package:sparksocial/src/features/settings/ui/widgets/feed_settings_list.
 class FeedSettingsSheet extends ConsumerStatefulWidget {
   final Function(String, bool) onToggleChanged;
 
-  const FeedSettingsSheet({
-    super.key,
-    required this.onToggleChanged,
-  });
+  const FeedSettingsSheet({super.key, required this.onToggleChanged});
 
   @override
   ConsumerState<FeedSettingsSheet> createState() => _FeedSettingsSheetState();
@@ -42,10 +39,10 @@ class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> with Sing
     try {
       // Get default labeler DID from provider
       final labelerDid = ref.read(defaultLabelerDidProvider);
-      
+
       // Request labeler details using provider
       await ref.read(labelerDetailsProvider(labelerDid).future);
-      
+
       if (mounted) {
         setState(() => _isLoadingLabels = false);
       }
@@ -63,32 +60,26 @@ class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> with Sing
   Future<void> _updateAdultContentPreferences(bool hideAdultContent) async {
     final labelerDid = ref.read(defaultLabelerDidProvider);
     final settingsNotifier = ref.read(settingsProvider.notifier);
-    
+
     // Get the labeler details with definitions
     final labeler = await ref.read(labelerDetailsProvider(labelerDid).future);
-    
+
     // For each label definition that has adultOnly: true
     for (final entry in labeler.labelDefinitions.entries) {
       final labelValue = entry.key;
       final definition = entry.value;
-      
+
       // Check if this is an adult-only label
       final bool isAdultOnly = definition.adultOnly;
-      
+
       if (isAdultOnly) {
         // Set the preference based on the hideAdultContent setting
-        final newPreference = hideAdultContent 
-          ? LabelPreference.hide 
-          : LabelPreference.show;
-        
-        await settingsNotifier.setLabelPreference(
-          labelerDid,
-          labelValue,
-          newPreference
-        );
+        final newPreference = hideAdultContent ? LabelPreference.hide : LabelPreference.show;
+
+        await settingsNotifier.setLabelPreference(labelerDid, labelValue, newPreference);
       }
     }
-    
+
     // Force rebuild
     setState(() {});
   }
@@ -109,18 +100,13 @@ class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> with Sing
         width: MediaQuery.of(context).size.width,
         decoration: BoxDecoration(
           color: backgroundColor,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(20), 
-            topRight: Radius.circular(20)
-          ),
+          borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
         ),
         child: Column(
           children: [
             // Add extra padding at the top for the notch/camera hole
             SizedBox(height: topPadding + 8),
-            FeedSettingsHeader(
-              onClose: () => context.router.maybePop(),
-            ),
+            FeedSettingsHeader(onClose: () => context.router.maybePop()),
             Expanded(
               child: Column(
                 children: [
@@ -128,22 +114,19 @@ class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> with Sing
                     controller: _tabController,
                     labelColor: textColor,
                     unselectedLabelColor: textColor.withAlpha(127),
-                    tabs: const [
-                      Tab(text: "Feed"),
-                      Tab(text: "Content"),
-                    ],
+                    tabs: const [Tab(text: "Feed"), Tab(text: "Content")],
                   ),
                   Expanded(
                     child: TabBarView(
                       controller: _tabController,
                       children: [
-                        FeedSettingsList(
-                            onSettingChanged: widget.onToggleChanged),
+                        FeedSettingsList(onSettingChanged: widget.onToggleChanged),
                         ContentSettingsList(
-                            isLoadingLabels: _isLoadingLabels,
-                            labelsError: _labelsError,
-                            onRetryLabels: _loadLabelDefinitions,
-                            onUpdateAdultContentPreferences: _updateAdultContentPreferences),
+                          isLoadingLabels: _isLoadingLabels,
+                          labelsError: _labelsError,
+                          onRetryLabels: _loadLabelDefinitions,
+                          onUpdateAdultContentPreferences: _updateAdultContentPreferences,
+                        ),
                       ],
                     ),
                   ),
@@ -151,8 +134,7 @@ class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> with Sing
               ),
             ),
             // Bottom safe area
-            if (MediaQuery.of(context).padding.bottom > 0)
-              SizedBox(height: MediaQuery.of(context).padding.bottom),
+            if (MediaQuery.of(context).padding.bottom > 0) SizedBox(height: MediaQuery.of(context).padding.bottom),
           ],
         ),
       ),

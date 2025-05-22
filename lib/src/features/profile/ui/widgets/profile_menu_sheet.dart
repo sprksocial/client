@@ -31,9 +31,9 @@ class ProfileMenuSheet extends StatelessWidget {
           Text(
             'Profile Options',
             style: TextStyle(
-              fontSize: 24, 
-              fontWeight: FontWeight.bold, 
-              color: theme.colorScheme.onSurface // Updated color
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: theme.colorScheme.onSurface, // Updated color
             ),
           ),
           const SizedBox(height: 32),
@@ -47,11 +47,7 @@ class ProfileMenuSheet extends StatelessWidget {
             },
           ),
           const SizedBox(height: 16),
-          _MenuButton(
-            icon: FluentIcons.dismiss_20_filled, 
-            label: 'Cancel', 
-            onTap: () => context.router.maybePop()
-          ),
+          _MenuButton(icon: FluentIcons.dismiss_20_filled, label: 'Cancel', onTap: () => context.router.maybePop()),
           const SizedBox(height: 16),
         ],
       ),
@@ -66,12 +62,7 @@ class _MenuButton extends StatelessWidget {
   final VoidCallback onTap;
   final Color? textColor;
 
-  const _MenuButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.textColor,
-  });
+  const _MenuButton({required this.icon, required this.label, required this.onTap, this.textColor});
 
   @override
   Widget build(BuildContext context) {
@@ -89,17 +80,10 @@ class _MenuButton extends StatelessWidget {
           children: [
             Icon(icon, color: effectiveTextColor, size: 24),
             const SizedBox(width: 16),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: effectiveTextColor,
-              ),
-            ),
+            Text(label, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: effectiveTextColor)),
           ],
         ),
       ),
     );
   }
-} 
+}

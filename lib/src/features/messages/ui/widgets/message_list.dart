@@ -7,11 +7,7 @@ class MessageList extends StatelessWidget {
   final List<MessageData> messages;
   final Function(MessageData)? onMessageTap;
 
-  const MessageList({
-    super.key, 
-    required this.messages, 
-    this.onMessageTap
-  });
+  const MessageList({super.key, required this.messages, this.onMessageTap});
 
   @override
   Widget build(BuildContext context) {
@@ -36,4 +32,4 @@ class MessageList extends StatelessWidget {
       },
     );
   }
-} 
+}

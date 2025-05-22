@@ -24,7 +24,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     super.initState();
     _searchController.addListener(_onSearchChanged);
   }
-  
+
   @override
   void dispose() {
     _searchController.removeListener(_onSearchChanged);
@@ -90,11 +90,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 }
 
 class UserResults extends StatelessWidget {
-  const UserResults({
-    super.key,
-    required this.ref,
-    required this.state,
-  });
+  const UserResults({super.key, required this.ref, required this.state});
 
   final WidgetRef ref;
   final SearchState state;
@@ -110,13 +106,13 @@ class UserResults extends StatelessWidget {
     if (state.query.isEmpty) {
       return const SizedBox.shrink();
     }
-    
+
     return ListView.builder(
       itemCount: state.searchResults.length,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemBuilder: (context, index) {
         final actor = state.searchResults[index];
-        
+
         // Check if the user is being followed
         final followUri = actor.viewer != null ? actor.viewer!['following'] as String? : null;
         final isFollowing = followUri != null && followUri.isNotEmpty;
@@ -146,4 +142,4 @@ class UserResults extends StatelessWidget {
       },
     );
   }
-} 
+}

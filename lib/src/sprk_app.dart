@@ -11,14 +11,14 @@ import 'core/theme/providers/theme_provider.dart';
 /// As features are migrated, they will be integrated here.
 class SprkApp extends ConsumerStatefulWidget {
   const SprkApp({super.key});
-  
+
   @override
   ConsumerState<SprkApp> createState() => _SprkAppState();
 }
 
 class _SprkAppState extends ConsumerState<SprkApp> {
   final _appRouter = AppRouter();
-  
+
   @override
   void initState() {
     super.initState();
@@ -30,16 +30,16 @@ class _SprkAppState extends ConsumerState<SprkApp> {
   Widget build(BuildContext context) {
     // Force dark status bar and navigation bar
     SystemChrome.setSystemUIOverlayStyle(AppTheme.darkSystemUiStyle);
-    
+
     // Watch theme mode from the provider
     final themeMode = ref.watch(themeModeProvider);
-    
+
     return MaterialApp.router(
       title: 'Spark',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       debugShowCheckedModeBanner: false,
-      themeMode: themeMode,      
+      themeMode: themeMode,
       routerConfig: _appRouter.config(),
     );
   }

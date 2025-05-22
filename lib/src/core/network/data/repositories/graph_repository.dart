@@ -21,4 +21,4 @@ abstract class GraphRepository {
   ///
   /// [followUri] The URI of the follow record to delete
   Future<void> unfollowUser(String followUri);
-} 
+}

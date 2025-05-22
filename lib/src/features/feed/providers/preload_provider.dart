@@ -15,11 +15,11 @@ PreloadRepository preloadRepository(Ref ref) {
     cacheManager: GetIt.instance<CacheManagerInterface>(),
     logService: GetIt.instance<LogService>(),
   );
-  
+
   ref.onDispose(() {
     preloadRepository.dispose();
   });
-  
+
   return preloadRepository;
 }
 
@@ -39,12 +39,7 @@ String? localVideoPath(Ref ref, int index) {
 
 /// Provider for getting a preloaded video
 @riverpod
-Future<void> preloadMedia(
-  Ref ref, {
-  required int index,
-  required String? videoUrl,
-  required List<String> imageUrls,
-}) async {
+Future<void> preloadMedia(Ref ref, {required int index, required String? videoUrl, required List<String> imageUrls}) async {
   final preloadRepository = ref.watch(preloadRepositoryProvider);
   await preloadRepository.preloadMedia(index, videoUrl, imageUrls);
-} 
+}

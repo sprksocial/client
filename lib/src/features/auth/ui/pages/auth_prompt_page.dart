@@ -19,25 +19,21 @@ class AuthPromptPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context),
-      appBar: onClose != null
-          ? AppBar(
-              leading: IconButton(
-                padding: EdgeInsets.zero,
-                onPressed: onClose,
-                icon: Icon(FluentIcons.dismiss_24_regular, color: AppTheme.getTextColor(context)),
-              ),
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-            )
-          : null,
+      appBar:
+          onClose != null
+              ? AppBar(
+                leading: IconButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: onClose,
+                  icon: Icon(FluentIcons.dismiss_24_regular, color: AppTheme.getTextColor(context)),
+                ),
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+              )
+              : null,
       body: Stack(
         children: [
-          Positioned.fill(
-            child: Image.asset(
-              'assets/branding/gradient.webp',
-              fit: BoxFit.cover,
-            ),
-          ),
+          Positioned.fill(child: Image.asset('assets/branding/gradient.webp', fit: BoxFit.cover)),
           SafeArea(
             child: Center(
               child: Padding(
@@ -62,11 +58,7 @@ class AuthPromptPage extends StatelessWidget {
                       child: Text(
                         'Add an account to create videos, connect with friends, and more.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: AppColors.white,
-                          fontSize: 20,
-                          height: 1.5,
-                        ),
+                        style: TextStyle(color: AppColors.white, fontSize: 20, height: 1.5),
                       ),
                     ),
                     const SizedBox(height: 60),
@@ -88,11 +80,7 @@ class AuthPromptPage extends StatelessWidget {
                             'Login with ',
                             style: TextStyle(fontWeight: FontWeight.normal, fontSize: 20, color: AppColors.white),
                           ),
-                          SvgPicture.asset(
-                            'assets/images/ataccount.svg',
-                            height: 22,
-                            width: 100,
-                          ),
+                          SvgPicture.asset('assets/images/ataccount.svg', height: 22, width: 100),
                         ],
                       ),
                     ),
@@ -115,11 +103,7 @@ class AuthPromptPage extends StatelessWidget {
                             'Create an ',
                             style: TextStyle(fontWeight: FontWeight.normal, fontSize: 20, color: AppColors.white),
                           ),
-                          SvgPicture.asset(
-                            'assets/images/ataccount.svg',
-                            height: 22,
-                            width: 100,
-                          ),
+                          SvgPicture.asset('assets/images/ataccount.svg', height: 22, width: 100),
                         ],
                       ),
                     ),
@@ -139,4 +123,4 @@ class AuthPromptPage extends StatelessWidget {
       ),
     );
   }
-} 
+}

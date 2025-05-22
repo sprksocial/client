@@ -76,4 +76,4 @@ class _VideoDescriptionState extends State<VideoDescription> with SingleTickerPr
       ),
     );
   }
-} 
+}

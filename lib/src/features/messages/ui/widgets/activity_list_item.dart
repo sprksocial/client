@@ -27,28 +27,39 @@ class ActivityListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    
+
     // Activity properties based on type
-    final IconData activityIcon = type == ActivityType.like 
-        ? FluentIcons.heart_16_filled
-        : type == ActivityType.comment 
-            ? FluentIcons.chat_16_filled 
+    final IconData activityIcon =
+        type == ActivityType.like
+            ? FluentIcons.heart_16_filled
+            : type == ActivityType.comment
+            ? FluentIcons.chat_16_filled
             : FluentIcons.person_add_16_filled;
-            
-    final Color activityColor = type == ActivityType.like 
-        ? Colors.red.shade500
-        : type == ActivityType.comment 
-            ? Colors.green.shade600 
+
+    final Color activityColor =
+        type == ActivityType.like
+            ? Colors.red.shade500
+            : type == ActivityType.comment
+            ? Colors.green.shade600
             : Colors.blue.shade600;
-            
-    final String activityDescription = type == ActivityType.like 
-        ? '$username liked your post'
-        : type == ActivityType.comment 
-            ? '$username commented on your post' 
+
+    final String activityDescription =
+        type == ActivityType.like
+            ? '$username liked your post'
+            : type == ActivityType.comment
+            ? '$username commented on your post'
             : '$username started following you';
-            
+
     // Avatar colors
-    final List<Color> avatarColors = [Colors.blue, Colors.green, Colors.orange, Colors.purple, Colors.teal, Colors.pink, Colors.indigo];
+    final List<Color> avatarColors = [
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.teal,
+      Colors.pink,
+      Colors.indigo,
+    ];
     final Color avatarColor = avatarColors[colorIndex % avatarColors.length];
 
     return GestureDetector(
@@ -58,12 +69,7 @@ class ActivityListItem extends StatelessWidget {
         decoration: BoxDecoration(
           color: isDarkMode ? AppColors.black : AppColors.white,
           border: Border(
-            bottom: BorderSide(
-              color: isDarkMode 
-                ? Colors.grey.shade900 
-                : AppColors.divider.withAlpha(77),
-              width: 0.5
-            ),
+            bottom: BorderSide(color: isDarkMode ? Colors.grey.shade900 : AppColors.divider.withAlpha(77), width: 0.5),
           ),
         ),
         child: Row(
@@ -76,12 +82,7 @@ class ActivityListItem extends StatelessWidget {
                   height: 48,
                   decoration: const BoxDecoration(shape: BoxShape.circle),
                   clipBehavior: Clip.antiAlias,
-                  child: UserAvatar(
-                    imageUrl: avatarUrl,
-                    username: username,
-                    size: 48,
-                    backgroundColor: avatarColor,
-                  ),
+                  child: UserAvatar(imageUrl: avatarUrl, username: username, size: 48, backgroundColor: avatarColor),
                 ),
                 Positioned(
                   right: -2,
@@ -107,9 +108,9 @@ class ActivityListItem extends StatelessWidget {
                   Text(
                     activityDescription,
                     style: TextStyle(
-                      fontSize: 16, 
-                      color: isDarkMode ? AppColors.white : AppColors.black, 
-                      fontWeight: FontWeight.w500
+                      fontSize: 16,
+                      color: isDarkMode ? AppColors.white : AppColors.black,
+                      fontWeight: FontWeight.w500,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -118,10 +119,7 @@ class ActivityListItem extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       additionalInfo!,
-                      style: TextStyle(
-                        fontSize: 14, 
-                        color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700
-                      ),
+                      style: TextStyle(fontSize: 14, color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade700),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -129,16 +127,10 @@ class ActivityListItem extends StatelessWidget {
                 ],
               ),
             ),
-            Text(
-              time, 
-              style: TextStyle(
-                fontSize: 12, 
-                color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600
-              )
-            ),
+            Text(time, style: TextStyle(fontSize: 12, color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600)),
           ],
         ),
       ),
     );
   }
-} 
+}

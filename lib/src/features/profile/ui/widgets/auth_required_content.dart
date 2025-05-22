@@ -32,15 +32,18 @@ class AuthRequiredContent extends StatelessWidget {
               Text(
                 title,
                 style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                    color: theme.textTheme.titleMedium?.color ?? theme.colorScheme.onSurface),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: theme.textTheme.titleMedium?.color ?? theme.colorScheme.onSurface,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 10),
-              Text(description,
-                  style: TextStyle(color: theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurfaceVariant),
-                  textAlign: TextAlign.center),
+              Text(
+                description,
+                style: TextStyle(color: theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurfaceVariant),
+                textAlign: TextAlign.center,
+              ),
               const SizedBox(height: 24),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
@@ -49,10 +52,7 @@ class AuthRequiredContent extends StatelessWidget {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: onLoginPressed,
-                child: const Text('Login',
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.white)),
+                child: const Text('Login', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.white)),
               ),
             ],
           ),
@@ -60,4 +60,4 @@ class AuthRequiredContent extends StatelessWidget {
       ),
     );
   }
-} 
+}

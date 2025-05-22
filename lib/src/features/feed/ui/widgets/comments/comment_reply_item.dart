@@ -91,12 +91,7 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          UserAvatar(
-            imageUrl: widget.profileImageUrl,
-            username: widget.username,
-            size: 28,
-            borderWidth: 1,
-          ),
+          UserAvatar(imageUrl: widget.profileImageUrl, username: widget.username, size: 28, borderWidth: 1),
           const SizedBox(width: 8),
           Expanded(
             child: _ReplyContent(

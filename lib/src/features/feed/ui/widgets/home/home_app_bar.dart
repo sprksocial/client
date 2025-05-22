@@ -7,15 +7,12 @@ import 'package:sparksocial/src/features/feed/ui/widgets/feed/feed_type_selector
 class HomeAppBar extends ConsumerWidget {
   final VoidCallback onSettingsTap;
 
-  const HomeAppBar({
-    super.key,
-    required this.onSettingsTap,
-  });
+  const HomeAppBar({super.key, required this.onSettingsTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final topPadding = MediaQuery.of(context).padding.top;
-    
+
     return Container(
       padding: EdgeInsets.only(top: topPadding + 10, left: 16.0, right: 16.0, bottom: 20.0),
       child: Row(
@@ -26,10 +23,7 @@ class HomeAppBar extends ConsumerWidget {
             child: Center(
               child: Container(
                 padding: const EdgeInsets.all(2),
-                decoration: BoxDecoration(
-                  color: Colors.transparent, 
-                  borderRadius: BorderRadius.circular(20)
-                ),
+                decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(20)),
                 child: const FeedTypeSelector(),
               ),
             ),
@@ -44,4 +38,4 @@ class HomeAppBar extends ConsumerWidget {
       ),
     );
   }
-} 
+}

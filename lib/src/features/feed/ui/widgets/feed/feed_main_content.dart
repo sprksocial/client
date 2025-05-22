@@ -31,25 +31,24 @@ class FeedMainContent extends StatelessWidget {
     return SizedBox(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
-      child: feedState.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : feedState.errorMessage != null
-          ? Center(child: Text('Error: ${feedState.errorMessage}', 
-              style: const TextStyle(color: AppColors.white)))
-          : feedState.posts.isEmpty
-          ? const Center(child: Text('No media available', 
-              style: TextStyle(color: AppColors.white)))
-          : canBuildPageView
-          ? FeedPageView(
-              pageController: pageController,
-              feedState: feedState,
-              isParentFeedVisible: isParentFeedVisible,
-              feedType: feedType,
-              initialPosts: initialPosts,
-              initialIndex: initialIndex,
-              onPageChanged: onPageChanged,
-            )
-          : const SizedBox.shrink(),
+      child:
+          feedState.isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : feedState.errorMessage != null
+              ? Center(child: Text('Error: ${feedState.errorMessage}', style: const TextStyle(color: AppColors.white)))
+              : feedState.posts.isEmpty
+              ? const Center(child: Text('No media available', style: TextStyle(color: AppColors.white)))
+              : canBuildPageView
+              ? FeedPageView(
+                pageController: pageController,
+                feedState: feedState,
+                isParentFeedVisible: isParentFeedVisible,
+                feedType: feedType,
+                initialPosts: initialPosts,
+                initialIndex: initialIndex,
+                onPageChanged: onPageChanged,
+              )
+              : const SizedBox.shrink(),
     );
   }
-} 
+}

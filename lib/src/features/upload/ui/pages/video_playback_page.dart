@@ -8,10 +8,7 @@ import 'package:video_player/video_player.dart';
 class VideoPlaybackPage extends StatefulWidget {
   final VideoPlayerController controller;
 
-  const VideoPlaybackPage({
-    super.key, 
-    required this.controller
-  });
+  const VideoPlaybackPage({super.key, required this.controller});
 
   @override
   State<VideoPlaybackPage> createState() => _VideoPlaybackPageState();
@@ -94,12 +91,7 @@ class _VideoPlaybackPageState extends State<VideoPlaybackPage> {
         child: Stack(
           children: [
             // Video Player
-            Center(
-              child: AspectRatio(
-                aspectRatio: widget.controller.value.aspectRatio, 
-                child: VideoPlayer(widget.controller)
-              )
-            ),
+            Center(child: AspectRatio(aspectRatio: widget.controller.value.aspectRatio, child: VideoPlayer(widget.controller))),
 
             // Controls overlay
             if (_showControls)
@@ -112,9 +104,7 @@ class _VideoPlaybackPageState extends State<VideoPlaybackPage> {
                       // Play/Pause button
                       IconButton(
                         icon: Icon(
-                          _isPlaying 
-                              ? FluentIcons.pause_48_filled 
-                              : FluentIcons.play_48_filled,
+                          _isPlaying ? FluentIcons.pause_48_filled : FluentIcons.play_48_filled,
                           color: Colors.white,
                           size: 60,
                         ),
@@ -126,11 +116,7 @@ class _VideoPlaybackPageState extends State<VideoPlaybackPage> {
                         top: MediaQuery.of(context).padding.top + 16,
                         left: 16,
                         child: IconButton(
-                          icon: const Icon(
-                            FluentIcons.arrow_left_24_filled, 
-                            color: Colors.white, 
-                            size: 28
-                          ),
+                          icon: const Icon(FluentIcons.arrow_left_24_filled, color: Colors.white, size: 28),
                           onPressed: () => context.router.maybePop(),
                         ),
                       ),
@@ -149,20 +135,8 @@ class _VideoPlaybackPageState extends State<VideoPlaybackPage> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    _formatDuration(position), 
-                                    style: const TextStyle(
-                                      color: Colors.white, 
-                                      fontSize: 12
-                                    )
-                                  ),
-                                  Text(
-                                    _formatDuration(duration), 
-                                    style: const TextStyle(
-                                      color: Colors.white, 
-                                      fontSize: 12
-                                    )
-                                  ),
+                                  Text(_formatDuration(position), style: const TextStyle(color: Colors.white, fontSize: 12)),
+                                  Text(_formatDuration(duration), style: const TextStyle(color: Colors.white, fontSize: 12)),
                                 ],
                               ),
                             ),
@@ -174,21 +148,15 @@ class _VideoPlaybackPageState extends State<VideoPlaybackPage> {
                                 activeTrackColor: theme.colorScheme.primary,
                                 inactiveTrackColor: Colors.white.withAlpha(77),
                                 thumbColor: theme.colorScheme.primary,
-                                thumbShape: const RoundSliderThumbShape(
-                                  enabledThumbRadius: 6
-                                ),
-                                overlayShape: const RoundSliderOverlayShape(
-                                  overlayRadius: 12
-                                ),
+                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                                overlayShape: const RoundSliderOverlayShape(overlayRadius: 12),
                               ),
                               child: Slider(
                                 value: position.inMilliseconds.toDouble(),
                                 min: 0,
                                 max: duration.inMilliseconds.toDouble(),
                                 onChanged: (value) {
-                                  widget.controller.seekTo(
-                                    Duration(milliseconds: value.toInt())
-                                  );
+                                  widget.controller.seekTo(Duration(milliseconds: value.toInt()));
                                 },
                               ),
                             ),
@@ -204,4 +172,4 @@ class _VideoPlaybackPageState extends State<VideoPlaybackPage> {
       ),
     );
   }
-} 
+}

@@ -8,60 +8,60 @@ import 'package:sparksocial/src/core/storage/cache/cache_manager_interface.dart'
 class CacheManagerImpl implements CacheManagerInterface {
   /// Singleton instance
   static final CacheManagerImpl _instance = CacheManagerImpl._();
-  
+
   /// Default cache manager for most files
   late final DefaultCacheManager defaultCacheManager;
-  
+
   /// Private constructor
   CacheManagerImpl._() {
     defaultCacheManager = DefaultCacheManager();
   }
-  
+
   /// Get the singleton instance
   static CacheManagerImpl get instance => _instance;
-  
+
   /// Get a cached file or download it if not available
   @override
   Future<File> getFile(String url) async {
     final fileInfo = await defaultCacheManager.getFileFromCache(url);
-    
+
     if (fileInfo != null) {
       return fileInfo.file;
     }
-    
+
     // File not in cache, download it
     final file = await defaultCacheManager.getSingleFile(url);
     return file;
   }
-  
+
   /// Store a file in the cache with the given key
   @override
   Future<void> putFile(String url, List<int> fileBytes) async {
     await defaultCacheManager.putFile(
-      url, 
+      url,
       Uint8List.fromList(fileBytes),
       maxAge: const Duration(days: 7), // Cache for 7 days
     );
   }
-  
+
   /// Remove a specific file from cache
   @override
   Future<void> removeFile(String url) async {
     await defaultCacheManager.removeFile(url);
   }
-  
+
   /// Calculate the total size of the cache in bytes
   @override
   Future<int> getCacheSize() async {
     final cacheDir = await getTemporaryDirectory();
     return await _calculateDirSize(cacheDir);
   }
-  
+
   /// Clear all cached files
   @override
   Future<void> clearCache() async {
     await defaultCacheManager.emptyCache();
-    
+
     // Also clear the temp directory
     final tempDir = await getTemporaryDirectory();
     if (tempDir.existsSync()) {
@@ -78,7 +78,7 @@ class CacheManagerImpl implements CacheManagerInterface {
       });
     }
   }
-  
+
   /// Helper method to calculate directory size
   Future<int> _calculateDirSize(Directory dir) async {
     int totalSize = 0;
@@ -95,4 +95,4 @@ class CacheManagerImpl implements CacheManagerInterface {
     }
     return totalSize;
   }
-} 
+}

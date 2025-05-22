@@ -6,11 +6,7 @@ import 'package:sparksocial/src/features/messages/data/models/activity_data.dart
 import 'package:sparksocial/src/features/messages/ui/widgets/activity_list.dart';
 
 class ActivitiesTab extends StatelessWidget {
-  const ActivitiesTab({
-    super.key,
-    required this.activities,
-    required this.onActivityTap,
-  });
+  const ActivitiesTab({super.key, required this.activities, required this.onActivityTap});
 
   final List<ActivityData> activities;
   final Function(ActivityData) onActivityTap;
@@ -28,4 +24,4 @@ class ActivitiesTab extends StatelessWidget {
       },
     );
   }
-} 
+}

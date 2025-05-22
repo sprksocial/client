@@ -60,4 +60,4 @@ class ProfileContentThumbnail extends StatelessWidget {
       ),
     );
   }
-} 
+}

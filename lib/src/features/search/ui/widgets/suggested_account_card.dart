@@ -37,10 +37,7 @@ class SuggestedAccountCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLow.withAlpha(102),
-          borderRadius: BorderRadius.circular(12),
-        ),
+        decoration: BoxDecoration(color: colorScheme.surfaceContainerLow.withAlpha(102), borderRadius: BorderRadius.circular(12)),
         child: Row(
           children: [
             Container(
@@ -58,20 +55,13 @@ class SuggestedAccountCard extends StatelessWidget {
                 children: [
                   Text(
                     username,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold, 
-                      fontSize: 16, 
-                      color: textColor
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textColor),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     handle,
-                    style: TextStyle(
-                      fontSize: 14, 
-                      color: secondaryTextColor
-                    ),
+                    style: TextStyle(fontSize: 14, color: secondaryTextColor),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -80,10 +70,7 @@ class SuggestedAccountCard extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 2.0),
                       child: Text(
                         description!,
-                        style: TextStyle(
-                          fontSize: 13, 
-                          color: secondaryTextColor
-                        ),
+                        style: TextStyle(fontSize: 13, color: secondaryTextColor),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -95,46 +82,35 @@ class SuggestedAccountCard extends StatelessWidget {
             if (showFollowButton)
               isFollowing
                   ? GestureDetector(
-                      onTap: onUnfollowTap,
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: Colors.transparent,
-                          border: Border.all(color: colorScheme.primary, width: 2),
-                          borderRadius: BorderRadius.circular(24),
-                        ),
-                        child: Text(
-                          'Following',
-                          style: TextStyle(
-                            color: colorScheme.primary, 
-                            fontWeight: FontWeight.w600, 
-                            fontSize: 14
-                          ),
-                        ),
+                    onTap: onUnfollowTap,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.transparent,
+                        border: Border.all(color: colorScheme.primary, width: 2),
+                        borderRadius: BorderRadius.circular(24),
                       ),
-                    )
-                  : GestureDetector(
-                      onTap: onFollowTap,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                        decoration: BoxDecoration(
-                          color: colorScheme.primary, 
-                          borderRadius: BorderRadius.circular(24)
-                        ),
-                        child: Text(
-                          'Follow',
-                          style: TextStyle(
-                            color: colorScheme.onPrimary, 
-                            fontWeight: FontWeight.w600, 
-                            fontSize: 14
-                          ),
-                        ),
+                      child: Text(
+                        'Following',
+                        style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w600, fontSize: 14),
                       ),
                     ),
+                  )
+                  : GestureDetector(
+                    onTap: onFollowTap,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      decoration: BoxDecoration(color: colorScheme.primary, borderRadius: BorderRadius.circular(24)),
+                      child: Text(
+                        'Follow',
+                        style: TextStyle(color: colorScheme.onPrimary, fontWeight: FontWeight.w600, fontSize: 14),
+                      ),
+                    ),
+                  ),
           ],
         ),
       ),
     );
   }
-} 
+}

@@ -9,9 +9,9 @@ class SplashNotifier extends _$SplashNotifier {
   bool build() {
     return false; // isImageLoaded initial state
   }
-  
+
   /// Set the image loaded state
   void setImageLoaded(bool isLoaded) {
     state = isLoaded;
   }
-} 
+}

@@ -23,14 +23,14 @@ class ImageReviewPage extends ConsumerStatefulWidget {
 class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   final TextEditingController _descriptionController = TextEditingController();
   final PageController _pageController = PageController();
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     // Create a custom provider instance with the initial images
     final notifier = ref.read(imageReviewNotifierProvider(initialImages: widget.imageFiles).notifier);
-    
+
     // Setup the page controller listener
     _pageController.addListener(() {
       final page = _pageController.page?.round() ?? 0;
@@ -41,7 +41,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
+
     // Initialize the description controller from state if needed
     final description = ref.read(imageReviewNotifierProvider(initialImages: widget.imageFiles)).description;
     if (description.isNotEmpty && _descriptionController.text.isEmpty) {
@@ -59,34 +59,30 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   void _showFullscreenImage(BuildContext context, XFile imageFile) {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: EdgeInsets.zero,
-        child: GestureDetector(
-          onTap: () => context.router.maybePop(),
-          child: InteractiveViewer(
-            child: Center(child: Image.file(File(imageFile.path))),
+      builder:
+          (context) => Dialog(
+            backgroundColor: Colors.transparent,
+            insetPadding: EdgeInsets.zero,
+            child: GestureDetector(
+              onTap: () => context.router.maybePop(),
+              child: InteractiveViewer(child: Center(child: Image.file(File(imageFile.path)))),
+            ),
           ),
-        ),
-      ),
     );
   }
 
   void _editAltText(XFile imageFile) async {
     final notifier = ref.read(imageReviewNotifierProvider(initialImages: widget.imageFiles).notifier);
     final state = ref.read(imageReviewNotifierProvider(initialImages: widget.imageFiles));
-    
+
     final path = imageFile.path;
     final initialText = state.altTexts[path] ?? '';
-    
+
     final result = await showDialog<String>(
       context: context,
-      builder: (context) => AltTextEditorDialog(
-        imageFile: imageFile, 
-        initialAltText: initialText
-      ),
+      builder: (context) => AltTextEditorDialog(imageFile: imageFile, initialAltText: initialText),
     );
-    
+
     if (result != null) {
       notifier.setAltText(imageFile, result);
     }
@@ -96,16 +92,16 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(imageReviewNotifierProvider(initialImages: widget.imageFiles));
     final notifier = ref.read(imageReviewNotifierProvider(initialImages: widget.imageFiles).notifier);
-    
+
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
-    
+
     final backgroundColor = isDarkMode ? AppColors.nearBlack : Colors.white;
     final textColor = isDarkMode ? AppColors.textLight : AppColors.textPrimary;
     final hintColor = isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600;
     final inputBackgroundColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200;
     final buttonTextColor = isDarkMode ? Colors.black : Colors.white;
-    
+
     // Update provider from controller
     if (_descriptionController.text != state.description) {
       notifier.setDescription(_descriptionController.text);
@@ -151,10 +147,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                                           margin: const EdgeInsets.symmetric(horizontal: 4.0),
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(8),
-                                            image: DecorationImage(
-                                              image: FileImage(File(image.path)),
-                                              fit: BoxFit.cover,
-                                            ),
+                                            image: DecorationImage(image: FileImage(File(image.path)), fit: BoxFit.cover),
                                           ),
                                         ),
                                         Positioned(
@@ -170,10 +163,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                                                   onTap: () => _editAltText(image),
                                                   borderRadius: BorderRadius.circular(8),
                                                   child: Padding(
-                                                    padding: const EdgeInsets.symmetric(
-                                                      horizontal: 8,
-                                                      vertical: 4,
-                                                    ),
+                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                     child: Row(
                                                       children: [
                                                         const Icon(
@@ -204,11 +194,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                                                   customBorder: const CircleBorder(),
                                                   child: const Padding(
                                                     padding: EdgeInsets.all(4),
-                                                    child: Icon(
-                                                      FluentIcons.dismiss_16_filled,
-                                                      color: Colors.white,
-                                                      size: 20,
-                                                    ),
+                                                    child: Icon(FluentIcons.dismiss_16_filled, color: Colors.white, size: 20),
                                                   ),
                                                 ),
                                               ),
@@ -243,14 +229,12 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton.icon(
-                          onPressed: notifier.canPickMoreImages 
-                            ? () => notifier.pickMoreImages()
-                            : null,
+                          onPressed: notifier.canPickMoreImages ? () => notifier.pickMoreImages() : null,
                           icon: const Icon(FluentIcons.add_24_regular),
                           label: Text(
                             notifier.canPickMoreImages
-                              ? 'Add More Images (${state.imageFiles.length}/12)'
-                              : 'Image Limit Reached',
+                                ? 'Add More Images (${state.imageFiles.length}/12)'
+                                : 'Image Limit Reached',
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
@@ -264,10 +248,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                       const SizedBox(height: 20),
                       Container(
                         padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: inputBackgroundColor,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
+                        decoration: BoxDecoration(color: inputBackgroundColor, borderRadius: BorderRadius.circular(8)),
                         child: TextField(
                           controller: _descriptionController,
                           style: TextStyle(color: textColor),
@@ -294,52 +275,41 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: state.isPosting
-                    ? null
-                    : () async {
-                        // Store router and scaffoldMessenger before the async gap
-                        final router = context.router;
-                        final scaffoldMessenger = ScaffoldMessenger.of(context);
+                  onPressed:
+                      state.isPosting
+                          ? null
+                          : () async {
+                            // Store router and scaffoldMessenger before the async gap
+                            final router = context.router;
+                            final scaffoldMessenger = ScaffoldMessenger.of(context);
 
-                        try {
-                          await notifier.postImages();
-                          if (mounted) {
-                            router.replaceAll([const HomeRoute()]);
-                          }
-                        } catch (e) {
-                          if (mounted) {
-                            scaffoldMessenger.showSnackBar(
-                              SnackBar(
-                                content: Text('Failed to create post: $e'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
-                          }
-                        }
-                      },
+                            try {
+                              await notifier.postImages();
+                              if (mounted) {
+                                router.replaceAll([const HomeRoute()]);
+                              }
+                            } catch (e) {
+                              if (mounted) {
+                                scaffoldMessenger.showSnackBar(
+                                  SnackBar(content: Text('Failed to create post: $e'), backgroundColor: Colors.red),
+                                );
+                              }
+                            }
+                          },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     disabledBackgroundColor: AppColors.primary.withAlpha(128),
                   ),
-                  child: state.isPosting
-                    ? SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: buttonTextColor,
-                        ),
-                      )
-                    : Text(
-                        'Post',
-                        style: TextStyle(
-                          color: buttonTextColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                  child:
+                      state.isPosting
+                          ? SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: buttonTextColor),
+                          )
+                          : Text('Post', style: TextStyle(color: buttonTextColor, fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ),
             ),
@@ -348,4 +318,4 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       ),
     );
   }
-} 
+}

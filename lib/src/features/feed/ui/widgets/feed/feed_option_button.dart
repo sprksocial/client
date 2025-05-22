@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
-/// A button used in feed selection components to navigate between different 
+/// A button used in feed selection components to navigate between different
 /// feed options.
 class FeedOptionButton extends StatelessWidget {
   /// The text displayed on the button
   final String label;
-  
+
   /// Whether this option is currently selected
   final bool isSelected;
-  
+
   /// Callback when the button is tapped
   final VoidCallback onTap;
-  
+
   /// Optional width of the button
   final double? width;
-  
+
   /// Height of the button
   final double height;
-  
+
   /// Optional padding for the button content
   final EdgeInsets? padding;
 
@@ -35,7 +35,7 @@ class FeedOptionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -58,4 +58,4 @@ class FeedOptionButton extends StatelessWidget {
       ),
     );
   }
-} 
+}

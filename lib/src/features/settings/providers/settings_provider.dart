@@ -32,7 +32,7 @@ class Settings extends _$Settings {
     final hideAdultContent = await _repository.getHideAdultContent();
     final followedLabelers = await _repository.getFollowedLabelers();
     final labelPreferences = await _repository.getLabelPreferences();
-    
+
     // Load new feed settings
     final followingFeedEnabled = await _repository.getFollowingFeedEnabled();
     final forYouFeedEnabled = await _repository.getForYouFeedEnabled();
@@ -50,7 +50,7 @@ class Settings extends _$Settings {
       selectedFeedType: selectedFeedType,
       isLoading: false,
     );
-    
+
     // Make sure selected feed is enabled
     if (!isSelectedFeedEnabled()) {
       await selectFirstEnabledFeed();
@@ -68,25 +68,25 @@ class Settings extends _$Settings {
     await _repository.setHideAdultContent(value);
     state = state.copyWith(hideAdultContent: value);
   }
-  
+
   /// Sets following feed enabled setting
   Future<void> setFollowingFeedEnabled(bool value) async {
     await _repository.setFollowingFeedEnabled(value);
     state = state.copyWith(followingFeedEnabled: value);
   }
-  
+
   /// Sets for you feed enabled setting
   Future<void> setForYouFeedEnabled(bool value) async {
     await _repository.setForYouFeedEnabled(value);
     state = state.copyWith(forYouFeedEnabled: value);
   }
-  
+
   /// Sets latest feed enabled setting
   Future<void> setLatestFeedEnabled(bool value) async {
     await _repository.setLatestFeedEnabled(value);
     state = state.copyWith(latestFeedEnabled: value);
   }
-  
+
   /// Sets selected feed type
   Future<void> setSelectedFeedType(FeedType value) async {
     await _repository.setSelectedFeedType(value);
@@ -98,8 +98,8 @@ class Settings extends _$Settings {
     return state.selectedFeedType == FeedType.following
         ? state.followingFeedEnabled
         : state.selectedFeedType == FeedType.forYou
-            ? state.forYouFeedEnabled
-            : state.latestFeedEnabled;
+        ? state.forYouFeedEnabled
+        : state.latestFeedEnabled;
   }
 
   /// Selects the first enabled feed
@@ -116,7 +116,7 @@ class Settings extends _$Settings {
       await setForYouFeedEnabled(true);
       feedType = FeedType.forYou;
     }
-    
+
     if (feedType != state.selectedFeedType) {
       await setSelectedFeedType(feedType);
     }
@@ -125,9 +125,8 @@ class Settings extends _$Settings {
   /// Checks if a feed can be disabled
   bool canDisableFeed(String settingType) {
     // Get the number of active feeds
-    final int activeFeeds = (state.followingFeedEnabled ? 1 : 0) + 
-                           (state.forYouFeedEnabled ? 1 : 0) + 
-                           (state.latestFeedEnabled ? 1 : 0);
+    final int activeFeeds =
+        (state.followingFeedEnabled ? 1 : 0) + (state.forYouFeedEnabled ? 1 : 0) + (state.latestFeedEnabled ? 1 : 0);
 
     // Don't allow disabling if it's the last enabled feed
     if (activeFeeds <= 1) return false;
@@ -190,67 +189,55 @@ class Settings extends _$Settings {
     if (state.followedLabelers.contains(labelerDid)) {
       final updatedList = state.followedLabelers.where((id) => id != labelerDid).toList();
       await _repository.setFollowedLabelers(updatedList);
-      
+
       // Also remove preferences for this labeler
       await _repository.clearLabelerPreferences(labelerDid);
-      
+
       // Update state
       final updatedPrefs = Map<String, Map<String, String>>.from(state.labelPreferences);
       updatedPrefs.remove(labelerDid);
-      
-      state = state.copyWith(
-        followedLabelers: updatedList,
-        labelPreferences: updatedPrefs,
-      );
+
+      state = state.copyWith(followedLabelers: updatedList, labelPreferences: updatedPrefs);
     }
   }
 
   /// Sets a preference for a specific label from a labeler
-  Future<void> setLabelPreference(
-    String labelerDid,
-    String labelValue,
-    LabelPreference preference,
-  ) async {
+  Future<void> setLabelPreference(String labelerDid, String labelValue, LabelPreference preference) async {
     await _repository.setLabelPreference(labelerDid, labelValue, preference);
-    
+
     // Update the state
     final updatedPrefs = Map<String, Map<String, String>>.from(state.labelPreferences);
     updatedPrefs[labelerDid] ??= {};
     updatedPrefs[labelerDid]![labelValue] = preference.name;
-    
+
     state = state.copyWith(labelPreferences: updatedPrefs);
   }
 
   /// Removes a preference for a specific label, reverting to the default
   Future<void> removeLabelPreference(String labelerDid, String labelValue) async {
     await _repository.removeLabelPreference(labelerDid, labelValue);
-    
+
     // Update the state
     if (state.labelPreferences.containsKey(labelerDid)) {
       final updatedPrefs = Map<String, Map<String, String>>.from(state.labelPreferences);
       updatedPrefs[labelerDid]?.remove(labelValue);
-      
+
       state = state.copyWith(labelPreferences: updatedPrefs);
     }
   }
 
   /// Sets preferences in bulk for all labels from a labeler
-  Future<void> setLabelerPreferences(
-    String labelerDid,
-    Map<String, LabelPreference> preferences,
-  ) async {
+  Future<void> setLabelerPreferences(String labelerDid, Map<String, LabelPreference> preferences) async {
     // Convert the map of enums to strings
-    final stringPrefs = preferences.map(
-      (key, value) => MapEntry(key, value.name)
-    );
-    
+    final stringPrefs = preferences.map((key, value) => MapEntry(key, value.name));
+
     // Create a new map with the updated preferences
     final updatedPrefs = Map<String, Map<String, String>>.from(state.labelPreferences);
     updatedPrefs[labelerDid] = stringPrefs;
-    
+
     // Update repository
     await _repository.saveLabelPreferences(updatedPrefs);
-    
+
     // Update state
     state = state.copyWith(labelPreferences: updatedPrefs);
   }
@@ -258,12 +245,12 @@ class Settings extends _$Settings {
   /// Clears all preferences for a specific labeler
   Future<void> clearLabelerPreferences(String labelerDid) async {
     await _repository.clearLabelerPreferences(labelerDid);
-    
+
     // Update state
     if (state.labelPreferences.containsKey(labelerDid)) {
       final updatedPrefs = Map<String, Map<String, String>>.from(state.labelPreferences);
       updatedPrefs.remove(labelerDid);
-      
+
       state = state.copyWith(labelPreferences: updatedPrefs);
     }
   }
@@ -277,32 +264,28 @@ extension SettingsLabelPreferences on SettingsState {
     if (isLoading || !labelPreferences.containsKey(labelerDid)) {
       return null;
     }
-    
+
     final prefValue = labelPreferences[labelerDid]?[labelValue];
     if (prefValue == null) return null;
-    
+
     return LabelPreference.values.firstWhere(
-      (e) => e.name == prefValue, 
-      orElse: () => LabelPreference.warn // default
+      (e) => e.name == prefValue,
+      orElse: () => LabelPreference.warn, // default
     );
   }
-  
+
   /// Gets the preference for a specific label, or returns the default setting from the label definition
-  LabelPreference getLabelPreferenceOrDefault(
-    String labelerDid, 
-    String labelValue, 
-    Map<String, dynamic>? labelDefinition
-  ) {
+  LabelPreference getLabelPreferenceOrDefault(String labelerDid, String labelValue, Map<String, dynamic>? labelDefinition) {
     // First try to get user's explicit preference
     final userPreference = getLabelPreference(labelerDid, labelValue);
     if (userPreference != null) {
       return userPreference;
     }
-    
+
     // If no user preference and we have a label definition with defaultSetting
     if (labelDefinition != null && labelDefinition.containsKey('defaultSetting')) {
       final defaultSetting = labelDefinition['defaultSetting'] as String;
-      
+
       // Map the defaultSetting string to LabelPreference
       switch (defaultSetting) {
         case 'show':
@@ -315,8 +298,8 @@ extension SettingsLabelPreferences on SettingsState {
           return LabelPreference.warn; // Fallback default
       }
     }
-    
+
     // Final fallback
     return LabelPreference.warn;
   }
-} 
+}

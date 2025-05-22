@@ -3,10 +3,7 @@ import 'package:flutter/material.dart';
 class EmojiPicker extends StatefulWidget {
   final Function(String) onEmojiSelected;
 
-  const EmojiPicker({
-    super.key, 
-    required this.onEmojiSelected, 
-  });
+  const EmojiPicker({super.key, required this.onEmojiSelected});
 
   @override
   State<EmojiPicker> createState() => _EmojiPickerState();
@@ -14,10 +11,7 @@ class EmojiPicker extends StatefulWidget {
 
 class _EmojiPickerState extends State<EmojiPicker> {
   // Common emojis list
-  static const List<String> _emojis = [
-    '❤️', '😂', '👍', '🔥', '😍', '🙌', '👏', 
-    '🎉', '😮', '🤔', '👀', '💯', '🤣', '😊', '🙏'
-  ];
+  static const List<String> _emojis = ['❤️', '😂', '👍', '🔥', '😍', '🙌', '👏', '🎉', '😮', '🤔', '👀', '💯', '🤣', '😊', '🙏'];
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +19,6 @@ class _EmojiPickerState extends State<EmojiPicker> {
     final colorScheme = theme.colorScheme;
     final backgroundColor = colorScheme.surface;
     final borderColor = colorScheme.outline;
-
 
     return Container(
       height: 50,
@@ -39,10 +32,7 @@ class _EmojiPickerState extends State<EmojiPicker> {
         itemCount: _emojis.length,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         itemBuilder: (context, index) {
-          return _EmojiItem(
-            emoji: _emojis[index],
-            onTap: () => widget.onEmojiSelected(_emojis[index]),
-          );
+          return _EmojiItem(emoji: _emojis[index], onTap: () => widget.onEmojiSelected(_emojis[index]));
         },
       ),
     );
@@ -53,10 +43,7 @@ class _EmojiItem extends StatelessWidget {
   final String emoji;
   final VoidCallback onTap;
 
-  const _EmojiItem({
-    required this.emoji,
-    required this.onTap,
-  });
+  const _EmojiItem({required this.emoji, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -69,14 +56,9 @@ class _EmojiItem extends StatelessWidget {
           width: 40,
           height: 40,
           margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
-          child: Center(
-            child: Text(
-              emoji, 
-              style: const TextStyle(fontSize: 24),
-            ),
-          ),
+          child: Center(child: Text(emoji, style: const TextStyle(fontSize: 24))),
         ),
       ),
     );
   }
-} 
+}

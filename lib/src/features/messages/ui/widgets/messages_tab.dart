@@ -6,11 +6,7 @@ import 'package:sparksocial/src/features/messages/data/models/message_data.dart'
 import 'package:sparksocial/src/features/messages/ui/widgets/message_list.dart';
 
 class MessagesTab extends StatelessWidget {
-  const MessagesTab({
-    super.key,
-    required this.messages,
-    required this.onMessageTap,
-  });
+  const MessagesTab({super.key, required this.messages, required this.onMessageTap});
 
   final List<MessageData> messages;
   final Function(MessageData) onMessageTap;
@@ -28,4 +24,4 @@ class MessagesTab extends StatelessWidget {
       },
     );
   }
-} 
+}

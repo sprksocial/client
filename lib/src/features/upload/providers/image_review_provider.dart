@@ -58,11 +58,7 @@ class ImageReviewNotifier extends _$ImageReviewNotifier {
       newCurrentPage = updatedImageFiles.length - 1;
     }
 
-    state = state.copyWith(
-      imageFiles: updatedImageFiles,
-      altTexts: updatedAltTexts,
-      currentPage: newCurrentPage,
-    );
+    state = state.copyWith(imageFiles: updatedImageFiles, altTexts: updatedAltTexts, currentPage: newCurrentPage);
   }
 
   Future<void> pickMoreImages() async {
@@ -75,15 +71,12 @@ class ImageReviewNotifier extends _$ImageReviewNotifier {
 
       final updatedImageFiles = [...state.imageFiles, ...pickedFiles];
       final updatedAltTexts = Map<String, String>.from(state.altTexts);
-      
+
       for (final file in pickedFiles) {
         updatedAltTexts[file.path] = '';
       }
 
-      state = state.copyWith(
-        imageFiles: updatedImageFiles,
-        altTexts: updatedAltTexts,
-      );
+      state = state.copyWith(imageFiles: updatedImageFiles, altTexts: updatedAltTexts);
     } catch (e) {
       _logger.e('Error picking more images', error: e);
       rethrow;
@@ -92,19 +85,15 @@ class ImageReviewNotifier extends _$ImageReviewNotifier {
 
   Future<void> postImages() async {
     if (state.isPosting || state.imageFiles.isEmpty) return;
-    
+
     state = state.copyWith(isPosting: true);
-    
+
     try {
       final taskId = _uploadRepository.registerTask('image');
       _uploadRepository.startTask(taskId);
-      
-      final response = await _feedRepository.postImageFeed(
-        state.description, 
-        state.imageFiles, 
-        state.altTexts
-      );
-      
+
+      final response = await _feedRepository.postImageFeed(state.description, state.imageFiles, state.altTexts);
+
       _logger.i('Posted images successfully: ${response.uri}');
       _uploadRepository.completeTask(taskId);
     } catch (e) {
@@ -117,6 +106,6 @@ class ImageReviewNotifier extends _$ImageReviewNotifier {
   }
 
   bool get canPickMoreImages => state.imageFiles.length < _maxImages;
-  
+
   int get remainingImageSlots => _maxImages - state.imageFiles.length;
-} 
+}

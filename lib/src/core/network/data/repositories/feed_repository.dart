@@ -70,41 +70,37 @@ abstract class FeedRepository {
   /// [imageFiles] List of image files to attach
   /// [altTexts] Map of file paths to alt texts
   Future<RecordResponse> postImageFeed(String text, List<XFile> imageFiles, Map<String, String> altTexts);
-  
+
   /// Post a video to the user's feed
-  /// 
+  ///
   /// [videoData] The blob reference data for the video
   /// [description] The text description for the post
   /// [videoAltText] The alt text for the video
-  Future<StrongRef> postVideo(
-    BlobReference? videoData, {
-    String description = '', 
-    String videoAltText = ''
-  });
-  
+  Future<StrongRef> postVideo(BlobReference? videoData, {String description = '', String videoAltText = ''});
+
   /// Post a video using a prepared VideoPost object
-  /// 
+  ///
   /// [videoPost] The prepared video post data
   Future<StrongRef> postVideoWithPost(VideoPost videoPost);
 
   /// Fetch a feed based on feed type
-  /// 
+  ///
   /// [feedType] Type of feed to fetch (0: Following, 1: For You, 2: Spark New)
   /// [limit] Number of items to return
   Future<List<FeedPost>> fetchFeed(int feedType, {int limit = 8});
-  
+
   /// Fetch the following feed (timeline) showing posts from followed users
-  /// 
+  ///
   /// [limit] Number of items to return
   Future<List<FeedPost>> fetchFollowingFeed({int limit = 8});
-  
+
   /// Fetch the "For You" feed showing recommended content
-  /// 
+  ///
   /// [limit] Number of items to return
   Future<List<FeedPost>> fetchForYouFeed({int limit = 8});
-  
+
   /// Fetch the Spark New feed showing new posts from Spark
-  /// 
+  ///
   /// [limit] Number of items to return
   Future<List<FeedPost>> fetchSparkNewFeed({int limit = 8});
 
@@ -127,4 +123,4 @@ abstract class FeedRepository {
   ///
   /// [commentUri] The URI of the comment to get
   Future<Comment> getBlueskyComment(String commentUri);
-} 
+}

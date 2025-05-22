@@ -25,11 +25,11 @@ class ProfileTabContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return switch ((selectedIndex, isAuthenticated)) {
       (4, false) => AuthRequiredContent(
-          title: 'Saved content',
-          description: 'Login to view your saved content',
-          icon: FluentIcons.bookmark_24_regular,
-          onLoginPressed: onLoginPressed,
-        ),
+        title: 'Saved content',
+        description: 'Login to view your saved content',
+        icon: FluentIcons.bookmark_24_regular,
+        onLoginPressed: onLoginPressed,
+      ),
       (0, _) => VideosTab(did: did),
       (1, _) => PhotosTab(did: did),
       (2, _) => ContentGridTab(icon: FluentIcons.heart_24_regular, type: 'favorites', itemCount: 30),
@@ -43,4 +43,4 @@ class ProfileTabContent extends StatelessWidget {
       _ => const SliverToBoxAdapter(child: SizedBox.shrink()),
     };
   }
-} 
+}

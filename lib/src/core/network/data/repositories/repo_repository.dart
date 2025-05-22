@@ -41,14 +41,14 @@ abstract class RepoRepository {
     int? limit,
     bool? reverse,
   });
-  
+
   /// Creates a report for content or an account
-  /// 
+  ///
   /// [subject] The subject of the report (content or account)
   /// [reasonType] The reason for the report
   /// [reason] Optional additional context about the violation
   /// [service] Optional moderation service to use
-  /// 
+  ///
   /// Returns true if the report was successfully created
   Future<bool> createReport({
     required ReportSubject subject,
@@ -56,4 +56,4 @@ abstract class RepoRepository {
     String? reason,
     ModerationService? service,
   });
-} 
+}

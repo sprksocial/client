@@ -155,20 +155,18 @@ class _ImageCarouselState extends State<ImageCarousel> {
             height: double.infinity,
           );
         },
-        placeholder: (context, url) => Container(
-          color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
-          child: Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withAlpha(140)),
+        placeholder:
+            (context, url) => Container(
+              color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+              child: Center(
+                child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withAlpha(140))),
+              ),
             ),
-          ),
-        ),
-        errorWidget: (context, url, error) => Container(
-          color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
-          child: Center(
-            child: Icon(Icons.error_outline, color: Colors.white.withAlpha(140)),
-          ),
-        ),
+        errorWidget:
+            (context, url, error) => Container(
+              color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+              child: Center(child: Icon(Icons.error_outline, color: Colors.white.withAlpha(140))),
+            ),
       ),
     );
   }
@@ -182,11 +180,9 @@ class _ImageCarouselState extends State<ImageCarousel> {
         margin: const EdgeInsets.symmetric(horizontal: 4.0),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: _currentIndex == index
-              ? Colors.white
-              : Colors.white.withAlpha(128),
+          color: _currentIndex == index ? Colors.white : Colors.white.withAlpha(128),
         ),
       ),
     );
   }
-} 
+}

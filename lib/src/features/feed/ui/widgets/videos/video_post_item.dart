@@ -16,7 +16,7 @@ class VideoPostItem extends ConsumerStatefulWidget {
   final VideoPlayerController? preloadedController;
   final String? localVideoPath;
   final bool isVisible;
-  
+
   // Content info
   final String username;
   final String description;
@@ -27,17 +27,17 @@ class VideoPostItem extends ConsumerStatefulWidget {
   final int shareCount;
   final String? profileImageUrl;
   final String? videoAlt;
-  
+
   // Flags
   final bool isLiked;
-  final bool isSprk; 
+  final bool isSprk;
   final bool disableBackgroundBlur;
-  
+
   // Post identifiers for actions
   final String? postUri;
   final String? postCid;
   final String? authorDid;
-  
+
   // Callbacks
   final VoidCallback? onLikePressed;
   final VoidCallback? onCommentPressed;
@@ -85,7 +85,6 @@ class VideoPostItem extends ConsumerStatefulWidget {
 }
 
 class _VideoItemState extends ConsumerState<VideoPostItem> {
-
   @override
   void initState() {
     super.initState();
@@ -96,10 +95,8 @@ class _VideoItemState extends ConsumerState<VideoPostItem> {
   }
 
   void _initializeVideoState() {
-    final videoStateNotifier = ref.read(
-      videoStateProvider(widget.index, initialCommentCount: widget.commentCount).notifier
-    );
-    
+    final videoStateNotifier = ref.read(videoStateProvider(widget.index, initialCommentCount: widget.commentCount).notifier);
+
     if (widget.preloadedController != null) {
       videoStateNotifier.setPreloadedController(widget.preloadedController!);
     } else if (widget.localVideoPath != null) {
@@ -107,7 +104,7 @@ class _VideoItemState extends ConsumerState<VideoPostItem> {
     } else if (widget.videoUrl != null) {
       videoStateNotifier.initializeWithUrl(widget.videoUrl!);
     }
-    
+
     // Set initial visibility
     videoStateNotifier.setVisibility(widget.isVisible);
   }
@@ -115,33 +112,33 @@ class _VideoItemState extends ConsumerState<VideoPostItem> {
   @override
   void didUpdateWidget(VideoPostItem oldWidget) {
     super.didUpdateWidget(oldWidget);
-    
-    final videoStateNotifier = ref.read(
-      videoStateProvider(widget.index).notifier
-    );
-    
+
+    final videoStateNotifier = ref.read(videoStateProvider(widget.index).notifier);
+
     // Update comment count if it changed
     if (oldWidget.commentCount != widget.commentCount) {
       videoStateNotifier.updateCommentCount(widget.commentCount);
     }
-    
+
     // Update visibility if it changed
     if (oldWidget.isVisible != widget.isVisible) {
       // Delay visibility update to avoid modifying provider during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) { // Ensure the widget is still in the tree
+        if (mounted) {
+          // Ensure the widget is still in the tree
           videoStateNotifier.setVisibility(widget.isVisible);
         }
       });
     }
-    
+
     // Reinitialize if video source changed
     if (oldWidget.preloadedController != widget.preloadedController ||
         oldWidget.videoUrl != widget.videoUrl ||
         oldWidget.localVideoPath != widget.localVideoPath) {
       // Delay initialization to avoid modifying provider during build
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) { // Ensure the widget is still in the tree
+        if (mounted) {
+          // Ensure the widget is still in the tree
           _initializeVideoState();
         }
       });
@@ -152,13 +149,13 @@ class _VideoItemState extends ConsumerState<VideoPostItem> {
   Widget build(BuildContext context) {
     final videoState = ref.watch(videoStateProvider(widget.index));
     final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
-    
+
     return Stack(
       fit: StackFit.expand,
       children: [
         // Background (blurred video or placeholder)
         IgnorePointer(
-          ignoring: true, 
+          ignoring: true,
           child: _VideoBackground(
             controller: videoState.controller,
             isInitialized: videoState.isInitialized,
@@ -166,29 +163,27 @@ class _VideoItemState extends ConsumerState<VideoPostItem> {
             isDarkMode: isDarkMode,
           ),
         ),
-        
+
         // Main content (video or placeholder)
         Center(
-          child: videoState.isInitialized && videoState.controller != null 
-              ? _VideoContent(controller: videoState.controller!)
-              : _VideoPlaceholder(index: widget.index),
+          child:
+              videoState.isInitialized && videoState.controller != null
+                  ? _VideoContent(controller: videoState.controller!)
+                  : _VideoPlaceholder(index: widget.index),
         ),
-        
+
         // Video overlay controls (if video is initialized)
-        if (videoState.isInitialized && videoState.controller != null) 
+        if (videoState.isInitialized && videoState.controller != null)
           VideoControllerOverlay(
             controller: videoState.controller!,
             onLikePressed: widget.onLikePressed,
             isLiked: widget.isLiked,
             onTap: () {}, // Empty as it's handled internally
           ),
-        
+
         // Gradient overlay
-        IgnorePointer(
-          ignoring: true, 
-          child: _GradientOverlay(isExpanded: videoState.isDescriptionExpanded),
-        ),
-        
+        IgnorePointer(ignoring: true, child: _GradientOverlay(isExpanded: videoState.isDescriptionExpanded)),
+
         // Info bar (username, description)
         Positioned(
           bottom: 20,
@@ -203,12 +198,11 @@ class _VideoItemState extends ConsumerState<VideoPostItem> {
             onUsernameTap: widget.onUsernameTap,
             onHashtagTap: widget.onHashtagTap,
             onDescriptionExpandToggle: (isExpanded) {
-              ref.read(videoStateProvider(widget.index).notifier)
-                 .toggleDescription(isExpanded);
+              ref.read(videoStateProvider(widget.index).notifier).toggleDescription(isExpanded);
             },
           ),
         ),
-        
+
         // Side action bar (like, comment, share buttons)
         Positioned(
           right: 16,
@@ -239,22 +233,20 @@ class _VideoItemState extends ConsumerState<VideoPostItem> {
             isImage: false,
           ),
         ),
-        
+
         // Loading indicator for network videos
-        if (widget.videoUrl != null && widget.localVideoPath == null && 
-            widget.preloadedController == null && !videoState.isInitialized)
+        if (widget.videoUrl != null &&
+            widget.localVideoPath == null &&
+            widget.preloadedController == null &&
+            !videoState.isInitialized)
           const Center(child: CircularProgressIndicator(color: AppColors.white)),
-          
+
         // Error message if video failed to load
         if (videoState.error != null)
           Center(
             child: Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Text(
-                videoState.error!,
-                style: const TextStyle(color: Colors.white),
-                textAlign: TextAlign.center,
-              ),
+              child: Text(videoState.error!, style: const TextStyle(color: Colors.white), textAlign: TextAlign.center),
             ),
           ),
       ],
@@ -290,19 +282,10 @@ class _VideoBackground extends StatelessWidget {
           ClipRect(
             child: ImageFiltered(
               imageFilter: ImageFilter.blur(sigmaX: 10.0, sigmaY: 10.0),
-              child: Transform.scale(
-                scale: 1.1, 
-                child: Opacity(
-                  opacity: 0.4, 
-                  child: VideoPlayer(controller!),
-                ),
-              ),
+              child: Transform.scale(scale: 1.1, child: Opacity(opacity: 0.4, child: VideoPlayer(controller!))),
             ),
           ),
-          Container(color: isDarkMode 
-            ? Colors.black.withAlpha(100) 
-            : AppColors.darkBackground.withAlpha(100)
-          ),
+          Container(color: isDarkMode ? Colors.black.withAlpha(100) : AppColors.darkBackground.withAlpha(100)),
         ],
       ),
     );
@@ -313,9 +296,7 @@ class _VideoBackground extends StatelessWidget {
 class _VideoContent extends StatelessWidget {
   final VideoPlayerController controller;
 
-  const _VideoContent({
-    required this.controller,
-  });
+  const _VideoContent({required this.controller});
 
   @override
   Widget build(BuildContext context) {
@@ -327,11 +308,7 @@ class _VideoContent extends StatelessWidget {
     return SizedBox.expand(
       child: FittedBox(
         fit: BoxFit.cover,
-        child: SizedBox(
-          width: videoSize.width, 
-          height: videoSize.height, 
-          child: VideoPlayer(controller),
-        ),
+        child: SizedBox(width: videoSize.width, height: videoSize.height, child: VideoPlayer(controller)),
       ),
     );
   }
@@ -341,17 +318,16 @@ class _VideoContent extends StatelessWidget {
 class _VideoPlaceholder extends StatelessWidget {
   final int index;
 
-  const _VideoPlaceholder({
-    required this.index,
-  });
+  const _VideoPlaceholder({required this.index});
 
   @override
   Widget build(BuildContext context) {
     final isDarkMode = MediaQuery.of(context).platformBrightness == Brightness.dark;
     return Container(
-      color: index.isEven
-          ? (isDarkMode ? Colors.indigo.shade900 : Colors.indigo.shade200)
-          : (isDarkMode ? Colors.purple.shade900 : Colors.purple.shade200),
+      color:
+          index.isEven
+              ? (isDarkMode ? Colors.indigo.shade900 : Colors.indigo.shade200)
+              : (isDarkMode ? Colors.purple.shade900 : Colors.purple.shade200),
       child: const SizedBox.shrink(),
     );
   }
@@ -361,9 +337,7 @@ class _VideoPlaceholder extends StatelessWidget {
 class _GradientOverlay extends StatelessWidget {
   final bool isExpanded;
 
-  const _GradientOverlay({
-    required this.isExpanded,
-  });
+  const _GradientOverlay({required this.isExpanded});
 
   @override
   Widget build(BuildContext context) {
@@ -382,11 +356,9 @@ class _GradientOverlay extends StatelessWidget {
             Colors.black.withAlpha(isExpanded ? 150 : 80),
             Colors.black.withAlpha(isExpanded ? 200 : 160),
           ],
-          stops: isExpanded 
-            ? const [0.0, 0.4, 0.5, 0.6, 0.75, 0.9] 
-            : const [0.0, 0.5, 0.65, 0.75, 0.85, 0.95],
+          stops: isExpanded ? const [0.0, 0.4, 0.5, 0.6, 0.75, 0.9] : const [0.0, 0.5, 0.65, 0.75, 0.85, 0.95],
         ),
       ),
     );
   }
-} 
+}

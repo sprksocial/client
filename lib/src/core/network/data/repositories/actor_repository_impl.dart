@@ -69,4 +69,4 @@ class ActorRepositoryImpl implements ActorRepository {
       return ActorSearchResponse.fromJson(result.data as Map<String, dynamic>);
     });
   }
-} 
+}

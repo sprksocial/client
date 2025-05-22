@@ -55,4 +55,4 @@ class PlayPauseControls extends StatelessWidget {
       ],
     );
   }
-} 
+}

@@ -60,7 +60,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     if (result.$1) {
       final hasProfile = await ref.read(hasSparkProfileProvider.future);
       if (!mounted) return;
-      
+
       if (hasProfile) {
         context.router.replace(const HomeRoute());
       } else {
@@ -195,13 +195,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             ),
                             Padding(
                               padding: const EdgeInsets.only(right: 16),
-                              child: Text(
-                                '.sprk.so',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: colorScheme.onSurface,
-                                ),
-                              ),
+                              child: Text('.sprk.so', style: TextStyle(fontSize: 16, color: colorScheme.onSurface)),
                             ),
                           ],
                         ),
@@ -302,4 +296,4 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       ),
     );
   }
-} 
+}

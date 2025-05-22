@@ -16,7 +16,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
   final Map<String, Map<String, dynamic>> _didDocCache = {};
 
   static const Duration _cacheExpiration = Duration(hours: 2);
-  
+
   final StorageManager _storageManager;
   final _logger = GetIt.instance<LogService>().getLogger('IdentityRepository');
 
@@ -90,24 +90,15 @@ class IdentityRepositoryImpl implements IdentityRepository {
   Future<void> _saveCache() async {
     try {
       await _storageManager.preferences.setInt(
-        StorageKeys.identityCacheTtl, 
-        DateTime.now().add(_cacheExpiration).millisecondsSinceEpoch
+        StorageKeys.identityCacheTtl,
+        DateTime.now().add(_cacheExpiration).millisecondsSinceEpoch,
       );
 
-      await _storageManager.preferences.setString(
-        StorageKeys.didToHandleCache, 
-        json.encode(_didToHandleCache)
-      );
-      
-      await _storageManager.preferences.setString(
-        StorageKeys.handleToDidCache, 
-        json.encode(_handleToDidCache)
-      );
-      
-      await _storageManager.preferences.setString(
-        StorageKeys.didDocCache, 
-        json.encode(_didDocCache)
-      );
+      await _storageManager.preferences.setString(StorageKeys.didToHandleCache, json.encode(_didToHandleCache));
+
+      await _storageManager.preferences.setString(StorageKeys.handleToDidCache, json.encode(_handleToDidCache));
+
+      await _storageManager.preferences.setString(StorageKeys.didDocCache, json.encode(_didDocCache));
     } catch (e) {
       _logger.e('Error saving identity cache', error: e);
     }
@@ -352,4 +343,4 @@ class IdentityRepositoryImpl implements IdentityRepository {
     final didDoc = await resolveDidToDidDoc(did);
     return didDoc != null;
   }
-} 
+}

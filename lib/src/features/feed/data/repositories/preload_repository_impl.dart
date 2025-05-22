@@ -28,11 +28,9 @@ class PreloadRepositoryImpl implements PreloadRepository {
   final int _maxPreloadBehind = 2;
   final int _maxLoadedVideos = 10; // Max controllers to keep loaded
 
-  PreloadRepositoryImpl({
-    required CacheManagerInterface cacheManager,
-    required LogService logService,
-  }) : _cacheManager = cacheManager,
-       _logger = logService.getLogger('MediaRepository');
+  PreloadRepositoryImpl({required CacheManagerInterface cacheManager, required LogService logService})
+    : _cacheManager = cacheManager,
+      _logger = logService.getLogger('MediaRepository');
 
   Future<String?> _downloadAndCacheVideo(String videoUrl) async {
     try {
@@ -111,11 +109,7 @@ class PreloadRepositoryImpl implements PreloadRepository {
 
     // Mark as preloading with a placeholder controller
     final placeholderController = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
-    _preloadedVideos[index] = PreloadedVideo(
-      controller: placeholderController, 
-      isInitialized: false, 
-      videoUrl: videoUrl
-    );
+    _preloadedVideos[index] = PreloadedVideo(controller: placeholderController, isInitialized: false, videoUrl: videoUrl);
 
     try {
       // Download and cache the video, returning a local file path if successful
@@ -158,7 +152,7 @@ class PreloadRepositoryImpl implements PreloadRepository {
 
   void _preloadImages(int index, List<String> imageUrls) {
     final cacheManager = GetIt.instance<CacheManagerInterface>();
-    
+
     for (final url in imageUrls) {
       if (!_preloadedImageUrls.contains(url)) {
         _preloadedImageUrls.add(url);
@@ -172,7 +166,7 @@ class PreloadRepositoryImpl implements PreloadRepository {
     if (_preloadedVideos.containsKey(index)) {
       final video = _preloadedVideos[index]!;
       video.controller.dispose();
-      
+
       // Clean up cached file if it exists
       if (video.localPath != null) {
         try {
@@ -184,7 +178,7 @@ class PreloadRepositoryImpl implements PreloadRepository {
           _logger.e('Error cleaning up cached video: $e');
         }
       }
-      
+
       _preloadedVideos.remove(index);
       _localVideoPaths.remove(index);
     }
@@ -265,4 +259,4 @@ class PreloadRepositoryImpl implements PreloadRepository {
   VideoPlayerController? _getVideoController(int index) {
     return _preloadedVideos[index]?.controller;
   }
-} 
+}

@@ -40,25 +40,18 @@ class VideoInfoBar extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Expanded(child: GestureDetector(
-              onTap: onUsernameTap, 
-              child: UsernameLabel(username: username, isSprk: isSprk)
-            )),
-            if (altText != null && altText!.trim().isNotEmpty) 
-              _AltButton(altText: altText!),
+            Expanded(child: GestureDetector(onTap: onUsernameTap, child: UsernameLabel(username: username, isSprk: isSprk))),
+            if (altText != null && altText!.trim().isNotEmpty) _AltButton(altText: altText!),
           ],
         ),
 
         if (hasDescription) const SizedBox(height: 10),
-        
+
         VideoDescription(text: description, onExpandToggle: onDescriptionExpandToggle),
 
         if (hasDescription && hasHashtags) const SizedBox(height: 6),
-        
-        if (hasHashtags) SizedBox(
-          height: 25, 
-          child: HashtagList(hashtags: hashtags, onHashtagTap: onHashtagTap)
-        ),
+
+        if (hasHashtags) SizedBox(height: 25, child: HashtagList(hashtags: hashtags, onHashtagTap: onHashtagTap)),
 
         const SizedBox(height: 25),
       ],
@@ -100,4 +93,4 @@ class _AltButton extends StatelessWidget {
       ),
     );
   }
-} 
+}

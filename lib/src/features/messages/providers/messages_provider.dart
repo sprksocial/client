@@ -3,7 +3,6 @@ import 'package:sparksocial/src/features/messages/data/models/messages_page_stat
 
 part 'messages_provider.g.dart';
 
-
 /// Provider for managing the messages page state
 @riverpod
 class MessagesPage extends _$MessagesPage {
@@ -19,9 +18,4 @@ class MessagesPage extends _$MessagesPage {
   void setSelectedTab(int index) {
     state = state.copyWith(selectedTabIndex: index);
   }
-
-  // Mock data methods are removed as data fetching should be handled by a repository
-  // and injected into the provider, or the provider should call a repository.
-  // For this refactor, we assume data is fetched/managed elsewhere and the provider
-  // primarily handles UI state like selectedTabIndex.
-} 
+}

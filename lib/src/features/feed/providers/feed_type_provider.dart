@@ -16,4 +16,4 @@ class FeedTypeNotifier extends _$FeedTypeNotifier {
   void setFeedType(FeedType feedType) {
     state = feedType;
   }
-} 
+}

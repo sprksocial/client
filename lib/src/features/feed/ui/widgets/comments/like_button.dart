@@ -33,20 +33,9 @@ class LikeButton extends StatelessWidget {
       onPressed: isLoading ? null : onPressed,
       child: Row(
         children: [
-          _LikeIcon(
-            isLiked: isLiked,
-            isLoading: isLoading,
-            iconSize: iconSize,
-            textColor: textColor,
-          ),
+          _LikeIcon(isLiked: isLiked, isLoading: isLoading, iconSize: iconSize, textColor: textColor),
           const SizedBox(width: 4),
-          Text(
-            likeCount.toString(),
-            style: TextStyle(
-              fontSize: fontSize,
-              color: textColor,
-            ),
-          ),
+          Text(likeCount.toString(), style: TextStyle(fontSize: fontSize, color: textColor)),
         ],
       ),
     );
@@ -59,27 +48,14 @@ class _LikeIcon extends StatelessWidget {
   final double iconSize;
   final Color textColor;
 
-  const _LikeIcon({
-    required this.isLiked,
-    required this.isLoading,
-    required this.iconSize,
-    required this.textColor,
-  });
+  const _LikeIcon({required this.isLiked, required this.isLoading, required this.iconSize, required this.textColor});
 
   @override
   Widget build(BuildContext context) {
-    final IconData icon = isLiked 
-        ? FluentIcons.heart_24_filled 
-        : FluentIcons.heart_24_regular;
-    
-    final Color color = isLiked 
-        ? AppColors.red 
-        : textColor;
-    
-    return Icon(
-      icon,
-      size: iconSize,
-      color: color,
-    );
+    final IconData icon = isLiked ? FluentIcons.heart_24_filled : FluentIcons.heart_24_regular;
+
+    final Color color = isLiked ? AppColors.red : textColor;
+
+    return Icon(icon, size: iconSize, color: color);
   }
 }

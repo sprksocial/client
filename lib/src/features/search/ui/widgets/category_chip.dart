@@ -5,12 +5,7 @@ class CategoryChip extends StatelessWidget {
   final VoidCallback? onTap;
   final bool isSelected;
 
-  const CategoryChip({
-    super.key, 
-    required this.label, 
-    this.onTap, 
-    this.isSelected = false
-  });
+  const CategoryChip({super.key, required this.label, this.onTap, this.isSelected = false});
 
   @override
   Widget build(BuildContext context) {
@@ -22,17 +17,13 @@ class CategoryChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected
-                ? colorScheme.primary
-                : colorScheme.surfaceContainerLow.withAlpha(179),
+          color: isSelected ? colorScheme.primary : colorScheme.surfaceContainerLow.withAlpha(179),
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected 
-                ? colorScheme.onPrimary
-                : colorScheme.onSurface,
+            color: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
             fontWeight: FontWeight.w500,
             fontSize: 14,
           ),
@@ -40,4 +31,4 @@ class CategoryChip extends StatelessWidget {
       ),
     );
   }
-} 
+}

@@ -40,4 +40,4 @@ class ActivityIcon extends StatelessWidget {
       child: Center(child: Icon(iconData, color: iconColor, size: size * 0.5)),
     );
   }
-} 
+}

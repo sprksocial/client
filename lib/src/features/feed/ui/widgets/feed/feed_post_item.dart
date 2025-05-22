@@ -25,7 +25,7 @@ class FeedPostItem extends StatelessWidget {
   final List<FeedPost>? initialPosts;
   final int? initialIndex;
   final WidgetRef ref;
-  
+
   // Get a logger for the FeedPostItem widget
   static final _logger = GetIt.instance<LogService>().getLogger('FeedPostItem');
 
@@ -57,7 +57,7 @@ class FeedPostItem extends StatelessWidget {
     // Common navigation actions used in multiple places
     navigateToProfile() => context.router.pushNamed('/profile/${post.authorDid}');
     onPostDeleted() => feedStateNotifier.refreshFeed(feedType);
-    
+
     // Build the appropriate media widget based on the post type using pattern matching
     final contentWidget = switch (post) {
       // Video post with preloaded video
@@ -90,71 +90,71 @@ class FeedPostItem extends StatelessWidget {
           onHashtagTap: (String hashtag) {},
           onPostDeleted: onPostDeleted,
         ),
-        
+
       // Video post without preloaded video
       FeedPost(videoUrl: String? url, :String authorDid) when url != null => VideoPostItem(
-          key: ValueKey('video_$index'),
-          index: index,
-          videoUrl: url,
-          videoAlt: post.videoAlt,
-          isVisible: isItemActuallyVisible,
-          username: post.username,
-          description: post.description,
-          hashtags: post.hashtags,
-          likeCount: post.likeCount,
-          commentCount: post.commentCount,
-          bookmarkCount: 0,
-          shareCount: post.shareCount,
-          profileImageUrl: post.profileImageUrl,
-          authorDid: authorDid,
-          isLiked: post.likeUri != null,
-          isSprk: post.isSprk,
-          postUri: post.uri,
-          postCid: post.cid,
-          disableBackgroundBlur: disableBackgroundBlur,
-          onLikePressed: () => feedStateNotifier.handleLikePress(post),
-          onBookmarkPressed: () {},
-          onSharePressed: () {},
-          onProfilePressed: navigateToProfile,
-          onUsernameTap: navigateToProfile,
-          onHashtagTap: (String hashtag) {},
-          onPostDeleted: onPostDeleted,
-        ),
-        
+        key: ValueKey('video_$index'),
+        index: index,
+        videoUrl: url,
+        videoAlt: post.videoAlt,
+        isVisible: isItemActuallyVisible,
+        username: post.username,
+        description: post.description,
+        hashtags: post.hashtags,
+        likeCount: post.likeCount,
+        commentCount: post.commentCount,
+        bookmarkCount: 0,
+        shareCount: post.shareCount,
+        profileImageUrl: post.profileImageUrl,
+        authorDid: authorDid,
+        isLiked: post.likeUri != null,
+        isSprk: post.isSprk,
+        postUri: post.uri,
+        postCid: post.cid,
+        disableBackgroundBlur: disableBackgroundBlur,
+        onLikePressed: () => feedStateNotifier.handleLikePress(post),
+        onBookmarkPressed: () {},
+        onSharePressed: () {},
+        onProfilePressed: navigateToProfile,
+        onUsernameTap: navigateToProfile,
+        onHashtagTap: (String hashtag) {},
+        onPostDeleted: onPostDeleted,
+      ),
+
       // Image post
       FeedPost(imageUrls: List<String> urls, :String authorDid) when urls.isNotEmpty => ImagePostItem(
-          key: ValueKey('image_$index'),
-          index: index,
-          imageUrls: urls,
-          imageAlts: post.imageAlts,
-          isVisible: isItemActuallyVisible,
-          username: post.username,
-          description: post.description,
-          hashtags: post.hashtags,
-          likeCount: post.likeCount,
-          commentCount: post.commentCount,
-          bookmarkCount: 0,
-          shareCount: post.shareCount,
-          profileImageUrl: post.profileImageUrl,
-          authorDid: authorDid,
-          isLiked: post.likeUri != null,
-          isSprk: post.isSprk,
-          postUri: post.uri,
-          postCid: post.cid,
-          disableBackgroundBlur: disableBackgroundBlur,
-          onLikePressed: () => feedStateNotifier.handleLikePress(post),
-          onBookmarkPressed: () {},
-          onSharePressed: () {},
-          onUsernameTap: navigateToProfile,
-          onHashtagTap: (String hashtag) {},
-        ),
-        
+        key: ValueKey('image_$index'),
+        index: index,
+        imageUrls: urls,
+        imageAlts: post.imageAlts,
+        isVisible: isItemActuallyVisible,
+        username: post.username,
+        description: post.description,
+        hashtags: post.hashtags,
+        likeCount: post.likeCount,
+        commentCount: post.commentCount,
+        bookmarkCount: 0,
+        shareCount: post.shareCount,
+        profileImageUrl: post.profileImageUrl,
+        authorDid: authorDid,
+        isLiked: post.likeUri != null,
+        isSprk: post.isSprk,
+        postUri: post.uri,
+        postCid: post.cid,
+        disableBackgroundBlur: disableBackgroundBlur,
+        onLikePressed: () => feedStateNotifier.handleLikePress(post),
+        onBookmarkPressed: () {},
+        onSharePressed: () {},
+        onUsernameTap: navigateToProfile,
+        onHashtagTap: (String hashtag) {},
+      ),
+
       // Fallback for unsupported media type
       _ => const Center(child: Text('Unsupported media type', style: TextStyle(color: AppColors.white))),
     };
 
     final shouldWarnAsync = ref.watch(shouldWarnContentProvider(post.labels));
-    
+
     // Pattern matching for async state handling
     switch (shouldWarnAsync) {
       case AsyncLoading():
@@ -178,17 +178,17 @@ class FeedPostItem extends StatelessWidget {
 
     // Labeler handling
     final followedLabelersAsync = ref.watch(followedLabelersProvider);
-    
+
     final String labelerDid = switch (followedLabelersAsync) {
       AsyncData(value: List<String>? labelers) when labelers.isNotEmpty => labelers.first,
       _ => ref.read(defaultLabelerDidProvider),
     };
 
     final labelValue = post.labels.isNotEmpty ? post.labels.first : '!warn';
-    
+
     // Blur type determination
     String blurType = 'content';
-    
+
     final labelerDetailsAsync = ref.watch(labelerDetailsProvider(labelerDid));
     if (labelerDetailsAsync case AsyncData(value: var details) when details.labelDefinitions[labelValue] != null) {
       blurType = details.labelDefinitions[labelValue]!.blurs;

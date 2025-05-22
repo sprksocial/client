@@ -18,61 +18,51 @@ class Search extends _$Search {
   final _actorRepository = GetIt.instance<ActorRepository>();
   final _authRepository = GetIt.instance<AuthRepository>();
   final _graphRepository = GetIt.instance<GraphRepository>();
-  
+
   @override
   SearchState build() {
     ref.onDispose(() {
       _debounce?.cancel();
     });
-    
+
     return SearchState.initial();
   }
-  
+
   /// Update the search query and trigger search with debounce
   void updateQuery(String query) {
     state = state.copyWith(query: query);
-    
+
     if (query.isEmpty) {
-      state = state.copyWith(
-        searchResults: [],
-        error: null,
-        isLoading: false
-      );
+      state = state.copyWith(searchResults: [], error: null, isLoading: false);
       return;
     }
-    
+
     // Debounce the search
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {
       _searchUsers(query);
     });
   }
-  
+
   /// Search for users with the given query
   Future<void> _searchUsers(String query) async {
     if (query.isEmpty) return;
-    
+
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final actorRepo = _actorRepository;
       final response = await actorRepo.searchActors(query);
-      
-      state = state.copyWith(
-        searchResults: response.actors,
-        isLoading: false
-      );
-      
+
+      state = state.copyWith(searchResults: response.actors, isLoading: false);
+
       _logger.d('Search completed with ${response.actors.length} results');
     } catch (e) {
       _logger.e('Failed to search users', error: e);
-      state = state.copyWith(
-        error: 'Failed to search users',
-        isLoading: false
-      );
+      state = state.copyWith(error: 'Failed to search users', isLoading: false);
     }
   }
-  
+
   /// Handle following a user
   Future<void> followUser(String userDid) async {
     try {
@@ -81,36 +71,33 @@ class Search extends _$Search {
         _logger.w('User not authenticated, cannot follow');
         return;
       }
-      
+
       final graphRepo = _graphRepository;
       final response = await graphRepo.followUser(userDid);
-      
+
       // Update the user in the search results with the follow URI
       final updatedResults = [...state.searchResults];
       final userIndex = updatedResults.indexWhere((user) => user.did == userDid);
-      
+
       if (userIndex != -1) {
         final user = updatedResults[userIndex];
         // Create a viewer map with following field if it doesn't exist
         final viewerMap = user.viewer ?? {};
         viewerMap['following'] = response.uri;
-        
+
         // Create updated user with the new viewer map
-        final updatedUser = user.copyWith(
-          youFollow: true,
-          viewer: viewerMap
-        );
-        
+        final updatedUser = user.copyWith(youFollow: true, viewer: viewerMap);
+
         updatedResults[userIndex] = updatedUser;
         state = state.copyWith(searchResults: updatedResults);
       }
-      
+
       _logger.i('Successfully followed user: $userDid');
     } catch (e) {
       _logger.e('Failed to follow user', error: e);
     }
   }
-  
+
   /// Handle unfollowing a user
   Future<void> unfollowUser(String userDid, String followUri) async {
     try {
@@ -119,30 +106,27 @@ class Search extends _$Search {
         _logger.w('User not authenticated, cannot unfollow');
         return;
       }
-      
+
       final graphRepo = _graphRepository;
       await graphRepo.unfollowUser(followUri);
-      
+
       // Update the user in the search results to remove the follow URI
       final updatedResults = [...state.searchResults];
       final userIndex = updatedResults.indexWhere((user) => user.did == userDid);
-      
+
       if (userIndex != -1) {
         final user = updatedResults[userIndex];
         // Create a viewer map without following field
         final viewerMap = user.viewer ?? {};
         viewerMap.remove('following');
-        
+
         // Create updated user with the updated viewer map
-        final updatedUser = user.copyWith(
-          youFollow: false,
-          viewer: viewerMap
-        );
-        
+        final updatedUser = user.copyWith(youFollow: false, viewer: viewerMap);
+
         updatedResults[userIndex] = updatedUser;
         state = state.copyWith(searchResults: updatedResults);
       }
-      
+
       _logger.i('Successfully unfollowed user: $userDid');
     } catch (e) {
       _logger.e('Failed to unfollow user', error: e);
@@ -158,4 +142,4 @@ class Search extends _$Search {
     final currentDid = authRepo.session?.did;
     return did == currentDid;
   }
-} 
+}

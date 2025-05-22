@@ -13,31 +13,28 @@ class ImagePost extends _$ImagePost {
   ImagePostState build(ImagePostState initialState) {
     return initialState;
   }
-  
+
   void toggleLike() {
     if (state.isLiked) {
       _feedRepository.unlikePost(state.postCid);
     } else {
       _feedRepository.likePost(state.postCid, state.postUri);
     }
-    state = state.copyWith(
-      isLiked: !state.isLiked,
-      likeCount: state.isLiked ? state.likeCount - 1 : state.likeCount + 1,
-    );
+    state = state.copyWith(isLiked: !state.isLiked, likeCount: state.isLiked ? state.likeCount - 1 : state.likeCount + 1);
   }
-  
+
   void updateCommentCount(int count) {
     state = state.copyWith(commentCount: count);
   }
-  
+
   void setVisible(bool isVisible) {
     state = state.copyWith(isVisible: isVisible);
   }
-  
+
   void updateCarouselIndex(int index) {
     state = state.copyWith(currentCarouselIndex: index);
   }
-  
+
   void toggleDescriptionExpanded(bool expanded) {
     state = state.copyWith(isDescriptionExpanded: expanded);
   }
@@ -45,4 +42,4 @@ class ImagePost extends _$ImagePost {
   void toggleComments() {
     state = state.copyWith(showComments: !state.showComments);
   }
-} 
+}

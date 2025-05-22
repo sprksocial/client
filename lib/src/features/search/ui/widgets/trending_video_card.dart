@@ -8,12 +8,7 @@ class TrendingVideoCard extends StatelessWidget {
   final int viewCount;
   final VoidCallback? onTap;
 
-  const TrendingVideoCard({
-    super.key, 
-    required this.thumbnailUrl, 
-    required this.viewCount, 
-    this.onTap
-  });
+  const TrendingVideoCard({super.key, required this.thumbnailUrl, required this.viewCount, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -38,17 +33,10 @@ class TrendingVideoCard extends StatelessWidget {
               left: 8,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.black.withAlpha(153), 
-                  borderRadius: BorderRadius.circular(4)
-                ),
+                decoration: BoxDecoration(color: AppColors.black.withAlpha(153), borderRadius: BorderRadius.circular(4)),
                 child: Text(
                   formattedViews,
-                  style: const TextStyle(
-                    color: AppColors.white, 
-                    fontSize: 14, 
-                    fontWeight: FontWeight.bold
-                  ),
+                  style: const TextStyle(color: AppColors.white, fontSize: 14, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
@@ -57,4 +45,4 @@ class TrendingVideoCard extends StatelessWidget {
       ),
     );
   }
-} 
+}

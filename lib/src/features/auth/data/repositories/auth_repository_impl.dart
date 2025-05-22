@@ -23,10 +23,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   bool get isAuthenticated => _session != null;
-  
+
   @override
   Session? get session => _session;
-  
+
   @override
   ATProto? get atproto => _atProto;
 
@@ -166,7 +166,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
       final didDoc = json.decode(didDocResponse.body);
 
-      String? pdsUrl = (didDoc['service'] as List<dynamic>).firstWhere((s) => s['id'] == '#atproto_pds', orElse: () => {})['serviceEndpoint'] as String?;
+      String? pdsUrl =
+          (didDoc['service'] as List<dynamic>).firstWhere((s) => s['id'] == '#atproto_pds', orElse: () => {})['serviceEndpoint']
+              as String?;
 
       if (pdsUrl == null) {
         _logger.e('PDS endpoint not found in DID document');
@@ -307,4 +309,4 @@ class AuthRepositoryImpl implements AuthRepository {
       return false;
     }
   }
-} 
+}

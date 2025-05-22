@@ -39,31 +39,19 @@ class ProfileVideoTile extends StatelessWidget {
         fit: BoxFit.cover,
         alignment: Alignment.center,
         fadeInDuration: const Duration(milliseconds: 200),
-        placeholder: (context, url) => Container(
-          color: Colors.black,
-          child: const Center(
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: Colors.white,
+        placeholder:
+            (context, url) => Container(
+              color: Colors.black,
+              child: const Center(child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white)),
             ),
-          ),
-        ),
-        errorWidget: (context, url, error) => Container(
-          color: Colors.black,
-          child: const Center(
-            child: Icon(
-              FluentIcons.video_24_regular,
-              color: Colors.white,
-              size: 24,
+        errorWidget:
+            (context, url, error) => Container(
+              color: Colors.black,
+              child: const Center(child: Icon(FluentIcons.video_24_regular, color: Colors.white, size: 24)),
             ),
-          ),
-        ),
       );
     } else {
-      thumbnailWidget = Center(
-          child: Icon(FluentIcons.video_24_regular,
-              color: AppColors.white.withAlpha(204),
-              size: 24));
+      thumbnailWidget = Center(child: Icon(FluentIcons.video_24_regular, color: AppColors.white.withAlpha(204), size: 24));
     }
 
     return GestureDetector(
@@ -81,10 +69,7 @@ class ProfileVideoTile extends StatelessWidget {
                 children: [
                   const Icon(FluentIcons.eye_24_regular, color: AppColors.white, size: 12),
                   const SizedBox(width: 4),
-                  Text(
-                    '$likeCount',
-                    style: const TextStyle(color: AppColors.white, fontSize: 12),
-                  ),
+                  Text('$likeCount', style: const TextStyle(color: AppColors.white, fontSize: 12)),
                 ],
               ),
             ),
@@ -96,18 +81,14 @@ class ProfileVideoTile extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(42),
                   boxShadow: [
-                    BoxShadow(
-                      color: AppColors.black.withAlpha(30),
-                      blurRadius: 4,
-                      spreadRadius: 1,
-                      offset: const Offset(0, 0),
-                    ),
+                    BoxShadow(color: AppColors.black.withAlpha(30), blurRadius: 4, spreadRadius: 1, offset: const Offset(0, 0)),
                   ],
                 ),
                 child: Icon(
-                    isImage ? FluentIcons.image_24_regular : FluentIcons.play_circle_24_filled,
-                    color: AppColors.white,
-                    size: 16),
+                  isImage ? FluentIcons.image_24_regular : FluentIcons.play_circle_24_filled,
+                  color: AppColors.white,
+                  size: 16,
+                ),
               ),
             ),
             Positioned(
@@ -118,17 +99,13 @@ class ProfileVideoTile extends StatelessWidget {
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(42),
                   boxShadow: [
-                    BoxShadow(
-                      color: AppColors.black.withAlpha(30),
-                      blurRadius: 4,
-                      spreadRadius: 1,
-                      offset: const Offset(0, 0),
-                    ),
+                    BoxShadow(color: AppColors.black.withAlpha(30), blurRadius: 4, spreadRadius: 1, offset: const Offset(0, 0)),
                   ],
                 ),
-                child: isSprk
-                    ? SvgPicture.asset('assets/images/sprk.svg', width: 14, height: 14)
-                    : SvgPicture.asset('assets/images/bsky.svg', width: 14, height: 14),
+                child:
+                    isSprk
+                        ? SvgPicture.asset('assets/images/sprk.svg', width: 14, height: 14)
+                        : SvgPicture.asset('assets/images/bsky.svg', width: 14, height: 14),
               ),
             ),
           ],
@@ -136,4 +113,4 @@ class ProfileVideoTile extends StatelessWidget {
       ),
     );
   }
-} 
+}

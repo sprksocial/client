@@ -7,13 +7,7 @@ class SoundCard extends StatelessWidget {
   final String imageUrl;
   final VoidCallback? onTap;
 
-  const SoundCard({
-    super.key, 
-    required this.title, 
-    required this.artist, 
-    required this.imageUrl, 
-    this.onTap
-  });
+  const SoundCard({super.key, required this.title, required this.artist, required this.imageUrl, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -26,10 +20,7 @@ class SoundCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-        decoration: BoxDecoration(
-          color: colorScheme.surfaceContainerLow.withAlpha(125),
-          borderRadius: BorderRadius.circular(12),
-        ),
+        decoration: BoxDecoration(color: colorScheme.surfaceContainerLow.withAlpha(125), borderRadius: BorderRadius.circular(12)),
         child: Row(
           children: [
             Container(
@@ -37,10 +28,7 @@ class SoundCard extends StatelessWidget {
               height: 60,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: NetworkImage(imageUrl), 
-                  fit: BoxFit.cover
-                ),
+                image: DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover),
               ),
             ),
             const SizedBox(width: 12),
@@ -52,20 +40,13 @@ class SoundCard extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold, 
-                      fontSize: 16, 
-                      color: textColor
-                    ),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textColor),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
                     artist,
-                    style: TextStyle(
-                      fontSize: 14, 
-                      color: secondaryTextColor
-                    ),
+                    style: TextStyle(fontSize: 14, color: secondaryTextColor),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -76,19 +57,12 @@ class SoundCard extends StatelessWidget {
             Container(
               width: 36,
               height: 36,
-              decoration: BoxDecoration(
-                color: colorScheme.primary, 
-                shape: BoxShape.circle
-              ),
-              child: const Icon(
-                FluentIcons.play_24_regular, 
-                color: Colors.white, 
-                size: 20
-              ),
+              decoration: BoxDecoration(color: colorScheme.primary, shape: BoxShape.circle),
+              child: const Icon(FluentIcons.play_24_regular, color: Colors.white, size: 20),
             ),
           ],
         ),
       ),
     );
   }
-} 
+}

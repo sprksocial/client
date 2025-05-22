@@ -60,9 +60,8 @@ class _ProfileActionButtonState extends State<ProfileActionButton> {
   @override
   Widget build(BuildContext context) {
     final followButtonSize = widget.size * 0.5;
-    final bool hasValidImage = widget.profileImageUrl != null && 
-                               widget.profileImageUrl!.isNotEmpty && 
-                               !widget.profileImageUrl!.contains('undefined');
+    final bool hasValidImage =
+        widget.profileImageUrl != null && widget.profileImageUrl!.isNotEmpty && !widget.profileImageUrl!.contains('undefined');
 
     return Material(
       color: Colors.transparent,
@@ -89,32 +88,22 @@ class _ProfileActionButtonState extends State<ProfileActionButton> {
                       border: widget.border ?? Border.all(color: AppColors.white, width: 2),
                     ),
                     child: ClipOval(
-                      child: hasValidImage 
-                        ? CachedNetworkImage(
-                            imageUrl: widget.profileImageUrl!,
-                            fit: BoxFit.cover,
-                            placeholder: (context, url) => Container(color: AppColors.deepPurple),
-                            errorWidget: (context, url, error) => Container(
-                              color: AppColors.deepPurple,
-                              child: Center(
-                                child: Icon(
-                                  Icons.person, 
-                                  color: AppColors.white, 
-                                  size: widget.size * 0.5
-                                ),
+                      child:
+                          hasValidImage
+                              ? CachedNetworkImage(
+                                imageUrl: widget.profileImageUrl!,
+                                fit: BoxFit.cover,
+                                placeholder: (context, url) => Container(color: AppColors.deepPurple),
+                                errorWidget:
+                                    (context, url, error) => Container(
+                                      color: AppColors.deepPurple,
+                                      child: Center(child: Icon(Icons.person, color: AppColors.white, size: widget.size * 0.5)),
+                                    ),
+                              )
+                              : Container(
+                                color: AppColors.deepPurple,
+                                child: Center(child: Icon(Icons.person, color: AppColors.white, size: widget.size * 0.5)),
                               ),
-                            ),
-                          )
-                        : Container(
-                            color: AppColors.deepPurple,
-                            child: Center(
-                              child: Icon(
-                                Icons.person, 
-                                color: AppColors.white, 
-                                size: widget.size * 0.5
-                              ),
-                            ),
-                          ),
                     ),
                   ),
                 ),
@@ -152,4 +141,4 @@ class _ProfileActionButtonState extends State<ProfileActionButton> {
       ),
     );
   }
-} 
+}

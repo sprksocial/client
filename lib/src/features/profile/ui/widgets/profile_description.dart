@@ -80,12 +80,13 @@ class _ProfileDescriptionState extends State<ProfileDescription> with SingleTick
         TextSpan(
           text: username,
           style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
-          recognizer: TapGestureRecognizer()
-            ..onTap = () {
-              if (widget.onMentionTap != null) {
-                widget.onMentionTap!(username);
-              }
-            },
+          recognizer:
+              TapGestureRecognizer()
+                ..onTap = () {
+                  if (widget.onMentionTap != null) {
+                    widget.onMentionTap!(username);
+                  }
+                },
         ),
       );
       lastEnd = match.end;
@@ -101,7 +102,8 @@ class _ProfileDescriptionState extends State<ProfileDescription> with SingleTick
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     final usernameMatches = _findUsernameMatches(widget.text);
-    final TextStyle defaultStyle = widget.style ?? TextStyle(color: theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface, fontSize: 14);
+    final TextStyle defaultStyle =
+        widget.style ?? TextStyle(color: theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface, fontSize: 14);
 
     final TextSpan textSpan = TextSpan(
       children: _buildTextSpans(widget.text, usernameMatches, defaultStyle),
@@ -127,4 +129,4 @@ class _ProfileDescriptionState extends State<ProfileDescription> with SingleTick
       ),
     );
   }
-} 
+}

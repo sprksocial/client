@@ -32,7 +32,8 @@ class CommentInput extends StatefulWidget {
     String? rootUri,
     List<XFile>? imageFiles,
     Map<String, String>? altTexts,
-  }) postComment;
+  })
+  postComment;
 
   const CommentInput({
     super.key,
@@ -56,7 +57,7 @@ class _CommentInputState extends State<CommentInput> {
   final TextEditingController _textController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
   final _logger = GetIt.instance<LogService>().getLogger('CommentInput');
-  
+
   List<XFile> _selectedImages = [];
   bool _canSubmit = false;
   bool _isPosting = false;
@@ -117,19 +118,15 @@ class _CommentInputState extends State<CommentInput> {
 
     const maxImages = 4;
     final currentImageCount = _selectedImages.length;
-    
+
     if (currentImageCount >= maxImages) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('You can select up to $maxImages images.')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('You can select up to $maxImages images.')));
       return;
     }
 
     try {
-      final List<XFile> pickedFiles = await _picker.pickMultiImage(
-        limit: maxImages - currentImageCount,
-      );
+      final List<XFile> pickedFiles = await _picker.pickMultiImage(limit: maxImages - currentImageCount);
 
       if (!mounted) return;
 
@@ -146,15 +143,13 @@ class _CommentInputState extends State<CommentInput> {
     } catch (e) {
       _logger.e('Error picking images', error: e);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to pick images: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to pick images: $e')));
     }
   }
 
   void _removeImage(int index) {
     if (_isPosting) return;
-    
+
     _logger.d('Removing image at index $index');
     setState(() {
       final removed = _selectedImages.removeAt(index);
@@ -190,7 +185,7 @@ class _CommentInputState extends State<CommentInput> {
       if (!mounted) return;
 
       _logger.i('Comment posted successfully');
-      
+
       // Clear text and selected images on success
       _textController.clear();
       setState(() {
@@ -208,15 +203,11 @@ class _CommentInputState extends State<CommentInput> {
         widget.onCommentPosted!("comment_uri");
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Comment posted successfully')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Comment posted successfully')));
     } catch (e) {
       _logger.e('Error posting comment', error: e);
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to post comment: $e')),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to post comment: $e')));
     } finally {
       if (mounted) {
         setState(() {
@@ -236,23 +227,13 @@ class _CommentInputState extends State<CommentInput> {
     final inputBackgroundColor = colorScheme.primary.withAlpha(77);
 
     return Container(
-      padding: const EdgeInsets.only(
-        left: 16,
-        right: 16,
-        top: 8,
-        bottom: 16,
-      ),
-      decoration: BoxDecoration(
-        color: backgroundColor, 
-        border: Border(top: BorderSide(color: borderColor, width: 0.5)),
-      ),
+      padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16),
+      decoration: BoxDecoration(color: backgroundColor, border: Border(top: BorderSide(color: borderColor, width: 0.5))),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          EmojiPicker(
-            onEmojiSelected: _insertEmoji, 
-          ),
+          EmojiPicker(onEmojiSelected: _insertEmoji),
 
           const SizedBox(height: 8),
 
@@ -283,7 +264,7 @@ class _CommentInputState extends State<CommentInput> {
 
           if (_selectedImages.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: 8.0), 
+              padding: const EdgeInsets.only(top: 8.0),
               child: _SelectedImagesPreview(
                 selectedImages: _selectedImages,
                 altTexts: _altTexts,
@@ -328,21 +309,12 @@ class _ReplyingToNotice extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Expanded(
-            child: Text(
-              'Replying to $username', 
-              style: TextStyle(color: textColor, fontSize: 13),
-            ),
-          ),
+          Expanded(child: Text('Replying to $username', style: TextStyle(color: textColor, fontSize: 13))),
           IconButton(
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
             onPressed: onCancel,
-            icon: Icon(
-              FluentIcons.dismiss_24_regular, 
-              size: 16, 
-              color: textColor,
-            ),
+            icon: Icon(FluentIcons.dismiss_24_regular, size: 16, color: textColor),
           ),
         ],
       ),
@@ -382,21 +354,14 @@ class _CommentInputBar extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: AppColors.nearBlack,
-        borderRadius: BorderRadius.circular(32),
-      ),
+      decoration: BoxDecoration(color: AppColors.nearBlack, borderRadius: BorderRadius.circular(32)),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _UserAvatar(),
           const SizedBox(width: 5),
-          _AttachmentButton(
-            enabled: enabled,
-            isPosting: isPosting,
-            onPickImages: onPickImages,
-          ),
+          _AttachmentButton(enabled: enabled, isPosting: isPosting, onPickImages: onPickImages),
           const SizedBox(width: 5),
           Expanded(
             child: _CommentTextField(
@@ -423,19 +388,12 @@ class _UserAvatar extends StatelessWidget {
     return Container(
       width: 28,
       height: 28,
-      decoration: const BoxDecoration(
-        color: AppColors.deepPurple, 
-        shape: BoxShape.circle,
-      ),
+      decoration: const BoxDecoration(color: AppColors.deepPurple, shape: BoxShape.circle),
       child: const Center(
         child: Text(
           // TODO: what?
-          'Y', 
-          style: TextStyle(
-            color: Colors.white, 
-            fontWeight: FontWeight.w500, 
-            fontSize: 14,
-          ),
+          'Y',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 14),
         ),
       ),
     );
@@ -447,11 +405,7 @@ class _AttachmentButton extends StatelessWidget {
   final bool isPosting;
   final VoidCallback onPickImages;
 
-  const _AttachmentButton({
-    required this.enabled,
-    required this.isPosting,
-    required this.onPickImages,
-  });
+  const _AttachmentButton({required this.enabled, required this.isPosting, required this.onPickImages});
 
   @override
   Widget build(BuildContext context) {
@@ -460,14 +414,8 @@ class _AttachmentButton extends StatelessWidget {
       visualDensity: VisualDensity.compact,
       constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
       onPressed: enabled ? onPickImages : null,
-      tooltip: enabled 
-          ? 'Add images (up to 4)' 
-          : (isPosting ? 'Posting...' : 'Maximum images reached'),
-      icon: Icon(
-        FluentIcons.image_24_regular, 
-        size: 24, 
-        color: AppColors.primary,
-      ),
+      tooltip: enabled ? 'Add images (up to 4)' : (isPosting ? 'Posting...' : 'Maximum images reached'),
+      icon: Icon(FluentIcons.image_24_regular, size: 24, color: AppColors.primary),
     );
   }
 }
@@ -518,24 +466,18 @@ class _CommentTextField extends StatelessWidget {
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
         focusedBorder: InputBorder.none,
-        suffixIcon: isPosting
-            ? Container(
-                margin: const EdgeInsets.all(8),
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2, 
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+        suffixIcon:
+            isPosting
+                ? Container(
+                  margin: const EdgeInsets.all(8),
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
+                )
+                : IconButton(
+                  icon: Icon(FluentIcons.send_24_filled, size: 20, color: canSubmit ? AppColors.primary : placeholderColor),
+                  onPressed: canSubmit ? onSubmit : null,
                 ),
-              )
-            : IconButton(
-                icon: Icon(
-                  FluentIcons.send_24_filled, 
-                  size: 20, 
-                  color: canSubmit ? AppColors.primary : placeholderColor,
-                ),
-                onPressed: canSubmit ? onSubmit : null,
-              ),
       ),
       style: TextStyle(color: textColor, fontSize: 14),
       maxLines: 5,
@@ -572,7 +514,7 @@ class _SelectedImagesPreview extends StatelessWidget {
         itemBuilder: (context, index) {
           final imageFile = selectedImages[index];
           final alt = altTexts[imageFile.path] ?? '';
-          
+
           return Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: _ImagePreviewItem(
@@ -616,20 +558,11 @@ class _ImagePreviewItem extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: borderColor, width: 0.5),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withAlpha(26), 
-                blurRadius: 4, 
-                offset: const Offset(0, 2),
-              ),
-            ],
-            image: DecorationImage(
-              image: FileImage(File(imageFile.path)), 
-              fit: BoxFit.cover,
-            ),
+            boxShadow: [BoxShadow(color: Colors.black.withAlpha(26), blurRadius: 4, offset: const Offset(0, 2))],
+            image: DecorationImage(image: FileImage(File(imageFile.path)), fit: BoxFit.cover),
           ),
         ),
-        
+
         // ALT Button
         Positioned(
           bottom: 4,
@@ -644,27 +577,16 @@ class _ImagePreviewItem extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 child: Row(
                   children: [
-                    Icon(
-                      FluentIcons.image_alt_text_20_regular, 
-                      color: Colors.white, 
-                      size: 14,
-                    ),
+                    Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 14),
                     const SizedBox(width: 2),
-                    const Text(
-                      'ALT', 
-                      style: TextStyle(
-                        color: Colors.white, 
-                        fontSize: 10, 
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    const Text('ALT', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
                   ],
                 ),
               ),
             ),
           ),
         ),
-        
+
         // Remove Button
         Positioned(
           top: 4,
@@ -677,11 +599,7 @@ class _ImagePreviewItem extends StatelessWidget {
               customBorder: const CircleBorder(),
               child: Container(
                 padding: const EdgeInsets.all(2),
-                child: const Icon(
-                  FluentIcons.dismiss_16_filled, 
-                  color: Colors.white, 
-                  size: 12,
-                ),
+                child: const Icon(FluentIcons.dismiss_16_filled, color: Colors.white, size: 12),
               ),
             ),
           ),
@@ -693,12 +611,9 @@ class _ImagePreviewItem extends StatelessWidget {
   Future<void> _showAltTextEditor(BuildContext context) async {
     final result = await showDialog<String>(
       context: context,
-      builder: (context) => _AltTextEditorDialog(
-        imageFile: imageFile,
-        initialAltText: alt,
-      ),
+      builder: (context) => _AltTextEditorDialog(imageFile: imageFile, initialAltText: alt),
     );
-    
+
     if (result != null) {
       onUpdateAlt(result.trim());
     }
@@ -709,10 +624,7 @@ class _AltTextEditorDialog extends StatefulWidget {
   final XFile imageFile;
   final String initialAltText;
 
-  const _AltTextEditorDialog({
-    required this.imageFile,
-    required this.initialAltText,
-  });
+  const _AltTextEditorDialog({required this.imageFile, required this.initialAltText});
 
   @override
   State<_AltTextEditorDialog> createState() => _AltTextEditorDialogState();
@@ -736,7 +648,7 @@ class _AltTextEditorDialogState extends State<_AltTextEditorDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Dialog(
       backgroundColor: theme.colorScheme.surface,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -750,55 +662,41 @@ class _AltTextEditorDialogState extends State<_AltTextEditorDialog> {
               children: [
                 const Icon(FluentIcons.image_alt_text_24_regular),
                 const SizedBox(width: 8),
-                Text(
-                  'Add alt text', 
-                  style: theme.textTheme.titleLarge,
-                ),
+                Text('Add alt text', style: theme.textTheme.titleLarge),
               ],
             ),
             const SizedBox(height: 16),
-            
+
             // Image preview
             Container(
               width: double.infinity,
               height: 120,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                image: DecorationImage(
-                  image: FileImage(File(widget.imageFile.path)),
-                  fit: BoxFit.cover,
-                ),
+                image: DecorationImage(image: FileImage(File(widget.imageFile.path)), fit: BoxFit.cover),
               ),
             ),
             const SizedBox(height: 16),
-            
+
             // Alt text input
             TextField(
               controller: _controller,
               decoration: InputDecoration(
                 labelText: 'Alt text',
                 hintText: 'Describe this image...',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
               maxLines: 3,
             ),
             const SizedBox(height: 16),
-            
+
             // Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton(
-                  onPressed: () => context.router.maybePop(),
-                  child: const Text('Cancel'),
-                ),
+                TextButton(onPressed: () => context.router.maybePop(), child: const Text('Cancel')),
                 const SizedBox(width: 8),
-                ElevatedButton(
-                  onPressed: () => context.router.maybePop(_controller.text),
-                  child: const Text('Save'),
-                ),
+                ElevatedButton(onPressed: () => context.router.maybePop(_controller.text), child: const Text('Save')),
               ],
             ),
           ],
@@ -806,4 +704,4 @@ class _AltTextEditorDialogState extends State<_AltTextEditorDialog> {
       ),
     );
   }
-} 
+}

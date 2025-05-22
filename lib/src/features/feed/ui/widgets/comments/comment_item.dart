@@ -234,11 +234,7 @@ class _CommentItemState extends State<CommentItem> {
         ),
 
         if (_showReplies && widget.replyCount > 0)
-          _RepliesSection(
-            replies: widget.replies,
-            dividerColor: dividerColor,
-            onReply: widget.onReply,
-          ),
+          _RepliesSection(replies: widget.replies, dividerColor: dividerColor, onReply: widget.onReply),
 
         Container(height: 0.5, color: dividerColor),
       ],
@@ -572,12 +568,7 @@ class _ImageThumbnail extends StatelessWidget {
   final VoidCallback onTap;
   final BorderRadius borderRadius;
 
-  const _ImageThumbnail({
-    required this.imageUrl,
-    required this.imageCount,
-    required this.onTap,
-    required this.borderRadius,
-  });
+  const _ImageThumbnail({required this.imageUrl, required this.imageCount, required this.onTap, required this.borderRadius});
 
   @override
   Widget build(BuildContext context) {

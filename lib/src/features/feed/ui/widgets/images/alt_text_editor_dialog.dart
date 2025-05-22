@@ -108,4 +108,4 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
       ),
     );
   }
-} 
+}

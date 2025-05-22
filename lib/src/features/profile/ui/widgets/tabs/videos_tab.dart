@@ -99,7 +99,7 @@ class _VideosTabState extends ConsumerState<VideosTab> with AutomaticKeepAliveCl
       }
 
       final Profile profileNotifier = ref.read(profileProvider(targetDid).notifier);
-      
+
       final AuthorFeedResponse? resultBsky = await profileNotifier.getProfileVideosBsky(cursor: isLoadingMore ? _cursor : null);
       final AuthorFeedResponse? resultSprk = isLoadingMore ? null : await profileNotifier.getProfileVideosSprk();
 
@@ -112,15 +112,14 @@ class _VideosTabState extends ConsumerState<VideosTab> with AutomaticKeepAliveCl
       List<Post> newPosts = [...fetchedSprkPosts, ...fetchedBskyPosts];
 
       // Filter to only include video posts
-      newPosts = newPosts.where((post) {
-        if (post.embed case {
-            r'$type': String typeString
-          }) {
-          return typeString == 'so.sprk.embed.video#view' || typeString == 'app.bsky.embed.video#view';
-        }
-        return false;
-      }).toList();
-      
+      newPosts =
+          newPosts.where((post) {
+            if (post.embed case {r'$type': String typeString}) {
+              return typeString == 'so.sprk.embed.video#view' || typeString == 'app.bsky.embed.video#view';
+            }
+            return false;
+          }).toList();
+
       // Sort by indexedAt, newest first. Handle null indexedAt.
       newPosts.sort((a, b) {
         final DateTime? dateA = a.indexedAt;
@@ -155,91 +154,94 @@ class _VideosTabState extends ConsumerState<VideosTab> with AutomaticKeepAliveCl
   }
 
   void _openMediaViewer(int index, List<Post> allPosts) {
-    final List<FeedPost> feedPosts = allPosts.map((post) {
-      String? videoUrl;
-      String? videoAlt;
+    final List<FeedPost> feedPosts =
+        allPosts.map((post) {
+          String? videoUrl;
+          String? videoAlt;
 
-      if (post.embed case {r'$type': String typeString} 
-          when typeString == 'so.sprk.embed.video#view' || typeString == 'app.bsky.embed.video#view') {
-        if (post.embed case {'video': {'ref': String refString}}) {
-          videoUrl = refString;
-        }
-        if (post.embed case {'alt': String altString}) {
-          videoAlt = altString;
-        }
-        
-        // Fallback for other video embed structures, e.g., Bluesky standard
-        if (videoUrl == null) {
-          if (post.embed case {'playlist': String playlistString}) {
-            videoUrl = playlistString;
-          } else if (post.embed case {'media': {'playlist': String mediaPlaylistString}}) {
-            videoUrl = mediaPlaylistString;
+          if (post.embed case {
+            r'$type': String typeString,
+          } when typeString == 'so.sprk.embed.video#view' || typeString == 'app.bsky.embed.video#view') {
+            if (post.embed case {'video': {'ref': String refString}}) {
+              videoUrl = refString;
+            }
+            if (post.embed case {'alt': String altString}) {
+              videoAlt = altString;
+            }
+
+            // Fallback for other video embed structures, e.g., Bluesky standard
+            if (videoUrl == null) {
+              if (post.embed case {'playlist': String playlistString}) {
+                videoUrl = playlistString;
+              } else if (post.embed case {'media': {'playlist': String mediaPlaylistString}}) {
+                videoUrl = mediaPlaylistString;
+              }
+            }
           }
-        }
-      }
-      
-      final String description = switch(post.record) {
-        {'text': String textString} => textString,
-        _ => ''
-      };
 
-      final List<String> hashtags = [];
-      for (final String word in description.split(' ')) {
-        if (word.startsWith('#') && word.length > 1) {
-          hashtags.add(word.substring(1));
-        }
-      }
-      
-      final int likeCount = switch(post.record) {
-        {'likeCount': int count} => count,
-        _ => 0
-      };
-      final int commentCount = switch(post.record) {
-        {'replyCount': int count} => count,
-        _ => 0
-      };
-      final int shareCount = switch(post.record) {
-        {'repostCount': int count} => count,
-        _ => 0
-      };
-      final bool isReply = post.record['reply'] != null;
-      final String? likeUri = post.viewer['like'] as String?;
+          final String description = switch (post.record) {
+            {'text': String textString} => textString,
+            _ => '',
+          };
 
+          final List<String> hashtags = [];
+          for (final String word in description.split(' ')) {
+            if (word.startsWith('#') && word.length > 1) {
+              hashtags.add(word.substring(1));
+            }
+          }
 
-      return FeedPost(
-        username: post.author.handle,
-        authorDid: post.author.did,
-        profileImageUrl: post.author.avatar,
-        description: description,
-        videoUrl: videoUrl,
-        imageUrls: const [], // This is VideosTab
-        likeCount: likeCount,
-        commentCount: commentCount,
-        shareCount: shareCount,
-        hashtags: hashtags,
-        uri: post.uri,
-        cid: post.cid,
-        isSprk: post.uri.contains('so.sprk.feed.post'),
-        hasMedia: true,
-        isReply: isReply,
-        imageAlts: const [], // This is VideosTab
-        videoAlt: videoAlt,
-        likeUri: likeUri,
-      );
-    }).toList();
+          final int likeCount = switch (post.record) {
+            {'likeCount': int count} => count,
+            _ => 0,
+          };
+          final int commentCount = switch (post.record) {
+            {'replyCount': int count} => count,
+            _ => 0,
+          };
+          final int shareCount = switch (post.record) {
+            {'repostCount': int count} => count,
+            _ => 0,
+          };
+          final bool isReply = post.record['reply'] != null;
+          final String? likeUri = post.viewer['like'] as String?;
 
-    AutoRouter.of(context).push(FeedRoute(
+          return FeedPost(
+            username: post.author.handle,
+            authorDid: post.author.did,
+            profileImageUrl: post.author.avatar,
+            description: description,
+            videoUrl: videoUrl,
+            imageUrls: const [], // This is VideosTab
+            likeCount: likeCount,
+            commentCount: commentCount,
+            shareCount: shareCount,
+            hashtags: hashtags,
+            uri: post.uri,
+            cid: post.cid,
+            isSprk: post.uri.contains('so.sprk.feed.post'),
+            hasMedia: true,
+            isReply: isReply,
+            imageAlts: const [], // This is VideosTab
+            videoAlt: videoAlt,
+            likeUri: likeUri,
+          );
+        }).toList();
+
+    AutoRouter.of(context).push(
+      FeedRoute(
         feedType: FeedType.latest.value, // Placeholder
         initialPosts: feedPosts,
         initialIndex: index,
         showBackButton: true,
         isParentFeedVisible: true,
-    ));
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); 
+    super.build(context);
 
     final ThemeData theme = Theme.of(context);
     final int itemCount = _posts.length + (_isLoadingMore && _cursor != null ? 1 : 0);
@@ -301,7 +303,7 @@ class _VideosTabState extends ConsumerState<VideosTab> with AutomaticKeepAliveCl
           }
 
           final Post post = _posts[index];
-          
+
           String thumbnailUrl = '';
           String? videoUrlTile;
 
@@ -309,7 +311,8 @@ class _VideosTabState extends ConsumerState<VideosTab> with AutomaticKeepAliveCl
             if (typeString == 'so.sprk.embed.video#view') {
               if (post.embed case {'video': {'thumb': String thumbString}}) {
                 thumbnailUrl = thumbString;
-              } else if (post.embed case {'thumbnail': String thumbString}) { // Fallback
+              } else if (post.embed case {'thumbnail': String thumbString}) {
+                // Fallback
                 thumbnailUrl = thumbString;
               }
               if (post.embed case {'video': {'ref': String refString}}) {
@@ -320,26 +323,26 @@ class _VideosTabState extends ConsumerState<VideosTab> with AutomaticKeepAliveCl
                 thumbnailUrl = thumbString;
               }
               if (post.embed case {'playlist': String playlistString}) {
-                 videoUrlTile = playlistString;
+                videoUrlTile = playlistString;
               } else if (post.embed case {'media': {'playlist': String mediaPlaylistString}}) {
-                 videoUrlTile = mediaPlaylistString;
+                videoUrlTile = mediaPlaylistString;
               }
             }
           }
-          
+
           if (thumbnailUrl.isEmpty) {
-             _logger.w('Post with URI ${post.uri} has no thumbnail for video, skipping render.');
+            _logger.w('Post with URI ${post.uri} has no thumbnail for video, skipping render.');
             return const SizedBox.shrink();
           }
 
           final String username = post.author.handle;
-          final String descriptionTile = switch(post.record) {
+          final String descriptionTile = switch (post.record) {
             {'text': String textString} => textString,
-            _ => ''
+            _ => '',
           };
-          final int likeCountTile = switch(post.record) {
+          final int likeCountTile = switch (post.record) {
             {'likeCount': int count} => count,
-            _ => 0
+            _ => 0,
           };
 
           final List<String> hashtags = [];
@@ -348,12 +351,12 @@ class _VideosTabState extends ConsumerState<VideosTab> with AutomaticKeepAliveCl
               hashtags.add(word.substring(1));
             }
           }
-          
+
           final bool isSprk = post.uri.contains('so.sprk.feed.post');
 
           return ProfileVideoTile(
             key: ValueKey('video_tile_${post.uri}'),
-            videoUrl: videoUrlTile, 
+            videoUrl: videoUrlTile,
             thumbnailUrl: thumbnailUrl,
             username: username,
             description: descriptionTile,
@@ -368,4 +371,4 @@ class _VideosTabState extends ConsumerState<VideosTab> with AutomaticKeepAliveCl
       ),
     );
   }
-} 
+}

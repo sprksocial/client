@@ -28,7 +28,7 @@ class Auth extends _$Auth {
   AuthState build() {
     _authRepository = ref.watch(authRepositoryProvider);
     _logService = GetIt.instance<LogService>();
-    
+
     return AuthState(
       isAuthenticated: _authRepository.isAuthenticated,
       session: _authRepository.session,
@@ -52,47 +52,44 @@ class Auth extends _$Auth {
   }
 
   /// Attempts to log in a user with the provided credentials
-  /// 
+  ///
   /// [handle] - The user handle (e.g. username)
   /// [password] - The user password
   /// [authCode] - Optional authentication code for two-factor authentication
   Future<LoginResult> login(String handle, String password, {String? authCode}) async {
     _logger.i('Login attempt by service layer');
-    
+
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final result = await _authRepository.login(handle, password, authCode: authCode);
-      
+
       if (!result.isSuccess) {
         state = state.copyWith(isLoading: false, error: result.error);
       } else {
         _updateState();
         state = state.copyWith(isLoading: false);
       }
-      
+
       return result;
     } catch (e, stackTrace) {
       _logger.e('Login error', error: e, stackTrace: stackTrace);
-      state = state.copyWith(
-        isLoading: false, 
-        error: 'Login failed: ${e.toString()}',
-      );
+      state = state.copyWith(isLoading: false, error: 'Login failed: ${e.toString()}');
       return LoginResult.failed('Login failed: ${e.toString()}');
     }
   }
 
   /// Registers a new user account
-  /// 
+  ///
   /// [handle] - The user handle (e.g. username)
   /// [email] - The user email address
   /// [password] - The user password
   /// [inviteCode] - Optional invite code for restricted registrations
   Future<(bool, String?)> register(String handle, String email, String password, String? inviteCode) async {
     _logger.i('Registration attempt by service layer');
-    
+
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final result = await _authRepository.register(handle, email, password, inviteCode);
       _updateState();
@@ -110,17 +107,14 @@ class Auth extends _$Auth {
   Future<void> logout() async {
     _logger.i('Logout attempt by service layer');
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       await _authRepository.logout();
       _updateState();
       state = state.copyWith(isLoading: false);
     } catch (e, stackTrace) {
       _logger.e('Logout error', error: e, stackTrace: stackTrace);
-      state = state.copyWith(
-        isLoading: false, 
-        error: 'Logout failed: ${e.toString()}',
-      );
+      state = state.copyWith(isLoading: false, error: 'Logout failed: ${e.toString()}');
     }
   }
 
@@ -128,7 +122,7 @@ class Auth extends _$Auth {
   /// Returns true if valid, false otherwise
   Future<bool> validateSession() async {
     _logger.d('Session validation by service layer');
-    
+
     try {
       final result = await _authRepository.validateSession();
       _updateState();
@@ -144,7 +138,7 @@ class Auth extends _$Auth {
   /// Returns true if the session was successfully refreshed
   Future<bool> refreshToken() async {
     _logger.i('Token refresh by service layer');
-    
+
     try {
       final result = await _authRepository.refreshToken();
       _updateState();
@@ -176,4 +170,4 @@ Session? session(Ref ref) {
 ATProto? atproto(Ref ref) {
   final authState = ref.watch(authProvider);
   return authState.atproto;
-} 
+}

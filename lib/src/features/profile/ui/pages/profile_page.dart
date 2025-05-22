@@ -10,16 +10,12 @@ import 'package:sparksocial/src/core/widgets/menu_action_button.dart';
 import 'package:sparksocial/src/core/widgets/report_dialog.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
-// Assuming these widgets are migrated or compatible:
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_header.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_tabs.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_tab_content.dart'; // May need refactor
+import 'package:sparksocial/src/features/profile/ui/widgets/profile_tab_content.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/early_supporter_sheet.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_menu_sheet.dart';
-import 'package:sparksocial/src/features/auth/ui/pages/auth_prompt_page.dart'; // This might need to become a route or a new widget
-import 'package:atproto/atproto.dart' as atp; // For ModerationReasonType
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_tab_content.dart';
 
 @RoutePage()
 class ProfilePage extends ConsumerWidget {

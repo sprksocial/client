@@ -62,9 +62,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     if (navData == null) {
       // This might happen if the state is error/loading, though form validation should prevent it.
       // Handle error appropriately, e.g. show a snackbar.
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not retrieve profile data. Please try again.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Could not retrieve profile data. Please try again.')));
       return;
     }
 
@@ -77,11 +77,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     }
 
     context.router.push(
-      ImportFollowsRoute(
-        displayName: navData.displayName,
-        description: navData.description,
-        avatar: avatarForNav,
-      ),
+      ImportFollowsRoute(displayName: navData.displayName, description: navData.description, avatar: avatarForNav),
     );
   }
 
@@ -90,20 +86,17 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     final onboardingStateAsync = ref.watch(onboardingNotifierProvider);
     final notifier = ref.read(onboardingNotifierProvider.notifier);
 
-    ref.listen<AsyncValue<OnboardingScreenState>>(
-      onboardingNotifierProvider,
-      (_, next) {
-        if (next.hasValue && next.value != null) {
-          final stateValue = next.value!;
-          if (_displayNameController.text != stateValue.displayName) {
-            _displayNameController.text = stateValue.displayName;
-          }
-          if (_descriptionController.text != stateValue.description) {
-            _descriptionController.text = stateValue.description;
-          }
+    ref.listen<AsyncValue<OnboardingScreenState>>(onboardingNotifierProvider, (_, next) {
+      if (next.hasValue && next.value != null) {
+        final stateValue = next.value!;
+        if (_displayNameController.text != stateValue.displayName) {
+          _displayNameController.text = stateValue.displayName;
         }
-      },
-    );
+        if (_descriptionController.text != stateValue.description) {
+          _descriptionController.text = stateValue.description;
+        }
+      }
+    });
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
@@ -118,16 +111,17 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       ),
       body: onboardingStateAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Error: ${err.toString()}'),
-              const SizedBox(height: 8),
-              ElevatedButton(onPressed: () => notifier.reloadProfile(), child: const Text('Retry'))
-            ],
-          ),
-        ),
+        error:
+            (err, stack) => Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Error: ${err.toString()}'),
+                  const SizedBox(height: 8),
+                  ElevatedButton(onPressed: () => notifier.reloadProfile(), child: const Text('Retry')),
+                ],
+              ),
+            ),
         data: (state) {
           ImageProvider<Object>? avatarImageProvider;
           if (state.localAvatarBytes != null) {
@@ -157,13 +151,16 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                               radius: 50,
                               backgroundImage: avatarImageProvider,
                               backgroundColor: theme.colorScheme.surfaceContainerHighest, // Placeholder color
-                              child: avatarImageProvider == null ? Icon(Icons.person, size: 50, color: theme.colorScheme.onSurfaceVariant) : null,
+                              child:
+                                  avatarImageProvider == null
+                                      ? Icon(Icons.person, size: 50, color: theme.colorScheme.onSurfaceVariant)
+                                      : null,
                             ),
                           ),
                           Positioned(
                             // Positioned to avoid overlap if both are shown
                             right: 0,
-                            bottom: 0, 
+                            bottom: 0,
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -206,10 +203,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                           CustomTextField(
                             controller: _displayNameController,
                             hintText: 'Display Name',
-                            fillColor: theme.inputDecorationTheme.fillColor ?? theme.colorScheme.surface, 
-                            onUndo: state.bskyProfileData?['displayName'] != null 
-                                ? () => notifier.resetDisplayName() 
-                                : null,
+                            fillColor: theme.inputDecorationTheme.fillColor ?? theme.colorScheme.surface,
+                            onUndo: state.bskyProfileData?['displayName'] != null ? () => notifier.resetDisplayName() : null,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) return 'Display Name is required';
                               if (value.trim().length > 64) return 'Display Name cannot exceed 64 characters';
@@ -222,13 +217,11 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                             hintText: 'Bio',
                             fillColor: theme.inputDecorationTheme.fillColor ?? theme.colorScheme.surface,
                             maxLines: 3,
-                            onUndo: state.bskyProfileData?['description'] != null
-                                ? () => notifier.resetDescription()
-                                : null,
+                            onUndo: state.bskyProfileData?['description'] != null ? () => notifier.resetDescription() : null,
                             validator: (value) {
-                               if (value != null && value.trim().length > 256) return 'Bio cannot exceed 256 characters';
-                               return null; // Bio is optional
-                            }
+                              if (value != null && value.trim().length > 256) return 'Bio cannot exceed 256 characters';
+                              return null; // Bio is optional
+                            },
                           ),
                           const SizedBox(height: 24),
                           Align(
@@ -259,4 +252,4 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       ),
     );
   }
-} 
+}

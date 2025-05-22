@@ -21,7 +21,7 @@ class StoryCircle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return GestureDetector(
       onTap: onTap,
       child: Column(
@@ -35,26 +35,21 @@ class StoryCircle extends StatelessWidget {
                 margin: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient: isYourStory
-                      ? null
-                      : LinearGradient(
-                          colors: [
-                            colorScheme.primary, 
-                            AppColors.pink
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
+                  gradient:
+                      isYourStory
+                          ? null
+                          : LinearGradient(
+                            colors: [colorScheme.primary, AppColors.pink],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
                 ),
                 padding: const EdgeInsets.all(2.5),
                 child: Container(
                   decoration: BoxDecoration(
                     color: Colors.black,
                     shape: BoxShape.circle,
-                    image: DecorationImage(
-                      image: NetworkImage(imageUrl), 
-                      fit: BoxFit.cover
-                    ),
+                    image: DecorationImage(image: NetworkImage(imageUrl), fit: BoxFit.cover),
                   ),
                 ),
               ),
@@ -71,11 +66,7 @@ class StoryCircle extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: Border.all(color: AppColors.black, width: 1.5),
                     ),
-                    child: const Icon(
-                      FluentIcons.add_24_regular, 
-                      size: 16, 
-                      color: Colors.white
-                    ),
+                    child: const Icon(FluentIcons.add_24_regular, size: 16, color: Colors.white),
                   ),
                 ),
             ],
@@ -83,10 +74,7 @@ class StoryCircle extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             username,
-            style: const TextStyle(
-              fontSize: 12, 
-              fontWeight: FontWeight.w500
-            ),
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -94,4 +82,4 @@ class StoryCircle extends StatelessWidget {
       ),
     );
   }
-} 
+}

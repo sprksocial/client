@@ -27,7 +27,7 @@ class EditProfile extends _$EditProfile {
     _authRepository = GetIt.instance<AuthRepository>();
     _logService = GetIt.instance<LogService>();
     logger = _logService.getLogger('EditProfileProvider');
-    
+
     return EditProfileState.fromProfile(profile);
   }
 
@@ -47,7 +47,7 @@ class EditProfile extends _$EditProfile {
       final picker = ImagePicker();
       final picked = await picker.pickImage(source: ImageSource.gallery);
       if (picked == null) return;
-      
+
       final bytes = await picked.readAsBytes();
       state = state.copyWith(localAvatar: bytes);
     } catch (e) {
@@ -66,9 +66,9 @@ class EditProfile extends _$EditProfile {
       if (!_authRepository.isAuthenticated) {
         throw Exception('Not authenticated');
       }
-      
+
       state = state.copyWith(isSaving: true);
-      
+
       dynamic avatarToSend;
       if (state.localAvatar is Uint8List) {
         // Upload new avatar blob
@@ -91,13 +91,13 @@ class EditProfile extends _$EditProfile {
         final recordData = recRes.data.value;
         avatarToSend = recordData['avatar'];
       }
-      
+
       await _profileRepository.updateProfile(
         displayName: state.displayName.trim(),
         description: state.description.trim(),
         avatar: avatarToSend,
       );
-      
+
       state = state.copyWith(isSaving: false);
       return true;
     } catch (e) {
@@ -106,4 +106,4 @@ class EditProfile extends _$EditProfile {
       return false;
     }
   }
-} 
+}

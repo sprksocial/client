@@ -7,5 +7,3 @@ export 'data/repositories/repo_repository.dart';
 export 'data/repositories/feed_repository.dart';
 export 'data/repositories/graph_repository.dart';
 export 'data/repositories/label_repository.dart';
-
-

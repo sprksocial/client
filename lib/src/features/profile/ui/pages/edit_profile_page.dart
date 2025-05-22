@@ -13,30 +13,23 @@ import 'package:get_it/get_it.dart';
 @RoutePage()
 class EditProfilePage extends ConsumerWidget {
   final Profile profile;
-  
-  const EditProfilePage({
-    super.key,
-    required this.profile,
-  });
+
+  const EditProfilePage({super.key, required this.profile});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final logger = GetIt.instance<LogService>().getLogger('EditProfilePage');
-    
+
     final editProfileState = ref.watch(editProfileProvider(profile));
     final editProfileNotifier = ref.read(editProfileProvider(profile).notifier);
-    
+
     final formKey = GlobalKey<FormState>();
-    
+
     final theme = Theme.of(context);
     final bgColor = theme.scaffoldBackgroundColor;
-    
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Profile'), 
-        backgroundColor: bgColor, 
-        elevation: 0
-      ),
+      appBar: AppBar(title: const Text('Edit Profile'), backgroundColor: bgColor, elevation: 0),
       body: SafeArea(
         child: Container(
           alignment: Alignment.center,
@@ -47,10 +40,7 @@ class EditProfilePage extends ConsumerWidget {
               key: formKey,
               child: Column(
                 children: [
-                  ProfileAvatarEditor(
-                    state: editProfileState,
-                    notifier: editProfileNotifier,
-                  ),
+                  ProfileAvatarEditor(state: editProfileState, notifier: editProfileNotifier),
                   const SizedBox(height: 16),
                   ProfileTextField(
                     initialValue: editProfileState.displayName,
@@ -67,12 +57,7 @@ class EditProfilePage extends ConsumerWidget {
                     maxLines: 3,
                   ),
                   const SizedBox(height: 24),
-                  ProfileSaveButton(
-                    state: editProfileState,
-                    notifier: editProfileNotifier,
-                    formKey: formKey,
-                    logger: logger,
-                  ),
+                  ProfileSaveButton(state: editProfileState, notifier: editProfileNotifier, formKey: formKey, logger: logger),
                 ],
               ),
             ),

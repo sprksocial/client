@@ -26,21 +26,11 @@ class FeedSettingItem extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: Container(
-          decoration: BoxDecoration(
-            color: itemColor, 
-            borderRadius: BorderRadius.circular(12)
-          ),
+          decoration: BoxDecoration(color: itemColor, borderRadius: BorderRadius.circular(12)),
           child: ListTile(
-            title: Text(
-              feedName, 
-              style: TextStyle(color: textColor, fontSize: 16)
-            ),
-            subtitle: description != null
-                ? Text(
-                    description!, 
-                    style: TextStyle(color: textColor.withAlpha(179), fontSize: 12)
-                  )
-                : null,
+            title: Text(feedName, style: TextStyle(color: textColor, fontSize: 16)),
+            subtitle:
+                description != null ? Text(description!, style: TextStyle(color: textColor.withAlpha(179), fontSize: 12)) : null,
             trailing: Switch(
               value: isEnabled,
               onChanged: onToggleChanged,
@@ -59,4 +49,4 @@ class FeedSettingItem extends StatelessWidget {
       ),
     );
   }
-} 
+}

@@ -2,13 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class TabItem extends StatelessWidget {
-  const TabItem({
-    super.key,
-    required this.isSelected,
-    required this.label,
-    required this.onTap,
-    required this.isDarkMode,
-  });
+  const TabItem({super.key, required this.isSelected, required this.label, required this.onTap, required this.isDarkMode});
 
   final bool isSelected;
   final String label;
@@ -25,11 +19,12 @@ class TabItem extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: isSelected
-                  ? label == 'Messages'
-                      ? AppColors.pink
-                      : AppColors.primary
-                  : Colors.transparent,
+              color:
+                  isSelected
+                      ? label == 'Messages'
+                          ? AppColors.pink
+                          : AppColors.primary
+                      : Colors.transparent,
               width: 2,
             ),
           ),
@@ -40,11 +35,12 @@ class TabItem extends StatelessWidget {
             style: TextStyle(
               fontSize: 16,
               fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-              color: isSelected
-                  ? label == 'Messages'
-                      ? AppColors.pink
-                      : AppColors.primary
-                  : isDarkMode
+              color:
+                  isSelected
+                      ? label == 'Messages'
+                          ? AppColors.pink
+                          : AppColors.primary
+                      : isDarkMode
                       ? AppColors.textLight.withAlpha(179)
                       : AppColors.textSecondary,
             ),
@@ -53,4 +49,4 @@ class TabItem extends StatelessWidget {
       ),
     );
   }
-} 
+}

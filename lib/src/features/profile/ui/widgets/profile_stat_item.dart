@@ -13,19 +13,20 @@ class ProfileStatItem extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(count, 
-             style: TextStyle(
-                fontWeight: FontWeight.bold, 
-                fontSize: 20, 
-                color: theme.textTheme.titleLarge?.color ?? theme.colorScheme.onSurface)
-            ),
+        Text(
+          count,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            color: theme.textTheme.titleLarge?.color ?? theme.colorScheme.onSurface,
+          ),
+        ),
         const SizedBox(height: 4),
-        Text(label, 
-             style: TextStyle(
-                color: theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurfaceVariant, 
-                fontSize: 14)
-            ),
+        Text(
+          label,
+          style: TextStyle(color: theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurfaceVariant, fontSize: 14),
+        ),
       ],
     );
   }
-} 
+}

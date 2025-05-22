@@ -31,4 +31,4 @@ class ActivityList extends StatelessWidget {
       },
     );
   }
-} 
+}

@@ -42,16 +42,12 @@ abstract class LabelRepository {
   /// Returns a map of label values to their definitions
   /// [labelerDid] The DID of the labeler to use, defaults to system labeler if not specified
   Future<Map<String, LabelValue>> getAllLabelsWithDefinitions({String? labelerDid});
-  
+
   /// Fetch and apply labels to a list of posts
   ///
   /// This method retrieves labels for a list of posts and returns new instances with labels applied
   /// [posts] List of FeedPost objects to fetch labels for
   /// [sources] Optional list of label sources (DIDs) to filter on
   /// [labelerDid] The DID of the labeler to use, defaults to system labeler if not specified
-  Future<List<FeedPost>> fetchLabelsForPosts(
-    List<FeedPost> posts, {
-    List<String>? sources,
-    String? labelerDid,
-  });
-} 
+  Future<List<FeedPost>> fetchLabelsForPosts(List<FeedPost> posts, {List<String>? sources, String? labelerDid});
+}

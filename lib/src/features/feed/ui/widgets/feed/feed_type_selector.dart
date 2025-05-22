@@ -9,31 +9,26 @@ import 'package:sparksocial/src/features/feed/ui/widgets/feed/feed_selector.dart
 class FeedTypeSelector extends ConsumerWidget {
   /// Height of the selector
   final double height;
-  
+
   /// Optional padding
   final EdgeInsets? padding;
-  
+
   /// Callback triggered when the feed type changes
   final Function(FeedType)? onFeedTypeChanged;
 
-  const FeedTypeSelector({
-    super.key,
-    this.height = 38,
-    this.padding,
-    this.onFeedTypeChanged,
-  });
+  const FeedTypeSelector({super.key, this.height = 38, this.padding, this.onFeedTypeChanged});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     // Get the current feed type from the provider
     final selectedFeedType = ref.watch(feedTypeNotifierProvider);
-    
+
     return FeedSelector(
       selectedFeedType: selectedFeedType,
       onFeedTypeSelected: (feedType) {
         // Update the provider state
         ref.read(feedTypeNotifierProvider.notifier).setFeedType(feedType);
-        
+
         // Call the optional callback if provided
         if (onFeedTypeChanged != null) {
           onFeedTypeChanged!(feedType);
@@ -43,4 +38,4 @@ class FeedTypeSelector extends ConsumerWidget {
       padding: padding,
     );
   }
-} 
+}

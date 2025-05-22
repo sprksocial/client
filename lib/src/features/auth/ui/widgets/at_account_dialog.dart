@@ -19,27 +19,15 @@ class ATAccountInfoIcon extends StatelessWidget {
         width: 18,
         height: 18,
         margin: const EdgeInsets.only(top: 4, left: 4),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-        ),
-        child: const Center(
-          child: Icon(
-            Icons.question_mark,
-            size: 14,
-            color: AppColors.primary,
-          ),
-        ),
+        decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
+        child: const Center(child: Icon(Icons.question_mark, size: 14, color: AppColors.primary)),
       ),
     );
   }
 
   /// Shows a dialog explaining what an AT Account is.
   void _showATAccountDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => const _ATAccountDialog(),
-    );
+    showDialog(context: context, builder: (context) => const _ATAccountDialog());
   }
 }
 
@@ -56,18 +44,11 @@ class _ATAccountDialog extends StatelessWidget {
       contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
       title: Column(
         children: [
-          SvgPicture.asset(
-            'assets/images/ataccount.svg',
-            height: 40,
-          ),
+          SvgPicture.asset('assets/images/ataccount.svg', height: 40),
           const SizedBox(height: 18),
           Text(
             'What is an AT Account?',
-            style: TextStyle(
-              color: AppColors.lightLavender,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
+            style: TextStyle(color: AppColors.lightLavender, fontWeight: FontWeight.bold, fontSize: 20),
             textAlign: TextAlign.center,
           ),
         ],
@@ -99,10 +80,7 @@ class _ATAccountDialogActions extends StatelessWidget {
   final VoidCallback onGotIt;
   final VoidCallback onLearnMore;
 
-  const _ATAccountDialogActions({
-    required this.onGotIt,
-    required this.onLearnMore,
-  });
+  const _ATAccountDialogActions({required this.onGotIt, required this.onLearnMore});
 
   @override
   Widget build(BuildContext context) {
@@ -111,14 +89,7 @@ class _ATAccountDialogActions extends StatelessWidget {
         Expanded(
           child: TextButton(
             onPressed: onLearnMore,
-            child: Text(
-              'Learn more',
-              style: TextStyle(
-                color: AppColors.primary,
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-              ),
-            ),
+            child: Text('Learn more', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 16)),
           ),
         ),
         const SizedBox(width: 12),
@@ -131,13 +102,10 @@ class _ATAccountDialogActions extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
             onPressed: onGotIt,
-            child: const Text(
-              'Got it',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-            ),
+            child: const Text('Got it', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           ),
         ),
       ],
     );
   }
-} 
+}

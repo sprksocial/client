@@ -27,4 +27,4 @@ class ContentSettingsTabPage extends ConsumerWidget {
       onUpdateAdultContentPreferences: onUpdateAdultContentPreferences,
     );
   }
-} 
+}

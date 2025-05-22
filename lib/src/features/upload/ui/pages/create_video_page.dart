@@ -32,7 +32,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    
+
     // Initialize the camera
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
@@ -51,7 +51,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     final cameraRepo = ref.read(cameraProvider);
-    
+
     if (cameraRepo.controller == null) {
       return;
     }
@@ -77,17 +77,14 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
 
   void _onVideoGalleryPressed() async {
     final isAuthenticated = ref.read(authProvider).isAuthenticated;
-    
+
     if (!isAuthenticated) {
       _promptAuthScreen();
       return;
     }
 
     try {
-      final XFile? video = await _picker.pickVideo(
-        source: ImageSource.gallery, 
-        maxDuration: const Duration(seconds: 180)
-      );
+      final XFile? video = await _picker.pickVideo(source: ImageSource.gallery, maxDuration: const Duration(seconds: 180));
 
       if (video != null && mounted) {
         _logger.d('Video selected from gallery: ${video.path}');
@@ -103,7 +100,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
 
   void _onImageGalleryPressed() async {
     final isAuthenticated = ref.read(authProvider).isAuthenticated;
-    
+
     if (!isAuthenticated) {
       _promptAuthScreen();
       return;
@@ -114,23 +111,19 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
     try {
       final List<XFile> pickedFiles = await _picker.pickMultiImage(limit: maxImages);
       if (pickedFiles.isEmpty) return;
-      
-      final List<XFile> limitedFiles = pickedFiles.length > maxImages 
-          ? pickedFiles.sublist(0, maxImages) 
-          : pickedFiles;
-      
+
+      final List<XFile> limitedFiles = pickedFiles.length > maxImages ? pickedFiles.sublist(0, maxImages) : pickedFiles;
+
       _logger.d('${limitedFiles.length} images selected from gallery.');
-      
+
       if (!mounted) return;
-      
+
       context.router.push(ImageReviewRoute(imageFiles: limitedFiles));
-      
+
       // For now, show a placeholder message
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Image review not yet implemented in new architecture'),
-        ),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Image review not yet implemented in new architecture')));
     } catch (e) {
       _logger.e('Error picking images for post', error: e);
       if (!mounted) return;
@@ -140,7 +133,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
 
   void _onCapturePressed() async {
     final isAuthenticated = ref.read(authProvider).isAuthenticated;
-    
+
     if (!isAuthenticated) {
       _promptAuthScreen();
       return;
@@ -148,7 +141,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
 
     final notifier = ref.read(createVideoNotifierProvider.notifier);
     final mode = ref.read(createVideoNotifierProvider).mode;
-    
+
     if (mode == CameraMode.photo) {
       await notifier.takePhoto();
     } else {
@@ -159,7 +152,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
   Future<void> _toggleVideoRecording() async {
     final notifier = ref.read(createVideoNotifierProvider.notifier);
     final state = ref.read(createVideoNotifierProvider);
-    
+
     if (state.isRecording) {
       try {
         final XFile? video = await notifier.stopVideoRecording();
@@ -187,10 +180,10 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
   void _startRecordingTimer() {
     final maxRecordingSeconds = 180; // 3 minutes
     final notifier = ref.read(createVideoNotifierProvider.notifier);
-    
+
     _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
       final recordingSeconds = ref.read(createVideoNotifierProvider).recordingSeconds;
-      
+
       if (recordingSeconds >= maxRecordingSeconds) {
         _toggleVideoRecording();
         return;
@@ -207,9 +200,13 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
   }
 
   void _promptAuthScreen() {
-    context.router.push(AuthPromptRoute(onClose: () {
-      // Just return to this screen
-    }));
+    context.router.push(
+      AuthPromptRoute(
+        onClose: () {
+          // Just return to this screen
+        },
+      ),
+    );
   }
 
   void _showErrorDialog(String title, String message) {
@@ -219,12 +216,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
         return AlertDialog(
           title: Text(title),
           content: Text(message),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('OK'),
-            ),
-          ],
+          actions: [TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('OK'))],
         );
       },
     );
@@ -234,7 +226,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
   Widget build(BuildContext context) {
     final state = ref.watch(createVideoNotifierProvider);
     final cameraRepo = ref.watch(cameraProvider);
-    
+
     return Scaffold(
       backgroundColor: AppColors.black,
       body: SafeArea(
@@ -243,16 +235,12 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
             if (state.cameraPermissionDenied)
               Positioned.fill(
                 child: CameraPermissionRequest(
-                  onRequestPermission: () => 
-                    ref.read(createVideoNotifierProvider.notifier).initializeCamera(),
+                  onRequestPermission: () => ref.read(createVideoNotifierProvider.notifier).initializeCamera(),
                 ),
               )
             else
               Positioned.fill(
-                child: CameraView(
-                  cameraController: cameraRepo.controller,
-                  isInitialized: cameraRepo.isInitialized,
-                ),
+                child: CameraView(cameraController: cameraRepo.controller, isInitialized: cameraRepo.isInitialized),
               ),
 
             // Close button
@@ -263,15 +251,8 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
                 onTap: () => context.router.maybePop(),
                 child: Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: AppColors.black.withAlpha(100),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    FluentIcons.dismiss_24_regular,
-                    color: AppColors.white,
-                    size: 24,
-                  ),
+                  decoration: BoxDecoration(color: AppColors.black.withAlpha(100), shape: BoxShape.circle),
+                  child: const Icon(FluentIcons.dismiss_24_regular, color: AppColors.white, size: 24),
                 ),
               ),
             ),
@@ -281,12 +262,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
               top: 20,
               left: 0,
               right: 0,
-              child: Center(
-                child: ModeSelector(
-                  selectedMode: state.mode,
-                  onModeSelected: _onModeSelected,
-                ),
-              ),
+              child: Center(child: ModeSelector(selectedMode: state.mode, onModeSelected: _onModeSelected)),
             ),
 
             // Camera controls
@@ -321,4 +297,4 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
       ),
     );
   }
-} 
+}

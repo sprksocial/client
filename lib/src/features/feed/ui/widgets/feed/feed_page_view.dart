@@ -30,9 +30,7 @@ class FeedPageView extends ConsumerWidget {
     return PageView.builder(
       controller: pageController,
       scrollDirection: Axis.vertical,
-      physics: isParentFeedVisible 
-          ? const PageScrollPhysics() 
-          : const NeverScrollableScrollPhysics(),
+      physics: isParentFeedVisible ? const PageScrollPhysics() : const NeverScrollableScrollPhysics(),
       itemCount: feedState.posts.length,
       onPageChanged: onPageChanged,
       itemBuilder: (context, index) {
@@ -49,4 +47,4 @@ class FeedPageView extends ConsumerWidget {
       },
     );
   }
-} 
+}

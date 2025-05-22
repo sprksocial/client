@@ -39,9 +39,9 @@ class VideoActionNotifier extends _$VideoActionNotifier {
   /// Like a post
   Future<LikePostResponse?> likePost(String postCid, String postUri) async {
     if (state.isLoading) return null;
-    
+
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final response = await ref.read(feedRepositoryProvider).likePost(postCid, postUri);
       state = state.copyWith(isLoading: false);
@@ -55,9 +55,9 @@ class VideoActionNotifier extends _$VideoActionNotifier {
   /// Unlike a post
   Future<bool> unlikePost(String likeUri) async {
     if (state.isLoading) return false;
-    
+
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       await ref.read(feedRepositoryProvider).unlikePost(likeUri);
       state = state.copyWith(isLoading: false);
@@ -71,9 +71,9 @@ class VideoActionNotifier extends _$VideoActionNotifier {
   /// Delete a post
   Future<bool> deletePost(String postUri) async {
     if (state.isLoading) return false;
-    
+
     state = state.copyWith(isLoading: true, error: null);
-    
+
     try {
       final success = await ref.read(feedRepositoryProvider).deletePost(postUri);
       state = state.copyWith(isLoading: false);
@@ -83,4 +83,4 @@ class VideoActionNotifier extends _$VideoActionNotifier {
       return false;
     }
   }
-} 
+}

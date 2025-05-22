@@ -34,12 +34,7 @@ class MessageListItem extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         decoration: BoxDecoration(
           color: Theme.of(context).scaffoldBackgroundColor,
-          border: Border(
-            bottom: BorderSide(
-              color: colorScheme.surfaceContainerLow.withAlpha(30),
-              width: 0.5,
-            ),
-          ),
+          border: Border(bottom: BorderSide(color: colorScheme.surfaceContainerLow.withAlpha(30), width: 0.5)),
         ),
         child: Row(
           children: [
@@ -48,12 +43,7 @@ class MessageListItem extends StatelessWidget {
               height: 48,
               decoration: const BoxDecoration(shape: BoxShape.circle),
               clipBehavior: Clip.antiAlias,
-              child: UserAvatar(
-                imageUrl: avatarUrl,
-                username: username,
-                size: 48,
-                backgroundColor: _getAvatarColor(colorIndex),
-              ),
+              child: UserAvatar(imageUrl: avatarUrl, username: username, size: 48, backgroundColor: _getAvatarColor(colorIndex)),
             ),
 
             const SizedBox(width: 12),
@@ -88,28 +78,15 @@ class MessageListItem extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(
-                  time, 
-                  style: TextStyle(
-                    fontSize: 12, 
-                    color: colorScheme.onSurfaceVariant,
-                  )
-                ),
+                Text(time, style: TextStyle(fontSize: 12, color: colorScheme.onSurfaceVariant)),
                 const SizedBox(height: 4),
                 if (hasUnread)
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: AppColors.unreadIndicator,
-                      borderRadius: BorderRadius.circular(10)
-                    ),
+                    decoration: BoxDecoration(color: AppColors.unreadIndicator, borderRadius: BorderRadius.circular(10)),
                     child: Text(
                       unreadCount.toString(),
-                      style: const TextStyle(
-                        color: AppColors.white, 
-                        fontSize: 12, 
-                        fontWeight: FontWeight.bold
-                      ),
+                      style: const TextStyle(color: AppColors.white, fontSize: 12, fontWeight: FontWeight.bold),
                     ),
                   ),
               ],
@@ -122,14 +99,14 @@ class MessageListItem extends StatelessWidget {
 
   Color _getAvatarColor(int index) {
     final List<Color> colors = [
-      Colors.blue, 
-      Colors.green, 
-      Colors.orange, 
-      Colors.purple, 
-      Colors.teal, 
-      AppColors.pink, 
-      Colors.indigo
+      Colors.blue,
+      Colors.green,
+      Colors.orange,
+      Colors.purple,
+      Colors.teal,
+      AppColors.pink,
+      Colors.indigo,
     ];
     return colors[index % colors.length];
   }
-} 
+}

@@ -6,13 +6,13 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 class FeedSelector extends StatelessWidget {
   /// The currently selected feed type value
   final FeedType selectedFeedType;
-  
+
   /// Callback when a feed option is selected
   final ValueChanged<FeedType> onFeedTypeSelected;
-  
+
   /// Height of the selector
   final double height;
-  
+
   /// Optional padding for the selector
   final EdgeInsets? padding;
 
@@ -28,13 +28,10 @@ class FeedSelector extends StatelessWidget {
   Widget build(BuildContext context) {
     // Get all available feed types
     final options = FeedType.values;
-    
+
     return Container(
       height: height,
-      decoration: BoxDecoration(
-        color: Colors.transparent, 
-        borderRadius: BorderRadius.circular(20),
-      ),
+      decoration: BoxDecoration(color: Colors.transparent, borderRadius: BorderRadius.circular(20)),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: List.generate(options.length, (index) {
@@ -67,4 +64,4 @@ class FeedSelector extends StatelessWidget {
       ),
     );
   }
-} 
+}
