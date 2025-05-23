@@ -141,7 +141,7 @@ abstract class _$AppRouter extends RootStackRouter {
     ProfileRoute.name: (routeData) {
       final pathParams = routeData.inheritedPathParams;
       final args = routeData.argsAs<ProfileRouteArgs>(
-          orElse: () => ProfileRouteArgs(did: pathParams.optString('did')));
+          orElse: () => ProfileRouteArgs(did: pathParams.getString('did')));
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: ProfilePage(
@@ -615,7 +615,7 @@ class OnboardingRoute extends PageRouteInfo<void> {
 /// [ProfilePage]
 class ProfileRoute extends PageRouteInfo<ProfileRouteArgs> {
   ProfileRoute({
-    String? did,
+    required String did,
     Key? key,
     List<PageRouteInfo>? children,
   }) : super(
@@ -636,11 +636,11 @@ class ProfileRoute extends PageRouteInfo<ProfileRouteArgs> {
 
 class ProfileRouteArgs {
   const ProfileRouteArgs({
-    this.did,
+    required this.did,
     this.key,
   });
 
-  final String? did;
+  final String did;
 
   final Key? key;
 

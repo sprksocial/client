@@ -19,10 +19,10 @@ import 'package:get_it/get_it.dart';
 
 @RoutePage()
 class ProfilePage extends ConsumerWidget {
-  final String? did;
+  final String did;
   late final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ProfilePage');
 
-  ProfilePage({@PathParam('did') this.did, super.key});
+  ProfilePage({@PathParam('did') required this.did, super.key});
 
   void _showEarlySupporterInfo(BuildContext context) {
     showModalBottomSheet(
@@ -120,14 +120,8 @@ class ProfilePage extends ConsumerWidget {
             theme: theme,
           );
         }
-
         final bool isCurrentUser = notifier.isCurrentUser();
 
-        // TODO: Refactor ProfileTabContent if it uses `getTabContent()`
-        // For now, assuming it works or can be adapted.
-        // The old ProfileTabContent took isAuthenticated and onLoginPressed.
-        // isAuthenticated can be derived from AuthRepository.
-        // onLoginPressed should navigate to login route.
         final authRepository = ref.read(authRepositoryProvider);
         final isAuthenticated = authRepository.isAuthenticated;
 
@@ -247,7 +241,7 @@ class ProfilePage extends ConsumerWidget {
                       ),
                     ),
                   ),
-                  SliverToBoxAdapter(child: tabContentWidget),
+                  tabContentWidget,
                 ],
               ),
             ),

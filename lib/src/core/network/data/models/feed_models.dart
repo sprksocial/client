@@ -39,8 +39,8 @@ class PostThread with _$PostThread {
 @freezed
 class Post with _$Post {
   const factory Post({
-    required String uri,
-    required String cid,
+    @JsonKey(defaultValue: '') required String uri,
+    @JsonKey(defaultValue: '') required String cid,
     required PostAuthor author,
     required Map<String, dynamic> record,
     @Default(false) bool isRepost,
@@ -57,8 +57,8 @@ class Post with _$Post {
 @freezed
 class PostAuthor with _$PostAuthor {
   const factory PostAuthor({
-    required String did,
-    required String handle,
+    @JsonKey(defaultValue: '') required String did,
+    @JsonKey(defaultValue: '') required String handle,
     String? displayName,
     String? avatar,
     @Default(false) bool isFollowing,

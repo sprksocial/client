@@ -11,14 +11,14 @@ class ProfileTabContent extends StatelessWidget {
   final int selectedIndex;
   final bool isAuthenticated;
   final VoidCallback onLoginPressed;
-  final String? did;
+  final String did;
 
   const ProfileTabContent({
     super.key,
     required this.selectedIndex,
     required this.isAuthenticated,
     required this.onLoginPressed,
-    this.did,
+    required this.did,
   });
 
   @override

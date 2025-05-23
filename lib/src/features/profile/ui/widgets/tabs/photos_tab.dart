@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
+import 'package:sparksocial/src/features/profile/data/repositories/profile_repository.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_video_tile.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
@@ -12,9 +11,9 @@ import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:get_it/get_it.dart';
 
 class PhotosTab extends ConsumerStatefulWidget {
-  final String? did;
+  final String did;
 
-  const PhotosTab({this.did, super.key});
+  const PhotosTab({required this.did, super.key});
 
   @override
   ConsumerState<PhotosTab> createState() => _PhotosTabState();
@@ -86,8 +85,7 @@ class _PhotosTabState extends ConsumerState<PhotosTab> with AutomaticKeepAliveCl
     if (!mounted) return;
 
     try {
-      final String? currentAuthDid = ref.read(authProvider).session?.did;
-      final String targetDid = widget.did ?? currentAuthDid ?? '';
+      final String targetDid = widget.did;
 
       if (targetDid.isEmpty) {
         setState(() {
@@ -98,19 +96,18 @@ class _PhotosTabState extends ConsumerState<PhotosTab> with AutomaticKeepAliveCl
         return;
       }
 
-      final Profile profileNotifier = ref.read(profileProvider(targetDid).notifier);
+      final profileRepository = GetIt.instance<ProfileRepository>();
 
       // Concurrently fetch from Spark and Bluesky for initial load
-      // For "load more", only Bluesky is typically paginated with a cursor in this context.
-      // The old logic only fetched sprk if not isLoadingMore.
-      final AuthorFeedResponse? resultBsky = await profileNotifier.getProfileVideosBsky(cursor: isLoadingMore ? _cursor : null);
-      final AuthorFeedResponse? resultSprk = isLoadingMore ? null : await profileNotifier.getProfileVideosSprk();
+
+      final AuthorFeedResponse resultBsky = await profileRepository.getProfileVideosBsky(targetDid, cursor: isLoadingMore ? _cursor : null);
+      final AuthorFeedResponse resultSprk = await profileRepository.getProfileVideosSprk(targetDid, cursor: isLoadingMore ? _cursor : null);
 
       if (!mounted) return;
 
-      List<Post> fetchedBskyPosts = resultBsky?.feed ?? [];
-      List<Post> fetchedSprkPosts = resultSprk?.feed ?? [];
-      String? nextCursor = resultBsky?.cursor;
+      List<Post> fetchedBskyPosts = resultBsky.feed;
+      List<Post> fetchedSprkPosts = resultSprk.feed;
+      String? nextCursor = resultBsky.cursor;
 
       List<Post> newPosts = [...fetchedSprkPosts, ...fetchedBskyPosts];
 
@@ -251,11 +248,15 @@ class _PhotosTabState extends ConsumerState<PhotosTab> with AutomaticKeepAliveCl
     final int itemCount = _posts.length + (_isLoadingMore && _cursor != null ? 1 : 0);
 
     if (_isLoading && _posts.isEmpty) {
-      return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
+      return const SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
 
     if (_error != null && _posts.isEmpty) {
       return SliverFillRemaining(
+        hasScrollBody: false,
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -294,7 +295,7 @@ class _PhotosTabState extends ConsumerState<PhotosTab> with AutomaticKeepAliveCl
     return SliverPadding(
       padding: const EdgeInsets.all(1),
       sliver: SliverGrid(
-        key: PageStorageKey<String>('photos_grid_${widget.did ?? 'current'}_${DateTime.now().millisecondsSinceEpoch}'),
+        key: PageStorageKey<String>('photos_grid_${widget.did}_${DateTime.now().millisecondsSinceEpoch}'),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
           childAspectRatio: 2 / 3,

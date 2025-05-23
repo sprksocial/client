@@ -407,7 +407,9 @@ Post _$PostFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$Post {
+  @JsonKey(defaultValue: '')
   String get uri => throw _privateConstructorUsedError;
+  @JsonKey(defaultValue: '')
   String get cid => throw _privateConstructorUsedError;
   PostAuthor get author => throw _privateConstructorUsedError;
   Map<String, dynamic> get record => throw _privateConstructorUsedError;
@@ -433,8 +435,8 @@ abstract class $PostCopyWith<$Res> {
       _$PostCopyWithImpl<$Res, Post>;
   @useResult
   $Res call(
-      {String uri,
-      String cid,
+      {@JsonKey(defaultValue: '') String uri,
+      @JsonKey(defaultValue: '') String cid,
       PostAuthor author,
       Map<String, dynamic> record,
       bool isRepost,
@@ -536,8 +538,8 @@ abstract class _$$PostImplCopyWith<$Res> implements $PostCopyWith<$Res> {
   @override
   @useResult
   $Res call(
-      {String uri,
-      String cid,
+      {@JsonKey(defaultValue: '') String uri,
+      @JsonKey(defaultValue: '') String cid,
       PostAuthor author,
       Map<String, dynamic> record,
       bool isRepost,
@@ -623,8 +625,8 @@ class __$$PostImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$PostImpl implements _Post {
   const _$PostImpl(
-      {required this.uri,
-      required this.cid,
+      {@JsonKey(defaultValue: '') required this.uri,
+      @JsonKey(defaultValue: '') required this.cid,
       required this.author,
       required final Map<String, dynamic> record,
       this.isRepost = false,
@@ -643,8 +645,10 @@ class _$PostImpl implements _Post {
       _$$PostImplFromJson(json);
 
   @override
+  @JsonKey(defaultValue: '')
   final String uri;
   @override
+  @JsonKey(defaultValue: '')
   final String cid;
   @override
   final PostAuthor author;
@@ -757,8 +761,8 @@ class _$PostImpl implements _Post {
 
 abstract class _Post implements Post {
   const factory _Post(
-      {required final String uri,
-      required final String cid,
+      {@JsonKey(defaultValue: '') required final String uri,
+      @JsonKey(defaultValue: '') required final String cid,
       required final PostAuthor author,
       required final Map<String, dynamic> record,
       final bool isRepost,
@@ -771,8 +775,10 @@ abstract class _Post implements Post {
   factory _Post.fromJson(Map<String, dynamic> json) = _$PostImpl.fromJson;
 
   @override
+  @JsonKey(defaultValue: '')
   String get uri;
   @override
+  @JsonKey(defaultValue: '')
   String get cid;
   @override
   PostAuthor get author;
@@ -805,7 +811,9 @@ PostAuthor _$PostAuthorFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$PostAuthor {
+  @JsonKey(defaultValue: '')
   String get did => throw _privateConstructorUsedError;
+  @JsonKey(defaultValue: '')
   String get handle => throw _privateConstructorUsedError;
   String? get displayName => throw _privateConstructorUsedError;
   String? get avatar => throw _privateConstructorUsedError;
@@ -829,8 +837,8 @@ abstract class $PostAuthorCopyWith<$Res> {
       _$PostAuthorCopyWithImpl<$Res, PostAuthor>;
   @useResult
   $Res call(
-      {String did,
-      String handle,
+      {@JsonKey(defaultValue: '') String did,
+      @JsonKey(defaultValue: '') String handle,
       String? displayName,
       String? avatar,
       bool isFollowing,
@@ -897,8 +905,8 @@ abstract class _$$PostAuthorImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String did,
-      String handle,
+      {@JsonKey(defaultValue: '') String did,
+      @JsonKey(defaultValue: '') String handle,
       String? displayName,
       String? avatar,
       bool isFollowing,
@@ -958,8 +966,8 @@ class __$$PostAuthorImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$PostAuthorImpl implements _PostAuthor {
   const _$PostAuthorImpl(
-      {required this.did,
-      required this.handle,
+      {@JsonKey(defaultValue: '') required this.did,
+      @JsonKey(defaultValue: '') required this.handle,
       this.displayName,
       this.avatar,
       this.isFollowing = false,
@@ -969,8 +977,10 @@ class _$PostAuthorImpl implements _PostAuthor {
       _$$PostAuthorImplFromJson(json);
 
   @override
+  @JsonKey(defaultValue: '')
   final String did;
   @override
+  @JsonKey(defaultValue: '')
   final String handle;
   @override
   final String? displayName;
@@ -1027,8 +1037,8 @@ class _$PostAuthorImpl implements _PostAuthor {
 
 abstract class _PostAuthor implements PostAuthor {
   const factory _PostAuthor(
-      {required final String did,
-      required final String handle,
+      {@JsonKey(defaultValue: '') required final String did,
+      @JsonKey(defaultValue: '') required final String handle,
       final String? displayName,
       final String? avatar,
       final bool isFollowing,
@@ -1038,8 +1048,10 @@ abstract class _PostAuthor implements PostAuthor {
       _$PostAuthorImpl.fromJson;
 
   @override
+  @JsonKey(defaultValue: '')
   String get did;
   @override
+  @JsonKey(defaultValue: '')
   String get handle;
   @override
   String? get displayName;

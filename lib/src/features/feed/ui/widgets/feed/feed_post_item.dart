@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/features/feed/data/models/feed_page_state.dart';
@@ -55,7 +56,7 @@ class FeedPostItem extends StatelessWidget {
     final disableBackgroundBlur = !ref.watch(settingsProvider).feedBlurEnabled;
 
     // Common navigation actions used in multiple places
-    navigateToProfile() => context.router.pushNamed('/profile/${post.authorDid}');
+    navigateToProfile() => context.router.push(ProfileRoute(did: post.authorDid));
     onPostDeleted() => feedStateNotifier.refreshFeed(feedType);
 
     // Build the appropriate media widget based on the post type using pattern matching

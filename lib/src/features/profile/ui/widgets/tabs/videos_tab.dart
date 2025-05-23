@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
+import 'package:sparksocial/src/features/profile/data/repositories/profile_repository.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_video_tile.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
@@ -12,9 +11,9 @@ import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:get_it/get_it.dart';
 
 class VideosTab extends ConsumerStatefulWidget {
-  final String? did;
+  final String did;
 
-  const VideosTab({this.did, super.key});
+  const VideosTab({required this.did, super.key});
 
   @override
   ConsumerState<VideosTab> createState() => _VideosTabState();
@@ -86,8 +85,7 @@ class _VideosTabState extends ConsumerState<VideosTab> with AutomaticKeepAliveCl
     if (!mounted) return;
 
     try {
-      final String? currentAuthDid = ref.read(authProvider).session?.did;
-      final String targetDid = widget.did ?? currentAuthDid ?? '';
+      final String targetDid = widget.did;
 
       if (targetDid.isEmpty) {
         setState(() {
@@ -98,16 +96,16 @@ class _VideosTabState extends ConsumerState<VideosTab> with AutomaticKeepAliveCl
         return;
       }
 
-      final Profile profileNotifier = ref.read(profileProvider(targetDid).notifier);
+      final ProfileRepository profileRepository = GetIt.instance<ProfileRepository>();
 
-      final AuthorFeedResponse? resultBsky = await profileNotifier.getProfileVideosBsky(cursor: isLoadingMore ? _cursor : null);
-      final AuthorFeedResponse? resultSprk = isLoadingMore ? null : await profileNotifier.getProfileVideosSprk();
+      final AuthorFeedResponse resultBsky = await profileRepository.getProfileVideosBsky(targetDid, cursor: isLoadingMore ? _cursor : null);
+      final AuthorFeedResponse resultSprk = await profileRepository.getProfileVideosSprk(targetDid, cursor: isLoadingMore ? _cursor : null);
 
       if (!mounted) return;
 
-      List<Post> fetchedBskyPosts = resultBsky?.feed ?? [];
-      List<Post> fetchedSprkPosts = resultSprk?.feed ?? [];
-      String? nextCursor = resultBsky?.cursor;
+      List<Post> fetchedBskyPosts = resultBsky.feed;
+      List<Post> fetchedSprkPosts = resultSprk.feed;
+      String? nextCursor = resultBsky.cursor;
 
       List<Post> newPosts = [...fetchedSprkPosts, ...fetchedBskyPosts];
 
@@ -247,11 +245,15 @@ class _VideosTabState extends ConsumerState<VideosTab> with AutomaticKeepAliveCl
     final int itemCount = _posts.length + (_isLoadingMore && _cursor != null ? 1 : 0);
 
     if (_isLoading && _posts.isEmpty) {
-      return const SliverFillRemaining(child: Center(child: CircularProgressIndicator()));
+      return const SliverFillRemaining(
+        hasScrollBody: false,
+        child: Center(child: CircularProgressIndicator()),
+      );
     }
 
     if (_error != null && _posts.isEmpty) {
       return SliverFillRemaining(
+        hasScrollBody: false,
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(16.0),
@@ -290,7 +292,7 @@ class _VideosTabState extends ConsumerState<VideosTab> with AutomaticKeepAliveCl
     return SliverPadding(
       padding: const EdgeInsets.all(1),
       sliver: SliverGrid(
-        key: PageStorageKey<String>('videos_grid_${widget.did ?? 'current'}_${DateTime.now().millisecondsSinceEpoch}'),
+        key: PageStorageKey<String>('videos_grid_${widget.did}_${DateTime.now().millisecondsSinceEpoch}'),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
           childAspectRatio: 2 / 3,

@@ -571,8 +571,6 @@ class FeedRepositoryImpl implements FeedRepository {
         _ => <Map<String, dynamic>>[],
       };
 
-      _logger.d('Feed items: $feedItems');
-
       // Convert to FeedPost models
       final allPosts = feedItems.map((item) => _convertToFeedPost(item, false)).toList();
 

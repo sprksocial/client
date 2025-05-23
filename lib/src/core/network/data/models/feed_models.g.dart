@@ -37,8 +37,8 @@ Map<String, dynamic> _$$PostThreadImplToJson(_$PostThreadImpl instance) =>
     };
 
 _$PostImpl _$$PostImplFromJson(Map<String, dynamic> json) => _$PostImpl(
-      uri: json['uri'] as String,
-      cid: json['cid'] as String,
+      uri: json['uri'] as String? ?? '',
+      cid: json['cid'] as String? ?? '',
       author: PostAuthor.fromJson(json['author'] as Map<String, dynamic>),
       record: json['record'] as Map<String, dynamic>,
       isRepost: json['isRepost'] as bool? ?? false,
@@ -71,8 +71,8 @@ Map<String, dynamic> _$$PostImplToJson(_$PostImpl instance) =>
 
 _$PostAuthorImpl _$$PostAuthorImplFromJson(Map<String, dynamic> json) =>
     _$PostAuthorImpl(
-      did: json['did'] as String,
-      handle: json['handle'] as String,
+      did: json['did'] as String? ?? '',
+      handle: json['handle'] as String? ?? '',
       displayName: json['displayName'] as String?,
       avatar: json['avatar'] as String?,
       isFollowing: json['isFollowing'] as bool? ?? false,
