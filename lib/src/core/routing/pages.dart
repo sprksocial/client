@@ -9,7 +9,7 @@ export 'package:sparksocial/src/features/settings/ui/pages/content_settings_tab_
 export 'package:sparksocial/src/features/profile/ui/pages/profile_page.dart';
 export 'package:sparksocial/src/features/profile/ui/pages/edit_profile_page.dart';
 export 'package:sparksocial/src/features/feed/ui/pages/feed_page.dart';
-export 'package:sparksocial/src/features/feed/ui/pages/home_page.dart';
+export 'package:sparksocial/src/features/feed/ui/pages/feeds_page.dart';
 export 'package:sparksocial/src/features/home/ui/pages/main_page.dart';
 export 'package:sparksocial/src/features/messages/ui/pages/messages_page.dart';
 export 'package:sparksocial/src/features/search/ui/pages/search_page.dart';

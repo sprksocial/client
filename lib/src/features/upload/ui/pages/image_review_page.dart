@@ -286,7 +286,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                             try {
                               await notifier.postImages();
                               if (mounted) {
-                                router.replaceAll([const HomeRoute()]);
+                                router.replaceAll([const FeedsRoute()]);
                               }
                             } catch (e) {
                               if (mounted) {

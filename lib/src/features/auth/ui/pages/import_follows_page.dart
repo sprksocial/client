@@ -315,7 +315,7 @@ class _ImportFollowsPageState extends ConsumerState<ImportFollowsPage> {
 
       if (!mounted) return;
 
-      context.router.navigate(const HomeRoute());
+      context.router.navigate(const FeedsRoute());
     } catch (e, stackTrace) {
       _logger.e('Failed to finish onboarding', error: e, stackTrace: stackTrace);
       if (mounted) {

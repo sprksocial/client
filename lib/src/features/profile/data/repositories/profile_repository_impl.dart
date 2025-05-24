@@ -28,9 +28,6 @@ class ProfileRepositoryImpl implements ProfileRepository {
         _sprkRepository = sprkRepository,
         _cacheManager = cacheManager;
 
-  String _getBskyCacheKey(String did) => 'bsky_profile_$did';
-
-  String _getSprkCacheKey(String did) => 'sprk_profile_$did';
 
   @override
   Future<Profile?> getProfile(String did, {bool forceRefresh = false}) async {
@@ -149,12 +146,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<bsky.ActorProfile?> _getProfileFullBsky(String did, {bool forceRefresh = false}) async {
     if (!_authRepository.isAuthenticated) return null;
 
-    final cacheKey = _getBskyCacheKey(did);
 
     // First check cache if not forcing refresh
     if (!forceRefresh) {
       try {
-        final cacheFile = await _cacheManager.getFile(cacheKey);
+        final cacheFile = await _cacheManager.getFile(did);
         if (await cacheFile.exists()) {
           final jsonString = await cacheFile.readAsString();
           final profileData = json.decode(jsonString);
@@ -174,7 +170,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       // Cache the response
       final profileJson = response.data.toJson();
       final jsonString = json.encode(profileJson);
-      await _cacheManager.putFile(cacheKey, Uint8List.fromList(utf8.encode(jsonString)));
+      await _cacheManager.putFile(did, Uint8List.fromList(utf8.encode(jsonString)));
 
       return response.data;
     } catch (e) {
@@ -185,12 +181,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<Map<String, dynamic>?> _getProfileFullSprk(String did, {bool forceRefresh = false}) async {
     if (!_authRepository.isAuthenticated) return null;
 
-    final cacheKey = _getSprkCacheKey(did);
 
     // First check cache if not forcing refresh
     if (!forceRefresh) {
       try {
-        final cacheFile = await _cacheManager.getFile(cacheKey);
+        final cacheFile = await _cacheManager.getFile(did);
         if (await cacheFile.exists()) {
           final jsonString = await cacheFile.readAsString();
           return json.decode(jsonString);
@@ -213,7 +208,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
       // Cache the response
       final jsonString = json.encode(profile);
-      await _cacheManager.putFile(cacheKey, Uint8List.fromList(utf8.encode(jsonString)));
+      await _cacheManager.putFile(did, Uint8List.fromList(utf8.encode(jsonString)));
 
       return profile;
     } catch (e) {
@@ -223,8 +218,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<void> clearProfileCache(String did) async {
-    await _cacheManager.removeFile(_getBskyCacheKey(did));
-    await _cacheManager.removeFile(_getSprkCacheKey(did));
+    await _cacheManager.removeFile(did);
   }
 
   @override
@@ -346,6 +340,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
     
     if (response.value.isEmpty) {
       throw Exception('Failed to update Spark profile');
+    }
+
+    // Clear cache for the updated profile
+    final String? currentUserDid = _authRepository.session?.did;
+    if (currentUserDid != null) {
+      await clearProfileCache(currentUserDid);
     }
   }
 

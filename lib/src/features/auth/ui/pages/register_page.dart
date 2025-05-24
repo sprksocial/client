@@ -62,7 +62,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       if (!mounted) return;
 
       if (hasProfile) {
-        context.router.replace(const HomeRoute());
+        context.router.replace(const FeedsRoute());
       } else {
         context.router.replace(const OnboardingRoute());
       }

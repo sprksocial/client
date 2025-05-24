@@ -50,7 +50,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
 
       // Navigate to home screen after successful upload
       if (mounted) {
-        context.router.replaceAll([const HomeRoute()]);
+        context.router.replaceAll([const FeedsRoute()]);
       }
     } catch (e) {
       if (mounted) {

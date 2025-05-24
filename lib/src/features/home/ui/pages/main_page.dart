@@ -22,7 +22,7 @@ class _MainPageState extends ConsumerState<MainPage> {
     final did = ref.read(authProvider).session!.did;
     return AutoTabsRouter(
       key: const ValueKey('mainTabsRouter'),
-      routes: [const HomeRoute(), const SearchRoute(), const EmptyRoute(), const MessagesRoute(), ProfileRoute(did: did)],
+      routes: [const FeedsRoute(), const SearchRoute(), const EmptyRoute(), const MessagesRoute(), ProfileRoute(did: did)],
       transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);

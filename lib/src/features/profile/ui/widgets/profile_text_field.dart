@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 /// A customized text field widget for profile editing
-class ProfileTextField extends StatelessWidget {
+class ProfileTextField extends StatefulWidget {
   /// Initial value of the text field
   final String initialValue;
 
@@ -29,15 +29,42 @@ class ProfileTextField extends StatelessWidget {
   });
 
   @override
+  State<ProfileTextField> createState() => _ProfileTextFieldState();
+}
+
+class _ProfileTextFieldState extends State<ProfileTextField> {
+  late TextEditingController _textController;
+
+  @override
+  void initState() {
+    super.initState();
+    _textController = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant ProfileTextField oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialValue != widget.initialValue && widget.initialValue != _textController.text) {
+      _textController.text = widget.initialValue;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return TextFormField(
-      initialValue: initialValue,
-      onChanged: onChanged,
-      maxLines: maxLines,
+      controller: _textController,
+      onChanged: widget.onChanged,
+      maxLines: widget.maxLines,
       decoration: InputDecoration(
-        hintText: hintText,
+        hintText: widget.hintText,
         filled: true,
-        fillColor: bgColor,
+        fillColor: widget.bgColor,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border)),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),

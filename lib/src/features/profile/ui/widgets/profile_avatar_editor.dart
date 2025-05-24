@@ -7,7 +7,7 @@ import 'package:sparksocial/src/features/profile/data/models/edit_profile_state.
 import 'package:sparksocial/src/features/profile/providers/edit_profile_provider.dart';
 
 /// Widget for editing the profile avatar
-class ProfileAvatarEditor extends StatelessWidget {
+class ProfileAvatarEditor extends StatefulWidget {
   /// Current state of the profile being edited
   final EditProfileState state;
 
@@ -18,28 +18,35 @@ class ProfileAvatarEditor extends StatelessWidget {
   const ProfileAvatarEditor({super.key, required this.state, required this.notifier});
 
   @override
+  State<ProfileAvatarEditor> createState() => _ProfileAvatarEditorState();
+}
+
+class _ProfileAvatarEditorState extends State<ProfileAvatarEditor> {
+  @override
   Widget build(BuildContext context) {
     ImageProvider<Object>? avatarImageProvider;
 
-    if (state.localAvatar is Uint8List) {
-      avatarImageProvider = MemoryImage(state.localAvatar as Uint8List);
-    } else if (state.localAvatar is String) {
-      avatarImageProvider = CachedNetworkImageProvider(state.localAvatar as String);
+    if (widget.state.localAvatar is Uint8List) {
+      avatarImageProvider = MemoryImage(widget.state.localAvatar as Uint8List);
+    } else if (widget.state.localAvatar is String) {
+      avatarImageProvider = CachedNetworkImageProvider(widget.state.localAvatar as String);
     }
 
     return Stack(
       alignment: Alignment.topRight,
       children: [
         GestureDetector(
-          onTap: notifier.pickAvatar,
+          onTap: () {
+            widget.notifier.pickAvatar();
+          },
           child: CircleAvatar(
             radius: 50,
             backgroundImage: avatarImageProvider,
             child: avatarImageProvider == null ? const Icon(Icons.person, size: 50) : null,
           ),
         ),
-        if (state.localAvatar is Uint8List)
-          IconButton(icon: const Icon(Icons.undo), onPressed: notifier.revertAvatar, color: AppColors.pink),
+        if (widget.state.localAvatar is Uint8List)
+          IconButton(icon: const Icon(Icons.undo), onPressed: widget.notifier.revertAvatar, color: AppColors.pink),
       ],
     );
   }

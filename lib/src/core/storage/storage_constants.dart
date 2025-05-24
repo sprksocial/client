@@ -12,9 +12,6 @@ class StorageKeys {
   static const String latestFeedEnabledKey = 'latest_feed_enabled';
   static const String selectedFeedTypeKey = 'selected_feed_type';
 
-  /// Profile cache keys
-  static const String bskyProfileCachePrefix = 'bsky_profile_';
-  static const String sprkProfileCachePrefix = 'sprk_profile_';
 
   /// Labelers
   static const String followedLabelers = 'followed_labelers';

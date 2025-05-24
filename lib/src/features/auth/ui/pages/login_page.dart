@@ -70,7 +70,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         if (!mounted) return;
 
         if (hasSparkProfile) {
-          context.router.replace(const HomeRoute());
+          context.router.replace(const FeedsRoute());
         } else {
           context.router.replace(const OnboardingRoute());
         }

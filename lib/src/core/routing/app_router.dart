@@ -26,7 +26,9 @@ class AppRouter extends _$AppRouter {
       page: MainRoute.page,
       path: '/main',
       children: [
-        AutoRoute(page: HomeRoute.page, path: 'home', initial: true),
+        AutoRoute(page: FeedsRoute.page, path: 'feeds', children: [
+          AutoRoute(page: FeedRoute.page, path: 'feed/:feedType'),
+        ]),
         AutoRoute(page: SearchRoute.page, path: 'search'),
         AutoRoute(page: EmptyRoute.page, path: 'create'), // Placeholder for create action
         AutoRoute(page: MessagesRoute.page, path: 'messages'),
@@ -36,7 +38,6 @@ class AppRouter extends _$AppRouter {
     AutoRoute(page: EmptyRoute.page, path: '/empty'),
     AutoRoute(page: LoginRoute.page, path: '/login'),
     AutoRoute(page: RegisterRoute.page, path: '/register'),
-    AutoRoute(page: FeedRoute.page, path: '/feed'),
 
     // Onboarding routes
     AutoRoute(page: OnboardingRoute.page, path: '/onboarding/profile'),

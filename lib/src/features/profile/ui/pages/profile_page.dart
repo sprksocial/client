@@ -169,7 +169,7 @@ class ProfilePage extends ConsumerWidget {
             child: RefreshIndicator(
               onRefresh: () => notifier.refreshProfile(),
               child: CustomScrollView(
-                key: PageStorageKey<String>('profile_${did ?? 'current'}'), // Use the passed did
+                key: PageStorageKey<String>('profile_$did'), // Use the passed did
                 slivers: [
                   SliverToBoxAdapter(
                     child: ProfileHeader(
@@ -228,7 +228,10 @@ class ProfilePage extends ConsumerWidget {
                           }
                         }
                       },
-                      onSettingsTap: () => _logger.i('Settings Tapped - Implement Navigation'),
+                      onSettingsTap:
+                          () => context.router.push(EditProfileRoute(profile: profile)).then((_) {
+                            notifier.refreshProfile();
+                          }),
                     ),
                   ),
                   SliverPersistentHeader(

@@ -267,22 +267,23 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 ),
                 const SizedBox(width: 8),
               ],
-              Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: widget.onSettingsTap,
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    height: 36,
-                    width: 36,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: theme.colorScheme.outline.withAlpha(128)),
+              if (widget.isCurrentUser)
+                Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: widget.onSettingsTap,
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      height: 36,
+                      width: 36,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: theme.colorScheme.outline.withAlpha(128)),
+                      ),
+                      child: Icon(FluentIcons.settings_24_regular, size: 20, color: theme.colorScheme.onSurfaceVariant),
                     ),
-                    child: Icon(FluentIcons.settings_24_regular, size: 20, color: theme.colorScheme.onSurfaceVariant),
                   ),
                 ),
-              ),
             ],
           ),
         ],

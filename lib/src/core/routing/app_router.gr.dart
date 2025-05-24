@@ -86,10 +86,10 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
-    HomeRoute.name: (routeData) {
+    FeedsRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: const HomePage(),
+        child: const FeedsPage(),
       );
     },
     ImageReviewRoute.name: (routeData) {
@@ -456,15 +456,15 @@ class FeedSettingsTabRouteArgs {
 }
 
 /// generated route for
-/// [HomePage]
-class HomeRoute extends PageRouteInfo<void> {
-  const HomeRoute({List<PageRouteInfo>? children})
+/// [FeedsPage]
+class FeedsRoute extends PageRouteInfo<void> {
+  const FeedsRoute({List<PageRouteInfo>? children})
       : super(
-          HomeRoute.name,
+          FeedsRoute.name,
           initialChildren: children,
         );
 
-  static const String name = 'HomeRoute';
+  static const String name = 'FeedsRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }

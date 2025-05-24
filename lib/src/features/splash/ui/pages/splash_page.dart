@@ -76,8 +76,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     if (hasSpark) {
       context.router.replaceAll([const MainRoute()]);
     } else {
-      _logger.i('No Spark profile found, navigating to onboarding');
-      context.router.replaceAll([const OnboardingRoute()]);
+      context.router.replaceAll([const RegisterRoute()]);
     }
   }
 

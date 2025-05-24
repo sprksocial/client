@@ -10,6 +10,7 @@ import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/features/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 
 part 'edit_profile_provider.g.dart';
 
@@ -97,6 +98,13 @@ class EditProfile extends _$EditProfile {
         description: state.description.trim(),
         avatar: avatarToSend,
       );
+
+      // save profile in the storage here
+
+      // Invalidate the main profile provider to trigger a refresh
+      if (state.profile.did == _authRepository.session?.did) {
+        ref.invalidate(profileNotifierProvider(did: state.profile.did));
+      }
 
       state = state.copyWith(isSaving: false);
       return true;

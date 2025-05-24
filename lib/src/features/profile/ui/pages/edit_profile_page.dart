@@ -23,10 +23,9 @@ class EditProfilePage extends ConsumerWidget {
     final editProfileState = ref.watch(editProfileProvider(profile));
     final editProfileNotifier = ref.read(editProfileProvider(profile).notifier);
 
-    final formKey = GlobalKey<FormState>();
-
     final theme = Theme.of(context);
     final bgColor = theme.scaffoldBackgroundColor;
+    final formKey = GlobalKey<FormState>();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Edit Profile'), backgroundColor: bgColor, elevation: 0),
@@ -43,6 +42,7 @@ class EditProfilePage extends ConsumerWidget {
                   ProfileAvatarEditor(state: editProfileState, notifier: editProfileNotifier),
                   const SizedBox(height: 16),
                   ProfileTextField(
+                    key: Key('displayNameField'),
                     initialValue: editProfileState.displayName,
                     hintText: 'Display Name',
                     onChanged: editProfileNotifier.updateDisplayName,
@@ -50,6 +50,7 @@ class EditProfilePage extends ConsumerWidget {
                   ),
                   const SizedBox(height: 16),
                   ProfileTextField(
+                    key: Key('descriptionField'),
                     initialValue: editProfileState.description,
                     hintText: 'Description',
                     onChanged: editProfileNotifier.updateDescription,

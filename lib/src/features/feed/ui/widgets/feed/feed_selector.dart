@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_type_provider.dart';
 
 /// A widget that allows selecting between different feed types.
-class FeedSelector extends StatelessWidget {
-  /// The currently selected feed type value
-  final FeedType selectedFeedType;
+class FeedSelector extends ConsumerWidget {
 
   /// Callback when a feed option is selected
   final ValueChanged<FeedType> onFeedTypeSelected;
@@ -18,14 +18,13 @@ class FeedSelector extends StatelessWidget {
 
   const FeedSelector({
     super.key,
-    required this.selectedFeedType,
     required this.onFeedTypeSelected,
     this.height = 38,
     this.padding,
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Get all available feed types
     final options = FeedType.values;
 
@@ -36,7 +35,7 @@ class FeedSelector extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: List.generate(options.length, (index) {
           final option = options[index];
-          final isSelected = option == selectedFeedType;
+          final isSelected = option == ref.watch(feedTypeNotifierProvider);
 
           return Expanded(
             child: GestureDetector(

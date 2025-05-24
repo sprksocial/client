@@ -20,11 +20,7 @@ class FeedTypeSelector extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Get the current feed type from the provider
-    final selectedFeedType = ref.watch(feedTypeNotifierProvider);
-
     return FeedSelector(
-      selectedFeedType: selectedFeedType,
       onFeedTypeSelected: (feedType) {
         // Update the provider state
         ref.read(feedTypeNotifierProvider.notifier).setFeedType(feedType);
