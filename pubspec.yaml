@@ -46,7 +46,6 @@ dependencies:
   json_annotation: ^4.9.0
   get_it: ^7.6.7
   auto_route: ^7.8.4
-  flutter_native_splash: ^2.4.6
   flutter_secure_storage: ^9.2.4
   # Old architecture dependencies
   provider: ^6.1.1
