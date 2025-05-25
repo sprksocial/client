@@ -310,15 +310,9 @@ class _RepliesSection extends StatelessWidget {
           const SizedBox(height: 2),
           ...commentState.comment.replies.map(
             (reply) => CommentReplyItem(
-              id: reply.id,
-              userId: reply.authorDid,
-              username: reply.username,
-              text: reply.text,
-              timeAgo: reply.createdAt,
-              likeCount: reply.likeCount,
-              isDarkMode: Theme.of(context).brightness == Brightness.dark,
-              onReply: widget.onReply,
-              profileImageUrl: reply.profileImageUrl,
+              reply: reply,
+              parentUri: widget.parentPostUri,
+              parentCid: widget.parentPostCid,
             ),
           ),
         ],
