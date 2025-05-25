@@ -20,8 +20,8 @@ class FeedPageStateNotifier extends _$FeedPageStateNotifier {
 
   @override
   FeedPageState build(int feedType, {List<FeedPost>? initialPosts, int? initialIndex}) {
-    _feedRepository = ref.read(feedRepositoryProvider);
-    _preloadRepository = ref.read(preloadRepositoryProvider);
+    _feedRepository = GetIt.instance<FeedRepository>();
+    _preloadRepository = GetIt.instance<PreloadRepository>();
 
     // If we have initial posts, use them and skip loading
     if (initialPosts != null) {
@@ -49,7 +49,9 @@ class FeedPageStateNotifier extends _$FeedPageStateNotifier {
       final posts = await _feedRepository.fetchFeed(feedType);
       final uniquePosts = _removeDuplicatePosts(posts);
 
-      state = state.copyWith(isLoading: false, posts: uniquePosts, currentIndex: 0);
+      final allPosts = [...state.posts, ...uniquePosts];
+
+      state = state.copyWith(isLoading: false, posts: allPosts, currentIndex: 0);
 
       _preloadInitialMedia(uniquePosts, 0);
     } catch (e) {

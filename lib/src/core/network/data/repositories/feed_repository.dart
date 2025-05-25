@@ -87,22 +87,22 @@ abstract class FeedRepository {
   ///
   /// [feedType] Type of feed to fetch (0: Following, 1: For You, 2: Spark New)
   /// [limit] Number of items to return
-  Future<List<FeedPost>> fetchFeed(int feedType, {int limit = 8});
+  Future<List<FeedPost>> fetchFeed(int feedType, {int limit = 100});
 
   /// Fetch the following feed (timeline) showing posts from followed users
   ///
   /// [limit] Number of items to return
-  Future<List<FeedPost>> fetchFollowingFeed({int limit = 8});
+  Future<List<FeedPost>> fetchFollowingFeed({int limit = 100});
 
   /// Fetch the "For You" feed showing recommended content
   ///
   /// [limit] Number of items to return
-  Future<List<FeedPost>> fetchForYouFeed({int limit = 8});
+  Future<List<FeedPost>> fetchForYouFeed({int limit = 100});
 
   /// Fetch the Spark New feed showing new posts from Spark
   ///
   /// [limit] Number of items to return
-  Future<List<FeedPost>> fetchSparkNewFeed({int limit = 8});
+  Future<List<FeedPost>> fetchSparkNewFeed({int limit = 100});
 
   /// Get comments for a Bluesky post
   ///

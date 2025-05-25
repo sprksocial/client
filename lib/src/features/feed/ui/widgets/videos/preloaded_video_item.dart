@@ -8,7 +8,7 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/features/feed/providers/video_state_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_controller_overlay.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_info_bar.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_side_action_bar.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 
 class PreloadedVideoItem extends ConsumerStatefulWidget {
   final int index;
@@ -235,7 +235,7 @@ class _PreloadedVideoItemState extends ConsumerState<PreloadedVideoItem> with Wi
         Positioned(
           right: 16,
           bottom: 16,
-          child: VideoSideActionBar(
+          child: SideActionBar(
             likeCount: "${widget.likeCount}",
             commentCount: "${videoState.commentCount}",
             shareCount: "${widget.shareCount}",

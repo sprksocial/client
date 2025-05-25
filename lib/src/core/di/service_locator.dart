@@ -54,11 +54,11 @@ Future<void> _registerFeatures() async {
   // Register profile dependencies
   await _registerProfile();
 
-  // Register video dependencies
-  await _registerVideo();
-
   // Register feed dependencies
   await _registerFeed();
+
+  // Register upload dependencies
+  await _registerUpload();
 }
 
 /// Registers core dependencies
@@ -133,12 +133,6 @@ Future<void> _registerProfile() async {
   );
 }
 
-/// Registers video dependencies
-Future<void> _registerVideo() async {
-  // Register VideoRepository
-  sl.registerLazySingleton<UploadRepository>(() => UploadRepositoryImpl());
-}
-
 /// Registers feed dependencies
 Future<void> _registerFeed() async {
   // Register MediaRepository
@@ -147,7 +141,11 @@ Future<void> _registerFeed() async {
   );
 }
 
-void setupDependencies() {
-  // Camera
-  GetIt.instance.registerLazySingleton<CameraRepository>(() => CameraRepositoryImpl());
+/// Registers upload dependencies
+Future<void> _registerUpload() async {
+  // Register CameraRepository
+  sl.registerLazySingleton<CameraRepository>(() => CameraRepositoryImpl());
+
+  // Register UploadRepository
+  sl.registerLazySingleton<UploadRepository>(() => UploadRepositoryImpl());
 }

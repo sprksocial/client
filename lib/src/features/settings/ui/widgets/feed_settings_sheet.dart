@@ -95,47 +95,49 @@ class _FeedSettingsSheetState extends ConsumerState<FeedSettingsSheet> with Sing
 
     return Material(
       type: MaterialType.transparency,
-      child: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-        ),
-        child: Column(
-          children: [
-            // Add extra padding at the top for the notch/camera hole
-            SizedBox(height: topPadding + 8),
-            FeedSettingsHeader(onClose: () => context.router.maybePop()),
-            Expanded(
-              child: Column(
-                children: [
-                  TabBar(
-                    controller: _tabController,
-                    labelColor: textColor,
-                    unselectedLabelColor: textColor.withAlpha(127),
-                    tabs: const [Tab(text: "Feed"), Tab(text: "Content")],
-                  ),
-                  Expanded(
-                    child: TabBarView(
+      child: SafeArea(
+        child: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              // Add extra padding at the top for the notch/camera hole
+              SizedBox(height: topPadding + 8),
+              FeedSettingsHeader(onClose: () => context.router.maybePop()),
+              Expanded(
+                child: Column(
+                  children: [
+                    TabBar(
                       controller: _tabController,
-                      children: [
-                        FeedSettingsList(onSettingChanged: widget.onToggleChanged),
-                        ContentSettingsList(
-                          isLoadingLabels: _isLoadingLabels,
-                          labelsError: _labelsError,
-                          onRetryLabels: _loadLabelDefinitions,
-                          onUpdateAdultContentPreferences: _updateAdultContentPreferences,
-                        ),
-                      ],
+                      labelColor: textColor,
+                      unselectedLabelColor: textColor.withAlpha(127),
+                      tabs: const [Tab(text: "Feed"), Tab(text: "Content")],
                     ),
-                  ),
-                ],
+                    Expanded(
+                      child: TabBarView(
+                        controller: _tabController,
+                        children: [
+                          FeedSettingsList(onSettingChanged: widget.onToggleChanged),
+                          ContentSettingsList(
+                            isLoadingLabels: _isLoadingLabels,
+                            labelsError: _labelsError,
+                            onRetryLabels: _loadLabelDefinitions,
+                            onUpdateAdultContentPreferences: _updateAdultContentPreferences,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-            // Bottom safe area
-            if (MediaQuery.of(context).padding.bottom > 0) SizedBox(height: MediaQuery.of(context).padding.bottom),
-          ],
+              // Bottom safe area
+              if (MediaQuery.of(context).padding.bottom > 0) SizedBox(height: MediaQuery.of(context).padding.bottom),
+            ],
+          ),
         ),
       ),
     );

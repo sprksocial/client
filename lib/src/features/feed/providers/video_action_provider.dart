@@ -1,38 +1,20 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
-import 'package:sparksocial/src/core/network/data/repositories/repo_repository.dart';
-import 'package:sparksocial/src/features/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/features/feed/data/models/video_action_state.dart';
 
 part 'video_action_provider.g.dart';
 
-/// Provider for the feed repository
-@riverpod
-FeedRepository feedRepository(Ref ref) {
-  return GetIt.instance<FeedRepository>();
-}
-
-/// Provider for the auth repository
-@riverpod
-AuthRepository authRepository(Ref ref) {
-  return GetIt.instance<AuthRepository>();
-}
-
-/// Provider for repo repository
-@riverpod
-RepoRepository repoRepository(Ref ref) {
-  return GetIt.instance<RepoRepository>();
-}
-
 /// Provider for managing post interactions
 @riverpod
 class VideoActionNotifier extends _$VideoActionNotifier {
+  late final FeedRepository _feedRepository;
+
   @override
   VideoActionState build() {
+    _feedRepository = GetIt.instance<FeedRepository>();
     return const VideoActionState();
   }
 
@@ -43,7 +25,7 @@ class VideoActionNotifier extends _$VideoActionNotifier {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final response = await ref.read(feedRepositoryProvider).likePost(postCid, postUri);
+      final response = await _feedRepository.likePost(postCid, postUri);
       state = state.copyWith(isLoading: false);
       return response;
     } catch (e) {
@@ -59,7 +41,7 @@ class VideoActionNotifier extends _$VideoActionNotifier {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      await ref.read(feedRepositoryProvider).unlikePost(likeUri);
+      await _feedRepository.unlikePost(likeUri);
       state = state.copyWith(isLoading: false);
       return true;
     } catch (e) {
@@ -75,7 +57,7 @@ class VideoActionNotifier extends _$VideoActionNotifier {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final success = await ref.read(feedRepositoryProvider).deletePost(postUri);
+      final success = await _feedRepository.deletePost(postUri);
       state = state.copyWith(isLoading: false);
       return success;
     } catch (e) {

@@ -120,6 +120,7 @@ class FeedPostItem extends StatelessWidget {
         onUsernameTap: navigateToProfile,
         onHashtagTap: (String hashtag) {},
         onPostDeleted: onPostDeleted,
+        onCommentPressed: () {},
       ),
 
       // Image post

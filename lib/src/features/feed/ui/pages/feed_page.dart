@@ -90,7 +90,6 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
       child: Stack(
         children: [
           FeedMainContent(
-            feedState: feedState,
             canBuildPageView: canBuildPageView,
             pageController: _pageController,
             isParentFeedVisible: widget.isParentFeedVisible,

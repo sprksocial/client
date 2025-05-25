@@ -443,7 +443,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<List<FeedPost>> fetchFeed(int feedType, {int limit = 8}) async {
+  Future<List<FeedPost>> fetchFeed(int feedType, {int limit = 100}) async {
     _logger.d('Fetching feed type: $feedType, limit: $limit');
 
     return switch (feedType) {
@@ -455,7 +455,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<List<FeedPost>> fetchFollowingFeed({int limit = 8}) async {
+  Future<List<FeedPost>> fetchFollowingFeed({int limit = 100}) async {
     _logger.d('Fetching following feed with limit: $limit');
 
     return _client.executeWithRetry(() async {
@@ -498,7 +498,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<List<FeedPost>> fetchForYouFeed({int limit = 8}) async {
+  Future<List<FeedPost>> fetchForYouFeed({int limit = 100}) async {
     _logger.d('Fetching For You feed with limit: $limit');
 
     return _client.executeWithRetry(() async {
@@ -541,7 +541,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<List<FeedPost>> fetchSparkNewFeed({int limit = 8}) async {
+  Future<List<FeedPost>> fetchSparkNewFeed({int limit = 100}) async {
     _logger.d('Fetching Spark New feed with limit: $limit');
 
     return _client.executeWithRetry(() async {

@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
-import 'package:sparksocial/src/features/feed/data/models/feed_page_state.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_page_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/feed_post_item.dart';
 
 class FeedPageView extends ConsumerWidget {
   final PageController pageController;
-  final FeedPageState feedState;
   final bool isParentFeedVisible;
   final int feedType;
   final List<FeedPost>? initialPosts;
@@ -17,7 +16,6 @@ class FeedPageView extends ConsumerWidget {
   const FeedPageView({
     super.key,
     required this.pageController,
-    required this.feedState,
     required this.isParentFeedVisible,
     required this.feedType,
     this.initialPosts,
@@ -27,6 +25,7 @@ class FeedPageView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final feedState = ref.watch(feedPageStateNotifierProvider(feedType, initialPosts: initialPosts, initialIndex: initialIndex));
     return PageView.builder(
       controller: pageController,
       scrollDirection: Axis.vertical,

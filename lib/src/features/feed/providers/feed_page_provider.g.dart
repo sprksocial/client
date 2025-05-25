@@ -7,7 +7,7 @@ part of 'feed_page_provider.dart';
 // **************************************************************************
 
 String _$feedPageStateNotifierHash() =>
-    r'af161399c390c43408cda9f8365d9740cf603517';
+    r'533d610d92848e212c90ab73625c6bf91d070dca';
 
 /// Copied from Dart SDK
 class _SystemHash {

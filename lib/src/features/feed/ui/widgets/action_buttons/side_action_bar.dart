@@ -12,7 +12,7 @@ import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/like_act
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/comment_action_button.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/share_action_button.dart';
 
-class VideoSideActionBar extends ConsumerStatefulWidget {
+class SideActionBar extends ConsumerStatefulWidget {
   final VoidCallback? onProfilePressed;
   final VoidCallback? onLikePressed;
   final VoidCallback? onCommentPressed;
@@ -34,7 +34,7 @@ class VideoSideActionBar extends ConsumerStatefulWidget {
   // Add flag to identify image content
   final bool isImage;
 
-  const VideoSideActionBar({
+  const SideActionBar({
     super.key,
     this.onProfilePressed,
     this.onLikePressed,
@@ -54,12 +54,14 @@ class VideoSideActionBar extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<VideoSideActionBar> createState() => _VideoSideActionBarState();
+  ConsumerState<SideActionBar> createState() => _VideoSideActionBarState();
 }
 
-class _VideoSideActionBarState extends ConsumerState<VideoSideActionBar> {
+class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
   bool _isLiked = false;
   late String _commentCount;
+
+  
 
   @override
   void initState() {
@@ -69,7 +71,7 @@ class _VideoSideActionBarState extends ConsumerState<VideoSideActionBar> {
   }
 
   @override
-  void didUpdateWidget(VideoSideActionBar oldWidget) {
+  void didUpdateWidget(SideActionBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.isLiked != widget.isLiked) {
       setState(() {
@@ -222,6 +224,7 @@ class _VideoSideActionBarState extends ConsumerState<VideoSideActionBar> {
       }
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

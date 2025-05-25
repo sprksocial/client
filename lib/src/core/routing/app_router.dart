@@ -48,7 +48,6 @@ class AppRouter extends _$AppRouter {
 
     // Feed Settings tabs
     AutoRoute(page: FeedSettingsTabRoute.page, path: '/settings/feed'),
-    AutoRoute(page: ContentSettingsTabRoute.page, path: '/settings/content'),
 
     // Upload feature routes
     AutoRoute(page: CreateVideoRoute.page, path: '/upload/create'),

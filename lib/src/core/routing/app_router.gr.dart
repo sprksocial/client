@@ -26,19 +26,6 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
-    ContentSettingsTabRoute.name: (routeData) {
-      final args = routeData.argsAs<ContentSettingsTabRouteArgs>();
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: ContentSettingsTabPage(
-          key: args.key,
-          isLoadingLabels: args.isLoadingLabels,
-          labelsError: args.labelsError,
-          onRetryLabels: args.onRetryLabels,
-          onUpdateAdultContentPreferences: args.onUpdateAdultContentPreferences,
-        ),
-      );
-    },
     CreateVideoRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -226,60 +213,6 @@ class AuthPromptRouteArgs {
   @override
   String toString() {
     return 'AuthPromptRouteArgs{key: $key, onClose: $onClose}';
-  }
-}
-
-/// generated route for
-/// [ContentSettingsTabPage]
-class ContentSettingsTabRoute
-    extends PageRouteInfo<ContentSettingsTabRouteArgs> {
-  ContentSettingsTabRoute({
-    Key? key,
-    required bool isLoadingLabels,
-    String? labelsError,
-    required dynamic Function() onRetryLabels,
-    required dynamic Function(bool) onUpdateAdultContentPreferences,
-    List<PageRouteInfo>? children,
-  }) : super(
-          ContentSettingsTabRoute.name,
-          args: ContentSettingsTabRouteArgs(
-            key: key,
-            isLoadingLabels: isLoadingLabels,
-            labelsError: labelsError,
-            onRetryLabels: onRetryLabels,
-            onUpdateAdultContentPreferences: onUpdateAdultContentPreferences,
-          ),
-          initialChildren: children,
-        );
-
-  static const String name = 'ContentSettingsTabRoute';
-
-  static const PageInfo<ContentSettingsTabRouteArgs> page =
-      PageInfo<ContentSettingsTabRouteArgs>(name);
-}
-
-class ContentSettingsTabRouteArgs {
-  const ContentSettingsTabRouteArgs({
-    this.key,
-    required this.isLoadingLabels,
-    this.labelsError,
-    required this.onRetryLabels,
-    required this.onUpdateAdultContentPreferences,
-  });
-
-  final Key? key;
-
-  final bool isLoadingLabels;
-
-  final String? labelsError;
-
-  final dynamic Function() onRetryLabels;
-
-  final dynamic Function(bool) onUpdateAdultContentPreferences;
-
-  @override
-  String toString() {
-    return 'ContentSettingsTabRouteArgs{key: $key, isLoadingLabels: $isLoadingLabels, labelsError: $labelsError, onRetryLabels: $onRetryLabels, onUpdateAdultContentPreferences: $onUpdateAdultContentPreferences}';
   }
 }
 

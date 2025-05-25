@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/features/feed/data/models/feed_page_state.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_page_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/feed_page_view.dart';
 
-class FeedMainContent extends StatelessWidget {
-  final FeedPageState feedState;
+class FeedMainContent extends ConsumerWidget {
   final bool canBuildPageView;
   final PageController pageController;
   final bool isParentFeedVisible;
@@ -16,7 +16,6 @@ class FeedMainContent extends StatelessWidget {
 
   const FeedMainContent({
     super.key,
-    required this.feedState,
     required this.canBuildPageView,
     required this.pageController,
     required this.isParentFeedVisible,
@@ -27,7 +26,8 @@ class FeedMainContent extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final feedState = ref.watch(feedPageStateNotifierProvider(feedType, initialPosts: initialPosts, initialIndex: initialIndex));
     return SizedBox(
       height: MediaQuery.of(context).size.height,
       width: MediaQuery.of(context).size.width,
@@ -41,7 +41,6 @@ class FeedMainContent extends StatelessWidget {
               : canBuildPageView
               ? FeedPageView(
                 pageController: pageController,
-                feedState: feedState,
                 isParentFeedVisible: isParentFeedVisible,
                 feedType: feedType,
                 initialPosts: initialPosts,

@@ -83,7 +83,7 @@ class ContentSettingsList extends ConsumerWidget {
             // Add the Adult Content switch at the top
             if (index == 0) {
               final hideAdultContent = ref.watch(settingsProvider).hideAdultContent;
-
+        
               return FeedSettingItem(
                 feedName: 'Hide Adult Content',
                 description: 'Hide all posts with adult content labels',
@@ -91,31 +91,31 @@ class ContentSettingsList extends ConsumerWidget {
                 onToggleChanged: (value) async {
                   // Update the setting
                   await ref.read(settingsProvider.notifier).setHideAdultContent(value);
-
+        
                   // Update all adult-only label preferences
                   await onUpdateAdultContentPreferences(value);
                 },
               );
             }
-
+        
             // Adjust index for label definitions using our sorted list
             final labelsIndex = index - 1;
             final labelKey = sortedLabels[labelsIndex];
             final labelValue = definitions[labelKey];
-
+        
             if (labelValue == null) return const SizedBox();
-
+        
             // Extract info from the LabelValue model
             String displayName = labelValue.value;
             String description = '';
-
+        
             if (labelValue.locales.isNotEmpty) {
               // Get the first locale (assumed to be English)
               final enLocale = labelValue.locales.first;
               displayName = enLocale.name;
               description = enLocale.description;
             }
-
+        
             return ContentLabelPreference(
               labelValue: labelKey,
               displayName: displayName,

@@ -7,7 +7,7 @@ import 'package:sparksocial/src/core/network/utils/comment_utils.dart';
 import 'package:sparksocial/src/features/feed/data/models/image_post_state.dart';
 import 'package:sparksocial/src/features/feed/providers/image_post_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_side_action_bar.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/widgets/video_info/video_info_bar.dart';
 
 class ImagePostItem extends ConsumerStatefulWidget {
@@ -359,7 +359,7 @@ class _SideActionBar extends StatelessWidget {
     return Positioned(
       right: 16,
       bottom: 16,
-      child: VideoSideActionBar(
+      child: SideActionBar(
         likeCount: '${state.likeCount}',
         commentCount: '${state.commentCount}',
         shareCount: '${state.shareCount}',
