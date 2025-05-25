@@ -4,12 +4,12 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/features/feed/data/models/comments_tray_state.dart';
-import 'package:sparksocial/src/features/feed/providers/comment_state_provider.dart' as commentStateProvider;
+import 'package:sparksocial/src/features/feed/providers/comment_provider.dart' as comment_state;
 
-part 'comments_tray_state_provider.g.dart';
+part 'comments_tray_provider.g.dart';
 
 @riverpod
-class CommentsTrayStateProvider extends _$CommentsTrayStateProvider {
+class CommentsTray extends _$CommentsTray {
   late final FeedRepository feedRepository;
   @override
   CommentsTrayState build({required String postUri, required String postCid, required bool isSprk, int commentCount = 0}) {
@@ -37,7 +37,7 @@ class CommentsTrayStateProvider extends _$CommentsTrayStateProvider {
     Map<String, String>? altTexts,
   }) async {
     final feedRepository = GetIt.instance<FeedRepository>();
-    final response = await commentStateProvider.postComment(
+    final response = await comment_state.postComment(
       text,
       parentCid,
       parentUri,

@@ -1,13 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'comment_state_provider.dart';
+part of 'comment_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$commentStateProviderHash() =>
-    r'709d4bbb5f3678fe52a610d9d59f3ea2a4884ed6';
+String _$commentNotifierHash() => r'c914b6a9b70d9543c9afdc48c96991b31d2784c6';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -30,7 +29,7 @@ class _SystemHash {
   }
 }
 
-abstract class _$CommentStateProvider
+abstract class _$CommentNotifier
     extends BuildlessAutoDisposeNotifier<CommentState> {
   late final Comment comment;
 
@@ -39,27 +38,27 @@ abstract class _$CommentStateProvider
   );
 }
 
-/// See also [CommentStateProvider].
-@ProviderFor(CommentStateProvider)
-const commentStateProviderProvider = CommentStateProviderFamily();
+/// See also [CommentNotifier].
+@ProviderFor(CommentNotifier)
+const commentNotifierProvider = CommentNotifierFamily();
 
-/// See also [CommentStateProvider].
-class CommentStateProviderFamily extends Family<CommentState> {
-  /// See also [CommentStateProvider].
-  const CommentStateProviderFamily();
+/// See also [CommentNotifier].
+class CommentNotifierFamily extends Family<CommentState> {
+  /// See also [CommentNotifier].
+  const CommentNotifierFamily();
 
-  /// See also [CommentStateProvider].
-  CommentStateProviderProvider call(
+  /// See also [CommentNotifier].
+  CommentNotifierProvider call(
     Comment comment,
   ) {
-    return CommentStateProviderProvider(
+    return CommentNotifierProvider(
       comment,
     );
   }
 
   @override
-  CommentStateProviderProvider getProviderOverride(
-    covariant CommentStateProviderProvider provider,
+  CommentNotifierProvider getProviderOverride(
+    covariant CommentNotifierProvider provider,
   ) {
     return call(
       provider.comment,
@@ -78,30 +77,30 @@ class CommentStateProviderFamily extends Family<CommentState> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'commentStateProviderProvider';
+  String? get name => r'commentNotifierProvider';
 }
 
-/// See also [CommentStateProvider].
-class CommentStateProviderProvider extends AutoDisposeNotifierProviderImpl<
-    CommentStateProvider, CommentState> {
-  /// See also [CommentStateProvider].
-  CommentStateProviderProvider(
+/// See also [CommentNotifier].
+class CommentNotifierProvider
+    extends AutoDisposeNotifierProviderImpl<CommentNotifier, CommentState> {
+  /// See also [CommentNotifier].
+  CommentNotifierProvider(
     Comment comment,
   ) : this._internal(
-          () => CommentStateProvider()..comment = comment,
-          from: commentStateProviderProvider,
-          name: r'commentStateProviderProvider',
+          () => CommentNotifier()..comment = comment,
+          from: commentNotifierProvider,
+          name: r'commentNotifierProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$commentStateProviderHash,
-          dependencies: CommentStateProviderFamily._dependencies,
+                  : _$commentNotifierHash,
+          dependencies: CommentNotifierFamily._dependencies,
           allTransitiveDependencies:
-              CommentStateProviderFamily._allTransitiveDependencies,
+              CommentNotifierFamily._allTransitiveDependencies,
           comment: comment,
         );
 
-  CommentStateProviderProvider._internal(
+  CommentNotifierProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -115,7 +114,7 @@ class CommentStateProviderProvider extends AutoDisposeNotifierProviderImpl<
 
   @override
   CommentState runNotifierBuild(
-    covariant CommentStateProvider notifier,
+    covariant CommentNotifier notifier,
   ) {
     return notifier.build(
       comment,
@@ -123,10 +122,10 @@ class CommentStateProviderProvider extends AutoDisposeNotifierProviderImpl<
   }
 
   @override
-  Override overrideWith(CommentStateProvider Function() create) {
+  Override overrideWith(CommentNotifier Function() create) {
     return ProviderOverride(
       origin: this,
-      override: CommentStateProviderProvider._internal(
+      override: CommentNotifierProvider._internal(
         () => create()..comment = comment,
         from: from,
         name: null,
@@ -139,14 +138,14 @@ class CommentStateProviderProvider extends AutoDisposeNotifierProviderImpl<
   }
 
   @override
-  AutoDisposeNotifierProviderElement<CommentStateProvider, CommentState>
+  AutoDisposeNotifierProviderElement<CommentNotifier, CommentState>
       createElement() {
-    return _CommentStateProviderProviderElement(this);
+    return _CommentNotifierProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is CommentStateProviderProvider && other.comment == comment;
+    return other is CommentNotifierProvider && other.comment == comment;
   }
 
   @override
@@ -160,18 +159,18 @@ class CommentStateProviderProvider extends AutoDisposeNotifierProviderImpl<
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin CommentStateProviderRef on AutoDisposeNotifierProviderRef<CommentState> {
+mixin CommentNotifierRef on AutoDisposeNotifierProviderRef<CommentState> {
   /// The parameter `comment` of this provider.
   Comment get comment;
 }
 
-class _CommentStateProviderProviderElement
-    extends AutoDisposeNotifierProviderElement<CommentStateProvider,
-        CommentState> with CommentStateProviderRef {
-  _CommentStateProviderProviderElement(super.provider);
+class _CommentNotifierProviderElement
+    extends AutoDisposeNotifierProviderElement<CommentNotifier, CommentState>
+    with CommentNotifierRef {
+  _CommentNotifierProviderElement(super.provider);
 
   @override
-  Comment get comment => (origin as CommentStateProviderProvider).comment;
+  Comment get comment => (origin as CommentNotifierProvider).comment;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

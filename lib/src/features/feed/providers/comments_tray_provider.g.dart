@@ -1,13 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'comments_tray_state_provider.dart';
+part of 'comments_tray_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$commentsTrayStateProviderHash() =>
-    r'3c85abc922aee6528c3135fb15db8f38be4d0cfc';
+String _$commentsTrayHash() => r'74ecd5024af9c47650c34dd898e078346e78319b';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -30,7 +29,7 @@ class _SystemHash {
   }
 }
 
-abstract class _$CommentsTrayStateProvider
+abstract class _$CommentsTray
     extends BuildlessAutoDisposeNotifier<CommentsTrayState> {
   late final String postUri;
   late final String postCid;
@@ -45,23 +44,23 @@ abstract class _$CommentsTrayStateProvider
   });
 }
 
-/// See also [CommentsTrayStateProvider].
-@ProviderFor(CommentsTrayStateProvider)
-const commentsTrayStateProviderProvider = CommentsTrayStateProviderFamily();
+/// See also [CommentsTray].
+@ProviderFor(CommentsTray)
+const commentsTrayProvider = CommentsTrayFamily();
 
-/// See also [CommentsTrayStateProvider].
-class CommentsTrayStateProviderFamily extends Family<CommentsTrayState> {
-  /// See also [CommentsTrayStateProvider].
-  const CommentsTrayStateProviderFamily();
+/// See also [CommentsTray].
+class CommentsTrayFamily extends Family<CommentsTrayState> {
+  /// See also [CommentsTray].
+  const CommentsTrayFamily();
 
-  /// See also [CommentsTrayStateProvider].
-  CommentsTrayStateProviderProvider call({
+  /// See also [CommentsTray].
+  CommentsTrayProvider call({
     required String postUri,
     required String postCid,
     required bool isSprk,
     int commentCount = 0,
   }) {
-    return CommentsTrayStateProviderProvider(
+    return CommentsTrayProvider(
       postUri: postUri,
       postCid: postCid,
       isSprk: isSprk,
@@ -70,8 +69,8 @@ class CommentsTrayStateProviderFamily extends Family<CommentsTrayState> {
   }
 
   @override
-  CommentsTrayStateProviderProvider getProviderOverride(
-    covariant CommentsTrayStateProviderProvider provider,
+  CommentsTrayProvider getProviderOverride(
+    covariant CommentsTrayProvider provider,
   ) {
     return call(
       postUri: provider.postUri,
@@ -93,40 +92,40 @@ class CommentsTrayStateProviderFamily extends Family<CommentsTrayState> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'commentsTrayStateProviderProvider';
+  String? get name => r'commentsTrayProvider';
 }
 
-/// See also [CommentsTrayStateProvider].
-class CommentsTrayStateProviderProvider extends AutoDisposeNotifierProviderImpl<
-    CommentsTrayStateProvider, CommentsTrayState> {
-  /// See also [CommentsTrayStateProvider].
-  CommentsTrayStateProviderProvider({
+/// See also [CommentsTray].
+class CommentsTrayProvider
+    extends AutoDisposeNotifierProviderImpl<CommentsTray, CommentsTrayState> {
+  /// See also [CommentsTray].
+  CommentsTrayProvider({
     required String postUri,
     required String postCid,
     required bool isSprk,
     int commentCount = 0,
   }) : this._internal(
-          () => CommentsTrayStateProvider()
+          () => CommentsTray()
             ..postUri = postUri
             ..postCid = postCid
             ..isSprk = isSprk
             ..commentCount = commentCount,
-          from: commentsTrayStateProviderProvider,
-          name: r'commentsTrayStateProviderProvider',
+          from: commentsTrayProvider,
+          name: r'commentsTrayProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$commentsTrayStateProviderHash,
-          dependencies: CommentsTrayStateProviderFamily._dependencies,
+                  : _$commentsTrayHash,
+          dependencies: CommentsTrayFamily._dependencies,
           allTransitiveDependencies:
-              CommentsTrayStateProviderFamily._allTransitiveDependencies,
+              CommentsTrayFamily._allTransitiveDependencies,
           postUri: postUri,
           postCid: postCid,
           isSprk: isSprk,
           commentCount: commentCount,
         );
 
-  CommentsTrayStateProviderProvider._internal(
+  CommentsTrayProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -146,7 +145,7 @@ class CommentsTrayStateProviderProvider extends AutoDisposeNotifierProviderImpl<
 
   @override
   CommentsTrayState runNotifierBuild(
-    covariant CommentsTrayStateProvider notifier,
+    covariant CommentsTray notifier,
   ) {
     return notifier.build(
       postUri: postUri,
@@ -157,10 +156,10 @@ class CommentsTrayStateProviderProvider extends AutoDisposeNotifierProviderImpl<
   }
 
   @override
-  Override overrideWith(CommentsTrayStateProvider Function() create) {
+  Override overrideWith(CommentsTray Function() create) {
     return ProviderOverride(
       origin: this,
-      override: CommentsTrayStateProviderProvider._internal(
+      override: CommentsTrayProvider._internal(
         () => create()
           ..postUri = postUri
           ..postCid = postCid
@@ -180,14 +179,14 @@ class CommentsTrayStateProviderProvider extends AutoDisposeNotifierProviderImpl<
   }
 
   @override
-  AutoDisposeNotifierProviderElement<CommentsTrayStateProvider,
-      CommentsTrayState> createElement() {
-    return _CommentsTrayStateProviderProviderElement(this);
+  AutoDisposeNotifierProviderElement<CommentsTray, CommentsTrayState>
+      createElement() {
+    return _CommentsTrayProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is CommentsTrayStateProviderProvider &&
+    return other is CommentsTrayProvider &&
         other.postUri == postUri &&
         other.postCid == postCid &&
         other.isSprk == isSprk &&
@@ -208,8 +207,7 @@ class CommentsTrayStateProviderProvider extends AutoDisposeNotifierProviderImpl<
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin CommentsTrayStateProviderRef
-    on AutoDisposeNotifierProviderRef<CommentsTrayState> {
+mixin CommentsTrayRef on AutoDisposeNotifierProviderRef<CommentsTrayState> {
   /// The parameter `postUri` of this provider.
   String get postUri;
 
@@ -223,20 +221,19 @@ mixin CommentsTrayStateProviderRef
   int get commentCount;
 }
 
-class _CommentsTrayStateProviderProviderElement
-    extends AutoDisposeNotifierProviderElement<CommentsTrayStateProvider,
-        CommentsTrayState> with CommentsTrayStateProviderRef {
-  _CommentsTrayStateProviderProviderElement(super.provider);
+class _CommentsTrayProviderElement
+    extends AutoDisposeNotifierProviderElement<CommentsTray, CommentsTrayState>
+    with CommentsTrayRef {
+  _CommentsTrayProviderElement(super.provider);
 
   @override
-  String get postUri => (origin as CommentsTrayStateProviderProvider).postUri;
+  String get postUri => (origin as CommentsTrayProvider).postUri;
   @override
-  String get postCid => (origin as CommentsTrayStateProviderProvider).postCid;
+  String get postCid => (origin as CommentsTrayProvider).postCid;
   @override
-  bool get isSprk => (origin as CommentsTrayStateProviderProvider).isSprk;
+  bool get isSprk => (origin as CommentsTrayProvider).isSprk;
   @override
-  int get commentCount =>
-      (origin as CommentsTrayStateProviderProvider).commentCount;
+  int get commentCount => (origin as CommentsTrayProvider).commentCount;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

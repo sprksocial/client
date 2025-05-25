@@ -18,7 +18,7 @@ class VideoState extends _$VideoState {
   @override
   VideoPlayerState build(int videoIndex, {int initialCommentCount = 0}) {
     ref.onDispose(() {
-      // Don't dispose the controller here, it should be managed by the parent
+        state.controller?.dispose();
       _logger.d('Disposing video state provider for index $videoIndex');
     });
 

@@ -8,13 +8,16 @@ import 'package:sparksocial/src/core/network/data/repositories/feed_repository.d
 import 'package:sparksocial/src/features/feed/data/models/comment_state.dart';
 import 'package:video_player/video_player.dart';
 
-part 'comment_state_provider.g.dart';
+part 'comment_provider.g.dart';
 
 @riverpod
-class CommentStateProvider extends _$CommentStateProvider {
+class CommentNotifier extends _$CommentNotifier {
   @override
   CommentState build(Comment comment) {
     _feedRepository = GetIt.instance<FeedRepository>();
+    ref.onDispose(() {
+        state.videoController?.dispose();
+    });
     return CommentState(comment: comment);
   }
 
@@ -32,8 +35,9 @@ class CommentStateProvider extends _$CommentStateProvider {
 
   void initializeVideoPlayer() {
     if (state.comment.mediaUrl != null) {
+      final videoController = VideoPlayerController.networkUrl(Uri.parse(state.comment.mediaUrl!));
       state = state.copyWith(
-        videoController: VideoPlayerController.networkUrl(Uri.parse(state.comment.mediaUrl!)),
+        videoController: videoController,
         isVideoInitialized: true,
       );
     }
