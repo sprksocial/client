@@ -6,7 +6,7 @@ import 'package:sparksocial/src/core/network/data/repositories/actor_repository.
 import 'package:sparksocial/src/core/network/data/repositories/graph_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/features/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/features/search/data/models/search_state.dart';
+import 'package:sparksocial/src/features/search/providers/search_state.dart';
 
 part 'search_provider.g.dart';
 

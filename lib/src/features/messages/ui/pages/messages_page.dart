@@ -7,10 +7,6 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/core/widgets/development_overlay.dart';
-import 'package:sparksocial/src/features/messages/providers/messages_provider.dart';
-import 'package:sparksocial/src/features/messages/ui/widgets/activities_tab.dart';
-import 'package:sparksocial/src/features/messages/ui/widgets/custom_tab_bar.dart';
-import 'package:sparksocial/src/features/messages/ui/widgets/messages_tab.dart';
 
 @RoutePage()
 class MessagesPage extends ConsumerWidget {
@@ -18,7 +14,6 @@ class MessagesPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final messagesState = ref.watch(messagesPageProvider);
     final theme = Theme.of(context);
     final isDarkMode = theme.brightness == Brightness.dark;
     final logger = GetIt.instance<LogService>().getLogger('MessagesPage');
@@ -50,29 +45,10 @@ class MessagesPage extends ConsumerWidget {
           children: [
             Column(
               children: [
-                CustomTabBar(selectedTabIndex: messagesState.selectedTabIndex),
-
                 Container(
                   height: 0.5,
                   width: double.infinity,
                   color: isDarkMode ? AppColors.divider.withAlpha(51) : AppColors.divider.withAlpha(128),
-                ),
-
-                Expanded(
-                  child:
-                      messagesState.selectedTabIndex == 0
-                          ? MessagesTab(
-                            messages: messagesState.messages,
-                            onMessageTap: (message) {
-                              logger.d('Message tapped: ${message.id}');
-                            },
-                          )
-                          : ActivitiesTab(
-                            activities: messagesState.activities,
-                            onActivityTap: (activity) {
-                              logger.d('Activity tapped: ${activity.id}');
-                            },
-                          ),
                 ),
               ],
             ),

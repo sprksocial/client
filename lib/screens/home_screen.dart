@@ -120,7 +120,6 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       child: Scaffold(
         backgroundColor: Colors.black,
-        // TODO: why is the topbar not a topbar bro what the hell are we doing
         body: Stack(children: [_buildMainContent(), _buildTopBar(topPadding, isDarkMode, _currentFeedOptions)]),
       ),
     );

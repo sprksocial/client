@@ -14,169 +14,857 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
-PostThreadResponse _$PostThreadResponseFromJson(Map<String, dynamic> json) {
-  return _PostThreadResponse.fromJson(json);
+CustomFeed _$CustomFeedFromJson(Map<String, dynamic> json) {
+  return _CustomFeed.fromJson(json);
 }
 
 /// @nodoc
-mixin _$PostThreadResponse {
-  PostThread get thread => throw _privateConstructorUsedError;
+mixin _$CustomFeed {
+  ProfileViewBasic? get creator => throw _privateConstructorUsedError;
+  String get name => throw _privateConstructorUsedError;
+  String get description => throw _privateConstructorUsedError;
+  List<Facet> get descriptionFacets => throw _privateConstructorUsedError;
+  List<Label> get labels => throw _privateConstructorUsedError;
+  int get likeCount => throw _privateConstructorUsedError;
+  String get imageUrl => throw _privateConstructorUsedError;
+  bool get isDraft => throw _privateConstructorUsedError;
+  bool get videosOnly => throw _privateConstructorUsedError;
+  String? get did => throw _privateConstructorUsedError;
+  String? get uri => throw _privateConstructorUsedError;
+  String? get cid => throw _privateConstructorUsedError;
+  Map<String, bool> get hashtagPreferences =>
+      throw _privateConstructorUsedError; // hashtag: only show posts with this hashtag || never show posts with this hashtag
+  Map<String, Map<String, bool>> get labelPreferences =>
+      throw _privateConstructorUsedError;
 
-  /// Serializes this PostThreadResponse to a JSON map.
+  /// Serializes this CustomFeed to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of PostThreadResponse
+  /// Create a copy of CustomFeed
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $PostThreadResponseCopyWith<PostThreadResponse> get copyWith =>
+  $CustomFeedCopyWith<CustomFeed> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $PostThreadResponseCopyWith<$Res> {
-  factory $PostThreadResponseCopyWith(
-          PostThreadResponse value, $Res Function(PostThreadResponse) then) =
-      _$PostThreadResponseCopyWithImpl<$Res, PostThreadResponse>;
+abstract class $CustomFeedCopyWith<$Res> {
+  factory $CustomFeedCopyWith(
+          CustomFeed value, $Res Function(CustomFeed) then) =
+      _$CustomFeedCopyWithImpl<$Res, CustomFeed>;
   @useResult
-  $Res call({PostThread thread});
+  $Res call(
+      {ProfileViewBasic? creator,
+      String name,
+      String description,
+      List<Facet> descriptionFacets,
+      List<Label> labels,
+      int likeCount,
+      String imageUrl,
+      bool isDraft,
+      bool videosOnly,
+      String? did,
+      String? uri,
+      String? cid,
+      Map<String, bool> hashtagPreferences,
+      Map<String, Map<String, bool>> labelPreferences});
 
-  $PostThreadCopyWith<$Res> get thread;
+  $ProfileViewBasicCopyWith<$Res>? get creator;
 }
 
 /// @nodoc
-class _$PostThreadResponseCopyWithImpl<$Res, $Val extends PostThreadResponse>
-    implements $PostThreadResponseCopyWith<$Res> {
-  _$PostThreadResponseCopyWithImpl(this._value, this._then);
+class _$CustomFeedCopyWithImpl<$Res, $Val extends CustomFeed>
+    implements $CustomFeedCopyWith<$Res> {
+  _$CustomFeedCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of PostThreadResponse
+  /// Create a copy of CustomFeed
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? thread = null,
+    Object? creator = freezed,
+    Object? name = null,
+    Object? description = null,
+    Object? descriptionFacets = null,
+    Object? labels = null,
+    Object? likeCount = null,
+    Object? imageUrl = null,
+    Object? isDraft = null,
+    Object? videosOnly = null,
+    Object? did = freezed,
+    Object? uri = freezed,
+    Object? cid = freezed,
+    Object? hashtagPreferences = null,
+    Object? labelPreferences = null,
   }) {
     return _then(_value.copyWith(
-      thread: null == thread
-          ? _value.thread
-          : thread // ignore: cast_nullable_to_non_nullable
-              as PostThread,
+      creator: freezed == creator
+          ? _value.creator
+          : creator // ignore: cast_nullable_to_non_nullable
+              as ProfileViewBasic?,
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      description: null == description
+          ? _value.description
+          : description // ignore: cast_nullable_to_non_nullable
+              as String,
+      descriptionFacets: null == descriptionFacets
+          ? _value.descriptionFacets
+          : descriptionFacets // ignore: cast_nullable_to_non_nullable
+              as List<Facet>,
+      labels: null == labels
+          ? _value.labels
+          : labels // ignore: cast_nullable_to_non_nullable
+              as List<Label>,
+      likeCount: null == likeCount
+          ? _value.likeCount
+          : likeCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      imageUrl: null == imageUrl
+          ? _value.imageUrl
+          : imageUrl // ignore: cast_nullable_to_non_nullable
+              as String,
+      isDraft: null == isDraft
+          ? _value.isDraft
+          : isDraft // ignore: cast_nullable_to_non_nullable
+              as bool,
+      videosOnly: null == videosOnly
+          ? _value.videosOnly
+          : videosOnly // ignore: cast_nullable_to_non_nullable
+              as bool,
+      did: freezed == did
+          ? _value.did
+          : did // ignore: cast_nullable_to_non_nullable
+              as String?,
+      uri: freezed == uri
+          ? _value.uri
+          : uri // ignore: cast_nullable_to_non_nullable
+              as String?,
+      cid: freezed == cid
+          ? _value.cid
+          : cid // ignore: cast_nullable_to_non_nullable
+              as String?,
+      hashtagPreferences: null == hashtagPreferences
+          ? _value.hashtagPreferences
+          : hashtagPreferences // ignore: cast_nullable_to_non_nullable
+              as Map<String, bool>,
+      labelPreferences: null == labelPreferences
+          ? _value.labelPreferences
+          : labelPreferences // ignore: cast_nullable_to_non_nullable
+              as Map<String, Map<String, bool>>,
     ) as $Val);
   }
 
-  /// Create a copy of PostThreadResponse
+  /// Create a copy of CustomFeed
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $PostThreadCopyWith<$Res> get thread {
-    return $PostThreadCopyWith<$Res>(_value.thread, (value) {
-      return _then(_value.copyWith(thread: value) as $Val);
+  $ProfileViewBasicCopyWith<$Res>? get creator {
+    if (_value.creator == null) {
+      return null;
+    }
+
+    return $ProfileViewBasicCopyWith<$Res>(_value.creator!, (value) {
+      return _then(_value.copyWith(creator: value) as $Val);
     });
   }
 }
 
 /// @nodoc
-abstract class _$$PostThreadResponseImplCopyWith<$Res>
-    implements $PostThreadResponseCopyWith<$Res> {
-  factory _$$PostThreadResponseImplCopyWith(_$PostThreadResponseImpl value,
-          $Res Function(_$PostThreadResponseImpl) then) =
-      __$$PostThreadResponseImplCopyWithImpl<$Res>;
+abstract class _$$CustomFeedImplCopyWith<$Res>
+    implements $CustomFeedCopyWith<$Res> {
+  factory _$$CustomFeedImplCopyWith(
+          _$CustomFeedImpl value, $Res Function(_$CustomFeedImpl) then) =
+      __$$CustomFeedImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({PostThread thread});
+  $Res call(
+      {ProfileViewBasic? creator,
+      String name,
+      String description,
+      List<Facet> descriptionFacets,
+      List<Label> labels,
+      int likeCount,
+      String imageUrl,
+      bool isDraft,
+      bool videosOnly,
+      String? did,
+      String? uri,
+      String? cid,
+      Map<String, bool> hashtagPreferences,
+      Map<String, Map<String, bool>> labelPreferences});
 
   @override
-  $PostThreadCopyWith<$Res> get thread;
+  $ProfileViewBasicCopyWith<$Res>? get creator;
 }
 
 /// @nodoc
-class __$$PostThreadResponseImplCopyWithImpl<$Res>
-    extends _$PostThreadResponseCopyWithImpl<$Res, _$PostThreadResponseImpl>
-    implements _$$PostThreadResponseImplCopyWith<$Res> {
-  __$$PostThreadResponseImplCopyWithImpl(_$PostThreadResponseImpl _value,
-      $Res Function(_$PostThreadResponseImpl) _then)
+class __$$CustomFeedImplCopyWithImpl<$Res>
+    extends _$CustomFeedCopyWithImpl<$Res, _$CustomFeedImpl>
+    implements _$$CustomFeedImplCopyWith<$Res> {
+  __$$CustomFeedImplCopyWithImpl(
+      _$CustomFeedImpl _value, $Res Function(_$CustomFeedImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of PostThreadResponse
+  /// Create a copy of CustomFeed
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? thread = null,
+    Object? creator = freezed,
+    Object? name = null,
+    Object? description = null,
+    Object? descriptionFacets = null,
+    Object? labels = null,
+    Object? likeCount = null,
+    Object? imageUrl = null,
+    Object? isDraft = null,
+    Object? videosOnly = null,
+    Object? did = freezed,
+    Object? uri = freezed,
+    Object? cid = freezed,
+    Object? hashtagPreferences = null,
+    Object? labelPreferences = null,
   }) {
-    return _then(_$PostThreadResponseImpl(
-      thread: null == thread
-          ? _value.thread
-          : thread // ignore: cast_nullable_to_non_nullable
-              as PostThread,
+    return _then(_$CustomFeedImpl(
+      creator: freezed == creator
+          ? _value.creator
+          : creator // ignore: cast_nullable_to_non_nullable
+              as ProfileViewBasic?,
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      description: null == description
+          ? _value.description
+          : description // ignore: cast_nullable_to_non_nullable
+              as String,
+      descriptionFacets: null == descriptionFacets
+          ? _value._descriptionFacets
+          : descriptionFacets // ignore: cast_nullable_to_non_nullable
+              as List<Facet>,
+      labels: null == labels
+          ? _value._labels
+          : labels // ignore: cast_nullable_to_non_nullable
+              as List<Label>,
+      likeCount: null == likeCount
+          ? _value.likeCount
+          : likeCount // ignore: cast_nullable_to_non_nullable
+              as int,
+      imageUrl: null == imageUrl
+          ? _value.imageUrl
+          : imageUrl // ignore: cast_nullable_to_non_nullable
+              as String,
+      isDraft: null == isDraft
+          ? _value.isDraft
+          : isDraft // ignore: cast_nullable_to_non_nullable
+              as bool,
+      videosOnly: null == videosOnly
+          ? _value.videosOnly
+          : videosOnly // ignore: cast_nullable_to_non_nullable
+              as bool,
+      did: freezed == did
+          ? _value.did
+          : did // ignore: cast_nullable_to_non_nullable
+              as String?,
+      uri: freezed == uri
+          ? _value.uri
+          : uri // ignore: cast_nullable_to_non_nullable
+              as String?,
+      cid: freezed == cid
+          ? _value.cid
+          : cid // ignore: cast_nullable_to_non_nullable
+              as String?,
+      hashtagPreferences: null == hashtagPreferences
+          ? _value._hashtagPreferences
+          : hashtagPreferences // ignore: cast_nullable_to_non_nullable
+              as Map<String, bool>,
+      labelPreferences: null == labelPreferences
+          ? _value._labelPreferences
+          : labelPreferences // ignore: cast_nullable_to_non_nullable
+              as Map<String, Map<String, bool>>,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$PostThreadResponseImpl implements _PostThreadResponse {
-  const _$PostThreadResponseImpl({required this.thread});
+class _$CustomFeedImpl implements _CustomFeed {
+  const _$CustomFeedImpl(
+      {required this.creator,
+      this.name = 'Custom Feed',
+      this.description = 'Your custom feed',
+      final List<Facet> descriptionFacets = const [],
+      final List<Label> labels = const [],
+      this.likeCount = 0,
+      this.imageUrl = '',
+      this.isDraft = true,
+      this.videosOnly = false,
+      this.did,
+      this.uri,
+      this.cid,
+      final Map<String, bool> hashtagPreferences = const {},
+      final Map<String, Map<String, bool>> labelPreferences = const {}})
+      : _descriptionFacets = descriptionFacets,
+        _labels = labels,
+        _hashtagPreferences = hashtagPreferences,
+        _labelPreferences = labelPreferences;
 
-  factory _$PostThreadResponseImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PostThreadResponseImplFromJson(json);
+  factory _$CustomFeedImpl.fromJson(Map<String, dynamic> json) =>
+      _$$CustomFeedImplFromJson(json);
 
   @override
-  final PostThread thread;
+  final ProfileViewBasic? creator;
+  @override
+  @JsonKey()
+  final String name;
+  @override
+  @JsonKey()
+  final String description;
+  final List<Facet> _descriptionFacets;
+  @override
+  @JsonKey()
+  List<Facet> get descriptionFacets {
+    if (_descriptionFacets is EqualUnmodifiableListView)
+      return _descriptionFacets;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_descriptionFacets);
+  }
+
+  final List<Label> _labels;
+  @override
+  @JsonKey()
+  List<Label> get labels {
+    if (_labels is EqualUnmodifiableListView) return _labels;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_labels);
+  }
+
+  @override
+  @JsonKey()
+  final int likeCount;
+  @override
+  @JsonKey()
+  final String imageUrl;
+  @override
+  @JsonKey()
+  final bool isDraft;
+  @override
+  @JsonKey()
+  final bool videosOnly;
+  @override
+  final String? did;
+  @override
+  final String? uri;
+  @override
+  final String? cid;
+  final Map<String, bool> _hashtagPreferences;
+  @override
+  @JsonKey()
+  Map<String, bool> get hashtagPreferences {
+    if (_hashtagPreferences is EqualUnmodifiableMapView)
+      return _hashtagPreferences;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_hashtagPreferences);
+  }
+
+// hashtag: only show posts with this hashtag || never show posts with this hashtag
+  final Map<String, Map<String, bool>> _labelPreferences;
+// hashtag: only show posts with this hashtag || never show posts with this hashtag
+  @override
+  @JsonKey()
+  Map<String, Map<String, bool>> get labelPreferences {
+    if (_labelPreferences is EqualUnmodifiableMapView) return _labelPreferences;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(_labelPreferences);
+  }
 
   @override
   String toString() {
-    return 'PostThreadResponse(thread: $thread)';
+    return 'CustomFeed(creator: $creator, name: $name, description: $description, descriptionFacets: $descriptionFacets, labels: $labels, likeCount: $likeCount, imageUrl: $imageUrl, isDraft: $isDraft, videosOnly: $videosOnly, did: $did, uri: $uri, cid: $cid, hashtagPreferences: $hashtagPreferences, labelPreferences: $labelPreferences)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$PostThreadResponseImpl &&
-            (identical(other.thread, thread) || other.thread == thread));
+            other is _$CustomFeedImpl &&
+            (identical(other.creator, creator) || other.creator == creator) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.description, description) ||
+                other.description == description) &&
+            const DeepCollectionEquality()
+                .equals(other._descriptionFacets, _descriptionFacets) &&
+            const DeepCollectionEquality().equals(other._labels, _labels) &&
+            (identical(other.likeCount, likeCount) ||
+                other.likeCount == likeCount) &&
+            (identical(other.imageUrl, imageUrl) ||
+                other.imageUrl == imageUrl) &&
+            (identical(other.isDraft, isDraft) || other.isDraft == isDraft) &&
+            (identical(other.videosOnly, videosOnly) ||
+                other.videosOnly == videosOnly) &&
+            (identical(other.did, did) || other.did == did) &&
+            (identical(other.uri, uri) || other.uri == uri) &&
+            (identical(other.cid, cid) || other.cid == cid) &&
+            const DeepCollectionEquality()
+                .equals(other._hashtagPreferences, _hashtagPreferences) &&
+            const DeepCollectionEquality()
+                .equals(other._labelPreferences, _labelPreferences));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, thread);
+  int get hashCode => Object.hash(
+      runtimeType,
+      creator,
+      name,
+      description,
+      const DeepCollectionEquality().hash(_descriptionFacets),
+      const DeepCollectionEquality().hash(_labels),
+      likeCount,
+      imageUrl,
+      isDraft,
+      videosOnly,
+      did,
+      uri,
+      cid,
+      const DeepCollectionEquality().hash(_hashtagPreferences),
+      const DeepCollectionEquality().hash(_labelPreferences));
 
-  /// Create a copy of PostThreadResponse
+  /// Create a copy of CustomFeed
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$PostThreadResponseImplCopyWith<_$PostThreadResponseImpl> get copyWith =>
-      __$$PostThreadResponseImplCopyWithImpl<_$PostThreadResponseImpl>(
-          this, _$identity);
+  _$$CustomFeedImplCopyWith<_$CustomFeedImpl> get copyWith =>
+      __$$CustomFeedImplCopyWithImpl<_$CustomFeedImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PostThreadResponseImplToJson(
+    return _$$CustomFeedImplToJson(
       this,
     );
   }
 }
 
-abstract class _PostThreadResponse implements PostThreadResponse {
-  const factory _PostThreadResponse({required final PostThread thread}) =
-      _$PostThreadResponseImpl;
+abstract class _CustomFeed implements CustomFeed {
+  const factory _CustomFeed(
+          {required final ProfileViewBasic? creator,
+          final String name,
+          final String description,
+          final List<Facet> descriptionFacets,
+          final List<Label> labels,
+          final int likeCount,
+          final String imageUrl,
+          final bool isDraft,
+          final bool videosOnly,
+          final String? did,
+          final String? uri,
+          final String? cid,
+          final Map<String, bool> hashtagPreferences,
+          final Map<String, Map<String, bool>> labelPreferences}) =
+      _$CustomFeedImpl;
 
-  factory _PostThreadResponse.fromJson(Map<String, dynamic> json) =
-      _$PostThreadResponseImpl.fromJson;
+  factory _CustomFeed.fromJson(Map<String, dynamic> json) =
+      _$CustomFeedImpl.fromJson;
 
   @override
-  PostThread get thread;
+  ProfileViewBasic? get creator;
+  @override
+  String get name;
+  @override
+  String get description;
+  @override
+  List<Facet> get descriptionFacets;
+  @override
+  List<Label> get labels;
+  @override
+  int get likeCount;
+  @override
+  String get imageUrl;
+  @override
+  bool get isDraft;
+  @override
+  bool get videosOnly;
+  @override
+  String? get did;
+  @override
+  String? get uri;
+  @override
+  String? get cid;
+  @override
+  Map<String, bool>
+      get hashtagPreferences; // hashtag: only show posts with this hashtag || never show posts with this hashtag
+  @override
+  Map<String, Map<String, bool>> get labelPreferences;
 
-  /// Create a copy of PostThreadResponse
+  /// Create a copy of CustomFeed
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$PostThreadResponseImplCopyWith<_$PostThreadResponseImpl> get copyWith =>
+  _$$CustomFeedImplCopyWith<_$CustomFeedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+mixin _$Feed {
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String name, String uri) custom,
+    required TResult Function(HardCodedFeed hardCodedFeed) hardCoded,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String name, String uri)? custom,
+    TResult? Function(HardCodedFeed hardCodedFeed)? hardCoded,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String name, String uri)? custom,
+    TResult Function(HardCodedFeed hardCodedFeed)? hardCoded,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Feed value) custom,
+    required TResult Function(_HardCodedFeed value) hardCoded,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Feed value)? custom,
+    TResult? Function(_HardCodedFeed value)? hardCoded,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Feed value)? custom,
+    TResult Function(_HardCodedFeed value)? hardCoded,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $FeedCopyWith<$Res> {
+  factory $FeedCopyWith(Feed value, $Res Function(Feed) then) =
+      _$FeedCopyWithImpl<$Res, Feed>;
+}
+
+/// @nodoc
+class _$FeedCopyWithImpl<$Res, $Val extends Feed>
+    implements $FeedCopyWith<$Res> {
+  _$FeedCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of Feed
+  /// with the given fields replaced by the non-null parameter values.
+}
+
+/// @nodoc
+abstract class _$$FeedImplCopyWith<$Res> {
+  factory _$$FeedImplCopyWith(
+          _$FeedImpl value, $Res Function(_$FeedImpl) then) =
+      __$$FeedImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({String name, String uri});
+}
+
+/// @nodoc
+class __$$FeedImplCopyWithImpl<$Res>
+    extends _$FeedCopyWithImpl<$Res, _$FeedImpl>
+    implements _$$FeedImplCopyWith<$Res> {
+  __$$FeedImplCopyWithImpl(_$FeedImpl _value, $Res Function(_$FeedImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of Feed
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? name = null,
+    Object? uri = null,
+  }) {
+    return _then(_$FeedImpl(
+      name: null == name
+          ? _value.name
+          : name // ignore: cast_nullable_to_non_nullable
+              as String,
+      uri: null == uri
+          ? _value.uri
+          : uri // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$FeedImpl extends _Feed {
+  const _$FeedImpl({required this.name, required this.uri}) : super._();
+
+  @override
+  final String name;
+  @override
+  final String uri;
+
+  @override
+  String toString() {
+    return 'Feed.custom(name: $name, uri: $uri)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$FeedImpl &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.uri, uri) || other.uri == uri));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, name, uri);
+
+  /// Create a copy of Feed
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$FeedImplCopyWith<_$FeedImpl> get copyWith =>
+      __$$FeedImplCopyWithImpl<_$FeedImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String name, String uri) custom,
+    required TResult Function(HardCodedFeed hardCodedFeed) hardCoded,
+  }) {
+    return custom(name, uri);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String name, String uri)? custom,
+    TResult? Function(HardCodedFeed hardCodedFeed)? hardCoded,
+  }) {
+    return custom?.call(name, uri);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String name, String uri)? custom,
+    TResult Function(HardCodedFeed hardCodedFeed)? hardCoded,
+    required TResult orElse(),
+  }) {
+    if (custom != null) {
+      return custom(name, uri);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Feed value) custom,
+    required TResult Function(_HardCodedFeed value) hardCoded,
+  }) {
+    return custom(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Feed value)? custom,
+    TResult? Function(_HardCodedFeed value)? hardCoded,
+  }) {
+    return custom?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Feed value)? custom,
+    TResult Function(_HardCodedFeed value)? hardCoded,
+    required TResult orElse(),
+  }) {
+    if (custom != null) {
+      return custom(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _Feed extends Feed {
+  const factory _Feed({required final String name, required final String uri}) =
+      _$FeedImpl;
+  const _Feed._() : super._();
+
+  String get name;
+  String get uri;
+
+  /// Create a copy of Feed
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$FeedImplCopyWith<_$FeedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$HardCodedFeedImplCopyWith<$Res> {
+  factory _$$HardCodedFeedImplCopyWith(
+          _$HardCodedFeedImpl value, $Res Function(_$HardCodedFeedImpl) then) =
+      __$$HardCodedFeedImplCopyWithImpl<$Res>;
+  @useResult
+  $Res call({HardCodedFeed hardCodedFeed});
+}
+
+/// @nodoc
+class __$$HardCodedFeedImplCopyWithImpl<$Res>
+    extends _$FeedCopyWithImpl<$Res, _$HardCodedFeedImpl>
+    implements _$$HardCodedFeedImplCopyWith<$Res> {
+  __$$HardCodedFeedImplCopyWithImpl(
+      _$HardCodedFeedImpl _value, $Res Function(_$HardCodedFeedImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of Feed
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? hardCodedFeed = null,
+  }) {
+    return _then(_$HardCodedFeedImpl(
+      hardCodedFeed: null == hardCodedFeed
+          ? _value.hardCodedFeed
+          : hardCodedFeed // ignore: cast_nullable_to_non_nullable
+              as HardCodedFeed,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$HardCodedFeedImpl extends _HardCodedFeed {
+  const _$HardCodedFeedImpl({required this.hardCodedFeed}) : super._();
+
+  @override
+  final HardCodedFeed hardCodedFeed;
+
+  @override
+  String toString() {
+    return 'Feed.hardCoded(hardCodedFeed: $hardCodedFeed)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$HardCodedFeedImpl &&
+            (identical(other.hardCodedFeed, hardCodedFeed) ||
+                other.hardCodedFeed == hardCodedFeed));
+  }
+
+  @override
+  int get hashCode => Object.hash(runtimeType, hardCodedFeed);
+
+  /// Create a copy of Feed
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$HardCodedFeedImplCopyWith<_$HardCodedFeedImpl> get copyWith =>
+      __$$HardCodedFeedImplCopyWithImpl<_$HardCodedFeedImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(String name, String uri) custom,
+    required TResult Function(HardCodedFeed hardCodedFeed) hardCoded,
+  }) {
+    return hardCoded(hardCodedFeed);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(String name, String uri)? custom,
+    TResult? Function(HardCodedFeed hardCodedFeed)? hardCoded,
+  }) {
+    return hardCoded?.call(hardCodedFeed);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(String name, String uri)? custom,
+    TResult Function(HardCodedFeed hardCodedFeed)? hardCoded,
+    required TResult orElse(),
+  }) {
+    if (hardCoded != null) {
+      return hardCoded(hardCodedFeed);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_Feed value) custom,
+    required TResult Function(_HardCodedFeed value) hardCoded,
+  }) {
+    return hardCoded(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_Feed value)? custom,
+    TResult? Function(_HardCodedFeed value)? hardCoded,
+  }) {
+    return hardCoded?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_Feed value)? custom,
+    TResult Function(_HardCodedFeed value)? hardCoded,
+    required TResult orElse(),
+  }) {
+    if (hardCoded != null) {
+      return hardCoded(this);
+    }
+    return orElse();
+  }
+}
+
+abstract class _HardCodedFeed extends Feed {
+  const factory _HardCodedFeed({required final HardCodedFeed hardCodedFeed}) =
+      _$HardCodedFeedImpl;
+  const _HardCodedFeed._() : super._();
+
+  HardCodedFeed get hardCodedFeed;
+
+  /// Create a copy of Feed
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$HardCodedFeedImplCopyWith<_$HardCodedFeedImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -186,9 +874,9 @@ PostThread _$PostThreadFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$PostThread {
-  Post get post => throw _privateConstructorUsedError;
-  List<Post>? get parent => throw _privateConstructorUsedError;
-  List<Post>? get replies => throw _privateConstructorUsedError;
+  PostView get post => throw _privateConstructorUsedError;
+  List<PostView>? get parent => throw _privateConstructorUsedError;
+  List<PostView>? get replies => throw _privateConstructorUsedError;
 
   /// Serializes this PostThread to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -206,9 +894,9 @@ abstract class $PostThreadCopyWith<$Res> {
           PostThread value, $Res Function(PostThread) then) =
       _$PostThreadCopyWithImpl<$Res, PostThread>;
   @useResult
-  $Res call({Post post, List<Post>? parent, List<Post>? replies});
+  $Res call({PostView post, List<PostView>? parent, List<PostView>? replies});
 
-  $PostCopyWith<$Res> get post;
+  $PostViewCopyWith<$Res> get post;
 }
 
 /// @nodoc
@@ -234,15 +922,15 @@ class _$PostThreadCopyWithImpl<$Res, $Val extends PostThread>
       post: null == post
           ? _value.post
           : post // ignore: cast_nullable_to_non_nullable
-              as Post,
+              as PostView,
       parent: freezed == parent
           ? _value.parent
           : parent // ignore: cast_nullable_to_non_nullable
-              as List<Post>?,
+              as List<PostView>?,
       replies: freezed == replies
           ? _value.replies
           : replies // ignore: cast_nullable_to_non_nullable
-              as List<Post>?,
+              as List<PostView>?,
     ) as $Val);
   }
 
@@ -250,8 +938,8 @@ class _$PostThreadCopyWithImpl<$Res, $Val extends PostThread>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $PostCopyWith<$Res> get post {
-    return $PostCopyWith<$Res>(_value.post, (value) {
+  $PostViewCopyWith<$Res> get post {
+    return $PostViewCopyWith<$Res>(_value.post, (value) {
       return _then(_value.copyWith(post: value) as $Val);
     });
   }
@@ -265,10 +953,10 @@ abstract class _$$PostThreadImplCopyWith<$Res>
       __$$PostThreadImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({Post post, List<Post>? parent, List<Post>? replies});
+  $Res call({PostView post, List<PostView>? parent, List<PostView>? replies});
 
   @override
-  $PostCopyWith<$Res> get post;
+  $PostViewCopyWith<$Res> get post;
 }
 
 /// @nodoc
@@ -292,15 +980,15 @@ class __$$PostThreadImplCopyWithImpl<$Res>
       post: null == post
           ? _value.post
           : post // ignore: cast_nullable_to_non_nullable
-              as Post,
+              as PostView,
       parent: freezed == parent
           ? _value._parent
           : parent // ignore: cast_nullable_to_non_nullable
-              as List<Post>?,
+              as List<PostView>?,
       replies: freezed == replies
           ? _value._replies
           : replies // ignore: cast_nullable_to_non_nullable
-              as List<Post>?,
+              as List<PostView>?,
     ));
   }
 }
@@ -309,7 +997,9 @@ class __$$PostThreadImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$PostThreadImpl implements _PostThread {
   const _$PostThreadImpl(
-      {required this.post, final List<Post>? parent, final List<Post>? replies})
+      {required this.post,
+      final List<PostView>? parent,
+      final List<PostView>? replies})
       : _parent = parent,
         _replies = replies;
 
@@ -317,10 +1007,10 @@ class _$PostThreadImpl implements _PostThread {
       _$$PostThreadImplFromJson(json);
 
   @override
-  final Post post;
-  final List<Post>? _parent;
+  final PostView post;
+  final List<PostView>? _parent;
   @override
-  List<Post>? get parent {
+  List<PostView>? get parent {
     final value = _parent;
     if (value == null) return null;
     if (_parent is EqualUnmodifiableListView) return _parent;
@@ -328,9 +1018,9 @@ class _$PostThreadImpl implements _PostThread {
     return EqualUnmodifiableListView(value);
   }
 
-  final List<Post>? _replies;
+  final List<PostView>? _replies;
   @override
-  List<Post>? get replies {
+  List<PostView>? get replies {
     final value = _replies;
     if (value == null) return null;
     if (_replies is EqualUnmodifiableListView) return _replies;
@@ -379,19 +1069,19 @@ class _$PostThreadImpl implements _PostThread {
 
 abstract class _PostThread implements PostThread {
   const factory _PostThread(
-      {required final Post post,
-      final List<Post>? parent,
-      final List<Post>? replies}) = _$PostThreadImpl;
+      {required final PostView post,
+      final List<PostView>? parent,
+      final List<PostView>? replies}) = _$PostThreadImpl;
 
   factory _PostThread.fromJson(Map<String, dynamic> json) =
       _$PostThreadImpl.fromJson;
 
   @override
-  Post get post;
+  PostView get post;
   @override
-  List<Post>? get parent;
+  List<PostView>? get parent;
   @override
-  List<Post>? get replies;
+  List<PostView>? get replies;
 
   /// Create a copy of PostThread
   /// with the given fields replaced by the non-null parameter values.
@@ -401,299 +1091,1814 @@ abstract class _PostThread implements PostThread {
       throw _privateConstructorUsedError;
 }
 
-Post _$PostFromJson(Map<String, dynamic> json) {
-  return _Post.fromJson(json);
+ReplyRef _$ReplyRefFromJson(Map<String, dynamic> json) {
+  return _ReplyRef.fromJson(json);
 }
 
 /// @nodoc
-mixin _$Post {
-  @JsonKey(defaultValue: '')
-  String get uri => throw _privateConstructorUsedError;
-  @JsonKey(defaultValue: '')
-  String get cid => throw _privateConstructorUsedError;
-  PostAuthor get author => throw _privateConstructorUsedError;
-  Map<String, dynamic> get record => throw _privateConstructorUsedError;
-  bool get isRepost => throw _privateConstructorUsedError;
-  DateTime? get indexedAt => throw _privateConstructorUsedError;
-  Map<String, dynamic>? get embed => throw _privateConstructorUsedError;
-  Map<String, dynamic> get viewer => throw _privateConstructorUsedError;
-  List<PostAuthor>? get likedBy => throw _privateConstructorUsedError;
-  List<Label>? get labels => throw _privateConstructorUsedError;
+mixin _$ReplyRef {
+  StrongRef get root => throw _privateConstructorUsedError;
+  StrongRef get parent => throw _privateConstructorUsedError;
 
-  /// Serializes this Post to a JSON map.
+  /// Serializes this ReplyRef to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of Post
+  /// Create a copy of ReplyRef
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $PostCopyWith<Post> get copyWith => throw _privateConstructorUsedError;
+  $ReplyRefCopyWith<ReplyRef> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $PostCopyWith<$Res> {
-  factory $PostCopyWith(Post value, $Res Function(Post) then) =
-      _$PostCopyWithImpl<$Res, Post>;
+abstract class $ReplyRefCopyWith<$Res> {
+  factory $ReplyRefCopyWith(ReplyRef value, $Res Function(ReplyRef) then) =
+      _$ReplyRefCopyWithImpl<$Res, ReplyRef>;
   @useResult
-  $Res call(
-      {@JsonKey(defaultValue: '') String uri,
-      @JsonKey(defaultValue: '') String cid,
-      PostAuthor author,
-      Map<String, dynamic> record,
-      bool isRepost,
-      DateTime? indexedAt,
-      Map<String, dynamic>? embed,
-      Map<String, dynamic> viewer,
-      List<PostAuthor>? likedBy,
-      List<Label>? labels});
+  $Res call({StrongRef root, StrongRef parent});
 
-  $PostAuthorCopyWith<$Res> get author;
+  $StrongRefCopyWith<$Res> get root;
+  $StrongRefCopyWith<$Res> get parent;
 }
 
 /// @nodoc
-class _$PostCopyWithImpl<$Res, $Val extends Post>
-    implements $PostCopyWith<$Res> {
-  _$PostCopyWithImpl(this._value, this._then);
+class _$ReplyRefCopyWithImpl<$Res, $Val extends ReplyRef>
+    implements $ReplyRefCopyWith<$Res> {
+  _$ReplyRefCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of Post
+  /// Create a copy of ReplyRef
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? uri = null,
-    Object? cid = null,
-    Object? author = null,
-    Object? record = null,
-    Object? isRepost = null,
-    Object? indexedAt = freezed,
-    Object? embed = freezed,
-    Object? viewer = null,
-    Object? likedBy = freezed,
-    Object? labels = freezed,
+    Object? root = null,
+    Object? parent = null,
   }) {
     return _then(_value.copyWith(
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as String,
-      cid: null == cid
-          ? _value.cid
-          : cid // ignore: cast_nullable_to_non_nullable
-              as String,
-      author: null == author
-          ? _value.author
-          : author // ignore: cast_nullable_to_non_nullable
-              as PostAuthor,
-      record: null == record
-          ? _value.record
-          : record // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>,
-      isRepost: null == isRepost
-          ? _value.isRepost
-          : isRepost // ignore: cast_nullable_to_non_nullable
-              as bool,
-      indexedAt: freezed == indexedAt
-          ? _value.indexedAt
-          : indexedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      embed: freezed == embed
-          ? _value.embed
-          : embed // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
-      viewer: null == viewer
-          ? _value.viewer
-          : viewer // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>,
-      likedBy: freezed == likedBy
-          ? _value.likedBy
-          : likedBy // ignore: cast_nullable_to_non_nullable
-              as List<PostAuthor>?,
-      labels: freezed == labels
-          ? _value.labels
-          : labels // ignore: cast_nullable_to_non_nullable
-              as List<Label>?,
+      root: null == root
+          ? _value.root
+          : root // ignore: cast_nullable_to_non_nullable
+              as StrongRef,
+      parent: null == parent
+          ? _value.parent
+          : parent // ignore: cast_nullable_to_non_nullable
+              as StrongRef,
     ) as $Val);
   }
 
-  /// Create a copy of Post
+  /// Create a copy of ReplyRef
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $PostAuthorCopyWith<$Res> get author {
-    return $PostAuthorCopyWith<$Res>(_value.author, (value) {
-      return _then(_value.copyWith(author: value) as $Val);
+  $StrongRefCopyWith<$Res> get root {
+    return $StrongRefCopyWith<$Res>(_value.root, (value) {
+      return _then(_value.copyWith(root: value) as $Val);
+    });
+  }
+
+  /// Create a copy of ReplyRef
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $StrongRefCopyWith<$Res> get parent {
+    return $StrongRefCopyWith<$Res>(_value.parent, (value) {
+      return _then(_value.copyWith(parent: value) as $Val);
     });
   }
 }
 
 /// @nodoc
-abstract class _$$PostImplCopyWith<$Res> implements $PostCopyWith<$Res> {
-  factory _$$PostImplCopyWith(
-          _$PostImpl value, $Res Function(_$PostImpl) then) =
-      __$$PostImplCopyWithImpl<$Res>;
+abstract class _$$ReplyRefImplCopyWith<$Res>
+    implements $ReplyRefCopyWith<$Res> {
+  factory _$$ReplyRefImplCopyWith(
+          _$ReplyRefImpl value, $Res Function(_$ReplyRefImpl) then) =
+      __$$ReplyRefImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(defaultValue: '') String uri,
-      @JsonKey(defaultValue: '') String cid,
-      PostAuthor author,
-      Map<String, dynamic> record,
-      bool isRepost,
-      DateTime? indexedAt,
-      Map<String, dynamic>? embed,
-      Map<String, dynamic> viewer,
-      List<PostAuthor>? likedBy,
-      List<Label>? labels});
+  $Res call({StrongRef root, StrongRef parent});
 
   @override
-  $PostAuthorCopyWith<$Res> get author;
+  $StrongRefCopyWith<$Res> get root;
+  @override
+  $StrongRefCopyWith<$Res> get parent;
 }
 
 /// @nodoc
-class __$$PostImplCopyWithImpl<$Res>
-    extends _$PostCopyWithImpl<$Res, _$PostImpl>
-    implements _$$PostImplCopyWith<$Res> {
-  __$$PostImplCopyWithImpl(_$PostImpl _value, $Res Function(_$PostImpl) _then)
+class __$$ReplyRefImplCopyWithImpl<$Res>
+    extends _$ReplyRefCopyWithImpl<$Res, _$ReplyRefImpl>
+    implements _$$ReplyRefImplCopyWith<$Res> {
+  __$$ReplyRefImplCopyWithImpl(
+      _$ReplyRefImpl _value, $Res Function(_$ReplyRefImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of Post
+  /// Create a copy of ReplyRef
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? uri = null,
-    Object? cid = null,
-    Object? author = null,
-    Object? record = null,
-    Object? isRepost = null,
-    Object? indexedAt = freezed,
-    Object? embed = freezed,
-    Object? viewer = null,
-    Object? likedBy = freezed,
-    Object? labels = freezed,
+    Object? root = null,
+    Object? parent = null,
   }) {
-    return _then(_$PostImpl(
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as String,
-      cid: null == cid
-          ? _value.cid
-          : cid // ignore: cast_nullable_to_non_nullable
-              as String,
-      author: null == author
-          ? _value.author
-          : author // ignore: cast_nullable_to_non_nullable
-              as PostAuthor,
-      record: null == record
-          ? _value._record
-          : record // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>,
-      isRepost: null == isRepost
-          ? _value.isRepost
-          : isRepost // ignore: cast_nullable_to_non_nullable
-              as bool,
-      indexedAt: freezed == indexedAt
-          ? _value.indexedAt
-          : indexedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime?,
-      embed: freezed == embed
-          ? _value._embed
-          : embed // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
-      viewer: null == viewer
-          ? _value._viewer
-          : viewer // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>,
-      likedBy: freezed == likedBy
-          ? _value._likedBy
-          : likedBy // ignore: cast_nullable_to_non_nullable
-              as List<PostAuthor>?,
-      labels: freezed == labels
-          ? _value._labels
-          : labels // ignore: cast_nullable_to_non_nullable
-              as List<Label>?,
+    return _then(_$ReplyRefImpl(
+      root: null == root
+          ? _value.root
+          : root // ignore: cast_nullable_to_non_nullable
+              as StrongRef,
+      parent: null == parent
+          ? _value.parent
+          : parent // ignore: cast_nullable_to_non_nullable
+              as StrongRef,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$PostImpl implements _Post {
-  const _$PostImpl(
-      {@JsonKey(defaultValue: '') required this.uri,
-      @JsonKey(defaultValue: '') required this.cid,
-      required this.author,
-      required final Map<String, dynamic> record,
-      this.isRepost = false,
-      this.indexedAt,
-      final Map<String, dynamic>? embed,
-      final Map<String, dynamic> viewer = const {},
-      final List<PostAuthor>? likedBy,
-      final List<Label>? labels})
-      : _record = record,
-        _embed = embed,
-        _viewer = viewer,
-        _likedBy = likedBy,
-        _labels = labels;
+class _$ReplyRefImpl implements _ReplyRef {
+  const _$ReplyRefImpl({required this.root, required this.parent});
 
-  factory _$PostImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PostImplFromJson(json);
+  factory _$ReplyRefImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ReplyRefImplFromJson(json);
 
+  @override
+  final StrongRef root;
+  @override
+  final StrongRef parent;
+
+  @override
+  String toString() {
+    return 'ReplyRef(root: $root, parent: $parent)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ReplyRefImpl &&
+            (identical(other.root, root) || other.root == root) &&
+            (identical(other.parent, parent) || other.parent == parent));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, root, parent);
+
+  /// Create a copy of ReplyRef
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ReplyRefImplCopyWith<_$ReplyRefImpl> get copyWith =>
+      __$$ReplyRefImplCopyWithImpl<_$ReplyRefImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ReplyRefImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _ReplyRef implements ReplyRef {
+  const factory _ReplyRef(
+      {required final StrongRef root,
+      required final StrongRef parent}) = _$ReplyRefImpl;
+
+  factory _ReplyRef.fromJson(Map<String, dynamic> json) =
+      _$ReplyRefImpl.fromJson;
+
+  @override
+  StrongRef get root;
+  @override
+  StrongRef get parent;
+
+  /// Create a copy of ReplyRef
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ReplyRefImplCopyWith<_$ReplyRefImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+SelfLabel _$SelfLabelFromJson(Map<String, dynamic> json) {
+  return _SelfLabel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$SelfLabel {
+  String get val => throw _privateConstructorUsedError;
+
+  /// Serializes this SelfLabel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of SelfLabel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $SelfLabelCopyWith<SelfLabel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $SelfLabelCopyWith<$Res> {
+  factory $SelfLabelCopyWith(SelfLabel value, $Res Function(SelfLabel) then) =
+      _$SelfLabelCopyWithImpl<$Res, SelfLabel>;
+  @useResult
+  $Res call({String val});
+}
+
+/// @nodoc
+class _$SelfLabelCopyWithImpl<$Res, $Val extends SelfLabel>
+    implements $SelfLabelCopyWith<$Res> {
+  _$SelfLabelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of SelfLabel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? val = null,
+  }) {
+    return _then(_value.copyWith(
+      val: null == val
+          ? _value.val
+          : val // ignore: cast_nullable_to_non_nullable
+              as String,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$SelfLabelImplCopyWith<$Res>
+    implements $SelfLabelCopyWith<$Res> {
+  factory _$$SelfLabelImplCopyWith(
+          _$SelfLabelImpl value, $Res Function(_$SelfLabelImpl) then) =
+      __$$SelfLabelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({String val});
+}
+
+/// @nodoc
+class __$$SelfLabelImplCopyWithImpl<$Res>
+    extends _$SelfLabelCopyWithImpl<$Res, _$SelfLabelImpl>
+    implements _$$SelfLabelImplCopyWith<$Res> {
+  __$$SelfLabelImplCopyWithImpl(
+      _$SelfLabelImpl _value, $Res Function(_$SelfLabelImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of SelfLabel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? val = null,
+  }) {
+    return _then(_$SelfLabelImpl(
+      val: null == val
+          ? _value.val
+          : val // ignore: cast_nullable_to_non_nullable
+              as String,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$SelfLabelImpl implements _SelfLabel {
+  const _$SelfLabelImpl({required this.val});
+
+  factory _$SelfLabelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SelfLabelImplFromJson(json);
+
+  @override
+  final String val;
+
+  @override
+  String toString() {
+    return 'SelfLabel(val: $val)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$SelfLabelImpl &&
+            (identical(other.val, val) || other.val == val));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, val);
+
+  /// Create a copy of SelfLabel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SelfLabelImplCopyWith<_$SelfLabelImpl> get copyWith =>
+      __$$SelfLabelImplCopyWithImpl<_$SelfLabelImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$SelfLabelImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _SelfLabel implements SelfLabel {
+  const factory _SelfLabel({required final String val}) = _$SelfLabelImpl;
+
+  factory _SelfLabel.fromJson(Map<String, dynamic> json) =
+      _$SelfLabelImpl.fromJson;
+
+  @override
+  String get val;
+
+  /// Create a copy of SelfLabel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$SelfLabelImplCopyWith<_$SelfLabelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+PostRecord _$PostRecordFromJson(Map<String, dynamic> json) {
+  switch (json['runtimeType']) {
+    case 'video':
+      return _PostRecordVideo.fromJson(json);
+    case 'image':
+      return _PostRecordImage.fromJson(json);
+
+    default:
+      throw CheckedFromJsonException(json, 'runtimeType', 'PostRecord',
+          'Invalid union type "${json['runtimeType']}"!');
+  }
+}
+
+/// @nodoc
+mixin _$PostRecord {
+  DateTime get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(defaultValue: '')
+  String? get text => throw _privateConstructorUsedError;
+  @JsonKey(defaultValue: [])
+  List<Facet>? get facets => throw _privateConstructorUsedError;
+  ReplyRef? get reply => throw _privateConstructorUsedError;
+  StrongRef? get sound => throw _privateConstructorUsedError;
+  List<String>? get langs => throw _privateConstructorUsedError;
+  List<String>? get tags => throw _privateConstructorUsedError;
+  List<SelfLabel>? get selfLabels => throw _privateConstructorUsedError;
+  Object? get embed => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            VideoEmbed? embed)
+        video,
+    required TResult Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            ImageEmbed? embed)
+        image,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            VideoEmbed? embed)?
+        video,
+    TResult? Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            ImageEmbed? embed)?
+        image,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            VideoEmbed? embed)?
+        video,
+    TResult Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            ImageEmbed? embed)?
+        image,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_PostRecordVideo value) video,
+    required TResult Function(_PostRecordImage value) image,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_PostRecordVideo value)? video,
+    TResult? Function(_PostRecordImage value)? image,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_PostRecordVideo value)? video,
+    TResult Function(_PostRecordImage value)? image,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+
+  /// Serializes this PostRecord to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of PostRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $PostRecordCopyWith<PostRecord> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $PostRecordCopyWith<$Res> {
+  factory $PostRecordCopyWith(
+          PostRecord value, $Res Function(PostRecord) then) =
+      _$PostRecordCopyWithImpl<$Res, PostRecord>;
+  @useResult
+  $Res call(
+      {DateTime createdAt,
+      @JsonKey(defaultValue: '') String? text,
+      @JsonKey(defaultValue: []) List<Facet>? facets,
+      ReplyRef? reply,
+      StrongRef? sound,
+      List<String>? langs,
+      List<String>? tags,
+      List<SelfLabel>? selfLabels});
+
+  $ReplyRefCopyWith<$Res>? get reply;
+  $StrongRefCopyWith<$Res>? get sound;
+}
+
+/// @nodoc
+class _$PostRecordCopyWithImpl<$Res, $Val extends PostRecord>
+    implements $PostRecordCopyWith<$Res> {
+  _$PostRecordCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of PostRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? createdAt = null,
+    Object? text = freezed,
+    Object? facets = freezed,
+    Object? reply = freezed,
+    Object? sound = freezed,
+    Object? langs = freezed,
+    Object? tags = freezed,
+    Object? selfLabels = freezed,
+  }) {
+    return _then(_value.copyWith(
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      text: freezed == text
+          ? _value.text
+          : text // ignore: cast_nullable_to_non_nullable
+              as String?,
+      facets: freezed == facets
+          ? _value.facets
+          : facets // ignore: cast_nullable_to_non_nullable
+              as List<Facet>?,
+      reply: freezed == reply
+          ? _value.reply
+          : reply // ignore: cast_nullable_to_non_nullable
+              as ReplyRef?,
+      sound: freezed == sound
+          ? _value.sound
+          : sound // ignore: cast_nullable_to_non_nullable
+              as StrongRef?,
+      langs: freezed == langs
+          ? _value.langs
+          : langs // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      tags: freezed == tags
+          ? _value.tags
+          : tags // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      selfLabels: freezed == selfLabels
+          ? _value.selfLabels
+          : selfLabels // ignore: cast_nullable_to_non_nullable
+              as List<SelfLabel>?,
+    ) as $Val);
+  }
+
+  /// Create a copy of PostRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ReplyRefCopyWith<$Res>? get reply {
+    if (_value.reply == null) {
+      return null;
+    }
+
+    return $ReplyRefCopyWith<$Res>(_value.reply!, (value) {
+      return _then(_value.copyWith(reply: value) as $Val);
+    });
+  }
+
+  /// Create a copy of PostRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $StrongRefCopyWith<$Res>? get sound {
+    if (_value.sound == null) {
+      return null;
+    }
+
+    return $StrongRefCopyWith<$Res>(_value.sound!, (value) {
+      return _then(_value.copyWith(sound: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$PostRecordVideoImplCopyWith<$Res>
+    implements $PostRecordCopyWith<$Res> {
+  factory _$$PostRecordVideoImplCopyWith(_$PostRecordVideoImpl value,
+          $Res Function(_$PostRecordVideoImpl) then) =
+      __$$PostRecordVideoImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {DateTime createdAt,
+      @JsonKey(defaultValue: '') String? text,
+      @JsonKey(defaultValue: []) List<Facet>? facets,
+      ReplyRef? reply,
+      StrongRef? sound,
+      List<String>? langs,
+      List<String>? tags,
+      List<SelfLabel>? selfLabels,
+      VideoEmbed? embed});
+
+  @override
+  $ReplyRefCopyWith<$Res>? get reply;
+  @override
+  $StrongRefCopyWith<$Res>? get sound;
+  $VideoEmbedCopyWith<$Res>? get embed;
+}
+
+/// @nodoc
+class __$$PostRecordVideoImplCopyWithImpl<$Res>
+    extends _$PostRecordCopyWithImpl<$Res, _$PostRecordVideoImpl>
+    implements _$$PostRecordVideoImplCopyWith<$Res> {
+  __$$PostRecordVideoImplCopyWithImpl(
+      _$PostRecordVideoImpl _value, $Res Function(_$PostRecordVideoImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of PostRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? createdAt = null,
+    Object? text = freezed,
+    Object? facets = freezed,
+    Object? reply = freezed,
+    Object? sound = freezed,
+    Object? langs = freezed,
+    Object? tags = freezed,
+    Object? selfLabels = freezed,
+    Object? embed = freezed,
+  }) {
+    return _then(_$PostRecordVideoImpl(
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      text: freezed == text
+          ? _value.text
+          : text // ignore: cast_nullable_to_non_nullable
+              as String?,
+      facets: freezed == facets
+          ? _value._facets
+          : facets // ignore: cast_nullable_to_non_nullable
+              as List<Facet>?,
+      reply: freezed == reply
+          ? _value.reply
+          : reply // ignore: cast_nullable_to_non_nullable
+              as ReplyRef?,
+      sound: freezed == sound
+          ? _value.sound
+          : sound // ignore: cast_nullable_to_non_nullable
+              as StrongRef?,
+      langs: freezed == langs
+          ? _value._langs
+          : langs // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      tags: freezed == tags
+          ? _value._tags
+          : tags // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      selfLabels: freezed == selfLabels
+          ? _value._selfLabels
+          : selfLabels // ignore: cast_nullable_to_non_nullable
+              as List<SelfLabel>?,
+      embed: freezed == embed
+          ? _value.embed
+          : embed // ignore: cast_nullable_to_non_nullable
+              as VideoEmbed?,
+    ));
+  }
+
+  /// Create a copy of PostRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $VideoEmbedCopyWith<$Res>? get embed {
+    if (_value.embed == null) {
+      return null;
+    }
+
+    return $VideoEmbedCopyWith<$Res>(_value.embed!, (value) {
+      return _then(_value.copyWith(embed: value));
+    });
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$PostRecordVideoImpl extends _PostRecordVideo {
+  const _$PostRecordVideoImpl(
+      {required this.createdAt,
+      @JsonKey(defaultValue: '') this.text,
+      @JsonKey(defaultValue: []) final List<Facet>? facets,
+      this.reply,
+      this.sound,
+      final List<String>? langs,
+      final List<String>? tags,
+      final List<SelfLabel>? selfLabels,
+      this.embed,
+      final String? $type})
+      : _facets = facets,
+        _langs = langs,
+        _tags = tags,
+        _selfLabels = selfLabels,
+        $type = $type ?? 'video',
+        super._();
+
+  factory _$PostRecordVideoImpl.fromJson(Map<String, dynamic> json) =>
+      _$$PostRecordVideoImplFromJson(json);
+
+  @override
+  final DateTime createdAt;
   @override
   @JsonKey(defaultValue: '')
-  final String uri;
+  final String? text;
+  final List<Facet>? _facets;
   @override
-  @JsonKey(defaultValue: '')
-  final String cid;
-  @override
-  final PostAuthor author;
-  final Map<String, dynamic> _record;
-  @override
-  Map<String, dynamic> get record {
-    if (_record is EqualUnmodifiableMapView) return _record;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_record);
-  }
-
-  @override
-  @JsonKey()
-  final bool isRepost;
-  @override
-  final DateTime? indexedAt;
-  final Map<String, dynamic>? _embed;
-  @override
-  Map<String, dynamic>? get embed {
-    final value = _embed;
+  @JsonKey(defaultValue: [])
+  List<Facet>? get facets {
+    final value = _facets;
     if (value == null) return null;
-    if (_embed is EqualUnmodifiableMapView) return _embed;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(value);
-  }
-
-  final Map<String, dynamic> _viewer;
-  @override
-  @JsonKey()
-  Map<String, dynamic> get viewer {
-    if (_viewer is EqualUnmodifiableMapView) return _viewer;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_viewer);
-  }
-
-  final List<PostAuthor>? _likedBy;
-  @override
-  List<PostAuthor>? get likedBy {
-    final value = _likedBy;
-    if (value == null) return null;
-    if (_likedBy is EqualUnmodifiableListView) return _likedBy;
+    if (_facets is EqualUnmodifiableListView) return _facets;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(value);
   }
 
+  @override
+  final ReplyRef? reply;
+  @override
+  final StrongRef? sound;
+  final List<String>? _langs;
+  @override
+  List<String>? get langs {
+    final value = _langs;
+    if (value == null) return null;
+    if (_langs is EqualUnmodifiableListView) return _langs;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  final List<String>? _tags;
+  @override
+  List<String>? get tags {
+    final value = _tags;
+    if (value == null) return null;
+    if (_tags is EqualUnmodifiableListView) return _tags;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  final List<SelfLabel>? _selfLabels;
+  @override
+  List<SelfLabel>? get selfLabels {
+    final value = _selfLabels;
+    if (value == null) return null;
+    if (_selfLabels is EqualUnmodifiableListView) return _selfLabels;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
+  final VideoEmbed? embed;
+
+  @JsonKey(name: 'runtimeType')
+  final String $type;
+
+  @override
+  String toString() {
+    return 'PostRecord.video(createdAt: $createdAt, text: $text, facets: $facets, reply: $reply, sound: $sound, langs: $langs, tags: $tags, selfLabels: $selfLabels, embed: $embed)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$PostRecordVideoImpl &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.text, text) || other.text == text) &&
+            const DeepCollectionEquality().equals(other._facets, _facets) &&
+            (identical(other.reply, reply) || other.reply == reply) &&
+            (identical(other.sound, sound) || other.sound == sound) &&
+            const DeepCollectionEquality().equals(other._langs, _langs) &&
+            const DeepCollectionEquality().equals(other._tags, _tags) &&
+            const DeepCollectionEquality()
+                .equals(other._selfLabels, _selfLabels) &&
+            (identical(other.embed, embed) || other.embed == embed));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      createdAt,
+      text,
+      const DeepCollectionEquality().hash(_facets),
+      reply,
+      sound,
+      const DeepCollectionEquality().hash(_langs),
+      const DeepCollectionEquality().hash(_tags),
+      const DeepCollectionEquality().hash(_selfLabels),
+      embed);
+
+  /// Create a copy of PostRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$PostRecordVideoImplCopyWith<_$PostRecordVideoImpl> get copyWith =>
+      __$$PostRecordVideoImplCopyWithImpl<_$PostRecordVideoImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            VideoEmbed? embed)
+        video,
+    required TResult Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            ImageEmbed? embed)
+        image,
+  }) {
+    return video(
+        createdAt, text, facets, reply, sound, langs, tags, selfLabels, embed);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            VideoEmbed? embed)?
+        video,
+    TResult? Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            ImageEmbed? embed)?
+        image,
+  }) {
+    return video?.call(
+        createdAt, text, facets, reply, sound, langs, tags, selfLabels, embed);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            VideoEmbed? embed)?
+        video,
+    TResult Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            ImageEmbed? embed)?
+        image,
+    required TResult orElse(),
+  }) {
+    if (video != null) {
+      return video(createdAt, text, facets, reply, sound, langs, tags,
+          selfLabels, embed);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_PostRecordVideo value) video,
+    required TResult Function(_PostRecordImage value) image,
+  }) {
+    return video(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_PostRecordVideo value)? video,
+    TResult? Function(_PostRecordImage value)? image,
+  }) {
+    return video?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_PostRecordVideo value)? video,
+    TResult Function(_PostRecordImage value)? image,
+    required TResult orElse(),
+  }) {
+    if (video != null) {
+      return video(this);
+    }
+    return orElse();
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$PostRecordVideoImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _PostRecordVideo extends PostRecord {
+  const factory _PostRecordVideo(
+      {required final DateTime createdAt,
+      @JsonKey(defaultValue: '') final String? text,
+      @JsonKey(defaultValue: []) final List<Facet>? facets,
+      final ReplyRef? reply,
+      final StrongRef? sound,
+      final List<String>? langs,
+      final List<String>? tags,
+      final List<SelfLabel>? selfLabels,
+      final VideoEmbed? embed}) = _$PostRecordVideoImpl;
+  const _PostRecordVideo._() : super._();
+
+  factory _PostRecordVideo.fromJson(Map<String, dynamic> json) =
+      _$PostRecordVideoImpl.fromJson;
+
+  @override
+  DateTime get createdAt;
+  @override
+  @JsonKey(defaultValue: '')
+  String? get text;
+  @override
+  @JsonKey(defaultValue: [])
+  List<Facet>? get facets;
+  @override
+  ReplyRef? get reply;
+  @override
+  StrongRef? get sound;
+  @override
+  List<String>? get langs;
+  @override
+  List<String>? get tags;
+  @override
+  List<SelfLabel>? get selfLabels;
+  @override
+  VideoEmbed? get embed;
+
+  /// Create a copy of PostRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$PostRecordVideoImplCopyWith<_$PostRecordVideoImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$PostRecordImageImplCopyWith<$Res>
+    implements $PostRecordCopyWith<$Res> {
+  factory _$$PostRecordImageImplCopyWith(_$PostRecordImageImpl value,
+          $Res Function(_$PostRecordImageImpl) then) =
+      __$$PostRecordImageImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {DateTime createdAt,
+      @JsonKey(defaultValue: '') String? text,
+      @JsonKey(defaultValue: []) List<Facet>? facets,
+      ReplyRef? reply,
+      StrongRef? sound,
+      List<String>? langs,
+      List<String>? tags,
+      List<SelfLabel>? selfLabels,
+      ImageEmbed? embed});
+
+  @override
+  $ReplyRefCopyWith<$Res>? get reply;
+  @override
+  $StrongRefCopyWith<$Res>? get sound;
+  $ImageEmbedCopyWith<$Res>? get embed;
+}
+
+/// @nodoc
+class __$$PostRecordImageImplCopyWithImpl<$Res>
+    extends _$PostRecordCopyWithImpl<$Res, _$PostRecordImageImpl>
+    implements _$$PostRecordImageImplCopyWith<$Res> {
+  __$$PostRecordImageImplCopyWithImpl(
+      _$PostRecordImageImpl _value, $Res Function(_$PostRecordImageImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of PostRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? createdAt = null,
+    Object? text = freezed,
+    Object? facets = freezed,
+    Object? reply = freezed,
+    Object? sound = freezed,
+    Object? langs = freezed,
+    Object? tags = freezed,
+    Object? selfLabels = freezed,
+    Object? embed = freezed,
+  }) {
+    return _then(_$PostRecordImageImpl(
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      text: freezed == text
+          ? _value.text
+          : text // ignore: cast_nullable_to_non_nullable
+              as String?,
+      facets: freezed == facets
+          ? _value._facets
+          : facets // ignore: cast_nullable_to_non_nullable
+              as List<Facet>?,
+      reply: freezed == reply
+          ? _value.reply
+          : reply // ignore: cast_nullable_to_non_nullable
+              as ReplyRef?,
+      sound: freezed == sound
+          ? _value.sound
+          : sound // ignore: cast_nullable_to_non_nullable
+              as StrongRef?,
+      langs: freezed == langs
+          ? _value._langs
+          : langs // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      tags: freezed == tags
+          ? _value._tags
+          : tags // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      selfLabels: freezed == selfLabels
+          ? _value._selfLabels
+          : selfLabels // ignore: cast_nullable_to_non_nullable
+              as List<SelfLabel>?,
+      embed: freezed == embed
+          ? _value.embed
+          : embed // ignore: cast_nullable_to_non_nullable
+              as ImageEmbed?,
+    ));
+  }
+
+  /// Create a copy of PostRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ImageEmbedCopyWith<$Res>? get embed {
+    if (_value.embed == null) {
+      return null;
+    }
+
+    return $ImageEmbedCopyWith<$Res>(_value.embed!, (value) {
+      return _then(_value.copyWith(embed: value));
+    });
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$PostRecordImageImpl extends _PostRecordImage {
+  const _$PostRecordImageImpl(
+      {required this.createdAt,
+      @JsonKey(defaultValue: '') this.text,
+      @JsonKey(defaultValue: []) final List<Facet>? facets,
+      this.reply,
+      this.sound,
+      final List<String>? langs,
+      final List<String>? tags,
+      final List<SelfLabel>? selfLabels,
+      this.embed,
+      final String? $type})
+      : _facets = facets,
+        _langs = langs,
+        _tags = tags,
+        _selfLabels = selfLabels,
+        $type = $type ?? 'image',
+        super._();
+
+  factory _$PostRecordImageImpl.fromJson(Map<String, dynamic> json) =>
+      _$$PostRecordImageImplFromJson(json);
+
+  @override
+  final DateTime createdAt;
+  @override
+  @JsonKey(defaultValue: '')
+  final String? text;
+  final List<Facet>? _facets;
+  @override
+  @JsonKey(defaultValue: [])
+  List<Facet>? get facets {
+    final value = _facets;
+    if (value == null) return null;
+    if (_facets is EqualUnmodifiableListView) return _facets;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
+  final ReplyRef? reply;
+  @override
+  final StrongRef? sound;
+  final List<String>? _langs;
+  @override
+  List<String>? get langs {
+    final value = _langs;
+    if (value == null) return null;
+    if (_langs is EqualUnmodifiableListView) return _langs;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  final List<String>? _tags;
+  @override
+  List<String>? get tags {
+    final value = _tags;
+    if (value == null) return null;
+    if (_tags is EqualUnmodifiableListView) return _tags;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  final List<SelfLabel>? _selfLabels;
+  @override
+  List<SelfLabel>? get selfLabels {
+    final value = _selfLabels;
+    if (value == null) return null;
+    if (_selfLabels is EqualUnmodifiableListView) return _selfLabels;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
+  final ImageEmbed? embed;
+
+  @JsonKey(name: 'runtimeType')
+  final String $type;
+
+  @override
+  String toString() {
+    return 'PostRecord.image(createdAt: $createdAt, text: $text, facets: $facets, reply: $reply, sound: $sound, langs: $langs, tags: $tags, selfLabels: $selfLabels, embed: $embed)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$PostRecordImageImpl &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.text, text) || other.text == text) &&
+            const DeepCollectionEquality().equals(other._facets, _facets) &&
+            (identical(other.reply, reply) || other.reply == reply) &&
+            (identical(other.sound, sound) || other.sound == sound) &&
+            const DeepCollectionEquality().equals(other._langs, _langs) &&
+            const DeepCollectionEquality().equals(other._tags, _tags) &&
+            const DeepCollectionEquality()
+                .equals(other._selfLabels, _selfLabels) &&
+            (identical(other.embed, embed) || other.embed == embed));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      createdAt,
+      text,
+      const DeepCollectionEquality().hash(_facets),
+      reply,
+      sound,
+      const DeepCollectionEquality().hash(_langs),
+      const DeepCollectionEquality().hash(_tags),
+      const DeepCollectionEquality().hash(_selfLabels),
+      embed);
+
+  /// Create a copy of PostRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$PostRecordImageImplCopyWith<_$PostRecordImageImpl> get copyWith =>
+      __$$PostRecordImageImplCopyWithImpl<_$PostRecordImageImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            VideoEmbed? embed)
+        video,
+    required TResult Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            ImageEmbed? embed)
+        image,
+  }) {
+    return image(
+        createdAt, text, facets, reply, sound, langs, tags, selfLabels, embed);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            VideoEmbed? embed)?
+        video,
+    TResult? Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            ImageEmbed? embed)?
+        image,
+  }) {
+    return image?.call(
+        createdAt, text, facets, reply, sound, langs, tags, selfLabels, embed);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            VideoEmbed? embed)?
+        video,
+    TResult Function(
+            DateTime createdAt,
+            @JsonKey(defaultValue: '') String? text,
+            @JsonKey(defaultValue: []) List<Facet>? facets,
+            ReplyRef? reply,
+            StrongRef? sound,
+            List<String>? langs,
+            List<String>? tags,
+            List<SelfLabel>? selfLabels,
+            ImageEmbed? embed)?
+        image,
+    required TResult orElse(),
+  }) {
+    if (image != null) {
+      return image(createdAt, text, facets, reply, sound, langs, tags,
+          selfLabels, embed);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_PostRecordVideo value) video,
+    required TResult Function(_PostRecordImage value) image,
+  }) {
+    return image(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_PostRecordVideo value)? video,
+    TResult? Function(_PostRecordImage value)? image,
+  }) {
+    return image?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_PostRecordVideo value)? video,
+    TResult Function(_PostRecordImage value)? image,
+    required TResult orElse(),
+  }) {
+    if (image != null) {
+      return image(this);
+    }
+    return orElse();
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$PostRecordImageImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _PostRecordImage extends PostRecord {
+  const factory _PostRecordImage(
+      {required final DateTime createdAt,
+      @JsonKey(defaultValue: '') final String? text,
+      @JsonKey(defaultValue: []) final List<Facet>? facets,
+      final ReplyRef? reply,
+      final StrongRef? sound,
+      final List<String>? langs,
+      final List<String>? tags,
+      final List<SelfLabel>? selfLabels,
+      final ImageEmbed? embed}) = _$PostRecordImageImpl;
+  const _PostRecordImage._() : super._();
+
+  factory _PostRecordImage.fromJson(Map<String, dynamic> json) =
+      _$PostRecordImageImpl.fromJson;
+
+  @override
+  DateTime get createdAt;
+  @override
+  @JsonKey(defaultValue: '')
+  String? get text;
+  @override
+  @JsonKey(defaultValue: [])
+  List<Facet>? get facets;
+  @override
+  ReplyRef? get reply;
+  @override
+  StrongRef? get sound;
+  @override
+  List<String>? get langs;
+  @override
+  List<String>? get tags;
+  @override
+  List<SelfLabel>? get selfLabels;
+  @override
+  ImageEmbed? get embed;
+
+  /// Create a copy of PostRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$PostRecordImageImplCopyWith<_$PostRecordImageImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+PostView _$PostViewFromJson(Map<String, dynamic> json) {
+  switch (json['runtimeType']) {
+    case 'video':
+      return VideoPostView.fromJson(json);
+    case 'image':
+      return ImagePostView.fromJson(json);
+
+    default:
+      throw CheckedFromJsonException(json, 'runtimeType', 'PostView',
+          'Invalid union type "${json['runtimeType']}"!');
+  }
+}
+
+/// @nodoc
+mixin _$PostView {
+  @AtUriConverter()
+  AtUri get uri => throw _privateConstructorUsedError;
+  @JsonKey(defaultValue: '')
+  String get cid => throw _privateConstructorUsedError;
+  ProfileViewBasic get author => throw _privateConstructorUsedError;
+  PostRecord get record => throw _privateConstructorUsedError;
+  bool get isRepost => throw _privateConstructorUsedError;
+  DateTime get indexedAt => throw _privateConstructorUsedError;
+  List<Label>? get labels => throw _privateConstructorUsedError;
+  SoundView? get sound => throw _privateConstructorUsedError;
+  Object? get embed => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            VideoView? embed)
+        video,
+    required TResult Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            int? replyCount,
+            int? repostCount,
+            int? likeCount,
+            int? lookCount,
+            Viewer? viewer,
+            ImageView? embed)
+        image,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            VideoView? embed)?
+        video,
+    TResult? Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            int? replyCount,
+            int? repostCount,
+            int? likeCount,
+            int? lookCount,
+            Viewer? viewer,
+            ImageView? embed)?
+        image,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            VideoView? embed)?
+        video,
+    TResult Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            int? replyCount,
+            int? repostCount,
+            int? likeCount,
+            int? lookCount,
+            Viewer? viewer,
+            ImageView? embed)?
+        image,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(VideoPostView value) video,
+    required TResult Function(ImagePostView value) image,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(VideoPostView value)? video,
+    TResult? Function(ImagePostView value)? image,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(VideoPostView value)? video,
+    TResult Function(ImagePostView value)? image,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+
+  /// Serializes this PostView to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of PostView
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $PostViewCopyWith<PostView> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $PostViewCopyWith<$Res> {
+  factory $PostViewCopyWith(PostView value, $Res Function(PostView) then) =
+      _$PostViewCopyWithImpl<$Res, PostView>;
+  @useResult
+  $Res call(
+      {@AtUriConverter() AtUri uri,
+      @JsonKey(defaultValue: '') String cid,
+      ProfileViewBasic author,
+      PostRecord record,
+      bool isRepost,
+      DateTime indexedAt,
+      List<Label>? labels,
+      SoundView? sound});
+
+  $ProfileViewBasicCopyWith<$Res> get author;
+  $PostRecordCopyWith<$Res> get record;
+  $SoundViewCopyWith<$Res>? get sound;
+}
+
+/// @nodoc
+class _$PostViewCopyWithImpl<$Res, $Val extends PostView>
+    implements $PostViewCopyWith<$Res> {
+  _$PostViewCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of PostView
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? uri = null,
+    Object? cid = null,
+    Object? author = null,
+    Object? record = null,
+    Object? isRepost = null,
+    Object? indexedAt = null,
+    Object? labels = freezed,
+    Object? sound = freezed,
+  }) {
+    return _then(_value.copyWith(
+      uri: null == uri
+          ? _value.uri
+          : uri // ignore: cast_nullable_to_non_nullable
+              as AtUri,
+      cid: null == cid
+          ? _value.cid
+          : cid // ignore: cast_nullable_to_non_nullable
+              as String,
+      author: null == author
+          ? _value.author
+          : author // ignore: cast_nullable_to_non_nullable
+              as ProfileViewBasic,
+      record: null == record
+          ? _value.record
+          : record // ignore: cast_nullable_to_non_nullable
+              as PostRecord,
+      isRepost: null == isRepost
+          ? _value.isRepost
+          : isRepost // ignore: cast_nullable_to_non_nullable
+              as bool,
+      indexedAt: null == indexedAt
+          ? _value.indexedAt
+          : indexedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      labels: freezed == labels
+          ? _value.labels
+          : labels // ignore: cast_nullable_to_non_nullable
+              as List<Label>?,
+      sound: freezed == sound
+          ? _value.sound
+          : sound // ignore: cast_nullable_to_non_nullable
+              as SoundView?,
+    ) as $Val);
+  }
+
+  /// Create a copy of PostView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProfileViewBasicCopyWith<$Res> get author {
+    return $ProfileViewBasicCopyWith<$Res>(_value.author, (value) {
+      return _then(_value.copyWith(author: value) as $Val);
+    });
+  }
+
+  /// Create a copy of PostView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $PostRecordCopyWith<$Res> get record {
+    return $PostRecordCopyWith<$Res>(_value.record, (value) {
+      return _then(_value.copyWith(record: value) as $Val);
+    });
+  }
+
+  /// Create a copy of PostView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $SoundViewCopyWith<$Res>? get sound {
+    if (_value.sound == null) {
+      return null;
+    }
+
+    return $SoundViewCopyWith<$Res>(_value.sound!, (value) {
+      return _then(_value.copyWith(sound: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$VideoPostViewImplCopyWith<$Res>
+    implements $PostViewCopyWith<$Res> {
+  factory _$$VideoPostViewImplCopyWith(
+          _$VideoPostViewImpl value, $Res Function(_$VideoPostViewImpl) then) =
+      __$$VideoPostViewImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {@AtUriConverter() AtUri uri,
+      @JsonKey(defaultValue: '') String cid,
+      ProfileViewBasic author,
+      PostRecord record,
+      bool isRepost,
+      DateTime indexedAt,
+      List<Label>? labels,
+      SoundView? sound,
+      VideoView? embed});
+
+  @override
+  $ProfileViewBasicCopyWith<$Res> get author;
+  @override
+  $PostRecordCopyWith<$Res> get record;
+  @override
+  $SoundViewCopyWith<$Res>? get sound;
+  $VideoViewCopyWith<$Res>? get embed;
+}
+
+/// @nodoc
+class __$$VideoPostViewImplCopyWithImpl<$Res>
+    extends _$PostViewCopyWithImpl<$Res, _$VideoPostViewImpl>
+    implements _$$VideoPostViewImplCopyWith<$Res> {
+  __$$VideoPostViewImplCopyWithImpl(
+      _$VideoPostViewImpl _value, $Res Function(_$VideoPostViewImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of PostView
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? uri = null,
+    Object? cid = null,
+    Object? author = null,
+    Object? record = null,
+    Object? isRepost = null,
+    Object? indexedAt = null,
+    Object? labels = freezed,
+    Object? sound = freezed,
+    Object? embed = freezed,
+  }) {
+    return _then(_$VideoPostViewImpl(
+      uri: null == uri
+          ? _value.uri
+          : uri // ignore: cast_nullable_to_non_nullable
+              as AtUri,
+      cid: null == cid
+          ? _value.cid
+          : cid // ignore: cast_nullable_to_non_nullable
+              as String,
+      author: null == author
+          ? _value.author
+          : author // ignore: cast_nullable_to_non_nullable
+              as ProfileViewBasic,
+      record: null == record
+          ? _value.record
+          : record // ignore: cast_nullable_to_non_nullable
+              as PostRecord,
+      isRepost: null == isRepost
+          ? _value.isRepost
+          : isRepost // ignore: cast_nullable_to_non_nullable
+              as bool,
+      indexedAt: null == indexedAt
+          ? _value.indexedAt
+          : indexedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      labels: freezed == labels
+          ? _value._labels
+          : labels // ignore: cast_nullable_to_non_nullable
+              as List<Label>?,
+      sound: freezed == sound
+          ? _value.sound
+          : sound // ignore: cast_nullable_to_non_nullable
+              as SoundView?,
+      embed: freezed == embed
+          ? _value.embed
+          : embed // ignore: cast_nullable_to_non_nullable
+              as VideoView?,
+    ));
+  }
+
+  /// Create a copy of PostView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $VideoViewCopyWith<$Res>? get embed {
+    if (_value.embed == null) {
+      return null;
+    }
+
+    return $VideoViewCopyWith<$Res>(_value.embed!, (value) {
+      return _then(_value.copyWith(embed: value));
+    });
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$VideoPostViewImpl implements VideoPostView {
+  const _$VideoPostViewImpl(
+      {@AtUriConverter() required this.uri,
+      @JsonKey(defaultValue: '') required this.cid,
+      required this.author,
+      required this.record,
+      this.isRepost = false,
+      required this.indexedAt,
+      final List<Label>? labels,
+      this.sound,
+      this.embed,
+      final String? $type})
+      : _labels = labels,
+        $type = $type ?? 'video';
+
+  factory _$VideoPostViewImpl.fromJson(Map<String, dynamic> json) =>
+      _$$VideoPostViewImplFromJson(json);
+
+  @override
+  @AtUriConverter()
+  final AtUri uri;
+  @override
+  @JsonKey(defaultValue: '')
+  final String cid;
+  @override
+  final ProfileViewBasic author;
+  @override
+  final PostRecord record;
+  @override
+  @JsonKey()
+  final bool isRepost;
+  @override
+  final DateTime indexedAt;
   final List<Label>? _labels;
   @override
   List<Label>? get labels {
@@ -705,27 +2910,34 @@ class _$PostImpl implements _Post {
   }
 
   @override
+  final SoundView? sound;
+  @override
+  final VideoView? embed;
+
+  @JsonKey(name: 'runtimeType')
+  final String $type;
+
+  @override
   String toString() {
-    return 'Post(uri: $uri, cid: $cid, author: $author, record: $record, isRepost: $isRepost, indexedAt: $indexedAt, embed: $embed, viewer: $viewer, likedBy: $likedBy, labels: $labels)';
+    return 'PostView.video(uri: $uri, cid: $cid, author: $author, record: $record, isRepost: $isRepost, indexedAt: $indexedAt, labels: $labels, sound: $sound, embed: $embed)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$PostImpl &&
+            other is _$VideoPostViewImpl &&
             (identical(other.uri, uri) || other.uri == uri) &&
             (identical(other.cid, cid) || other.cid == cid) &&
             (identical(other.author, author) || other.author == author) &&
-            const DeepCollectionEquality().equals(other._record, _record) &&
+            (identical(other.record, record) || other.record == record) &&
             (identical(other.isRepost, isRepost) ||
                 other.isRepost == isRepost) &&
             (identical(other.indexedAt, indexedAt) ||
                 other.indexedAt == indexedAt) &&
-            const DeepCollectionEquality().equals(other._embed, _embed) &&
-            const DeepCollectionEquality().equals(other._viewer, _viewer) &&
-            const DeepCollectionEquality().equals(other._likedBy, _likedBy) &&
-            const DeepCollectionEquality().equals(other._labels, _labels));
+            const DeepCollectionEquality().equals(other._labels, _labels) &&
+            (identical(other.sound, sound) || other.sound == sound) &&
+            (identical(other.embed, embed) || other.embed == embed));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -735,543 +2947,732 @@ class _$PostImpl implements _Post {
       uri,
       cid,
       author,
-      const DeepCollectionEquality().hash(_record),
+      record,
       isRepost,
       indexedAt,
-      const DeepCollectionEquality().hash(_embed),
-      const DeepCollectionEquality().hash(_viewer),
-      const DeepCollectionEquality().hash(_likedBy),
-      const DeepCollectionEquality().hash(_labels));
+      const DeepCollectionEquality().hash(_labels),
+      sound,
+      embed);
 
-  /// Create a copy of Post
+  /// Create a copy of PostView
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$PostImplCopyWith<_$PostImpl> get copyWith =>
-      __$$PostImplCopyWithImpl<_$PostImpl>(this, _$identity);
+  _$$VideoPostViewImplCopyWith<_$VideoPostViewImpl> get copyWith =>
+      __$$VideoPostViewImplCopyWithImpl<_$VideoPostViewImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            VideoView? embed)
+        video,
+    required TResult Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            int? replyCount,
+            int? repostCount,
+            int? likeCount,
+            int? lookCount,
+            Viewer? viewer,
+            ImageView? embed)
+        image,
+  }) {
+    return video(
+        uri, cid, author, record, isRepost, indexedAt, labels, sound, embed);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            VideoView? embed)?
+        video,
+    TResult? Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            int? replyCount,
+            int? repostCount,
+            int? likeCount,
+            int? lookCount,
+            Viewer? viewer,
+            ImageView? embed)?
+        image,
+  }) {
+    return video?.call(
+        uri, cid, author, record, isRepost, indexedAt, labels, sound, embed);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            VideoView? embed)?
+        video,
+    TResult Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            int? replyCount,
+            int? repostCount,
+            int? likeCount,
+            int? lookCount,
+            Viewer? viewer,
+            ImageView? embed)?
+        image,
+    required TResult orElse(),
+  }) {
+    if (video != null) {
+      return video(
+          uri, cid, author, record, isRepost, indexedAt, labels, sound, embed);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(VideoPostView value) video,
+    required TResult Function(ImagePostView value) image,
+  }) {
+    return video(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(VideoPostView value)? video,
+    TResult? Function(ImagePostView value)? image,
+  }) {
+    return video?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(VideoPostView value)? video,
+    TResult Function(ImagePostView value)? image,
+    required TResult orElse(),
+  }) {
+    if (video != null) {
+      return video(this);
+    }
+    return orElse();
+  }
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PostImplToJson(
+    return _$$VideoPostViewImplToJson(
       this,
     );
   }
 }
 
-abstract class _Post implements Post {
-  const factory _Post(
-      {@JsonKey(defaultValue: '') required final String uri,
+abstract class VideoPostView implements PostView {
+  const factory VideoPostView(
+      {@AtUriConverter() required final AtUri uri,
       @JsonKey(defaultValue: '') required final String cid,
-      required final PostAuthor author,
-      required final Map<String, dynamic> record,
+      required final ProfileViewBasic author,
+      required final PostRecord record,
       final bool isRepost,
-      final DateTime? indexedAt,
-      final Map<String, dynamic>? embed,
-      final Map<String, dynamic> viewer,
-      final List<PostAuthor>? likedBy,
-      final List<Label>? labels}) = _$PostImpl;
+      required final DateTime indexedAt,
+      final List<Label>? labels,
+      final SoundView? sound,
+      final VideoView? embed}) = _$VideoPostViewImpl;
 
-  factory _Post.fromJson(Map<String, dynamic> json) = _$PostImpl.fromJson;
+  factory VideoPostView.fromJson(Map<String, dynamic> json) =
+      _$VideoPostViewImpl.fromJson;
 
   @override
-  @JsonKey(defaultValue: '')
-  String get uri;
+  @AtUriConverter()
+  AtUri get uri;
   @override
   @JsonKey(defaultValue: '')
   String get cid;
   @override
-  PostAuthor get author;
+  ProfileViewBasic get author;
   @override
-  Map<String, dynamic> get record;
+  PostRecord get record;
   @override
   bool get isRepost;
   @override
-  DateTime? get indexedAt;
-  @override
-  Map<String, dynamic>? get embed;
-  @override
-  Map<String, dynamic> get viewer;
-  @override
-  List<PostAuthor>? get likedBy;
+  DateTime get indexedAt;
   @override
   List<Label>? get labels;
+  @override
+  SoundView? get sound;
+  @override
+  VideoView? get embed;
 
-  /// Create a copy of Post
+  /// Create a copy of PostView
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$PostImplCopyWith<_$PostImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-PostAuthor _$PostAuthorFromJson(Map<String, dynamic> json) {
-  return _PostAuthor.fromJson(json);
-}
-
-/// @nodoc
-mixin _$PostAuthor {
-  @JsonKey(defaultValue: '')
-  String get did => throw _privateConstructorUsedError;
-  @JsonKey(defaultValue: '')
-  String get handle => throw _privateConstructorUsedError;
-  String? get displayName => throw _privateConstructorUsedError;
-  String? get avatar => throw _privateConstructorUsedError;
-  bool get isFollowing => throw _privateConstructorUsedError;
-  bool get isFollowedBy => throw _privateConstructorUsedError;
-
-  /// Serializes this PostAuthor to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of PostAuthor
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $PostAuthorCopyWith<PostAuthor> get copyWith =>
+  _$$VideoPostViewImplCopyWith<_$VideoPostViewImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $PostAuthorCopyWith<$Res> {
-  factory $PostAuthorCopyWith(
-          PostAuthor value, $Res Function(PostAuthor) then) =
-      _$PostAuthorCopyWithImpl<$Res, PostAuthor>;
-  @useResult
-  $Res call(
-      {@JsonKey(defaultValue: '') String did,
-      @JsonKey(defaultValue: '') String handle,
-      String? displayName,
-      String? avatar,
-      bool isFollowing,
-      bool isFollowedBy});
-}
-
-/// @nodoc
-class _$PostAuthorCopyWithImpl<$Res, $Val extends PostAuthor>
-    implements $PostAuthorCopyWith<$Res> {
-  _$PostAuthorCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of PostAuthor
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? did = null,
-    Object? handle = null,
-    Object? displayName = freezed,
-    Object? avatar = freezed,
-    Object? isFollowing = null,
-    Object? isFollowedBy = null,
-  }) {
-    return _then(_value.copyWith(
-      did: null == did
-          ? _value.did
-          : did // ignore: cast_nullable_to_non_nullable
-              as String,
-      handle: null == handle
-          ? _value.handle
-          : handle // ignore: cast_nullable_to_non_nullable
-              as String,
-      displayName: freezed == displayName
-          ? _value.displayName
-          : displayName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      avatar: freezed == avatar
-          ? _value.avatar
-          : avatar // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isFollowing: null == isFollowing
-          ? _value.isFollowing
-          : isFollowing // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isFollowedBy: null == isFollowedBy
-          ? _value.isFollowedBy
-          : isFollowedBy // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$PostAuthorImplCopyWith<$Res>
-    implements $PostAuthorCopyWith<$Res> {
-  factory _$$PostAuthorImplCopyWith(
-          _$PostAuthorImpl value, $Res Function(_$PostAuthorImpl) then) =
-      __$$PostAuthorImplCopyWithImpl<$Res>;
+abstract class _$$ImagePostViewImplCopyWith<$Res>
+    implements $PostViewCopyWith<$Res> {
+  factory _$$ImagePostViewImplCopyWith(
+          _$ImagePostViewImpl value, $Res Function(_$ImagePostViewImpl) then) =
+      __$$ImagePostViewImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
-      {@JsonKey(defaultValue: '') String did,
-      @JsonKey(defaultValue: '') String handle,
-      String? displayName,
-      String? avatar,
-      bool isFollowing,
-      bool isFollowedBy});
+      {@AtUriConverter() AtUri uri,
+      @JsonKey(defaultValue: '') String cid,
+      ProfileViewBasic author,
+      PostRecord record,
+      bool isRepost,
+      DateTime indexedAt,
+      List<Label>? labels,
+      SoundView? sound,
+      int? replyCount,
+      int? repostCount,
+      int? likeCount,
+      int? lookCount,
+      Viewer? viewer,
+      ImageView? embed});
+
+  @override
+  $ProfileViewBasicCopyWith<$Res> get author;
+  @override
+  $PostRecordCopyWith<$Res> get record;
+  @override
+  $SoundViewCopyWith<$Res>? get sound;
+  $ViewerCopyWith<$Res>? get viewer;
+  $ImageViewCopyWith<$Res>? get embed;
 }
 
 /// @nodoc
-class __$$PostAuthorImplCopyWithImpl<$Res>
-    extends _$PostAuthorCopyWithImpl<$Res, _$PostAuthorImpl>
-    implements _$$PostAuthorImplCopyWith<$Res> {
-  __$$PostAuthorImplCopyWithImpl(
-      _$PostAuthorImpl _value, $Res Function(_$PostAuthorImpl) _then)
+class __$$ImagePostViewImplCopyWithImpl<$Res>
+    extends _$PostViewCopyWithImpl<$Res, _$ImagePostViewImpl>
+    implements _$$ImagePostViewImplCopyWith<$Res> {
+  __$$ImagePostViewImplCopyWithImpl(
+      _$ImagePostViewImpl _value, $Res Function(_$ImagePostViewImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of PostAuthor
+  /// Create a copy of PostView
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? did = null,
-    Object? handle = null,
-    Object? displayName = freezed,
-    Object? avatar = freezed,
-    Object? isFollowing = null,
-    Object? isFollowedBy = null,
+    Object? uri = null,
+    Object? cid = null,
+    Object? author = null,
+    Object? record = null,
+    Object? isRepost = null,
+    Object? indexedAt = null,
+    Object? labels = freezed,
+    Object? sound = freezed,
+    Object? replyCount = freezed,
+    Object? repostCount = freezed,
+    Object? likeCount = freezed,
+    Object? lookCount = freezed,
+    Object? viewer = freezed,
+    Object? embed = freezed,
   }) {
-    return _then(_$PostAuthorImpl(
-      did: null == did
-          ? _value.did
-          : did // ignore: cast_nullable_to_non_nullable
+    return _then(_$ImagePostViewImpl(
+      uri: null == uri
+          ? _value.uri
+          : uri // ignore: cast_nullable_to_non_nullable
+              as AtUri,
+      cid: null == cid
+          ? _value.cid
+          : cid // ignore: cast_nullable_to_non_nullable
               as String,
-      handle: null == handle
-          ? _value.handle
-          : handle // ignore: cast_nullable_to_non_nullable
-              as String,
-      displayName: freezed == displayName
-          ? _value.displayName
-          : displayName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      avatar: freezed == avatar
-          ? _value.avatar
-          : avatar // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isFollowing: null == isFollowing
-          ? _value.isFollowing
-          : isFollowing // ignore: cast_nullable_to_non_nullable
+      author: null == author
+          ? _value.author
+          : author // ignore: cast_nullable_to_non_nullable
+              as ProfileViewBasic,
+      record: null == record
+          ? _value.record
+          : record // ignore: cast_nullable_to_non_nullable
+              as PostRecord,
+      isRepost: null == isRepost
+          ? _value.isRepost
+          : isRepost // ignore: cast_nullable_to_non_nullable
               as bool,
-      isFollowedBy: null == isFollowedBy
-          ? _value.isFollowedBy
-          : isFollowedBy // ignore: cast_nullable_to_non_nullable
-              as bool,
+      indexedAt: null == indexedAt
+          ? _value.indexedAt
+          : indexedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      labels: freezed == labels
+          ? _value._labels
+          : labels // ignore: cast_nullable_to_non_nullable
+              as List<Label>?,
+      sound: freezed == sound
+          ? _value.sound
+          : sound // ignore: cast_nullable_to_non_nullable
+              as SoundView?,
+      replyCount: freezed == replyCount
+          ? _value.replyCount
+          : replyCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      repostCount: freezed == repostCount
+          ? _value.repostCount
+          : repostCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      likeCount: freezed == likeCount
+          ? _value.likeCount
+          : likeCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      lookCount: freezed == lookCount
+          ? _value.lookCount
+          : lookCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      viewer: freezed == viewer
+          ? _value.viewer
+          : viewer // ignore: cast_nullable_to_non_nullable
+              as Viewer?,
+      embed: freezed == embed
+          ? _value.embed
+          : embed // ignore: cast_nullable_to_non_nullable
+              as ImageView?,
     ));
+  }
+
+  /// Create a copy of PostView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ViewerCopyWith<$Res>? get viewer {
+    if (_value.viewer == null) {
+      return null;
+    }
+
+    return $ViewerCopyWith<$Res>(_value.viewer!, (value) {
+      return _then(_value.copyWith(viewer: value));
+    });
+  }
+
+  /// Create a copy of PostView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ImageViewCopyWith<$Res>? get embed {
+    if (_value.embed == null) {
+      return null;
+    }
+
+    return $ImageViewCopyWith<$Res>(_value.embed!, (value) {
+      return _then(_value.copyWith(embed: value));
+    });
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$PostAuthorImpl implements _PostAuthor {
-  const _$PostAuthorImpl(
-      {@JsonKey(defaultValue: '') required this.did,
-      @JsonKey(defaultValue: '') required this.handle,
-      this.displayName,
-      this.avatar,
-      this.isFollowing = false,
-      this.isFollowedBy = false});
+class _$ImagePostViewImpl implements ImagePostView {
+  const _$ImagePostViewImpl(
+      {@AtUriConverter() required this.uri,
+      @JsonKey(defaultValue: '') required this.cid,
+      required this.author,
+      required this.record,
+      this.isRepost = false,
+      required this.indexedAt,
+      final List<Label>? labels,
+      this.sound,
+      this.replyCount,
+      this.repostCount,
+      this.likeCount,
+      this.lookCount,
+      this.viewer,
+      this.embed,
+      final String? $type})
+      : _labels = labels,
+        $type = $type ?? 'image';
 
-  factory _$PostAuthorImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PostAuthorImplFromJson(json);
+  factory _$ImagePostViewImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ImagePostViewImplFromJson(json);
 
+  @override
+  @AtUriConverter()
+  final AtUri uri;
   @override
   @JsonKey(defaultValue: '')
-  final String did;
+  final String cid;
   @override
-  @JsonKey(defaultValue: '')
-  final String handle;
+  final ProfileViewBasic author;
   @override
-  final String? displayName;
-  @override
-  final String? avatar;
+  final PostRecord record;
   @override
   @JsonKey()
-  final bool isFollowing;
+  final bool isRepost;
   @override
-  @JsonKey()
-  final bool isFollowedBy;
+  final DateTime indexedAt;
+  final List<Label>? _labels;
+  @override
+  List<Label>? get labels {
+    final value = _labels;
+    if (value == null) return null;
+    if (_labels is EqualUnmodifiableListView) return _labels;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
+  final SoundView? sound;
+  @override
+  final int? replyCount;
+  @override
+  final int? repostCount;
+  @override
+  final int? likeCount;
+  @override
+  final int? lookCount;
+  @override
+  final Viewer? viewer;
+  @override
+  final ImageView? embed;
+
+  @JsonKey(name: 'runtimeType')
+  final String $type;
 
   @override
   String toString() {
-    return 'PostAuthor(did: $did, handle: $handle, displayName: $displayName, avatar: $avatar, isFollowing: $isFollowing, isFollowedBy: $isFollowedBy)';
+    return 'PostView.image(uri: $uri, cid: $cid, author: $author, record: $record, isRepost: $isRepost, indexedAt: $indexedAt, labels: $labels, sound: $sound, replyCount: $replyCount, repostCount: $repostCount, likeCount: $likeCount, lookCount: $lookCount, viewer: $viewer, embed: $embed)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$PostAuthorImpl &&
-            (identical(other.did, did) || other.did == did) &&
-            (identical(other.handle, handle) || other.handle == handle) &&
-            (identical(other.displayName, displayName) ||
-                other.displayName == displayName) &&
-            (identical(other.avatar, avatar) || other.avatar == avatar) &&
-            (identical(other.isFollowing, isFollowing) ||
-                other.isFollowing == isFollowing) &&
-            (identical(other.isFollowedBy, isFollowedBy) ||
-                other.isFollowedBy == isFollowedBy));
+            other is _$ImagePostViewImpl &&
+            (identical(other.uri, uri) || other.uri == uri) &&
+            (identical(other.cid, cid) || other.cid == cid) &&
+            (identical(other.author, author) || other.author == author) &&
+            (identical(other.record, record) || other.record == record) &&
+            (identical(other.isRepost, isRepost) ||
+                other.isRepost == isRepost) &&
+            (identical(other.indexedAt, indexedAt) ||
+                other.indexedAt == indexedAt) &&
+            const DeepCollectionEquality().equals(other._labels, _labels) &&
+            (identical(other.sound, sound) || other.sound == sound) &&
+            (identical(other.replyCount, replyCount) ||
+                other.replyCount == replyCount) &&
+            (identical(other.repostCount, repostCount) ||
+                other.repostCount == repostCount) &&
+            (identical(other.likeCount, likeCount) ||
+                other.likeCount == likeCount) &&
+            (identical(other.lookCount, lookCount) ||
+                other.lookCount == lookCount) &&
+            (identical(other.viewer, viewer) || other.viewer == viewer) &&
+            (identical(other.embed, embed) || other.embed == embed));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, did, handle, displayName, avatar, isFollowing, isFollowedBy);
+      runtimeType,
+      uri,
+      cid,
+      author,
+      record,
+      isRepost,
+      indexedAt,
+      const DeepCollectionEquality().hash(_labels),
+      sound,
+      replyCount,
+      repostCount,
+      likeCount,
+      lookCount,
+      viewer,
+      embed);
 
-  /// Create a copy of PostAuthor
+  /// Create a copy of PostView
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$PostAuthorImplCopyWith<_$PostAuthorImpl> get copyWith =>
-      __$$PostAuthorImplCopyWithImpl<_$PostAuthorImpl>(this, _$identity);
+  _$$ImagePostViewImplCopyWith<_$ImagePostViewImpl> get copyWith =>
+      __$$ImagePostViewImplCopyWithImpl<_$ImagePostViewImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            VideoView? embed)
+        video,
+    required TResult Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            int? replyCount,
+            int? repostCount,
+            int? likeCount,
+            int? lookCount,
+            Viewer? viewer,
+            ImageView? embed)
+        image,
+  }) {
+    return image(uri, cid, author, record, isRepost, indexedAt, labels, sound,
+        replyCount, repostCount, likeCount, lookCount, viewer, embed);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            VideoView? embed)?
+        video,
+    TResult? Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            int? replyCount,
+            int? repostCount,
+            int? likeCount,
+            int? lookCount,
+            Viewer? viewer,
+            ImageView? embed)?
+        image,
+  }) {
+    return image?.call(uri, cid, author, record, isRepost, indexedAt, labels,
+        sound, replyCount, repostCount, likeCount, lookCount, viewer, embed);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            VideoView? embed)?
+        video,
+    TResult Function(
+            @AtUriConverter() AtUri uri,
+            @JsonKey(defaultValue: '') String cid,
+            ProfileViewBasic author,
+            PostRecord record,
+            bool isRepost,
+            DateTime indexedAt,
+            List<Label>? labels,
+            SoundView? sound,
+            int? replyCount,
+            int? repostCount,
+            int? likeCount,
+            int? lookCount,
+            Viewer? viewer,
+            ImageView? embed)?
+        image,
+    required TResult orElse(),
+  }) {
+    if (image != null) {
+      return image(uri, cid, author, record, isRepost, indexedAt, labels, sound,
+          replyCount, repostCount, likeCount, lookCount, viewer, embed);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(VideoPostView value) video,
+    required TResult Function(ImagePostView value) image,
+  }) {
+    return image(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(VideoPostView value)? video,
+    TResult? Function(ImagePostView value)? image,
+  }) {
+    return image?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(VideoPostView value)? video,
+    TResult Function(ImagePostView value)? image,
+    required TResult orElse(),
+  }) {
+    if (image != null) {
+      return image(this);
+    }
+    return orElse();
+  }
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PostAuthorImplToJson(
+    return _$$ImagePostViewImplToJson(
       this,
     );
   }
 }
 
-abstract class _PostAuthor implements PostAuthor {
-  const factory _PostAuthor(
-      {@JsonKey(defaultValue: '') required final String did,
-      @JsonKey(defaultValue: '') required final String handle,
-      final String? displayName,
-      final String? avatar,
-      final bool isFollowing,
-      final bool isFollowedBy}) = _$PostAuthorImpl;
+abstract class ImagePostView implements PostView {
+  const factory ImagePostView(
+      {@AtUriConverter() required final AtUri uri,
+      @JsonKey(defaultValue: '') required final String cid,
+      required final ProfileViewBasic author,
+      required final PostRecord record,
+      final bool isRepost,
+      required final DateTime indexedAt,
+      final List<Label>? labels,
+      final SoundView? sound,
+      final int? replyCount,
+      final int? repostCount,
+      final int? likeCount,
+      final int? lookCount,
+      final Viewer? viewer,
+      final ImageView? embed}) = _$ImagePostViewImpl;
 
-  factory _PostAuthor.fromJson(Map<String, dynamic> json) =
-      _$PostAuthorImpl.fromJson;
+  factory ImagePostView.fromJson(Map<String, dynamic> json) =
+      _$ImagePostViewImpl.fromJson;
 
+  @override
+  @AtUriConverter()
+  AtUri get uri;
   @override
   @JsonKey(defaultValue: '')
-  String get did;
+  String get cid;
   @override
-  @JsonKey(defaultValue: '')
-  String get handle;
+  ProfileViewBasic get author;
   @override
-  String? get displayName;
+  PostRecord get record;
   @override
-  String? get avatar;
+  bool get isRepost;
   @override
-  bool get isFollowing;
+  DateTime get indexedAt;
   @override
-  bool get isFollowedBy;
+  List<Label>? get labels;
+  @override
+  SoundView? get sound;
+  int? get replyCount;
+  int? get repostCount;
+  int? get likeCount;
+  int? get lookCount;
+  Viewer? get viewer;
+  @override
+  ImageView? get embed;
 
-  /// Create a copy of PostAuthor
+  /// Create a copy of PostView
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$PostAuthorImplCopyWith<_$PostAuthorImpl> get copyWith =>
+  _$$ImagePostViewImplCopyWith<_$ImagePostViewImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
-Label _$LabelFromJson(Map<String, dynamic> json) {
-  return _Label.fromJson(json);
+FeedSkeleton _$FeedSkeletonFromJson(Map<String, dynamic> json) {
+  return _FeedSkeleton.fromJson(json);
 }
 
 /// @nodoc
-mixin _$Label {
-  String get val => throw _privateConstructorUsedError;
-  String? get src => throw _privateConstructorUsedError;
-
-  /// Serializes this Label to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of Label
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $LabelCopyWith<Label> get copyWith => throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $LabelCopyWith<$Res> {
-  factory $LabelCopyWith(Label value, $Res Function(Label) then) =
-      _$LabelCopyWithImpl<$Res, Label>;
-  @useResult
-  $Res call({String val, String? src});
-}
-
-/// @nodoc
-class _$LabelCopyWithImpl<$Res, $Val extends Label>
-    implements $LabelCopyWith<$Res> {
-  _$LabelCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of Label
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? val = null,
-    Object? src = freezed,
-  }) {
-    return _then(_value.copyWith(
-      val: null == val
-          ? _value.val
-          : val // ignore: cast_nullable_to_non_nullable
-              as String,
-      src: freezed == src
-          ? _value.src
-          : src // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$LabelImplCopyWith<$Res> implements $LabelCopyWith<$Res> {
-  factory _$$LabelImplCopyWith(
-          _$LabelImpl value, $Res Function(_$LabelImpl) then) =
-      __$$LabelImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({String val, String? src});
-}
-
-/// @nodoc
-class __$$LabelImplCopyWithImpl<$Res>
-    extends _$LabelCopyWithImpl<$Res, _$LabelImpl>
-    implements _$$LabelImplCopyWith<$Res> {
-  __$$LabelImplCopyWithImpl(
-      _$LabelImpl _value, $Res Function(_$LabelImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of Label
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? val = null,
-    Object? src = freezed,
-  }) {
-    return _then(_$LabelImpl(
-      val: null == val
-          ? _value.val
-          : val // ignore: cast_nullable_to_non_nullable
-              as String,
-      src: freezed == src
-          ? _value.src
-          : src // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$LabelImpl implements _Label {
-  const _$LabelImpl({required this.val, this.src});
-
-  factory _$LabelImpl.fromJson(Map<String, dynamic> json) =>
-      _$$LabelImplFromJson(json);
-
-  @override
-  final String val;
-  @override
-  final String? src;
-
-  @override
-  String toString() {
-    return 'Label(val: $val, src: $src)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$LabelImpl &&
-            (identical(other.val, val) || other.val == val) &&
-            (identical(other.src, src) || other.src == src));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(runtimeType, val, src);
-
-  /// Create a copy of Label
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$LabelImplCopyWith<_$LabelImpl> get copyWith =>
-      __$$LabelImplCopyWithImpl<_$LabelImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$LabelImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _Label implements Label {
-  const factory _Label({required final String val, final String? src}) =
-      _$LabelImpl;
-
-  factory _Label.fromJson(Map<String, dynamic> json) = _$LabelImpl.fromJson;
-
-  @override
-  String get val;
-  @override
-  String? get src;
-
-  /// Create a copy of Label
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$LabelImplCopyWith<_$LabelImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-FeedSkeletonResponse _$FeedSkeletonResponseFromJson(Map<String, dynamic> json) {
-  return _FeedSkeletonResponse.fromJson(json);
-}
-
-/// @nodoc
-mixin _$FeedSkeletonResponse {
+mixin _$FeedSkeleton {
   List<FeedItem> get feed => throw _privateConstructorUsedError;
   String? get cursor => throw _privateConstructorUsedError;
 
-  /// Serializes this FeedSkeletonResponse to a JSON map.
+  /// Serializes this FeedSkeleton to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of FeedSkeletonResponse
+  /// Create a copy of FeedSkeleton
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $FeedSkeletonResponseCopyWith<FeedSkeletonResponse> get copyWith =>
+  $FeedSkeletonCopyWith<FeedSkeleton> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $FeedSkeletonResponseCopyWith<$Res> {
-  factory $FeedSkeletonResponseCopyWith(FeedSkeletonResponse value,
-          $Res Function(FeedSkeletonResponse) then) =
-      _$FeedSkeletonResponseCopyWithImpl<$Res, FeedSkeletonResponse>;
+abstract class $FeedSkeletonCopyWith<$Res> {
+  factory $FeedSkeletonCopyWith(
+          FeedSkeleton value, $Res Function(FeedSkeleton) then) =
+      _$FeedSkeletonCopyWithImpl<$Res, FeedSkeleton>;
   @useResult
   $Res call({List<FeedItem> feed, String? cursor});
 }
 
 /// @nodoc
-class _$FeedSkeletonResponseCopyWithImpl<$Res,
-        $Val extends FeedSkeletonResponse>
-    implements $FeedSkeletonResponseCopyWith<$Res> {
-  _$FeedSkeletonResponseCopyWithImpl(this._value, this._then);
+class _$FeedSkeletonCopyWithImpl<$Res, $Val extends FeedSkeleton>
+    implements $FeedSkeletonCopyWith<$Res> {
+  _$FeedSkeletonCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of FeedSkeletonResponse
+  /// Create a copy of FeedSkeleton
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -1293,25 +3694,25 @@ class _$FeedSkeletonResponseCopyWithImpl<$Res,
 }
 
 /// @nodoc
-abstract class _$$FeedSkeletonResponseImplCopyWith<$Res>
-    implements $FeedSkeletonResponseCopyWith<$Res> {
-  factory _$$FeedSkeletonResponseImplCopyWith(_$FeedSkeletonResponseImpl value,
-          $Res Function(_$FeedSkeletonResponseImpl) then) =
-      __$$FeedSkeletonResponseImplCopyWithImpl<$Res>;
+abstract class _$$FeedSkeletonImplCopyWith<$Res>
+    implements $FeedSkeletonCopyWith<$Res> {
+  factory _$$FeedSkeletonImplCopyWith(
+          _$FeedSkeletonImpl value, $Res Function(_$FeedSkeletonImpl) then) =
+      __$$FeedSkeletonImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({List<FeedItem> feed, String? cursor});
 }
 
 /// @nodoc
-class __$$FeedSkeletonResponseImplCopyWithImpl<$Res>
-    extends _$FeedSkeletonResponseCopyWithImpl<$Res, _$FeedSkeletonResponseImpl>
-    implements _$$FeedSkeletonResponseImplCopyWith<$Res> {
-  __$$FeedSkeletonResponseImplCopyWithImpl(_$FeedSkeletonResponseImpl _value,
-      $Res Function(_$FeedSkeletonResponseImpl) _then)
+class __$$FeedSkeletonImplCopyWithImpl<$Res>
+    extends _$FeedSkeletonCopyWithImpl<$Res, _$FeedSkeletonImpl>
+    implements _$$FeedSkeletonImplCopyWith<$Res> {
+  __$$FeedSkeletonImplCopyWithImpl(
+      _$FeedSkeletonImpl _value, $Res Function(_$FeedSkeletonImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of FeedSkeletonResponse
+  /// Create a copy of FeedSkeleton
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -1319,7 +3720,7 @@ class __$$FeedSkeletonResponseImplCopyWithImpl<$Res>
     Object? feed = null,
     Object? cursor = freezed,
   }) {
-    return _then(_$FeedSkeletonResponseImpl(
+    return _then(_$FeedSkeletonImpl(
       feed: null == feed
           ? _value._feed
           : feed // ignore: cast_nullable_to_non_nullable
@@ -1334,13 +3735,12 @@ class __$$FeedSkeletonResponseImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$FeedSkeletonResponseImpl implements _FeedSkeletonResponse {
-  const _$FeedSkeletonResponseImpl(
-      {required final List<FeedItem> feed, this.cursor})
+class _$FeedSkeletonImpl implements _FeedSkeleton {
+  const _$FeedSkeletonImpl({required final List<FeedItem> feed, this.cursor})
       : _feed = feed;
 
-  factory _$FeedSkeletonResponseImpl.fromJson(Map<String, dynamic> json) =>
-      _$$FeedSkeletonResponseImplFromJson(json);
+  factory _$FeedSkeletonImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FeedSkeletonImplFromJson(json);
 
   final List<FeedItem> _feed;
   @override
@@ -1355,14 +3755,14 @@ class _$FeedSkeletonResponseImpl implements _FeedSkeletonResponse {
 
   @override
   String toString() {
-    return 'FeedSkeletonResponse(feed: $feed, cursor: $cursor)';
+    return 'FeedSkeleton(feed: $feed, cursor: $cursor)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$FeedSkeletonResponseImpl &&
+            other is _$FeedSkeletonImpl &&
             const DeepCollectionEquality().equals(other._feed, _feed) &&
             (identical(other.cursor, cursor) || other.cursor == cursor));
   }
@@ -1372,43 +3772,41 @@ class _$FeedSkeletonResponseImpl implements _FeedSkeletonResponse {
   int get hashCode => Object.hash(
       runtimeType, const DeepCollectionEquality().hash(_feed), cursor);
 
-  /// Create a copy of FeedSkeletonResponse
+  /// Create a copy of FeedSkeleton
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$FeedSkeletonResponseImplCopyWith<_$FeedSkeletonResponseImpl>
-      get copyWith =>
-          __$$FeedSkeletonResponseImplCopyWithImpl<_$FeedSkeletonResponseImpl>(
-              this, _$identity);
+  _$$FeedSkeletonImplCopyWith<_$FeedSkeletonImpl> get copyWith =>
+      __$$FeedSkeletonImplCopyWithImpl<_$FeedSkeletonImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FeedSkeletonResponseImplToJson(
+    return _$$FeedSkeletonImplToJson(
       this,
     );
   }
 }
 
-abstract class _FeedSkeletonResponse implements FeedSkeletonResponse {
-  const factory _FeedSkeletonResponse(
+abstract class _FeedSkeleton implements FeedSkeleton {
+  const factory _FeedSkeleton(
       {required final List<FeedItem> feed,
-      final String? cursor}) = _$FeedSkeletonResponseImpl;
+      final String? cursor}) = _$FeedSkeletonImpl;
 
-  factory _FeedSkeletonResponse.fromJson(Map<String, dynamic> json) =
-      _$FeedSkeletonResponseImpl.fromJson;
+  factory _FeedSkeleton.fromJson(Map<String, dynamic> json) =
+      _$FeedSkeletonImpl.fromJson;
 
   @override
   List<FeedItem> get feed;
   @override
   String? get cursor;
 
-  /// Create a copy of FeedSkeletonResponse
+  /// Create a copy of FeedSkeleton
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$FeedSkeletonResponseImplCopyWith<_$FeedSkeletonResponseImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  _$$FeedSkeletonImplCopyWith<_$FeedSkeletonImpl> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 FeedItem _$FeedItemFromJson(Map<String, dynamic> json) {
@@ -1417,7 +3815,8 @@ FeedItem _$FeedItemFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$FeedItem {
-  String get post => throw _privateConstructorUsedError;
+  @AtUriConverter()
+  AtUri get postUri => throw _privateConstructorUsedError;
   String? get reason => throw _privateConstructorUsedError;
 
   /// Serializes this FeedItem to a JSON map.
@@ -1435,7 +3834,7 @@ abstract class $FeedItemCopyWith<$Res> {
   factory $FeedItemCopyWith(FeedItem value, $Res Function(FeedItem) then) =
       _$FeedItemCopyWithImpl<$Res, FeedItem>;
   @useResult
-  $Res call({String post, String? reason});
+  $Res call({@AtUriConverter() AtUri postUri, String? reason});
 }
 
 /// @nodoc
@@ -1453,14 +3852,14 @@ class _$FeedItemCopyWithImpl<$Res, $Val extends FeedItem>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? post = null,
+    Object? postUri = null,
     Object? reason = freezed,
   }) {
     return _then(_value.copyWith(
-      post: null == post
-          ? _value.post
-          : post // ignore: cast_nullable_to_non_nullable
-              as String,
+      postUri: null == postUri
+          ? _value.postUri
+          : postUri // ignore: cast_nullable_to_non_nullable
+              as AtUri,
       reason: freezed == reason
           ? _value.reason
           : reason // ignore: cast_nullable_to_non_nullable
@@ -1477,7 +3876,7 @@ abstract class _$$FeedItemImplCopyWith<$Res>
       __$$FeedItemImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String post, String? reason});
+  $Res call({@AtUriConverter() AtUri postUri, String? reason});
 }
 
 /// @nodoc
@@ -1493,14 +3892,14 @@ class __$$FeedItemImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? post = null,
+    Object? postUri = null,
     Object? reason = freezed,
   }) {
     return _then(_$FeedItemImpl(
-      post: null == post
-          ? _value.post
-          : post // ignore: cast_nullable_to_non_nullable
-              as String,
+      postUri: null == postUri
+          ? _value.postUri
+          : postUri // ignore: cast_nullable_to_non_nullable
+              as AtUri,
       reason: freezed == reason
           ? _value.reason
           : reason // ignore: cast_nullable_to_non_nullable
@@ -1512,19 +3911,20 @@ class __$$FeedItemImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$FeedItemImpl implements _FeedItem {
-  const _$FeedItemImpl({required this.post, this.reason});
+  const _$FeedItemImpl({@AtUriConverter() required this.postUri, this.reason});
 
   factory _$FeedItemImpl.fromJson(Map<String, dynamic> json) =>
       _$$FeedItemImplFromJson(json);
 
   @override
-  final String post;
+  @AtUriConverter()
+  final AtUri postUri;
   @override
   final String? reason;
 
   @override
   String toString() {
-    return 'FeedItem(post: $post, reason: $reason)';
+    return 'FeedItem(postUri: $postUri, reason: $reason)';
   }
 
   @override
@@ -1532,13 +3932,13 @@ class _$FeedItemImpl implements _FeedItem {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$FeedItemImpl &&
-            (identical(other.post, post) || other.post == post) &&
+            (identical(other.postUri, postUri) || other.postUri == postUri) &&
             (identical(other.reason, reason) || other.reason == reason));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, post, reason);
+  int get hashCode => Object.hash(runtimeType, postUri, reason);
 
   /// Create a copy of FeedItem
   /// with the given fields replaced by the non-null parameter values.
@@ -1557,14 +3957,16 @@ class _$FeedItemImpl implements _FeedItem {
 }
 
 abstract class _FeedItem implements FeedItem {
-  const factory _FeedItem({required final String post, final String? reason}) =
-      _$FeedItemImpl;
+  const factory _FeedItem(
+      {@AtUriConverter() required final AtUri postUri,
+      final String? reason}) = _$FeedItemImpl;
 
   factory _FeedItem.fromJson(Map<String, dynamic> json) =
       _$FeedItemImpl.fromJson;
 
   @override
-  String get post;
+  @AtUriConverter()
+  AtUri get postUri;
   @override
   String? get reason;
 
@@ -1582,7 +3984,7 @@ PostsResponse _$PostsResponseFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$PostsResponse {
-  List<Post> get posts => throw _privateConstructorUsedError;
+  List<PostView> get posts => throw _privateConstructorUsedError;
 
   /// Serializes this PostsResponse to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1600,7 +4002,7 @@ abstract class $PostsResponseCopyWith<$Res> {
           PostsResponse value, $Res Function(PostsResponse) then) =
       _$PostsResponseCopyWithImpl<$Res, PostsResponse>;
   @useResult
-  $Res call({List<Post> posts});
+  $Res call({List<PostView> posts});
 }
 
 /// @nodoc
@@ -1624,7 +4026,7 @@ class _$PostsResponseCopyWithImpl<$Res, $Val extends PostsResponse>
       posts: null == posts
           ? _value.posts
           : posts // ignore: cast_nullable_to_non_nullable
-              as List<Post>,
+              as List<PostView>,
     ) as $Val);
   }
 }
@@ -1637,7 +4039,7 @@ abstract class _$$PostsResponseImplCopyWith<$Res>
       __$$PostsResponseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({List<Post> posts});
+  $Res call({List<PostView> posts});
 }
 
 /// @nodoc
@@ -1659,7 +4061,7 @@ class __$$PostsResponseImplCopyWithImpl<$Res>
       posts: null == posts
           ? _value._posts
           : posts // ignore: cast_nullable_to_non_nullable
-              as List<Post>,
+              as List<PostView>,
     ));
   }
 }
@@ -1667,14 +4069,15 @@ class __$$PostsResponseImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$PostsResponseImpl implements _PostsResponse {
-  const _$PostsResponseImpl({required final List<Post> posts}) : _posts = posts;
+  const _$PostsResponseImpl({required final List<PostView> posts})
+      : _posts = posts;
 
   factory _$PostsResponseImpl.fromJson(Map<String, dynamic> json) =>
       _$$PostsResponseImplFromJson(json);
 
-  final List<Post> _posts;
+  final List<PostView> _posts;
   @override
-  List<Post> get posts {
+  List<PostView> get posts {
     if (_posts is EqualUnmodifiableListView) return _posts;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_posts);
@@ -1715,14 +4118,14 @@ class _$PostsResponseImpl implements _PostsResponse {
 }
 
 abstract class _PostsResponse implements PostsResponse {
-  const factory _PostsResponse({required final List<Post> posts}) =
+  const factory _PostsResponse({required final List<PostView> posts}) =
       _$PostsResponseImpl;
 
   factory _PostsResponse.fromJson(Map<String, dynamic> json) =
       _$PostsResponseImpl.fromJson;
 
   @override
-  List<Post> get posts;
+  List<PostView> get posts;
 
   /// Create a copy of PostsResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -1738,7 +4141,7 @@ AuthorFeedResponse _$AuthorFeedResponseFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$AuthorFeedResponse {
-  List<Post> get feed => throw _privateConstructorUsedError;
+  List<PostView> get feed => throw _privateConstructorUsedError;
   String? get cursor => throw _privateConstructorUsedError;
 
   /// Serializes this AuthorFeedResponse to a JSON map.
@@ -1757,7 +4160,7 @@ abstract class $AuthorFeedResponseCopyWith<$Res> {
           AuthorFeedResponse value, $Res Function(AuthorFeedResponse) then) =
       _$AuthorFeedResponseCopyWithImpl<$Res, AuthorFeedResponse>;
   @useResult
-  $Res call({List<Post> feed, String? cursor});
+  $Res call({List<PostView> feed, String? cursor});
 }
 
 /// @nodoc
@@ -1782,7 +4185,7 @@ class _$AuthorFeedResponseCopyWithImpl<$Res, $Val extends AuthorFeedResponse>
       feed: null == feed
           ? _value.feed
           : feed // ignore: cast_nullable_to_non_nullable
-              as List<Post>,
+              as List<PostView>,
       cursor: freezed == cursor
           ? _value.cursor
           : cursor // ignore: cast_nullable_to_non_nullable
@@ -1799,7 +4202,7 @@ abstract class _$$AuthorFeedResponseImplCopyWith<$Res>
       __$$AuthorFeedResponseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({List<Post> feed, String? cursor});
+  $Res call({List<PostView> feed, String? cursor});
 }
 
 /// @nodoc
@@ -1822,7 +4225,7 @@ class __$$AuthorFeedResponseImplCopyWithImpl<$Res>
       feed: null == feed
           ? _value._feed
           : feed // ignore: cast_nullable_to_non_nullable
-              as List<Post>,
+              as List<PostView>,
       cursor: freezed == cursor
           ? _value.cursor
           : cursor // ignore: cast_nullable_to_non_nullable
@@ -1834,15 +4237,16 @@ class __$$AuthorFeedResponseImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$AuthorFeedResponseImpl implements _AuthorFeedResponse {
-  const _$AuthorFeedResponseImpl({required final List<Post> feed, this.cursor})
+  const _$AuthorFeedResponseImpl(
+      {required final List<PostView> feed, this.cursor})
       : _feed = feed;
 
   factory _$AuthorFeedResponseImpl.fromJson(Map<String, dynamic> json) =>
       _$$AuthorFeedResponseImplFromJson(json);
 
-  final List<Post> _feed;
+  final List<PostView> _feed;
   @override
-  List<Post> get feed {
+  List<PostView> get feed {
     if (_feed is EqualUnmodifiableListView) return _feed;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_feed);
@@ -1889,14 +4293,14 @@ class _$AuthorFeedResponseImpl implements _AuthorFeedResponse {
 
 abstract class _AuthorFeedResponse implements AuthorFeedResponse {
   const factory _AuthorFeedResponse(
-      {required final List<Post> feed,
+      {required final List<PostView> feed,
       final String? cursor}) = _$AuthorFeedResponseImpl;
 
   factory _AuthorFeedResponse.fromJson(Map<String, dynamic> json) =
       _$AuthorFeedResponseImpl.fromJson;
 
   @override
-  List<Post> get feed;
+  List<PostView> get feed;
   @override
   String? get cursor;
 
@@ -1905,342 +4309,6 @@ abstract class _AuthorFeedResponse implements AuthorFeedResponse {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$AuthorFeedResponseImplCopyWith<_$AuthorFeedResponseImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-LikePostResponse _$LikePostResponseFromJson(Map<String, dynamic> json) {
-  return _LikePostResponse.fromJson(json);
-}
-
-/// @nodoc
-mixin _$LikePostResponse {
-  String get uri => throw _privateConstructorUsedError;
-  String get cid => throw _privateConstructorUsedError;
-
-  /// Serializes this LikePostResponse to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of LikePostResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $LikePostResponseCopyWith<LikePostResponse> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $LikePostResponseCopyWith<$Res> {
-  factory $LikePostResponseCopyWith(
-          LikePostResponse value, $Res Function(LikePostResponse) then) =
-      _$LikePostResponseCopyWithImpl<$Res, LikePostResponse>;
-  @useResult
-  $Res call({String uri, String cid});
-}
-
-/// @nodoc
-class _$LikePostResponseCopyWithImpl<$Res, $Val extends LikePostResponse>
-    implements $LikePostResponseCopyWith<$Res> {
-  _$LikePostResponseCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of LikePostResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? uri = null,
-    Object? cid = null,
-  }) {
-    return _then(_value.copyWith(
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as String,
-      cid: null == cid
-          ? _value.cid
-          : cid // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$LikePostResponseImplCopyWith<$Res>
-    implements $LikePostResponseCopyWith<$Res> {
-  factory _$$LikePostResponseImplCopyWith(_$LikePostResponseImpl value,
-          $Res Function(_$LikePostResponseImpl) then) =
-      __$$LikePostResponseImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({String uri, String cid});
-}
-
-/// @nodoc
-class __$$LikePostResponseImplCopyWithImpl<$Res>
-    extends _$LikePostResponseCopyWithImpl<$Res, _$LikePostResponseImpl>
-    implements _$$LikePostResponseImplCopyWith<$Res> {
-  __$$LikePostResponseImplCopyWithImpl(_$LikePostResponseImpl _value,
-      $Res Function(_$LikePostResponseImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of LikePostResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? uri = null,
-    Object? cid = null,
-  }) {
-    return _then(_$LikePostResponseImpl(
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as String,
-      cid: null == cid
-          ? _value.cid
-          : cid // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$LikePostResponseImpl implements _LikePostResponse {
-  const _$LikePostResponseImpl({required this.uri, required this.cid});
-
-  factory _$LikePostResponseImpl.fromJson(Map<String, dynamic> json) =>
-      _$$LikePostResponseImplFromJson(json);
-
-  @override
-  final String uri;
-  @override
-  final String cid;
-
-  @override
-  String toString() {
-    return 'LikePostResponse(uri: $uri, cid: $cid)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$LikePostResponseImpl &&
-            (identical(other.uri, uri) || other.uri == uri) &&
-            (identical(other.cid, cid) || other.cid == cid));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(runtimeType, uri, cid);
-
-  /// Create a copy of LikePostResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$LikePostResponseImplCopyWith<_$LikePostResponseImpl> get copyWith =>
-      __$$LikePostResponseImplCopyWithImpl<_$LikePostResponseImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$LikePostResponseImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _LikePostResponse implements LikePostResponse {
-  const factory _LikePostResponse(
-      {required final String uri,
-      required final String cid}) = _$LikePostResponseImpl;
-
-  factory _LikePostResponse.fromJson(Map<String, dynamic> json) =
-      _$LikePostResponseImpl.fromJson;
-
-  @override
-  String get uri;
-  @override
-  String get cid;
-
-  /// Create a copy of LikePostResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$LikePostResponseImplCopyWith<_$LikePostResponseImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-CommentPostResponse _$CommentPostResponseFromJson(Map<String, dynamic> json) {
-  return _CommentPostResponse.fromJson(json);
-}
-
-/// @nodoc
-mixin _$CommentPostResponse {
-  String get uri => throw _privateConstructorUsedError;
-  String get cid => throw _privateConstructorUsedError;
-
-  /// Serializes this CommentPostResponse to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of CommentPostResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $CommentPostResponseCopyWith<CommentPostResponse> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $CommentPostResponseCopyWith<$Res> {
-  factory $CommentPostResponseCopyWith(
-          CommentPostResponse value, $Res Function(CommentPostResponse) then) =
-      _$CommentPostResponseCopyWithImpl<$Res, CommentPostResponse>;
-  @useResult
-  $Res call({String uri, String cid});
-}
-
-/// @nodoc
-class _$CommentPostResponseCopyWithImpl<$Res, $Val extends CommentPostResponse>
-    implements $CommentPostResponseCopyWith<$Res> {
-  _$CommentPostResponseCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of CommentPostResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? uri = null,
-    Object? cid = null,
-  }) {
-    return _then(_value.copyWith(
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as String,
-      cid: null == cid
-          ? _value.cid
-          : cid // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$CommentPostResponseImplCopyWith<$Res>
-    implements $CommentPostResponseCopyWith<$Res> {
-  factory _$$CommentPostResponseImplCopyWith(_$CommentPostResponseImpl value,
-          $Res Function(_$CommentPostResponseImpl) then) =
-      __$$CommentPostResponseImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({String uri, String cid});
-}
-
-/// @nodoc
-class __$$CommentPostResponseImplCopyWithImpl<$Res>
-    extends _$CommentPostResponseCopyWithImpl<$Res, _$CommentPostResponseImpl>
-    implements _$$CommentPostResponseImplCopyWith<$Res> {
-  __$$CommentPostResponseImplCopyWithImpl(_$CommentPostResponseImpl _value,
-      $Res Function(_$CommentPostResponseImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of CommentPostResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? uri = null,
-    Object? cid = null,
-  }) {
-    return _then(_$CommentPostResponseImpl(
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as String,
-      cid: null == cid
-          ? _value.cid
-          : cid // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$CommentPostResponseImpl implements _CommentPostResponse {
-  const _$CommentPostResponseImpl({required this.uri, required this.cid});
-
-  factory _$CommentPostResponseImpl.fromJson(Map<String, dynamic> json) =>
-      _$$CommentPostResponseImplFromJson(json);
-
-  @override
-  final String uri;
-  @override
-  final String cid;
-
-  @override
-  String toString() {
-    return 'CommentPostResponse(uri: $uri, cid: $cid)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$CommentPostResponseImpl &&
-            (identical(other.uri, uri) || other.uri == uri) &&
-            (identical(other.cid, cid) || other.cid == cid));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(runtimeType, uri, cid);
-
-  /// Create a copy of CommentPostResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$CommentPostResponseImplCopyWith<_$CommentPostResponseImpl> get copyWith =>
-      __$$CommentPostResponseImplCopyWithImpl<_$CommentPostResponseImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$CommentPostResponseImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _CommentPostResponse implements CommentPostResponse {
-  const factory _CommentPostResponse(
-      {required final String uri,
-      required final String cid}) = _$CommentPostResponseImpl;
-
-  factory _CommentPostResponse.fromJson(Map<String, dynamic> json) =
-      _$CommentPostResponseImpl.fromJson;
-
-  @override
-  String get uri;
-  @override
-  String get cid;
-
-  /// Create a copy of CommentPostResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$CommentPostResponseImplCopyWith<_$CommentPostResponseImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -2437,589 +4505,6 @@ abstract class _ImageUploadResult implements ImageUploadResult {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ImageUploadResultImplCopyWith<_$ImageUploadResultImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-FeedPost _$FeedPostFromJson(Map<String, dynamic> json) {
-  return _FeedPost.fromJson(json);
-}
-
-/// @nodoc
-mixin _$FeedPost {
-  String get username => throw _privateConstructorUsedError;
-  String get authorDid => throw _privateConstructorUsedError;
-  String? get profileImageUrl => throw _privateConstructorUsedError;
-  String get description => throw _privateConstructorUsedError;
-  String? get videoUrl => throw _privateConstructorUsedError;
-  int get likeCount => throw _privateConstructorUsedError;
-  int get commentCount => throw _privateConstructorUsedError;
-  int get shareCount => throw _privateConstructorUsedError;
-  List<String> get hashtags => throw _privateConstructorUsedError;
-  List<String> get labels => throw _privateConstructorUsedError;
-  List<String> get imageUrls => throw _privateConstructorUsedError;
-  String get uri => throw _privateConstructorUsedError;
-  String get cid => throw _privateConstructorUsedError;
-  bool get isSprk => throw _privateConstructorUsedError;
-  String? get likeUri => throw _privateConstructorUsedError;
-  bool get hasMedia => throw _privateConstructorUsedError;
-  bool get isReply => throw _privateConstructorUsedError;
-  List<String> get imageAlts => throw _privateConstructorUsedError;
-  String? get videoAlt => throw _privateConstructorUsedError;
-
-  /// Serializes this FeedPost to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of FeedPost
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $FeedPostCopyWith<FeedPost> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $FeedPostCopyWith<$Res> {
-  factory $FeedPostCopyWith(FeedPost value, $Res Function(FeedPost) then) =
-      _$FeedPostCopyWithImpl<$Res, FeedPost>;
-  @useResult
-  $Res call(
-      {String username,
-      String authorDid,
-      String? profileImageUrl,
-      String description,
-      String? videoUrl,
-      int likeCount,
-      int commentCount,
-      int shareCount,
-      List<String> hashtags,
-      List<String> labels,
-      List<String> imageUrls,
-      String uri,
-      String cid,
-      bool isSprk,
-      String? likeUri,
-      bool hasMedia,
-      bool isReply,
-      List<String> imageAlts,
-      String? videoAlt});
-}
-
-/// @nodoc
-class _$FeedPostCopyWithImpl<$Res, $Val extends FeedPost>
-    implements $FeedPostCopyWith<$Res> {
-  _$FeedPostCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of FeedPost
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? username = null,
-    Object? authorDid = null,
-    Object? profileImageUrl = freezed,
-    Object? description = null,
-    Object? videoUrl = freezed,
-    Object? likeCount = null,
-    Object? commentCount = null,
-    Object? shareCount = null,
-    Object? hashtags = null,
-    Object? labels = null,
-    Object? imageUrls = null,
-    Object? uri = null,
-    Object? cid = null,
-    Object? isSprk = null,
-    Object? likeUri = freezed,
-    Object? hasMedia = null,
-    Object? isReply = null,
-    Object? imageAlts = null,
-    Object? videoAlt = freezed,
-  }) {
-    return _then(_value.copyWith(
-      username: null == username
-          ? _value.username
-          : username // ignore: cast_nullable_to_non_nullable
-              as String,
-      authorDid: null == authorDid
-          ? _value.authorDid
-          : authorDid // ignore: cast_nullable_to_non_nullable
-              as String,
-      profileImageUrl: freezed == profileImageUrl
-          ? _value.profileImageUrl
-          : profileImageUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      description: null == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String,
-      videoUrl: freezed == videoUrl
-          ? _value.videoUrl
-          : videoUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      likeCount: null == likeCount
-          ? _value.likeCount
-          : likeCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      commentCount: null == commentCount
-          ? _value.commentCount
-          : commentCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      shareCount: null == shareCount
-          ? _value.shareCount
-          : shareCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      hashtags: null == hashtags
-          ? _value.hashtags
-          : hashtags // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      labels: null == labels
-          ? _value.labels
-          : labels // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      imageUrls: null == imageUrls
-          ? _value.imageUrls
-          : imageUrls // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as String,
-      cid: null == cid
-          ? _value.cid
-          : cid // ignore: cast_nullable_to_non_nullable
-              as String,
-      isSprk: null == isSprk
-          ? _value.isSprk
-          : isSprk // ignore: cast_nullable_to_non_nullable
-              as bool,
-      likeUri: freezed == likeUri
-          ? _value.likeUri
-          : likeUri // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hasMedia: null == hasMedia
-          ? _value.hasMedia
-          : hasMedia // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isReply: null == isReply
-          ? _value.isReply
-          : isReply // ignore: cast_nullable_to_non_nullable
-              as bool,
-      imageAlts: null == imageAlts
-          ? _value.imageAlts
-          : imageAlts // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      videoAlt: freezed == videoAlt
-          ? _value.videoAlt
-          : videoAlt // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$FeedPostImplCopyWith<$Res>
-    implements $FeedPostCopyWith<$Res> {
-  factory _$$FeedPostImplCopyWith(
-          _$FeedPostImpl value, $Res Function(_$FeedPostImpl) then) =
-      __$$FeedPostImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String username,
-      String authorDid,
-      String? profileImageUrl,
-      String description,
-      String? videoUrl,
-      int likeCount,
-      int commentCount,
-      int shareCount,
-      List<String> hashtags,
-      List<String> labels,
-      List<String> imageUrls,
-      String uri,
-      String cid,
-      bool isSprk,
-      String? likeUri,
-      bool hasMedia,
-      bool isReply,
-      List<String> imageAlts,
-      String? videoAlt});
-}
-
-/// @nodoc
-class __$$FeedPostImplCopyWithImpl<$Res>
-    extends _$FeedPostCopyWithImpl<$Res, _$FeedPostImpl>
-    implements _$$FeedPostImplCopyWith<$Res> {
-  __$$FeedPostImplCopyWithImpl(
-      _$FeedPostImpl _value, $Res Function(_$FeedPostImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of FeedPost
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? username = null,
-    Object? authorDid = null,
-    Object? profileImageUrl = freezed,
-    Object? description = null,
-    Object? videoUrl = freezed,
-    Object? likeCount = null,
-    Object? commentCount = null,
-    Object? shareCount = null,
-    Object? hashtags = null,
-    Object? labels = null,
-    Object? imageUrls = null,
-    Object? uri = null,
-    Object? cid = null,
-    Object? isSprk = null,
-    Object? likeUri = freezed,
-    Object? hasMedia = null,
-    Object? isReply = null,
-    Object? imageAlts = null,
-    Object? videoAlt = freezed,
-  }) {
-    return _then(_$FeedPostImpl(
-      username: null == username
-          ? _value.username
-          : username // ignore: cast_nullable_to_non_nullable
-              as String,
-      authorDid: null == authorDid
-          ? _value.authorDid
-          : authorDid // ignore: cast_nullable_to_non_nullable
-              as String,
-      profileImageUrl: freezed == profileImageUrl
-          ? _value.profileImageUrl
-          : profileImageUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      description: null == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String,
-      videoUrl: freezed == videoUrl
-          ? _value.videoUrl
-          : videoUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      likeCount: null == likeCount
-          ? _value.likeCount
-          : likeCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      commentCount: null == commentCount
-          ? _value.commentCount
-          : commentCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      shareCount: null == shareCount
-          ? _value.shareCount
-          : shareCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      hashtags: null == hashtags
-          ? _value._hashtags
-          : hashtags // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      labels: null == labels
-          ? _value._labels
-          : labels // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      imageUrls: null == imageUrls
-          ? _value._imageUrls
-          : imageUrls // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as String,
-      cid: null == cid
-          ? _value.cid
-          : cid // ignore: cast_nullable_to_non_nullable
-              as String,
-      isSprk: null == isSprk
-          ? _value.isSprk
-          : isSprk // ignore: cast_nullable_to_non_nullable
-              as bool,
-      likeUri: freezed == likeUri
-          ? _value.likeUri
-          : likeUri // ignore: cast_nullable_to_non_nullable
-              as String?,
-      hasMedia: null == hasMedia
-          ? _value.hasMedia
-          : hasMedia // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isReply: null == isReply
-          ? _value.isReply
-          : isReply // ignore: cast_nullable_to_non_nullable
-              as bool,
-      imageAlts: null == imageAlts
-          ? _value._imageAlts
-          : imageAlts // ignore: cast_nullable_to_non_nullable
-              as List<String>,
-      videoAlt: freezed == videoAlt
-          ? _value.videoAlt
-          : videoAlt // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$FeedPostImpl implements _FeedPost {
-  const _$FeedPostImpl(
-      {required this.username,
-      required this.authorDid,
-      this.profileImageUrl,
-      required this.description,
-      this.videoUrl,
-      this.likeCount = 0,
-      this.commentCount = 0,
-      this.shareCount = 0,
-      final List<String> hashtags = const [],
-      final List<String> labels = const [],
-      final List<String> imageUrls = const [],
-      required this.uri,
-      required this.cid,
-      this.isSprk = false,
-      this.likeUri,
-      this.hasMedia = false,
-      this.isReply = false,
-      final List<String> imageAlts = const [],
-      this.videoAlt})
-      : _hashtags = hashtags,
-        _labels = labels,
-        _imageUrls = imageUrls,
-        _imageAlts = imageAlts;
-
-  factory _$FeedPostImpl.fromJson(Map<String, dynamic> json) =>
-      _$$FeedPostImplFromJson(json);
-
-  @override
-  final String username;
-  @override
-  final String authorDid;
-  @override
-  final String? profileImageUrl;
-  @override
-  final String description;
-  @override
-  final String? videoUrl;
-  @override
-  @JsonKey()
-  final int likeCount;
-  @override
-  @JsonKey()
-  final int commentCount;
-  @override
-  @JsonKey()
-  final int shareCount;
-  final List<String> _hashtags;
-  @override
-  @JsonKey()
-  List<String> get hashtags {
-    if (_hashtags is EqualUnmodifiableListView) return _hashtags;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_hashtags);
-  }
-
-  final List<String> _labels;
-  @override
-  @JsonKey()
-  List<String> get labels {
-    if (_labels is EqualUnmodifiableListView) return _labels;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_labels);
-  }
-
-  final List<String> _imageUrls;
-  @override
-  @JsonKey()
-  List<String> get imageUrls {
-    if (_imageUrls is EqualUnmodifiableListView) return _imageUrls;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_imageUrls);
-  }
-
-  @override
-  final String uri;
-  @override
-  final String cid;
-  @override
-  @JsonKey()
-  final bool isSprk;
-  @override
-  final String? likeUri;
-  @override
-  @JsonKey()
-  final bool hasMedia;
-  @override
-  @JsonKey()
-  final bool isReply;
-  final List<String> _imageAlts;
-  @override
-  @JsonKey()
-  List<String> get imageAlts {
-    if (_imageAlts is EqualUnmodifiableListView) return _imageAlts;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_imageAlts);
-  }
-
-  @override
-  final String? videoAlt;
-
-  @override
-  String toString() {
-    return 'FeedPost(username: $username, authorDid: $authorDid, profileImageUrl: $profileImageUrl, description: $description, videoUrl: $videoUrl, likeCount: $likeCount, commentCount: $commentCount, shareCount: $shareCount, hashtags: $hashtags, labels: $labels, imageUrls: $imageUrls, uri: $uri, cid: $cid, isSprk: $isSprk, likeUri: $likeUri, hasMedia: $hasMedia, isReply: $isReply, imageAlts: $imageAlts, videoAlt: $videoAlt)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$FeedPostImpl &&
-            (identical(other.username, username) ||
-                other.username == username) &&
-            (identical(other.authorDid, authorDid) ||
-                other.authorDid == authorDid) &&
-            (identical(other.profileImageUrl, profileImageUrl) ||
-                other.profileImageUrl == profileImageUrl) &&
-            (identical(other.description, description) ||
-                other.description == description) &&
-            (identical(other.videoUrl, videoUrl) ||
-                other.videoUrl == videoUrl) &&
-            (identical(other.likeCount, likeCount) ||
-                other.likeCount == likeCount) &&
-            (identical(other.commentCount, commentCount) ||
-                other.commentCount == commentCount) &&
-            (identical(other.shareCount, shareCount) ||
-                other.shareCount == shareCount) &&
-            const DeepCollectionEquality().equals(other._hashtags, _hashtags) &&
-            const DeepCollectionEquality().equals(other._labels, _labels) &&
-            const DeepCollectionEquality()
-                .equals(other._imageUrls, _imageUrls) &&
-            (identical(other.uri, uri) || other.uri == uri) &&
-            (identical(other.cid, cid) || other.cid == cid) &&
-            (identical(other.isSprk, isSprk) || other.isSprk == isSprk) &&
-            (identical(other.likeUri, likeUri) || other.likeUri == likeUri) &&
-            (identical(other.hasMedia, hasMedia) ||
-                other.hasMedia == hasMedia) &&
-            (identical(other.isReply, isReply) || other.isReply == isReply) &&
-            const DeepCollectionEquality()
-                .equals(other._imageAlts, _imageAlts) &&
-            (identical(other.videoAlt, videoAlt) ||
-                other.videoAlt == videoAlt));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hashAll([
-        runtimeType,
-        username,
-        authorDid,
-        profileImageUrl,
-        description,
-        videoUrl,
-        likeCount,
-        commentCount,
-        shareCount,
-        const DeepCollectionEquality().hash(_hashtags),
-        const DeepCollectionEquality().hash(_labels),
-        const DeepCollectionEquality().hash(_imageUrls),
-        uri,
-        cid,
-        isSprk,
-        likeUri,
-        hasMedia,
-        isReply,
-        const DeepCollectionEquality().hash(_imageAlts),
-        videoAlt
-      ]);
-
-  /// Create a copy of FeedPost
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$FeedPostImplCopyWith<_$FeedPostImpl> get copyWith =>
-      __$$FeedPostImplCopyWithImpl<_$FeedPostImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$FeedPostImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _FeedPost implements FeedPost {
-  const factory _FeedPost(
-      {required final String username,
-      required final String authorDid,
-      final String? profileImageUrl,
-      required final String description,
-      final String? videoUrl,
-      final int likeCount,
-      final int commentCount,
-      final int shareCount,
-      final List<String> hashtags,
-      final List<String> labels,
-      final List<String> imageUrls,
-      required final String uri,
-      required final String cid,
-      final bool isSprk,
-      final String? likeUri,
-      final bool hasMedia,
-      final bool isReply,
-      final List<String> imageAlts,
-      final String? videoAlt}) = _$FeedPostImpl;
-
-  factory _FeedPost.fromJson(Map<String, dynamic> json) =
-      _$FeedPostImpl.fromJson;
-
-  @override
-  String get username;
-  @override
-  String get authorDid;
-  @override
-  String? get profileImageUrl;
-  @override
-  String get description;
-  @override
-  String? get videoUrl;
-  @override
-  int get likeCount;
-  @override
-  int get commentCount;
-  @override
-  int get shareCount;
-  @override
-  List<String> get hashtags;
-  @override
-  List<String> get labels;
-  @override
-  List<String> get imageUrls;
-  @override
-  String get uri;
-  @override
-  String get cid;
-  @override
-  bool get isSprk;
-  @override
-  String? get likeUri;
-  @override
-  bool get hasMedia;
-  @override
-  bool get isReply;
-  @override
-  List<String> get imageAlts;
-  @override
-  String? get videoAlt;
-
-  /// Create a copy of FeedPost
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$FeedPostImplCopyWith<_$FeedPostImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -3565,274 +5050,6 @@ abstract class _Comment implements Comment {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$CommentImplCopyWith<_$CommentImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-BlobReference _$BlobReferenceFromJson(Map<String, dynamic> json) {
-  return _BlobReference.fromJson(json);
-}
-
-/// @nodoc
-mixin _$BlobReference {
-  /// The type of the blob, usually 'blob'
-  @JsonKey(name: '\$type')
-  String get type => throw _privateConstructorUsedError;
-
-  /// The MIME type of the blob
-  String get mimeType => throw _privateConstructorUsedError;
-
-  /// Size of the blob in bytes
-  int get size => throw _privateConstructorUsedError;
-
-  /// Content reference (CID)
-  String get ref => throw _privateConstructorUsedError;
-
-  /// Creation time in ISO 8601 format
-  String? get createdAt => throw _privateConstructorUsedError;
-
-  /// Serializes this BlobReference to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of BlobReference
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $BlobReferenceCopyWith<BlobReference> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $BlobReferenceCopyWith<$Res> {
-  factory $BlobReferenceCopyWith(
-          BlobReference value, $Res Function(BlobReference) then) =
-      _$BlobReferenceCopyWithImpl<$Res, BlobReference>;
-  @useResult
-  $Res call(
-      {@JsonKey(name: '\$type') String type,
-      String mimeType,
-      int size,
-      String ref,
-      String? createdAt});
-}
-
-/// @nodoc
-class _$BlobReferenceCopyWithImpl<$Res, $Val extends BlobReference>
-    implements $BlobReferenceCopyWith<$Res> {
-  _$BlobReferenceCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of BlobReference
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? type = null,
-    Object? mimeType = null,
-    Object? size = null,
-    Object? ref = null,
-    Object? createdAt = freezed,
-  }) {
-    return _then(_value.copyWith(
-      type: null == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as String,
-      mimeType: null == mimeType
-          ? _value.mimeType
-          : mimeType // ignore: cast_nullable_to_non_nullable
-              as String,
-      size: null == size
-          ? _value.size
-          : size // ignore: cast_nullable_to_non_nullable
-              as int,
-      ref: null == ref
-          ? _value.ref
-          : ref // ignore: cast_nullable_to_non_nullable
-              as String,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$BlobReferenceImplCopyWith<$Res>
-    implements $BlobReferenceCopyWith<$Res> {
-  factory _$$BlobReferenceImplCopyWith(
-          _$BlobReferenceImpl value, $Res Function(_$BlobReferenceImpl) then) =
-      __$$BlobReferenceImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {@JsonKey(name: '\$type') String type,
-      String mimeType,
-      int size,
-      String ref,
-      String? createdAt});
-}
-
-/// @nodoc
-class __$$BlobReferenceImplCopyWithImpl<$Res>
-    extends _$BlobReferenceCopyWithImpl<$Res, _$BlobReferenceImpl>
-    implements _$$BlobReferenceImplCopyWith<$Res> {
-  __$$BlobReferenceImplCopyWithImpl(
-      _$BlobReferenceImpl _value, $Res Function(_$BlobReferenceImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of BlobReference
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? type = null,
-    Object? mimeType = null,
-    Object? size = null,
-    Object? ref = null,
-    Object? createdAt = freezed,
-  }) {
-    return _then(_$BlobReferenceImpl(
-      type: null == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
-              as String,
-      mimeType: null == mimeType
-          ? _value.mimeType
-          : mimeType // ignore: cast_nullable_to_non_nullable
-              as String,
-      size: null == size
-          ? _value.size
-          : size // ignore: cast_nullable_to_non_nullable
-              as int,
-      ref: null == ref
-          ? _value.ref
-          : ref // ignore: cast_nullable_to_non_nullable
-              as String,
-      createdAt: freezed == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$BlobReferenceImpl extends _BlobReference {
-  const _$BlobReferenceImpl(
-      {@JsonKey(name: '\$type') required this.type,
-      required this.mimeType,
-      required this.size,
-      required this.ref,
-      this.createdAt})
-      : super._();
-
-  factory _$BlobReferenceImpl.fromJson(Map<String, dynamic> json) =>
-      _$$BlobReferenceImplFromJson(json);
-
-  /// The type of the blob, usually 'blob'
-  @override
-  @JsonKey(name: '\$type')
-  final String type;
-
-  /// The MIME type of the blob
-  @override
-  final String mimeType;
-
-  /// Size of the blob in bytes
-  @override
-  final int size;
-
-  /// Content reference (CID)
-  @override
-  final String ref;
-
-  /// Creation time in ISO 8601 format
-  @override
-  final String? createdAt;
-
-  @override
-  String toString() {
-    return 'BlobReference(type: $type, mimeType: $mimeType, size: $size, ref: $ref, createdAt: $createdAt)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$BlobReferenceImpl &&
-            (identical(other.type, type) || other.type == type) &&
-            (identical(other.mimeType, mimeType) ||
-                other.mimeType == mimeType) &&
-            (identical(other.size, size) || other.size == size) &&
-            (identical(other.ref, ref) || other.ref == ref) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, type, mimeType, size, ref, createdAt);
-
-  /// Create a copy of BlobReference
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$BlobReferenceImplCopyWith<_$BlobReferenceImpl> get copyWith =>
-      __$$BlobReferenceImplCopyWithImpl<_$BlobReferenceImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$BlobReferenceImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _BlobReference extends BlobReference {
-  const factory _BlobReference(
-      {@JsonKey(name: '\$type') required final String type,
-      required final String mimeType,
-      required final int size,
-      required final String ref,
-      final String? createdAt}) = _$BlobReferenceImpl;
-  const _BlobReference._() : super._();
-
-  factory _BlobReference.fromJson(Map<String, dynamic> json) =
-      _$BlobReferenceImpl.fromJson;
-
-  /// The type of the blob, usually 'blob'
-  @override
-  @JsonKey(name: '\$type')
-  String get type;
-
-  /// The MIME type of the blob
-  @override
-  String get mimeType;
-
-  /// Size of the blob in bytes
-  @override
-  int get size;
-
-  /// Content reference (CID)
-  @override
-  String get ref;
-
-  /// Creation time in ISO 8601 format
-  @override
-  String? get createdAt;
-
-  /// Create a copy of BlobReference
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$BlobReferenceImplCopyWith<_$BlobReferenceImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -4812,8 +6029,10 @@ mixin _$VideoEmbed {
   String get type => throw _privateConstructorUsedError;
 
   /// The video blob reference
-  BlobReference get video => throw _privateConstructorUsedError;
-
+  Blob get video =>
+      throw _privateConstructorUsedError; // remaining fields that are in the json
+// List<Caption> captions,
+// AspectRatio aspectRatio, {width: int, height: int}
   /// Optional alt text for accessibility
   String? get alt => throw _privateConstructorUsedError;
 
@@ -4833,10 +6052,9 @@ abstract class $VideoEmbedCopyWith<$Res> {
           VideoEmbed value, $Res Function(VideoEmbed) then) =
       _$VideoEmbedCopyWithImpl<$Res, VideoEmbed>;
   @useResult
-  $Res call(
-      {@JsonKey(name: '\$type') String type, BlobReference video, String? alt});
+  $Res call({@JsonKey(name: '\$type') String type, Blob video, String? alt});
 
-  $BlobReferenceCopyWith<$Res> get video;
+  $BlobCopyWith<$Res> get video;
 }
 
 /// @nodoc
@@ -4866,7 +6084,7 @@ class _$VideoEmbedCopyWithImpl<$Res, $Val extends VideoEmbed>
       video: null == video
           ? _value.video
           : video // ignore: cast_nullable_to_non_nullable
-              as BlobReference,
+              as Blob,
       alt: freezed == alt
           ? _value.alt
           : alt // ignore: cast_nullable_to_non_nullable
@@ -4878,8 +6096,8 @@ class _$VideoEmbedCopyWithImpl<$Res, $Val extends VideoEmbed>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $BlobReferenceCopyWith<$Res> get video {
-    return $BlobReferenceCopyWith<$Res>(_value.video, (value) {
+  $BlobCopyWith<$Res> get video {
+    return $BlobCopyWith<$Res>(_value.video, (value) {
       return _then(_value.copyWith(video: value) as $Val);
     });
   }
@@ -4893,11 +6111,10 @@ abstract class _$$VideoEmbedImplCopyWith<$Res>
       __$$VideoEmbedImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@JsonKey(name: '\$type') String type, BlobReference video, String? alt});
+  $Res call({@JsonKey(name: '\$type') String type, Blob video, String? alt});
 
   @override
-  $BlobReferenceCopyWith<$Res> get video;
+  $BlobCopyWith<$Res> get video;
 }
 
 /// @nodoc
@@ -4925,7 +6142,7 @@ class __$$VideoEmbedImplCopyWithImpl<$Res>
       video: null == video
           ? _value.video
           : video // ignore: cast_nullable_to_non_nullable
-              as BlobReference,
+              as Blob,
       alt: freezed == alt
           ? _value.alt
           : alt // ignore: cast_nullable_to_non_nullable
@@ -4953,8 +6170,10 @@ class _$VideoEmbedImpl extends _VideoEmbed {
 
   /// The video blob reference
   @override
-  final BlobReference video;
-
+  final Blob video;
+// remaining fields that are in the json
+// List<Caption> captions,
+// AspectRatio aspectRatio, {width: int, height: int}
   /// Optional alt text for accessibility
   @override
   final String? alt;
@@ -4997,7 +6216,7 @@ class _$VideoEmbedImpl extends _VideoEmbed {
 abstract class _VideoEmbed extends VideoEmbed {
   const factory _VideoEmbed(
       {@JsonKey(name: '\$type') required final String type,
-      required final BlobReference video,
+      required final Blob video,
       final String? alt}) = _$VideoEmbedImpl;
   const _VideoEmbed._() : super._();
 
@@ -5011,8 +6230,9 @@ abstract class _VideoEmbed extends VideoEmbed {
 
   /// The video blob reference
   @override
-  BlobReference get video;
-
+  Blob get video; // remaining fields that are in the json
+// List<Caption> captions,
+// AspectRatio aspectRatio, {width: int, height: int}
   /// Optional alt text for accessibility
   @override
   String? get alt;
@@ -5025,277 +6245,1286 @@ abstract class _VideoEmbed extends VideoEmbed {
       throw _privateConstructorUsedError;
 }
 
-VideoPost _$VideoPostFromJson(Map<String, dynamic> json) {
-  return _VideoPost.fromJson(json);
+VideoView _$VideoViewFromJson(Map<String, dynamic> json) {
+  return _VideoView.fromJson(json);
 }
 
 /// @nodoc
-mixin _$VideoPost {
-  /// The type of post, typically 'so.sprk.feed.post'
-  @JsonKey(name: r'$type')
-  String get type => throw _privateConstructorUsedError;
+mixin _$VideoView {
+  String get cid => throw _privateConstructorUsedError;
+  @AtUriConverter()
+  AtUri get playlist => throw _privateConstructorUsedError;
+  @AtUriConverter()
+  AtUri get thumbnail => throw _privateConstructorUsedError;
+  String? get alt => throw _privateConstructorUsedError;
 
-  /// Post text/description
-  String get text => throw _privateConstructorUsedError;
-
-  /// Video embed containing the actual video data
-  VideoEmbed get embed => throw _privateConstructorUsedError;
-
-  /// When the post was created (ISO 8601 format)
-  String get createdAt => throw _privateConstructorUsedError;
-
-  /// Optional language tags
-  List<String>? get langs => throw _privateConstructorUsedError;
-
-  /// Optional content warning labels
-  @JsonKey(name: 'labels')
-  List<LabelDetail>? get labels => throw _privateConstructorUsedError;
-
-  /// Optional tags for discovery
-  List<String>? get tags => throw _privateConstructorUsedError;
-
-  /// Optional facets for rich text formatting
-  List<Facet>? get facets => throw _privateConstructorUsedError;
-
-  /// Serializes this VideoPost to a JSON map.
+  /// Serializes this VideoView to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of VideoPost
+  /// Create a copy of VideoView
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $VideoPostCopyWith<VideoPost> get copyWith =>
+  $VideoViewCopyWith<VideoView> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $VideoPostCopyWith<$Res> {
-  factory $VideoPostCopyWith(VideoPost value, $Res Function(VideoPost) then) =
-      _$VideoPostCopyWithImpl<$Res, VideoPost>;
+abstract class $VideoViewCopyWith<$Res> {
+  factory $VideoViewCopyWith(VideoView value, $Res Function(VideoView) then) =
+      _$VideoViewCopyWithImpl<$Res, VideoView>;
   @useResult
   $Res call(
-      {@JsonKey(name: r'$type') String type,
-      String text,
-      VideoEmbed embed,
-      String createdAt,
-      List<String>? langs,
-      @JsonKey(name: 'labels') List<LabelDetail>? labels,
-      List<String>? tags,
-      List<Facet>? facets});
-
-  $VideoEmbedCopyWith<$Res> get embed;
+      {String cid,
+      @AtUriConverter() AtUri playlist,
+      @AtUriConverter() AtUri thumbnail,
+      String? alt});
 }
 
 /// @nodoc
-class _$VideoPostCopyWithImpl<$Res, $Val extends VideoPost>
-    implements $VideoPostCopyWith<$Res> {
-  _$VideoPostCopyWithImpl(this._value, this._then);
+class _$VideoViewCopyWithImpl<$Res, $Val extends VideoView>
+    implements $VideoViewCopyWith<$Res> {
+  _$VideoViewCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of VideoPost
+  /// Create a copy of VideoView
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? type = null,
-    Object? text = null,
-    Object? embed = null,
-    Object? createdAt = null,
-    Object? langs = freezed,
-    Object? labels = freezed,
-    Object? tags = freezed,
-    Object? facets = freezed,
+    Object? cid = null,
+    Object? playlist = null,
+    Object? thumbnail = null,
+    Object? alt = freezed,
   }) {
     return _then(_value.copyWith(
-      type: null == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
+      cid: null == cid
+          ? _value.cid
+          : cid // ignore: cast_nullable_to_non_nullable
               as String,
-      text: null == text
-          ? _value.text
-          : text // ignore: cast_nullable_to_non_nullable
-              as String,
-      embed: null == embed
-          ? _value.embed
-          : embed // ignore: cast_nullable_to_non_nullable
-              as VideoEmbed,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as String,
-      langs: freezed == langs
-          ? _value.langs
-          : langs // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
-      labels: freezed == labels
-          ? _value.labels
-          : labels // ignore: cast_nullable_to_non_nullable
-              as List<LabelDetail>?,
-      tags: freezed == tags
-          ? _value.tags
-          : tags // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
-      facets: freezed == facets
-          ? _value.facets
-          : facets // ignore: cast_nullable_to_non_nullable
-              as List<Facet>?,
+      playlist: null == playlist
+          ? _value.playlist
+          : playlist // ignore: cast_nullable_to_non_nullable
+              as AtUri,
+      thumbnail: null == thumbnail
+          ? _value.thumbnail
+          : thumbnail // ignore: cast_nullable_to_non_nullable
+              as AtUri,
+      alt: freezed == alt
+          ? _value.alt
+          : alt // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
-  }
-
-  /// Create a copy of VideoPost
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $VideoEmbedCopyWith<$Res> get embed {
-    return $VideoEmbedCopyWith<$Res>(_value.embed, (value) {
-      return _then(_value.copyWith(embed: value) as $Val);
-    });
   }
 }
 
 /// @nodoc
-abstract class _$$VideoPostImplCopyWith<$Res>
-    implements $VideoPostCopyWith<$Res> {
-  factory _$$VideoPostImplCopyWith(
-          _$VideoPostImpl value, $Res Function(_$VideoPostImpl) then) =
-      __$$VideoPostImplCopyWithImpl<$Res>;
+abstract class _$$VideoViewImplCopyWith<$Res>
+    implements $VideoViewCopyWith<$Res> {
+  factory _$$VideoViewImplCopyWith(
+          _$VideoViewImpl value, $Res Function(_$VideoViewImpl) then) =
+      __$$VideoViewImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
-      {@JsonKey(name: r'$type') String type,
-      String text,
-      VideoEmbed embed,
-      String createdAt,
-      List<String>? langs,
-      @JsonKey(name: 'labels') List<LabelDetail>? labels,
-      List<String>? tags,
-      List<Facet>? facets});
-
-  @override
-  $VideoEmbedCopyWith<$Res> get embed;
+      {String cid,
+      @AtUriConverter() AtUri playlist,
+      @AtUriConverter() AtUri thumbnail,
+      String? alt});
 }
 
 /// @nodoc
-class __$$VideoPostImplCopyWithImpl<$Res>
-    extends _$VideoPostCopyWithImpl<$Res, _$VideoPostImpl>
-    implements _$$VideoPostImplCopyWith<$Res> {
-  __$$VideoPostImplCopyWithImpl(
-      _$VideoPostImpl _value, $Res Function(_$VideoPostImpl) _then)
+class __$$VideoViewImplCopyWithImpl<$Res>
+    extends _$VideoViewCopyWithImpl<$Res, _$VideoViewImpl>
+    implements _$$VideoViewImplCopyWith<$Res> {
+  __$$VideoViewImplCopyWithImpl(
+      _$VideoViewImpl _value, $Res Function(_$VideoViewImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of VideoPost
+  /// Create a copy of VideoView
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? type = null,
-    Object? text = null,
-    Object? embed = null,
-    Object? createdAt = null,
-    Object? langs = freezed,
-    Object? labels = freezed,
-    Object? tags = freezed,
-    Object? facets = freezed,
+    Object? cid = null,
+    Object? playlist = null,
+    Object? thumbnail = null,
+    Object? alt = freezed,
   }) {
-    return _then(_$VideoPostImpl(
-      type: null == type
-          ? _value.type
-          : type // ignore: cast_nullable_to_non_nullable
+    return _then(_$VideoViewImpl(
+      cid: null == cid
+          ? _value.cid
+          : cid // ignore: cast_nullable_to_non_nullable
               as String,
-      text: null == text
-          ? _value.text
-          : text // ignore: cast_nullable_to_non_nullable
-              as String,
-      embed: null == embed
-          ? _value.embed
-          : embed // ignore: cast_nullable_to_non_nullable
-              as VideoEmbed,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as String,
-      langs: freezed == langs
-          ? _value._langs
-          : langs // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
-      labels: freezed == labels
-          ? _value._labels
-          : labels // ignore: cast_nullable_to_non_nullable
-              as List<LabelDetail>?,
-      tags: freezed == tags
-          ? _value._tags
-          : tags // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
-      facets: freezed == facets
-          ? _value._facets
-          : facets // ignore: cast_nullable_to_non_nullable
-              as List<Facet>?,
+      playlist: null == playlist
+          ? _value.playlist
+          : playlist // ignore: cast_nullable_to_non_nullable
+              as AtUri,
+      thumbnail: null == thumbnail
+          ? _value.thumbnail
+          : thumbnail // ignore: cast_nullable_to_non_nullable
+              as AtUri,
+      alt: freezed == alt
+          ? _value.alt
+          : alt // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$VideoPostImpl extends _VideoPost {
-  const _$VideoPostImpl(
-      {@JsonKey(name: r'$type') required this.type,
-      this.text = '',
-      required this.embed,
-      required this.createdAt,
-      final List<String>? langs,
-      @JsonKey(name: 'labels') final List<LabelDetail>? labels,
-      final List<String>? tags,
-      final List<Facet>? facets})
-      : _langs = langs,
-        _labels = labels,
-        _tags = tags,
-        _facets = facets,
-        super._();
+class _$VideoViewImpl extends _VideoView {
+  const _$VideoViewImpl(
+      {required this.cid,
+      @AtUriConverter() required this.playlist,
+      @AtUriConverter() required this.thumbnail,
+      this.alt})
+      : super._();
 
-  factory _$VideoPostImpl.fromJson(Map<String, dynamic> json) =>
-      _$$VideoPostImplFromJson(json);
+  factory _$VideoViewImpl.fromJson(Map<String, dynamic> json) =>
+      _$$VideoViewImplFromJson(json);
 
-  /// The type of post, typically 'so.sprk.feed.post'
   @override
-  @JsonKey(name: r'$type')
-  final String type;
-
-  /// Post text/description
+  final String cid;
   @override
-  @JsonKey()
-  final String text;
-
-  /// Video embed containing the actual video data
+  @AtUriConverter()
+  final AtUri playlist;
   @override
-  final VideoEmbed embed;
-
-  /// When the post was created (ISO 8601 format)
+  @AtUriConverter()
+  final AtUri thumbnail;
   @override
-  final String createdAt;
+  final String? alt;
 
-  /// Optional language tags
-  final List<String>? _langs;
-
-  /// Optional language tags
   @override
-  List<String>? get langs {
-    final value = _langs;
-    if (value == null) return null;
-    if (_langs is EqualUnmodifiableListView) return _langs;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(value);
+  String toString() {
+    return 'VideoView(cid: $cid, playlist: $playlist, thumbnail: $thumbnail, alt: $alt)';
   }
 
-  /// Optional content warning labels
-  final List<LabelDetail>? _labels;
-
-  /// Optional content warning labels
   @override
-  @JsonKey(name: 'labels')
-  List<LabelDetail>? get labels {
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$VideoViewImpl &&
+            (identical(other.cid, cid) || other.cid == cid) &&
+            (identical(other.playlist, playlist) ||
+                other.playlist == playlist) &&
+            (identical(other.thumbnail, thumbnail) ||
+                other.thumbnail == thumbnail) &&
+            (identical(other.alt, alt) || other.alt == alt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, cid, playlist, thumbnail, alt);
+
+  /// Create a copy of VideoView
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$VideoViewImplCopyWith<_$VideoViewImpl> get copyWith =>
+      __$$VideoViewImplCopyWithImpl<_$VideoViewImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$VideoViewImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _VideoView extends VideoView {
+  const factory _VideoView(
+      {required final String cid,
+      @AtUriConverter() required final AtUri playlist,
+      @AtUriConverter() required final AtUri thumbnail,
+      final String? alt}) = _$VideoViewImpl;
+  const _VideoView._() : super._();
+
+  factory _VideoView.fromJson(Map<String, dynamic> json) =
+      _$VideoViewImpl.fromJson;
+
+  @override
+  String get cid;
+  @override
+  @AtUriConverter()
+  AtUri get playlist;
+  @override
+  @AtUriConverter()
+  AtUri get thumbnail;
+  @override
+  String? get alt;
+
+  /// Create a copy of VideoView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$VideoViewImplCopyWith<_$VideoViewImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+ImageEmbed _$ImageEmbedFromJson(Map<String, dynamic> json) {
+  return _ImageEmbed.fromJson(json);
+}
+
+/// @nodoc
+mixin _$ImageEmbed {
+  @JsonKey(name: '\$type')
+  String get type => throw _privateConstructorUsedError;
+  List<Image> get images => throw _privateConstructorUsedError;
+
+  /// Serializes this ImageEmbed to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of ImageEmbed
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $ImageEmbedCopyWith<ImageEmbed> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ImageEmbedCopyWith<$Res> {
+  factory $ImageEmbedCopyWith(
+          ImageEmbed value, $Res Function(ImageEmbed) then) =
+      _$ImageEmbedCopyWithImpl<$Res, ImageEmbed>;
+  @useResult
+  $Res call({@JsonKey(name: '\$type') String type, List<Image> images});
+}
+
+/// @nodoc
+class _$ImageEmbedCopyWithImpl<$Res, $Val extends ImageEmbed>
+    implements $ImageEmbedCopyWith<$Res> {
+  _$ImageEmbedCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of ImageEmbed
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? type = null,
+    Object? images = null,
+  }) {
+    return _then(_value.copyWith(
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String,
+      images: null == images
+          ? _value.images
+          : images // ignore: cast_nullable_to_non_nullable
+              as List<Image>,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$ImageEmbedImplCopyWith<$Res>
+    implements $ImageEmbedCopyWith<$Res> {
+  factory _$$ImageEmbedImplCopyWith(
+          _$ImageEmbedImpl value, $Res Function(_$ImageEmbedImpl) then) =
+      __$$ImageEmbedImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({@JsonKey(name: '\$type') String type, List<Image> images});
+}
+
+/// @nodoc
+class __$$ImageEmbedImplCopyWithImpl<$Res>
+    extends _$ImageEmbedCopyWithImpl<$Res, _$ImageEmbedImpl>
+    implements _$$ImageEmbedImplCopyWith<$Res> {
+  __$$ImageEmbedImplCopyWithImpl(
+      _$ImageEmbedImpl _value, $Res Function(_$ImageEmbedImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of ImageEmbed
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? type = null,
+    Object? images = null,
+  }) {
+    return _then(_$ImageEmbedImpl(
+      type: null == type
+          ? _value.type
+          : type // ignore: cast_nullable_to_non_nullable
+              as String,
+      images: null == images
+          ? _value._images
+          : images // ignore: cast_nullable_to_non_nullable
+              as List<Image>,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$ImageEmbedImpl extends _ImageEmbed {
+  const _$ImageEmbedImpl(
+      {@JsonKey(name: '\$type') required this.type,
+      required final List<Image> images})
+      : _images = images,
+        super._();
+
+  factory _$ImageEmbedImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ImageEmbedImplFromJson(json);
+
+  @override
+  @JsonKey(name: '\$type')
+  final String type;
+  final List<Image> _images;
+  @override
+  List<Image> get images {
+    if (_images is EqualUnmodifiableListView) return _images;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_images);
+  }
+
+  @override
+  String toString() {
+    return 'ImageEmbed(type: $type, images: $images)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ImageEmbedImpl &&
+            (identical(other.type, type) || other.type == type) &&
+            const DeepCollectionEquality().equals(other._images, _images));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, type, const DeepCollectionEquality().hash(_images));
+
+  /// Create a copy of ImageEmbed
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ImageEmbedImplCopyWith<_$ImageEmbedImpl> get copyWith =>
+      __$$ImageEmbedImplCopyWithImpl<_$ImageEmbedImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ImageEmbedImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _ImageEmbed extends ImageEmbed {
+  const factory _ImageEmbed(
+      {@JsonKey(name: '\$type') required final String type,
+      required final List<Image> images}) = _$ImageEmbedImpl;
+  const _ImageEmbed._() : super._();
+
+  factory _ImageEmbed.fromJson(Map<String, dynamic> json) =
+      _$ImageEmbedImpl.fromJson;
+
+  @override
+  @JsonKey(name: '\$type')
+  String get type;
+  @override
+  List<Image> get images;
+
+  /// Create a copy of ImageEmbed
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ImageEmbedImplCopyWith<_$ImageEmbedImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+Image _$ImageFromJson(Map<String, dynamic> json) {
+  return _Image.fromJson(json);
+}
+
+/// @nodoc
+mixin _$Image {
+  Blob get image => throw _privateConstructorUsedError;
+  String? get alt => throw _privateConstructorUsedError;
+
+  /// Serializes this Image to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of Image
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $ImageCopyWith<Image> get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ImageCopyWith<$Res> {
+  factory $ImageCopyWith(Image value, $Res Function(Image) then) =
+      _$ImageCopyWithImpl<$Res, Image>;
+  @useResult
+  $Res call({Blob image, String? alt});
+
+  $BlobCopyWith<$Res> get image;
+}
+
+/// @nodoc
+class _$ImageCopyWithImpl<$Res, $Val extends Image>
+    implements $ImageCopyWith<$Res> {
+  _$ImageCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of Image
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? image = null,
+    Object? alt = freezed,
+  }) {
+    return _then(_value.copyWith(
+      image: null == image
+          ? _value.image
+          : image // ignore: cast_nullable_to_non_nullable
+              as Blob,
+      alt: freezed == alt
+          ? _value.alt
+          : alt // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
+  }
+
+  /// Create a copy of Image
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $BlobCopyWith<$Res> get image {
+    return $BlobCopyWith<$Res>(_value.image, (value) {
+      return _then(_value.copyWith(image: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$ImageImplCopyWith<$Res> implements $ImageCopyWith<$Res> {
+  factory _$$ImageImplCopyWith(
+          _$ImageImpl value, $Res Function(_$ImageImpl) then) =
+      __$$ImageImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({Blob image, String? alt});
+
+  @override
+  $BlobCopyWith<$Res> get image;
+}
+
+/// @nodoc
+class __$$ImageImplCopyWithImpl<$Res>
+    extends _$ImageCopyWithImpl<$Res, _$ImageImpl>
+    implements _$$ImageImplCopyWith<$Res> {
+  __$$ImageImplCopyWithImpl(
+      _$ImageImpl _value, $Res Function(_$ImageImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of Image
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? image = null,
+    Object? alt = freezed,
+  }) {
+    return _then(_$ImageImpl(
+      image: null == image
+          ? _value.image
+          : image // ignore: cast_nullable_to_non_nullable
+              as Blob,
+      alt: freezed == alt
+          ? _value.alt
+          : alt // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$ImageImpl extends _Image {
+  const _$ImageImpl({required this.image, this.alt}) : super._();
+
+  factory _$ImageImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ImageImplFromJson(json);
+
+  @override
+  final Blob image;
+  @override
+  final String? alt;
+
+  @override
+  String toString() {
+    return 'Image(image: $image, alt: $alt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ImageImpl &&
+            (identical(other.image, image) || other.image == image) &&
+            (identical(other.alt, alt) || other.alt == alt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, image, alt);
+
+  /// Create a copy of Image
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ImageImplCopyWith<_$ImageImpl> get copyWith =>
+      __$$ImageImplCopyWithImpl<_$ImageImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ImageImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _Image extends Image {
+  const factory _Image({required final Blob image, final String? alt}) =
+      _$ImageImpl;
+  const _Image._() : super._();
+
+  factory _Image.fromJson(Map<String, dynamic> json) = _$ImageImpl.fromJson;
+
+  @override
+  Blob get image;
+  @override
+  String? get alt;
+
+  /// Create a copy of Image
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ImageImplCopyWith<_$ImageImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+ImageView _$ImageViewFromJson(Map<String, dynamic> json) {
+  return _ImageView.fromJson(json);
+}
+
+/// @nodoc
+mixin _$ImageView {
+  List<ViewImage> get images => throw _privateConstructorUsedError;
+
+  /// Serializes this ImageView to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of ImageView
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $ImageViewCopyWith<ImageView> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ImageViewCopyWith<$Res> {
+  factory $ImageViewCopyWith(ImageView value, $Res Function(ImageView) then) =
+      _$ImageViewCopyWithImpl<$Res, ImageView>;
+  @useResult
+  $Res call({List<ViewImage> images});
+}
+
+/// @nodoc
+class _$ImageViewCopyWithImpl<$Res, $Val extends ImageView>
+    implements $ImageViewCopyWith<$Res> {
+  _$ImageViewCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of ImageView
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? images = null,
+  }) {
+    return _then(_value.copyWith(
+      images: null == images
+          ? _value.images
+          : images // ignore: cast_nullable_to_non_nullable
+              as List<ViewImage>,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$ImageViewImplCopyWith<$Res>
+    implements $ImageViewCopyWith<$Res> {
+  factory _$$ImageViewImplCopyWith(
+          _$ImageViewImpl value, $Res Function(_$ImageViewImpl) then) =
+      __$$ImageViewImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({List<ViewImage> images});
+}
+
+/// @nodoc
+class __$$ImageViewImplCopyWithImpl<$Res>
+    extends _$ImageViewCopyWithImpl<$Res, _$ImageViewImpl>
+    implements _$$ImageViewImplCopyWith<$Res> {
+  __$$ImageViewImplCopyWithImpl(
+      _$ImageViewImpl _value, $Res Function(_$ImageViewImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of ImageView
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? images = null,
+  }) {
+    return _then(_$ImageViewImpl(
+      images: null == images
+          ? _value._images
+          : images // ignore: cast_nullable_to_non_nullable
+              as List<ViewImage>,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$ImageViewImpl extends _ImageView {
+  const _$ImageViewImpl({required final List<ViewImage> images})
+      : _images = images,
+        super._();
+
+  factory _$ImageViewImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ImageViewImplFromJson(json);
+
+  final List<ViewImage> _images;
+  @override
+  List<ViewImage> get images {
+    if (_images is EqualUnmodifiableListView) return _images;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_images);
+  }
+
+  @override
+  String toString() {
+    return 'ImageView(images: $images)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ImageViewImpl &&
+            const DeepCollectionEquality().equals(other._images, _images));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, const DeepCollectionEquality().hash(_images));
+
+  /// Create a copy of ImageView
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ImageViewImplCopyWith<_$ImageViewImpl> get copyWith =>
+      __$$ImageViewImplCopyWithImpl<_$ImageViewImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ImageViewImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _ImageView extends ImageView {
+  const factory _ImageView({required final List<ViewImage> images}) =
+      _$ImageViewImpl;
+  const _ImageView._() : super._();
+
+  factory _ImageView.fromJson(Map<String, dynamic> json) =
+      _$ImageViewImpl.fromJson;
+
+  @override
+  List<ViewImage> get images;
+
+  /// Create a copy of ImageView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ImageViewImplCopyWith<_$ImageViewImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+ViewImage _$ViewImageFromJson(Map<String, dynamic> json) {
+  return _ViewImage.fromJson(json);
+}
+
+/// @nodoc
+mixin _$ViewImage {
+  @AtUriConverter()
+  AtUri get thumb => throw _privateConstructorUsedError;
+  @AtUriConverter()
+  AtUri get fullsize => throw _privateConstructorUsedError;
+  String? get alt => throw _privateConstructorUsedError;
+
+  /// Serializes this ViewImage to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of ViewImage
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $ViewImageCopyWith<ViewImage> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ViewImageCopyWith<$Res> {
+  factory $ViewImageCopyWith(ViewImage value, $Res Function(ViewImage) then) =
+      _$ViewImageCopyWithImpl<$Res, ViewImage>;
+  @useResult
+  $Res call(
+      {@AtUriConverter() AtUri thumb,
+      @AtUriConverter() AtUri fullsize,
+      String? alt});
+}
+
+/// @nodoc
+class _$ViewImageCopyWithImpl<$Res, $Val extends ViewImage>
+    implements $ViewImageCopyWith<$Res> {
+  _$ViewImageCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of ViewImage
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? thumb = null,
+    Object? fullsize = null,
+    Object? alt = freezed,
+  }) {
+    return _then(_value.copyWith(
+      thumb: null == thumb
+          ? _value.thumb
+          : thumb // ignore: cast_nullable_to_non_nullable
+              as AtUri,
+      fullsize: null == fullsize
+          ? _value.fullsize
+          : fullsize // ignore: cast_nullable_to_non_nullable
+              as AtUri,
+      alt: freezed == alt
+          ? _value.alt
+          : alt // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$ViewImageImplCopyWith<$Res>
+    implements $ViewImageCopyWith<$Res> {
+  factory _$$ViewImageImplCopyWith(
+          _$ViewImageImpl value, $Res Function(_$ViewImageImpl) then) =
+      __$$ViewImageImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {@AtUriConverter() AtUri thumb,
+      @AtUriConverter() AtUri fullsize,
+      String? alt});
+}
+
+/// @nodoc
+class __$$ViewImageImplCopyWithImpl<$Res>
+    extends _$ViewImageCopyWithImpl<$Res, _$ViewImageImpl>
+    implements _$$ViewImageImplCopyWith<$Res> {
+  __$$ViewImageImplCopyWithImpl(
+      _$ViewImageImpl _value, $Res Function(_$ViewImageImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of ViewImage
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? thumb = null,
+    Object? fullsize = null,
+    Object? alt = freezed,
+  }) {
+    return _then(_$ViewImageImpl(
+      thumb: null == thumb
+          ? _value.thumb
+          : thumb // ignore: cast_nullable_to_non_nullable
+              as AtUri,
+      fullsize: null == fullsize
+          ? _value.fullsize
+          : fullsize // ignore: cast_nullable_to_non_nullable
+              as AtUri,
+      alt: freezed == alt
+          ? _value.alt
+          : alt // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$ViewImageImpl extends _ViewImage {
+  const _$ViewImageImpl(
+      {@AtUriConverter() required this.thumb,
+      @AtUriConverter() required this.fullsize,
+      this.alt})
+      : super._();
+
+  factory _$ViewImageImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ViewImageImplFromJson(json);
+
+  @override
+  @AtUriConverter()
+  final AtUri thumb;
+  @override
+  @AtUriConverter()
+  final AtUri fullsize;
+  @override
+  final String? alt;
+
+  @override
+  String toString() {
+    return 'ViewImage(thumb: $thumb, fullsize: $fullsize, alt: $alt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ViewImageImpl &&
+            (identical(other.thumb, thumb) || other.thumb == thumb) &&
+            (identical(other.fullsize, fullsize) ||
+                other.fullsize == fullsize) &&
+            (identical(other.alt, alt) || other.alt == alt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, thumb, fullsize, alt);
+
+  /// Create a copy of ViewImage
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ViewImageImplCopyWith<_$ViewImageImpl> get copyWith =>
+      __$$ViewImageImplCopyWithImpl<_$ViewImageImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ViewImageImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _ViewImage extends ViewImage {
+  const factory _ViewImage(
+      {@AtUriConverter() required final AtUri thumb,
+      @AtUriConverter() required final AtUri fullsize,
+      final String? alt}) = _$ViewImageImpl;
+  const _ViewImage._() : super._();
+
+  factory _ViewImage.fromJson(Map<String, dynamic> json) =
+      _$ViewImageImpl.fromJson;
+
+  @override
+  @AtUriConverter()
+  AtUri get thumb;
+  @override
+  @AtUriConverter()
+  AtUri get fullsize;
+  @override
+  String? get alt;
+
+  /// Create a copy of ViewImage
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ViewImageImplCopyWith<_$ViewImageImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+SoundView _$SoundViewFromJson(Map<String, dynamic> json) {
+  switch (json['runtimeType']) {
+    case 'audio':
+      return _SoundViewAudio.fromJson(json);
+    case 'music':
+      return _SoundViewMusic.fromJson(json);
+
+    default:
+      throw CheckedFromJsonException(json, 'runtimeType', 'SoundView',
+          'Invalid union type "${json['runtimeType']}"!');
+  }
+}
+
+/// @nodoc
+mixin _$SoundView {
+  @AtUriConverter()
+  AtUri get uri => throw _privateConstructorUsedError;
+  String get cid => throw _privateConstructorUsedError;
+  ProfileViewBasic get author => throw _privateConstructorUsedError;
+  Object get record => throw _privateConstructorUsedError;
+  int? get useCount => throw _privateConstructorUsedError;
+  int? get likeCount => throw _privateConstructorUsedError;
+  DateTime get indexedAt => throw _privateConstructorUsedError;
+  List<Label>? get labels => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Audio record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)
+        audio,
+    required TResult Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Music record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)
+        music,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Audio record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)?
+        audio,
+    TResult? Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Music record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)?
+        music,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Audio record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)?
+        audio,
+    TResult Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Music record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)?
+        music,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_SoundViewAudio value) audio,
+    required TResult Function(_SoundViewMusic value) music,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_SoundViewAudio value)? audio,
+    TResult? Function(_SoundViewMusic value)? music,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_SoundViewAudio value)? audio,
+    TResult Function(_SoundViewMusic value)? music,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+
+  /// Serializes this SoundView to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of SoundView
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $SoundViewCopyWith<SoundView> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $SoundViewCopyWith<$Res> {
+  factory $SoundViewCopyWith(SoundView value, $Res Function(SoundView) then) =
+      _$SoundViewCopyWithImpl<$Res, SoundView>;
+  @useResult
+  $Res call(
+      {@AtUriConverter() AtUri uri,
+      String cid,
+      ProfileViewBasic author,
+      int? useCount,
+      int? likeCount,
+      DateTime indexedAt,
+      List<Label>? labels});
+
+  $ProfileViewBasicCopyWith<$Res> get author;
+}
+
+/// @nodoc
+class _$SoundViewCopyWithImpl<$Res, $Val extends SoundView>
+    implements $SoundViewCopyWith<$Res> {
+  _$SoundViewCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of SoundView
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? uri = null,
+    Object? cid = null,
+    Object? author = null,
+    Object? useCount = freezed,
+    Object? likeCount = freezed,
+    Object? indexedAt = null,
+    Object? labels = freezed,
+  }) {
+    return _then(_value.copyWith(
+      uri: null == uri
+          ? _value.uri
+          : uri // ignore: cast_nullable_to_non_nullable
+              as AtUri,
+      cid: null == cid
+          ? _value.cid
+          : cid // ignore: cast_nullable_to_non_nullable
+              as String,
+      author: null == author
+          ? _value.author
+          : author // ignore: cast_nullable_to_non_nullable
+              as ProfileViewBasic,
+      useCount: freezed == useCount
+          ? _value.useCount
+          : useCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      likeCount: freezed == likeCount
+          ? _value.likeCount
+          : likeCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      indexedAt: null == indexedAt
+          ? _value.indexedAt
+          : indexedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      labels: freezed == labels
+          ? _value.labels
+          : labels // ignore: cast_nullable_to_non_nullable
+              as List<Label>?,
+    ) as $Val);
+  }
+
+  /// Create a copy of SoundView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProfileViewBasicCopyWith<$Res> get author {
+    return $ProfileViewBasicCopyWith<$Res>(_value.author, (value) {
+      return _then(_value.copyWith(author: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$SoundViewAudioImplCopyWith<$Res>
+    implements $SoundViewCopyWith<$Res> {
+  factory _$$SoundViewAudioImplCopyWith(_$SoundViewAudioImpl value,
+          $Res Function(_$SoundViewAudioImpl) then) =
+      __$$SoundViewAudioImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {@AtUriConverter() AtUri uri,
+      String cid,
+      ProfileViewBasic author,
+      Audio record,
+      int? useCount,
+      int? likeCount,
+      DateTime indexedAt,
+      List<Label>? labels});
+
+  @override
+  $ProfileViewBasicCopyWith<$Res> get author;
+  $AudioCopyWith<$Res> get record;
+}
+
+/// @nodoc
+class __$$SoundViewAudioImplCopyWithImpl<$Res>
+    extends _$SoundViewCopyWithImpl<$Res, _$SoundViewAudioImpl>
+    implements _$$SoundViewAudioImplCopyWith<$Res> {
+  __$$SoundViewAudioImplCopyWithImpl(
+      _$SoundViewAudioImpl _value, $Res Function(_$SoundViewAudioImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of SoundView
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? uri = null,
+    Object? cid = null,
+    Object? author = null,
+    Object? record = null,
+    Object? useCount = freezed,
+    Object? likeCount = freezed,
+    Object? indexedAt = null,
+    Object? labels = freezed,
+  }) {
+    return _then(_$SoundViewAudioImpl(
+      uri: null == uri
+          ? _value.uri
+          : uri // ignore: cast_nullable_to_non_nullable
+              as AtUri,
+      cid: null == cid
+          ? _value.cid
+          : cid // ignore: cast_nullable_to_non_nullable
+              as String,
+      author: null == author
+          ? _value.author
+          : author // ignore: cast_nullable_to_non_nullable
+              as ProfileViewBasic,
+      record: null == record
+          ? _value.record
+          : record // ignore: cast_nullable_to_non_nullable
+              as Audio,
+      useCount: freezed == useCount
+          ? _value.useCount
+          : useCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      likeCount: freezed == likeCount
+          ? _value.likeCount
+          : likeCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      indexedAt: null == indexedAt
+          ? _value.indexedAt
+          : indexedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      labels: freezed == labels
+          ? _value._labels
+          : labels // ignore: cast_nullable_to_non_nullable
+              as List<Label>?,
+    ));
+  }
+
+  /// Create a copy of SoundView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $AudioCopyWith<$Res> get record {
+    return $AudioCopyWith<$Res>(_value.record, (value) {
+      return _then(_value.copyWith(record: value));
+    });
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$SoundViewAudioImpl extends _SoundViewAudio {
+  const _$SoundViewAudioImpl(
+      {@AtUriConverter() required this.uri,
+      required this.cid,
+      required this.author,
+      required this.record,
+      this.useCount,
+      this.likeCount,
+      required this.indexedAt,
+      final List<Label>? labels,
+      final String? $type})
+      : _labels = labels,
+        $type = $type ?? 'audio',
+        super._();
+
+  factory _$SoundViewAudioImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SoundViewAudioImplFromJson(json);
+
+  @override
+  @AtUriConverter()
+  final AtUri uri;
+  @override
+  final String cid;
+  @override
+  final ProfileViewBasic author;
+  @override
+  final Audio record;
+  @override
+  final int? useCount;
+  @override
+  final int? likeCount;
+  @override
+  final DateTime indexedAt;
+  final List<Label>? _labels;
+  @override
+  List<Label>? get labels {
     final value = _labels;
     if (value == null) return null;
     if (_labels is EqualUnmodifiableListView) return _labels;
@@ -5303,23 +7532,1194 @@ class _$VideoPostImpl extends _VideoPost {
     return EqualUnmodifiableListView(value);
   }
 
-  /// Optional tags for discovery
-  final List<String>? _tags;
+  @JsonKey(name: 'runtimeType')
+  final String $type;
 
-  /// Optional tags for discovery
   @override
-  List<String>? get tags {
-    final value = _tags;
+  String toString() {
+    return 'SoundView.audio(uri: $uri, cid: $cid, author: $author, record: $record, useCount: $useCount, likeCount: $likeCount, indexedAt: $indexedAt, labels: $labels)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$SoundViewAudioImpl &&
+            (identical(other.uri, uri) || other.uri == uri) &&
+            (identical(other.cid, cid) || other.cid == cid) &&
+            (identical(other.author, author) || other.author == author) &&
+            (identical(other.record, record) || other.record == record) &&
+            (identical(other.useCount, useCount) ||
+                other.useCount == useCount) &&
+            (identical(other.likeCount, likeCount) ||
+                other.likeCount == likeCount) &&
+            (identical(other.indexedAt, indexedAt) ||
+                other.indexedAt == indexedAt) &&
+            const DeepCollectionEquality().equals(other._labels, _labels));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      uri,
+      cid,
+      author,
+      record,
+      useCount,
+      likeCount,
+      indexedAt,
+      const DeepCollectionEquality().hash(_labels));
+
+  /// Create a copy of SoundView
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SoundViewAudioImplCopyWith<_$SoundViewAudioImpl> get copyWith =>
+      __$$SoundViewAudioImplCopyWithImpl<_$SoundViewAudioImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Audio record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)
+        audio,
+    required TResult Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Music record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)
+        music,
+  }) {
+    return audio(
+        uri, cid, author, record, useCount, likeCount, indexedAt, labels);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Audio record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)?
+        audio,
+    TResult? Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Music record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)?
+        music,
+  }) {
+    return audio?.call(
+        uri, cid, author, record, useCount, likeCount, indexedAt, labels);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Audio record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)?
+        audio,
+    TResult Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Music record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)?
+        music,
+    required TResult orElse(),
+  }) {
+    if (audio != null) {
+      return audio(
+          uri, cid, author, record, useCount, likeCount, indexedAt, labels);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_SoundViewAudio value) audio,
+    required TResult Function(_SoundViewMusic value) music,
+  }) {
+    return audio(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_SoundViewAudio value)? audio,
+    TResult? Function(_SoundViewMusic value)? music,
+  }) {
+    return audio?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_SoundViewAudio value)? audio,
+    TResult Function(_SoundViewMusic value)? music,
+    required TResult orElse(),
+  }) {
+    if (audio != null) {
+      return audio(this);
+    }
+    return orElse();
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$SoundViewAudioImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _SoundViewAudio extends SoundView {
+  const factory _SoundViewAudio(
+      {@AtUriConverter() required final AtUri uri,
+      required final String cid,
+      required final ProfileViewBasic author,
+      required final Audio record,
+      final int? useCount,
+      final int? likeCount,
+      required final DateTime indexedAt,
+      final List<Label>? labels}) = _$SoundViewAudioImpl;
+  const _SoundViewAudio._() : super._();
+
+  factory _SoundViewAudio.fromJson(Map<String, dynamic> json) =
+      _$SoundViewAudioImpl.fromJson;
+
+  @override
+  @AtUriConverter()
+  AtUri get uri;
+  @override
+  String get cid;
+  @override
+  ProfileViewBasic get author;
+  @override
+  Audio get record;
+  @override
+  int? get useCount;
+  @override
+  int? get likeCount;
+  @override
+  DateTime get indexedAt;
+  @override
+  List<Label>? get labels;
+
+  /// Create a copy of SoundView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$SoundViewAudioImplCopyWith<_$SoundViewAudioImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class _$$SoundViewMusicImplCopyWith<$Res>
+    implements $SoundViewCopyWith<$Res> {
+  factory _$$SoundViewMusicImplCopyWith(_$SoundViewMusicImpl value,
+          $Res Function(_$SoundViewMusicImpl) then) =
+      __$$SoundViewMusicImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {@AtUriConverter() AtUri uri,
+      String cid,
+      ProfileViewBasic author,
+      Music record,
+      int? useCount,
+      int? likeCount,
+      DateTime indexedAt,
+      List<Label>? labels});
+
+  @override
+  $ProfileViewBasicCopyWith<$Res> get author;
+  $MusicCopyWith<$Res> get record;
+}
+
+/// @nodoc
+class __$$SoundViewMusicImplCopyWithImpl<$Res>
+    extends _$SoundViewCopyWithImpl<$Res, _$SoundViewMusicImpl>
+    implements _$$SoundViewMusicImplCopyWith<$Res> {
+  __$$SoundViewMusicImplCopyWithImpl(
+      _$SoundViewMusicImpl _value, $Res Function(_$SoundViewMusicImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of SoundView
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? uri = null,
+    Object? cid = null,
+    Object? author = null,
+    Object? record = null,
+    Object? useCount = freezed,
+    Object? likeCount = freezed,
+    Object? indexedAt = null,
+    Object? labels = freezed,
+  }) {
+    return _then(_$SoundViewMusicImpl(
+      uri: null == uri
+          ? _value.uri
+          : uri // ignore: cast_nullable_to_non_nullable
+              as AtUri,
+      cid: null == cid
+          ? _value.cid
+          : cid // ignore: cast_nullable_to_non_nullable
+              as String,
+      author: null == author
+          ? _value.author
+          : author // ignore: cast_nullable_to_non_nullable
+              as ProfileViewBasic,
+      record: null == record
+          ? _value.record
+          : record // ignore: cast_nullable_to_non_nullable
+              as Music,
+      useCount: freezed == useCount
+          ? _value.useCount
+          : useCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      likeCount: freezed == likeCount
+          ? _value.likeCount
+          : likeCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      indexedAt: null == indexedAt
+          ? _value.indexedAt
+          : indexedAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      labels: freezed == labels
+          ? _value._labels
+          : labels // ignore: cast_nullable_to_non_nullable
+              as List<Label>?,
+    ));
+  }
+
+  /// Create a copy of SoundView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $MusicCopyWith<$Res> get record {
+    return $MusicCopyWith<$Res>(_value.record, (value) {
+      return _then(_value.copyWith(record: value));
+    });
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$SoundViewMusicImpl extends _SoundViewMusic {
+  const _$SoundViewMusicImpl(
+      {@AtUriConverter() required this.uri,
+      required this.cid,
+      required this.author,
+      required this.record,
+      this.useCount,
+      this.likeCount,
+      required this.indexedAt,
+      final List<Label>? labels,
+      final String? $type})
+      : _labels = labels,
+        $type = $type ?? 'music',
+        super._();
+
+  factory _$SoundViewMusicImpl.fromJson(Map<String, dynamic> json) =>
+      _$$SoundViewMusicImplFromJson(json);
+
+  @override
+  @AtUriConverter()
+  final AtUri uri;
+  @override
+  final String cid;
+  @override
+  final ProfileViewBasic author;
+  @override
+  final Music record;
+  @override
+  final int? useCount;
+  @override
+  final int? likeCount;
+  @override
+  final DateTime indexedAt;
+  final List<Label>? _labels;
+  @override
+  List<Label>? get labels {
+    final value = _labels;
     if (value == null) return null;
-    if (_tags is EqualUnmodifiableListView) return _tags;
+    if (_labels is EqualUnmodifiableListView) return _labels;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(value);
   }
 
-  /// Optional facets for rich text formatting
-  final List<Facet>? _facets;
+  @JsonKey(name: 'runtimeType')
+  final String $type;
 
-  /// Optional facets for rich text formatting
+  @override
+  String toString() {
+    return 'SoundView.music(uri: $uri, cid: $cid, author: $author, record: $record, useCount: $useCount, likeCount: $likeCount, indexedAt: $indexedAt, labels: $labels)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$SoundViewMusicImpl &&
+            (identical(other.uri, uri) || other.uri == uri) &&
+            (identical(other.cid, cid) || other.cid == cid) &&
+            (identical(other.author, author) || other.author == author) &&
+            (identical(other.record, record) || other.record == record) &&
+            (identical(other.useCount, useCount) ||
+                other.useCount == useCount) &&
+            (identical(other.likeCount, likeCount) ||
+                other.likeCount == likeCount) &&
+            (identical(other.indexedAt, indexedAt) ||
+                other.indexedAt == indexedAt) &&
+            const DeepCollectionEquality().equals(other._labels, _labels));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      uri,
+      cid,
+      author,
+      record,
+      useCount,
+      likeCount,
+      indexedAt,
+      const DeepCollectionEquality().hash(_labels));
+
+  /// Create a copy of SoundView
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SoundViewMusicImplCopyWith<_$SoundViewMusicImpl> get copyWith =>
+      __$$SoundViewMusicImplCopyWithImpl<_$SoundViewMusicImpl>(
+          this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Audio record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)
+        audio,
+    required TResult Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Music record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)
+        music,
+  }) {
+    return music(
+        uri, cid, author, record, useCount, likeCount, indexedAt, labels);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Audio record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)?
+        audio,
+    TResult? Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Music record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)?
+        music,
+  }) {
+    return music?.call(
+        uri, cid, author, record, useCount, likeCount, indexedAt, labels);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Audio record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)?
+        audio,
+    TResult Function(
+            @AtUriConverter() AtUri uri,
+            String cid,
+            ProfileViewBasic author,
+            Music record,
+            int? useCount,
+            int? likeCount,
+            DateTime indexedAt,
+            List<Label>? labels)?
+        music,
+    required TResult orElse(),
+  }) {
+    if (music != null) {
+      return music(
+          uri, cid, author, record, useCount, likeCount, indexedAt, labels);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(_SoundViewAudio value) audio,
+    required TResult Function(_SoundViewMusic value) music,
+  }) {
+    return music(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(_SoundViewAudio value)? audio,
+    TResult? Function(_SoundViewMusic value)? music,
+  }) {
+    return music?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(_SoundViewAudio value)? audio,
+    TResult Function(_SoundViewMusic value)? music,
+    required TResult orElse(),
+  }) {
+    if (music != null) {
+      return music(this);
+    }
+    return orElse();
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$SoundViewMusicImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _SoundViewMusic extends SoundView {
+  const factory _SoundViewMusic(
+      {@AtUriConverter() required final AtUri uri,
+      required final String cid,
+      required final ProfileViewBasic author,
+      required final Music record,
+      final int? useCount,
+      final int? likeCount,
+      required final DateTime indexedAt,
+      final List<Label>? labels}) = _$SoundViewMusicImpl;
+  const _SoundViewMusic._() : super._();
+
+  factory _SoundViewMusic.fromJson(Map<String, dynamic> json) =
+      _$SoundViewMusicImpl.fromJson;
+
+  @override
+  @AtUriConverter()
+  AtUri get uri;
+  @override
+  String get cid;
+  @override
+  ProfileViewBasic get author;
+  @override
+  Music get record;
+  @override
+  int? get useCount;
+  @override
+  int? get likeCount;
+  @override
+  DateTime get indexedAt;
+  @override
+  List<Label>? get labels;
+
+  /// Create a copy of SoundView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$SoundViewMusicImplCopyWith<_$SoundViewMusicImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+Audio _$AudioFromJson(Map<String, dynamic> json) {
+  return _Audio.fromJson(json);
+}
+
+/// @nodoc
+mixin _$Audio {
+  Blob get sound => throw _privateConstructorUsedError;
+  StrongRef get origin => throw _privateConstructorUsedError;
+  String? get title => throw _privateConstructorUsedError;
+  String? get text => throw _privateConstructorUsedError;
+  List<SelfLabel>? get labels => throw _privateConstructorUsedError;
+  DateTime get createdAt => throw _privateConstructorUsedError;
+
+  /// Serializes this Audio to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of Audio
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $AudioCopyWith<Audio> get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $AudioCopyWith<$Res> {
+  factory $AudioCopyWith(Audio value, $Res Function(Audio) then) =
+      _$AudioCopyWithImpl<$Res, Audio>;
+  @useResult
+  $Res call(
+      {Blob sound,
+      StrongRef origin,
+      String? title,
+      String? text,
+      List<SelfLabel>? labels,
+      DateTime createdAt});
+
+  $BlobCopyWith<$Res> get sound;
+  $StrongRefCopyWith<$Res> get origin;
+}
+
+/// @nodoc
+class _$AudioCopyWithImpl<$Res, $Val extends Audio>
+    implements $AudioCopyWith<$Res> {
+  _$AudioCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of Audio
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sound = null,
+    Object? origin = null,
+    Object? title = freezed,
+    Object? text = freezed,
+    Object? labels = freezed,
+    Object? createdAt = null,
+  }) {
+    return _then(_value.copyWith(
+      sound: null == sound
+          ? _value.sound
+          : sound // ignore: cast_nullable_to_non_nullable
+              as Blob,
+      origin: null == origin
+          ? _value.origin
+          : origin // ignore: cast_nullable_to_non_nullable
+              as StrongRef,
+      title: freezed == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String?,
+      text: freezed == text
+          ? _value.text
+          : text // ignore: cast_nullable_to_non_nullable
+              as String?,
+      labels: freezed == labels
+          ? _value.labels
+          : labels // ignore: cast_nullable_to_non_nullable
+              as List<SelfLabel>?,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+    ) as $Val);
+  }
+
+  /// Create a copy of Audio
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $BlobCopyWith<$Res> get sound {
+    return $BlobCopyWith<$Res>(_value.sound, (value) {
+      return _then(_value.copyWith(sound: value) as $Val);
+    });
+  }
+
+  /// Create a copy of Audio
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $StrongRefCopyWith<$Res> get origin {
+    return $StrongRefCopyWith<$Res>(_value.origin, (value) {
+      return _then(_value.copyWith(origin: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$AudioImplCopyWith<$Res> implements $AudioCopyWith<$Res> {
+  factory _$$AudioImplCopyWith(
+          _$AudioImpl value, $Res Function(_$AudioImpl) then) =
+      __$$AudioImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {Blob sound,
+      StrongRef origin,
+      String? title,
+      String? text,
+      List<SelfLabel>? labels,
+      DateTime createdAt});
+
+  @override
+  $BlobCopyWith<$Res> get sound;
+  @override
+  $StrongRefCopyWith<$Res> get origin;
+}
+
+/// @nodoc
+class __$$AudioImplCopyWithImpl<$Res>
+    extends _$AudioCopyWithImpl<$Res, _$AudioImpl>
+    implements _$$AudioImplCopyWith<$Res> {
+  __$$AudioImplCopyWithImpl(
+      _$AudioImpl _value, $Res Function(_$AudioImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of Audio
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sound = null,
+    Object? origin = null,
+    Object? title = freezed,
+    Object? text = freezed,
+    Object? labels = freezed,
+    Object? createdAt = null,
+  }) {
+    return _then(_$AudioImpl(
+      sound: null == sound
+          ? _value.sound
+          : sound // ignore: cast_nullable_to_non_nullable
+              as Blob,
+      origin: null == origin
+          ? _value.origin
+          : origin // ignore: cast_nullable_to_non_nullable
+              as StrongRef,
+      title: freezed == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String?,
+      text: freezed == text
+          ? _value.text
+          : text // ignore: cast_nullable_to_non_nullable
+              as String?,
+      labels: freezed == labels
+          ? _value._labels
+          : labels // ignore: cast_nullable_to_non_nullable
+              as List<SelfLabel>?,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$AudioImpl extends _Audio {
+  const _$AudioImpl(
+      {required this.sound,
+      required this.origin,
+      this.title,
+      this.text,
+      final List<SelfLabel>? labels,
+      required this.createdAt})
+      : _labels = labels,
+        super._();
+
+  factory _$AudioImpl.fromJson(Map<String, dynamic> json) =>
+      _$$AudioImplFromJson(json);
+
+  @override
+  final Blob sound;
+  @override
+  final StrongRef origin;
+  @override
+  final String? title;
+  @override
+  final String? text;
+  final List<SelfLabel>? _labels;
+  @override
+  List<SelfLabel>? get labels {
+    final value = _labels;
+    if (value == null) return null;
+    if (_labels is EqualUnmodifiableListView) return _labels;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
+  final DateTime createdAt;
+
+  @override
+  String toString() {
+    return 'Audio(sound: $sound, origin: $origin, title: $title, text: $text, labels: $labels, createdAt: $createdAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$AudioImpl &&
+            (identical(other.sound, sound) || other.sound == sound) &&
+            (identical(other.origin, origin) || other.origin == origin) &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.text, text) || other.text == text) &&
+            const DeepCollectionEquality().equals(other._labels, _labels) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, sound, origin, title, text,
+      const DeepCollectionEquality().hash(_labels), createdAt);
+
+  /// Create a copy of Audio
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$AudioImplCopyWith<_$AudioImpl> get copyWith =>
+      __$$AudioImplCopyWithImpl<_$AudioImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$AudioImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _Audio extends Audio {
+  const factory _Audio(
+      {required final Blob sound,
+      required final StrongRef origin,
+      final String? title,
+      final String? text,
+      final List<SelfLabel>? labels,
+      required final DateTime createdAt}) = _$AudioImpl;
+  const _Audio._() : super._();
+
+  factory _Audio.fromJson(Map<String, dynamic> json) = _$AudioImpl.fromJson;
+
+  @override
+  Blob get sound;
+  @override
+  StrongRef get origin;
+  @override
+  String? get title;
+  @override
+  String? get text;
+  @override
+  List<SelfLabel>? get labels;
+  @override
+  DateTime get createdAt;
+
+  /// Create a copy of Audio
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$AudioImplCopyWith<_$AudioImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+Music _$MusicFromJson(Map<String, dynamic> json) {
+  return _Music.fromJson(json);
+}
+
+/// @nodoc
+mixin _$Music {
+  Blob get sound => throw _privateConstructorUsedError;
+  String get title => throw _privateConstructorUsedError;
+  DateTime get releaseDate => throw _privateConstructorUsedError;
+  String? get album => throw _privateConstructorUsedError;
+  String? get recordLabel => throw _privateConstructorUsedError;
+  Blob? get cover => throw _privateConstructorUsedError;
+  String get author => throw _privateConstructorUsedError; // the artist
+  String? get text => throw _privateConstructorUsedError;
+  List<String>? get copyright => throw _privateConstructorUsedError;
+  List<Facet>? get facets => throw _privateConstructorUsedError;
+  List<SelfLabel>? get labels => throw _privateConstructorUsedError;
+  List<String>? get tags => throw _privateConstructorUsedError;
+  DateTime get createdAt => throw _privateConstructorUsedError;
+
+  /// Serializes this Music to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of Music
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $MusicCopyWith<Music> get copyWith => throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $MusicCopyWith<$Res> {
+  factory $MusicCopyWith(Music value, $Res Function(Music) then) =
+      _$MusicCopyWithImpl<$Res, Music>;
+  @useResult
+  $Res call(
+      {Blob sound,
+      String title,
+      DateTime releaseDate,
+      String? album,
+      String? recordLabel,
+      Blob? cover,
+      String author,
+      String? text,
+      List<String>? copyright,
+      List<Facet>? facets,
+      List<SelfLabel>? labels,
+      List<String>? tags,
+      DateTime createdAt});
+
+  $BlobCopyWith<$Res> get sound;
+  $BlobCopyWith<$Res>? get cover;
+}
+
+/// @nodoc
+class _$MusicCopyWithImpl<$Res, $Val extends Music>
+    implements $MusicCopyWith<$Res> {
+  _$MusicCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of Music
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sound = null,
+    Object? title = null,
+    Object? releaseDate = null,
+    Object? album = freezed,
+    Object? recordLabel = freezed,
+    Object? cover = freezed,
+    Object? author = null,
+    Object? text = freezed,
+    Object? copyright = freezed,
+    Object? facets = freezed,
+    Object? labels = freezed,
+    Object? tags = freezed,
+    Object? createdAt = null,
+  }) {
+    return _then(_value.copyWith(
+      sound: null == sound
+          ? _value.sound
+          : sound // ignore: cast_nullable_to_non_nullable
+              as Blob,
+      title: null == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      releaseDate: null == releaseDate
+          ? _value.releaseDate
+          : releaseDate // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      album: freezed == album
+          ? _value.album
+          : album // ignore: cast_nullable_to_non_nullable
+              as String?,
+      recordLabel: freezed == recordLabel
+          ? _value.recordLabel
+          : recordLabel // ignore: cast_nullable_to_non_nullable
+              as String?,
+      cover: freezed == cover
+          ? _value.cover
+          : cover // ignore: cast_nullable_to_non_nullable
+              as Blob?,
+      author: null == author
+          ? _value.author
+          : author // ignore: cast_nullable_to_non_nullable
+              as String,
+      text: freezed == text
+          ? _value.text
+          : text // ignore: cast_nullable_to_non_nullable
+              as String?,
+      copyright: freezed == copyright
+          ? _value.copyright
+          : copyright // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      facets: freezed == facets
+          ? _value.facets
+          : facets // ignore: cast_nullable_to_non_nullable
+              as List<Facet>?,
+      labels: freezed == labels
+          ? _value.labels
+          : labels // ignore: cast_nullable_to_non_nullable
+              as List<SelfLabel>?,
+      tags: freezed == tags
+          ? _value.tags
+          : tags // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+    ) as $Val);
+  }
+
+  /// Create a copy of Music
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $BlobCopyWith<$Res> get sound {
+    return $BlobCopyWith<$Res>(_value.sound, (value) {
+      return _then(_value.copyWith(sound: value) as $Val);
+    });
+  }
+
+  /// Create a copy of Music
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $BlobCopyWith<$Res>? get cover {
+    if (_value.cover == null) {
+      return null;
+    }
+
+    return $BlobCopyWith<$Res>(_value.cover!, (value) {
+      return _then(_value.copyWith(cover: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$MusicImplCopyWith<$Res> implements $MusicCopyWith<$Res> {
+  factory _$$MusicImplCopyWith(
+          _$MusicImpl value, $Res Function(_$MusicImpl) then) =
+      __$$MusicImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {Blob sound,
+      String title,
+      DateTime releaseDate,
+      String? album,
+      String? recordLabel,
+      Blob? cover,
+      String author,
+      String? text,
+      List<String>? copyright,
+      List<Facet>? facets,
+      List<SelfLabel>? labels,
+      List<String>? tags,
+      DateTime createdAt});
+
+  @override
+  $BlobCopyWith<$Res> get sound;
+  @override
+  $BlobCopyWith<$Res>? get cover;
+}
+
+/// @nodoc
+class __$$MusicImplCopyWithImpl<$Res>
+    extends _$MusicCopyWithImpl<$Res, _$MusicImpl>
+    implements _$$MusicImplCopyWith<$Res> {
+  __$$MusicImplCopyWithImpl(
+      _$MusicImpl _value, $Res Function(_$MusicImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of Music
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? sound = null,
+    Object? title = null,
+    Object? releaseDate = null,
+    Object? album = freezed,
+    Object? recordLabel = freezed,
+    Object? cover = freezed,
+    Object? author = null,
+    Object? text = freezed,
+    Object? copyright = freezed,
+    Object? facets = freezed,
+    Object? labels = freezed,
+    Object? tags = freezed,
+    Object? createdAt = null,
+  }) {
+    return _then(_$MusicImpl(
+      sound: null == sound
+          ? _value.sound
+          : sound // ignore: cast_nullable_to_non_nullable
+              as Blob,
+      title: null == title
+          ? _value.title
+          : title // ignore: cast_nullable_to_non_nullable
+              as String,
+      releaseDate: null == releaseDate
+          ? _value.releaseDate
+          : releaseDate // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+      album: freezed == album
+          ? _value.album
+          : album // ignore: cast_nullable_to_non_nullable
+              as String?,
+      recordLabel: freezed == recordLabel
+          ? _value.recordLabel
+          : recordLabel // ignore: cast_nullable_to_non_nullable
+              as String?,
+      cover: freezed == cover
+          ? _value.cover
+          : cover // ignore: cast_nullable_to_non_nullable
+              as Blob?,
+      author: null == author
+          ? _value.author
+          : author // ignore: cast_nullable_to_non_nullable
+              as String,
+      text: freezed == text
+          ? _value.text
+          : text // ignore: cast_nullable_to_non_nullable
+              as String?,
+      copyright: freezed == copyright
+          ? _value._copyright
+          : copyright // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      facets: freezed == facets
+          ? _value._facets
+          : facets // ignore: cast_nullable_to_non_nullable
+              as List<Facet>?,
+      labels: freezed == labels
+          ? _value._labels
+          : labels // ignore: cast_nullable_to_non_nullable
+              as List<SelfLabel>?,
+      tags: freezed == tags
+          ? _value._tags
+          : tags // ignore: cast_nullable_to_non_nullable
+              as List<String>?,
+      createdAt: null == createdAt
+          ? _value.createdAt
+          : createdAt // ignore: cast_nullable_to_non_nullable
+              as DateTime,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$MusicImpl extends _Music {
+  const _$MusicImpl(
+      {required this.sound,
+      required this.title,
+      required this.releaseDate,
+      this.album,
+      this.recordLabel,
+      this.cover,
+      required this.author,
+      this.text,
+      final List<String>? copyright,
+      final List<Facet>? facets,
+      final List<SelfLabel>? labels,
+      final List<String>? tags,
+      required this.createdAt})
+      : _copyright = copyright,
+        _facets = facets,
+        _labels = labels,
+        _tags = tags,
+        super._();
+
+  factory _$MusicImpl.fromJson(Map<String, dynamic> json) =>
+      _$$MusicImplFromJson(json);
+
+  @override
+  final Blob sound;
+  @override
+  final String title;
+  @override
+  final DateTime releaseDate;
+  @override
+  final String? album;
+  @override
+  final String? recordLabel;
+  @override
+  final Blob? cover;
+  @override
+  final String author;
+// the artist
+  @override
+  final String? text;
+  final List<String>? _copyright;
+  @override
+  List<String>? get copyright {
+    final value = _copyright;
+    if (value == null) return null;
+    if (_copyright is EqualUnmodifiableListView) return _copyright;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  final List<Facet>? _facets;
   @override
   List<Facet>? get facets {
     final value = _facets;
@@ -5329,109 +8729,142 @@ class _$VideoPostImpl extends _VideoPost {
     return EqualUnmodifiableListView(value);
   }
 
+  final List<SelfLabel>? _labels;
+  @override
+  List<SelfLabel>? get labels {
+    final value = _labels;
+    if (value == null) return null;
+    if (_labels is EqualUnmodifiableListView) return _labels;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  final List<String>? _tags;
+  @override
+  List<String>? get tags {
+    final value = _tags;
+    if (value == null) return null;
+    if (_tags is EqualUnmodifiableListView) return _tags;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
+  final DateTime createdAt;
+
   @override
   String toString() {
-    return 'VideoPost(type: $type, text: $text, embed: $embed, createdAt: $createdAt, langs: $langs, labels: $labels, tags: $tags, facets: $facets)';
+    return 'Music(sound: $sound, title: $title, releaseDate: $releaseDate, album: $album, recordLabel: $recordLabel, cover: $cover, author: $author, text: $text, copyright: $copyright, facets: $facets, labels: $labels, tags: $tags, createdAt: $createdAt)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$VideoPostImpl &&
-            (identical(other.type, type) || other.type == type) &&
+            other is _$MusicImpl &&
+            (identical(other.sound, sound) || other.sound == sound) &&
+            (identical(other.title, title) || other.title == title) &&
+            (identical(other.releaseDate, releaseDate) ||
+                other.releaseDate == releaseDate) &&
+            (identical(other.album, album) || other.album == album) &&
+            (identical(other.recordLabel, recordLabel) ||
+                other.recordLabel == recordLabel) &&
+            (identical(other.cover, cover) || other.cover == cover) &&
+            (identical(other.author, author) || other.author == author) &&
             (identical(other.text, text) || other.text == text) &&
-            (identical(other.embed, embed) || other.embed == embed) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            const DeepCollectionEquality().equals(other._langs, _langs) &&
+            const DeepCollectionEquality()
+                .equals(other._copyright, _copyright) &&
+            const DeepCollectionEquality().equals(other._facets, _facets) &&
             const DeepCollectionEquality().equals(other._labels, _labels) &&
             const DeepCollectionEquality().equals(other._tags, _tags) &&
-            const DeepCollectionEquality().equals(other._facets, _facets));
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType,
-      type,
+      sound,
+      title,
+      releaseDate,
+      album,
+      recordLabel,
+      cover,
+      author,
       text,
-      embed,
-      createdAt,
-      const DeepCollectionEquality().hash(_langs),
+      const DeepCollectionEquality().hash(_copyright),
+      const DeepCollectionEquality().hash(_facets),
       const DeepCollectionEquality().hash(_labels),
       const DeepCollectionEquality().hash(_tags),
-      const DeepCollectionEquality().hash(_facets));
+      createdAt);
 
-  /// Create a copy of VideoPost
+  /// Create a copy of Music
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$VideoPostImplCopyWith<_$VideoPostImpl> get copyWith =>
-      __$$VideoPostImplCopyWithImpl<_$VideoPostImpl>(this, _$identity);
+  _$$MusicImplCopyWith<_$MusicImpl> get copyWith =>
+      __$$MusicImplCopyWithImpl<_$MusicImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$VideoPostImplToJson(
+    return _$$MusicImplToJson(
       this,
     );
   }
 }
 
-abstract class _VideoPost extends VideoPost {
-  const factory _VideoPost(
-      {@JsonKey(name: r'$type') required final String type,
-      final String text,
-      required final VideoEmbed embed,
-      required final String createdAt,
-      final List<String>? langs,
-      @JsonKey(name: 'labels') final List<LabelDetail>? labels,
+abstract class _Music extends Music {
+  const factory _Music(
+      {required final Blob sound,
+      required final String title,
+      required final DateTime releaseDate,
+      final String? album,
+      final String? recordLabel,
+      final Blob? cover,
+      required final String author,
+      final String? text,
+      final List<String>? copyright,
+      final List<Facet>? facets,
+      final List<SelfLabel>? labels,
       final List<String>? tags,
-      final List<Facet>? facets}) = _$VideoPostImpl;
-  const _VideoPost._() : super._();
+      required final DateTime createdAt}) = _$MusicImpl;
+  const _Music._() : super._();
 
-  factory _VideoPost.fromJson(Map<String, dynamic> json) =
-      _$VideoPostImpl.fromJson;
+  factory _Music.fromJson(Map<String, dynamic> json) = _$MusicImpl.fromJson;
 
-  /// The type of post, typically 'so.sprk.feed.post'
   @override
-  @JsonKey(name: r'$type')
-  String get type;
-
-  /// Post text/description
+  Blob get sound;
   @override
-  String get text;
-
-  /// Video embed containing the actual video data
+  String get title;
   @override
-  VideoEmbed get embed;
-
-  /// When the post was created (ISO 8601 format)
+  DateTime get releaseDate;
   @override
-  String get createdAt;
-
-  /// Optional language tags
+  String? get album;
   @override
-  List<String>? get langs;
-
-  /// Optional content warning labels
+  String? get recordLabel;
   @override
-  @JsonKey(name: 'labels')
-  List<LabelDetail>? get labels;
-
-  /// Optional tags for discovery
+  Blob? get cover;
   @override
-  List<String>? get tags;
-
-  /// Optional facets for rich text formatting
+  String get author; // the artist
+  @override
+  String? get text;
+  @override
+  List<String>? get copyright;
   @override
   List<Facet>? get facets;
+  @override
+  List<SelfLabel>? get labels;
+  @override
+  List<String>? get tags;
+  @override
+  DateTime get createdAt;
 
-  /// Create a copy of VideoPost
+  /// Create a copy of Music
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$VideoPostImplCopyWith<_$VideoPostImpl> get copyWith =>
+  _$$MusicImplCopyWith<_$MusicImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

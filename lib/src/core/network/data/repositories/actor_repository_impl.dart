@@ -17,7 +17,7 @@ class ActorRepositoryImpl implements ActorRepository {
   }
 
   @override
-  Future<ProfileResponse> getProfile(String did) async {
+  Future<ProfileViewDetailed> getProfile(String did) async {
     _logger.d('Getting profile for DID: $did');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -39,12 +39,12 @@ class ActorRepositoryImpl implements ActorRepository {
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
       _logger.d('Profile retrieved successfully');
-      return ProfileResponse.fromJson(result.data as Map<String, dynamic>);
+      return ProfileViewDetailed.fromJson(result.data as Map<String, dynamic>);
     });
   }
 
   @override
-  Future<ActorSearchResponse> searchActors(String query) async {
+  Future<ProfileView> searchActors(String query) async {
     _logger.d('Searching actors with query: $query');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -66,7 +66,7 @@ class ActorRepositoryImpl implements ActorRepository {
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
       _logger.d('Actor search completed successfully');
-      return ActorSearchResponse.fromJson(result.data as Map<String, dynamic>);
+      return ProfileView.fromJson(result.data as Map<String, dynamic>);
     });
   }
 }

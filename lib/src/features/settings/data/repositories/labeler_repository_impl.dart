@@ -1,4 +1,3 @@
-import 'package:sparksocial/src/core/network/data/models/label_models.dart';
 import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/storage/storage_constants.dart';
 import 'package:sparksocial/src/core/storage/local/storage_manager.dart';

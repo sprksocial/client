@@ -3,7 +3,6 @@ import 'package:sparksocial/src/core/config/app_config.dart';
 import 'package:sparksocial/src/core/network/data/repositories/actor_repository.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/network/data/repositories/graph_repository.dart';
-import 'package:sparksocial/src/core/network/data/repositories/label_repository.dart';
 import 'package:sparksocial/src/core/network/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/features/auth/data/repositories/auth_repository.dart';
@@ -14,7 +13,6 @@ import 'package:sparksocial/src/core/network/data/repositories/actor_repository_
 
 // Feature-specific repositories
 import 'package:sparksocial/src/core/network/data/repositories/graph_repository_impl.dart';
-import 'package:sparksocial/src/core/network/data/repositories/label_repository_impl.dart';
 
 /// Client for interacting with Spark API endpoints
 class SprkRepositoryImpl implements SprkRepository {
@@ -77,8 +75,5 @@ class SprkRepositoryImpl implements SprkRepository {
   GraphRepository get graph => GraphRepositoryImpl(this);
 
   @override
-  LabelRepository get label => LabelRepositoryImpl(this);
-
-  @override
-  FeedRepository get feed => FeedRepositoryImpl(this, label);
+  FeedRepository get feed => FeedRepositoryImpl(this);
 }

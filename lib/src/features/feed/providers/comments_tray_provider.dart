@@ -4,8 +4,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/features/feed/data/models/comments_tray_state.dart';
+import 'package:sparksocial/src/features/feed/providers/comments_tray_state.dart';
 import 'package:sparksocial/src/features/feed/providers/comment_provider.dart' as comment_state;
 
 part 'comments_tray_provider.g.dart';
@@ -77,15 +76,13 @@ Future<List<Comment>> loadComments(
   required String postCid,
   required bool isSprk,
 }) async {
-  final state = ref.read(commentsTrayProvider(postUri: postUri, postCid: postCid, isSprk: isSprk));
   final feedRepository = GetIt.instance<FeedRepository>();
   final List<Comment> comments;
-  if (state.isSprk) {
-    comments = await feedRepository.getSparkComments(state.postUri);
-    final _logger = GetIt.instance<LogService>().getLogger('CommentsTray');
-    _logger.d('comments: $comments');
+  if (isSprk) {
+    comments = await feedRepository.getSparkComments(postUri);
   } else {
-    comments = await feedRepository.getBlueskyComments(state.postUri);
+    comments = await feedRepository.getBlueskyComments(postUri);
   }
+  ref.read(commentsTrayProvider(postUri: postUri, postCid: postCid, isSprk: isSprk).notifier).setComments(comments);
   return comments;
 }

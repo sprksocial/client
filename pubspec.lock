@@ -79,7 +79,7 @@ packages:
     source: hosted
     version: "0.13.3"
   atproto_core:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: atproto_core
       sha256: "13e7f5f0f3d9e5be59eefd5f427adf45ffdeaa59001d4ea7c91764ba21f1e9ba"

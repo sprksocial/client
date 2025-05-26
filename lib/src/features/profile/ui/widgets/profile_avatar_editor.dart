@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/features/profile/data/models/edit_profile_state.dart';
+import 'package:sparksocial/src/features/profile/providers/edit_profile_state.dart';
 import 'package:sparksocial/src/features/profile/providers/edit_profile_provider.dart';
 
 /// Widget for editing the profile avatar

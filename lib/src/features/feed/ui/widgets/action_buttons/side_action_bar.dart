@@ -6,7 +6,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/menu_action_button.dart';
 import 'package:sparksocial/src/core/widgets/report_dialog.dart';
-import 'package:sparksocial/src/features/feed/providers/post_action_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/profile_action_button.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/like_action_button.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/comment_action_button.dart';
@@ -60,6 +59,7 @@ class SideActionBar extends ConsumerStatefulWidget {
 }
 
 class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
+  // TODO: COMPLETE STATE MANAGEMENT REWORK
   bool _isLiked = false;
   late String _commentCount;
 

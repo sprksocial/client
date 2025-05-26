@@ -3,7 +3,7 @@ import 'package:atproto/core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/features/auth/data/models/auth_state.dart';
+import 'package:sparksocial/src/features/auth/providers/auth_state.dart';
 import 'package:sparksocial/src/features/auth/data/models/login_result.dart';
 import 'package:sparksocial/src/features/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';

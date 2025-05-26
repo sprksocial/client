@@ -1,5 +1,6 @@
 import 'package:sparksocial/src/features/settings/data/models/label_preference.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/features/settings/data/models/labeler.dart';
 
 abstract class SettingsRepository {
   Future<bool> getFeedBlurEnabled();
@@ -8,32 +9,22 @@ abstract class SettingsRepository {
   Future<bool> getHideAdultContent();
   Future<void> setHideAdultContent(bool value);
   
-  Future<List<String>> getFollowedLabelers();
-  Future<void> setFollowedLabelers(List<String> labelerDids);
+  Future<List<Labeler>> getFollowedLabelers();
+  Future<void> setFollowedLabelers(List<Labeler> labelers);
   
-  Future<Map<String, Map<String, String>>> getLabelPreferences();
-  Future<void> saveLabelPreferences(Map<String, Map<String, String>> preferences);
+  Future<Map<Labeler, Map<Label, String>>> getLabelPreferences();
+  // labelerDid: {label: preference}
+  Future<void> saveLabelPreferences(Map<String, Map<Label, String>> preferences);
   
-  Future<LabelPreference?> getLabelPreference(String labelerDid, String labelValue);
+  Future<LabelPreference?> getLabelPreference(Label label);
   Future<void> setLabelPreference(
-    String labelerDid, 
-    String labelValue, 
+    Label label, 
     LabelPreference preference
   );
   
-  Future<void> removeLabelPreference(String labelerDid, String labelValue);
-  Future<void> clearLabelerPreferences(String labelerDid);
+  Future<void> removeLabelPreference(Label label);
+  Future<void> clearLabelerPreferences(Labeler labeler);
   
-  // New feed settings methods
-  Future<bool> getFollowingFeedEnabled();
-  Future<void> setFollowingFeedEnabled(bool value);
-  
-  Future<bool> getForYouFeedEnabled();
-  Future<void> setForYouFeedEnabled(bool value);
-  
-  Future<bool> getLatestFeedEnabled();
-  Future<void> setLatestFeedEnabled(bool value);
-  
-  Future<FeedType> getSelectedFeedType();
-  Future<void> setSelectedFeedType(FeedType value);
+  Future<List<Feed>> getFeeds();
+  Future<void> setFeeds(List<Feed> feeds);
 }

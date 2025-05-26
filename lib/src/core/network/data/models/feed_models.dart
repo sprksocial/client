@@ -1,120 +1,206 @@
+import 'package:atproto/atproto.dart';
+import 'package:atproto_core/atproto_core.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/data/repositories/actor_repository.dart';
 import 'package:sparksocial/src/features/auth/data/repositories/identity_repository.dart';
-import 'package:sparksocial/src/core/network/data/models/label_models.dart';
+
+import 'actor_models.dart';
 
 part 'feed_models.freezed.dart';
 part 'feed_models.g.dart';
 
-enum FeedType {
-  following(0, 'Following'),
-  forYou(1, 'For You'),
-  latest(2, 'Latest');
+/// yes this file has 820 lines of code. it's because of the comment model. this needs to be fixed.
 
-  final int value;
+enum HardCodedFeed {
+  following('Following'), // posts from people you follow (bsky/sprk)
+  forYou('For You'), // hardcoded algorithm for trending posts (bsky/sprk). for now, it's just the TheVids feed (bsky)
+  latestSprk('Latest'), // latest sprk posts (sprk)
+  shared('Shared'); // posts sent by friends in the dms (bsky/sprk)
+
+  const HardCodedFeed(this.name);
   final String name;
+}
 
-  const FeedType(this.value, this.name);
+/// This model will be used in:
+/// - Creating a custom feed
+/// - Editing a custom feed
+///
+/// The CustomFeedCreatorPage will create a CustomFeed and send it to the API.
+///
+/// The CustomFeedPage will need a CustomFeed and will display it.
+///
+/// The CustomFeedEditorPage will edit a CustomFeed and send the changes to the API.
+///
+/// TODO: make this the same as the lexicon (not implemented yet)
+@freezed
+class CustomFeed with _$CustomFeed {
+  const factory CustomFeed({
+    required ProfileViewBasic? creator,
+    @Default('Custom Feed') String name,
+    @Default('Your custom feed') String description,
+    @Default([]) List<Facet> descriptionFacets,
+    @Default([]) List<Label> labels,
+    @Default(0) int likeCount,
+    @Default('') String imageUrl,
+    @Default(true) bool isDraft,
+    @Default(false) bool videosOnly,
+    String? did,
+    String? uri,
+    String? cid,
 
-  static FeedType fromValue(int value) {
-    return FeedType.values.firstWhere((feedType) => feedType.value == value, orElse: () => FeedType.forYou);
+    @Default({})
+    Map<String, bool> hashtagPreferences, // hashtag: only show posts with this hashtag || never show posts with this hashtag
+
+    @Default({})
+    Map<String, Map<String, bool>>
+    labelPreferences, // labeler: {label: only show posts with this label || never show posts with this label}
+  }) = _CustomFeed;
+
+  factory CustomFeed.fromJson(Map<String, dynamic> json) => _$CustomFeedFromJson(json);
+}
+
+/// The feeds that are actually used in the app
+///
+/// Custom Feeds just need a uri, the rest is fetched from the API (if the custom feed is finished, it will be saved in the backend)
+///
+/// HardCoded feeds are "fake" and completely handled in the frontend
+@freezed
+class Feed with _$Feed {
+  const Feed._();
+  const factory Feed.custom({required String name, required String uri}) = _Feed;
+
+  /// HardCoded feeds can be "fake", so they don't have a uri
+  const factory Feed.hardCoded({required HardCodedFeed hardCodedFeed}) = _HardCodedFeed;
+
+  String get name {
+    return when(custom: (name, did) => name, hardCoded: (hardCodedFeed) => hardCodedFeed.name);
   }
 }
 
 @freezed
-class PostThreadResponse with _$PostThreadResponse {
-  const factory PostThreadResponse({required PostThread thread}) = _PostThreadResponse;
-
-  factory PostThreadResponse.fromJson(Map<String, dynamic> json) => _$PostThreadResponseFromJson(json);
-}
-
-@freezed
 class PostThread with _$PostThread {
-  const factory PostThread({required Post post, List<Post>? parent, List<Post>? replies}) = _PostThread;
+  const factory PostThread({required PostView post, List<PostView>? parent, List<PostView>? replies}) = _PostThread;
 
   factory PostThread.fromJson(Map<String, dynamic> json) => _$PostThreadFromJson(json);
 }
 
 @freezed
-class Post with _$Post {
-  const factory Post({
-    @JsonKey(defaultValue: '') required String uri,
+class ReplyRef with _$ReplyRef {
+  const factory ReplyRef({required StrongRef root, required StrongRef parent}) = _ReplyRef;
+
+  factory ReplyRef.fromJson(Map<String, dynamic> json) => _$ReplyRefFromJson(json);
+}
+
+@freezed
+class SelfLabel with _$SelfLabel {
+  const factory SelfLabel({required String val}) = _SelfLabel;
+
+  factory SelfLabel.fromJson(Map<String, dynamic> json) => _$SelfLabelFromJson(json);
+}
+
+@freezed
+class PostRecord with _$PostRecord {
+  const PostRecord._();
+  const factory PostRecord.video({
+    required DateTime createdAt,
+    @JsonKey(defaultValue: '') String? text,
+    @JsonKey(defaultValue: []) List<Facet>? facets,
+    ReplyRef? reply,
+    StrongRef? sound,
+    List<String>? langs,
+    List<String>? tags,
+    List<SelfLabel>? selfLabels,
+    VideoEmbed? embed,
+    // threadgate
+  }) = _PostRecordVideo;
+
+  const factory PostRecord.image({
+    required DateTime createdAt,
+    @JsonKey(defaultValue: '') String? text,
+    @JsonKey(defaultValue: []) List<Facet>? facets,
+    ReplyRef? reply,
+    StrongRef? sound,
+    List<String>? langs,
+    List<String>? tags,
+    List<SelfLabel>? selfLabels,
+    ImageEmbed? embed,
+    // threadgate
+  }) = _PostRecordImage;
+
+
+  factory PostRecord.fromJson(Map<String, dynamic> json) => _$PostRecordFromJson(json);
+}
+
+/// https://pub.dev/packages/freezed#union-types read this to understand what the hell is going on here
+///
+/// TL;DR:
+/// - posts can be either a video or an image, you can use pattern matching to check which one it is
+/// switch (post) {
+///   case VideoPost(:final VideoEmbed embed): ...
+///   case ImagePost(:final ImageEmbed embed): ...
+/// }
+@freezed
+sealed class PostView with _$PostView {
+  const factory PostView.video({
+    @AtUriConverter() required AtUri uri,
     @JsonKey(defaultValue: '') required String cid,
-    required PostAuthor author,
-    required Map<String, dynamic> record,
+    required ProfileViewBasic author,
+    required PostRecord record,
     @Default(false) bool isRepost,
-    DateTime? indexedAt,
-    Map<String, dynamic>? embed,
-    @Default({}) Map<String, dynamic> viewer,
-    List<PostAuthor>? likedBy,
+    required DateTime indexedAt,
     List<Label>? labels,
-  }) = _Post;
+    SoundView? sound,
+    VideoView? embed,
+  }) = VideoPostView;
 
-  factory Post.fromJson(Map<String, dynamic> json) => _$PostFromJson(json);
+  const factory PostView.image({
+    @AtUriConverter() required AtUri uri,
+    @JsonKey(defaultValue: '') required String cid,
+    required ProfileViewBasic author,
+    required PostRecord record,
+    @Default(false) bool isRepost,
+    required DateTime indexedAt,
+    List<Label>? labels,
+    SoundView? sound,
+    int? replyCount,
+    int? repostCount,
+    int? likeCount,
+    int? lookCount,
+    Viewer? viewer,
+    ImageView? embed,
+  }) = ImagePostView;
+
+  factory PostView.fromJson(Map<String, dynamic> json) => _$PostViewFromJson(json);
+
 }
 
 @freezed
-class PostAuthor with _$PostAuthor {
-  const factory PostAuthor({
-    @JsonKey(defaultValue: '') required String did,
-    @JsonKey(defaultValue: '') required String handle,
-    String? displayName,
-    String? avatar,
-    @Default(false) bool isFollowing,
-    @Default(false) bool isFollowedBy,
-  }) = _PostAuthor;
+class FeedSkeleton with _$FeedSkeleton {
+  const factory FeedSkeleton({required List<FeedItem> feed, String? cursor}) = _FeedSkeleton;
 
-  factory PostAuthor.fromJson(Map<String, dynamic> json) => _$PostAuthorFromJson(json);
-}
-
-@freezed
-class Label with _$Label {
-  const factory Label({required String val, String? src}) = _Label;
-
-  factory Label.fromJson(Map<String, dynamic> json) => _$LabelFromJson(json);
-}
-
-@freezed
-class FeedSkeletonResponse with _$FeedSkeletonResponse {
-  const factory FeedSkeletonResponse({required List<FeedItem> feed, String? cursor}) = _FeedSkeletonResponse;
-
-  factory FeedSkeletonResponse.fromJson(Map<String, dynamic> json) => _$FeedSkeletonResponseFromJson(json);
+  factory FeedSkeleton.fromJson(Map<String, dynamic> json) => _$FeedSkeletonFromJson(json);
 }
 
 @freezed
 class FeedItem with _$FeedItem {
-  const factory FeedItem({required String post, String? reason}) = _FeedItem;
+  const factory FeedItem({@AtUriConverter() required AtUri postUri, String? reason}) = _FeedItem;
 
   factory FeedItem.fromJson(Map<String, dynamic> json) => _$FeedItemFromJson(json);
 }
 
 @freezed
 class PostsResponse with _$PostsResponse {
-  const factory PostsResponse({required List<Post> posts}) = _PostsResponse;
+  const factory PostsResponse({required List<PostView> posts}) = _PostsResponse;
 
   factory PostsResponse.fromJson(Map<String, dynamic> json) => _$PostsResponseFromJson(json);
 }
 
 @freezed
 class AuthorFeedResponse with _$AuthorFeedResponse {
-  const factory AuthorFeedResponse({required List<Post> feed, String? cursor}) = _AuthorFeedResponse;
+  const factory AuthorFeedResponse({required List<PostView> feed, String? cursor}) = _AuthorFeedResponse;
 
   factory AuthorFeedResponse.fromJson(Map<String, dynamic> json) => _$AuthorFeedResponseFromJson(json);
-}
-
-@freezed
-class LikePostResponse with _$LikePostResponse {
-  const factory LikePostResponse({required String uri, required String cid}) = _LikePostResponse;
-
-  factory LikePostResponse.fromJson(Map<String, dynamic> json) => _$LikePostResponseFromJson(json);
-}
-
-@freezed
-class CommentPostResponse with _$CommentPostResponse {
-  const factory CommentPostResponse({required String uri, required String cid}) = _CommentPostResponse;
-
-  factory CommentPostResponse.fromJson(Map<String, dynamic> json) => _$CommentPostResponseFromJson(json);
 }
 
 @freezed
@@ -125,33 +211,7 @@ class ImageUploadResult with _$ImageUploadResult {
   factory ImageUploadResult.fromJson(Map<String, dynamic> json) => _$ImageUploadResultFromJson(json);
 }
 
-@freezed
-class FeedPost with _$FeedPost {
-  const factory FeedPost({
-    required String username,
-    required String authorDid,
-    String? profileImageUrl,
-    required String description,
-    String? videoUrl,
-    @Default(0) int likeCount,
-    @Default(0) int commentCount,
-    @Default(0) int shareCount,
-    @Default([]) List<String> hashtags,
-    @Default([]) List<String> labels,
-    @Default([]) List<String> imageUrls,
-    required String uri,
-    required String cid,
-    @Default(false) bool isSprk,
-    String? likeUri,
-    @Default(false) bool hasMedia,
-    @Default(false) bool isReply,
-    @Default([]) List<String> imageAlts,
-    String? videoAlt,
-  }) = _FeedPost;
-
-  factory FeedPost.fromJson(Map<String, dynamic> json) => _$FeedPostFromJson(json);
-}
-
+/// TODO: make this better
 @freezed
 class Comment with _$Comment {
   const factory Comment({
@@ -408,7 +468,7 @@ class Comment with _$Comment {
       cid: record['cid'] as String? ?? '',
       authorDid: authorDid,
       username: profileResponse.displayName ?? profileResponse.handle,
-      profileImageUrl: profileResponse.avatar,
+      profileImageUrl: profileResponse.avatar.toString(),
       text: text,
       createdAt: _formatTimeAgo(switch (record) {
         {'indexedAt': String date} => date,
@@ -495,7 +555,7 @@ class Comment with _$Comment {
       cid: record['cid'] as String? ?? '',
       authorDid: authorDid,
       username: profileResponse.displayName ?? profileResponse.handle,
-      profileImageUrl: profileResponse.avatar,
+      profileImageUrl: profileResponse.avatar.toString(),
       text: text,
       createdAt: _formatTimeAgo(switch (record) {
         {'indexedAt': String date} => date,
@@ -547,35 +607,6 @@ class Comment with _$Comment {
       return 'now';
     }
   }
-}
-
-/// Represents a blob reference in the AT Protocol
-@freezed
-class BlobReference with _$BlobReference {
-  const BlobReference._();
-
-  const factory BlobReference({
-    /// The type of the blob, usually 'blob'
-    @JsonKey(name: '\$type') required String type,
-
-    /// The MIME type of the blob
-    required String mimeType,
-
-    /// Size of the blob in bytes
-    required int size,
-
-    /// Content reference (CID)
-    required String ref,
-
-    /// Creation time in ISO 8601 format
-    String? createdAt,
-  }) = _BlobReference;
-
-  /// Create a BlobReference from JSON
-  factory BlobReference.fromJson(Map<String, dynamic> json) => _$BlobReferenceFromJson(json);
-
-  /// Create an empty BlobReference
-  factory BlobReference.empty() => const BlobReference(type: 'blob', mimeType: 'video/mp4', size: 0, ref: '');
 }
 
 /// Represents the index range for a facet in the text
@@ -640,7 +671,11 @@ class VideoEmbed with _$VideoEmbed {
     @JsonKey(name: '\$type') required String type,
 
     /// The video blob reference
-    required BlobReference video,
+    required Blob video,
+
+    // remaining fields that are in the json
+    // List<Caption> captions,
+    // AspectRatio aspectRatio, {width: int, height: int}
 
     /// Optional alt text for accessibility
     String? alt,
@@ -648,69 +683,130 @@ class VideoEmbed with _$VideoEmbed {
 
   /// Create a VideoEmbed from JSON
   factory VideoEmbed.fromJson(Map<String, dynamic> json) => _$VideoEmbedFromJson(json);
-
-  /// Create an empty VideoEmbed
-  factory VideoEmbed.empty() => VideoEmbed(type: 'so.sprk.embed.video', video: BlobReference.empty());
 }
 
-/// Represents a post containing a video
 @freezed
-class VideoPost with _$VideoPost {
-  const VideoPost._();
+class VideoView with _$VideoView {
+  const VideoView._();
+  const factory VideoView({
+    required String cid,
+    @AtUriConverter() required AtUri playlist,
+    @AtUriConverter() required AtUri thumbnail,
+    String? alt,
+    // aspectRatio: {width: int, height: int}
+  }) = _VideoView;
 
-  const factory VideoPost({
-    /// The type of post, typically 'so.sprk.feed.post'
-    @JsonKey(name: r'$type') required String type,
+  factory VideoView.fromJson(Map<String, dynamic> json) => _$VideoViewFromJson(json);
+}
 
-    /// Post text/description
-    @Default('') String text,
+@freezed
+class ImageEmbed with _$ImageEmbed {
+  const ImageEmbed._();
 
-    /// Video embed containing the actual video data
-    required VideoEmbed embed,
+  const factory ImageEmbed({@JsonKey(name: '\$type') required String type, required List<Image> images}) = _ImageEmbed;
 
-    /// When the post was created (ISO 8601 format)
-    required String createdAt,
+  factory ImageEmbed.fromJson(Map<String, dynamic> json) => _$ImageEmbedFromJson(json);
+}
 
-    /// Optional language tags
-    List<String>? langs,
+@freezed
+class Image with _$Image {
+  const Image._();
 
-    /// Optional content warning labels
-    @JsonKey(name: 'labels') List<LabelDetail>? labels,
+  const factory Image({
+    required Blob image,
+    String? alt,
+    // aspectRatio: {width: int, height: int}
+  }) = _Image;
 
-    /// Optional tags for discovery
-    List<String>? tags,
+  factory Image.fromJson(Map<String, dynamic> json) => _$ImageFromJson(json);
+}
 
-    /// Optional facets for rich text formatting
+@freezed
+class ImageView with _$ImageView {
+  const ImageView._();
+  const factory ImageView({required List<ViewImage> images}) = _ImageView;
+
+  factory ImageView.fromJson(Map<String, dynamic> json) => _$ImageViewFromJson(json);
+}
+
+// yes. this is different than ImageView. thanks paulinho!
+@freezed
+class ViewImage with _$ViewImage {
+  const ViewImage._();
+  const factory ViewImage({
+    @AtUriConverter() required AtUri thumb,
+    @AtUriConverter() required AtUri fullsize,
+    String? alt,
+    // aspectRatio: {width: int, height: int}
+  }) = _ViewImage;
+
+  factory ViewImage.fromJson(Map<String, dynamic> json) => _$ViewImageFromJson(json);
+}
+
+@freezed
+class SoundView with _$SoundView {
+  const SoundView._();
+  const factory SoundView.audio({
+    @AtUriConverter() required AtUri uri,
+    required String cid,
+    required ProfileViewBasic author,
+    required Audio record,
+    int? useCount,
+    int? likeCount,
+    required DateTime indexedAt,
+    List<Label>? labels,
+  }) = _SoundViewAudio;
+
+  const factory SoundView.music({
+    @AtUriConverter() required AtUri uri,
+    required String cid,
+    required ProfileViewBasic author,
+    required Music record,
+    int? useCount,
+    int? likeCount,
+    required DateTime indexedAt,
+    List<Label>? labels,
+  }) = _SoundViewMusic;
+
+
+  factory SoundView.fromJson(Map<String, dynamic> json) => _$SoundViewFromJson(json);
+}
+
+@freezed
+class Audio with _$Audio {
+  const Audio._();
+  const factory Audio({
+    required Blob sound,
+    required StrongRef origin,
+    String? title,
+    String? text,
+    List<SelfLabel>? labels,
+    required DateTime createdAt,
+  }) = _Audio;
+
+
+  factory Audio.fromJson(Map<String, dynamic> json) => _$AudioFromJson(json);
+}
+
+@freezed
+class Music with _$Music {
+  const Music._();
+  const factory Music({
+    required Blob sound,
+    required String title,
+    required DateTime releaseDate,
+    String? album,
+    String? recordLabel,
+    Blob? cover,
+    required String author, // the artist
+    String? text,
+    List<String>? copyright,
     List<Facet>? facets,
-  }) = _VideoPost;
-
-  /// Create a VideoPost from JSON
-  factory VideoPost.fromJson(Map<String, dynamic> json) => _$VideoPostFromJson(json);
-
-  /// Create a new empty VideoPost
-  factory VideoPost.create({
-    required String text,
-    required Map<String, dynamic> videoData,
-    String? videoAltText,
+    List<SelfLabel>? labels,
     List<String>? tags,
-    List<LabelDetail>? labels,
-    List<Facet>? facets,
-  }) {
-    final videoEmbed = {r'$type': 'so.sprk.embed.video', 'video': videoData};
+    required DateTime createdAt,
+  }) = _Music;
 
-    // Add alt text if provided
-    if (videoAltText != null && videoAltText.isNotEmpty) {
-      videoEmbed['alt'] = videoAltText;
-    }
 
-    return VideoPost(
-      type: 'so.sprk.feed.post',
-      text: text,
-      embed: VideoEmbed.fromJson(videoEmbed),
-      createdAt: DateTime.now().toUtc().toIso8601String(),
-      tags: tags,
-      labels: labels,
-      facets: facets,
-    );
-  }
+  factory Music.fromJson(Map<String, dynamic> json) => _$MusicFromJson(json);
 }

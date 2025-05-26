@@ -2,10 +2,9 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/network/utils/comment_utils.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
-import 'package:sparksocial/src/features/feed/data/models/comment_state.dart';
+import 'package:sparksocial/src/features/feed/providers/comment_state.dart';
 import 'package:sparksocial/src/features/feed/providers/comment_provider.dart';
 import 'package:sparksocial/src/features/feed/providers/comments_tray_provider.dart';
 

@@ -31,10 +31,10 @@ class _SystemHash {
 
 abstract class _$EditProfile
     extends BuildlessAutoDisposeNotifier<EditProfileState> {
-  late final Profile profile;
+  late final InvalidType profile;
 
   EditProfileState build(
-    Profile profile,
+    InvalidType profile,
   );
 }
 
@@ -57,7 +57,7 @@ class EditProfileFamily extends Family<EditProfileState> {
   ///
   /// Copied from [EditProfile].
   EditProfileProvider call(
-    Profile profile,
+    InvalidType profile,
   ) {
     return EditProfileProvider(
       profile,
@@ -97,7 +97,7 @@ class EditProfileProvider
   ///
   /// Copied from [EditProfile].
   EditProfileProvider(
-    Profile profile,
+    InvalidType profile,
   ) : this._internal(
           () => EditProfile()..profile = profile,
           from: editProfileProvider,
@@ -122,7 +122,7 @@ class EditProfileProvider
     required this.profile,
   }) : super.internal();
 
-  final Profile profile;
+  final InvalidType profile;
 
   @override
   EditProfileState runNotifierBuild(
@@ -173,7 +173,7 @@ class EditProfileProvider
 // ignore: unused_element
 mixin EditProfileRef on AutoDisposeNotifierProviderRef<EditProfileState> {
   /// The parameter `profile` of this provider.
-  Profile get profile;
+  InvalidType get profile;
 }
 
 class _EditProfileProviderElement
@@ -182,7 +182,7 @@ class _EditProfileProviderElement
   _EditProfileProviderElement(super.provider);
 
   @override
-  Profile get profile => (origin as EditProfileProvider).profile;
+  InvalidType get profile => (origin as EditProfileProvider).profile;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

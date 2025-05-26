@@ -227,16 +227,9 @@ class _PhotosTabState extends ConsumerState<PhotosTab> with AutomaticKeepAliveCl
           );
         }).toList();
 
-    // Navigate using AutoRoute
-    // Assuming FeedScreen is registered in AppRouter as FeedRoute
+   // TODO: navigate (push) to post route
     AutoRouter.of(context).push(
-      FeedRoute(
-        feedType: FeedType.latest.value, // Using latest as a placeholder for custom profile view.
-        initialPosts: feedPosts,
-        initialIndex: index,
-        showBackButton: true,
-        isParentFeedVisible: true,
-      ),
+      
     );
   }
 

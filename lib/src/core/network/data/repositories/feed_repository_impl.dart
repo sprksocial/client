@@ -10,16 +10,13 @@ import 'package:sparksocial/src/core/network/data/repositories/feed_repository.d
 import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/network/data/models/repo_models.dart';
-import 'package:sparksocial/src/core/network/data/repositories/label_repository.dart';
 
 /// Implementation of Feed-related API endpoints
 class FeedRepositoryImpl implements FeedRepository {
   final SprkRepository _client;
   final _logger = GetIt.instance<LogService>().getLogger('FeedRepository');
-  final LabelRepository _labelRepository;
 
-  FeedRepositoryImpl(this._client, this._labelRepository) {
+  FeedRepositoryImpl(this._client) {
     _logger.v('FeedRepository initialized');
   }
 
@@ -51,7 +48,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<FeedSkeletonResponse> getFeedSkeleton(String feed, {int limit = 8}) async {
+  Future<FeedSkeleton> getFeedSkeleton(String feed, {int limit = 8}) async {
     _logger.d('Getting feed skeleton for feed: $feed, limit: $limit');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -73,7 +70,7 @@ class FeedRepositoryImpl implements FeedRepository {
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
       _logger.d('Feed skeleton retrieved successfully');
-      return FeedSkeletonResponse.fromJson(result.data as Map<String, dynamic>);
+      return FeedSkeleton.fromJson(result.data as Map<String, dynamic>);
     });
   }
 
@@ -252,7 +249,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<RecordResponse> postImageFeed(String text, List<XFile> imageFiles, Map<String, String> altTexts) async {
+  Future<StrongRef> postImage(String text, List<XFile> imageFiles, Map<String, String> altTexts) async {
     _logger.d('Creating image post with ${imageFiles.length} images');
 
     switch (imageFiles) {
@@ -281,7 +278,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
             _logger.i('Image post created successfully: ${result.data.uri}');
 
-            return RecordResponse(uri: result.data.uri.toString(), cid: result.data.cid, value: record);
+            return result.data;
           } else {
             _logger.e('AtProto not initialized');
             throw Exception('AtProto not initialized');
@@ -440,281 +437,6 @@ class FeedRepositoryImpl implements FeedRepository {
           }
       }
     });
-  }
-
-  @override
-  Future<List<FeedPost>> fetchFeed(int feedType, {int limit = 100}) async {
-    _logger.d('Fetching feed type: $feedType, limit: $limit');
-
-    return switch (feedType) {
-      0 => fetchFollowingFeed(limit: limit),
-      1 => fetchForYouFeed(limit: limit),
-      2 => fetchSparkNewFeed(limit: limit),
-      _ => fetchForYouFeed(limit: limit),
-    };
-  }
-
-  @override
-  Future<List<FeedPost>> fetchFollowingFeed({int limit = 100}) async {
-    _logger.d('Fetching following feed with limit: $limit');
-
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
-      switch (_client.authRepository.atproto) {
-        case null:
-          _logger.e('AtProto not initialized');
-          throw Exception('AtProto not initialized');
-        case final atproto:
-          // Get timeline feed
-          final result = await atproto.get(
-            NSID.parse('app.bsky.feed.getTimeline'),
-            parameters: {'limit': limit},
-            to: (jsonMap) => jsonMap,
-            adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
-          );
-
-          _logger.d('Timeline feed retrieved successfully');
-
-          // Parse result into feed items
-          final feedItems = switch (result.data['feed']) {
-            List<dynamic> items => items.cast<Map<String, dynamic>>(),
-            _ => <Map<String, dynamic>>[],
-          };
-
-          // Convert to FeedPost models
-          final allPosts = feedItems.map((item) => _convertToFeedPost(item, false)).toList();
-
-          // Filter posts to only show those with media that aren't replies
-          final filteredPosts = allPosts.where((post) => post.hasMedia && !post.isReply).toList();
-
-          // Fetch and apply labels
-          return await _labelRepository.fetchLabelsForPosts(filteredPosts);
-      }
-    });
-  }
-
-  @override
-  Future<List<FeedPost>> fetchForYouFeed({int limit = 100}) async {
-    _logger.d('Fetching For You feed with limit: $limit');
-
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
-      switch (_client.authRepository.atproto) {
-        case null:
-          _logger.e('AtProto not initialized');
-          throw Exception('AtProto not initialized');
-        case final atproto:
-          // Get feed from "thevids" generator
-          final result = await atproto.get(
-            NSID.parse('app.bsky.feed.getFeed'),
-            parameters: {'feed': 'at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/thevids', 'limit': limit},
-            to: (jsonMap) => jsonMap,
-            adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
-          );
-
-          _logger.d('For You feed retrieved successfully');
-
-          // Parse result into feed items
-          final feedItems = switch (result.data['feed']) {
-            List<dynamic> items => items.cast<Map<String, dynamic>>(),
-            _ => <Map<String, dynamic>>[],
-          };
-
-          // Convert to FeedPost models
-          final allPosts = feedItems.map((item) => _convertToFeedPost(item, false)).toList();
-
-          // Filter posts to only show those with media that aren't replies
-          final filteredPosts = allPosts.where((post) => post.hasMedia && !post.isReply).toList();
-
-          // Fetch and apply labels
-          return await _labelRepository.fetchLabelsForPosts(filteredPosts);
-      }
-    });
-  }
-
-  @override
-  Future<List<FeedPost>> fetchSparkNewFeed({int limit = 100}) async {
-    _logger.d('Fetching Spark New feed with limit: $limit');
-
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
-      // Get feed skeleton with simple-desc feed
-      final feedSkeleton = await getFeedSkeleton('simple-desc', limit: limit);
-
-      // Extract post URIs
-      final uris = feedSkeleton.feed.map((item) => item.post).toList();
-
-      if (uris.isEmpty) {
-        _logger.d('No posts found in Spark New feed');
-        return [];
-      }
-
-      // Get the actual posts using the URIs
-      final result = await getPosts(uris);
-
-      _logger.d('Result: $result');
-
-      final feedItems = switch (result['posts']) {
-        List<dynamic> items => items.cast<Map<String, dynamic>>(),
-        _ => <Map<String, dynamic>>[],
-      };
-
-      // Convert to FeedPost models
-      final allPosts = feedItems.map((item) => _convertToFeedPost(item, false)).toList();
-
-      // Filter posts to only show those with media that aren't replies
-      final filteredPosts = allPosts.where((post) => post.hasMedia && !post.isReply).toList();
-
-      // Fetch and apply labels
-      return await _labelRepository.fetchLabelsForPosts(filteredPosts);
-    });
-  }
-
-  /// Helper method to convert API response to FeedPost model
-  FeedPost _convertToFeedPost(Map<String, dynamic> feedItem, bool isSprk) {
-    _logger.v('Converting feed item to FeedPost (isSprk: $isSprk)');
-
-    try {
-      // Extract post data based on structure
-      final postData = switch ((feedItem, isSprk)) {
-        ({'post': Map<String, dynamic> post}, true) => post,
-        ({'post': Map<String, dynamic> post}, false) => post,
-        (Map(), true) => <String, dynamic>{},
-        (_, false) => feedItem,
-      };
-
-      // Extract record and author data
-      final (recordData, authorData) = switch (postData) {
-        {'record': Map<String, dynamic> record, 'author': Map<String, dynamic> author} => (record, author),
-        _ => (<String, dynamic>{}, <String, dynamic>{}),
-      };
-
-      // Extract text
-      final text = recordData['text'] as String? ?? '';
-
-      // Default media information
-      var hasMedia = false;
-      var imageUrls = <String>[];
-      String? videoUrl;
-      var imageAlts = <String>[];
-      String? videoAlt;
-
-      // Extract media information from embeds
-      if (postData case {'embed': Map<String, dynamic> embedData}) {
-        switch (embedData) {
-          // Handle image embeds
-          case {r'$type': String type} when type.contains('images'):
-            hasMedia = true;
-
-            if (embedData case {'images': List<dynamic> images}) {
-              for (final imageItem in images) {
-                if (imageItem case Map<String, dynamic> imageData) {
-                  // Handle image URLs differently based on source
-                  if (isSprk) {
-                    if (imageData case {'fullsize': String fullsize}) {
-                      imageUrls.add(fullsize);
-                    }
-                    if (imageData case {'alt': String alt}) {
-                      imageAlts.add(alt);
-                    }
-                  } else {
-                    if (imageData case {'fullsize': String fullsize}) {
-                      imageUrls.add(fullsize);
-                    }
-                    if (imageData case {'alt': String alt}) {
-                      imageAlts.add(alt);
-                    }
-                  }
-                }
-              }
-            }
-
-          // Handle video embeds
-          case {r'$type': String type} when type.contains('video'):
-            hasMedia = true;
-
-            // Extract video URL - different structures depending on source
-            videoUrl = switch (embedData) {
-              {'playlist': String playlist} => playlist,
-              {'video': Map<String, dynamic> video} => switch (video) {
-                {'ref': String ref} => ref,
-                _ => null,
-              },
-              _ => null,
-            };
-
-            // Extract video alt text
-            videoAlt = embedData['alt'] as String?;
-        }
-      }
-
-      // Check if post is a reply
-      final isReply = recordData.containsKey('reply');
-
-      // Extract like URI
-      final likeUri = switch (postData) {
-        {'viewer': Map<String, dynamic> viewer} => switch (viewer) {
-          {'like': String like} => like,
-          _ => null,
-        },
-        _ => null,
-      };
-
-      // Count values
-      final likeCount = postData['likeCount'] as int? ?? 0;
-      final commentCount = postData['replyCount'] as int? ?? 0;
-
-      // Extract hashtags from text
-      final hashtags = _extractHashtags(text);
-
-      // Create FeedPost
-      return FeedPost(
-        username: authorData['handle'] as String? ?? '',
-        authorDid: authorData['did'] as String? ?? '',
-        profileImageUrl: authorData['avatar'] as String?,
-        description: text,
-        videoUrl: videoUrl,
-        likeCount: likeCount,
-        commentCount: commentCount,
-        shareCount: 0, // Not provided in API
-        hashtags: hashtags,
-        labels: [], // Will be populated by _fetchLabelsForPosts
-        imageUrls: imageUrls,
-        uri: postData['uri'] as String? ?? '',
-        cid: postData['cid'] as String? ?? '',
-        isSprk: isSprk,
-        likeUri: likeUri,
-        hasMedia: hasMedia,
-        isReply: isReply,
-        imageAlts: imageAlts,
-        videoAlt: videoAlt,
-      );
-    } catch (e) {
-      _logger.e('Error converting feed item to FeedPost', error: e);
-      // Return an empty FeedPost to prevent null errors
-      return FeedPost(username: '', authorDid: '', description: 'Error loading post', uri: '', cid: '', hasMedia: false);
-    }
-  }
-
-  /// Extract hashtags from text
-  List<String> _extractHashtags(String text) {
-    final matches = RegExp(r'#(\w+)').allMatches(text);
-    return switch (matches) {
-      final matches when matches.isNotEmpty => matches.map((m) => m.group(1)!).toList(),
-      _ => [],
-    };
   }
 
   @override

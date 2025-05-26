@@ -171,7 +171,7 @@ class _CommentsTrayState extends ConsumerState<CommentsTray> with SingleTickerPr
                     return ListView.builder(
                       controller: _scrollController,
                       padding: const EdgeInsets.only(bottom: 16),
-                      itemCount: comments.length, // +1 for loading indicator or end message
+                      itemCount: comments.length,
                       itemBuilder: (context, index) {
                         final comment = comments[index];
                         return CommentItem(
@@ -193,7 +193,7 @@ class _CommentsTrayState extends ConsumerState<CommentsTray> with SingleTickerPr
               ),
               Padding(
                 padding: EdgeInsets.only(bottom: keyboardHeight),
-                child: CommentInput(
+                child: CommentInputWidget(
                   videoId: widget.postUri,
                   postCid: widget.postCid,
                   postUri: widget.postUri,

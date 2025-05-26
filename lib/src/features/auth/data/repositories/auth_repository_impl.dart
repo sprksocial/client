@@ -7,8 +7,6 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/features/auth/data/models/login_result.dart';
 import 'package:sparksocial/src/features/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/features/auth/utils/did_utils.dart';
-import 'package:sparksocial/src/features/auth/utils/jwt_utils.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 
@@ -49,6 +47,32 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
+  String? _extractPdsDomain(Map<String, dynamic> doc) {
+    final services = doc['service'] as List<dynamic>?;
+    if (services == null || services.isEmpty) {
+      return null;
+    }
+
+    final pdsService = services.firstWhere(
+      (s) => s['id'] == '#atproto_pds', 
+      orElse: () => {}
+    );
+
+    final String? pdsUrl = pdsService['serviceEndpoint'] as String?;
+    if (pdsUrl == null) {
+      return null;
+    }
+
+    return pdsUrl
+      .replaceFirst('http://', '')
+      .replaceFirst('https://', '')
+      .replaceFirst('/', '');
+  }
+
+  bool _isTokenExpired(Jwt token) {
+    return DateTime.now().isAfter(token.exp.subtract(const Duration(minutes: 5)));
+  }
+
   Future<void> _loadSavedSession() async {
     try {
       _logger.d('Loading saved session');
@@ -65,7 +89,7 @@ class AuthRepositoryImpl implements AuthRepository {
         return;
       }
 
-      if (!_session!.active || JwtUtils.isTokenExpired(_session!.accessTokenJwt)) {
+      if (!_session!.active || _isTokenExpired(_session!.accessTokenJwt)) {
         _logger.i('Session inactive or token expired, refreshing');
         await _refreshSession();
         return;
@@ -87,13 +111,13 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       _logger.i('Refreshing session for user: ${_session!.handle}');
-      String? service = _session!.didDoc != null ? DidUtils.extractPdsDomain(_session!.didDoc!) : null;
+      String? service = _session!.didDoc != null ? _extractPdsDomain(_session!.didDoc!) : null;
 
       if (service == null) {
         _logger.d('Fetching DID document from PLC directory');
         final didDocResponse = await http.get(Uri.parse('https://plc.directory/${_session!.did}'));
         if (didDocResponse.statusCode == 200) {
-          service = DidUtils.extractPdsDomain(json.decode(didDocResponse.body));
+          service = _extractPdsDomain(json.decode(didDocResponse.body));
         }
       }
 

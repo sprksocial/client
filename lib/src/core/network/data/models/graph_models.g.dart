@@ -10,7 +10,7 @@ _$FollowersResponseImpl _$$FollowersResponseImplFromJson(
         Map<String, dynamic> json) =>
     _$FollowersResponseImpl(
       followers: (json['followers'] as List<dynamic>)
-          .map((e) => Actor.fromJson(e as Map<String, dynamic>))
+          .map((e) => ProfileView.fromJson(e as Map<String, dynamic>))
           .toList(),
       cursor: json['cursor'] as String?,
     );
@@ -26,7 +26,7 @@ _$FollowsResponseImpl _$$FollowsResponseImplFromJson(
         Map<String, dynamic> json) =>
     _$FollowsResponseImpl(
       follows: (json['follows'] as List<dynamic>)
-          .map((e) => Actor.fromJson(e as Map<String, dynamic>))
+          .map((e) => ProfileView.fromJson(e as Map<String, dynamic>))
           .toList(),
       cursor: json['cursor'] as String?,
     );

@@ -49,6 +49,7 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   # Old architecture dependencies
   provider: ^6.1.1
+  atproto_core: ^0.11.2
 
 dev_dependencies:
   flutter_test:

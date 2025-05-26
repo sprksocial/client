@@ -6,8 +6,7 @@ part of 'comment_input_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$commentInputNotifierHash() =>
-    r'6ba357d480849d379d9cf082f02145f5d84596c2';
+String _$commentInputHash() => r'4dc19ef4dd3fc4689c80a42069e51cdc65e46309';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -30,7 +29,7 @@ class _SystemHash {
   }
 }
 
-abstract class _$CommentInputNotifier
+abstract class _$CommentInput
     extends BuildlessAutoDisposeNotifier<CommentInputState> {
   late final TextEditingController textController;
   late final ImagePicker imagePicker;
@@ -41,29 +40,29 @@ abstract class _$CommentInputNotifier
   );
 }
 
-/// See also [CommentInputNotifier].
-@ProviderFor(CommentInputNotifier)
-const commentInputNotifierProvider = CommentInputNotifierFamily();
+/// See also [CommentInput].
+@ProviderFor(CommentInput)
+const commentInputProvider = CommentInputFamily();
 
-/// See also [CommentInputNotifier].
-class CommentInputNotifierFamily extends Family<CommentInputState> {
-  /// See also [CommentInputNotifier].
-  const CommentInputNotifierFamily();
+/// See also [CommentInput].
+class CommentInputFamily extends Family<CommentInputState> {
+  /// See also [CommentInput].
+  const CommentInputFamily();
 
-  /// See also [CommentInputNotifier].
-  CommentInputNotifierProvider call(
+  /// See also [CommentInput].
+  CommentInputProvider call(
     TextEditingController textController,
     ImagePicker imagePicker,
   ) {
-    return CommentInputNotifierProvider(
+    return CommentInputProvider(
       textController,
       imagePicker,
     );
   }
 
   @override
-  CommentInputNotifierProvider getProviderOverride(
-    covariant CommentInputNotifierProvider provider,
+  CommentInputProvider getProviderOverride(
+    covariant CommentInputProvider provider,
   ) {
     return call(
       provider.textController,
@@ -83,34 +82,34 @@ class CommentInputNotifierFamily extends Family<CommentInputState> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'commentInputNotifierProvider';
+  String? get name => r'commentInputProvider';
 }
 
-/// See also [CommentInputNotifier].
-class CommentInputNotifierProvider extends AutoDisposeNotifierProviderImpl<
-    CommentInputNotifier, CommentInputState> {
-  /// See also [CommentInputNotifier].
-  CommentInputNotifierProvider(
+/// See also [CommentInput].
+class CommentInputProvider
+    extends AutoDisposeNotifierProviderImpl<CommentInput, CommentInputState> {
+  /// See also [CommentInput].
+  CommentInputProvider(
     TextEditingController textController,
     ImagePicker imagePicker,
   ) : this._internal(
-          () => CommentInputNotifier()
+          () => CommentInput()
             ..textController = textController
             ..imagePicker = imagePicker,
-          from: commentInputNotifierProvider,
-          name: r'commentInputNotifierProvider',
+          from: commentInputProvider,
+          name: r'commentInputProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$commentInputNotifierHash,
-          dependencies: CommentInputNotifierFamily._dependencies,
+                  : _$commentInputHash,
+          dependencies: CommentInputFamily._dependencies,
           allTransitiveDependencies:
-              CommentInputNotifierFamily._allTransitiveDependencies,
+              CommentInputFamily._allTransitiveDependencies,
           textController: textController,
           imagePicker: imagePicker,
         );
 
-  CommentInputNotifierProvider._internal(
+  CommentInputProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -126,7 +125,7 @@ class CommentInputNotifierProvider extends AutoDisposeNotifierProviderImpl<
 
   @override
   CommentInputState runNotifierBuild(
-    covariant CommentInputNotifier notifier,
+    covariant CommentInput notifier,
   ) {
     return notifier.build(
       textController,
@@ -135,10 +134,10 @@ class CommentInputNotifierProvider extends AutoDisposeNotifierProviderImpl<
   }
 
   @override
-  Override overrideWith(CommentInputNotifier Function() create) {
+  Override overrideWith(CommentInput Function() create) {
     return ProviderOverride(
       origin: this,
-      override: CommentInputNotifierProvider._internal(
+      override: CommentInputProvider._internal(
         () => create()
           ..textController = textController
           ..imagePicker = imagePicker,
@@ -154,14 +153,14 @@ class CommentInputNotifierProvider extends AutoDisposeNotifierProviderImpl<
   }
 
   @override
-  AutoDisposeNotifierProviderElement<CommentInputNotifier, CommentInputState>
+  AutoDisposeNotifierProviderElement<CommentInput, CommentInputState>
       createElement() {
-    return _CommentInputNotifierProviderElement(this);
+    return _CommentInputProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is CommentInputNotifierProvider &&
+    return other is CommentInputProvider &&
         other.textController == textController &&
         other.imagePicker == imagePicker;
   }
@@ -178,8 +177,7 @@ class CommentInputNotifierProvider extends AutoDisposeNotifierProviderImpl<
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin CommentInputNotifierRef
-    on AutoDisposeNotifierProviderRef<CommentInputState> {
+mixin CommentInputRef on AutoDisposeNotifierProviderRef<CommentInputState> {
   /// The parameter `textController` of this provider.
   TextEditingController get textController;
 
@@ -187,17 +185,16 @@ mixin CommentInputNotifierRef
   ImagePicker get imagePicker;
 }
 
-class _CommentInputNotifierProviderElement
-    extends AutoDisposeNotifierProviderElement<CommentInputNotifier,
-        CommentInputState> with CommentInputNotifierRef {
-  _CommentInputNotifierProviderElement(super.provider);
+class _CommentInputProviderElement
+    extends AutoDisposeNotifierProviderElement<CommentInput, CommentInputState>
+    with CommentInputRef {
+  _CommentInputProviderElement(super.provider);
 
   @override
   TextEditingController get textController =>
-      (origin as CommentInputNotifierProvider).textController;
+      (origin as CommentInputProvider).textController;
   @override
-  ImagePicker get imagePicker =>
-      (origin as CommentInputNotifierProvider).imagePicker;
+  ImagePicker get imagePicker => (origin as CommentInputProvider).imagePicker;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

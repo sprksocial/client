@@ -5,10 +5,10 @@ abstract class ActorRepository {
   /// Get a profile by DID
   ///
   /// [did] The DID of the profile to get
-  Future<ProfileResponse> getProfile(String did);
+  Future<ProfileViewDetailed> getProfile(String did);
 
   /// Search actors by query string.
   ///
   /// [query] The search query.
-  Future<ActorSearchResponse> searchActors(String query);
-} 
+  Future<ProfileView> searchActors(String query);
+}

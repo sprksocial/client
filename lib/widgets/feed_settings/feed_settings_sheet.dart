@@ -245,10 +245,8 @@ class _FeedSettingsSheetState extends State<FeedSettingsSheet> with SingleTicker
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // TODO: normalized textstyle
               Text(_labelsError!, style: TextStyle(color: AppColors.red, fontSize: 16)),
               const SizedBox(height: 24),
-              // TODO: normalized button
               ElevatedButton(
                 onPressed: _loadLabelDefinitions,
                 style: ElevatedButton.styleFrom(

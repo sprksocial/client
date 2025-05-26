@@ -20,7 +20,7 @@ FollowersResponse _$FollowersResponseFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$FollowersResponse {
-  List<Actor> get followers => throw _privateConstructorUsedError;
+  List<ProfileView> get followers => throw _privateConstructorUsedError;
   String? get cursor => throw _privateConstructorUsedError;
 
   /// Serializes this FollowersResponse to a JSON map.
@@ -39,7 +39,7 @@ abstract class $FollowersResponseCopyWith<$Res> {
           FollowersResponse value, $Res Function(FollowersResponse) then) =
       _$FollowersResponseCopyWithImpl<$Res, FollowersResponse>;
   @useResult
-  $Res call({List<Actor> followers, String? cursor});
+  $Res call({List<ProfileView> followers, String? cursor});
 }
 
 /// @nodoc
@@ -64,7 +64,7 @@ class _$FollowersResponseCopyWithImpl<$Res, $Val extends FollowersResponse>
       followers: null == followers
           ? _value.followers
           : followers // ignore: cast_nullable_to_non_nullable
-              as List<Actor>,
+              as List<ProfileView>,
       cursor: freezed == cursor
           ? _value.cursor
           : cursor // ignore: cast_nullable_to_non_nullable
@@ -81,7 +81,7 @@ abstract class _$$FollowersResponseImplCopyWith<$Res>
       __$$FollowersResponseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({List<Actor> followers, String? cursor});
+  $Res call({List<ProfileView> followers, String? cursor});
 }
 
 /// @nodoc
@@ -104,7 +104,7 @@ class __$$FollowersResponseImplCopyWithImpl<$Res>
       followers: null == followers
           ? _value._followers
           : followers // ignore: cast_nullable_to_non_nullable
-              as List<Actor>,
+              as List<ProfileView>,
       cursor: freezed == cursor
           ? _value.cursor
           : cursor // ignore: cast_nullable_to_non_nullable
@@ -117,15 +117,15 @@ class __$$FollowersResponseImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$FollowersResponseImpl implements _FollowersResponse {
   const _$FollowersResponseImpl(
-      {required final List<Actor> followers, this.cursor})
+      {required final List<ProfileView> followers, this.cursor})
       : _followers = followers;
 
   factory _$FollowersResponseImpl.fromJson(Map<String, dynamic> json) =>
       _$$FollowersResponseImplFromJson(json);
 
-  final List<Actor> _followers;
+  final List<ProfileView> _followers;
   @override
-  List<Actor> get followers {
+  List<ProfileView> get followers {
     if (_followers is EqualUnmodifiableListView) return _followers;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_followers);
@@ -173,14 +173,14 @@ class _$FollowersResponseImpl implements _FollowersResponse {
 
 abstract class _FollowersResponse implements FollowersResponse {
   const factory _FollowersResponse(
-      {required final List<Actor> followers,
+      {required final List<ProfileView> followers,
       final String? cursor}) = _$FollowersResponseImpl;
 
   factory _FollowersResponse.fromJson(Map<String, dynamic> json) =
       _$FollowersResponseImpl.fromJson;
 
   @override
-  List<Actor> get followers;
+  List<ProfileView> get followers;
   @override
   String? get cursor;
 
@@ -198,7 +198,7 @@ FollowsResponse _$FollowsResponseFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$FollowsResponse {
-  List<Actor> get follows => throw _privateConstructorUsedError;
+  List<ProfileView> get follows => throw _privateConstructorUsedError;
   String? get cursor => throw _privateConstructorUsedError;
 
   /// Serializes this FollowsResponse to a JSON map.
@@ -217,7 +217,7 @@ abstract class $FollowsResponseCopyWith<$Res> {
           FollowsResponse value, $Res Function(FollowsResponse) then) =
       _$FollowsResponseCopyWithImpl<$Res, FollowsResponse>;
   @useResult
-  $Res call({List<Actor> follows, String? cursor});
+  $Res call({List<ProfileView> follows, String? cursor});
 }
 
 /// @nodoc
@@ -242,7 +242,7 @@ class _$FollowsResponseCopyWithImpl<$Res, $Val extends FollowsResponse>
       follows: null == follows
           ? _value.follows
           : follows // ignore: cast_nullable_to_non_nullable
-              as List<Actor>,
+              as List<ProfileView>,
       cursor: freezed == cursor
           ? _value.cursor
           : cursor // ignore: cast_nullable_to_non_nullable
@@ -259,7 +259,7 @@ abstract class _$$FollowsResponseImplCopyWith<$Res>
       __$$FollowsResponseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({List<Actor> follows, String? cursor});
+  $Res call({List<ProfileView> follows, String? cursor});
 }
 
 /// @nodoc
@@ -282,7 +282,7 @@ class __$$FollowsResponseImplCopyWithImpl<$Res>
       follows: null == follows
           ? _value._follows
           : follows // ignore: cast_nullable_to_non_nullable
-              as List<Actor>,
+              as List<ProfileView>,
       cursor: freezed == cursor
           ? _value.cursor
           : cursor // ignore: cast_nullable_to_non_nullable
@@ -294,15 +294,16 @@ class __$$FollowsResponseImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$FollowsResponseImpl implements _FollowsResponse {
-  const _$FollowsResponseImpl({required final List<Actor> follows, this.cursor})
+  const _$FollowsResponseImpl(
+      {required final List<ProfileView> follows, this.cursor})
       : _follows = follows;
 
   factory _$FollowsResponseImpl.fromJson(Map<String, dynamic> json) =>
       _$$FollowsResponseImplFromJson(json);
 
-  final List<Actor> _follows;
+  final List<ProfileView> _follows;
   @override
-  List<Actor> get follows {
+  List<ProfileView> get follows {
     if (_follows is EqualUnmodifiableListView) return _follows;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_follows);
@@ -349,14 +350,14 @@ class _$FollowsResponseImpl implements _FollowsResponse {
 
 abstract class _FollowsResponse implements FollowsResponse {
   const factory _FollowsResponse(
-      {required final List<Actor> follows,
+      {required final List<ProfileView> follows,
       final String? cursor}) = _$FollowsResponseImpl;
 
   factory _FollowsResponse.fromJson(Map<String, dynamic> json) =
       _$FollowsResponseImpl.fromJson;
 
   @override
-  List<Actor> get follows;
+  List<ProfileView> get follows;
   @override
   String? get cursor;
 

@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_type_provider.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/home/feed_settings_handler.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/home/home_app_bar.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/feed/feed_settings_handler.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/feed/home_app_bar.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 import 'package:visibility_detector/visibility_detector.dart';
 

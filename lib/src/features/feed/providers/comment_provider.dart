@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
-import 'package:sparksocial/src/features/feed/data/models/comment_state.dart';
+import 'package:sparksocial/src/features/feed/providers/comment_state.dart';
 import 'package:video_player/video_player.dart';
 
 part 'comment_provider.g.dart';

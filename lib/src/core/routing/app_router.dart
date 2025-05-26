@@ -26,13 +26,36 @@ class AppRouter extends _$AppRouter {
       page: MainRoute.page,
       path: '/main',
       children: [
-        AutoRoute(page: FeedsRoute.page, path: 'feeds', children: [
-          AutoRoute(page: FeedRoute.page, path: 'feed/:feedType'),
-        ]),
+        AutoRoute(
+          page: FeedsRoute.page,
+          path: 'feeds',
+          children: [
+            AutoRoute(
+              page: FeedRoute.page,
+              path: 'feed/:feedId',
+              children: [
+                AutoRoute(page: PostRoute.page, path: 'post/:postId'), // TODO: add post route
+              ],
+            ),
+            AutoRoute(page: FeedSettingsTabRoute.page, path: '/settings'),
+          ],
+        ),
         AutoRoute(page: SearchRoute.page, path: 'search'),
         AutoRoute(page: EmptyRoute.page, path: 'create'), // Placeholder for create action
         AutoRoute(page: MessagesRoute.page, path: 'messages'),
-        AutoRoute(page: ProfileRoute.page, path: 'profile/:did'),
+        AutoRoute(
+          page: ProfileRoute.page,
+          path: 'profile/:did',
+          children: [
+            AutoRoute(page: EditProfileRoute.page, path: '/edit'),
+            AutoRoute(page: ProfilePhotosRoute.page, path: 'photos', children: [
+              AutoRoute(page: PostRoute.page, path: 'post/:postId'), // TODO: add post route
+            ]),
+            AutoRoute(page: ProfileVideosRoute.page, path: 'videos', children: [
+              AutoRoute(page: PostRoute.page, path: 'post/:postId'), // TODO: add post route
+            ]),
+          ],
+        ),
       ],
     ),
     AutoRoute(page: EmptyRoute.page, path: '/empty'),
@@ -42,12 +65,6 @@ class AppRouter extends _$AppRouter {
     // Onboarding routes
     AutoRoute(page: OnboardingRoute.page, path: '/onboarding/profile'),
     AutoRoute(page: ImportFollowsRoute.page, path: '/onboarding/import-follows'),
-
-    // Profile routes
-    AutoRoute(page: EditProfileRoute.page, path: '/profile/edit'),
-
-    // Feed Settings tabs
-    AutoRoute(page: FeedSettingsTabRoute.page, path: '/settings/feed'),
 
     // Upload feature routes
     AutoRoute(page: CreateVideoRoute.page, path: '/upload/create'),

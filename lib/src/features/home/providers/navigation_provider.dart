@@ -1,16 +1,16 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/features/home/data/models/navigation_state.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sparksocial/src/features/home/providers/navigation_state.dart';
 
-/// NavigationNotifier manages the bottom navigation state
-class NavigationNotifier extends StateNotifier<NavigationState> {
-  NavigationNotifier() : super(const NavigationState());
+part 'navigation_provider.g.dart';
+
+@riverpod
+class Navigation extends _$Navigation {
+  @override
+  NavigationState build() {
+    return const NavigationState();
+  }
 
   void updateIndex(int index) {
     state = state.copyWith(currentIndex: index);
   }
 }
-
-/// Provider for the navigation state
-final navigationProvider = StateNotifierProvider<NavigationNotifier, NavigationState>((ref) {
-  return NavigationNotifier();
-});

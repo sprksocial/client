@@ -4,14 +4,16 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart'; // Import image_picker
-import 'package:sparksocial/src/features/feed/data/models/comment_input_state.dart';
+import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
+import 'package:sparksocial/src/features/feed/providers/comment_input_state.dart';
 import 'package:sparksocial/src/features/feed/providers/comment_input_provider.dart';
 import 'package:sparksocial/src/features/feed/providers/comments_tray_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/alt_text_editor_dialog.dart';
+import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 
 import 'emoji_picker.dart';
 
-class CommentInput extends ConsumerStatefulWidget {
+class CommentInputWidget extends ConsumerStatefulWidget {
   final String videoId;
   final String? replyingToUsername;
   // Video post info
@@ -23,7 +25,7 @@ class CommentInput extends ConsumerStatefulWidget {
   final FocusNode? focusNode;
   final bool isSprk;
 
-  const CommentInput({
+  const CommentInputWidget({
     super.key,
     required this.videoId,
     this.replyingToUsername,
@@ -36,10 +38,10 @@ class CommentInput extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<CommentInput> createState() => _CommentInputState();
+  ConsumerState<CommentInputWidget> createState() => _CommentInputState();
 }
 
-class _CommentInputState extends ConsumerState<CommentInput> {
+class _CommentInputState extends ConsumerState<CommentInputWidget> {
   final textController = TextEditingController();
   final imagePicker = ImagePicker();
   @override
@@ -49,8 +51,9 @@ class _CommentInputState extends ConsumerState<CommentInput> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(commentInputNotifierProvider(textController, imagePicker));
-    final notifier = ref.read(commentInputNotifierProvider(textController, imagePicker).notifier);
+    final state = ref.watch(commentInputProvider(textController, imagePicker));
+    final notifier = ref.read(commentInputProvider(textController, imagePicker).notifier);
+    final session = ref.watch(authProvider).session;
     return Container(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16),
       decoration: BoxDecoration(
@@ -88,7 +91,7 @@ class _CommentInputState extends ConsumerState<CommentInput> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _UserAvatar(textColor: Theme.of(context).colorScheme.onSurface),
+                _UserAvatar(textColor: Theme.of(context).colorScheme.onSurface, did: session?.did ?? ''),
                 const SizedBox(width: 5),
                 _AttachmentButton(
                   state: state,
@@ -129,7 +132,7 @@ class _ReplyingToNotice extends ConsumerWidget {
     required this.textColor,
   });
 
-  final CommentInput widget;
+  final CommentInputWidget widget;
   final Color inputBackgroundColor;
   final Color borderColor;
   final Color textColor;
@@ -161,19 +164,56 @@ class _ReplyingToNotice extends ConsumerWidget {
   }
 }
 
-class _UserAvatar extends StatelessWidget {
-  const _UserAvatar({required this.textColor});
+class _UserAvatar extends ConsumerWidget {
+  const _UserAvatar({required this.textColor, required this.did});
 
   final Color textColor;
+  final String did;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 28,
-      height: 28,
-      decoration: const BoxDecoration(color: Color(0xFF330072), shape: BoxShape.circle),
-      child: const Center(child: Text('Y', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 14))),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profileState = ref.watch(profileNotifierProvider(did: did));
+    profileState.when(
+      loading:
+          () => Container(
+            width: 28,
+            height: 28,
+            decoration: const BoxDecoration(color: Color(0xFF330072), shape: BoxShape.circle),
+            child: const Center(
+              child: Text('Y', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 14)),
+            ),
+          ),
+      error:
+          (error, stackTrace) => Container(
+            width: 28,
+            height: 28,
+            decoration: const BoxDecoration(color: Color(0xFF330072), shape: BoxShape.circle),
+            child: const Center(
+              child: Text('Y', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 14)),
+            ),
+          ),
+      data: (profile) {
+        if (profile.profile?.avatar == null || profile.profile?.avatar == '') {
+          return Container(
+            width: 28,
+            height: 28,
+            decoration: const BoxDecoration(color: Color(0xFF330072), shape: BoxShape.circle),
+            child: const Center(
+              child: Text('Y', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 14)),
+            ),
+          );
+        }
+        return Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: DecorationImage(image: NetworkImage(profile.profile!.avatar!)),
+          ),
+        );
+      },
     );
+    return SizedBox(); // in theory this should never be reached, but it's here to satisfy the compiler
   }
 }
 
@@ -187,10 +227,10 @@ class _TextField extends StatelessWidget {
     required this.placeholderColor,
   });
 
-  final CommentInput widget;
+  final CommentInputWidget widget;
   final CommentInputState state;
   final BuildContext context;
-  final CommentInputNotifier notifier;
+  final CommentInput notifier;
   final Color textColor;
   final Color placeholderColor;
 
@@ -264,7 +304,7 @@ class _AttachmentButton extends StatelessWidget {
   });
 
   final CommentInputState state;
-  final CommentInputNotifier notifier;
+  final CommentInput notifier;
   final BuildContext context;
   final Color borderColor;
   final Color textColor;
@@ -289,7 +329,7 @@ class _SelectedImagesPreview extends StatelessWidget {
   const _SelectedImagesPreview({required this.state, required this.notifier});
 
   final CommentInputState state;
-  final CommentInputNotifier notifier;
+  final CommentInput notifier;
 
   @override
   Widget build(BuildContext context) {

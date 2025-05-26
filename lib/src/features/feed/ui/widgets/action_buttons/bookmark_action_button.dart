@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import '../../../../../core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class BookmarkActionButton extends StatefulWidget {
   final String count;

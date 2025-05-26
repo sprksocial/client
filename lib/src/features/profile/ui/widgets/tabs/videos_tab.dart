@@ -226,14 +226,9 @@ class _VideosTabState extends ConsumerState<VideosTab> with AutomaticKeepAliveCl
           );
         }).toList();
 
+    // TODO: navigate (push) to post route
     AutoRouter.of(context).push(
-      FeedRoute(
-        feedType: FeedType.latest.value, // Placeholder
-        initialPosts: feedPosts,
-        initialIndex: index,
-        showBackButton: true,
-        isParentFeedVisible: true,
-      ),
+      
     );
   }
 

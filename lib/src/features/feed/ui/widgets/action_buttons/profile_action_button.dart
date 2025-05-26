@@ -2,7 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class ProfileActionButton extends StatefulWidget {
   final String? profileImageUrl;

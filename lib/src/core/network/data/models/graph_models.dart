@@ -7,7 +7,7 @@ part 'graph_models.g.dart';
 @freezed
 class FollowersResponse with _$FollowersResponse {
   const factory FollowersResponse({
-    required List<Actor> followers,
+    required List<ProfileView> followers,
     String? cursor,
   }) = _FollowersResponse;
 
@@ -17,7 +17,7 @@ class FollowersResponse with _$FollowersResponse {
 @freezed
 class FollowsResponse with _$FollowsResponse {
   const factory FollowsResponse({
-    required List<Actor> follows,
+    required List<ProfileView> follows,
     String? cursor,
   }) = _FollowsResponse;
 

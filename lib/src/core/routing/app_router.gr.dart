@@ -235,7 +235,7 @@ class CreateVideoRoute extends PageRouteInfo<void> {
 class EditProfileRoute extends PageRouteInfo<EditProfileRouteArgs> {
   EditProfileRoute({
     Key? key,
-    required Profile profile,
+    required InvalidType profile,
     List<PageRouteInfo>? children,
   }) : super(
           EditProfileRoute.name,
@@ -260,7 +260,7 @@ class EditProfileRouteArgs {
 
   final Key? key;
 
-  final Profile profile;
+  final InvalidType profile;
 
   @override
   String toString() {
@@ -288,7 +288,7 @@ class FeedRoute extends PageRouteInfo<FeedRouteArgs> {
   FeedRoute({
     Key? key,
     required int feedType,
-    List<FeedPost>? initialPosts,
+    List<void>? initialPosts,
     int? initialIndex,
     bool showBackButton = false,
     required bool isParentFeedVisible,
@@ -325,7 +325,7 @@ class FeedRouteArgs {
 
   final int feedType;
 
-  final List<FeedPost>? initialPosts;
+  final List<void>? initialPosts;
 
   final int? initialIndex;
 

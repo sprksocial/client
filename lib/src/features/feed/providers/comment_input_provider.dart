@@ -3,17 +3,20 @@ import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/features/feed/data/models/comment_input_state.dart';
+import 'package:sparksocial/src/features/feed/providers/comment_input_state.dart';
 import 'package:sparksocial/src/features/feed/providers/comments_tray_provider.dart';
 
 part 'comment_input_provider.g.dart';
 
 @riverpod
-class CommentInputNotifier extends _$CommentInputNotifier {
+class CommentInput extends _$CommentInput {
   @override
   CommentInputState build(TextEditingController textController, ImagePicker imagePicker) {
     ref.onDispose(() {
       textController.dispose();
+    });
+    textController.addListener(() {
+      updateCanSubmit();
     });
     return CommentInputState(textController: textController, imagePicker: imagePicker);
   }

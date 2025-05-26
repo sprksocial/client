@@ -14,63 +14,787 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
-ProfileResponse _$ProfileResponseFromJson(Map<String, dynamic> json) {
-  return _ProfileResponse.fromJson(json);
+Viewer _$ViewerFromJson(Map<String, dynamic> json) {
+  return _Viewer.fromJson(json);
 }
 
 /// @nodoc
-mixin _$ProfileResponse {
-  String get did => throw _privateConstructorUsedError;
-  String get handle => throw _privateConstructorUsedError;
-  String? get displayName => throw _privateConstructorUsedError;
-  String? get description => throw _privateConstructorUsedError;
-  String? get avatar => throw _privateConstructorUsedError;
-  String? get banner => throw _privateConstructorUsedError;
-  bool get followsYou => throw _privateConstructorUsedError;
-  bool get youFollow => throw _privateConstructorUsedError;
-  Map<String, dynamic>? get viewer => throw _privateConstructorUsedError;
-  Map<String, dynamic>? get labels => throw _privateConstructorUsedError;
+mixin _$Viewer {
+  bool? get muted =>
+      throw _privateConstructorUsedError; // muted by list: when we add lists add this field
+  bool? get blockedBy => throw _privateConstructorUsedError;
+  @AtUriConverter()
+  AtUri? get blocking =>
+      throw _privateConstructorUsedError; // blocked by list: when we add lists add this field
+  @AtUriConverter()
+  AtUri? get following => throw _privateConstructorUsedError;
+  @AtUriConverter()
+  AtUri? get followedBy => throw _privateConstructorUsedError;
+  KnownFollowers? get followers => throw _privateConstructorUsedError;
 
-  /// Serializes this ProfileResponse to a JSON map.
+  /// Serializes this Viewer to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of ProfileResponse
+  /// Create a copy of Viewer
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $ProfileResponseCopyWith<ProfileResponse> get copyWith =>
-      throw _privateConstructorUsedError;
+  $ViewerCopyWith<Viewer> get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $ProfileResponseCopyWith<$Res> {
-  factory $ProfileResponseCopyWith(
-          ProfileResponse value, $Res Function(ProfileResponse) then) =
-      _$ProfileResponseCopyWithImpl<$Res, ProfileResponse>;
+abstract class $ViewerCopyWith<$Res> {
+  factory $ViewerCopyWith(Viewer value, $Res Function(Viewer) then) =
+      _$ViewerCopyWithImpl<$Res, Viewer>;
   @useResult
   $Res call(
-      {String did,
-      String handle,
-      String? displayName,
-      String? description,
-      String? avatar,
-      String? banner,
-      bool followsYou,
-      bool youFollow,
-      Map<String, dynamic>? viewer,
-      Map<String, dynamic>? labels});
+      {bool? muted,
+      bool? blockedBy,
+      @AtUriConverter() AtUri? blocking,
+      @AtUriConverter() AtUri? following,
+      @AtUriConverter() AtUri? followedBy,
+      KnownFollowers? followers});
+
+  $KnownFollowersCopyWith<$Res>? get followers;
 }
 
 /// @nodoc
-class _$ProfileResponseCopyWithImpl<$Res, $Val extends ProfileResponse>
-    implements $ProfileResponseCopyWith<$Res> {
-  _$ProfileResponseCopyWithImpl(this._value, this._then);
+class _$ViewerCopyWithImpl<$Res, $Val extends Viewer>
+    implements $ViewerCopyWith<$Res> {
+  _$ViewerCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of ProfileResponse
+  /// Create a copy of Viewer
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? muted = freezed,
+    Object? blockedBy = freezed,
+    Object? blocking = freezed,
+    Object? following = freezed,
+    Object? followedBy = freezed,
+    Object? followers = freezed,
+  }) {
+    return _then(_value.copyWith(
+      muted: freezed == muted
+          ? _value.muted
+          : muted // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      blockedBy: freezed == blockedBy
+          ? _value.blockedBy
+          : blockedBy // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      blocking: freezed == blocking
+          ? _value.blocking
+          : blocking // ignore: cast_nullable_to_non_nullable
+              as AtUri?,
+      following: freezed == following
+          ? _value.following
+          : following // ignore: cast_nullable_to_non_nullable
+              as AtUri?,
+      followedBy: freezed == followedBy
+          ? _value.followedBy
+          : followedBy // ignore: cast_nullable_to_non_nullable
+              as AtUri?,
+      followers: freezed == followers
+          ? _value.followers
+          : followers // ignore: cast_nullable_to_non_nullable
+              as KnownFollowers?,
+    ) as $Val);
+  }
+
+  /// Create a copy of Viewer
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $KnownFollowersCopyWith<$Res>? get followers {
+    if (_value.followers == null) {
+      return null;
+    }
+
+    return $KnownFollowersCopyWith<$Res>(_value.followers!, (value) {
+      return _then(_value.copyWith(followers: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$ViewerImplCopyWith<$Res> implements $ViewerCopyWith<$Res> {
+  factory _$$ViewerImplCopyWith(
+          _$ViewerImpl value, $Res Function(_$ViewerImpl) then) =
+      __$$ViewerImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {bool? muted,
+      bool? blockedBy,
+      @AtUriConverter() AtUri? blocking,
+      @AtUriConverter() AtUri? following,
+      @AtUriConverter() AtUri? followedBy,
+      KnownFollowers? followers});
+
+  @override
+  $KnownFollowersCopyWith<$Res>? get followers;
+}
+
+/// @nodoc
+class __$$ViewerImplCopyWithImpl<$Res>
+    extends _$ViewerCopyWithImpl<$Res, _$ViewerImpl>
+    implements _$$ViewerImplCopyWith<$Res> {
+  __$$ViewerImplCopyWithImpl(
+      _$ViewerImpl _value, $Res Function(_$ViewerImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of Viewer
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? muted = freezed,
+    Object? blockedBy = freezed,
+    Object? blocking = freezed,
+    Object? following = freezed,
+    Object? followedBy = freezed,
+    Object? followers = freezed,
+  }) {
+    return _then(_$ViewerImpl(
+      muted: freezed == muted
+          ? _value.muted
+          : muted // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      blockedBy: freezed == blockedBy
+          ? _value.blockedBy
+          : blockedBy // ignore: cast_nullable_to_non_nullable
+              as bool?,
+      blocking: freezed == blocking
+          ? _value.blocking
+          : blocking // ignore: cast_nullable_to_non_nullable
+              as AtUri?,
+      following: freezed == following
+          ? _value.following
+          : following // ignore: cast_nullable_to_non_nullable
+              as AtUri?,
+      followedBy: freezed == followedBy
+          ? _value.followedBy
+          : followedBy // ignore: cast_nullable_to_non_nullable
+              as AtUri?,
+      followers: freezed == followers
+          ? _value.followers
+          : followers // ignore: cast_nullable_to_non_nullable
+              as KnownFollowers?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$ViewerImpl implements _Viewer {
+  const _$ViewerImpl(
+      {this.muted,
+      this.blockedBy,
+      @AtUriConverter() this.blocking,
+      @AtUriConverter() this.following,
+      @AtUriConverter() this.followedBy,
+      this.followers});
+
+  factory _$ViewerImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ViewerImplFromJson(json);
+
+  @override
+  final bool? muted;
+// muted by list: when we add lists add this field
+  @override
+  final bool? blockedBy;
+  @override
+  @AtUriConverter()
+  final AtUri? blocking;
+// blocked by list: when we add lists add this field
+  @override
+  @AtUriConverter()
+  final AtUri? following;
+  @override
+  @AtUriConverter()
+  final AtUri? followedBy;
+  @override
+  final KnownFollowers? followers;
+
+  @override
+  String toString() {
+    return 'Viewer(muted: $muted, blockedBy: $blockedBy, blocking: $blocking, following: $following, followedBy: $followedBy, followers: $followers)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ViewerImpl &&
+            (identical(other.muted, muted) || other.muted == muted) &&
+            (identical(other.blockedBy, blockedBy) ||
+                other.blockedBy == blockedBy) &&
+            (identical(other.blocking, blocking) ||
+                other.blocking == blocking) &&
+            (identical(other.following, following) ||
+                other.following == following) &&
+            (identical(other.followedBy, followedBy) ||
+                other.followedBy == followedBy) &&
+            (identical(other.followers, followers) ||
+                other.followers == followers));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, muted, blockedBy, blocking,
+      following, followedBy, followers);
+
+  /// Create a copy of Viewer
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ViewerImplCopyWith<_$ViewerImpl> get copyWith =>
+      __$$ViewerImplCopyWithImpl<_$ViewerImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ViewerImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _Viewer implements Viewer {
+  const factory _Viewer(
+      {final bool? muted,
+      final bool? blockedBy,
+      @AtUriConverter() final AtUri? blocking,
+      @AtUriConverter() final AtUri? following,
+      @AtUriConverter() final AtUri? followedBy,
+      final KnownFollowers? followers}) = _$ViewerImpl;
+
+  factory _Viewer.fromJson(Map<String, dynamic> json) = _$ViewerImpl.fromJson;
+
+  @override
+  bool? get muted; // muted by list: when we add lists add this field
+  @override
+  bool? get blockedBy;
+  @override
+  @AtUriConverter()
+  AtUri? get blocking; // blocked by list: when we add lists add this field
+  @override
+  @AtUriConverter()
+  AtUri? get following;
+  @override
+  @AtUriConverter()
+  AtUri? get followedBy;
+  @override
+  KnownFollowers? get followers;
+
+  /// Create a copy of Viewer
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ViewerImplCopyWith<_$ViewerImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+KnownFollowers _$KnownFollowersFromJson(Map<String, dynamic> json) {
+  return _KnownFollowers.fromJson(json);
+}
+
+/// @nodoc
+mixin _$KnownFollowers {
+  int get count => throw _privateConstructorUsedError;
+  List<String> get followersDids => throw _privateConstructorUsedError;
+
+  /// Serializes this KnownFollowers to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of KnownFollowers
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $KnownFollowersCopyWith<KnownFollowers> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $KnownFollowersCopyWith<$Res> {
+  factory $KnownFollowersCopyWith(
+          KnownFollowers value, $Res Function(KnownFollowers) then) =
+      _$KnownFollowersCopyWithImpl<$Res, KnownFollowers>;
+  @useResult
+  $Res call({int count, List<String> followersDids});
+}
+
+/// @nodoc
+class _$KnownFollowersCopyWithImpl<$Res, $Val extends KnownFollowers>
+    implements $KnownFollowersCopyWith<$Res> {
+  _$KnownFollowersCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of KnownFollowers
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? count = null,
+    Object? followersDids = null,
+  }) {
+    return _then(_value.copyWith(
+      count: null == count
+          ? _value.count
+          : count // ignore: cast_nullable_to_non_nullable
+              as int,
+      followersDids: null == followersDids
+          ? _value.followersDids
+          : followersDids // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$KnownFollowersImplCopyWith<$Res>
+    implements $KnownFollowersCopyWith<$Res> {
+  factory _$$KnownFollowersImplCopyWith(_$KnownFollowersImpl value,
+          $Res Function(_$KnownFollowersImpl) then) =
+      __$$KnownFollowersImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({int count, List<String> followersDids});
+}
+
+/// @nodoc
+class __$$KnownFollowersImplCopyWithImpl<$Res>
+    extends _$KnownFollowersCopyWithImpl<$Res, _$KnownFollowersImpl>
+    implements _$$KnownFollowersImplCopyWith<$Res> {
+  __$$KnownFollowersImplCopyWithImpl(
+      _$KnownFollowersImpl _value, $Res Function(_$KnownFollowersImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of KnownFollowers
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? count = null,
+    Object? followersDids = null,
+  }) {
+    return _then(_$KnownFollowersImpl(
+      count: null == count
+          ? _value.count
+          : count // ignore: cast_nullable_to_non_nullable
+              as int,
+      followersDids: null == followersDids
+          ? _value._followersDids
+          : followersDids // ignore: cast_nullable_to_non_nullable
+              as List<String>,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$KnownFollowersImpl implements _KnownFollowers {
+  const _$KnownFollowersImpl(
+      {required this.count, required final List<String> followersDids})
+      : _followersDids = followersDids;
+
+  factory _$KnownFollowersImpl.fromJson(Map<String, dynamic> json) =>
+      _$$KnownFollowersImplFromJson(json);
+
+  @override
+  final int count;
+  final List<String> _followersDids;
+  @override
+  List<String> get followersDids {
+    if (_followersDids is EqualUnmodifiableListView) return _followersDids;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_followersDids);
+  }
+
+  @override
+  String toString() {
+    return 'KnownFollowers(count: $count, followersDids: $followersDids)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$KnownFollowersImpl &&
+            (identical(other.count, count) || other.count == count) &&
+            const DeepCollectionEquality()
+                .equals(other._followersDids, _followersDids));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, count, const DeepCollectionEquality().hash(_followersDids));
+
+  /// Create a copy of KnownFollowers
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$KnownFollowersImplCopyWith<_$KnownFollowersImpl> get copyWith =>
+      __$$KnownFollowersImplCopyWithImpl<_$KnownFollowersImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$KnownFollowersImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _KnownFollowers implements KnownFollowers {
+  const factory _KnownFollowers(
+      {required final int count,
+      required final List<String> followersDids}) = _$KnownFollowersImpl;
+
+  factory _KnownFollowers.fromJson(Map<String, dynamic> json) =
+      _$KnownFollowersImpl.fromJson;
+
+  @override
+  int get count;
+  @override
+  List<String> get followersDids;
+
+  /// Create a copy of KnownFollowers
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$KnownFollowersImplCopyWith<_$KnownFollowersImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+ProfileViewBasic _$ProfileViewBasicFromJson(Map<String, dynamic> json) {
+  return _ProfileViewBasic.fromJson(json);
+}
+
+/// @nodoc
+mixin _$ProfileViewBasic {
+  String get did => throw _privateConstructorUsedError;
+  String get handle => throw _privateConstructorUsedError;
+  String? get displayName => throw _privateConstructorUsedError;
+  @AtUriConverter()
+  AtUri? get avatar =>
+      throw _privateConstructorUsedError; // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
+  Viewer? get viewer => throw _privateConstructorUsedError;
+
+  /// Serializes this ProfileViewBasic to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of ProfileViewBasic
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $ProfileViewBasicCopyWith<ProfileViewBasic> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ProfileViewBasicCopyWith<$Res> {
+  factory $ProfileViewBasicCopyWith(
+          ProfileViewBasic value, $Res Function(ProfileViewBasic) then) =
+      _$ProfileViewBasicCopyWithImpl<$Res, ProfileViewBasic>;
+  @useResult
+  $Res call(
+      {String did,
+      String handle,
+      String? displayName,
+      @AtUriConverter() AtUri? avatar,
+      Viewer? viewer});
+
+  $ViewerCopyWith<$Res>? get viewer;
+}
+
+/// @nodoc
+class _$ProfileViewBasicCopyWithImpl<$Res, $Val extends ProfileViewBasic>
+    implements $ProfileViewBasicCopyWith<$Res> {
+  _$ProfileViewBasicCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of ProfileViewBasic
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? did = null,
+    Object? handle = null,
+    Object? displayName = freezed,
+    Object? avatar = freezed,
+    Object? viewer = freezed,
+  }) {
+    return _then(_value.copyWith(
+      did: null == did
+          ? _value.did
+          : did // ignore: cast_nullable_to_non_nullable
+              as String,
+      handle: null == handle
+          ? _value.handle
+          : handle // ignore: cast_nullable_to_non_nullable
+              as String,
+      displayName: freezed == displayName
+          ? _value.displayName
+          : displayName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      avatar: freezed == avatar
+          ? _value.avatar
+          : avatar // ignore: cast_nullable_to_non_nullable
+              as AtUri?,
+      viewer: freezed == viewer
+          ? _value.viewer
+          : viewer // ignore: cast_nullable_to_non_nullable
+              as Viewer?,
+    ) as $Val);
+  }
+
+  /// Create a copy of ProfileViewBasic
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ViewerCopyWith<$Res>? get viewer {
+    if (_value.viewer == null) {
+      return null;
+    }
+
+    return $ViewerCopyWith<$Res>(_value.viewer!, (value) {
+      return _then(_value.copyWith(viewer: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$ProfileViewBasicImplCopyWith<$Res>
+    implements $ProfileViewBasicCopyWith<$Res> {
+  factory _$$ProfileViewBasicImplCopyWith(_$ProfileViewBasicImpl value,
+          $Res Function(_$ProfileViewBasicImpl) then) =
+      __$$ProfileViewBasicImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {String did,
+      String handle,
+      String? displayName,
+      @AtUriConverter() AtUri? avatar,
+      Viewer? viewer});
+
+  @override
+  $ViewerCopyWith<$Res>? get viewer;
+}
+
+/// @nodoc
+class __$$ProfileViewBasicImplCopyWithImpl<$Res>
+    extends _$ProfileViewBasicCopyWithImpl<$Res, _$ProfileViewBasicImpl>
+    implements _$$ProfileViewBasicImplCopyWith<$Res> {
+  __$$ProfileViewBasicImplCopyWithImpl(_$ProfileViewBasicImpl _value,
+      $Res Function(_$ProfileViewBasicImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of ProfileViewBasic
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? did = null,
+    Object? handle = null,
+    Object? displayName = freezed,
+    Object? avatar = freezed,
+    Object? viewer = freezed,
+  }) {
+    return _then(_$ProfileViewBasicImpl(
+      did: null == did
+          ? _value.did
+          : did // ignore: cast_nullable_to_non_nullable
+              as String,
+      handle: null == handle
+          ? _value.handle
+          : handle // ignore: cast_nullable_to_non_nullable
+              as String,
+      displayName: freezed == displayName
+          ? _value.displayName
+          : displayName // ignore: cast_nullable_to_non_nullable
+              as String?,
+      avatar: freezed == avatar
+          ? _value.avatar
+          : avatar // ignore: cast_nullable_to_non_nullable
+              as AtUri?,
+      viewer: freezed == viewer
+          ? _value.viewer
+          : viewer // ignore: cast_nullable_to_non_nullable
+              as Viewer?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$ProfileViewBasicImpl implements _ProfileViewBasic {
+  const _$ProfileViewBasicImpl(
+      {required this.did,
+      required this.handle,
+      this.displayName,
+      @AtUriConverter() this.avatar,
+      this.viewer});
+
+  factory _$ProfileViewBasicImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ProfileViewBasicImplFromJson(json);
+
+  @override
+  final String did;
+  @override
+  final String handle;
+  @override
+  final String? displayName;
+  @override
+  @AtUriConverter()
+  final AtUri? avatar;
+// associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
+  @override
+  final Viewer? viewer;
+
+  @override
+  String toString() {
+    return 'ProfileViewBasic(did: $did, handle: $handle, displayName: $displayName, avatar: $avatar, viewer: $viewer)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ProfileViewBasicImpl &&
+            (identical(other.did, did) || other.did == did) &&
+            (identical(other.handle, handle) || other.handle == handle) &&
+            (identical(other.displayName, displayName) ||
+                other.displayName == displayName) &&
+            (identical(other.avatar, avatar) || other.avatar == avatar) &&
+            (identical(other.viewer, viewer) || other.viewer == viewer));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, did, handle, displayName, avatar, viewer);
+
+  /// Create a copy of ProfileViewBasic
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ProfileViewBasicImplCopyWith<_$ProfileViewBasicImpl> get copyWith =>
+      __$$ProfileViewBasicImplCopyWithImpl<_$ProfileViewBasicImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ProfileViewBasicImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _ProfileViewBasic implements ProfileViewBasic {
+  const factory _ProfileViewBasic(
+      {required final String did,
+      required final String handle,
+      final String? displayName,
+      @AtUriConverter() final AtUri? avatar,
+      final Viewer? viewer}) = _$ProfileViewBasicImpl;
+
+  factory _ProfileViewBasic.fromJson(Map<String, dynamic> json) =
+      _$ProfileViewBasicImpl.fromJson;
+
+  @override
+  String get did;
+  @override
+  String get handle;
+  @override
+  String? get displayName;
+  @override
+  @AtUriConverter()
+  AtUri?
+      get avatar; // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
+  @override
+  Viewer? get viewer;
+
+  /// Create a copy of ProfileViewBasic
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ProfileViewBasicImplCopyWith<_$ProfileViewBasicImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+ProfileView _$ProfileViewFromJson(Map<String, dynamic> json) {
+  return _ProfileView.fromJson(json);
+}
+
+/// @nodoc
+mixin _$ProfileView {
+  String get did => throw _privateConstructorUsedError;
+  String get handle => throw _privateConstructorUsedError;
+  String? get displayName => throw _privateConstructorUsedError;
+  String? get description => throw _privateConstructorUsedError;
+  @AtUriConverter()
+  AtUri? get avatar =>
+      throw _privateConstructorUsedError; // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
+// indexedAt and createdAt
+  Viewer? get viewer => throw _privateConstructorUsedError;
+  List<Label>? get labels => throw _privateConstructorUsedError;
+
+  /// Serializes this ProfileView to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of ProfileView
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $ProfileViewCopyWith<ProfileView> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ProfileViewCopyWith<$Res> {
+  factory $ProfileViewCopyWith(
+          ProfileView value, $Res Function(ProfileView) then) =
+      _$ProfileViewCopyWithImpl<$Res, ProfileView>;
+  @useResult
+  $Res call(
+      {String did,
+      String handle,
+      String? displayName,
+      String? description,
+      @AtUriConverter() AtUri? avatar,
+      Viewer? viewer,
+      List<Label>? labels});
+
+  $ViewerCopyWith<$Res>? get viewer;
+}
+
+/// @nodoc
+class _$ProfileViewCopyWithImpl<$Res, $Val extends ProfileView>
+    implements $ProfileViewCopyWith<$Res> {
+  _$ProfileViewCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of ProfileView
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -80,9 +804,6 @@ class _$ProfileResponseCopyWithImpl<$Res, $Val extends ProfileResponse>
     Object? displayName = freezed,
     Object? description = freezed,
     Object? avatar = freezed,
-    Object? banner = freezed,
-    Object? followsYou = null,
-    Object? youFollow = null,
     Object? viewer = freezed,
     Object? labels = freezed,
   }) {
@@ -106,37 +827,39 @@ class _$ProfileResponseCopyWithImpl<$Res, $Val extends ProfileResponse>
       avatar: freezed == avatar
           ? _value.avatar
           : avatar // ignore: cast_nullable_to_non_nullable
-              as String?,
-      banner: freezed == banner
-          ? _value.banner
-          : banner // ignore: cast_nullable_to_non_nullable
-              as String?,
-      followsYou: null == followsYou
-          ? _value.followsYou
-          : followsYou // ignore: cast_nullable_to_non_nullable
-              as bool,
-      youFollow: null == youFollow
-          ? _value.youFollow
-          : youFollow // ignore: cast_nullable_to_non_nullable
-              as bool,
+              as AtUri?,
       viewer: freezed == viewer
           ? _value.viewer
           : viewer // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
+              as Viewer?,
       labels: freezed == labels
           ? _value.labels
           : labels // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
+              as List<Label>?,
     ) as $Val);
+  }
+
+  /// Create a copy of ProfileView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ViewerCopyWith<$Res>? get viewer {
+    if (_value.viewer == null) {
+      return null;
+    }
+
+    return $ViewerCopyWith<$Res>(_value.viewer!, (value) {
+      return _then(_value.copyWith(viewer: value) as $Val);
+    });
   }
 }
 
 /// @nodoc
-abstract class _$$ProfileResponseImplCopyWith<$Res>
-    implements $ProfileResponseCopyWith<$Res> {
-  factory _$$ProfileResponseImplCopyWith(_$ProfileResponseImpl value,
-          $Res Function(_$ProfileResponseImpl) then) =
-      __$$ProfileResponseImplCopyWithImpl<$Res>;
+abstract class _$$ProfileViewImplCopyWith<$Res>
+    implements $ProfileViewCopyWith<$Res> {
+  factory _$$ProfileViewImplCopyWith(
+          _$ProfileViewImpl value, $Res Function(_$ProfileViewImpl) then) =
+      __$$ProfileViewImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -144,23 +867,23 @@ abstract class _$$ProfileResponseImplCopyWith<$Res>
       String handle,
       String? displayName,
       String? description,
-      String? avatar,
-      String? banner,
-      bool followsYou,
-      bool youFollow,
-      Map<String, dynamic>? viewer,
-      Map<String, dynamic>? labels});
+      @AtUriConverter() AtUri? avatar,
+      Viewer? viewer,
+      List<Label>? labels});
+
+  @override
+  $ViewerCopyWith<$Res>? get viewer;
 }
 
 /// @nodoc
-class __$$ProfileResponseImplCopyWithImpl<$Res>
-    extends _$ProfileResponseCopyWithImpl<$Res, _$ProfileResponseImpl>
-    implements _$$ProfileResponseImplCopyWith<$Res> {
-  __$$ProfileResponseImplCopyWithImpl(
-      _$ProfileResponseImpl _value, $Res Function(_$ProfileResponseImpl) _then)
+class __$$ProfileViewImplCopyWithImpl<$Res>
+    extends _$ProfileViewCopyWithImpl<$Res, _$ProfileViewImpl>
+    implements _$$ProfileViewImplCopyWith<$Res> {
+  __$$ProfileViewImplCopyWithImpl(
+      _$ProfileViewImpl _value, $Res Function(_$ProfileViewImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of ProfileResponse
+  /// Create a copy of ProfileView
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -170,13 +893,10 @@ class __$$ProfileResponseImplCopyWithImpl<$Res>
     Object? displayName = freezed,
     Object? description = freezed,
     Object? avatar = freezed,
-    Object? banner = freezed,
-    Object? followsYou = null,
-    Object? youFollow = null,
     Object? viewer = freezed,
     Object? labels = freezed,
   }) {
-    return _then(_$ProfileResponseImpl(
+    return _then(_$ProfileViewImpl(
       did: null == did
           ? _value.did
           : did // ignore: cast_nullable_to_non_nullable
@@ -196,50 +916,34 @@ class __$$ProfileResponseImplCopyWithImpl<$Res>
       avatar: freezed == avatar
           ? _value.avatar
           : avatar // ignore: cast_nullable_to_non_nullable
-              as String?,
-      banner: freezed == banner
-          ? _value.banner
-          : banner // ignore: cast_nullable_to_non_nullable
-              as String?,
-      followsYou: null == followsYou
-          ? _value.followsYou
-          : followsYou // ignore: cast_nullable_to_non_nullable
-              as bool,
-      youFollow: null == youFollow
-          ? _value.youFollow
-          : youFollow // ignore: cast_nullable_to_non_nullable
-              as bool,
+              as AtUri?,
       viewer: freezed == viewer
-          ? _value._viewer
+          ? _value.viewer
           : viewer // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
+              as Viewer?,
       labels: freezed == labels
           ? _value._labels
           : labels // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
+              as List<Label>?,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$ProfileResponseImpl implements _ProfileResponse {
-  const _$ProfileResponseImpl(
+class _$ProfileViewImpl implements _ProfileView {
+  const _$ProfileViewImpl(
       {required this.did,
       required this.handle,
       this.displayName,
       this.description,
-      this.avatar,
-      this.banner,
-      this.followsYou = false,
-      this.youFollow = false,
-      final Map<String, dynamic>? viewer,
-      final Map<String, dynamic>? labels})
-      : _viewer = viewer,
-        _labels = labels;
+      @AtUriConverter() this.avatar,
+      this.viewer,
+      final List<Label>? labels})
+      : _labels = labels;
 
-  factory _$ProfileResponseImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ProfileResponseImplFromJson(json);
+  factory _$ProfileViewImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ProfileViewImplFromJson(json);
 
   @override
   final String did;
@@ -250,45 +954,32 @@ class _$ProfileResponseImpl implements _ProfileResponse {
   @override
   final String? description;
   @override
-  final String? avatar;
+  @AtUriConverter()
+  final AtUri? avatar;
+// associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
+// indexedAt and createdAt
   @override
-  final String? banner;
+  final Viewer? viewer;
+  final List<Label>? _labels;
   @override
-  @JsonKey()
-  final bool followsYou;
-  @override
-  @JsonKey()
-  final bool youFollow;
-  final Map<String, dynamic>? _viewer;
-  @override
-  Map<String, dynamic>? get viewer {
-    final value = _viewer;
-    if (value == null) return null;
-    if (_viewer is EqualUnmodifiableMapView) return _viewer;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(value);
-  }
-
-  final Map<String, dynamic>? _labels;
-  @override
-  Map<String, dynamic>? get labels {
+  List<Label>? get labels {
     final value = _labels;
     if (value == null) return null;
-    if (_labels is EqualUnmodifiableMapView) return _labels;
+    if (_labels is EqualUnmodifiableListView) return _labels;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(value);
+    return EqualUnmodifiableListView(value);
   }
 
   @override
   String toString() {
-    return 'ProfileResponse(did: $did, handle: $handle, displayName: $displayName, description: $description, avatar: $avatar, banner: $banner, followsYou: $followsYou, youFollow: $youFollow, viewer: $viewer, labels: $labels)';
+    return 'ProfileView(did: $did, handle: $handle, displayName: $displayName, description: $description, avatar: $avatar, viewer: $viewer, labels: $labels)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ProfileResponseImpl &&
+            other is _$ProfileViewImpl &&
             (identical(other.did, did) || other.did == did) &&
             (identical(other.handle, handle) || other.handle == handle) &&
             (identical(other.displayName, displayName) ||
@@ -296,12 +987,7 @@ class _$ProfileResponseImpl implements _ProfileResponse {
             (identical(other.description, description) ||
                 other.description == description) &&
             (identical(other.avatar, avatar) || other.avatar == avatar) &&
-            (identical(other.banner, banner) || other.banner == banner) &&
-            (identical(other.followsYou, followsYou) ||
-                other.followsYou == followsYou) &&
-            (identical(other.youFollow, youFollow) ||
-                other.youFollow == youFollow) &&
-            const DeepCollectionEquality().equals(other._viewer, _viewer) &&
+            (identical(other.viewer, viewer) || other.viewer == viewer) &&
             const DeepCollectionEquality().equals(other._labels, _labels));
   }
 
@@ -314,44 +1000,37 @@ class _$ProfileResponseImpl implements _ProfileResponse {
       displayName,
       description,
       avatar,
-      banner,
-      followsYou,
-      youFollow,
-      const DeepCollectionEquality().hash(_viewer),
+      viewer,
       const DeepCollectionEquality().hash(_labels));
 
-  /// Create a copy of ProfileResponse
+  /// Create a copy of ProfileView
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$ProfileResponseImplCopyWith<_$ProfileResponseImpl> get copyWith =>
-      __$$ProfileResponseImplCopyWithImpl<_$ProfileResponseImpl>(
-          this, _$identity);
+  _$$ProfileViewImplCopyWith<_$ProfileViewImpl> get copyWith =>
+      __$$ProfileViewImplCopyWithImpl<_$ProfileViewImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ProfileResponseImplToJson(
+    return _$$ProfileViewImplToJson(
       this,
     );
   }
 }
 
-abstract class _ProfileResponse implements ProfileResponse {
-  const factory _ProfileResponse(
+abstract class _ProfileView implements ProfileView {
+  const factory _ProfileView(
       {required final String did,
       required final String handle,
       final String? displayName,
       final String? description,
-      final String? avatar,
-      final String? banner,
-      final bool followsYou,
-      final bool youFollow,
-      final Map<String, dynamic>? viewer,
-      final Map<String, dynamic>? labels}) = _$ProfileResponseImpl;
+      @AtUriConverter() final AtUri? avatar,
+      final Viewer? viewer,
+      final List<Label>? labels}) = _$ProfileViewImpl;
 
-  factory _ProfileResponse.fromJson(Map<String, dynamic> json) =
-      _$ProfileResponseImpl.fromJson;
+  factory _ProfileView.fromJson(Map<String, dynamic> json) =
+      _$ProfileViewImpl.fromJson;
 
   @override
   String get did;
@@ -362,256 +1041,92 @@ abstract class _ProfileResponse implements ProfileResponse {
   @override
   String? get description;
   @override
-  String? get avatar;
+  @AtUriConverter()
+  AtUri?
+      get avatar; // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
+// indexedAt and createdAt
   @override
-  String? get banner;
+  Viewer? get viewer;
   @override
-  bool get followsYou;
-  @override
-  bool get youFollow;
-  @override
-  Map<String, dynamic>? get viewer;
-  @override
-  Map<String, dynamic>? get labels;
+  List<Label>? get labels;
 
-  /// Create a copy of ProfileResponse
+  /// Create a copy of ProfileView
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ProfileResponseImplCopyWith<_$ProfileResponseImpl> get copyWith =>
+  _$$ProfileViewImplCopyWith<_$ProfileViewImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
-ActorSearchResponse _$ActorSearchResponseFromJson(Map<String, dynamic> json) {
-  return _ActorSearchResponse.fromJson(json);
+ProfileViewDetailed _$ProfileViewDetailedFromJson(Map<String, dynamic> json) {
+  return _ProfileViewDetailed.fromJson(json);
 }
 
 /// @nodoc
-mixin _$ActorSearchResponse {
-  List<Actor> get actors => throw _privateConstructorUsedError;
-  String? get cursor => throw _privateConstructorUsedError;
-
-  /// Serializes this ActorSearchResponse to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of ActorSearchResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $ActorSearchResponseCopyWith<ActorSearchResponse> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $ActorSearchResponseCopyWith<$Res> {
-  factory $ActorSearchResponseCopyWith(
-          ActorSearchResponse value, $Res Function(ActorSearchResponse) then) =
-      _$ActorSearchResponseCopyWithImpl<$Res, ActorSearchResponse>;
-  @useResult
-  $Res call({List<Actor> actors, String? cursor});
-}
-
-/// @nodoc
-class _$ActorSearchResponseCopyWithImpl<$Res, $Val extends ActorSearchResponse>
-    implements $ActorSearchResponseCopyWith<$Res> {
-  _$ActorSearchResponseCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of ActorSearchResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? actors = null,
-    Object? cursor = freezed,
-  }) {
-    return _then(_value.copyWith(
-      actors: null == actors
-          ? _value.actors
-          : actors // ignore: cast_nullable_to_non_nullable
-              as List<Actor>,
-      cursor: freezed == cursor
-          ? _value.cursor
-          : cursor // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$ActorSearchResponseImplCopyWith<$Res>
-    implements $ActorSearchResponseCopyWith<$Res> {
-  factory _$$ActorSearchResponseImplCopyWith(_$ActorSearchResponseImpl value,
-          $Res Function(_$ActorSearchResponseImpl) then) =
-      __$$ActorSearchResponseImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({List<Actor> actors, String? cursor});
-}
-
-/// @nodoc
-class __$$ActorSearchResponseImplCopyWithImpl<$Res>
-    extends _$ActorSearchResponseCopyWithImpl<$Res, _$ActorSearchResponseImpl>
-    implements _$$ActorSearchResponseImplCopyWith<$Res> {
-  __$$ActorSearchResponseImplCopyWithImpl(_$ActorSearchResponseImpl _value,
-      $Res Function(_$ActorSearchResponseImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of ActorSearchResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? actors = null,
-    Object? cursor = freezed,
-  }) {
-    return _then(_$ActorSearchResponseImpl(
-      actors: null == actors
-          ? _value._actors
-          : actors // ignore: cast_nullable_to_non_nullable
-              as List<Actor>,
-      cursor: freezed == cursor
-          ? _value.cursor
-          : cursor // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$ActorSearchResponseImpl implements _ActorSearchResponse {
-  const _$ActorSearchResponseImpl(
-      {required final List<Actor> actors, this.cursor})
-      : _actors = actors;
-
-  factory _$ActorSearchResponseImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ActorSearchResponseImplFromJson(json);
-
-  final List<Actor> _actors;
-  @override
-  List<Actor> get actors {
-    if (_actors is EqualUnmodifiableListView) return _actors;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_actors);
-  }
-
-  @override
-  final String? cursor;
-
-  @override
-  String toString() {
-    return 'ActorSearchResponse(actors: $actors, cursor: $cursor)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ActorSearchResponseImpl &&
-            const DeepCollectionEquality().equals(other._actors, _actors) &&
-            (identical(other.cursor, cursor) || other.cursor == cursor));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType, const DeepCollectionEquality().hash(_actors), cursor);
-
-  /// Create a copy of ActorSearchResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$ActorSearchResponseImplCopyWith<_$ActorSearchResponseImpl> get copyWith =>
-      __$$ActorSearchResponseImplCopyWithImpl<_$ActorSearchResponseImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ActorSearchResponseImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _ActorSearchResponse implements ActorSearchResponse {
-  const factory _ActorSearchResponse(
-      {required final List<Actor> actors,
-      final String? cursor}) = _$ActorSearchResponseImpl;
-
-  factory _ActorSearchResponse.fromJson(Map<String, dynamic> json) =
-      _$ActorSearchResponseImpl.fromJson;
-
-  @override
-  List<Actor> get actors;
-  @override
-  String? get cursor;
-
-  /// Create a copy of ActorSearchResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ActorSearchResponseImplCopyWith<_$ActorSearchResponseImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-Actor _$ActorFromJson(Map<String, dynamic> json) {
-  return _Actor.fromJson(json);
-}
-
-/// @nodoc
-mixin _$Actor {
+mixin _$ProfileViewDetailed {
   String get did => throw _privateConstructorUsedError;
   String get handle => throw _privateConstructorUsedError;
   String? get displayName => throw _privateConstructorUsedError;
   String? get description => throw _privateConstructorUsedError;
-  String? get avatar => throw _privateConstructorUsedError;
-  bool get followsYou => throw _privateConstructorUsedError;
-  bool get youFollow => throw _privateConstructorUsedError;
-  Map<String, dynamic>? get viewer => throw _privateConstructorUsedError;
-  Map<String, dynamic>? get labels => throw _privateConstructorUsedError;
+  @AtUriConverter()
+  AtUri? get avatar => throw _privateConstructorUsedError;
+  @AtUriConverter()
+  AtUri? get banner => throw _privateConstructorUsedError;
+  int? get followersCount => throw _privateConstructorUsedError;
+  int? get followingCount => throw _privateConstructorUsedError;
+  int? get postsCount =>
+      throw _privateConstructorUsedError; // joinedViaStarterPack ?????
+// associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
+// indexedAt and createdAt
+  Viewer? get viewer => throw _privateConstructorUsedError;
+  List<Label>? get labels => throw _privateConstructorUsedError;
+  StrongRef? get pinnedPost => throw _privateConstructorUsedError;
 
-  /// Serializes this Actor to a JSON map.
+  /// Serializes this ProfileViewDetailed to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of Actor
+  /// Create a copy of ProfileViewDetailed
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $ActorCopyWith<Actor> get copyWith => throw _privateConstructorUsedError;
+  $ProfileViewDetailedCopyWith<ProfileViewDetailed> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $ActorCopyWith<$Res> {
-  factory $ActorCopyWith(Actor value, $Res Function(Actor) then) =
-      _$ActorCopyWithImpl<$Res, Actor>;
+abstract class $ProfileViewDetailedCopyWith<$Res> {
+  factory $ProfileViewDetailedCopyWith(
+          ProfileViewDetailed value, $Res Function(ProfileViewDetailed) then) =
+      _$ProfileViewDetailedCopyWithImpl<$Res, ProfileViewDetailed>;
   @useResult
   $Res call(
       {String did,
       String handle,
       String? displayName,
       String? description,
-      String? avatar,
-      bool followsYou,
-      bool youFollow,
-      Map<String, dynamic>? viewer,
-      Map<String, dynamic>? labels});
+      @AtUriConverter() AtUri? avatar,
+      @AtUriConverter() AtUri? banner,
+      int? followersCount,
+      int? followingCount,
+      int? postsCount,
+      Viewer? viewer,
+      List<Label>? labels,
+      StrongRef? pinnedPost});
+
+  $ViewerCopyWith<$Res>? get viewer;
+  $StrongRefCopyWith<$Res>? get pinnedPost;
 }
 
 /// @nodoc
-class _$ActorCopyWithImpl<$Res, $Val extends Actor>
-    implements $ActorCopyWith<$Res> {
-  _$ActorCopyWithImpl(this._value, this._then);
+class _$ProfileViewDetailedCopyWithImpl<$Res, $Val extends ProfileViewDetailed>
+    implements $ProfileViewDetailedCopyWith<$Res> {
+  _$ProfileViewDetailedCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of Actor
+  /// Create a copy of ProfileViewDetailed
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -621,10 +1136,13 @@ class _$ActorCopyWithImpl<$Res, $Val extends Actor>
     Object? displayName = freezed,
     Object? description = freezed,
     Object? avatar = freezed,
-    Object? followsYou = null,
-    Object? youFollow = null,
+    Object? banner = freezed,
+    Object? followersCount = freezed,
+    Object? followingCount = freezed,
+    Object? postsCount = freezed,
     Object? viewer = freezed,
     Object? labels = freezed,
+    Object? pinnedPost = freezed,
   }) {
     return _then(_value.copyWith(
       did: null == did
@@ -646,32 +1164,73 @@ class _$ActorCopyWithImpl<$Res, $Val extends Actor>
       avatar: freezed == avatar
           ? _value.avatar
           : avatar // ignore: cast_nullable_to_non_nullable
-              as String?,
-      followsYou: null == followsYou
-          ? _value.followsYou
-          : followsYou // ignore: cast_nullable_to_non_nullable
-              as bool,
-      youFollow: null == youFollow
-          ? _value.youFollow
-          : youFollow // ignore: cast_nullable_to_non_nullable
-              as bool,
+              as AtUri?,
+      banner: freezed == banner
+          ? _value.banner
+          : banner // ignore: cast_nullable_to_non_nullable
+              as AtUri?,
+      followersCount: freezed == followersCount
+          ? _value.followersCount
+          : followersCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      followingCount: freezed == followingCount
+          ? _value.followingCount
+          : followingCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      postsCount: freezed == postsCount
+          ? _value.postsCount
+          : postsCount // ignore: cast_nullable_to_non_nullable
+              as int?,
       viewer: freezed == viewer
           ? _value.viewer
           : viewer // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
+              as Viewer?,
       labels: freezed == labels
           ? _value.labels
           : labels // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
+              as List<Label>?,
+      pinnedPost: freezed == pinnedPost
+          ? _value.pinnedPost
+          : pinnedPost // ignore: cast_nullable_to_non_nullable
+              as StrongRef?,
     ) as $Val);
+  }
+
+  /// Create a copy of ProfileViewDetailed
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ViewerCopyWith<$Res>? get viewer {
+    if (_value.viewer == null) {
+      return null;
+    }
+
+    return $ViewerCopyWith<$Res>(_value.viewer!, (value) {
+      return _then(_value.copyWith(viewer: value) as $Val);
+    });
+  }
+
+  /// Create a copy of ProfileViewDetailed
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $StrongRefCopyWith<$Res>? get pinnedPost {
+    if (_value.pinnedPost == null) {
+      return null;
+    }
+
+    return $StrongRefCopyWith<$Res>(_value.pinnedPost!, (value) {
+      return _then(_value.copyWith(pinnedPost: value) as $Val);
+    });
   }
 }
 
 /// @nodoc
-abstract class _$$ActorImplCopyWith<$Res> implements $ActorCopyWith<$Res> {
-  factory _$$ActorImplCopyWith(
-          _$ActorImpl value, $Res Function(_$ActorImpl) then) =
-      __$$ActorImplCopyWithImpl<$Res>;
+abstract class _$$ProfileViewDetailedImplCopyWith<$Res>
+    implements $ProfileViewDetailedCopyWith<$Res> {
+  factory _$$ProfileViewDetailedImplCopyWith(_$ProfileViewDetailedImpl value,
+          $Res Function(_$ProfileViewDetailedImpl) then) =
+      __$$ProfileViewDetailedImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -679,22 +1238,30 @@ abstract class _$$ActorImplCopyWith<$Res> implements $ActorCopyWith<$Res> {
       String handle,
       String? displayName,
       String? description,
-      String? avatar,
-      bool followsYou,
-      bool youFollow,
-      Map<String, dynamic>? viewer,
-      Map<String, dynamic>? labels});
+      @AtUriConverter() AtUri? avatar,
+      @AtUriConverter() AtUri? banner,
+      int? followersCount,
+      int? followingCount,
+      int? postsCount,
+      Viewer? viewer,
+      List<Label>? labels,
+      StrongRef? pinnedPost});
+
+  @override
+  $ViewerCopyWith<$Res>? get viewer;
+  @override
+  $StrongRefCopyWith<$Res>? get pinnedPost;
 }
 
 /// @nodoc
-class __$$ActorImplCopyWithImpl<$Res>
-    extends _$ActorCopyWithImpl<$Res, _$ActorImpl>
-    implements _$$ActorImplCopyWith<$Res> {
-  __$$ActorImplCopyWithImpl(
-      _$ActorImpl _value, $Res Function(_$ActorImpl) _then)
+class __$$ProfileViewDetailedImplCopyWithImpl<$Res>
+    extends _$ProfileViewDetailedCopyWithImpl<$Res, _$ProfileViewDetailedImpl>
+    implements _$$ProfileViewDetailedImplCopyWith<$Res> {
+  __$$ProfileViewDetailedImplCopyWithImpl(_$ProfileViewDetailedImpl _value,
+      $Res Function(_$ProfileViewDetailedImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of Actor
+  /// Create a copy of ProfileViewDetailed
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -704,12 +1271,15 @@ class __$$ActorImplCopyWithImpl<$Res>
     Object? displayName = freezed,
     Object? description = freezed,
     Object? avatar = freezed,
-    Object? followsYou = null,
-    Object? youFollow = null,
+    Object? banner = freezed,
+    Object? followersCount = freezed,
+    Object? followingCount = freezed,
+    Object? postsCount = freezed,
     Object? viewer = freezed,
     Object? labels = freezed,
+    Object? pinnedPost = freezed,
   }) {
-    return _then(_$ActorImpl(
+    return _then(_$ProfileViewDetailedImpl(
       did: null == did
           ? _value.did
           : did // ignore: cast_nullable_to_non_nullable
@@ -729,45 +1299,59 @@ class __$$ActorImplCopyWithImpl<$Res>
       avatar: freezed == avatar
           ? _value.avatar
           : avatar // ignore: cast_nullable_to_non_nullable
-              as String?,
-      followsYou: null == followsYou
-          ? _value.followsYou
-          : followsYou // ignore: cast_nullable_to_non_nullable
-              as bool,
-      youFollow: null == youFollow
-          ? _value.youFollow
-          : youFollow // ignore: cast_nullable_to_non_nullable
-              as bool,
+              as AtUri?,
+      banner: freezed == banner
+          ? _value.banner
+          : banner // ignore: cast_nullable_to_non_nullable
+              as AtUri?,
+      followersCount: freezed == followersCount
+          ? _value.followersCount
+          : followersCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      followingCount: freezed == followingCount
+          ? _value.followingCount
+          : followingCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      postsCount: freezed == postsCount
+          ? _value.postsCount
+          : postsCount // ignore: cast_nullable_to_non_nullable
+              as int?,
       viewer: freezed == viewer
-          ? _value._viewer
+          ? _value.viewer
           : viewer // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
+              as Viewer?,
       labels: freezed == labels
           ? _value._labels
           : labels // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
+              as List<Label>?,
+      pinnedPost: freezed == pinnedPost
+          ? _value.pinnedPost
+          : pinnedPost // ignore: cast_nullable_to_non_nullable
+              as StrongRef?,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$ActorImpl implements _Actor {
-  const _$ActorImpl(
+class _$ProfileViewDetailedImpl implements _ProfileViewDetailed {
+  const _$ProfileViewDetailedImpl(
       {required this.did,
       required this.handle,
       this.displayName,
       this.description,
-      this.avatar,
-      this.followsYou = false,
-      this.youFollow = false,
-      final Map<String, dynamic>? viewer,
-      final Map<String, dynamic>? labels})
-      : _viewer = viewer,
-        _labels = labels;
+      @AtUriConverter() this.avatar,
+      @AtUriConverter() this.banner,
+      this.followersCount,
+      this.followingCount,
+      this.postsCount,
+      this.viewer,
+      final List<Label>? labels,
+      this.pinnedPost})
+      : _labels = labels;
 
-  factory _$ActorImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ActorImplFromJson(json);
+  factory _$ProfileViewDetailedImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ProfileViewDetailedImplFromJson(json);
 
   @override
   final String did;
@@ -778,419 +1362,45 @@ class _$ActorImpl implements _Actor {
   @override
   final String? description;
   @override
-  final String? avatar;
+  @AtUriConverter()
+  final AtUri? avatar;
   @override
-  @JsonKey()
-  final bool followsYou;
+  @AtUriConverter()
+  final AtUri? banner;
   @override
-  @JsonKey()
-  final bool youFollow;
-  final Map<String, dynamic>? _viewer;
+  final int? followersCount;
   @override
-  Map<String, dynamic>? get viewer {
-    final value = _viewer;
-    if (value == null) return null;
-    if (_viewer is EqualUnmodifiableMapView) return _viewer;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(value);
-  }
-
-  final Map<String, dynamic>? _labels;
+  final int? followingCount;
   @override
-  Map<String, dynamic>? get labels {
+  final int? postsCount;
+// joinedViaStarterPack ?????
+// associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
+// indexedAt and createdAt
+  @override
+  final Viewer? viewer;
+  final List<Label>? _labels;
+  @override
+  List<Label>? get labels {
     final value = _labels;
     if (value == null) return null;
-    if (_labels is EqualUnmodifiableMapView) return _labels;
+    if (_labels is EqualUnmodifiableListView) return _labels;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(value);
+    return EqualUnmodifiableListView(value);
   }
 
   @override
+  final StrongRef? pinnedPost;
+
+  @override
   String toString() {
-    return 'Actor(did: $did, handle: $handle, displayName: $displayName, description: $description, avatar: $avatar, followsYou: $followsYou, youFollow: $youFollow, viewer: $viewer, labels: $labels)';
+    return 'ProfileViewDetailed(did: $did, handle: $handle, displayName: $displayName, description: $description, avatar: $avatar, banner: $banner, followersCount: $followersCount, followingCount: $followingCount, postsCount: $postsCount, viewer: $viewer, labels: $labels, pinnedPost: $pinnedPost)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ActorImpl &&
-            (identical(other.did, did) || other.did == did) &&
-            (identical(other.handle, handle) || other.handle == handle) &&
-            (identical(other.displayName, displayName) ||
-                other.displayName == displayName) &&
-            (identical(other.description, description) ||
-                other.description == description) &&
-            (identical(other.avatar, avatar) || other.avatar == avatar) &&
-            (identical(other.followsYou, followsYou) ||
-                other.followsYou == followsYou) &&
-            (identical(other.youFollow, youFollow) ||
-                other.youFollow == youFollow) &&
-            const DeepCollectionEquality().equals(other._viewer, _viewer) &&
-            const DeepCollectionEquality().equals(other._labels, _labels));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType,
-      did,
-      handle,
-      displayName,
-      description,
-      avatar,
-      followsYou,
-      youFollow,
-      const DeepCollectionEquality().hash(_viewer),
-      const DeepCollectionEquality().hash(_labels));
-
-  /// Create a copy of Actor
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$ActorImplCopyWith<_$ActorImpl> get copyWith =>
-      __$$ActorImplCopyWithImpl<_$ActorImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ActorImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _Actor implements Actor {
-  const factory _Actor(
-      {required final String did,
-      required final String handle,
-      final String? displayName,
-      final String? description,
-      final String? avatar,
-      final bool followsYou,
-      final bool youFollow,
-      final Map<String, dynamic>? viewer,
-      final Map<String, dynamic>? labels}) = _$ActorImpl;
-
-  factory _Actor.fromJson(Map<String, dynamic> json) = _$ActorImpl.fromJson;
-
-  @override
-  String get did;
-  @override
-  String get handle;
-  @override
-  String? get displayName;
-  @override
-  String? get description;
-  @override
-  String? get avatar;
-  @override
-  bool get followsYou;
-  @override
-  bool get youFollow;
-  @override
-  Map<String, dynamic>? get viewer;
-  @override
-  Map<String, dynamic>? get labels;
-
-  /// Create a copy of Actor
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ActorImplCopyWith<_$ActorImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-Profile _$ProfileFromJson(Map<String, dynamic> json) {
-  return _Profile.fromJson(json);
-}
-
-/// @nodoc
-mixin _$Profile {
-  String get did => throw _privateConstructorUsedError;
-  String get handle => throw _privateConstructorUsedError;
-  String? get displayName => throw _privateConstructorUsedError;
-  String? get description => throw _privateConstructorUsedError;
-  String? get avatar => throw _privateConstructorUsedError;
-  String? get banner => throw _privateConstructorUsedError;
-  int get followersCount => throw _privateConstructorUsedError;
-  int get followingCount => throw _privateConstructorUsedError;
-  int get postsCount => throw _privateConstructorUsedError;
-  bool get isSprk => throw _privateConstructorUsedError;
-  bool get isFollowing => throw _privateConstructorUsedError;
-  String? get followUri => throw _privateConstructorUsedError;
-
-  /// Serializes this Profile to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of Profile
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $ProfileCopyWith<Profile> get copyWith => throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $ProfileCopyWith<$Res> {
-  factory $ProfileCopyWith(Profile value, $Res Function(Profile) then) =
-      _$ProfileCopyWithImpl<$Res, Profile>;
-  @useResult
-  $Res call(
-      {String did,
-      String handle,
-      String? displayName,
-      String? description,
-      String? avatar,
-      String? banner,
-      int followersCount,
-      int followingCount,
-      int postsCount,
-      bool isSprk,
-      bool isFollowing,
-      String? followUri});
-}
-
-/// @nodoc
-class _$ProfileCopyWithImpl<$Res, $Val extends Profile>
-    implements $ProfileCopyWith<$Res> {
-  _$ProfileCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of Profile
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? did = null,
-    Object? handle = null,
-    Object? displayName = freezed,
-    Object? description = freezed,
-    Object? avatar = freezed,
-    Object? banner = freezed,
-    Object? followersCount = null,
-    Object? followingCount = null,
-    Object? postsCount = null,
-    Object? isSprk = null,
-    Object? isFollowing = null,
-    Object? followUri = freezed,
-  }) {
-    return _then(_value.copyWith(
-      did: null == did
-          ? _value.did
-          : did // ignore: cast_nullable_to_non_nullable
-              as String,
-      handle: null == handle
-          ? _value.handle
-          : handle // ignore: cast_nullable_to_non_nullable
-              as String,
-      displayName: freezed == displayName
-          ? _value.displayName
-          : displayName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-      avatar: freezed == avatar
-          ? _value.avatar
-          : avatar // ignore: cast_nullable_to_non_nullable
-              as String?,
-      banner: freezed == banner
-          ? _value.banner
-          : banner // ignore: cast_nullable_to_non_nullable
-              as String?,
-      followersCount: null == followersCount
-          ? _value.followersCount
-          : followersCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      followingCount: null == followingCount
-          ? _value.followingCount
-          : followingCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      postsCount: null == postsCount
-          ? _value.postsCount
-          : postsCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      isSprk: null == isSprk
-          ? _value.isSprk
-          : isSprk // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isFollowing: null == isFollowing
-          ? _value.isFollowing
-          : isFollowing // ignore: cast_nullable_to_non_nullable
-              as bool,
-      followUri: freezed == followUri
-          ? _value.followUri
-          : followUri // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$ProfileImplCopyWith<$Res> implements $ProfileCopyWith<$Res> {
-  factory _$$ProfileImplCopyWith(
-          _$ProfileImpl value, $Res Function(_$ProfileImpl) then) =
-      __$$ProfileImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {String did,
-      String handle,
-      String? displayName,
-      String? description,
-      String? avatar,
-      String? banner,
-      int followersCount,
-      int followingCount,
-      int postsCount,
-      bool isSprk,
-      bool isFollowing,
-      String? followUri});
-}
-
-/// @nodoc
-class __$$ProfileImplCopyWithImpl<$Res>
-    extends _$ProfileCopyWithImpl<$Res, _$ProfileImpl>
-    implements _$$ProfileImplCopyWith<$Res> {
-  __$$ProfileImplCopyWithImpl(
-      _$ProfileImpl _value, $Res Function(_$ProfileImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of Profile
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? did = null,
-    Object? handle = null,
-    Object? displayName = freezed,
-    Object? description = freezed,
-    Object? avatar = freezed,
-    Object? banner = freezed,
-    Object? followersCount = null,
-    Object? followingCount = null,
-    Object? postsCount = null,
-    Object? isSprk = null,
-    Object? isFollowing = null,
-    Object? followUri = freezed,
-  }) {
-    return _then(_$ProfileImpl(
-      did: null == did
-          ? _value.did
-          : did // ignore: cast_nullable_to_non_nullable
-              as String,
-      handle: null == handle
-          ? _value.handle
-          : handle // ignore: cast_nullable_to_non_nullable
-              as String,
-      displayName: freezed == displayName
-          ? _value.displayName
-          : displayName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-      avatar: freezed == avatar
-          ? _value.avatar
-          : avatar // ignore: cast_nullable_to_non_nullable
-              as String?,
-      banner: freezed == banner
-          ? _value.banner
-          : banner // ignore: cast_nullable_to_non_nullable
-              as String?,
-      followersCount: null == followersCount
-          ? _value.followersCount
-          : followersCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      followingCount: null == followingCount
-          ? _value.followingCount
-          : followingCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      postsCount: null == postsCount
-          ? _value.postsCount
-          : postsCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      isSprk: null == isSprk
-          ? _value.isSprk
-          : isSprk // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isFollowing: null == isFollowing
-          ? _value.isFollowing
-          : isFollowing // ignore: cast_nullable_to_non_nullable
-              as bool,
-      followUri: freezed == followUri
-          ? _value.followUri
-          : followUri // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$ProfileImpl implements _Profile {
-  const _$ProfileImpl(
-      {required this.did,
-      required this.handle,
-      this.displayName,
-      this.description,
-      this.avatar,
-      this.banner,
-      this.followersCount = 0,
-      this.followingCount = 0,
-      this.postsCount = 0,
-      this.isSprk = false,
-      this.isFollowing = false,
-      this.followUri});
-
-  factory _$ProfileImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ProfileImplFromJson(json);
-
-  @override
-  final String did;
-  @override
-  final String handle;
-  @override
-  final String? displayName;
-  @override
-  final String? description;
-  @override
-  final String? avatar;
-  @override
-  final String? banner;
-  @override
-  @JsonKey()
-  final int followersCount;
-  @override
-  @JsonKey()
-  final int followingCount;
-  @override
-  @JsonKey()
-  final int postsCount;
-  @override
-  @JsonKey()
-  final bool isSprk;
-  @override
-  @JsonKey()
-  final bool isFollowing;
-  @override
-  final String? followUri;
-
-  @override
-  String toString() {
-    return 'Profile(did: $did, handle: $handle, displayName: $displayName, description: $description, avatar: $avatar, banner: $banner, followersCount: $followersCount, followingCount: $followingCount, postsCount: $postsCount, isSprk: $isSprk, isFollowing: $isFollowing, followUri: $followUri)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ProfileImpl &&
+            other is _$ProfileViewDetailedImpl &&
             (identical(other.did, did) || other.did == did) &&
             (identical(other.handle, handle) || other.handle == handle) &&
             (identical(other.displayName, displayName) ||
@@ -1205,11 +1415,10 @@ class _$ProfileImpl implements _Profile {
                 other.followingCount == followingCount) &&
             (identical(other.postsCount, postsCount) ||
                 other.postsCount == postsCount) &&
-            (identical(other.isSprk, isSprk) || other.isSprk == isSprk) &&
-            (identical(other.isFollowing, isFollowing) ||
-                other.isFollowing == isFollowing) &&
-            (identical(other.followUri, followUri) ||
-                other.followUri == followUri));
+            (identical(other.viewer, viewer) || other.viewer == viewer) &&
+            const DeepCollectionEquality().equals(other._labels, _labels) &&
+            (identical(other.pinnedPost, pinnedPost) ||
+                other.pinnedPost == pinnedPost));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1225,42 +1434,44 @@ class _$ProfileImpl implements _Profile {
       followersCount,
       followingCount,
       postsCount,
-      isSprk,
-      isFollowing,
-      followUri);
+      viewer,
+      const DeepCollectionEquality().hash(_labels),
+      pinnedPost);
 
-  /// Create a copy of Profile
+  /// Create a copy of ProfileViewDetailed
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$ProfileImplCopyWith<_$ProfileImpl> get copyWith =>
-      __$$ProfileImplCopyWithImpl<_$ProfileImpl>(this, _$identity);
+  _$$ProfileViewDetailedImplCopyWith<_$ProfileViewDetailedImpl> get copyWith =>
+      __$$ProfileViewDetailedImplCopyWithImpl<_$ProfileViewDetailedImpl>(
+          this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ProfileImplToJson(
+    return _$$ProfileViewDetailedImplToJson(
       this,
     );
   }
 }
 
-abstract class _Profile implements Profile {
-  const factory _Profile(
+abstract class _ProfileViewDetailed implements ProfileViewDetailed {
+  const factory _ProfileViewDetailed(
       {required final String did,
       required final String handle,
       final String? displayName,
       final String? description,
-      final String? avatar,
-      final String? banner,
-      final int followersCount,
-      final int followingCount,
-      final int postsCount,
-      final bool isSprk,
-      final bool isFollowing,
-      final String? followUri}) = _$ProfileImpl;
+      @AtUriConverter() final AtUri? avatar,
+      @AtUriConverter() final AtUri? banner,
+      final int? followersCount,
+      final int? followingCount,
+      final int? postsCount,
+      final Viewer? viewer,
+      final List<Label>? labels,
+      final StrongRef? pinnedPost}) = _$ProfileViewDetailedImpl;
 
-  factory _Profile.fromJson(Map<String, dynamic> json) = _$ProfileImpl.fromJson;
+  factory _ProfileViewDetailed.fromJson(Map<String, dynamic> json) =
+      _$ProfileViewDetailedImpl.fromJson;
 
   @override
   String get did;
@@ -1271,26 +1482,30 @@ abstract class _Profile implements Profile {
   @override
   String? get description;
   @override
-  String? get avatar;
+  @AtUriConverter()
+  AtUri? get avatar;
   @override
-  String? get banner;
+  @AtUriConverter()
+  AtUri? get banner;
   @override
-  int get followersCount;
+  int? get followersCount;
   @override
-  int get followingCount;
+  int? get followingCount;
   @override
-  int get postsCount;
+  int? get postsCount; // joinedViaStarterPack ?????
+// associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
+// indexedAt and createdAt
   @override
-  bool get isSprk;
+  Viewer? get viewer;
   @override
-  bool get isFollowing;
+  List<Label>? get labels;
   @override
-  String? get followUri;
+  StrongRef? get pinnedPost;
 
-  /// Create a copy of Profile
+  /// Create a copy of ProfileViewDetailed
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ProfileImplCopyWith<_$ProfileImpl> get copyWith =>
+  _$$ProfileViewDetailedImplCopyWith<_$ProfileViewDetailedImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
