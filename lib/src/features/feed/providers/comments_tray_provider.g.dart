@@ -6,7 +6,7 @@ part of 'comments_tray_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$commentsTrayHash() => r'74ecd5024af9c47650c34dd898e078346e78319b';
+String _$loadCommentsHash() => r'7c97515ecb1ff88d73a7cda988098a6d645731c5';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -28,6 +28,170 @@ class _SystemHash {
     return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
   }
 }
+
+/// See also [loadComments].
+@ProviderFor(loadComments)
+const loadCommentsProvider = LoadCommentsFamily();
+
+/// See also [loadComments].
+class LoadCommentsFamily extends Family<AsyncValue<List<Comment>>> {
+  /// See also [loadComments].
+  const LoadCommentsFamily();
+
+  /// See also [loadComments].
+  LoadCommentsProvider call({
+    required String postUri,
+    required String postCid,
+    required bool isSprk,
+  }) {
+    return LoadCommentsProvider(
+      postUri: postUri,
+      postCid: postCid,
+      isSprk: isSprk,
+    );
+  }
+
+  @override
+  LoadCommentsProvider getProviderOverride(
+    covariant LoadCommentsProvider provider,
+  ) {
+    return call(
+      postUri: provider.postUri,
+      postCid: provider.postCid,
+      isSprk: provider.isSprk,
+    );
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'loadCommentsProvider';
+}
+
+/// See also [loadComments].
+class LoadCommentsProvider extends AutoDisposeFutureProvider<List<Comment>> {
+  /// See also [loadComments].
+  LoadCommentsProvider({
+    required String postUri,
+    required String postCid,
+    required bool isSprk,
+  }) : this._internal(
+          (ref) => loadComments(
+            ref as LoadCommentsRef,
+            postUri: postUri,
+            postCid: postCid,
+            isSprk: isSprk,
+          ),
+          from: loadCommentsProvider,
+          name: r'loadCommentsProvider',
+          debugGetCreateSourceHash:
+              const bool.fromEnvironment('dart.vm.product')
+                  ? null
+                  : _$loadCommentsHash,
+          dependencies: LoadCommentsFamily._dependencies,
+          allTransitiveDependencies:
+              LoadCommentsFamily._allTransitiveDependencies,
+          postUri: postUri,
+          postCid: postCid,
+          isSprk: isSprk,
+        );
+
+  LoadCommentsProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.postUri,
+    required this.postCid,
+    required this.isSprk,
+  }) : super.internal();
+
+  final String postUri;
+  final String postCid;
+  final bool isSprk;
+
+  @override
+  Override overrideWith(
+    FutureOr<List<Comment>> Function(LoadCommentsRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: LoadCommentsProvider._internal(
+        (ref) => create(ref as LoadCommentsRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        postUri: postUri,
+        postCid: postCid,
+        isSprk: isSprk,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeFutureProviderElement<List<Comment>> createElement() {
+    return _LoadCommentsProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is LoadCommentsProvider &&
+        other.postUri == postUri &&
+        other.postCid == postCid &&
+        other.isSprk == isSprk;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, postUri.hashCode);
+    hash = _SystemHash.combine(hash, postCid.hashCode);
+    hash = _SystemHash.combine(hash, isSprk.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin LoadCommentsRef on AutoDisposeFutureProviderRef<List<Comment>> {
+  /// The parameter `postUri` of this provider.
+  String get postUri;
+
+  /// The parameter `postCid` of this provider.
+  String get postCid;
+
+  /// The parameter `isSprk` of this provider.
+  bool get isSprk;
+}
+
+class _LoadCommentsProviderElement
+    extends AutoDisposeFutureProviderElement<List<Comment>>
+    with LoadCommentsRef {
+  _LoadCommentsProviderElement(super.provider);
+
+  @override
+  String get postUri => (origin as LoadCommentsProvider).postUri;
+  @override
+  String get postCid => (origin as LoadCommentsProvider).postCid;
+  @override
+  bool get isSprk => (origin as LoadCommentsProvider).isSprk;
+}
+
+String _$commentsTrayHash() => r'8efc06ce224a529edc7ab52b728b983919494099';
 
 abstract class _$CommentsTray
     extends BuildlessAutoDisposeNotifier<CommentsTrayState> {

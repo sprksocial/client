@@ -18,8 +18,6 @@ class CommentInput extends ConsumerStatefulWidget {
   final String postCid;
   final String postUri;
   // For replies, parent may be different than the main post
-  final String parentCid;
-  final String parentUri;
   final String? rootCid;
   final String? rootUri;
   final FocusNode? focusNode;
@@ -31,8 +29,6 @@ class CommentInput extends ConsumerStatefulWidget {
     this.replyingToUsername,
     required this.postCid,
     required this.postUri,
-    required this.parentCid,
-    required this.parentUri,
     this.focusNode,
     required this.isSprk,
     this.rootCid,
@@ -44,19 +40,17 @@ class CommentInput extends ConsumerStatefulWidget {
 }
 
 class _CommentInputState extends ConsumerState<CommentInput> {
-  late CommentInputState _state;
-  late CommentInputNotifier _notifier;
+  final textController = TextEditingController();
+  final imagePicker = ImagePicker();
   @override
   void initState() {
     super.initState();
-    final textController = TextEditingController();
-    final imagePicker = ImagePicker();
-    _state = ref.watch(commentInputNotifierProvider(textController, imagePicker));
-    _notifier = ref.read(commentInputNotifierProvider(textController, imagePicker).notifier);
   }
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(commentInputNotifierProvider(textController, imagePicker));
+    final notifier = ref.read(commentInputNotifierProvider(textController, imagePicker).notifier);
     return Container(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16),
       decoration: BoxDecoration(
@@ -69,7 +63,7 @@ class _CommentInputState extends ConsumerState<CommentInput> {
         children: [
           // Emoji Picker is always displayed at the top
           EmojiPicker(
-            onEmojiSelected: _notifier.insertEmoji,
+            onEmojiSelected: notifier.insertEmoji,
             isDarkMode: Theme.of(context).colorScheme.brightness == Brightness.dark,
           ),
 
@@ -78,7 +72,12 @@ class _CommentInputState extends ConsumerState<CommentInput> {
           if (widget.replyingToUsername != null)
             Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
-              child: _ReplyingToNotice(widget: widget, inputBackgroundColor: Theme.of(context).colorScheme.surface, borderColor: Theme.of(context).colorScheme.outline, textColor: Theme.of(context).colorScheme.onSurface),
+              child: _ReplyingToNotice(
+                widget: widget,
+                inputBackgroundColor: Theme.of(context).colorScheme.surface,
+                borderColor: Theme.of(context).colorScheme.outline,
+                textColor: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
 
           // Updated input row with centered alignment
@@ -91,29 +90,35 @@ class _CommentInputState extends ConsumerState<CommentInput> {
               children: [
                 _UserAvatar(textColor: Theme.of(context).colorScheme.onSurface),
                 const SizedBox(width: 5),
-                _AttachmentButton(state: _state, notifier: _notifier, context: context, borderColor: Theme.of(context).colorScheme.outline, textColor: Theme.of(context).colorScheme.onSurface),
+                _AttachmentButton(
+                  state: state,
+                  notifier: notifier,
+                  context: context,
+                  borderColor: Theme.of(context).colorScheme.outline,
+                  textColor: Theme.of(context).colorScheme.onSurface,
+                ),
                 const SizedBox(width: 5),
                 Expanded(
-                  child: _TextField(widget: widget, state: _state, context: context, notifier: _notifier, textColor: Theme.of(context).colorScheme.onSurface, placeholderColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 128)),
+                  child: _TextField(
+                    widget: widget,
+                    state: state,
+                    context: context,
+                    notifier: notifier,
+                    textColor: Theme.of(context).colorScheme.onSurface,
+                    placeholderColor: Theme.of(context).colorScheme.onSurface.withValues(alpha: 128),
+                  ),
                 ),
               ],
             ),
           ),
 
           // Selected Images Preview (only show if images are selected)
-          if (_state.selectedImages.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0),
-              child: _SelectedImagesPreview(
-                state: _state,
-                notifier: _notifier,
-              ),
-            ),
+          if (state.selectedImages.isNotEmpty)
+            Padding(padding: const EdgeInsets.only(top: 8.0), child: _SelectedImagesPreview(state: state, notifier: notifier)),
         ],
       ),
     );
   }
-
 }
 
 class _ReplyingToNotice extends ConsumerWidget {
@@ -157,9 +162,7 @@ class _ReplyingToNotice extends ConsumerWidget {
 }
 
 class _UserAvatar extends StatelessWidget {
-  const _UserAvatar({
-    required this.textColor,
-  });
+  const _UserAvatar({required this.textColor});
 
   final Color textColor;
 
@@ -232,8 +235,8 @@ class _TextField extends StatelessWidget {
                   onPressed:
                       state.canSubmit
                           ? () => notifier.submitComment(
-                            parentCid: widget.parentCid,
-                            parentUri: widget.parentUri,
+                            parentCid: widget.postCid,
+                            parentUri: widget.postUri,
                             isSprk: widget.isSprk,
                             rootCid: widget.rootCid,
                             rootUri: widget.rootUri,

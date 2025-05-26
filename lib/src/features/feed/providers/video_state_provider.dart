@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sparksocial/src/features/feed/providers/post_action_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:get_it/get_it.dart';
 
@@ -23,6 +24,10 @@ class VideoState extends _$VideoState {
     });
 
     return VideoPlayerState.initial().copyWith(commentCount: initialCommentCount);
+  }
+
+  void toggleComments() {
+    state = state.copyWith(showComments: !state.showComments);
   }
 
   /// Initialize controller with a network URL

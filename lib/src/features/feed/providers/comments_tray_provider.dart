@@ -1,8 +1,10 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
+import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/features/feed/data/models/comments_tray_state.dart';
 import 'package:sparksocial/src/features/feed/providers/comment_provider.dart' as comment_state;
 
@@ -17,14 +19,8 @@ class CommentsTray extends _$CommentsTray {
     return CommentsTrayState(postUri: postUri, postCid: postCid, isSprk: isSprk, commentCount: commentCount);
   }
 
-  Future<void> loadComments() async {
-    final List<Comment> comments;
-    if (state.isSprk) {
-      comments = await feedRepository.getSparkComments(state.postUri);
-    } else {
-      comments = await feedRepository.getBlueskyComments(state.postUri);
-    }
-    state = state.copyWith(comments: comments);
+  void setComments(List<Comment> comments) {
+    state = state.copyWith(comments: comments, commentCount: comments.length);
   }
 
   Future<void> postComment(
@@ -72,4 +68,24 @@ class CommentsTray extends _$CommentsTray {
   void cancelReply() {
     state = state.copyWith(replyingToUsername: null, replyingToId: null, replyingToUri: null, replyingToCid: null);
   }
+}
+
+@riverpod
+Future<List<Comment>> loadComments(
+  Ref ref, {
+  required String postUri,
+  required String postCid,
+  required bool isSprk,
+}) async {
+  final state = ref.read(commentsTrayProvider(postUri: postUri, postCid: postCid, isSprk: isSprk));
+  final feedRepository = GetIt.instance<FeedRepository>();
+  final List<Comment> comments;
+  if (state.isSprk) {
+    comments = await feedRepository.getSparkComments(state.postUri);
+    final _logger = GetIt.instance<LogService>().getLogger('CommentsTray');
+    _logger.d('comments: $comments');
+  } else {
+    comments = await feedRepository.getBlueskyComments(state.postUri);
+  }
+  return comments;
 }

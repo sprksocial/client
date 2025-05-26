@@ -236,6 +236,7 @@ class _PreloadedVideoItemState extends ConsumerState<PreloadedVideoItem> with Wi
           right: 16,
           bottom: 16,
           child: SideActionBar(
+            videoIndex: widget.index,
             likeCount: "${widget.likeCount}",
             commentCount: "${videoState.commentCount}",
             shareCount: "${widget.shareCount}",

@@ -374,6 +374,7 @@ class _SideActionBar extends StatelessWidget {
         authorDid: state.authorDid,
         onPostDeleted: onPostDeleted ?? () {},
         isImage: true,
+        videoIndex: state.index,
       ),
     );
   }

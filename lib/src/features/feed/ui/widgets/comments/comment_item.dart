@@ -35,7 +35,6 @@ class _CommentItemState extends ConsumerState<CommentItem> {
   @override
   void initState() {
     super.initState();
-    commentState = ref.watch(CommentNotifierProvider(widget.comment));
   }
 
   void _showImageCarousel() {
@@ -137,9 +136,9 @@ class _CommentItemState extends ConsumerState<CommentItem> {
 
   @override
   Widget build(BuildContext context) {
+    commentState = ref.watch(CommentNotifierProvider(widget.comment));
     final imageCount = commentState.comment.imageUrls.length;
     const double thumbnailSize = 120.0;
-    final firstImageUrl = commentState.comment.imageUrls.first;
 
     final borderRadius = BorderRadius.circular(8);
     final bool hasImages = commentState.comment.mediaType == 'image' && commentState.comment.imageUrls.isNotEmpty;
@@ -174,7 +173,7 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                CommentUtils.formatTimeAgo(commentState.comment.createdAt),
+                                commentState.comment.createdAt,
                                 style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color),
                               ),
                             ],
@@ -216,7 +215,7 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                               fit: StackFit.expand,
                               children: [
                                 CachedNetworkImage(
-                                  imageUrl: firstImageUrl,
+                                  imageUrl: commentState.comment.imageUrls.first,
                                   fit: BoxFit.cover,
                                   placeholder:
                                       (context, url) => Container(

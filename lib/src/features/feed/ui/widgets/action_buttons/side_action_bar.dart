@@ -6,7 +6,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/menu_action_button.dart';
 import 'package:sparksocial/src/core/widgets/report_dialog.dart';
-import 'package:sparksocial/src/features/feed/providers/video_action_provider.dart';
+import 'package:sparksocial/src/features/feed/providers/post_action_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/profile_action_button.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/like_action_button.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/comment_action_button.dart';
@@ -33,6 +33,7 @@ class SideActionBar extends ConsumerStatefulWidget {
 
   // Add flag to identify image content
   final bool isImage;
+  final int videoIndex;
 
   const SideActionBar({
     super.key,
@@ -51,6 +52,7 @@ class SideActionBar extends ConsumerStatefulWidget {
     this.postCid,
     this.authorDid,
     this.isImage = false,
+    required this.videoIndex,
   });
 
   @override
@@ -60,8 +62,6 @@ class SideActionBar extends ConsumerStatefulWidget {
 class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
   bool _isLiked = false;
   late String _commentCount;
-
-  
 
   @override
   void initState() {
@@ -201,23 +201,25 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
 
     try {
       // Use the provider instead of direct repository access
-      final result = await ref.read(videoActionNotifierProvider.notifier).deletePost(widget.postUri!);
+      final deletePost = ref.read(deletePostProvider(widget.postUri!));
 
-      if (!mounted) return;
+      deletePost.when(
+        data: (_) {
+          messenger.showSnackBar(const SnackBar(content: Text('Post deleted successfully')));
 
-      if (result) {
-        messenger.showSnackBar(const SnackBar(content: Text('Post deleted successfully')));
+          if (!mounted) return;
 
-        await Future.delayed(const Duration(milliseconds: 800));
-
-        if (!mounted) return;
-
-        if (widget.onPostDeleted != null) {
-          widget.onPostDeleted!();
-        }
-      } else {
-        messenger.showSnackBar(const SnackBar(content: Text('Failed to delete post')));
-      }
+          if (widget.onPostDeleted != null) {
+            widget.onPostDeleted!();
+          }
+        },
+        error: (error, stackTrace) => throw error,
+        loading: () async {
+          while (deletePost.isLoading) {
+            await Future.delayed(const Duration(milliseconds: 10));
+          }
+        },
+      );
     } catch (e) {
       if (mounted) {
         messenger.showSnackBar(SnackBar(content: Text('Error deleting post: $e')));
@@ -225,17 +227,8 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    // Watch for any errors from the video action provider
-    final videoActionState = ref.watch(videoActionNotifierProvider);
-    if (videoActionState.error != null) {
-      // Show error if there is one
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${videoActionState.error!}')));
-      });
-    }
 
     return Column(
       children: [
@@ -245,7 +238,7 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
         LikeActionButton(count: widget.likeCount, isLiked: _isLiked, onPressed: _handleLike),
         const SizedBox(height: 20),
 
-        CommentActionButton(count: _commentCount, onPressed: widget.onCommentPressed),
+        CommentActionButton(count: _commentCount, onPressed: widget.onCommentPressed, postUri: widget.postUri!, postCid: widget.postCid!, commentCount: int.parse(_commentCount), isSprk: true, videoIndex: widget.videoIndex),
         const SizedBox(height: 20),
 
         // Only show share button for videos, not for images

@@ -7,7 +7,7 @@ import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/features/feed/data/models/feed_page_state.dart';
 import 'package:sparksocial/src/features/feed/data/repositories/preload_repository.dart';
 import 'package:sparksocial/src/features/feed/providers/preload_provider.dart';
-import 'package:sparksocial/src/features/feed/providers/video_action_provider.dart';
+import 'package:sparksocial/src/features/feed/providers/post_action_provider.dart';
 
 part 'feed_page_provider.g.dart';
 
@@ -156,25 +156,40 @@ class FeedPageStateNotifier extends _$FeedPageStateNotifier {
 
   /// Handle like press for a post
   Future<void> handleLikePress(FeedPost post) async {
-    final videoActionNotifier = ref.read(videoActionNotifierProvider.notifier);
-
+    bool increase = true;
     try {
       LikePostResponse? response;
-
       if (post.likeUri != null) {
-        // Unlike the post
-        await _feedRepository.unlikePost(post.likeUri!);
-        response = null;
+        increase = false;
+        final unlikePost = ref.read(unlikePostProvider(post.likeUri!));
+        await unlikePost.when(
+          data: (_) {},
+          error: (error, stackTrace) => throw error,
+          loading: () async {
+            while (unlikePost.isLoading) {
+              await Future.delayed(const Duration(milliseconds: 10));
+            }
+          },
+        );
       } else {
         // Like the post
-        response = await videoActionNotifier.likePost(post.cid, post.uri);
+        final likePost = ref.read(likePostProvider(post.cid, post.uri));
+        likePost.when(
+          data: (data) => response = data,
+          error: (error, stackTrace) => throw error,
+          loading: () async {
+            while (likePost.isLoading) {
+              await Future.delayed(const Duration(milliseconds: 10));
+            }
+          },
+        );
       }
 
       // Update the post in the state
       final index = state.posts.indexWhere((p) => p.uri == post.uri);
       if (index >= 0) {
         final updatedPosts = [...state.posts];
-        updatedPosts[index] = post.copyWith(likeCount: post.likeCount + (response != null ? 1 : -1), likeUri: response?.uri);
+        updatedPosts[index] = post.copyWith(likeCount: post.likeCount + (increase ? 1 : -1), likeUri: response?.uri);
 
         state = state.copyWith(posts: updatedPosts);
       }

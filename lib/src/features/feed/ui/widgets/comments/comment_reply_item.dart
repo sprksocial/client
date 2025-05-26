@@ -53,7 +53,7 @@ class _CommentReplyItemState extends ConsumerState<CommentReplyItem> {
                     Text(state.comment.username, style: TextStyle(fontWeight: FontWeight.bold, color: textColor, fontSize: 13)),
                     const SizedBox(width: 6),
                     Text(
-                      CommentUtils.formatTimeAgo(state.comment.createdAt),
+                      state.comment.createdAt,
                       style: TextStyle(fontSize: 11, color: secondaryTextColor),
                     ),
                   ],
