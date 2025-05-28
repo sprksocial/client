@@ -22,7 +22,7 @@ abstract class FeedRepository {
   /// [feed] The feed to get the posts for
   /// [limit] The number of items to return
   /// [cursor] Pagination cursor for the next set of results
-  Future<({List<bsky.FeedView> bsky, List<FeedViewPost> sprk, String? cursor})> getPostsByFeed(Feed feed, {int limit = 30, String? cursor});
+  Future<({List<bsky.FeedView> bsky, List<PostView> sprk, String? cursor})> getPostsByFeed(Feed feed, {int limit = 30, String? cursor});
 
   /// Get an author's feed
   ///

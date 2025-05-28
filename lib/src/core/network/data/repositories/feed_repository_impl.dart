@@ -436,7 +436,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<({List<bsky.FeedView> bsky, List<FeedViewPost> sprk, String? cursor})> getPostsByFeed(
+  Future<({List<bsky.FeedView> bsky, List<PostView> sprk, String? cursor})> getPostsByFeed(
     Feed feed, {
     int limit = 8,
     String? cursor,
@@ -444,21 +444,84 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Getting posts by feed: $feed, limit: $limit, cursor: $cursor');
     final blueskySession = bsky.Bluesky.fromSession(_client.authRepository.session!);
     final bskyFeed = <bsky.FeedView>[];
-    final sprkFeed = <FeedViewPost>[];
+    final sprkFeed = <PostView>[];
 
     switch (feed) {
       case FeedHardCoded(:final hardCodedFeed):
         switch (hardCodedFeed) {
           case HardCodedFeed.following:
+            // bsky feed
+            final unfilteredBskyFeed = (await blueskySession.feed.getTimeline(limit: limit, cursor: cursor)).data.feed;
+            bskyFeed.addAll(
+              unfilteredBskyFeed.where((feedview) {
+                return feedview.post.embed != null && feedview.post.record.reply == null;
+              }),
+            );
+
+          // sprk feed
+          // TODO: spark following feed
           case HardCodedFeed.forYou:
+            // bsky feed
+            final unfilteredBskyFeed = (await blueskySession.feed.getFeed(
+              generatorUri: AtUri.parse('at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/thevids'),
+              limit: limit,
+              cursor: cursor,
+            )).data.feed;
+
+            bskyFeed.addAll(
+              unfilteredBskyFeed.where((feedview) {
+                return feedview.post.embed != null && feedview.post.record.reply == null;
+              }),
+            );
+
+          // sprk feed
+          // TODO: spark for you feed
           case HardCodedFeed.latestSprk:
+            // no bsky feed
+            // sprk feed
+            final skeleton = await _getFeedSkeletonHardcoded('simple-desc', limit: limit);
+            final hydratedFeed = <PostView>[];
+            final uris = skeleton.feed.map((post) => post.uri).toList();
+            hydratedFeed.addAll(await getPosts(uris));
+            hydratedFeed.sort((a, b) => b.indexedAt.compareTo(a.indexedAt));
+            sprkFeed.addAll(hydratedFeed);
           case HardCodedFeed.mutuals:
+            // TODO: spark mutuals feed
           case HardCodedFeed.shared:
+            // TODO: spark shared feed
         }
       case FeedCustom():
+        // TODO: custom feeds
       default:
         return (bsky: bskyFeed, sprk: sprkFeed, cursor: null);
     }
     return (bsky: bskyFeed, sprk: sprkFeed, cursor: null);
+  }
+
+  // this exists just because feeds are not real yet
+  Future<FeedSkeleton> _getFeedSkeletonHardcoded(String feed, {int limit = 8}) async {
+    _logger.d('Getting feed skeleton for feed: $feed, limit: $limit');
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final result = await atproto.get(
+        NSID.parse('so.sprk.feed.getFeedSkeleton'),
+        parameters: {'feed': feed, 'limit': limit},
+        service: 'feeds.sprk.so',
+        to: (jsonMap) => FeedSkeleton.fromJson(jsonMap),
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+      );
+      _logger.d('Feed skeleton retrieved successfully');
+      return result.data;
+    });
   }
 }

@@ -89,7 +89,7 @@ class SkeletonFeedPost with _$SkeletonFeedPost {
   factory SkeletonFeedPost.fromJson(Map<String, dynamic> json) => _$SkeletonFeedPostFromJson(json);
 }
 
-/// Hydrated feeds return a FeedViewPost array
+/// GetTimeline returns a FeedViewPost array
 @freezed
 class FeedViewPost with _$FeedViewPost {
   const factory FeedViewPost({
