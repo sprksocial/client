@@ -156,6 +156,30 @@ class FeedAPI {
       );
     });
   }
+
+  /// Get stories timeline
+  ///
+  /// [limit] The number of stories to return
+  Future<dynamic> getStoriesTimeline({int limit = 30}) async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      return await atproto.get(
+        NSID.parse('so.sprk.feed.getStoriesTimeline'),
+        parameters: {'limit': limit},
+        headers: {'atproto-proxy': _client._sprkDid},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+      );
+    });
+  }
 }
 
 /// Actor-related API endpoints
