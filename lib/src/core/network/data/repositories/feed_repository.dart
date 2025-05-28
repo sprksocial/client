@@ -72,7 +72,14 @@ abstract class FeedRepository {
   Future<StrongRef> postImage(String text, List<XFile> imageFiles, Map<String, String> altTexts);
 
   /// Post a video to the user's feed
-  Future<StrongRef> postVideo(Blob blob, {String text = '', String alt = '', List<String>? tags, List<String>? langs, List<SelfLabel>? selfLabels,});
+  Future<StrongRef> postVideo(
+    Blob blob, {
+    String text = '',
+    String alt = '',
+    List<String>? tags,
+    List<String>? langs,
+    List<SelfLabel>? selfLabels,
+  });
 
   /// Get posts from a custom feed
   ///
@@ -83,21 +90,21 @@ abstract class FeedRepository {
 
   /// Get comments for a Bluesky post
   ///
-  /// [postUri] The URI of the post to get comments for
-  Future<List<Comment>> getBlueskyComments(AtUri postUri);
+  /// [uri] The URI of the post to get comments for
+  Future<Thread> getBlueskyComments(AtUri uri, {int depth = 2, int parentHeight = 0});
 
   /// Get comments for a Spark post
   ///
-  /// [postUri] The URI of the post to get comments for
-  Future<List<Comment>> getSparkComments(AtUri postUri);
+  /// [uri] The URI of the post to get comments for
+  Future<Thread> getSparkComments(AtUri uri);
 
   /// Get a single Spark comment by URI
   ///
   /// [commentUri] The URI of the comment to get
-  Future<Comment> getSparkComment(AtUri commentUri);
+  Future<PostView> getSparkComment(AtUri commentUri);
 
   /// Get a single Bluesky comment by URI
   ///
   /// [commentUri] The URI of the comment to get
-  Future<Comment> getBlueskyComment(AtUri commentUri);
+  Future<PostView> getBlueskyComment(AtUri commentUri);
 }

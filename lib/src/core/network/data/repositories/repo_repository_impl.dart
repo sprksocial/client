@@ -8,7 +8,6 @@ import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/core/network/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/network/data/repositories/sprk_repository_impl.dart';
-import 'package:sparksocial/src/core/network/data/models/repo_models.dart';
 
 /// Repository-related API endpoints implementation
 class RepoRepositoryImpl implements RepoRepository {
@@ -20,7 +19,7 @@ class RepoRepositoryImpl implements RepoRepository {
   }
 
   @override
-  Future<RecordResponse> getRecord({required AtUri uri}) async {
+  Future<(Record, StrongRef)> getRecord({required AtUri uri}) async {
     _logger.d('Getting record for URI: $uri');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -34,13 +33,12 @@ class RepoRepositoryImpl implements RepoRepository {
       }
       final result = await atproto.repo.getRecord(uri: uri);
       _logger.d('Record retrieved successfully');
-      final value = result.data.value;
-      return RecordResponse(uri: result.data.uri.toString(), cid: result.data.cid ?? '', value: value);
+      return (result.data, StrongRef(uri: result.data.uri, cid: result.data.cid ?? ''));
     });
   }
 
   @override
-  Future<RecordResponse> editRecord({required AtUri uri, required Map<String, dynamic> record}) async {
+  Future<StrongRef> editRecord({required AtUri uri, required Record record}) async {
     _logger.d('Editing record at URI: $uri');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -52,14 +50,14 @@ class RepoRepositoryImpl implements RepoRepository {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       }
-      final result = await atproto.repo.putRecord(uri: uri, record: record);
+      final result = await atproto.repo.putRecord(uri: uri, record: record.toJson());
       _logger.d('Record edited successfully');
-      return RecordResponse(uri: result.data.uri.toString(), cid: result.data.cid, value: record);
+      return StrongRef(uri: result.data.uri, cid: result.data.cid);
     });
   }
 
   @override
-  Future<RecordResponse> createRecord({required NSID collection, required Map<String, dynamic> record, String? rkey}) async {
+  Future<StrongRef> createRecord({required NSID collection, required Record record, String? rkey}) async {
     _logger.d('Creating record in collection: $collection');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -73,9 +71,9 @@ class RepoRepositoryImpl implements RepoRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final result = await atproto.repo.createRecord(collection: collection, record: record, rkey: rkey);
+      final result = await atproto.repo.createRecord(collection: collection, record: record.toJson(), rkey: rkey);
       _logger.d('Record created successfully');
-      return RecordResponse(uri: result.data.uri.toString(), cid: result.data.cid, value: record);
+      return StrongRef(uri: result.data.uri, cid: result.data.cid);
     });
   }
 
@@ -100,7 +98,7 @@ class RepoRepositoryImpl implements RepoRepository {
   }
 
   @override
-  Future<BlobResponse> uploadBlob(Uint8List data) async {
+  Future<Blob> uploadBlob(Uint8List data) async {
     _logger.d('Uploading blob of size: ${data.length} bytes');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -117,18 +115,12 @@ class RepoRepositoryImpl implements RepoRepository {
       final result = await atproto.repo.uploadBlob(data);
       _logger.d('Blob uploaded successfully');
 
-      // Create blobRef map
-      final Map<String, dynamic> blobRef = {};
-      blobRef['\$type'] = 'blob';
-      blobRef['ref'] = result.data.blob.ref;
-      blobRef['mimeType'] = result.data.blob.mimeType;
-
-      return BlobResponse(blob: result.data.blob.toString(), blobRef: blobRef);
+      return result.data.blob;
     });
   }
 
   @override
-  Future<RecordsListResponse> listRecords({
+  Future<List<Record>> listRecords({
     required String repo,
     required NSID collection,
     String? cursor,
@@ -158,12 +150,9 @@ class RepoRepositoryImpl implements RepoRepository {
 
       _logger.d('Records listed successfully');
 
-      final records =
-          result.data.records
-              .map((record) => RecordItem(uri: record.uri.toString(), cid: record.cid ?? '', value: record.value))
-              .toList();
+      final records = result.data.records.map((record) => Record.fromJson(record.value)).toList();
 
-      return RecordsListResponse(records: records, cursor: result.data.cursor);
+      return records;
     });
   }
 

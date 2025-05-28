@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:auto_route/auto_route.dart';
 
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_page_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/feed_main_content.dart';

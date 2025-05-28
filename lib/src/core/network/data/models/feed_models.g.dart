@@ -142,14 +142,14 @@ _$ReplyRefPostReferencePostImpl _$$ReplyRefPostReferencePostImplFromJson(
         Map<String, dynamic> json) =>
     _$ReplyRefPostReferencePostImpl(
       post: PostView.fromJson(json['post'] as Map<String, dynamic>),
-      $type: json['runtimeType'] as String?,
+      $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$ReplyRefPostReferencePostImplToJson(
         _$ReplyRefPostReferencePostImpl instance) =>
     <String, dynamic>{
       'post': instance.post,
-      'runtimeType': instance.$type,
+      r'$type': instance.$type,
     };
 
 _$ReplyRefPostReferenceNotFoundPostImpl
@@ -157,8 +157,8 @@ _$ReplyRefPostReferenceNotFoundPostImpl
             Map<String, dynamic> json) =>
         _$ReplyRefPostReferenceNotFoundPostImpl(
           uri: const AtUriConverter().fromJson(json['uri'] as String),
-          notFound: json['notFound'] as bool? ?? true,
-          $type: json['runtimeType'] as String?,
+          notFound: json['notFound'] as bool,
+          $type: json[r'$type'] as String?,
         );
 
 Map<String, dynamic> _$$ReplyRefPostReferenceNotFoundPostImplToJson(
@@ -166,7 +166,7 @@ Map<String, dynamic> _$$ReplyRefPostReferenceNotFoundPostImplToJson(
     <String, dynamic>{
       'uri': const AtUriConverter().toJson(instance.uri),
       'notFound': instance.notFound,
-      'runtimeType': instance.$type,
+      r'$type': instance.$type,
     };
 
 _$ReplyRefPostReferenceBlockedPostImpl
@@ -174,10 +174,10 @@ _$ReplyRefPostReferenceBlockedPostImpl
             Map<String, dynamic> json) =>
         _$ReplyRefPostReferenceBlockedPostImpl(
           uri: const AtUriConverter().fromJson(json['uri'] as String),
-          blocked: json['blocked'] as bool? ?? true,
+          blocked: json['blocked'] as bool,
           author:
               BlockedAuthor.fromJson(json['author'] as Map<String, dynamic>),
-          $type: json['runtimeType'] as String?,
+          $type: json[r'$type'] as String?,
         );
 
 Map<String, dynamic> _$$ReplyRefPostReferenceBlockedPostImplToJson(
@@ -186,7 +186,7 @@ Map<String, dynamic> _$$ReplyRefPostReferenceBlockedPostImplToJson(
       'uri': const AtUriConverter().toJson(instance.uri),
       'blocked': instance.blocked,
       'author': instance.author,
-      'runtimeType': instance.$type,
+      r'$type': instance.$type,
     };
 
 _$BlockedAuthorImpl _$$BlockedAuthorImplFromJson(Map<String, dynamic> json) =>
@@ -312,25 +312,25 @@ Map<String, dynamic> _$$PostRecordVideoImplToJson(
 _$EmbedVideoImpl _$$EmbedVideoImplFromJson(Map<String, dynamic> json) =>
     _$EmbedVideoImpl(
       video: VideoEmbed.fromJson(json['video'] as Map<String, dynamic>),
-      $type: json['runtimeType'] as String?,
+      $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$EmbedVideoImplToJson(_$EmbedVideoImpl instance) =>
     <String, dynamic>{
       'video': instance.video,
-      'runtimeType': instance.$type,
+      r'$type': instance.$type,
     };
 
 _$EmbedImageImpl _$$EmbedImageImplFromJson(Map<String, dynamic> json) =>
     _$EmbedImageImpl(
       image: ImageEmbed.fromJson(json['image'] as Map<String, dynamic>),
-      $type: json['runtimeType'] as String?,
+      $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$EmbedImageImplToJson(_$EmbedImageImpl instance) =>
     <String, dynamic>{
       'image': instance.image,
-      'runtimeType': instance.$type,
+      r'$type': instance.$type,
     };
 
 _$VideoPostViewImpl _$$VideoPostViewImplFromJson(Map<String, dynamic> json) =>
@@ -364,27 +364,27 @@ Map<String, dynamic> _$$VideoPostViewImplToJson(_$VideoPostViewImpl instance) =>
 _$EmbedViewVideoImpl _$$EmbedViewVideoImplFromJson(Map<String, dynamic> json) =>
     _$EmbedViewVideoImpl(
       video: VideoView.fromJson(json['video'] as Map<String, dynamic>),
-      $type: json['runtimeType'] as String?,
+      $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$EmbedViewVideoImplToJson(
         _$EmbedViewVideoImpl instance) =>
     <String, dynamic>{
       'video': instance.video,
-      'runtimeType': instance.$type,
+      r'$type': instance.$type,
     };
 
 _$EmbedViewImageImpl _$$EmbedViewImageImplFromJson(Map<String, dynamic> json) =>
     _$EmbedViewImageImpl(
       image: ImageView.fromJson(json['image'] as Map<String, dynamic>),
-      $type: json['runtimeType'] as String?,
+      $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$EmbedViewImageImplToJson(
         _$EmbedViewImageImpl instance) =>
     <String, dynamic>{
       'image': instance.image,
-      'runtimeType': instance.$type,
+      r'$type': instance.$type,
     };
 
 _$FeedSkeletonImpl _$$FeedSkeletonImplFromJson(Map<String, dynamic> json) =>
@@ -448,38 +448,38 @@ Map<String, dynamic> _$$FacetIndexImplToJson(_$FacetIndexImpl instance) =>
 _$MentionFeatureImpl _$$MentionFeatureImplFromJson(Map<String, dynamic> json) =>
     _$MentionFeatureImpl(
       did: json['did'] as String,
-      $type: json['runtimeType'] as String?,
+      $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$MentionFeatureImplToJson(
         _$MentionFeatureImpl instance) =>
     <String, dynamic>{
       'did': instance.did,
-      'runtimeType': instance.$type,
+      r'$type': instance.$type,
     };
 
 _$LinkFeatureImpl _$$LinkFeatureImplFromJson(Map<String, dynamic> json) =>
     _$LinkFeatureImpl(
       uri: json['uri'] as String,
-      $type: json['runtimeType'] as String?,
+      $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$LinkFeatureImplToJson(_$LinkFeatureImpl instance) =>
     <String, dynamic>{
       'uri': instance.uri,
-      'runtimeType': instance.$type,
+      r'$type': instance.$type,
     };
 
 _$TagFeatureImpl _$$TagFeatureImplFromJson(Map<String, dynamic> json) =>
     _$TagFeatureImpl(
       tag: json['tag'] as String,
-      $type: json['runtimeType'] as String?,
+      $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$TagFeatureImplToJson(_$TagFeatureImpl instance) =>
     <String, dynamic>{
       'tag': instance.tag,
-      'runtimeType': instance.$type,
+      r'$type': instance.$type,
     };
 
 _$FacetImpl _$$FacetImplFromJson(Map<String, dynamic> json) => _$FacetImpl(
@@ -581,7 +581,10 @@ _$ThreadViewPostImpl _$$ThreadViewPostImplFromJson(Map<String, dynamic> json) =>
       replies: (json['replies'] as List<dynamic>?)
           ?.map((e) => Thread.fromJson(e as Map<String, dynamic>))
           .toList(),
-      $type: json['runtimeType'] as String?,
+      context: json['context'] == null
+          ? null
+          : ThreadContext.fromJson(json['context'] as Map<String, dynamic>),
+      $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$ThreadViewPostImplToJson(
@@ -590,21 +593,22 @@ Map<String, dynamic> _$$ThreadViewPostImplToJson(
       'post': instance.post,
       'parent': instance.parent,
       'replies': instance.replies,
-      'runtimeType': instance.$type,
+      'context': instance.context,
+      r'$type': instance.$type,
     };
 
 _$NotFoundPostImpl _$$NotFoundPostImplFromJson(Map<String, dynamic> json) =>
     _$NotFoundPostImpl(
       uri: const AtUriConverter().fromJson(json['uri'] as String),
       notFound: json['notFound'] as bool,
-      $type: json['runtimeType'] as String?,
+      $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$NotFoundPostImplToJson(_$NotFoundPostImpl instance) =>
     <String, dynamic>{
       'uri': const AtUriConverter().toJson(instance.uri),
       'notFound': instance.notFound,
-      'runtimeType': instance.$type,
+      r'$type': instance.$type,
     };
 
 _$BlockedPostImpl _$$BlockedPostImplFromJson(Map<String, dynamic> json) =>
@@ -612,7 +616,7 @@ _$BlockedPostImpl _$$BlockedPostImplFromJson(Map<String, dynamic> json) =>
       uri: const AtUriConverter().fromJson(json['uri'] as String),
       blocked: json['blocked'] as bool,
       author: BlockedAuthor.fromJson(json['author'] as Map<String, dynamic>),
-      $type: json['runtimeType'] as String?,
+      $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$BlockedPostImplToJson(_$BlockedPostImpl instance) =>
@@ -620,5 +624,17 @@ Map<String, dynamic> _$$BlockedPostImplToJson(_$BlockedPostImpl instance) =>
       'uri': const AtUriConverter().toJson(instance.uri),
       'blocked': instance.blocked,
       'author': instance.author,
-      'runtimeType': instance.$type,
+      r'$type': instance.$type,
+    };
+
+_$ThreadContextImpl _$$ThreadContextImplFromJson(Map<String, dynamic> json) =>
+    _$ThreadContextImpl(
+      rootAuthorLike: _$JsonConverterFromJson<String, AtUri>(
+          json['rootAuthorLike'], const AtUriConverter().fromJson),
+    );
+
+Map<String, dynamic> _$$ThreadContextImplToJson(_$ThreadContextImpl instance) =>
+    <String, dynamic>{
+      'rootAuthorLike': _$JsonConverterToJson<String, AtUri>(
+          instance.rootAuthorLike, const AtUriConverter().toJson),
     };

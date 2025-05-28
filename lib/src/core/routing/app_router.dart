@@ -48,12 +48,20 @@ class AppRouter extends _$AppRouter {
           path: 'profile/:did',
           children: [
             AutoRoute(page: EditProfileRoute.page, path: '/edit'),
-            AutoRoute(page: ProfilePhotosRoute.page, path: 'photos', children: [
-              AutoRoute(page: PostRoute.page, path: 'post/:postId'), // TODO: add post route
-            ]),
-            AutoRoute(page: ProfileVideosRoute.page, path: 'videos', children: [
-              AutoRoute(page: PostRoute.page, path: 'post/:postId'), // TODO: add post route
-            ]),
+            AutoRoute(
+              page: ProfilePhotosRoute.page,
+              path: 'photos',
+              children: [
+                AutoRoute(page: PostRoute.page, path: 'post/:postId'), // TODO: add post route
+              ],
+            ),
+            AutoRoute(
+              page: ProfileVideosRoute.page,
+              path: 'videos',
+              children: [
+                AutoRoute(page: PostRoute.page, path: 'post/:postId'), // TODO: add post route
+              ],
+            ),
           ],
         ),
       ],

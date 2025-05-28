@@ -1,8 +1,5 @@
-import 'dart:convert';
 import 'package:sparksocial/src/features/settings/data/repositories/settings_repository.dart';
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 
-import '../models/label_preference.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {

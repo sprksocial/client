@@ -1,5 +1,4 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 
 part 'comments_tray_state.freezed.dart';
 

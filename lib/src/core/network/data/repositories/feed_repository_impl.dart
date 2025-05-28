@@ -193,9 +193,9 @@ class FeedRepositoryImpl implements FeedRepository {
   Future<StrongRef> postComment(
     String text,
     String parentCid,
-    String parentUri, {
+    AtUri parentUri, {
     String? rootCid,
-    String? rootUri,
+    AtUri? rootUri,
     List<XFile>? imageFiles,
     Map<String, String>? altTexts,
   }) async {
@@ -217,8 +217,8 @@ class FeedRepositoryImpl implements FeedRepository {
           final effectiveRootUri = rootUri ?? parentUri;
 
           // Determine if target is a Spark post or Bluesky post
-          final postType = switch (parentUri) {
-            String uri when RegExp(r'^at://[^/]+/so\.sprk\.feed\.post/[^/]+$').hasMatch(uri) => "so.sprk.feed.post",
+          final postType = switch (parentUri.origin) {
+            String uri when uri.contains('sprk') => "so.sprk.feed.post",
             _ => "app.bsky.feed.post",
           };
 
@@ -345,7 +345,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<bool> deletePost(String postUri) async {
+  Future<bool> deletePost(AtUri postUri) async {
     _logger.d('Deleting post with URI: $postUri');
 
     return _client.executeWithRetry(() async {
@@ -360,18 +360,12 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      // Ensure the URI starts with 'at://'
-      final normalizedUri = switch (postUri) {
-        String uri when uri.startsWith('at://') => uri,
-        _ => 'at://$postUri',
-      };
-
       try {
-        final response = await atproto.repo.deleteRecord(uri: AtUri.parse(normalizedUri));
+        final response = await atproto.repo.deleteRecord(uri: postUri);
 
         switch (response.status.code) {
           case 200:
-            _logger.i('Post deleted successfully: $normalizedUri');
+            _logger.i('Post deleted successfully: ${postUri.toString()}');
             return true;
           default:
             _logger.e('Failed to delete post: ${response.status.code}');
@@ -401,9 +395,11 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('Not authenticated');
       }
 
-      final record = PostRecord.video(
+      final record = PostRecord(
         text: text,
-        embed: VideoEmbed(video: blob, type: 'so.sprk.embed.video', alt: alt),
+        embed: Embed.video(
+          video: VideoEmbed(video: blob, alt: alt),
+        ),
         createdAt: DateTime.now(),
         langs: langs,
         selfLabels: selfLabels,
@@ -429,8 +425,8 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<List<Comment>> getBlueskyComments(String postUri) async {
-    _logger.d('Getting Bluesky comments for post: $postUri');
+  Future<List<PostView>> getBlueskyComments(AtUri uri) async {
+    _logger.d('Getting Bluesky comments for post: $uri');
 
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -445,9 +441,6 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       try {
-        // Parse the post URI
-        final uri = AtUri.parse(postUri);
-
         // Get the post thread
         final response = await atproto.get(
           NSID.parse('app.bsky.feed.getPostThread'),
@@ -514,7 +507,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<Comment> getSparkComment(String commentUri) async {
+  Future<PostView> getSparkComment(AtUri commentUri) async {
     _logger.d('Getting Spark comment: $commentUri');
 
     return _client.executeWithRetry(() async {
@@ -530,9 +523,9 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       try {
-        final response = await atproto.repo.getRecord(uri: AtUri.parse(commentUri));
+        final response = await atproto.repo.getRecord(uri: commentUri);
 
-        return Comment.fromSparkCommentRecord(response.data.value, commentUri);
+        return response.data;
       } catch (e) {
         _logger.e('Failed to get Spark comment', error: e);
         throw Exception('Failed to get comment: ${e.toString()}');
@@ -577,125 +570,5 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('Failed to get comment: ${e.toString()}');
       }
     });
-  }
-
-  /// Extract replies from a Bluesky thread
-  List<Comment> _extractBlueskyReplies(Map<String, dynamic> thread) {
-    final List<Comment> result = [];
-
-    // Skip the root post, only include replies
-    final replies = thread['replies'] as List<dynamic>?;
-    if (replies == null) {
-      return result;
-    }
-
-    for (final reply in replies) {
-      final post = reply['post'] as Map<String, dynamic>?;
-      if (post == null) {
-        continue;
-      }
-
-      // Create comment from the post
-      final comment = Comment.fromBlueskyComment(post);
-
-      // Process any nested replies if they exist
-      final nestedReplies = reply['replies'] as List<dynamic>?;
-      final List<Comment> commentReplies = [];
-      if (nestedReplies != null) {
-        for (final nestedReply in nestedReplies) {
-          final nestedPost = nestedReply['post'] as Map<String, dynamic>?;
-          if (nestedPost != null) {
-            commentReplies.add(Comment.fromBlueskyComment(nestedPost));
-          }
-        }
-      }
-
-      // Add the comment with its nested replies
-      result.add(
-        Comment(
-          id: comment.id,
-          uri: comment.uri,
-          cid: comment.cid,
-          authorDid: comment.authorDid,
-          username: comment.username,
-          profileImageUrl: comment.profileImageUrl,
-          text: comment.text,
-          createdAt: comment.createdAt,
-          likeCount: comment.likeCount,
-          replyCount: commentReplies.length,
-          hashtags: comment.hashtags,
-          hasMedia: comment.hasMedia,
-          mediaType: comment.mediaType,
-          mediaUrl: comment.mediaUrl,
-          likeUri: comment.likeUri,
-          isSprk: comment.isSprk,
-          replies: commentReplies,
-          imageUrls: comment.imageUrls,
-        ),
-      );
-    }
-
-    return result;
-  }
-
-  /// Extract replies from a Spark thread
-  List<Comment> _extractSparkReplies(Map<String, dynamic> thread) {
-    final List<Comment> result = [];
-
-    // Skip the root post, only include replies
-    final replies = thread['replies'] as List<dynamic>?;
-    if (replies == null) {
-      return result;
-    }
-
-    for (final reply in replies) {
-      final post = reply['post'] as Map<String, dynamic>?;
-      if (post == null) {
-        continue;
-      }
-
-      // Create comment from the post
-      final comment = Comment.fromSparkComment(post);
-
-      // Process any nested replies if they exist
-      final List<Comment> nestedReplies = [];
-      if (reply['replies'] != null) {
-        final nestedRepliesData = reply['replies'] as List<dynamic>?;
-        if (nestedRepliesData != null) {
-          for (final nestedReply in nestedRepliesData) {
-            final nestedPost = nestedReply['post'] as Map<String, dynamic>?;
-            if (nestedPost != null) {
-              nestedReplies.add(Comment.fromSparkComment(nestedPost));
-            }
-          }
-        }
-      }
-
-      // Add the comment with its nested replies
-      result.add(
-        Comment(
-          id: comment.id,
-          uri: comment.uri,
-          cid: comment.cid,
-          authorDid: comment.authorDid,
-          username: comment.username,
-          profileImageUrl: comment.profileImageUrl,
-          text: comment.text,
-          createdAt: comment.createdAt,
-          likeCount: comment.likeCount,
-          replyCount: nestedReplies.length,
-          hashtags: comment.hashtags,
-          hasMedia: comment.hasMedia,
-          mediaType: comment.mediaType,
-          mediaUrl: comment.mediaUrl,
-          likeUri: comment.likeUri,
-          isSprk: comment.isSprk,
-          replies: nestedReplies,
-          imageUrls: comment.imageUrls,
-        ),
-      );
-    }
-
-    return result;
   }
 }

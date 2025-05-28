@@ -1,4 +1,5 @@
 library;
+
 export 'package:sparksocial/src/features/auth/ui/pages/auth_prompt_page.dart';
 export 'package:sparksocial/src/features/auth/ui/pages/login_page.dart';
 export 'package:sparksocial/src/features/auth/ui/pages/register_page.dart';

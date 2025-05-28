@@ -1517,20 +1517,17 @@ abstract class _ReplyRef implements ReplyRef {
 
 ReplyRefPostReference _$ReplyRefPostReferenceFromJson(
     Map<String, dynamic> json) {
-  switch (json['runtimeType']) {
+  switch (json['\$type']) {
     case 'so.sprk.feed.defs#post':
-      return _ReplyRefPostReferencePost.fromJson(json);
+      return ReplyRefPostReferencePost.fromJson(json);
     case 'so.sprk.feed.defs#notFoundPost':
-      return _ReplyRefPostReferenceNotFoundPost.fromJson(json);
+      return ReplyRefPostReferenceNotFoundPost.fromJson(json);
     case 'so.sprk.feed.defs#blockedPost':
-      return _ReplyRefPostReferenceBlockedPost.fromJson(json);
+      return ReplyRefPostReferenceBlockedPost.fromJson(json);
 
     default:
-      throw CheckedFromJsonException(
-          json,
-          'runtimeType',
-          'ReplyRefPostReference',
-          'Invalid union type "${json['runtimeType']}"!');
+      throw CheckedFromJsonException(json, '\$type', 'ReplyRefPostReference',
+          'Invalid union type "${json['\$type']}"!');
   }
 }
 
@@ -1567,25 +1564,25 @@ mixin _$ReplyRefPostReference {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_ReplyRefPostReferencePost value) post,
-    required TResult Function(_ReplyRefPostReferenceNotFoundPost value)
+    required TResult Function(ReplyRefPostReferencePost value) post,
+    required TResult Function(ReplyRefPostReferenceNotFoundPost value)
         notFoundPost,
-    required TResult Function(_ReplyRefPostReferenceBlockedPost value)
+    required TResult Function(ReplyRefPostReferenceBlockedPost value)
         blockedPost,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_ReplyRefPostReferencePost value)? post,
-    TResult? Function(_ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
-    TResult? Function(_ReplyRefPostReferenceBlockedPost value)? blockedPost,
+    TResult? Function(ReplyRefPostReferencePost value)? post,
+    TResult? Function(ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
+    TResult? Function(ReplyRefPostReferenceBlockedPost value)? blockedPost,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_ReplyRefPostReferencePost value)? post,
-    TResult Function(_ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
-    TResult Function(_ReplyRefPostReferenceBlockedPost value)? blockedPost,
+    TResult Function(ReplyRefPostReferencePost value)? post,
+    TResult Function(ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
+    TResult Function(ReplyRefPostReferenceBlockedPost value)? blockedPost,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -1666,7 +1663,7 @@ class __$$ReplyRefPostReferencePostImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ReplyRefPostReferencePostImpl extends _ReplyRefPostReferencePost {
+class _$ReplyRefPostReferencePostImpl extends ReplyRefPostReferencePost {
   const _$ReplyRefPostReferencePostImpl(
       {required this.post, final String? $type})
       : $type = $type ?? 'so.sprk.feed.defs#post',
@@ -1678,7 +1675,7 @@ class _$ReplyRefPostReferencePostImpl extends _ReplyRefPostReferencePost {
   @override
   final PostView post;
 
-  @JsonKey(name: 'runtimeType')
+  @JsonKey(name: '\$type')
   final String $type;
 
   @override
@@ -1751,10 +1748,10 @@ class _$ReplyRefPostReferencePostImpl extends _ReplyRefPostReferencePost {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_ReplyRefPostReferencePost value) post,
-    required TResult Function(_ReplyRefPostReferenceNotFoundPost value)
+    required TResult Function(ReplyRefPostReferencePost value) post,
+    required TResult Function(ReplyRefPostReferenceNotFoundPost value)
         notFoundPost,
-    required TResult Function(_ReplyRefPostReferenceBlockedPost value)
+    required TResult Function(ReplyRefPostReferenceBlockedPost value)
         blockedPost,
   }) {
     return post(this);
@@ -1763,9 +1760,9 @@ class _$ReplyRefPostReferencePostImpl extends _ReplyRefPostReferencePost {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_ReplyRefPostReferencePost value)? post,
-    TResult? Function(_ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
-    TResult? Function(_ReplyRefPostReferenceBlockedPost value)? blockedPost,
+    TResult? Function(ReplyRefPostReferencePost value)? post,
+    TResult? Function(ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
+    TResult? Function(ReplyRefPostReferenceBlockedPost value)? blockedPost,
   }) {
     return post?.call(this);
   }
@@ -1773,9 +1770,9 @@ class _$ReplyRefPostReferencePostImpl extends _ReplyRefPostReferencePost {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_ReplyRefPostReferencePost value)? post,
-    TResult Function(_ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
-    TResult Function(_ReplyRefPostReferenceBlockedPost value)? blockedPost,
+    TResult Function(ReplyRefPostReferencePost value)? post,
+    TResult Function(ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
+    TResult Function(ReplyRefPostReferenceBlockedPost value)? blockedPost,
     required TResult orElse(),
   }) {
     if (post != null) {
@@ -1792,12 +1789,12 @@ class _$ReplyRefPostReferencePostImpl extends _ReplyRefPostReferencePost {
   }
 }
 
-abstract class _ReplyRefPostReferencePost extends ReplyRefPostReference {
-  const factory _ReplyRefPostReferencePost({required final PostView post}) =
+abstract class ReplyRefPostReferencePost extends ReplyRefPostReference {
+  const factory ReplyRefPostReferencePost({required final PostView post}) =
       _$ReplyRefPostReferencePostImpl;
-  const _ReplyRefPostReferencePost._() : super._();
+  const ReplyRefPostReferencePost._() : super._();
 
-  factory _ReplyRefPostReferencePost.fromJson(Map<String, dynamic> json) =
+  factory ReplyRefPostReferencePost.fromJson(Map<String, dynamic> json) =
       _$ReplyRefPostReferencePostImpl.fromJson;
 
   PostView get post;
@@ -1853,10 +1850,10 @@ class __$$ReplyRefPostReferenceNotFoundPostImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$ReplyRefPostReferenceNotFoundPostImpl
-    extends _ReplyRefPostReferenceNotFoundPost {
+    extends ReplyRefPostReferenceNotFoundPost {
   const _$ReplyRefPostReferenceNotFoundPostImpl(
       {@AtUriConverter() required this.uri,
-      required this.notFound = true,
+      required this.notFound,
       final String? $type})
       : $type = $type ?? 'so.sprk.feed.defs#notFoundPost',
         super._();
@@ -1869,10 +1866,9 @@ class _$ReplyRefPostReferenceNotFoundPostImpl
   @AtUriConverter()
   final AtUri uri;
   @override
-  @JsonKey()
   final bool notFound;
 
-  @JsonKey(name: 'runtimeType')
+  @JsonKey(name: '\$type')
   final String $type;
 
   @override
@@ -1948,10 +1944,10 @@ class _$ReplyRefPostReferenceNotFoundPostImpl
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_ReplyRefPostReferencePost value) post,
-    required TResult Function(_ReplyRefPostReferenceNotFoundPost value)
+    required TResult Function(ReplyRefPostReferencePost value) post,
+    required TResult Function(ReplyRefPostReferenceNotFoundPost value)
         notFoundPost,
-    required TResult Function(_ReplyRefPostReferenceBlockedPost value)
+    required TResult Function(ReplyRefPostReferenceBlockedPost value)
         blockedPost,
   }) {
     return notFoundPost(this);
@@ -1960,9 +1956,9 @@ class _$ReplyRefPostReferenceNotFoundPostImpl
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_ReplyRefPostReferencePost value)? post,
-    TResult? Function(_ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
-    TResult? Function(_ReplyRefPostReferenceBlockedPost value)? blockedPost,
+    TResult? Function(ReplyRefPostReferencePost value)? post,
+    TResult? Function(ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
+    TResult? Function(ReplyRefPostReferenceBlockedPost value)? blockedPost,
   }) {
     return notFoundPost?.call(this);
   }
@@ -1970,9 +1966,9 @@ class _$ReplyRefPostReferenceNotFoundPostImpl
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_ReplyRefPostReferencePost value)? post,
-    TResult Function(_ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
-    TResult Function(_ReplyRefPostReferenceBlockedPost value)? blockedPost,
+    TResult Function(ReplyRefPostReferencePost value)? post,
+    TResult Function(ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
+    TResult Function(ReplyRefPostReferenceBlockedPost value)? blockedPost,
     required TResult orElse(),
   }) {
     if (notFoundPost != null) {
@@ -1989,14 +1985,13 @@ class _$ReplyRefPostReferenceNotFoundPostImpl
   }
 }
 
-abstract class _ReplyRefPostReferenceNotFoundPost
-    extends ReplyRefPostReference {
-  const factory _ReplyRefPostReferenceNotFoundPost(
+abstract class ReplyRefPostReferenceNotFoundPost extends ReplyRefPostReference {
+  const factory ReplyRefPostReferenceNotFoundPost(
       {@AtUriConverter() required final AtUri uri,
       required final bool notFound}) = _$ReplyRefPostReferenceNotFoundPostImpl;
-  const _ReplyRefPostReferenceNotFoundPost._() : super._();
+  const ReplyRefPostReferenceNotFoundPost._() : super._();
 
-  factory _ReplyRefPostReferenceNotFoundPost.fromJson(
+  factory ReplyRefPostReferenceNotFoundPost.fromJson(
           Map<String, dynamic> json) =
       _$ReplyRefPostReferenceNotFoundPostImpl.fromJson;
 
@@ -2073,10 +2068,10 @@ class __$$ReplyRefPostReferenceBlockedPostImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$ReplyRefPostReferenceBlockedPostImpl
-    extends _ReplyRefPostReferenceBlockedPost {
+    extends ReplyRefPostReferenceBlockedPost {
   const _$ReplyRefPostReferenceBlockedPostImpl(
       {@AtUriConverter() required this.uri,
-      required this.blocked = true,
+      required this.blocked,
       required this.author,
       final String? $type})
       : $type = $type ?? 'so.sprk.feed.defs#blockedPost',
@@ -2090,12 +2085,11 @@ class _$ReplyRefPostReferenceBlockedPostImpl
   @AtUriConverter()
   final AtUri uri;
   @override
-  @JsonKey()
   final bool blocked;
   @override
   final BlockedAuthor author;
 
-  @JsonKey(name: 'runtimeType')
+  @JsonKey(name: '\$type')
   final String $type;
 
   @override
@@ -2171,10 +2165,10 @@ class _$ReplyRefPostReferenceBlockedPostImpl
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_ReplyRefPostReferencePost value) post,
-    required TResult Function(_ReplyRefPostReferenceNotFoundPost value)
+    required TResult Function(ReplyRefPostReferencePost value) post,
+    required TResult Function(ReplyRefPostReferenceNotFoundPost value)
         notFoundPost,
-    required TResult Function(_ReplyRefPostReferenceBlockedPost value)
+    required TResult Function(ReplyRefPostReferenceBlockedPost value)
         blockedPost,
   }) {
     return blockedPost(this);
@@ -2183,9 +2177,9 @@ class _$ReplyRefPostReferenceBlockedPostImpl
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_ReplyRefPostReferencePost value)? post,
-    TResult? Function(_ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
-    TResult? Function(_ReplyRefPostReferenceBlockedPost value)? blockedPost,
+    TResult? Function(ReplyRefPostReferencePost value)? post,
+    TResult? Function(ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
+    TResult? Function(ReplyRefPostReferenceBlockedPost value)? blockedPost,
   }) {
     return blockedPost?.call(this);
   }
@@ -2193,9 +2187,9 @@ class _$ReplyRefPostReferenceBlockedPostImpl
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_ReplyRefPostReferencePost value)? post,
-    TResult Function(_ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
-    TResult Function(_ReplyRefPostReferenceBlockedPost value)? blockedPost,
+    TResult Function(ReplyRefPostReferencePost value)? post,
+    TResult Function(ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
+    TResult Function(ReplyRefPostReferenceBlockedPost value)? blockedPost,
     required TResult orElse(),
   }) {
     if (blockedPost != null) {
@@ -2212,16 +2206,15 @@ class _$ReplyRefPostReferenceBlockedPostImpl
   }
 }
 
-abstract class _ReplyRefPostReferenceBlockedPost extends ReplyRefPostReference {
-  const factory _ReplyRefPostReferenceBlockedPost(
+abstract class ReplyRefPostReferenceBlockedPost extends ReplyRefPostReference {
+  const factory ReplyRefPostReferenceBlockedPost(
           {@AtUriConverter() required final AtUri uri,
           required final bool blocked,
           required final BlockedAuthor author}) =
       _$ReplyRefPostReferenceBlockedPostImpl;
-  const _ReplyRefPostReferenceBlockedPost._() : super._();
+  const ReplyRefPostReferenceBlockedPost._() : super._();
 
-  factory _ReplyRefPostReferenceBlockedPost.fromJson(
-          Map<String, dynamic> json) =
+  factory ReplyRefPostReferenceBlockedPost.fromJson(Map<String, dynamic> json) =
       _$ReplyRefPostReferenceBlockedPostImpl.fromJson;
 
   @AtUriConverter()
@@ -3509,15 +3502,15 @@ abstract class _PostRecordVideo extends PostRecord {
 }
 
 Embed _$EmbedFromJson(Map<String, dynamic> json) {
-  switch (json['runtimeType']) {
+  switch (json['\$type']) {
     case 'so.sprk.embed.video':
-      return _EmbedVideo.fromJson(json);
+      return EmbedVideo.fromJson(json);
     case 'so.sprk.embed.images':
-      return _EmbedImage.fromJson(json);
+      return EmbedImage.fromJson(json);
 
     default:
-      throw CheckedFromJsonException(json, 'runtimeType', 'Embed',
-          'Invalid union type "${json['runtimeType']}"!');
+      throw CheckedFromJsonException(
+          json, '\$type', 'Embed', 'Invalid union type "${json['\$type']}"!');
   }
 }
 
@@ -3544,20 +3537,20 @@ mixin _$Embed {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_EmbedVideo value) video,
-    required TResult Function(_EmbedImage value) image,
+    required TResult Function(EmbedVideo value) video,
+    required TResult Function(EmbedImage value) image,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_EmbedVideo value)? video,
-    TResult? Function(_EmbedImage value)? image,
+    TResult? Function(EmbedVideo value)? video,
+    TResult? Function(EmbedImage value)? image,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_EmbedVideo value)? video,
-    TResult Function(_EmbedImage value)? image,
+    TResult Function(EmbedVideo value)? video,
+    TResult Function(EmbedImage value)? image,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -3633,7 +3626,7 @@ class __$$EmbedVideoImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$EmbedVideoImpl extends _EmbedVideo {
+class _$EmbedVideoImpl extends EmbedVideo {
   const _$EmbedVideoImpl({required this.video, final String? $type})
       : $type = $type ?? 'so.sprk.embed.video',
         super._();
@@ -3644,7 +3637,7 @@ class _$EmbedVideoImpl extends _EmbedVideo {
   @override
   final VideoEmbed video;
 
-  @JsonKey(name: 'runtimeType')
+  @JsonKey(name: '\$type')
   final String $type;
 
   @override
@@ -3706,8 +3699,8 @@ class _$EmbedVideoImpl extends _EmbedVideo {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_EmbedVideo value) video,
-    required TResult Function(_EmbedImage value) image,
+    required TResult Function(EmbedVideo value) video,
+    required TResult Function(EmbedImage value) image,
   }) {
     return video(this);
   }
@@ -3715,8 +3708,8 @@ class _$EmbedVideoImpl extends _EmbedVideo {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_EmbedVideo value)? video,
-    TResult? Function(_EmbedImage value)? image,
+    TResult? Function(EmbedVideo value)? video,
+    TResult? Function(EmbedImage value)? image,
   }) {
     return video?.call(this);
   }
@@ -3724,8 +3717,8 @@ class _$EmbedVideoImpl extends _EmbedVideo {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_EmbedVideo value)? video,
-    TResult Function(_EmbedImage value)? image,
+    TResult Function(EmbedVideo value)? video,
+    TResult Function(EmbedImage value)? image,
     required TResult orElse(),
   }) {
     if (video != null) {
@@ -3742,12 +3735,12 @@ class _$EmbedVideoImpl extends _EmbedVideo {
   }
 }
 
-abstract class _EmbedVideo extends Embed {
-  const factory _EmbedVideo({required final VideoEmbed video}) =
+abstract class EmbedVideo extends Embed {
+  const factory EmbedVideo({required final VideoEmbed video}) =
       _$EmbedVideoImpl;
-  const _EmbedVideo._() : super._();
+  const EmbedVideo._() : super._();
 
-  factory _EmbedVideo.fromJson(Map<String, dynamic> json) =
+  factory EmbedVideo.fromJson(Map<String, dynamic> json) =
       _$EmbedVideoImpl.fromJson;
 
   VideoEmbed get video;
@@ -3806,7 +3799,7 @@ class __$$EmbedImageImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$EmbedImageImpl extends _EmbedImage {
+class _$EmbedImageImpl extends EmbedImage {
   const _$EmbedImageImpl({required this.image, final String? $type})
       : $type = $type ?? 'so.sprk.embed.images',
         super._();
@@ -3817,7 +3810,7 @@ class _$EmbedImageImpl extends _EmbedImage {
   @override
   final ImageEmbed image;
 
-  @JsonKey(name: 'runtimeType')
+  @JsonKey(name: '\$type')
   final String $type;
 
   @override
@@ -3879,8 +3872,8 @@ class _$EmbedImageImpl extends _EmbedImage {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_EmbedVideo value) video,
-    required TResult Function(_EmbedImage value) image,
+    required TResult Function(EmbedVideo value) video,
+    required TResult Function(EmbedImage value) image,
   }) {
     return image(this);
   }
@@ -3888,8 +3881,8 @@ class _$EmbedImageImpl extends _EmbedImage {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_EmbedVideo value)? video,
-    TResult? Function(_EmbedImage value)? image,
+    TResult? Function(EmbedVideo value)? video,
+    TResult? Function(EmbedImage value)? image,
   }) {
     return image?.call(this);
   }
@@ -3897,8 +3890,8 @@ class _$EmbedImageImpl extends _EmbedImage {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_EmbedVideo value)? video,
-    TResult Function(_EmbedImage value)? image,
+    TResult Function(EmbedVideo value)? video,
+    TResult Function(EmbedImage value)? image,
     required TResult orElse(),
   }) {
     if (image != null) {
@@ -3915,12 +3908,12 @@ class _$EmbedImageImpl extends _EmbedImage {
   }
 }
 
-abstract class _EmbedImage extends Embed {
-  const factory _EmbedImage({required final ImageEmbed image}) =
+abstract class EmbedImage extends Embed {
+  const factory EmbedImage({required final ImageEmbed image}) =
       _$EmbedImageImpl;
-  const _EmbedImage._() : super._();
+  const EmbedImage._() : super._();
 
-  factory _EmbedImage.fromJson(Map<String, dynamic> json) =
+  factory EmbedImage.fromJson(Map<String, dynamic> json) =
       _$EmbedImageImpl.fromJson;
 
   ImageEmbed get image;
@@ -4293,15 +4286,15 @@ abstract class VideoPostView extends PostView {
 }
 
 EmbedView _$EmbedViewFromJson(Map<String, dynamic> json) {
-  switch (json['runtimeType']) {
+  switch (json['\$type']) {
     case 'so.sprk.embed.video#view':
-      return _EmbedViewVideo.fromJson(json);
+      return EmbedViewVideo.fromJson(json);
     case 'so.sprk.embed.images#view':
-      return _EmbedViewImage.fromJson(json);
+      return EmbedViewImage.fromJson(json);
 
     default:
-      throw CheckedFromJsonException(json, 'runtimeType', 'EmbedView',
-          'Invalid union type "${json['runtimeType']}"!');
+      throw CheckedFromJsonException(json, '\$type', 'EmbedView',
+          'Invalid union type "${json['\$type']}"!');
   }
 }
 
@@ -4328,20 +4321,20 @@ mixin _$EmbedView {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_EmbedViewVideo value) video,
-    required TResult Function(_EmbedViewImage value) image,
+    required TResult Function(EmbedViewVideo value) video,
+    required TResult Function(EmbedViewImage value) image,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_EmbedViewVideo value)? video,
-    TResult? Function(_EmbedViewImage value)? image,
+    TResult? Function(EmbedViewVideo value)? video,
+    TResult? Function(EmbedViewImage value)? image,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_EmbedViewVideo value)? video,
-    TResult Function(_EmbedViewImage value)? image,
+    TResult Function(EmbedViewVideo value)? video,
+    TResult Function(EmbedViewImage value)? image,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -4417,7 +4410,7 @@ class __$$EmbedViewVideoImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$EmbedViewVideoImpl extends _EmbedViewVideo {
+class _$EmbedViewVideoImpl extends EmbedViewVideo {
   const _$EmbedViewVideoImpl({required this.video, final String? $type})
       : $type = $type ?? 'so.sprk.embed.video#view',
         super._();
@@ -4428,7 +4421,7 @@ class _$EmbedViewVideoImpl extends _EmbedViewVideo {
   @override
   final VideoView video;
 
-  @JsonKey(name: 'runtimeType')
+  @JsonKey(name: '\$type')
   final String $type;
 
   @override
@@ -4491,8 +4484,8 @@ class _$EmbedViewVideoImpl extends _EmbedViewVideo {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_EmbedViewVideo value) video,
-    required TResult Function(_EmbedViewImage value) image,
+    required TResult Function(EmbedViewVideo value) video,
+    required TResult Function(EmbedViewImage value) image,
   }) {
     return video(this);
   }
@@ -4500,8 +4493,8 @@ class _$EmbedViewVideoImpl extends _EmbedViewVideo {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_EmbedViewVideo value)? video,
-    TResult? Function(_EmbedViewImage value)? image,
+    TResult? Function(EmbedViewVideo value)? video,
+    TResult? Function(EmbedViewImage value)? image,
   }) {
     return video?.call(this);
   }
@@ -4509,8 +4502,8 @@ class _$EmbedViewVideoImpl extends _EmbedViewVideo {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_EmbedViewVideo value)? video,
-    TResult Function(_EmbedViewImage value)? image,
+    TResult Function(EmbedViewVideo value)? video,
+    TResult Function(EmbedViewImage value)? image,
     required TResult orElse(),
   }) {
     if (video != null) {
@@ -4527,12 +4520,12 @@ class _$EmbedViewVideoImpl extends _EmbedViewVideo {
   }
 }
 
-abstract class _EmbedViewVideo extends EmbedView {
-  const factory _EmbedViewVideo({required final VideoView video}) =
+abstract class EmbedViewVideo extends EmbedView {
+  const factory EmbedViewVideo({required final VideoView video}) =
       _$EmbedViewVideoImpl;
-  const _EmbedViewVideo._() : super._();
+  const EmbedViewVideo._() : super._();
 
-  factory _EmbedViewVideo.fromJson(Map<String, dynamic> json) =
+  factory EmbedViewVideo.fromJson(Map<String, dynamic> json) =
       _$EmbedViewVideoImpl.fromJson;
 
   VideoView get video;
@@ -4591,7 +4584,7 @@ class __$$EmbedViewImageImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$EmbedViewImageImpl extends _EmbedViewImage {
+class _$EmbedViewImageImpl extends EmbedViewImage {
   const _$EmbedViewImageImpl({required this.image, final String? $type})
       : $type = $type ?? 'so.sprk.embed.images#view',
         super._();
@@ -4602,7 +4595,7 @@ class _$EmbedViewImageImpl extends _EmbedViewImage {
   @override
   final ImageView image;
 
-  @JsonKey(name: 'runtimeType')
+  @JsonKey(name: '\$type')
   final String $type;
 
   @override
@@ -4665,8 +4658,8 @@ class _$EmbedViewImageImpl extends _EmbedViewImage {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_EmbedViewVideo value) video,
-    required TResult Function(_EmbedViewImage value) image,
+    required TResult Function(EmbedViewVideo value) video,
+    required TResult Function(EmbedViewImage value) image,
   }) {
     return image(this);
   }
@@ -4674,8 +4667,8 @@ class _$EmbedViewImageImpl extends _EmbedViewImage {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_EmbedViewVideo value)? video,
-    TResult? Function(_EmbedViewImage value)? image,
+    TResult? Function(EmbedViewVideo value)? video,
+    TResult? Function(EmbedViewImage value)? image,
   }) {
     return image?.call(this);
   }
@@ -4683,8 +4676,8 @@ class _$EmbedViewImageImpl extends _EmbedViewImage {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_EmbedViewVideo value)? video,
-    TResult Function(_EmbedViewImage value)? image,
+    TResult Function(EmbedViewVideo value)? video,
+    TResult Function(EmbedViewImage value)? image,
     required TResult orElse(),
   }) {
     if (image != null) {
@@ -4701,12 +4694,12 @@ class _$EmbedViewImageImpl extends _EmbedViewImage {
   }
 }
 
-abstract class _EmbedViewImage extends EmbedView {
-  const factory _EmbedViewImage({required final ImageView image}) =
+abstract class EmbedViewImage extends EmbedView {
+  const factory EmbedViewImage({required final ImageView image}) =
       _$EmbedViewImageImpl;
-  const _EmbedViewImage._() : super._();
+  const EmbedViewImage._() : super._();
 
-  factory _EmbedViewImage.fromJson(Map<String, dynamic> json) =
+  factory EmbedViewImage.fromJson(Map<String, dynamic> json) =
       _$EmbedViewImageImpl.fromJson;
 
   ImageView get image;
@@ -5447,17 +5440,17 @@ abstract class _FacetIndex extends FacetIndex {
 }
 
 FacetFeature _$FacetFeatureFromJson(Map<String, dynamic> json) {
-  switch (json['runtimeType']) {
-    case 'mention':
-      return _MentionFeature.fromJson(json);
-    case 'link':
-      return _LinkFeature.fromJson(json);
-    case 'tag':
-      return _TagFeature.fromJson(json);
+  switch (json['\$type']) {
+    case '#mention':
+      return MentionFeature.fromJson(json);
+    case '#link':
+      return LinkFeature.fromJson(json);
+    case '#tag':
+      return TagFeature.fromJson(json);
 
     default:
-      throw CheckedFromJsonException(json, 'runtimeType', 'FacetFeature',
-          'Invalid union type "${json['runtimeType']}"!');
+      throw CheckedFromJsonException(json, '\$type', 'FacetFeature',
+          'Invalid union type "${json['\$type']}"!');
   }
 }
 
@@ -5487,23 +5480,23 @@ mixin _$FacetFeature {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_MentionFeature value) mention,
-    required TResult Function(_LinkFeature value) link,
-    required TResult Function(_TagFeature value) tag,
+    required TResult Function(MentionFeature value) mention,
+    required TResult Function(LinkFeature value) link,
+    required TResult Function(TagFeature value) tag,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_MentionFeature value)? mention,
-    TResult? Function(_LinkFeature value)? link,
-    TResult? Function(_TagFeature value)? tag,
+    TResult? Function(MentionFeature value)? mention,
+    TResult? Function(LinkFeature value)? link,
+    TResult? Function(TagFeature value)? tag,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_MentionFeature value)? mention,
-    TResult Function(_LinkFeature value)? link,
-    TResult Function(_TagFeature value)? tag,
+    TResult Function(MentionFeature value)? mention,
+    TResult Function(LinkFeature value)? link,
+    TResult Function(TagFeature value)? tag,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -5568,9 +5561,9 @@ class __$$MentionFeatureImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$MentionFeatureImpl extends _MentionFeature {
+class _$MentionFeatureImpl extends MentionFeature {
   const _$MentionFeatureImpl({required this.did, final String? $type})
-      : $type = $type ?? 'mention',
+      : $type = $type ?? '#mention',
         super._();
 
   factory _$MentionFeatureImpl.fromJson(Map<String, dynamic> json) =>
@@ -5579,7 +5572,7 @@ class _$MentionFeatureImpl extends _MentionFeature {
   @override
   final String did;
 
-  @JsonKey(name: 'runtimeType')
+  @JsonKey(name: '\$type')
   final String $type;
 
   @override
@@ -5645,9 +5638,9 @@ class _$MentionFeatureImpl extends _MentionFeature {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_MentionFeature value) mention,
-    required TResult Function(_LinkFeature value) link,
-    required TResult Function(_TagFeature value) tag,
+    required TResult Function(MentionFeature value) mention,
+    required TResult Function(LinkFeature value) link,
+    required TResult Function(TagFeature value) tag,
   }) {
     return mention(this);
   }
@@ -5655,9 +5648,9 @@ class _$MentionFeatureImpl extends _MentionFeature {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_MentionFeature value)? mention,
-    TResult? Function(_LinkFeature value)? link,
-    TResult? Function(_TagFeature value)? tag,
+    TResult? Function(MentionFeature value)? mention,
+    TResult? Function(LinkFeature value)? link,
+    TResult? Function(TagFeature value)? tag,
   }) {
     return mention?.call(this);
   }
@@ -5665,9 +5658,9 @@ class _$MentionFeatureImpl extends _MentionFeature {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_MentionFeature value)? mention,
-    TResult Function(_LinkFeature value)? link,
-    TResult Function(_TagFeature value)? tag,
+    TResult Function(MentionFeature value)? mention,
+    TResult Function(LinkFeature value)? link,
+    TResult Function(TagFeature value)? tag,
     required TResult orElse(),
   }) {
     if (mention != null) {
@@ -5684,12 +5677,12 @@ class _$MentionFeatureImpl extends _MentionFeature {
   }
 }
 
-abstract class _MentionFeature extends FacetFeature {
-  const factory _MentionFeature({required final String did}) =
+abstract class MentionFeature extends FacetFeature {
+  const factory MentionFeature({required final String did}) =
       _$MentionFeatureImpl;
-  const _MentionFeature._() : super._();
+  const MentionFeature._() : super._();
 
-  factory _MentionFeature.fromJson(Map<String, dynamic> json) =
+  factory MentionFeature.fromJson(Map<String, dynamic> json) =
       _$MentionFeatureImpl.fromJson;
 
   String get did;
@@ -5736,9 +5729,9 @@ class __$$LinkFeatureImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$LinkFeatureImpl extends _LinkFeature {
+class _$LinkFeatureImpl extends LinkFeature {
   const _$LinkFeatureImpl({required this.uri, final String? $type})
-      : $type = $type ?? 'link',
+      : $type = $type ?? '#link',
         super._();
 
   factory _$LinkFeatureImpl.fromJson(Map<String, dynamic> json) =>
@@ -5747,7 +5740,7 @@ class _$LinkFeatureImpl extends _LinkFeature {
   @override
   final String uri;
 
-  @JsonKey(name: 'runtimeType')
+  @JsonKey(name: '\$type')
   final String $type;
 
   @override
@@ -5812,9 +5805,9 @@ class _$LinkFeatureImpl extends _LinkFeature {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_MentionFeature value) mention,
-    required TResult Function(_LinkFeature value) link,
-    required TResult Function(_TagFeature value) tag,
+    required TResult Function(MentionFeature value) mention,
+    required TResult Function(LinkFeature value) link,
+    required TResult Function(TagFeature value) tag,
   }) {
     return link(this);
   }
@@ -5822,9 +5815,9 @@ class _$LinkFeatureImpl extends _LinkFeature {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_MentionFeature value)? mention,
-    TResult? Function(_LinkFeature value)? link,
-    TResult? Function(_TagFeature value)? tag,
+    TResult? Function(MentionFeature value)? mention,
+    TResult? Function(LinkFeature value)? link,
+    TResult? Function(TagFeature value)? tag,
   }) {
     return link?.call(this);
   }
@@ -5832,9 +5825,9 @@ class _$LinkFeatureImpl extends _LinkFeature {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_MentionFeature value)? mention,
-    TResult Function(_LinkFeature value)? link,
-    TResult Function(_TagFeature value)? tag,
+    TResult Function(MentionFeature value)? mention,
+    TResult Function(LinkFeature value)? link,
+    TResult Function(TagFeature value)? tag,
     required TResult orElse(),
   }) {
     if (link != null) {
@@ -5851,11 +5844,11 @@ class _$LinkFeatureImpl extends _LinkFeature {
   }
 }
 
-abstract class _LinkFeature extends FacetFeature {
-  const factory _LinkFeature({required final String uri}) = _$LinkFeatureImpl;
-  const _LinkFeature._() : super._();
+abstract class LinkFeature extends FacetFeature {
+  const factory LinkFeature({required final String uri}) = _$LinkFeatureImpl;
+  const LinkFeature._() : super._();
 
-  factory _LinkFeature.fromJson(Map<String, dynamic> json) =
+  factory LinkFeature.fromJson(Map<String, dynamic> json) =
       _$LinkFeatureImpl.fromJson;
 
   String get uri;
@@ -5902,9 +5895,9 @@ class __$$TagFeatureImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$TagFeatureImpl extends _TagFeature {
+class _$TagFeatureImpl extends TagFeature {
   const _$TagFeatureImpl({required this.tag, final String? $type})
-      : $type = $type ?? 'tag',
+      : $type = $type ?? '#tag',
         super._();
 
   factory _$TagFeatureImpl.fromJson(Map<String, dynamic> json) =>
@@ -5913,7 +5906,7 @@ class _$TagFeatureImpl extends _TagFeature {
   @override
   final String tag;
 
-  @JsonKey(name: 'runtimeType')
+  @JsonKey(name: '\$type')
   final String $type;
 
   @override
@@ -5978,9 +5971,9 @@ class _$TagFeatureImpl extends _TagFeature {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_MentionFeature value) mention,
-    required TResult Function(_LinkFeature value) link,
-    required TResult Function(_TagFeature value) tag,
+    required TResult Function(MentionFeature value) mention,
+    required TResult Function(LinkFeature value) link,
+    required TResult Function(TagFeature value) tag,
   }) {
     return tag(this);
   }
@@ -5988,9 +5981,9 @@ class _$TagFeatureImpl extends _TagFeature {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_MentionFeature value)? mention,
-    TResult? Function(_LinkFeature value)? link,
-    TResult? Function(_TagFeature value)? tag,
+    TResult? Function(MentionFeature value)? mention,
+    TResult? Function(LinkFeature value)? link,
+    TResult? Function(TagFeature value)? tag,
   }) {
     return tag?.call(this);
   }
@@ -5998,9 +5991,9 @@ class _$TagFeatureImpl extends _TagFeature {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_MentionFeature value)? mention,
-    TResult Function(_LinkFeature value)? link,
-    TResult Function(_TagFeature value)? tag,
+    TResult Function(MentionFeature value)? mention,
+    TResult Function(LinkFeature value)? link,
+    TResult Function(TagFeature value)? tag,
     required TResult orElse(),
   }) {
     if (tag != null) {
@@ -6017,11 +6010,11 @@ class _$TagFeatureImpl extends _TagFeature {
   }
 }
 
-abstract class _TagFeature extends FacetFeature {
-  const factory _TagFeature({required final String tag}) = _$TagFeatureImpl;
-  const _TagFeature._() : super._();
+abstract class TagFeature extends FacetFeature {
+  const factory TagFeature({required final String tag}) = _$TagFeatureImpl;
+  const TagFeature._() : super._();
 
-  factory _TagFeature.fromJson(Map<String, dynamic> json) =
+  factory TagFeature.fromJson(Map<String, dynamic> json) =
       _$TagFeatureImpl.fromJson;
 
   String get tag;
@@ -7341,17 +7334,17 @@ abstract class _ViewImage extends ViewImage {
 }
 
 Thread _$ThreadFromJson(Map<String, dynamic> json) {
-  switch (json['runtimeType']) {
+  switch (json['\$type']) {
     case 'so.sprk.feed.defs#threadViewPost':
-      return _ThreadViewPost.fromJson(json);
+      return ThreadViewPost.fromJson(json);
     case 'so.sprk.feed.defs#notFoundPost':
-      return _NotFoundPost.fromJson(json);
+      return NotFoundPost.fromJson(json);
     case 'so.sprk.feed.defs#blockedPost':
-      return _BlockedPost.fromJson(json);
+      return BlockedPost.fromJson(json);
 
     default:
-      throw CheckedFromJsonException(json, 'runtimeType', 'Thread',
-          'Invalid union type "${json['runtimeType']}"!');
+      throw CheckedFromJsonException(
+          json, '\$type', 'Thread', 'Invalid union type "${json['\$type']}"!');
   }
 }
 
@@ -7359,8 +7352,8 @@ Thread _$ThreadFromJson(Map<String, dynamic> json) {
 mixin _$Thread {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(
-            PostView post, Thread? parent, List<Thread>? replies)
+    required TResult Function(PostView post, Thread? parent,
+            List<Thread>? replies, ThreadContext? context)
         threadViewPost,
     required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
         notFoundPost,
@@ -7371,7 +7364,8 @@ mixin _$Thread {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(PostView post, Thread? parent, List<Thread>? replies)?
+    TResult? Function(PostView post, Thread? parent, List<Thread>? replies,
+            ThreadContext? context)?
         threadViewPost,
     TResult? Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult? Function(
@@ -7381,7 +7375,8 @@ mixin _$Thread {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(PostView post, Thread? parent, List<Thread>? replies)?
+    TResult Function(PostView post, Thread? parent, List<Thread>? replies,
+            ThreadContext? context)?
         threadViewPost,
     TResult Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult Function(
@@ -7392,23 +7387,23 @@ mixin _$Thread {
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_ThreadViewPost value) threadViewPost,
-    required TResult Function(_NotFoundPost value) notFoundPost,
-    required TResult Function(_BlockedPost value) blockedPost,
+    required TResult Function(ThreadViewPost value) threadViewPost,
+    required TResult Function(NotFoundPost value) notFoundPost,
+    required TResult Function(BlockedPost value) blockedPost,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_ThreadViewPost value)? threadViewPost,
-    TResult? Function(_NotFoundPost value)? notFoundPost,
-    TResult? Function(_BlockedPost value)? blockedPost,
+    TResult? Function(ThreadViewPost value)? threadViewPost,
+    TResult? Function(NotFoundPost value)? notFoundPost,
+    TResult? Function(BlockedPost value)? blockedPost,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_ThreadViewPost value)? threadViewPost,
-    TResult Function(_NotFoundPost value)? notFoundPost,
-    TResult Function(_BlockedPost value)? blockedPost,
+    TResult Function(ThreadViewPost value)? threadViewPost,
+    TResult Function(NotFoundPost value)? notFoundPost,
+    TResult Function(BlockedPost value)? blockedPost,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -7443,10 +7438,15 @@ abstract class _$$ThreadViewPostImplCopyWith<$Res> {
           $Res Function(_$ThreadViewPostImpl) then) =
       __$$ThreadViewPostImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({PostView post, Thread? parent, List<Thread>? replies});
+  $Res call(
+      {PostView post,
+      Thread? parent,
+      List<Thread>? replies,
+      ThreadContext? context});
 
   $PostViewCopyWith<$Res> get post;
   $ThreadCopyWith<$Res>? get parent;
+  $ThreadContextCopyWith<$Res>? get context;
 }
 
 /// @nodoc
@@ -7465,6 +7465,7 @@ class __$$ThreadViewPostImplCopyWithImpl<$Res>
     Object? post = null,
     Object? parent = freezed,
     Object? replies = freezed,
+    Object? context = freezed,
   }) {
     return _then(_$ThreadViewPostImpl(
       post: null == post
@@ -7479,6 +7480,10 @@ class __$$ThreadViewPostImplCopyWithImpl<$Res>
           ? _value._replies
           : replies // ignore: cast_nullable_to_non_nullable
               as List<Thread>?,
+      context: freezed == context
+          ? _value.context
+          : context // ignore: cast_nullable_to_non_nullable
+              as ThreadContext?,
     ));
   }
 
@@ -7505,15 +7510,30 @@ class __$$ThreadViewPostImplCopyWithImpl<$Res>
       return _then(_value.copyWith(parent: value));
     });
   }
+
+  /// Create a copy of Thread
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ThreadContextCopyWith<$Res>? get context {
+    if (_value.context == null) {
+      return null;
+    }
+
+    return $ThreadContextCopyWith<$Res>(_value.context!, (value) {
+      return _then(_value.copyWith(context: value));
+    });
+  }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$ThreadViewPostImpl extends _ThreadViewPost {
+class _$ThreadViewPostImpl extends ThreadViewPost {
   const _$ThreadViewPostImpl(
       {required this.post,
       this.parent,
       final List<Thread>? replies,
+      this.context,
       final String? $type})
       : _replies = replies,
         $type = $type ?? 'so.sprk.feed.defs#threadViewPost',
@@ -7536,12 +7556,15 @@ class _$ThreadViewPostImpl extends _ThreadViewPost {
     return EqualUnmodifiableListView(value);
   }
 
-  @JsonKey(name: 'runtimeType')
+  @override
+  final ThreadContext? context;
+
+  @JsonKey(name: '\$type')
   final String $type;
 
   @override
   String toString() {
-    return 'Thread.threadViewPost(post: $post, parent: $parent, replies: $replies)';
+    return 'Thread.threadViewPost(post: $post, parent: $parent, replies: $replies, context: $context)';
   }
 
   @override
@@ -7551,13 +7574,14 @@ class _$ThreadViewPostImpl extends _ThreadViewPost {
             other is _$ThreadViewPostImpl &&
             (identical(other.post, post) || other.post == post) &&
             (identical(other.parent, parent) || other.parent == parent) &&
-            const DeepCollectionEquality().equals(other._replies, _replies));
+            const DeepCollectionEquality().equals(other._replies, _replies) &&
+            (identical(other.context, context) || other.context == context));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-      runtimeType, post, parent, const DeepCollectionEquality().hash(_replies));
+  int get hashCode => Object.hash(runtimeType, post, parent,
+      const DeepCollectionEquality().hash(_replies), context);
 
   /// Create a copy of Thread
   /// with the given fields replaced by the non-null parameter values.
@@ -7571,8 +7595,8 @@ class _$ThreadViewPostImpl extends _ThreadViewPost {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(
-            PostView post, Thread? parent, List<Thread>? replies)
+    required TResult Function(PostView post, Thread? parent,
+            List<Thread>? replies, ThreadContext? context)
         threadViewPost,
     required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
         notFoundPost,
@@ -7580,26 +7604,28 @@ class _$ThreadViewPostImpl extends _ThreadViewPost {
             @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)
         blockedPost,
   }) {
-    return threadViewPost(post, parent, replies);
+    return threadViewPost(post, parent, replies, context);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(PostView post, Thread? parent, List<Thread>? replies)?
+    TResult? Function(PostView post, Thread? parent, List<Thread>? replies,
+            ThreadContext? context)?
         threadViewPost,
     TResult? Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult? Function(
             @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
         blockedPost,
   }) {
-    return threadViewPost?.call(post, parent, replies);
+    return threadViewPost?.call(post, parent, replies, context);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(PostView post, Thread? parent, List<Thread>? replies)?
+    TResult Function(PostView post, Thread? parent, List<Thread>? replies,
+            ThreadContext? context)?
         threadViewPost,
     TResult Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult Function(
@@ -7608,7 +7634,7 @@ class _$ThreadViewPostImpl extends _ThreadViewPost {
     required TResult orElse(),
   }) {
     if (threadViewPost != null) {
-      return threadViewPost(post, parent, replies);
+      return threadViewPost(post, parent, replies, context);
     }
     return orElse();
   }
@@ -7616,9 +7642,9 @@ class _$ThreadViewPostImpl extends _ThreadViewPost {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_ThreadViewPost value) threadViewPost,
-    required TResult Function(_NotFoundPost value) notFoundPost,
-    required TResult Function(_BlockedPost value) blockedPost,
+    required TResult Function(ThreadViewPost value) threadViewPost,
+    required TResult Function(NotFoundPost value) notFoundPost,
+    required TResult Function(BlockedPost value) blockedPost,
   }) {
     return threadViewPost(this);
   }
@@ -7626,9 +7652,9 @@ class _$ThreadViewPostImpl extends _ThreadViewPost {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_ThreadViewPost value)? threadViewPost,
-    TResult? Function(_NotFoundPost value)? notFoundPost,
-    TResult? Function(_BlockedPost value)? blockedPost,
+    TResult? Function(ThreadViewPost value)? threadViewPost,
+    TResult? Function(NotFoundPost value)? notFoundPost,
+    TResult? Function(BlockedPost value)? blockedPost,
   }) {
     return threadViewPost?.call(this);
   }
@@ -7636,9 +7662,9 @@ class _$ThreadViewPostImpl extends _ThreadViewPost {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_ThreadViewPost value)? threadViewPost,
-    TResult Function(_NotFoundPost value)? notFoundPost,
-    TResult Function(_BlockedPost value)? blockedPost,
+    TResult Function(ThreadViewPost value)? threadViewPost,
+    TResult Function(NotFoundPost value)? notFoundPost,
+    TResult Function(BlockedPost value)? blockedPost,
     required TResult orElse(),
   }) {
     if (threadViewPost != null) {
@@ -7655,19 +7681,21 @@ class _$ThreadViewPostImpl extends _ThreadViewPost {
   }
 }
 
-abstract class _ThreadViewPost extends Thread {
-  const factory _ThreadViewPost(
+abstract class ThreadViewPost extends Thread {
+  const factory ThreadViewPost(
       {required final PostView post,
       final Thread? parent,
-      final List<Thread>? replies}) = _$ThreadViewPostImpl;
-  const _ThreadViewPost._() : super._();
+      final List<Thread>? replies,
+      final ThreadContext? context}) = _$ThreadViewPostImpl;
+  const ThreadViewPost._() : super._();
 
-  factory _ThreadViewPost.fromJson(Map<String, dynamic> json) =
+  factory ThreadViewPost.fromJson(Map<String, dynamic> json) =
       _$ThreadViewPostImpl.fromJson;
 
   PostView get post;
   Thread? get parent;
   List<Thread>? get replies;
+  ThreadContext? get context;
 
   /// Create a copy of Thread
   /// with the given fields replaced by the non-null parameter values.
@@ -7716,7 +7744,7 @@ class __$$NotFoundPostImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$NotFoundPostImpl extends _NotFoundPost {
+class _$NotFoundPostImpl extends NotFoundPost {
   const _$NotFoundPostImpl(
       {@AtUriConverter() required this.uri,
       required this.notFound,
@@ -7733,7 +7761,7 @@ class _$NotFoundPostImpl extends _NotFoundPost {
   @override
   final bool notFound;
 
-  @JsonKey(name: 'runtimeType')
+  @JsonKey(name: '\$type')
   final String $type;
 
   @override
@@ -7766,8 +7794,8 @@ class _$NotFoundPostImpl extends _NotFoundPost {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(
-            PostView post, Thread? parent, List<Thread>? replies)
+    required TResult Function(PostView post, Thread? parent,
+            List<Thread>? replies, ThreadContext? context)
         threadViewPost,
     required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
         notFoundPost,
@@ -7781,7 +7809,8 @@ class _$NotFoundPostImpl extends _NotFoundPost {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(PostView post, Thread? parent, List<Thread>? replies)?
+    TResult? Function(PostView post, Thread? parent, List<Thread>? replies,
+            ThreadContext? context)?
         threadViewPost,
     TResult? Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult? Function(
@@ -7794,7 +7823,8 @@ class _$NotFoundPostImpl extends _NotFoundPost {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(PostView post, Thread? parent, List<Thread>? replies)?
+    TResult Function(PostView post, Thread? parent, List<Thread>? replies,
+            ThreadContext? context)?
         threadViewPost,
     TResult Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult Function(
@@ -7811,9 +7841,9 @@ class _$NotFoundPostImpl extends _NotFoundPost {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_ThreadViewPost value) threadViewPost,
-    required TResult Function(_NotFoundPost value) notFoundPost,
-    required TResult Function(_BlockedPost value) blockedPost,
+    required TResult Function(ThreadViewPost value) threadViewPost,
+    required TResult Function(NotFoundPost value) notFoundPost,
+    required TResult Function(BlockedPost value) blockedPost,
   }) {
     return notFoundPost(this);
   }
@@ -7821,9 +7851,9 @@ class _$NotFoundPostImpl extends _NotFoundPost {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_ThreadViewPost value)? threadViewPost,
-    TResult? Function(_NotFoundPost value)? notFoundPost,
-    TResult? Function(_BlockedPost value)? blockedPost,
+    TResult? Function(ThreadViewPost value)? threadViewPost,
+    TResult? Function(NotFoundPost value)? notFoundPost,
+    TResult? Function(BlockedPost value)? blockedPost,
   }) {
     return notFoundPost?.call(this);
   }
@@ -7831,9 +7861,9 @@ class _$NotFoundPostImpl extends _NotFoundPost {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_ThreadViewPost value)? threadViewPost,
-    TResult Function(_NotFoundPost value)? notFoundPost,
-    TResult Function(_BlockedPost value)? blockedPost,
+    TResult Function(ThreadViewPost value)? threadViewPost,
+    TResult Function(NotFoundPost value)? notFoundPost,
+    TResult Function(BlockedPost value)? blockedPost,
     required TResult orElse(),
   }) {
     if (notFoundPost != null) {
@@ -7850,13 +7880,13 @@ class _$NotFoundPostImpl extends _NotFoundPost {
   }
 }
 
-abstract class _NotFoundPost extends Thread {
-  const factory _NotFoundPost(
+abstract class NotFoundPost extends Thread {
+  const factory NotFoundPost(
       {@AtUriConverter() required final AtUri uri,
       required final bool notFound}) = _$NotFoundPostImpl;
-  const _NotFoundPost._() : super._();
+  const NotFoundPost._() : super._();
 
-  factory _NotFoundPost.fromJson(Map<String, dynamic> json) =
+  factory NotFoundPost.fromJson(Map<String, dynamic> json) =
       _$NotFoundPostImpl.fromJson;
 
   @AtUriConverter()
@@ -7927,7 +7957,7 @@ class __$$BlockedPostImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$BlockedPostImpl extends _BlockedPost {
+class _$BlockedPostImpl extends BlockedPost {
   const _$BlockedPostImpl(
       {@AtUriConverter() required this.uri,
       required this.blocked,
@@ -7947,7 +7977,7 @@ class _$BlockedPostImpl extends _BlockedPost {
   @override
   final BlockedAuthor author;
 
-  @JsonKey(name: 'runtimeType')
+  @JsonKey(name: '\$type')
   final String $type;
 
   @override
@@ -7980,8 +8010,8 @@ class _$BlockedPostImpl extends _BlockedPost {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(
-            PostView post, Thread? parent, List<Thread>? replies)
+    required TResult Function(PostView post, Thread? parent,
+            List<Thread>? replies, ThreadContext? context)
         threadViewPost,
     required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
         notFoundPost,
@@ -7995,7 +8025,8 @@ class _$BlockedPostImpl extends _BlockedPost {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(PostView post, Thread? parent, List<Thread>? replies)?
+    TResult? Function(PostView post, Thread? parent, List<Thread>? replies,
+            ThreadContext? context)?
         threadViewPost,
     TResult? Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult? Function(
@@ -8008,7 +8039,8 @@ class _$BlockedPostImpl extends _BlockedPost {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(PostView post, Thread? parent, List<Thread>? replies)?
+    TResult Function(PostView post, Thread? parent, List<Thread>? replies,
+            ThreadContext? context)?
         threadViewPost,
     TResult Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult Function(
@@ -8025,9 +8057,9 @@ class _$BlockedPostImpl extends _BlockedPost {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_ThreadViewPost value) threadViewPost,
-    required TResult Function(_NotFoundPost value) notFoundPost,
-    required TResult Function(_BlockedPost value) blockedPost,
+    required TResult Function(ThreadViewPost value) threadViewPost,
+    required TResult Function(NotFoundPost value) notFoundPost,
+    required TResult Function(BlockedPost value) blockedPost,
   }) {
     return blockedPost(this);
   }
@@ -8035,9 +8067,9 @@ class _$BlockedPostImpl extends _BlockedPost {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_ThreadViewPost value)? threadViewPost,
-    TResult? Function(_NotFoundPost value)? notFoundPost,
-    TResult? Function(_BlockedPost value)? blockedPost,
+    TResult? Function(ThreadViewPost value)? threadViewPost,
+    TResult? Function(NotFoundPost value)? notFoundPost,
+    TResult? Function(BlockedPost value)? blockedPost,
   }) {
     return blockedPost?.call(this);
   }
@@ -8045,9 +8077,9 @@ class _$BlockedPostImpl extends _BlockedPost {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_ThreadViewPost value)? threadViewPost,
-    TResult Function(_NotFoundPost value)? notFoundPost,
-    TResult Function(_BlockedPost value)? blockedPost,
+    TResult Function(ThreadViewPost value)? threadViewPost,
+    TResult Function(NotFoundPost value)? notFoundPost,
+    TResult Function(BlockedPost value)? blockedPost,
     required TResult orElse(),
   }) {
     if (blockedPost != null) {
@@ -8064,14 +8096,14 @@ class _$BlockedPostImpl extends _BlockedPost {
   }
 }
 
-abstract class _BlockedPost extends Thread {
-  const factory _BlockedPost(
+abstract class BlockedPost extends Thread {
+  const factory BlockedPost(
       {@AtUriConverter() required final AtUri uri,
       required final bool blocked,
       required final BlockedAuthor author}) = _$BlockedPostImpl;
-  const _BlockedPost._() : super._();
+  const BlockedPost._() : super._();
 
-  factory _BlockedPost.fromJson(Map<String, dynamic> json) =
+  factory BlockedPost.fromJson(Map<String, dynamic> json) =
       _$BlockedPostImpl.fromJson;
 
   @AtUriConverter()
@@ -8083,5 +8115,159 @@ abstract class _BlockedPost extends Thread {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$BlockedPostImplCopyWith<_$BlockedPostImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+ThreadContext _$ThreadContextFromJson(Map<String, dynamic> json) {
+  return _ThreadContext.fromJson(json);
+}
+
+/// @nodoc
+mixin _$ThreadContext {
+  @AtUriConverter()
+  AtUri? get rootAuthorLike => throw _privateConstructorUsedError;
+
+  /// Serializes this ThreadContext to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of ThreadContext
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $ThreadContextCopyWith<ThreadContext> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $ThreadContextCopyWith<$Res> {
+  factory $ThreadContextCopyWith(
+          ThreadContext value, $Res Function(ThreadContext) then) =
+      _$ThreadContextCopyWithImpl<$Res, ThreadContext>;
+  @useResult
+  $Res call({@AtUriConverter() AtUri? rootAuthorLike});
+}
+
+/// @nodoc
+class _$ThreadContextCopyWithImpl<$Res, $Val extends ThreadContext>
+    implements $ThreadContextCopyWith<$Res> {
+  _$ThreadContextCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of ThreadContext
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? rootAuthorLike = freezed,
+  }) {
+    return _then(_value.copyWith(
+      rootAuthorLike: freezed == rootAuthorLike
+          ? _value.rootAuthorLike
+          : rootAuthorLike // ignore: cast_nullable_to_non_nullable
+              as AtUri?,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$ThreadContextImplCopyWith<$Res>
+    implements $ThreadContextCopyWith<$Res> {
+  factory _$$ThreadContextImplCopyWith(
+          _$ThreadContextImpl value, $Res Function(_$ThreadContextImpl) then) =
+      __$$ThreadContextImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({@AtUriConverter() AtUri? rootAuthorLike});
+}
+
+/// @nodoc
+class __$$ThreadContextImplCopyWithImpl<$Res>
+    extends _$ThreadContextCopyWithImpl<$Res, _$ThreadContextImpl>
+    implements _$$ThreadContextImplCopyWith<$Res> {
+  __$$ThreadContextImplCopyWithImpl(
+      _$ThreadContextImpl _value, $Res Function(_$ThreadContextImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of ThreadContext
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? rootAuthorLike = freezed,
+  }) {
+    return _then(_$ThreadContextImpl(
+      rootAuthorLike: freezed == rootAuthorLike
+          ? _value.rootAuthorLike
+          : rootAuthorLike // ignore: cast_nullable_to_non_nullable
+              as AtUri?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$ThreadContextImpl implements _ThreadContext {
+  const _$ThreadContextImpl({@AtUriConverter() this.rootAuthorLike});
+
+  factory _$ThreadContextImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ThreadContextImplFromJson(json);
+
+  @override
+  @AtUriConverter()
+  final AtUri? rootAuthorLike;
+
+  @override
+  String toString() {
+    return 'ThreadContext(rootAuthorLike: $rootAuthorLike)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$ThreadContextImpl &&
+            (identical(other.rootAuthorLike, rootAuthorLike) ||
+                other.rootAuthorLike == rootAuthorLike));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, rootAuthorLike);
+
+  /// Create a copy of ThreadContext
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$ThreadContextImplCopyWith<_$ThreadContextImpl> get copyWith =>
+      __$$ThreadContextImplCopyWithImpl<_$ThreadContextImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$ThreadContextImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _ThreadContext implements ThreadContext {
+  const factory _ThreadContext(
+      {@AtUriConverter() final AtUri? rootAuthorLike}) = _$ThreadContextImpl;
+
+  factory _ThreadContext.fromJson(Map<String, dynamic> json) =
+      _$ThreadContextImpl.fromJson;
+
+  @override
+  @AtUriConverter()
+  AtUri? get rootAuthorLike;
+
+  /// Create a copy of ThreadContext
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$ThreadContextImplCopyWith<_$ThreadContextImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }

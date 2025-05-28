@@ -5,7 +5,6 @@ import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/features/auth/data/repositories/auth_repository.dart';

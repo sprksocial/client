@@ -7,6 +7,8 @@ import 'actor_models.dart';
 part 'feed_models.freezed.dart';
 part 'feed_models.g.dart';
 
+/// https://pub.dev/packages/freezed#union-types <= read this to know how to use pattern matching to know the type of the object
+
 enum HardCodedFeed {
   following('Following'), // posts from people you follow (bsky/sprk)
   mutuals('Mutuals'), // posts from people you follow who follow each other (bsky/sprk)
@@ -112,24 +114,22 @@ class ReplyRef with _$ReplyRef {
 }
 
 /// Can be a post, a not found post, or a blocked post
-@freezed
+@Freezed(unionKey: r'$type')
 sealed class ReplyRefPostReference with _$ReplyRefPostReference {
   const ReplyRefPostReference._();
   @FreezedUnionValue('so.sprk.feed.defs#post')
-  const factory ReplyRefPostReference.post({required PostView post}) = _ReplyRefPostReferencePost;
+  const factory ReplyRefPostReference.post({required PostView post}) = ReplyRefPostReferencePost;
 
   @FreezedUnionValue('so.sprk.feed.defs#notFoundPost')
-  const factory ReplyRefPostReference.notFoundPost({
-    @AtUriConverter() required AtUri uri,
-    @Default(true) required bool notFound,
-  }) = _ReplyRefPostReferenceNotFoundPost;
+  const factory ReplyRefPostReference.notFoundPost({@AtUriConverter() required AtUri uri, required bool notFound}) =
+      ReplyRefPostReferenceNotFoundPost;
 
   @FreezedUnionValue('so.sprk.feed.defs#blockedPost')
   const factory ReplyRefPostReference.blockedPost({
     @AtUriConverter() required AtUri uri,
-    @Default(true) required bool blocked,
+    required bool blocked,
     required BlockedAuthor author,
-  }) = _ReplyRefPostReferenceBlockedPost;
+  }) = ReplyRefPostReferenceBlockedPost;
 
   factory ReplyRefPostReference.fromJson(Map<String, dynamic> json) => _$ReplyRefPostReferenceFromJson(json);
 }
@@ -188,18 +188,17 @@ class PostRecord with _$PostRecord {
   factory PostRecord.fromJson(Map<String, dynamic> json) => _$PostRecordFromJson(json);
 }
 
-@freezed
+@Freezed(unionKey: r'$type')
 sealed class Embed with _$Embed {
   const Embed._();
   @FreezedUnionValue('so.sprk.embed.video')
-  const factory Embed.video({required VideoEmbed video}) = _EmbedVideo;
+  const factory Embed.video({required VideoEmbed video}) = EmbedVideo;
   @FreezedUnionValue('so.sprk.embed.images')
-  const factory Embed.image({required ImageEmbed image}) = _EmbedImage;
+  const factory Embed.image({required ImageEmbed image}) = EmbedImage;
 
   factory Embed.fromJson(Map<String, dynamic> json) => _$EmbedFromJson(json);
 }
 
-/// https://pub.dev/packages/freezed#union-types
 @freezed
 class PostView with _$PostView {
   const PostView._();
@@ -220,13 +219,13 @@ class PostView with _$PostView {
   bool get isSprk => RegExp(r'^at://[^/]+/so\.sprk\.feed\.post/[^/]+$').hasMatch(uri.toString());
 }
 
-@freezed
+@Freezed(unionKey: r'$type')
 sealed class EmbedView with _$EmbedView {
   const EmbedView._();
   @FreezedUnionValue('so.sprk.embed.video#view')
-  const factory EmbedView.video({required VideoView video}) = _EmbedViewVideo;
+  const factory EmbedView.video({required VideoView video}) = EmbedViewVideo;
   @FreezedUnionValue('so.sprk.embed.images#view')
-  const factory EmbedView.image({required ImageView image}) = _EmbedViewImage;
+  const factory EmbedView.image({required ImageView image}) = EmbedViewImage;
 
   factory EmbedView.fromJson(Map<String, dynamic> json) => _$EmbedViewFromJson(json);
 }
@@ -271,18 +270,21 @@ class FacetIndex with _$FacetIndex {
 }
 
 /// Represents a feature of a facet (mention, link, hashtag, etc.)
-@freezed
+@Freezed(unionKey: r'$type')
 class FacetFeature with _$FacetFeature {
   const FacetFeature._();
 
   /// Mention feature for referencing a user
-  const factory FacetFeature.mention({required String did}) = _MentionFeature;
+  @FreezedUnionValue('#mention')
+  const factory FacetFeature.mention({required String did}) = MentionFeature;
 
   /// Link feature for URLs
-  const factory FacetFeature.link({required String uri}) = _LinkFeature;
+  @FreezedUnionValue('#link')
+  const factory FacetFeature.link({required String uri}) = LinkFeature;
 
   /// Tag feature for hashtags
-  const factory FacetFeature.tag({required String tag}) = _TagFeature;
+  @FreezedUnionValue('#tag')
+  const factory FacetFeature.tag({required String tag}) = TagFeature;
 
   /// Create a FacetFeature from JSON
   factory FacetFeature.fromJson(Map<String, dynamic> json) => _$FacetFeatureFromJson(json);
@@ -381,19 +383,27 @@ class ViewImage with _$ViewImage {
   factory ViewImage.fromJson(Map<String, dynamic> json) => _$ViewImageFromJson(json);
 }
 
-@freezed
+@Freezed(unionKey: r'$type')
 class Thread with _$Thread {
   const Thread._();
 
   @FreezedUnionValue('so.sprk.feed.defs#threadViewPost')
-  const factory Thread.threadViewPost({required PostView post, Thread? parent, List<Thread>? replies}) = _ThreadViewPost;
+  const factory Thread.threadViewPost({required PostView post, Thread? parent, List<Thread>? replies, ThreadContext? context}) =
+      ThreadViewPost;
 
   @FreezedUnionValue('so.sprk.feed.defs#notFoundPost')
-  const factory Thread.notFoundPost({@AtUriConverter() required AtUri uri, required bool notFound}) = _NotFoundPost;
+  const factory Thread.notFoundPost({@AtUriConverter() required AtUri uri, required bool notFound}) = NotFoundPost;
 
   @FreezedUnionValue('so.sprk.feed.defs#blockedPost')
   const factory Thread.blockedPost({@AtUriConverter() required AtUri uri, required bool blocked, required BlockedAuthor author}) =
-      _BlockedPost;
+      BlockedPost;
 
   factory Thread.fromJson(Map<String, dynamic> json) => _$ThreadFromJson(json);
+}
+
+@freezed
+class ThreadContext with _$ThreadContext {
+  const factory ThreadContext({@AtUriConverter() AtUri? rootAuthorLike}) = _ThreadContext;
+
+  factory ThreadContext.fromJson(Map<String, dynamic> json) => _$ThreadContextFromJson(json);
 }
