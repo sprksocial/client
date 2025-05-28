@@ -44,7 +44,7 @@ class FeedManager {
     // Fetch labels for posts
     await fetchLabelsForPosts(filteredPosts, authService);
 
-    // Apply label preferences filtering if LabelerManager está disponível
+    // Apply label preferences filtering if LabelerManager is available
     if (_labelerManager != null) {
       return _applyLabelPreferences(filteredPosts);
     }

@@ -10,8 +10,6 @@ import 'package:sparksocial/src/core/network/atproto.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/core/network/data/repositories/sprk_repository_impl.dart';
 import 'package:sparksocial/src/features/settings/data/repositories/settings_repository_impl.dart';
-import 'package:sparksocial/src/features/settings/data/repositories/labeler_repository.dart';
-import 'package:sparksocial/src/features/settings/data/repositories/labeler_repository_impl.dart';
 import 'package:sparksocial/src/features/auth/data/repositories/onboarding_repository.dart';
 import 'package:sparksocial/src/features/auth/data/repositories/onboarding_repository_impl.dart';
 import 'package:sparksocial/src/features/profile/data/repositories/profile_repository.dart';
@@ -95,9 +93,6 @@ Future<void> _registerCore() async {
 Future<void> _registerSettings() async {
   // Register SettingsRepository
   sl.registerSingleton<SettingsRepository>(SettingsRepositoryImpl(sl<StorageManager>()));
-
-  // Register labeler repository
-  sl.registerLazySingleton<LabelerRepository>(() => LabelerRepositoryImpl(sl<SprkRepository>(), StorageManager.instance));
 }
 
 /// Registers onboarding dependencies

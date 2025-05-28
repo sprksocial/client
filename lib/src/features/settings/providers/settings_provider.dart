@@ -40,11 +40,6 @@ class Settings extends _$Settings {
       followedLabelers: followedLabelers,
       labelPreferences: labelPreferences,
     );
-
-    // Make sure selected feed is enabled
-    if (!isSelectedFeedEnabled()) {
-      await selectFirstEnabledFeed();
-    }
   }
 
   /// Sets feed blur setting

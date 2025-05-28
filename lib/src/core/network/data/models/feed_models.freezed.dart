@@ -30,8 +30,9 @@ mixin _$CustomFeed {
   bool get isDraft => throw _privateConstructorUsedError;
   bool get videosOnly => throw _privateConstructorUsedError;
   String? get did => throw _privateConstructorUsedError;
-  String? get uri => throw _privateConstructorUsedError;
-  String? get cid => throw _privateConstructorUsedError;
+  @AtUriConverter()
+  AtUri? get uri => throw _privateConstructorUsedError;
+  CID? get cid => throw _privateConstructorUsedError;
   Map<String, bool> get hashtagPreferences =>
       throw _privateConstructorUsedError; // hashtag: only show posts with this hashtag || never show posts with this hashtag
   Map<String, Map<String, bool>> get labelPreferences =>
@@ -64,8 +65,8 @@ abstract class $CustomFeedCopyWith<$Res> {
       bool isDraft,
       bool videosOnly,
       String? did,
-      String? uri,
-      String? cid,
+      @AtUriConverter() AtUri? uri,
+      CID? cid,
       Map<String, bool> hashtagPreferences,
       Map<String, Map<String, bool>> labelPreferences});
 
@@ -146,11 +147,11 @@ class _$CustomFeedCopyWithImpl<$Res, $Val extends CustomFeed>
       uri: freezed == uri
           ? _value.uri
           : uri // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as AtUri?,
       cid: freezed == cid
           ? _value.cid
           : cid // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as CID?,
       hashtagPreferences: null == hashtagPreferences
           ? _value.hashtagPreferences
           : hashtagPreferences // ignore: cast_nullable_to_non_nullable
@@ -196,8 +197,8 @@ abstract class _$$CustomFeedImplCopyWith<$Res>
       bool isDraft,
       bool videosOnly,
       String? did,
-      String? uri,
-      String? cid,
+      @AtUriConverter() AtUri? uri,
+      CID? cid,
       Map<String, bool> hashtagPreferences,
       Map<String, Map<String, bool>> labelPreferences});
 
@@ -277,11 +278,11 @@ class __$$CustomFeedImplCopyWithImpl<$Res>
       uri: freezed == uri
           ? _value.uri
           : uri // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as AtUri?,
       cid: freezed == cid
           ? _value.cid
           : cid // ignore: cast_nullable_to_non_nullable
-              as String?,
+              as CID?,
       hashtagPreferences: null == hashtagPreferences
           ? _value._hashtagPreferences
           : hashtagPreferences // ignore: cast_nullable_to_non_nullable
@@ -308,7 +309,7 @@ class _$CustomFeedImpl implements _CustomFeed {
       this.isDraft = true,
       this.videosOnly = false,
       this.did,
-      this.uri,
+      @AtUriConverter() this.uri,
       this.cid,
       final Map<String, bool> hashtagPreferences = const {},
       final Map<String, Map<String, bool>> labelPreferences = const {}})
@@ -362,9 +363,10 @@ class _$CustomFeedImpl implements _CustomFeed {
   @override
   final String? did;
   @override
-  final String? uri;
+  @AtUriConverter()
+  final AtUri? uri;
   @override
-  final String? cid;
+  final CID? cid;
   final Map<String, bool> _hashtagPreferences;
   @override
   @JsonKey()
@@ -466,8 +468,8 @@ abstract class _CustomFeed implements CustomFeed {
           final bool isDraft,
           final bool videosOnly,
           final String? did,
-          final String? uri,
-          final String? cid,
+          @AtUriConverter() final AtUri? uri,
+          final CID? cid,
           final Map<String, bool> hashtagPreferences,
           final Map<String, Map<String, bool>> labelPreferences}) =
       _$CustomFeedImpl;
@@ -496,9 +498,10 @@ abstract class _CustomFeed implements CustomFeed {
   @override
   String? get did;
   @override
-  String? get uri;
+  @AtUriConverter()
+  AtUri? get uri;
   @override
-  String? get cid;
+  CID? get cid;
   @override
   Map<String, bool>
       get hashtagPreferences; // hashtag: only show posts with this hashtag || never show posts with this hashtag
@@ -516,9 +519,9 @@ abstract class _CustomFeed implements CustomFeed {
 Feed _$FeedFromJson(Map<String, dynamic> json) {
   switch (json['runtimeType']) {
     case 'custom':
-      return _Feed.fromJson(json);
+      return FeedCustom.fromJson(json);
     case 'hardCoded':
-      return _HardCodedFeed.fromJson(json);
+      return FeedHardCoded.fromJson(json);
 
     default:
       throw CheckedFromJsonException(json, 'runtimeType', 'Feed',
@@ -530,39 +533,39 @@ Feed _$FeedFromJson(Map<String, dynamic> json) {
 mixin _$Feed {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String name, String uri) custom,
+    required TResult Function(String name, @AtUriConverter() AtUri uri) custom,
     required TResult Function(HardCodedFeed hardCodedFeed) hardCoded,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String name, String uri)? custom,
+    TResult? Function(String name, @AtUriConverter() AtUri uri)? custom,
     TResult? Function(HardCodedFeed hardCodedFeed)? hardCoded,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String name, String uri)? custom,
+    TResult Function(String name, @AtUriConverter() AtUri uri)? custom,
     TResult Function(HardCodedFeed hardCodedFeed)? hardCoded,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_Feed value) custom,
-    required TResult Function(_HardCodedFeed value) hardCoded,
+    required TResult Function(FeedCustom value) custom,
+    required TResult Function(FeedHardCoded value) hardCoded,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_Feed value)? custom,
-    TResult? Function(_HardCodedFeed value)? hardCoded,
+    TResult? Function(FeedCustom value)? custom,
+    TResult? Function(FeedHardCoded value)? hardCoded,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_Feed value)? custom,
-    TResult Function(_HardCodedFeed value)? hardCoded,
+    TResult Function(FeedCustom value)? custom,
+    TResult Function(FeedHardCoded value)? hardCoded,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -592,19 +595,20 @@ class _$FeedCopyWithImpl<$Res, $Val extends Feed>
 }
 
 /// @nodoc
-abstract class _$$FeedImplCopyWith<$Res> {
-  factory _$$FeedImplCopyWith(
-          _$FeedImpl value, $Res Function(_$FeedImpl) then) =
-      __$$FeedImplCopyWithImpl<$Res>;
+abstract class _$$FeedCustomImplCopyWith<$Res> {
+  factory _$$FeedCustomImplCopyWith(
+          _$FeedCustomImpl value, $Res Function(_$FeedCustomImpl) then) =
+      __$$FeedCustomImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({String name, String uri});
+  $Res call({String name, @AtUriConverter() AtUri uri});
 }
 
 /// @nodoc
-class __$$FeedImplCopyWithImpl<$Res>
-    extends _$FeedCopyWithImpl<$Res, _$FeedImpl>
-    implements _$$FeedImplCopyWith<$Res> {
-  __$$FeedImplCopyWithImpl(_$FeedImpl _value, $Res Function(_$FeedImpl) _then)
+class __$$FeedCustomImplCopyWithImpl<$Res>
+    extends _$FeedCopyWithImpl<$Res, _$FeedCustomImpl>
+    implements _$$FeedCustomImplCopyWith<$Res> {
+  __$$FeedCustomImplCopyWithImpl(
+      _$FeedCustomImpl _value, $Res Function(_$FeedCustomImpl) _then)
       : super(_value, _then);
 
   /// Create a copy of Feed
@@ -615,7 +619,7 @@ class __$$FeedImplCopyWithImpl<$Res>
     Object? name = null,
     Object? uri = null,
   }) {
-    return _then(_$FeedImpl(
+    return _then(_$FeedCustomImpl(
       name: null == name
           ? _value.name
           : name // ignore: cast_nullable_to_non_nullable
@@ -623,25 +627,29 @@ class __$$FeedImplCopyWithImpl<$Res>
       uri: null == uri
           ? _value.uri
           : uri // ignore: cast_nullable_to_non_nullable
-              as String,
+              as AtUri,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$FeedImpl extends _Feed {
-  const _$FeedImpl({required this.name, required this.uri, final String? $type})
+class _$FeedCustomImpl extends FeedCustom {
+  const _$FeedCustomImpl(
+      {required this.name,
+      @AtUriConverter() required this.uri,
+      final String? $type})
       : $type = $type ?? 'custom',
         super._();
 
-  factory _$FeedImpl.fromJson(Map<String, dynamic> json) =>
-      _$$FeedImplFromJson(json);
+  factory _$FeedCustomImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FeedCustomImplFromJson(json);
 
   @override
   final String name;
   @override
-  final String uri;
+  @AtUriConverter()
+  final AtUri uri;
 
   @JsonKey(name: 'runtimeType')
   final String $type;
@@ -655,7 +663,7 @@ class _$FeedImpl extends _Feed {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$FeedImpl &&
+            other is _$FeedCustomImpl &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.uri, uri) || other.uri == uri));
   }
@@ -669,13 +677,13 @@ class _$FeedImpl extends _Feed {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$FeedImplCopyWith<_$FeedImpl> get copyWith =>
-      __$$FeedImplCopyWithImpl<_$FeedImpl>(this, _$identity);
+  _$$FeedCustomImplCopyWith<_$FeedCustomImpl> get copyWith =>
+      __$$FeedCustomImplCopyWithImpl<_$FeedCustomImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String name, String uri) custom,
+    required TResult Function(String name, @AtUriConverter() AtUri uri) custom,
     required TResult Function(HardCodedFeed hardCodedFeed) hardCoded,
   }) {
     return custom(name, uri);
@@ -684,7 +692,7 @@ class _$FeedImpl extends _Feed {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String name, String uri)? custom,
+    TResult? Function(String name, @AtUriConverter() AtUri uri)? custom,
     TResult? Function(HardCodedFeed hardCodedFeed)? hardCoded,
   }) {
     return custom?.call(name, uri);
@@ -693,7 +701,7 @@ class _$FeedImpl extends _Feed {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String name, String uri)? custom,
+    TResult Function(String name, @AtUriConverter() AtUri uri)? custom,
     TResult Function(HardCodedFeed hardCodedFeed)? hardCoded,
     required TResult orElse(),
   }) {
@@ -706,8 +714,8 @@ class _$FeedImpl extends _Feed {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_Feed value) custom,
-    required TResult Function(_HardCodedFeed value) hardCoded,
+    required TResult Function(FeedCustom value) custom,
+    required TResult Function(FeedHardCoded value) hardCoded,
   }) {
     return custom(this);
   }
@@ -715,8 +723,8 @@ class _$FeedImpl extends _Feed {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_Feed value)? custom,
-    TResult? Function(_HardCodedFeed value)? hardCoded,
+    TResult? Function(FeedCustom value)? custom,
+    TResult? Function(FeedHardCoded value)? hardCoded,
   }) {
     return custom?.call(this);
   }
@@ -724,8 +732,8 @@ class _$FeedImpl extends _Feed {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_Feed value)? custom,
-    TResult Function(_HardCodedFeed value)? hardCoded,
+    TResult Function(FeedCustom value)? custom,
+    TResult Function(FeedHardCoded value)? hardCoded,
     required TResult orElse(),
   }) {
     if (custom != null) {
@@ -736,44 +744,47 @@ class _$FeedImpl extends _Feed {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FeedImplToJson(
+    return _$$FeedCustomImplToJson(
       this,
     );
   }
 }
 
-abstract class _Feed extends Feed {
-  const factory _Feed({required final String name, required final String uri}) =
-      _$FeedImpl;
-  const _Feed._() : super._();
+abstract class FeedCustom extends Feed {
+  const factory FeedCustom(
+      {required final String name,
+      @AtUriConverter() required final AtUri uri}) = _$FeedCustomImpl;
+  const FeedCustom._() : super._();
 
-  factory _Feed.fromJson(Map<String, dynamic> json) = _$FeedImpl.fromJson;
+  factory FeedCustom.fromJson(Map<String, dynamic> json) =
+      _$FeedCustomImpl.fromJson;
 
   String get name;
-  String get uri;
+  @AtUriConverter()
+  AtUri get uri;
 
   /// Create a copy of Feed
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$FeedImplCopyWith<_$FeedImpl> get copyWith =>
+  _$$FeedCustomImplCopyWith<_$FeedCustomImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class _$$HardCodedFeedImplCopyWith<$Res> {
-  factory _$$HardCodedFeedImplCopyWith(
-          _$HardCodedFeedImpl value, $Res Function(_$HardCodedFeedImpl) then) =
-      __$$HardCodedFeedImplCopyWithImpl<$Res>;
+abstract class _$$FeedHardCodedImplCopyWith<$Res> {
+  factory _$$FeedHardCodedImplCopyWith(
+          _$FeedHardCodedImpl value, $Res Function(_$FeedHardCodedImpl) then) =
+      __$$FeedHardCodedImplCopyWithImpl<$Res>;
   @useResult
   $Res call({HardCodedFeed hardCodedFeed});
 }
 
 /// @nodoc
-class __$$HardCodedFeedImplCopyWithImpl<$Res>
-    extends _$FeedCopyWithImpl<$Res, _$HardCodedFeedImpl>
-    implements _$$HardCodedFeedImplCopyWith<$Res> {
-  __$$HardCodedFeedImplCopyWithImpl(
-      _$HardCodedFeedImpl _value, $Res Function(_$HardCodedFeedImpl) _then)
+class __$$FeedHardCodedImplCopyWithImpl<$Res>
+    extends _$FeedCopyWithImpl<$Res, _$FeedHardCodedImpl>
+    implements _$$FeedHardCodedImplCopyWith<$Res> {
+  __$$FeedHardCodedImplCopyWithImpl(
+      _$FeedHardCodedImpl _value, $Res Function(_$FeedHardCodedImpl) _then)
       : super(_value, _then);
 
   /// Create a copy of Feed
@@ -783,7 +794,7 @@ class __$$HardCodedFeedImplCopyWithImpl<$Res>
   $Res call({
     Object? hardCodedFeed = null,
   }) {
-    return _then(_$HardCodedFeedImpl(
+    return _then(_$FeedHardCodedImpl(
       hardCodedFeed: null == hardCodedFeed
           ? _value.hardCodedFeed
           : hardCodedFeed // ignore: cast_nullable_to_non_nullable
@@ -794,13 +805,13 @@ class __$$HardCodedFeedImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$HardCodedFeedImpl extends _HardCodedFeed {
-  const _$HardCodedFeedImpl({required this.hardCodedFeed, final String? $type})
+class _$FeedHardCodedImpl extends FeedHardCoded {
+  const _$FeedHardCodedImpl({required this.hardCodedFeed, final String? $type})
       : $type = $type ?? 'hardCoded',
         super._();
 
-  factory _$HardCodedFeedImpl.fromJson(Map<String, dynamic> json) =>
-      _$$HardCodedFeedImplFromJson(json);
+  factory _$FeedHardCodedImpl.fromJson(Map<String, dynamic> json) =>
+      _$$FeedHardCodedImplFromJson(json);
 
   @override
   final HardCodedFeed hardCodedFeed;
@@ -817,7 +828,7 @@ class _$HardCodedFeedImpl extends _HardCodedFeed {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$HardCodedFeedImpl &&
+            other is _$FeedHardCodedImpl &&
             (identical(other.hardCodedFeed, hardCodedFeed) ||
                 other.hardCodedFeed == hardCodedFeed));
   }
@@ -831,13 +842,13 @@ class _$HardCodedFeedImpl extends _HardCodedFeed {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$HardCodedFeedImplCopyWith<_$HardCodedFeedImpl> get copyWith =>
-      __$$HardCodedFeedImplCopyWithImpl<_$HardCodedFeedImpl>(this, _$identity);
+  _$$FeedHardCodedImplCopyWith<_$FeedHardCodedImpl> get copyWith =>
+      __$$FeedHardCodedImplCopyWithImpl<_$FeedHardCodedImpl>(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(String name, String uri) custom,
+    required TResult Function(String name, @AtUriConverter() AtUri uri) custom,
     required TResult Function(HardCodedFeed hardCodedFeed) hardCoded,
   }) {
     return hardCoded(hardCodedFeed);
@@ -846,7 +857,7 @@ class _$HardCodedFeedImpl extends _HardCodedFeed {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(String name, String uri)? custom,
+    TResult? Function(String name, @AtUriConverter() AtUri uri)? custom,
     TResult? Function(HardCodedFeed hardCodedFeed)? hardCoded,
   }) {
     return hardCoded?.call(hardCodedFeed);
@@ -855,7 +866,7 @@ class _$HardCodedFeedImpl extends _HardCodedFeed {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(String name, String uri)? custom,
+    TResult Function(String name, @AtUriConverter() AtUri uri)? custom,
     TResult Function(HardCodedFeed hardCodedFeed)? hardCoded,
     required TResult orElse(),
   }) {
@@ -868,8 +879,8 @@ class _$HardCodedFeedImpl extends _HardCodedFeed {
   @override
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
-    required TResult Function(_Feed value) custom,
-    required TResult Function(_HardCodedFeed value) hardCoded,
+    required TResult Function(FeedCustom value) custom,
+    required TResult Function(FeedHardCoded value) hardCoded,
   }) {
     return hardCoded(this);
   }
@@ -877,8 +888,8 @@ class _$HardCodedFeedImpl extends _HardCodedFeed {
   @override
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
-    TResult? Function(_Feed value)? custom,
-    TResult? Function(_HardCodedFeed value)? hardCoded,
+    TResult? Function(FeedCustom value)? custom,
+    TResult? Function(FeedHardCoded value)? hardCoded,
   }) {
     return hardCoded?.call(this);
   }
@@ -886,8 +897,8 @@ class _$HardCodedFeedImpl extends _HardCodedFeed {
   @override
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
-    TResult Function(_Feed value)? custom,
-    TResult Function(_HardCodedFeed value)? hardCoded,
+    TResult Function(FeedCustom value)? custom,
+    TResult Function(FeedHardCoded value)? hardCoded,
     required TResult orElse(),
   }) {
     if (hardCoded != null) {
@@ -898,26 +909,26 @@ class _$HardCodedFeedImpl extends _HardCodedFeed {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$HardCodedFeedImplToJson(
+    return _$$FeedHardCodedImplToJson(
       this,
     );
   }
 }
 
-abstract class _HardCodedFeed extends Feed {
-  const factory _HardCodedFeed({required final HardCodedFeed hardCodedFeed}) =
-      _$HardCodedFeedImpl;
-  const _HardCodedFeed._() : super._();
+abstract class FeedHardCoded extends Feed {
+  const factory FeedHardCoded({required final HardCodedFeed hardCodedFeed}) =
+      _$FeedHardCodedImpl;
+  const FeedHardCoded._() : super._();
 
-  factory _HardCodedFeed.fromJson(Map<String, dynamic> json) =
-      _$HardCodedFeedImpl.fromJson;
+  factory FeedHardCoded.fromJson(Map<String, dynamic> json) =
+      _$FeedHardCodedImpl.fromJson;
 
   HardCodedFeed get hardCodedFeed;
 
   /// Create a copy of Feed
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$HardCodedFeedImplCopyWith<_$HardCodedFeedImpl> get copyWith =>
+  _$$FeedHardCodedImplCopyWith<_$FeedHardCodedImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -3933,8 +3944,7 @@ PostView _$PostViewFromJson(Map<String, dynamic> json) {
 mixin _$PostView {
   @AtUriConverter()
   AtUri get uri => throw _privateConstructorUsedError;
-  @JsonKey(defaultValue: '')
-  String get cid => throw _privateConstructorUsedError;
+  CID get cid => throw _privateConstructorUsedError;
   ProfileViewBasic get author => throw _privateConstructorUsedError;
   PostRecord get record => throw _privateConstructorUsedError;
   bool get isRepost => throw _privateConstructorUsedError;
@@ -3960,7 +3970,7 @@ abstract class $PostViewCopyWith<$Res> {
   @useResult
   $Res call(
       {@AtUriConverter() AtUri uri,
-      @JsonKey(defaultValue: '') String cid,
+      CID cid,
       ProfileViewBasic author,
       PostRecord record,
       bool isRepost,
@@ -4005,7 +4015,7 @@ class _$PostViewCopyWithImpl<$Res, $Val extends PostView>
       cid: null == cid
           ? _value.cid
           : cid // ignore: cast_nullable_to_non_nullable
-              as String,
+              as CID,
       author: null == author
           ? _value.author
           : author // ignore: cast_nullable_to_non_nullable
@@ -4078,7 +4088,7 @@ abstract class _$$VideoPostViewImplCopyWith<$Res>
   @useResult
   $Res call(
       {@AtUriConverter() AtUri uri,
-      @JsonKey(defaultValue: '') String cid,
+      CID cid,
       ProfileViewBasic author,
       PostRecord record,
       bool isRepost,
@@ -4124,7 +4134,7 @@ class __$$VideoPostViewImplCopyWithImpl<$Res>
       cid: null == cid
           ? _value.cid
           : cid // ignore: cast_nullable_to_non_nullable
-              as String,
+              as CID,
       author: null == author
           ? _value.author
           : author // ignore: cast_nullable_to_non_nullable
@@ -4158,7 +4168,7 @@ class __$$VideoPostViewImplCopyWithImpl<$Res>
 class _$VideoPostViewImpl extends VideoPostView {
   const _$VideoPostViewImpl(
       {@AtUriConverter() required this.uri,
-      @JsonKey(defaultValue: '') required this.cid,
+      required this.cid,
       required this.author,
       required this.record,
       this.isRepost = false,
@@ -4175,8 +4185,7 @@ class _$VideoPostViewImpl extends VideoPostView {
   @AtUriConverter()
   final AtUri uri;
   @override
-  @JsonKey(defaultValue: '')
-  final String cid;
+  final CID cid;
   @override
   final ProfileViewBasic author;
   @override
@@ -4246,7 +4255,7 @@ class _$VideoPostViewImpl extends VideoPostView {
 abstract class VideoPostView extends PostView {
   const factory VideoPostView(
       {@AtUriConverter() required final AtUri uri,
-      @JsonKey(defaultValue: '') required final String cid,
+      required final CID cid,
       required final ProfileViewBasic author,
       required final PostRecord record,
       final bool isRepost,
@@ -4262,8 +4271,7 @@ abstract class VideoPostView extends PostView {
   @AtUriConverter()
   AtUri get uri;
   @override
-  @JsonKey(defaultValue: '')
-  String get cid;
+  CID get cid;
   @override
   ProfileViewBasic get author;
   @override
@@ -5459,21 +5467,21 @@ mixin _$FacetFeature {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(String did) mention,
-    required TResult Function(String uri) link,
+    required TResult Function(@AtUriConverter() AtUri uri) link,
     required TResult Function(String tag) tag,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String did)? mention,
-    TResult? Function(String uri)? link,
+    TResult? Function(@AtUriConverter() AtUri uri)? link,
     TResult? Function(String tag)? tag,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String did)? mention,
-    TResult Function(String uri)? link,
+    TResult Function(@AtUriConverter() AtUri uri)? link,
     TResult Function(String tag)? tag,
     required TResult orElse(),
   }) =>
@@ -5605,7 +5613,7 @@ class _$MentionFeatureImpl extends MentionFeature {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(String did) mention,
-    required TResult Function(String uri) link,
+    required TResult Function(@AtUriConverter() AtUri uri) link,
     required TResult Function(String tag) tag,
   }) {
     return mention(did);
@@ -5615,7 +5623,7 @@ class _$MentionFeatureImpl extends MentionFeature {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String did)? mention,
-    TResult? Function(String uri)? link,
+    TResult? Function(@AtUriConverter() AtUri uri)? link,
     TResult? Function(String tag)? tag,
   }) {
     return mention?.call(did);
@@ -5625,7 +5633,7 @@ class _$MentionFeatureImpl extends MentionFeature {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String did)? mention,
-    TResult Function(String uri)? link,
+    TResult Function(@AtUriConverter() AtUri uri)? link,
     TResult Function(String tag)? tag,
     required TResult orElse(),
   }) {
@@ -5700,7 +5708,7 @@ abstract class _$$LinkFeatureImplCopyWith<$Res> {
           _$LinkFeatureImpl value, $Res Function(_$LinkFeatureImpl) then) =
       __$$LinkFeatureImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({String uri});
+  $Res call({@AtUriConverter() AtUri uri});
 }
 
 /// @nodoc
@@ -5722,7 +5730,7 @@ class __$$LinkFeatureImplCopyWithImpl<$Res>
       uri: null == uri
           ? _value.uri
           : uri // ignore: cast_nullable_to_non_nullable
-              as String,
+              as AtUri,
     ));
   }
 }
@@ -5730,7 +5738,8 @@ class __$$LinkFeatureImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$LinkFeatureImpl extends LinkFeature {
-  const _$LinkFeatureImpl({required this.uri, final String? $type})
+  const _$LinkFeatureImpl(
+      {@AtUriConverter() required this.uri, final String? $type})
       : $type = $type ?? '#link',
         super._();
 
@@ -5738,7 +5747,8 @@ class _$LinkFeatureImpl extends LinkFeature {
       _$$LinkFeatureImplFromJson(json);
 
   @override
-  final String uri;
+  @AtUriConverter()
+  final AtUri uri;
 
   @JsonKey(name: '\$type')
   final String $type;
@@ -5772,7 +5782,7 @@ class _$LinkFeatureImpl extends LinkFeature {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(String did) mention,
-    required TResult Function(String uri) link,
+    required TResult Function(@AtUriConverter() AtUri uri) link,
     required TResult Function(String tag) tag,
   }) {
     return link(uri);
@@ -5782,7 +5792,7 @@ class _$LinkFeatureImpl extends LinkFeature {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String did)? mention,
-    TResult? Function(String uri)? link,
+    TResult? Function(@AtUriConverter() AtUri uri)? link,
     TResult? Function(String tag)? tag,
   }) {
     return link?.call(uri);
@@ -5792,7 +5802,7 @@ class _$LinkFeatureImpl extends LinkFeature {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String did)? mention,
-    TResult Function(String uri)? link,
+    TResult Function(@AtUriConverter() AtUri uri)? link,
     TResult Function(String tag)? tag,
     required TResult orElse(),
   }) {
@@ -5845,13 +5855,15 @@ class _$LinkFeatureImpl extends LinkFeature {
 }
 
 abstract class LinkFeature extends FacetFeature {
-  const factory LinkFeature({required final String uri}) = _$LinkFeatureImpl;
+  const factory LinkFeature({@AtUriConverter() required final AtUri uri}) =
+      _$LinkFeatureImpl;
   const LinkFeature._() : super._();
 
   factory LinkFeature.fromJson(Map<String, dynamic> json) =
       _$LinkFeatureImpl.fromJson;
 
-  String get uri;
+  @AtUriConverter()
+  AtUri get uri;
 
   /// Create a copy of FacetFeature
   /// with the given fields replaced by the non-null parameter values.
@@ -5938,7 +5950,7 @@ class _$TagFeatureImpl extends TagFeature {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(String did) mention,
-    required TResult Function(String uri) link,
+    required TResult Function(@AtUriConverter() AtUri uri) link,
     required TResult Function(String tag) tag,
   }) {
     return tag(this.tag);
@@ -5948,7 +5960,7 @@ class _$TagFeatureImpl extends TagFeature {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String did)? mention,
-    TResult? Function(String uri)? link,
+    TResult? Function(@AtUriConverter() AtUri uri)? link,
     TResult? Function(String tag)? tag,
   }) {
     return tag?.call(this.tag);
@@ -5958,7 +5970,7 @@ class _$TagFeatureImpl extends TagFeature {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String did)? mention,
-    TResult Function(String uri)? link,
+    TResult Function(@AtUriConverter() AtUri uri)? link,
     TResult Function(String tag)? tag,
     required TResult orElse(),
   }) {

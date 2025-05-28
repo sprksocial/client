@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:atproto/core.dart';
 import 'package:atproto/atproto.dart';
+import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:get_it/get_it.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
@@ -432,5 +433,32 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('Failed to load comments: ${e.toString()}');
       }
     });
+  }
+
+  @override
+  Future<({List<bsky.FeedView> bsky, List<FeedViewPost> sprk, String? cursor})> getPostsByFeed(
+    Feed feed, {
+    int limit = 8,
+    String? cursor,
+  }) async {
+    _logger.d('Getting posts by feed: $feed, limit: $limit, cursor: $cursor');
+    final blueskySession = bsky.Bluesky.fromSession(_client.authRepository.session!);
+    final bskyFeed = <bsky.FeedView>[];
+    final sprkFeed = <FeedViewPost>[];
+
+    switch (feed) {
+      case FeedHardCoded(:final hardCodedFeed):
+        switch (hardCodedFeed) {
+          case HardCodedFeed.following:
+          case HardCodedFeed.forYou:
+          case HardCodedFeed.latestSprk:
+          case HardCodedFeed.mutuals:
+          case HardCodedFeed.shared:
+        }
+      case FeedCustom():
+      default:
+        return (bsky: bskyFeed, sprk: sprkFeed, cursor: null);
+    }
+    return (bsky: bskyFeed, sprk: sprkFeed, cursor: null);
   }
 }

@@ -1,3 +1,4 @@
+import 'package:atproto/atproto.dart';
 import 'package:sparksocial/src/features/settings/data/models/label_preference.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/features/settings/data/models/labeler.dart';

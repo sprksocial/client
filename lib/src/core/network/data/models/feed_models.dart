@@ -44,8 +44,8 @@ class CustomFeed with _$CustomFeed {
     @Default(true) bool isDraft,
     @Default(false) bool videosOnly,
     String? did,
-    String? uri,
-    String? cid,
+    @AtUriConverter() AtUri? uri,
+    CID? cid,
 
     @Default({})
     Map<String, bool> hashtagPreferences, // hashtag: only show posts with this hashtag || never show posts with this hashtag
@@ -66,10 +66,10 @@ class CustomFeed with _$CustomFeed {
 @freezed
 class Feed with _$Feed {
   const Feed._();
-  const factory Feed.custom({required String name, required String uri}) = _Feed;
+  const factory Feed.custom({required String name, @AtUriConverter() required AtUri uri}) = FeedCustom;
 
   /// HardCoded feeds can be "fake", so they don't have a uri
-  const factory Feed.hardCoded({required HardCodedFeed hardCodedFeed}) = _HardCodedFeed;
+  const factory Feed.hardCoded({required HardCodedFeed hardCodedFeed}) = FeedHardCoded;
 
   String get name {
     return when(custom: (name, did) => name, hardCoded: (hardCodedFeed) => hardCodedFeed.name);
@@ -204,7 +204,7 @@ class PostView with _$PostView {
   const PostView._();
   const factory PostView({
     @AtUriConverter() required AtUri uri,
-    @JsonKey(defaultValue: '') required String cid,
+    required CID cid,
     required ProfileViewBasic author,
     required PostRecord record,
     @Default(false) bool isRepost,
@@ -280,7 +280,7 @@ class FacetFeature with _$FacetFeature {
 
   /// Link feature for URLs
   @FreezedUnionValue('#link')
-  const factory FacetFeature.link({required String uri}) = LinkFeature;
+  const factory FacetFeature.link({@AtUriConverter() required AtUri uri}) = LinkFeature;
 
   /// Tag feature for hashtags
   @FreezedUnionValue('#tag')
@@ -328,6 +328,7 @@ class VideoEmbed with _$VideoEmbed {
 @freezed
 class VideoView with _$VideoView {
   const VideoView._();
+
   const factory VideoView({
     required String cid,
     @AtUriConverter() required AtUri playlist,
@@ -364,6 +365,7 @@ class Image with _$Image {
 @freezed
 class ImageView with _$ImageView {
   const ImageView._();
+
   const factory ImageView({required List<ViewImage> images}) = _ImageView;
 
   factory ImageView.fromJson(Map<String, dynamic> json) => _$ImageViewFromJson(json);
@@ -373,6 +375,7 @@ class ImageView with _$ImageView {
 @freezed
 class ViewImage with _$ViewImage {
   const ViewImage._();
+  
   const factory ViewImage({
     @AtUriConverter() required AtUri thumb,
     @AtUriConverter() required AtUri fullsize,

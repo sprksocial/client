@@ -47,9 +47,11 @@ dependencies:
   get_it: ^7.6.7
   auto_route: ^7.8.4
   flutter_secure_storage: ^9.2.4
+  atproto_core: ^0.11.2
+  multiformats: ^0.2.3
+  did_plc: ^0.0.22
   # Old architecture dependencies
   provider: ^6.1.1
-  atproto_core: ^0.11.2
 
 dev_dependencies:
   flutter_test:

@@ -398,6 +398,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.8"
+  did_plc:
+    dependency: "direct main"
+    description:
+      name: did_plc
+      sha256: "93f23fa696fdbeba4c0613a127ff2f68d5ea3665eb62f86f013edf376f1d55bf"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.22"
   dio:
     dependency: "direct main"
     description:
@@ -926,7 +934,7 @@ packages:
     source: hosted
     version: "1.0.6"
   multiformats:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: multiformats
       sha256: aa2fa36d2e4d0069dac993b35ee52e5165d67f15b995d68f797466065a6d05a5

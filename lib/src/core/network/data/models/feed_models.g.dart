@@ -26,8 +26,11 @@ _$CustomFeedImpl _$$CustomFeedImplFromJson(Map<String, dynamic> json) =>
       isDraft: json['isDraft'] as bool? ?? true,
       videosOnly: json['videosOnly'] as bool? ?? false,
       did: json['did'] as String?,
-      uri: json['uri'] as String?,
-      cid: json['cid'] as String?,
+      uri: _$JsonConverterFromJson<String, AtUri>(
+          json['uri'], const AtUriConverter().fromJson),
+      cid: json['cid'] == null
+          ? null
+          : CID.fromJson(json['cid'] as Map<String, dynamic>),
       hashtagPreferences:
           (json['hashtagPreferences'] as Map<String, dynamic>?)?.map(
                 (k, e) => MapEntry(k, e as bool),
@@ -52,32 +55,46 @@ Map<String, dynamic> _$$CustomFeedImplToJson(_$CustomFeedImpl instance) =>
       'isDraft': instance.isDraft,
       'videosOnly': instance.videosOnly,
       'did': instance.did,
-      'uri': instance.uri,
+      'uri': _$JsonConverterToJson<String, AtUri>(
+          instance.uri, const AtUriConverter().toJson),
       'cid': instance.cid,
       'hashtagPreferences': instance.hashtagPreferences,
       'labelPreferences': instance.labelPreferences,
     };
 
-_$FeedImpl _$$FeedImplFromJson(Map<String, dynamic> json) => _$FeedImpl(
+Value? _$JsonConverterFromJson<Json, Value>(
+  Object? json,
+  Value? Function(Json json) fromJson,
+) =>
+    json == null ? null : fromJson(json as Json);
+
+Json? _$JsonConverterToJson<Json, Value>(
+  Value? value,
+  Json? Function(Value value) toJson,
+) =>
+    value == null ? null : toJson(value);
+
+_$FeedCustomImpl _$$FeedCustomImplFromJson(Map<String, dynamic> json) =>
+    _$FeedCustomImpl(
       name: json['name'] as String,
-      uri: json['uri'] as String,
+      uri: const AtUriConverter().fromJson(json['uri'] as String),
       $type: json['runtimeType'] as String?,
     );
 
-Map<String, dynamic> _$$FeedImplToJson(_$FeedImpl instance) =>
+Map<String, dynamic> _$$FeedCustomImplToJson(_$FeedCustomImpl instance) =>
     <String, dynamic>{
       'name': instance.name,
-      'uri': instance.uri,
+      'uri': const AtUriConverter().toJson(instance.uri),
       'runtimeType': instance.$type,
     };
 
-_$HardCodedFeedImpl _$$HardCodedFeedImplFromJson(Map<String, dynamic> json) =>
-    _$HardCodedFeedImpl(
+_$FeedHardCodedImpl _$$FeedHardCodedImplFromJson(Map<String, dynamic> json) =>
+    _$FeedHardCodedImpl(
       hardCodedFeed: $enumDecode(_$HardCodedFeedEnumMap, json['hardCodedFeed']),
       $type: json['runtimeType'] as String?,
     );
 
-Map<String, dynamic> _$$HardCodedFeedImplToJson(_$HardCodedFeedImpl instance) =>
+Map<String, dynamic> _$$FeedHardCodedImplToJson(_$FeedHardCodedImpl instance) =>
     <String, dynamic>{
       'hardCodedFeed': _$HardCodedFeedEnumMap[instance.hardCodedFeed]!,
       'runtimeType': instance.$type,
@@ -261,18 +278,6 @@ Map<String, dynamic> _$$ViewerImplToJson(_$ViewerImpl instance) =>
       'pinned': instance.pinned,
     };
 
-Value? _$JsonConverterFromJson<Json, Value>(
-  Object? json,
-  Value? Function(Json json) fromJson,
-) =>
-    json == null ? null : fromJson(json as Json);
-
-Json? _$JsonConverterToJson<Json, Value>(
-  Value? value,
-  Json? Function(Value value) toJson,
-) =>
-    value == null ? null : toJson(value);
-
 _$PostRecordVideoImpl _$$PostRecordVideoImplFromJson(
         Map<String, dynamic> json) =>
     _$PostRecordVideoImpl(
@@ -336,7 +341,7 @@ Map<String, dynamic> _$$EmbedImageImplToJson(_$EmbedImageImpl instance) =>
 _$VideoPostViewImpl _$$VideoPostViewImplFromJson(Map<String, dynamic> json) =>
     _$VideoPostViewImpl(
       uri: const AtUriConverter().fromJson(json['uri'] as String),
-      cid: json['cid'] as String? ?? '',
+      cid: CID.fromJson(json['cid'] as Map<String, dynamic>),
       author: ProfileViewBasic.fromJson(json['author'] as Map<String, dynamic>),
       record: PostRecord.fromJson(json['record'] as Map<String, dynamic>),
       isRepost: json['isRepost'] as bool? ?? false,
@@ -460,13 +465,13 @@ Map<String, dynamic> _$$MentionFeatureImplToJson(
 
 _$LinkFeatureImpl _$$LinkFeatureImplFromJson(Map<String, dynamic> json) =>
     _$LinkFeatureImpl(
-      uri: json['uri'] as String,
+      uri: const AtUriConverter().fromJson(json['uri'] as String),
       $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$LinkFeatureImplToJson(_$LinkFeatureImpl instance) =>
     <String, dynamic>{
-      'uri': instance.uri,
+      'uri': const AtUriConverter().toJson(instance.uri),
       r'$type': instance.$type,
     };
 
