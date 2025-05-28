@@ -21,34 +21,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<PostThreadResponse> getPostThread(String postUri) async {
-    _logger.d('Getting post thread for URI: $postUri');
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
-      final atproto = _client.authRepository.atproto;
-      if (atproto == null) {
-        _logger.e('AtProto not initialized');
-        throw Exception('AtProto not initialized');
-      }
-
-      final result = await atproto.get(
-        NSID.parse('so.sprk.feed.getPostThread'),
-        parameters: {'uri': postUri},
-        headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
-      );
-      _logger.d('Post thread retrieved successfully');
-      return PostThreadResponse.fromJson(result.data as Map<String, dynamic>);
-    });
-  }
-
-  @override
-  Future<FeedSkeleton> getFeedSkeleton(String feed, {int limit = 8}) async {
+  Future<FeedSkeleton> getFeedSkeleton(AtUri feed, {int limit = 8}) async {
     _logger.d('Getting feed skeleton for feed: $feed, limit: $limit');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -66,16 +39,16 @@ class FeedRepositoryImpl implements FeedRepository {
         NSID.parse('so.sprk.feed.getFeedSkeleton'),
         parameters: {'feed': feed, 'limit': limit},
         service: 'feeds.sprk.so',
-        to: (jsonMap) => jsonMap,
+        to: (jsonMap) => FeedSkeleton.fromJson(jsonMap),
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
       _logger.d('Feed skeleton retrieved successfully');
-      return FeedSkeleton.fromJson(result.data as Map<String, dynamic>);
+      return result.data;
     });
   }
 
   @override
-  Future<Map<String, dynamic>> getPosts(List<String> uris) async {
+  Future<List<PostView>> getPosts(List<AtUri> uris) async {
     _logger.d('Getting posts for URIs: ${uris.length} URIs');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -93,11 +66,15 @@ class FeedRepositoryImpl implements FeedRepository {
         NSID.parse('so.sprk.feed.getPosts'),
         parameters: {'uris': uris},
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
+        to: (jsonMap) {
+          final posts = jsonMap['posts'] as List<dynamic>;
+          return posts.map((post) => PostView.fromJson(post)).toList();
+        },
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
       _logger.d('Posts retrieved successfully');
-      return result.data as Map<String, dynamic>;
+
+      return result.data;
     });
   }
 
@@ -132,16 +109,16 @@ class FeedRepositoryImpl implements FeedRepository {
         NSID.parse('so.sprk.feed.getAuthorFeed'),
         parameters: parameters,
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
+        to: (jsonMap) => AuthorFeedResponse.fromJson(jsonMap),
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
       _logger.d('Author feed retrieved successfully');
-      return AuthorFeedResponse.fromJson(result.data);
+      return result.data;
     });
   }
 
   @override
-  Future<StrongRef> likePost(String postCid, String postUri) async {
+  Future<StrongRef> likePost(String postCid, AtUri postUri) async {
     _logger.d('Liking post with CID: $postCid, URI: $postUri');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -170,7 +147,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<void> unlikePost(String likeUri) async {
+  Future<void> unlikePost(AtUri likeUri) async {
     _logger.d('Unliking post with like URI: $likeUri');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -184,7 +161,7 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      await atproto.repo.deleteRecord(uri: AtUri.parse(likeUri));
+      await atproto.repo.deleteRecord(uri: likeUri);
       _logger.i('Post unliked successfully');
     });
   }
@@ -404,7 +381,7 @@ class FeedRepositoryImpl implements FeedRepository {
         langs: langs,
         selfLabels: selfLabels,
         tags: tags,
-        // TODO: facets here
+        // facets
       );
 
       // Create the post record
@@ -425,8 +402,8 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<List<PostView>> getBlueskyComments(AtUri uri) async {
-    _logger.d('Getting Bluesky comments for post: $uri');
+  Future<Thread> getThread(AtUri uri, {int depth = 2, int parentHeight = 0, bool bluesky = false}) async {
+    _logger.d('Getting thread for post: $uri');
 
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -442,132 +419,17 @@ class FeedRepositoryImpl implements FeedRepository {
 
       try {
         // Get the post thread
+        final source = bluesky ? 'app.bsky.feed.getPostThread' : 'so.sprk.feed.getThread';
         final response = await atproto.get(
-          NSID.parse('app.bsky.feed.getPostThread'),
-          parameters: {'uri': uri.toString(), 'depth': 10},
-          to: (jsonMap) => jsonMap,
-          adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+          NSID.parse(source),
+          parameters: {'uri': uri.toString(), 'depth': depth, 'parentHeight': parentHeight},
+          to: (jsonMap) => Thread.fromJson(jsonMap),
         );
-
-        // Extract the replies from the thread
-        final thread = (response.data as Map<String, dynamic>)['thread'] as Map<String, dynamic>;
-        final replies = _extractBlueskyReplies(thread);
-
-        _logger.d('Retrieved ${replies.length} Bluesky comments');
-        return replies;
-      } catch (e) {
-        _logger.e('Failed to load Bluesky comments', error: e);
-        throw Exception('Failed to load comments: ${e.toString()}');
-      }
-    });
-  }
-
-  @override
-  Future<List<Comment>> getSparkComments(String postUri) async {
-    _logger.d('Getting Spark comments for post: $postUri');
-
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
-      final atproto = _client.authRepository.atproto;
-      if (atproto == null) {
-        _logger.e('AtProto not initialized');
-        throw Exception('AtProto not initialized');
-      }
-
-      try {
-        // Get the post thread
-        final response = await atproto.get(
-          NSID.parse('so.sprk.feed.getPostThread'),
-          parameters: {'uri': postUri},
-          headers: {'atproto-proxy': _client.sprkDid},
-          to: (jsonMap) => jsonMap,
-          adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
-        );
-
-        // Extract comments from the thread
-        final thread = (response.data as Map<String, dynamic>)['thread'] as Map<String, dynamic>?;
-        if (thread == null) {
-          _logger.w('No thread data found for post: $postUri');
-          return [];
-        }
-
-        final replies = _extractSparkReplies(thread);
-
-        _logger.d('Retrieved ${replies.length} Spark comments');
-        return replies;
-      } catch (e) {
-        _logger.e('Failed to load Spark comments', error: e);
-        throw Exception('Failed to load comments: ${e.toString()}');
-      }
-    });
-  }
-
-  @override
-  Future<PostView> getSparkComment(AtUri commentUri) async {
-    _logger.d('Getting Spark comment: $commentUri');
-
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
-      final atproto = _client.authRepository.atproto;
-      if (atproto == null) {
-        _logger.e('AtProto not initialized');
-        throw Exception('AtProto not initialized');
-      }
-
-      try {
-        final response = await atproto.repo.getRecord(uri: commentUri);
 
         return response.data;
       } catch (e) {
-        _logger.e('Failed to get Spark comment', error: e);
-        throw Exception('Failed to get comment: ${e.toString()}');
-      }
-    });
-  }
-
-  @override
-  Future<Comment> getBlueskyComment(String commentUri) async {
-    _logger.d('Getting Bluesky comment: $commentUri');
-
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
-      final atproto = _client.authRepository.atproto;
-      if (atproto == null) {
-        _logger.e('AtProto not initialized');
-        throw Exception('AtProto not initialized');
-      }
-
-      try {
-        final response = await atproto.get(
-          NSID.parse('app.bsky.feed.getPostThread'),
-          parameters: {'uri': AtUri.parse(commentUri).toString()},
-          to: (jsonMap) => jsonMap,
-          adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
-        );
-
-        final post = ((response.data as Map<String, dynamic>)['thread'] as Map<String, dynamic>)['post'];
-
-        if (post == null) {
-          _logger.e('Failed to get Bluesky comment: Post not found');
-          throw Exception('Failed to get comment: Post not found');
-        }
-
-        return Comment.fromBlueskyComment(post as Map<String, dynamic>);
-      } catch (e) {
-        _logger.e('Failed to get Bluesky comment', error: e);
-        throw Exception('Failed to get comment: ${e.toString()}');
+        _logger.e('Failed to load Bluesky comments', error: e);
+        throw Exception('Failed to load comments: ${e.toString()}');
       }
     });
   }

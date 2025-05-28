@@ -5,18 +5,13 @@ import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 
 /// Interface for Feed-related API endpoints
 abstract class FeedRepository {
-  /// Get a post thread by URI
-  ///
-  /// [postUri] The URI of the post to get the thread for
-  Future<PostThread> getPostThread(AtUri postUri);
-
   /// Get a feed skeleton
   ///
   /// [feed] The feed to get the skeleton for
   /// [limit] The number of items to return
   Future<FeedSkeleton> getFeedSkeleton(AtUri feed, {int limit = 30});
 
-  /// Get posts by URIs
+  /// Get posts by URIs (hydrates a skeleton)
   ///
   /// [uris] List of post URIs to fetch
   Future<List<PostView>> getPosts(List<AtUri> uris);
@@ -81,30 +76,11 @@ abstract class FeedRepository {
     List<SelfLabel>? selfLabels,
   });
 
-  /// Get posts from a custom feed
+  /// Get the thread for a post
   ///
-  /// [uri] The uri of the custom feed to get posts from
-  /// [limit] The number of posts to fetch
-  /// [cursor] The cursor to fetch the next set of posts
-  Future<List<PostView>> getCustomFeedPosts(AtUri uri, {int limit = 8, String? cursor});
-
-  /// Get comments for a Bluesky post
-  ///
-  /// [uri] The URI of the post to get comments for
-  Future<Thread> getBlueskyComments(AtUri uri, {int depth = 2, int parentHeight = 0});
-
-  /// Get comments for a Spark post
-  ///
-  /// [uri] The URI of the post to get comments for
-  Future<Thread> getSparkComments(AtUri uri);
-
-  /// Get a single Spark comment by URI
-  ///
-  /// [commentUri] The URI of the comment to get
-  Future<PostView> getSparkComment(AtUri commentUri);
-
-  /// Get a single Bluesky comment by URI
-  ///
-  /// [commentUri] The URI of the comment to get
-  Future<PostView> getBlueskyComment(AtUri commentUri);
+  /// [uri] The URI of the post to get the thread for
+  /// [depth] The depth of the thread to get
+  /// [parentHeight] The height of the parent post
+  /// [bluesky] Whether the thread is a Bluesky thread
+  Future<Thread> getThread(AtUri uri, {int depth = 2, int parentHeight = 0, bool bluesky = false});
 }
