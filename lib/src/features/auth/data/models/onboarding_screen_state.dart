@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:bluesky/bluesky.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'onboarding_screen_state.freezed.dart';
@@ -8,7 +9,7 @@ part 'onboarding_screen_state.freezed.dart';
 class OnboardingScreenState with _$OnboardingScreenState {
   const factory OnboardingScreenState({
     @Default(true) bool isLoading,
-    Map<String, dynamic>? bskyProfileData,
+    ProfileRecord? bskyProfileRecord,
     String? initialAvatarCid,
     String? initialAvatarUrl,
     Uint8List? localAvatarBytes,
@@ -17,4 +18,4 @@ class OnboardingScreenState with _$OnboardingScreenState {
     String? errorMessage,
     String? userDid, // To store the user's DID for avatar URL construction
   }) = _OnboardingScreenState;
-} 
+}

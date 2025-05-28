@@ -5,7 +5,7 @@ import 'package:atproto/core.dart';
 /// Interface for Repository-related API endpoints
 abstract class RepoRepository {
   /// Get a record from the repository
-  Future<(Record, StrongRef)> getRecord({required AtUri uri});
+  Future<({Record record, StrongRef strongRef})> getRecord({required AtUri uri});
 
   /// Edit a record in the repository
   ///
@@ -17,7 +17,7 @@ abstract class RepoRepository {
   ///
   /// [collection] The NSID of the collection to create the record in
   /// [record] The record data to create
-  Future<StrongRef> createRecord({required NSID collection, required Record record, String? rkey});
+  Future<StrongRef> createRecord({required NSID collection, required Map<String, dynamic> record, String? rkey});
 
   /// Delete a record from the repository
   ///

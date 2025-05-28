@@ -49,7 +49,12 @@ class ActionButton extends StatelessWidget {
                 clipBehavior: Clip.antiAlias,
                 child: InkWell(
                   onTap: onPressed,
-                  child: Center(child: Transform.scale(scale: scale, child: Icon(icon, color: color ?? Colors.white, size: 30))),
+                  child: Center(
+                    child: Transform.scale(
+                      scale: scale,
+                      child: Icon(icon, color: color ?? Colors.white, size: 30),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -62,11 +67,11 @@ class ActionButton extends StatelessWidget {
               color: Colors.white,
               fontSize: 12,
               shadows: <Shadow>[
-              Shadow(offset: Offset(0, 0), blurRadius: 20.0, color: Color(0xFF000000)),
-              Shadow(offset: Offset(1, 1), blurRadius: 8.0, color: Colors.black87),
-            ],
+                Shadow(offset: Offset(0, 0), blurRadius: 20.0, color: Color(0xFF000000)),
+                Shadow(offset: Offset(1, 1), blurRadius: 8.0, color: Colors.black87),
+              ],
+            ),
           ),
-        ),
       ],
     );
   }

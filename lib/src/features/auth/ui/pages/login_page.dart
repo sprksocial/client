@@ -253,13 +253,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           minimumSize: const Size(320, 60),
                           disabledBackgroundColor: AppColors.primary.withAlpha(128),
                         ),
-                        child:
-                            isLoading
-                                ? const CircularProgressIndicator(color: AppColors.white)
-                                : Text(
-                                  _showAuthCodeField ? 'Verify Code' : 'Login',
-                                  style: const TextStyle(fontSize: 20, fontWeight: FontWeight.normal, color: AppColors.white),
-                                ),
+                        child: isLoading
+                            ? const CircularProgressIndicator(color: AppColors.white)
+                            : Text(
+                                _showAuthCodeField ? 'Verify Code' : 'Login',
+                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.normal, color: AppColors.white),
+                              ),
                       ),
                     ],
                   ),

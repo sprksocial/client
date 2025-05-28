@@ -57,7 +57,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       _isRegistering = false;
     });
 
-    if (result.$1) {
+    if (result.isSuccess) {
       final hasProfile = await ref.read(hasSparkProfileProvider.future);
       if (!mounted) return;
 
@@ -68,7 +68,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       }
     } else {
       setState(() {
-        _errorMessage = result.$2;
+        _errorMessage = result.error;
       });
     }
   }
@@ -148,7 +148,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         ),
                         const SizedBox(height: 24),
                       ],
-                      Text('Email', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.white)),
+                      Text(
+                        'Email',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.white),
+                      ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _emailController,
@@ -168,7 +171,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
                       const SizedBox(height: 24),
 
-                      Text('Username', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.white)),
+                      Text(
+                        'Username',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.white),
+                      ),
                       const SizedBox(height: 8),
                       Container(
                         decoration: BoxDecoration(color: AppColors.white.withAlpha(255), borderRadius: BorderRadius.circular(16)),
@@ -203,7 +209,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
                       const SizedBox(height: 24),
 
-                      Text('Password', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.white)),
+                      Text(
+                        'Password',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.white),
+                      ),
                       const SizedBox(height: 8),
                       TextField(
                         controller: _passwordController,
@@ -246,7 +255,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             children: [
                               const Icon(FluentIcons.warning_24_regular, color: AppColors.error),
                               const SizedBox(width: 8),
-                              Expanded(child: Text(_errorMessage!, style: const TextStyle(color: AppColors.error))),
+                              Expanded(
+                                child: Text(_errorMessage!, style: const TextStyle(color: AppColors.error)),
+                              ),
                             ],
                           ),
                         ),
@@ -264,13 +275,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                             minimumSize: const Size(0, 60),
                           ),
                           onPressed: _isFormValid() && !_isRegistering ? _register : null,
-                          child:
-                              _isRegistering
-                                  ? const CircularProgressIndicator(color: AppColors.white)
-                                  : const Text(
-                                    'Create Account',
-                                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal, color: AppColors.white),
-                                  ),
+                          child: _isRegistering
+                              ? const CircularProgressIndicator(color: AppColors.white)
+                              : const Text(
+                                  'Create Account',
+                                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal, color: AppColors.white),
+                                ),
                         ),
                       ),
 
@@ -282,7 +292,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           Text('Already have an account?', style: TextStyle(color: AppColors.white)),
                           TextButton(
                             onPressed: () => context.router.replace(const LoginRoute()),
-                            child: const Text('Sign in', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold)),
+                            child: const Text(
+                              'Sign in',
+                              style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ],
                       ),

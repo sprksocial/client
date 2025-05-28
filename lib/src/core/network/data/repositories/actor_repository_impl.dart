@@ -44,7 +44,7 @@ class ActorRepositoryImpl implements ActorRepository {
   }
 
   @override
-  Future<ProfileView> searchActors(String query) async {
+  Future<List<ProfileView>> searchActors(String query) async {
     _logger.d('Searching actors with query: $query');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -66,7 +66,7 @@ class ActorRepositoryImpl implements ActorRepository {
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
       _logger.d('Actor search completed successfully');
-      return ProfileView.fromJson(result.data as Map<String, dynamic>);
+      return (result.data as List).map((e) => ProfileView.fromJson(e as Map<String, dynamic>)).toList();
     });
   }
 }

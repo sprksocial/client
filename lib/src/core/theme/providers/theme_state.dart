@@ -5,7 +5,5 @@ part 'theme_state.freezed.dart';
 
 @freezed
 class ThemeState with _$ThemeState {
-  const factory ThemeState({
-    required ThemeMode themeMode,
-  }) = _ThemeState;
+  const factory ThemeState({required ThemeMode themeMode}) = _ThemeState;
 }

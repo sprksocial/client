@@ -28,4 +28,4 @@ class StorageManager {
 
   /// Access to secure storage for sensitive data
   LocalStorageInterface get secure => _secureStorage;
-} 
+}

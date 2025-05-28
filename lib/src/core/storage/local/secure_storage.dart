@@ -11,8 +11,7 @@ class SecureStorage implements LocalStorageInterface {
 
   /// Creates a new SecureStorage instance
   /// If no secureStorage is provided, a default one will be created
-  SecureStorage({FlutterSecureStorage? secureStorage})
-      : _secureStorage = secureStorage ?? const FlutterSecureStorage();
+  SecureStorage({FlutterSecureStorage? secureStorage}) : _secureStorage = secureStorage ?? const FlutterSecureStorage();
 
   @override
   Future<void> setString(String key, String value) async {
@@ -159,4 +158,4 @@ class SecureStorage implements LocalStorageInterface {
       await _secureStorage.deleteAll();
     });
   }
-} 
+}

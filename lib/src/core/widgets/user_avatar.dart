@@ -27,7 +27,7 @@ class UserAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     final effectiveBorderColor = borderColor ?? colorScheme.outline;
     final effectiveBackgroundColor = backgroundColor ?? colorScheme.primary;
     final effectiveFallbackTextColor = fallbackTextColor ?? colorScheme.onPrimary;
@@ -46,16 +46,9 @@ class UserAvatar extends StatelessWidget {
           child: username.isNotEmpty
               ? Text(
                   username[0].toUpperCase(),
-                  style: TextStyle(
-                    color: effectiveFallbackTextColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(color: effectiveFallbackTextColor, fontWeight: FontWeight.bold),
                 )
-              : Icon(
-                  FluentIcons.person_24_regular,
-                  size: size * 0.5,
-                  color: effectiveFallbackTextColor,
-                ),
+              : Icon(FluentIcons.person_24_regular, size: size * 0.5, color: effectiveFallbackTextColor),
         ),
       );
     }
@@ -78,16 +71,9 @@ class UserAvatar extends StatelessWidget {
             child: username.isNotEmpty
                 ? Text(
                     username[0].toUpperCase(),
-                    style: TextStyle(
-                      color: effectiveFallbackTextColor,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(color: effectiveFallbackTextColor, fontWeight: FontWeight.bold),
                   )
-                : Icon(
-                    FluentIcons.person_24_regular,
-                    size: size * 0.5,
-                    color: effectiveFallbackTextColor,
-                  ),
+                : Icon(FluentIcons.person_24_regular, size: size * 0.5, color: effectiveFallbackTextColor),
           ),
         ),
         errorWidget: (context, url, error) => Container(
@@ -96,19 +82,12 @@ class UserAvatar extends StatelessWidget {
             child: username.isNotEmpty
                 ? Text(
                     username[0].toUpperCase(),
-                    style: TextStyle(
-                      color: effectiveFallbackTextColor,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: TextStyle(color: effectiveFallbackTextColor, fontWeight: FontWeight.bold),
                   )
-                : Icon(
-                    FluentIcons.person_24_regular,
-                    size: size * 0.5,
-                    color: effectiveFallbackTextColor,
-                  ),
+                : Icon(FluentIcons.person_24_regular, size: size * 0.5, color: effectiveFallbackTextColor),
           ),
         ),
       ),
     );
   }
-} 
+}

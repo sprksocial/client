@@ -20,7 +20,10 @@ class SectionHeader extends StatelessWidget {
           Row(
             children: [
               if (icon != null) ...[Icon(icon, color: textColor, size: 22), const SizedBox(width: 8)],
-              Text(title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: textColor)),
+              Text(
+                title,
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: textColor),
+              ),
             ],
           ),
 

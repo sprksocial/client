@@ -72,26 +72,15 @@ class TextFormatter {
   }
 
   /// Builds text with clickable @mentions using the MentionedText widget
-  static Widget buildTextWithMentions(
-    BuildContext context,
-    String text,
-    bool expandDescription,
-    Function(String) onUsernameTap,
-  ) {
+  static Widget buildTextWithMentions(BuildContext context, String text, bool expandDescription, Function(String) onUsernameTap) {
     return MentionedText(
       text: text,
       onUsernameTap: onUsernameTap,
       expandText: expandDescription,
       maxLines: expandDescription ? null : 2,
       overflow: TextOverflow.ellipsis,
-      textStyle: TextStyle(
-        color: Theme.of(context).colorScheme.onSurface,
-        fontSize: 14,
-      ),
-      mentionStyle: const TextStyle(
-        color: AppColors.primary,
-        fontWeight: FontWeight.bold,
-      ),
+      textStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14),
+      mentionStyle: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
     );
   }
-} 
+}

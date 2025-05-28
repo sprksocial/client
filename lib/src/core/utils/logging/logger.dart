@@ -21,10 +21,10 @@ class SparkLogger {
     LogLevel minLevel = LogLevel.info,
     List<LogOutput> outputs = const [],
     bool includeStackTrace = true,
-  })  : _name = name,
-        _minLevel = minLevel,
-        _outputs = List.from(outputs),
-        _includeStackTrace = includeStackTrace;
+  }) : _name = name,
+       _minLevel = minLevel,
+       _outputs = List.from(outputs),
+       _includeStackTrace = includeStackTrace;
 
   /// Log a verbose message
   void v(String message, {Object? error, StackTrace? stackTrace}) {
@@ -89,4 +89,4 @@ class SparkLogger {
   void clearOutputs() {
     _outputs.clear();
   }
-} 
+}

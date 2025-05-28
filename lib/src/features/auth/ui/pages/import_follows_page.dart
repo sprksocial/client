@@ -7,12 +7,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
 
 import 'package:sparksocial/src/core/network/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/features/auth/data/models/bsky_follows.dart';
 import 'package:sparksocial/src/features/auth/providers/onboarding_providers.dart';
 
 @RoutePage()
@@ -29,8 +29,8 @@ class ImportFollowsPage extends ConsumerStatefulWidget {
 
 class _ImportFollowsPageState extends ConsumerState<ImportFollowsPage> {
   bool _loading = true;
-  List<BskyFollow> _filteredFollows = [];
-  List<BskyFollow> _allActors = [];
+  List<ProfileView> _filteredFollows = [];
+  List<ProfileView> _allActors = [];
   final Set<String> _followed = {};
   final TextEditingController _searchController = TextEditingController();
 
@@ -64,16 +64,9 @@ class _ImportFollowsPageState extends ConsumerState<ImportFollowsPage> {
         setState(() {
           _allActors.addAll(asyncValue.follows);
           final query = _searchController.text.toLowerCase();
-          _filteredFollows =
-              query.isEmpty
-                  ? _allActors
-                  : _allActors
-                      .where(
-                        (actor) =>
-                            actor.handle.toLowerCase().contains(query) ||
-                            (actor.displayName?.toLowerCase().contains(query) ?? false),
-                      )
-                      .toList();
+          _filteredFollows = query.isEmpty
+              ? _allActors
+              : _allActors.where((actor) => actor.displayName?.toLowerCase().contains(query) ?? false).toList();
         });
       } catch (e, stackTrace) {
         _logger.e('Failed to fetch more follows', error: e, stackTrace: stackTrace);
@@ -85,13 +78,11 @@ class _ImportFollowsPageState extends ConsumerState<ImportFollowsPage> {
   void _onSearchChanged() {
     final query = _searchController.text.toLowerCase();
     setState(() {
-      _filteredFollows =
-          _allActors
-              .where(
-                (actor) =>
-                    actor.handle.toLowerCase().contains(query) || (actor.displayName?.toLowerCase().contains(query) ?? false),
-              )
-              .toList();
+      _filteredFollows = _allActors
+          .where(
+            (actor) => actor.handle.toLowerCase().contains(query) || (actor.displayName?.toLowerCase().contains(query) ?? false),
+          )
+          .toList();
     });
   }
 
@@ -136,30 +127,31 @@ class _ImportFollowsPageState extends ConsumerState<ImportFollowsPage> {
 
     // Handle the AsyncValue states
     return followsAsyncValue.when(
-      loading:
-          () => Scaffold(backgroundColor: bgColor, body: const Center(child: CircularProgressIndicator(color: Colors.white))),
-      error:
-          (error, stackTrace) => Scaffold(
-            backgroundColor: bgColor,
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    'Failed to load follows: ${error.toString()}',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(color: AppColors.error),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: () => _finishOnboarding(),
-                    style: ElevatedButton.styleFrom(backgroundColor: AppColors.pink),
-                    child: const Text('Skip Import', style: TextStyle(color: Colors.white)),
-                  ),
-                ],
+      loading: () => Scaffold(
+        backgroundColor: bgColor,
+        body: const Center(child: CircularProgressIndicator(color: Colors.white)),
+      ),
+      error: (error, stackTrace) => Scaffold(
+        backgroundColor: bgColor,
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Failed to load follows: ${error.toString()}',
+                textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.error),
               ),
-            ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => _finishOnboarding(),
+                style: ElevatedButton.styleFrom(backgroundColor: AppColors.pink),
+                child: const Text('Skip Import', style: TextStyle(color: Colors.white)),
+              ),
+            ],
           ),
+        ),
+      ),
       data: (follows) {
         // Initialize data if first load
         if (_loading && follows.follows.isNotEmpty) {
@@ -180,7 +172,10 @@ class _ImportFollowsPageState extends ConsumerState<ImportFollowsPage> {
         // If no follows, skip to finish onboarding
         if (_loading && follows.follows.isEmpty) {
           Future.microtask(() => _finishOnboarding());
-          return Scaffold(backgroundColor: bgColor, body: const Center(child: CircularProgressIndicator(color: Colors.white)));
+          return Scaffold(
+            backgroundColor: bgColor,
+            body: const Center(child: CircularProgressIndicator(color: Colors.white)),
+          );
         }
 
         // Main UI
@@ -217,76 +212,77 @@ class _ImportFollowsPageState extends ConsumerState<ImportFollowsPage> {
               const SizedBox(width: 8),
             ],
           ),
-          body:
-              _loading
-                  ? const Center(child: CircularProgressIndicator(color: Colors.white))
-                  : Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const Text(
-                          'Follow the same accounts you follow on Bluesky?',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: _searchController,
-                          decoration: InputDecoration(
-                            hintText: 'Search',
-                            prefixIcon: const Icon(Icons.search),
-                            filled: true,
-                            fillColor: isDark ? Colors.grey[800] : Colors.grey[200],
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: AppColors.border),
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8),
-                              borderSide: BorderSide(color: AppColors.border),
-                            ),
+          body: _loading
+              ? const Center(child: CircularProgressIndicator(color: Colors.white))
+              : Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Follow the same accounts you follow on Bluesky?',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Search',
+                          prefixIcon: const Icon(Icons.search),
+                          filled: true,
+                          fillColor: isDark ? Colors.grey[800] : Colors.grey[200],
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: AppColors.border),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: AppColors.border),
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        Expanded(
-                          child: ListView.separated(
-                            addAutomaticKeepAlives: false,
-                            addRepaintBoundaries: false,
-                            itemCount: _filteredFollows.length,
-                            separatorBuilder: (_, __) => const SizedBox(height: 8),
-                            itemBuilder: (context, index) {
-                              final follow = _filteredFollows[index];
-                              final isFollowed = _followed.contains(follow.did);
-                              return ListTile(
-                                leading: CircleAvatar(
-                                  backgroundImage: follow.avatar != null ? CachedNetworkImageProvider(follow.avatar!) : null,
-                                  child: follow.avatar == null ? const Icon(Icons.person) : null,
+                      ),
+                      const SizedBox(height: 16),
+                      Expanded(
+                        child: ListView.separated(
+                          addAutomaticKeepAlives: false,
+                          addRepaintBoundaries: false,
+                          itemCount: _filteredFollows.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final follow = _filteredFollows[index];
+                            final isFollowed = _followed.contains(follow.did);
+                            return ListTile(
+                              leading: CircleAvatar(
+                                backgroundImage: follow.avatar != null
+                                    ? CachedNetworkImageProvider(follow.avatar.toString())
+                                    : null,
+                                child: follow.avatar == null ? const Icon(Icons.person) : null,
+                              ),
+                              title: Text(follow.displayName ?? ''),
+                              subtitle: Text(follow.handle, style: TextStyle(color: AppColors.hintText)),
+                              trailing: OutlinedButton(
+                                onPressed: isFollowed ? null : () => _follow(follow.did),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: AppColors.pink),
+                                  foregroundColor: AppColors.pink,
+                                  disabledForegroundColor: AppColors.pink.withValues(alpha: 0.5),
+                                  disabledBackgroundColor: AppColors.pink.withValues(alpha: 0.05),
                                 ),
-                                title: Text(follow.displayName ?? ''),
-                                subtitle: Text(follow.handle, style: TextStyle(color: AppColors.hintText)),
-                                trailing: OutlinedButton(
-                                  onPressed: isFollowed ? null : () => _follow(follow.did),
-                                  style: OutlinedButton.styleFrom(
-                                    side: BorderSide(color: AppColors.pink),
-                                    foregroundColor: AppColors.pink,
-                                    disabledForegroundColor: AppColors.pink.withValues(alpha: 0.5),
-                                    disabledBackgroundColor: AppColors.pink.withValues(alpha: 0.05),
-                                  ),
-                                  child: Text(isFollowed ? 'Following' : 'Follow'),
-                                ),
-                              );
-                            },
-                          ),
+                                child: Text(isFollowed ? 'Following' : 'Follow'),
+                              ),
+                            );
+                          },
                         ),
-                        ElevatedButton(
-                          onPressed: _followAll,
-                          style: ElevatedButton.styleFrom(backgroundColor: AppColors.pink),
-                          child: const Text('Follow all', style: TextStyle(color: Colors.white)),
-                        ),
-                      ],
-                    ),
+                      ),
+                      ElevatedButton(
+                        onPressed: _followAll,
+                        style: ElevatedButton.styleFrom(backgroundColor: AppColors.pink),
+                        child: const Text('Follow all', style: TextStyle(color: Colors.white)),
+                      ),
+                    ],
                   ),
+                ),
         );
       },
     );
@@ -302,7 +298,7 @@ class _ImportFollowsPageState extends ConsumerState<ImportFollowsPage> {
         final repoRepository = GetIt.instance<RepoRepository>();
         final resp = await repoRepository.uploadBlob(widget.avatar as Uint8List);
         // The blob reference is already a JSON-serializable object
-        avatarToSend = resp.blob;
+        avatarToSend = resp;
       }
 
       final onboardingStateNotifier = ref.read(onboardingStateProvider.notifier);

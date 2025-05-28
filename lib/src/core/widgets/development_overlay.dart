@@ -9,7 +9,7 @@ class DevelopmentOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Positioned.fill(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
@@ -18,17 +18,10 @@ class DevelopmentOverlay extends StatelessWidget {
           child: Center(
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
-              decoration: BoxDecoration(
-                color: Colors.black.withAlpha(100), 
-                borderRadius: BorderRadius.circular(12),
-              ),
+              decoration: BoxDecoration(color: Colors.black.withAlpha(100), borderRadius: BorderRadius.circular(12)),
               child: Text(
                 'coming soon :)',
-                style: TextStyle(
-                  color: colorScheme.onPrimary,
-                  fontSize: 18, 
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(color: colorScheme.onPrimary, fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -36,4 +29,4 @@ class DevelopmentOverlay extends StatelessWidget {
       ),
     );
   }
-} 
+}

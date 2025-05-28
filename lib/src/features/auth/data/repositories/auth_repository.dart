@@ -28,7 +28,7 @@ abstract class AuthRepository {
   /// [inviteCode] - Optional invite code for restricted registrations
   ///
   /// Returns a tuple with a boolean indicating success and an optional error message
-  Future<(bool, String?)> register(String handle, String email, String password, String? inviteCode);
+  Future<({bool success, String? error})> register(String handle, String email, String password, String? inviteCode);
 
   /// Logs out the current user
   Future<void> logout();

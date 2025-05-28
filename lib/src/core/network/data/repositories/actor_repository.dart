@@ -10,5 +10,5 @@ abstract class ActorRepository {
   /// Search actors by query string.
   ///
   /// [query] The search query.
-  Future<ProfileView> searchActors(String query);
+  Future<List<ProfileView>> searchActors(String query);
 }

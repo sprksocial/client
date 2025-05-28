@@ -101,4 +101,4 @@ class SharedPrefsStorage implements LocalStorageInterface {
   Future<void> clear() async {
     await _prefs.clear();
   }
-} 
+}

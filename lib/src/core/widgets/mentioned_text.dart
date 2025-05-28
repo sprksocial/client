@@ -7,22 +7,22 @@ import '../utils/text_formatter.dart';
 class MentionedText extends StatelessWidget {
   /// The text to display, which may contain @mentions
   final String text;
-  
+
   /// Called when a username is tapped
   final Function(String username) onUsernameTap;
-  
+
   /// Whether to show the full text or truncate it
   final bool expandText;
-  
+
   /// Maximum number of lines when not expanded
   final int? maxLines;
-  
+
   /// How to handle overflow when not expanded
   final TextOverflow overflow;
-  
+
   /// Text style to apply to the regular text
   final TextStyle? textStyle;
-  
+
   /// Text style to apply to the @mentions, merged with textStyle
   final TextStyle? mentionStyle;
 
@@ -42,18 +42,12 @@ class MentionedText extends StatelessWidget {
   Widget build(BuildContext context) {
     final usernameMatches = TextFormatter.findUsernameMatches(text);
     final theme = Theme.of(context);
-    
-    final defaultTextStyle = TextStyle(
-      color: theme.colorScheme.onSurface,
-      fontSize: 14,
-    );
-    
+
+    final defaultTextStyle = TextStyle(color: theme.colorScheme.onSurface, fontSize: 14);
+
     final baseStyle = textStyle ?? defaultTextStyle;
-    final effectiveMentionStyle = mentionStyle ?? const TextStyle(
-      color: AppColors.primary,
-      fontWeight: FontWeight.bold,
-    );
-    
+    final effectiveMentionStyle = mentionStyle ?? const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold);
+
     // Build text spans for mentions
     final List<InlineSpan> spans = [];
     int lastEnd = 0;
@@ -62,10 +56,7 @@ class MentionedText extends StatelessWidget {
 
     for (final match in usernameMatches) {
       if (match.start > lastEnd) {
-        spans.add(TextSpan(
-          text: text.substring(lastEnd, match.start),
-          style: baseStyle,
-        ));
+        spans.add(TextSpan(text: text.substring(lastEnd, match.start), style: baseStyle));
       }
 
       final username = match.group(0)!;
@@ -81,16 +72,10 @@ class MentionedText extends StatelessWidget {
     }
 
     if (lastEnd < text.length) {
-      spans.add(TextSpan(
-        text: text.substring(lastEnd),
-        style: baseStyle,
-      ));
+      spans.add(TextSpan(text: text.substring(lastEnd), style: baseStyle));
     }
-    
-    final TextSpan textSpan = TextSpan(
-      children: spans,
-      style: baseStyle,
-    );
+
+    final TextSpan textSpan = TextSpan(children: spans, style: baseStyle);
 
     return RichText(
       text: textSpan,
@@ -98,4 +83,4 @@ class MentionedText extends StatelessWidget {
       overflow: expandText ? TextOverflow.visible : overflow,
     );
   }
-} 
+}

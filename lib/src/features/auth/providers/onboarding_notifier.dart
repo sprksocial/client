@@ -42,34 +42,13 @@ class OnboardingNotifier extends _$OnboardingNotifier {
 
       final profileDataMap = await _onboardingRepository.getBskyProfile();
 
-      String? displayName;
-      String? descriptionValue;
-      String? avatarCid;
-      String? avatarUrl;
-
-      if (profileDataMap != null) {
-        displayName = profileDataMap['displayName'] as String?;
-        descriptionValue = profileDataMap['description'] as String?;
-        final avatarData = profileDataMap['avatar'];
-
-        if (avatarData is String) {
-          avatarUrl = avatarData;
-        } else if (avatarData is Map) {
-          if (avatarData.containsKey('ref') && avatarData['ref'] is Map) {
-            avatarCid = avatarData['ref']['\$link'] as String?;
-          } else if (avatarData.containsKey('cid')) {
-            avatarCid = avatarData['cid'] as String?;
-          }
-        }
-      }
-
       return OnboardingScreenState(
         isLoading: false,
-        bskyProfileData: profileDataMap,
-        displayName: displayName ?? '',
-        description: descriptionValue ?? '',
-        initialAvatarCid: avatarCid,
-        initialAvatarUrl: avatarUrl,
+        bskyProfileRecord: profileDataMap,
+        displayName: profileDataMap?.displayName ?? '',
+        description: profileDataMap?.description ?? '',
+        initialAvatarCid: profileDataMap?.avatar?.ref.link,
+        initialAvatarUrl: profileDataMap?.avatar?.ref.link,
         localAvatarBytes: null,
         userDid: userDid,
       );
@@ -114,16 +93,16 @@ class OnboardingNotifier extends _$OnboardingNotifier {
 
   void resetDisplayName() {
     if (state.hasValue) {
-      final currentProfileData = state.value!.bskyProfileData;
-      final originalDisplayName = currentProfileData?['displayName'] as String? ?? '';
+      final currentProfileData = state.value!.bskyProfileRecord;
+      final originalDisplayName = currentProfileData?.displayName ?? '';
       state = AsyncValue.data(state.value!.copyWith(displayName: originalDisplayName));
     }
   }
 
   void resetDescription() {
     if (state.hasValue) {
-      final currentProfileData = state.value!.bskyProfileData;
-      final originalDescription = currentProfileData?['description'] as String? ?? '';
+      final currentProfileData = state.value!.bskyProfileRecord;
+      final originalDescription = currentProfileData?.description ?? '';
       state = AsyncValue.data(state.value!.copyWith(description: originalDescription));
     }
   }

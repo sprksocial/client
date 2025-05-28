@@ -53,20 +53,14 @@ class AuthRepositoryImpl implements AuthRepository {
       return null;
     }
 
-    final pdsService = services.firstWhere(
-      (s) => s['id'] == '#atproto_pds', 
-      orElse: () => {}
-    );
+    final pdsService = services.firstWhere((s) => s['id'] == '#atproto_pds', orElse: () => {});
 
     final String? pdsUrl = pdsService['serviceEndpoint'] as String?;
     if (pdsUrl == null) {
       return null;
     }
 
-    return pdsUrl
-      .replaceFirst('http://', '')
-      .replaceFirst('https://', '')
-      .replaceFirst('/', '');
+    return pdsUrl.replaceFirst('http://', '').replaceFirst('https://', '').replaceFirst('/', '');
   }
 
   bool _isTokenExpired(Jwt token) {
@@ -239,7 +233,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<(bool, String?)> register(String handle, String email, String password, String? inviteCode) async {
+  Future<({bool success, String? error})> register(String handle, String email, String password, String? inviteCode) async {
     try {
       _logger.i('Registration attempt for handle: $handle, email: $email');
       ATProto at = ATProto.anonymous(service: 'pds.sprk.so');
@@ -278,10 +272,10 @@ class AuthRepositoryImpl implements AuthRepository {
       await _saveSession(_session!);
       _logger.i('Registration successful for user: $handle');
 
-      return (true, null);
+      return (success: true, error: null);
     } catch (e) {
       _logger.e('Registration failed', error: e);
-      return (false, e.toString());
+      return (success: false, error: e.toString());
     }
   }
 

@@ -2,10 +2,11 @@ import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart' as bs;
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/data/models/graph_models.dart';
 
 import 'package:sparksocial/src/core/network/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/features/auth/data/models/bsky_follows.dart';
 import 'package:sparksocial/src/features/auth/data/repositories/auth_repository.dart';
 import 'onboarding_repository.dart';
 
@@ -28,8 +29,8 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     final uri = AtUri.parse('at://${_session!.did}/so.sprk.actor.profile/self');
     try {
       final response = await _repoRepository.getRecord(uri: uri);
-      _logger.i('Spark profile found: ${response.value}');
-      return response.value.isNotEmpty;
+      _logger.i('Spark profile found: ${response.record.value}');
+      return response.record.value.isNotEmpty;
     } catch (e) {
       // Treat 404 and 'Could not locate record' 400 errors as no profile
       final msg = e.toString().toLowerCase();
@@ -42,13 +43,13 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
   }
 
   @override
-  Future<Map<String, dynamic>?> getBskyProfile() async {
+  Future<bs.ProfileRecord?> getBskyProfile() async {
     if (_session == null) return null;
 
     try {
       final uri = AtUri.parse('at://${_session!.did}/app.bsky.actor.profile/self');
       final response = await _repoRepository.getRecord(uri: uri);
-      return response.value;
+      return bs.ProfileRecord.fromJson(response.record.value);
     } catch (e) {
       _logger.i('Bluesky profile not found', error: e);
       return null;
@@ -64,19 +65,15 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       if (avatar != null) 'avatar': avatar,
     };
 
-    final response = await _repoRepository.createRecord(
+    await _repoRepository.createRecord(
       collection: NSID.parse('so.sprk.actor.profile'),
       record: record,
       rkey: 'self',
     );
-
-    if (response.uri.isEmpty) {
-      throw Exception('Failed to create Spark profile');
-    }
   }
 
   @override
-  Future<BskyFollows> getBskyFollows({String? cursor}) async {
+  Future<FollowsResponse> getBskyFollows({String? cursor}) async {
     if (_session == null || _atproto == null) {
       throw Exception('Not authenticated');
     }
@@ -89,21 +86,13 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     final rawData = response.data.toJson();
     final List<dynamic> rawFollows = rawData['follows'] as List<dynamic>;
 
-    final follows =
-        rawFollows
-            .map(
-              (followData) => BskyFollow(
-                did: followData['did'] as String,
-                handle: followData['handle'] as String,
-                displayName: followData['displayName'] as String?,
-                avatar: followData['avatar'] as String?,
-                description: followData['description'] as String?,
-                indexedAt: followData['indexedAt'] != null ? DateTime.parse(followData['indexedAt'] as String) : null,
-              ),
-            )
-            .toList();
+    final follows = rawFollows
+        .map(
+          (followData) => ProfileView.fromJson(followData),
+        )
+        .toList();
 
-    return BskyFollows(follows: follows, cursor: rawData['cursor'] as String?);
+    return FollowsResponse(follows: follows, cursor: rawData['cursor'] as String?);
   }
 
   @override
@@ -116,7 +105,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
 
     final response = await _repoRepository.createRecord(collection: NSID.parse('so.sprk.graph.follow'), record: record);
 
-    if (response.uri.isEmpty) {
+    if (response.uri.toString().isEmpty) {
       throw Exception('Failed to create Spark follow');
     }
   }

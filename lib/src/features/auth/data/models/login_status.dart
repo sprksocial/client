@@ -1,6 +1,2 @@
 /// Login status enumeration
-enum LoginStatus { 
-  success, 
-  failed, 
-  codeRequired 
-} 
+enum LoginStatus { success, failed, codeRequired }

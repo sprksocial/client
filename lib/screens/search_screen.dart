@@ -158,7 +158,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ),
               Theme(
-                data: Theme.of(context).copyWith(tabBarTheme: const TabBarTheme(dividerColor: Colors.transparent)),
+                data: Theme.of(context).copyWith(tabBarTheme: const TabBarThemeData(dividerColor: Colors.transparent)),
                 child: TabBar(
                   tabs: const [Tab(text: 'Users')],
                   indicatorColor: AppColors.pink,

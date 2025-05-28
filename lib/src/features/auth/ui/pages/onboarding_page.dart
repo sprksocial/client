@@ -73,7 +73,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       avatarForNav = navData.avatarBytes;
     } else {
       final currentOnboardingStateValue = ref.read(onboardingNotifierProvider).value;
-      avatarForNav = currentOnboardingStateValue?.bskyProfileData?['avatar'];
+      avatarForNav = currentOnboardingStateValue?.bskyProfileRecord?.avatar;
     }
 
     context.router.push(
@@ -111,17 +111,16 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       ),
       body: onboardingStateAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error:
-            (err, stack) => Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Error: ${err.toString()}'),
-                  const SizedBox(height: 8),
-                  ElevatedButton(onPressed: () => notifier.reloadProfile(), child: const Text('Retry')),
-                ],
-              ),
-            ),
+        error: (err, stack) => Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Error: ${err.toString()}'),
+              const SizedBox(height: 8),
+              ElevatedButton(onPressed: () => notifier.reloadProfile(), child: const Text('Retry')),
+            ],
+          ),
+        ),
         data: (state) {
           ImageProvider<Object>? avatarImageProvider;
           if (state.localAvatarBytes != null) {
@@ -151,10 +150,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                               radius: 50,
                               backgroundImage: avatarImageProvider,
                               backgroundColor: theme.colorScheme.surfaceContainerHighest, // Placeholder color
-                              child:
-                                  avatarImageProvider == null
-                                      ? Icon(Icons.person, size: 50, color: theme.colorScheme.onSurfaceVariant)
-                                      : null,
+                              child: avatarImageProvider == null
+                                  ? Icon(Icons.person, size: 50, color: theme.colorScheme.onSurfaceVariant)
+                                  : null,
                             ),
                           ),
                           Positioned(
@@ -204,7 +202,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                             controller: _displayNameController,
                             hintText: 'Display Name',
                             fillColor: theme.inputDecorationTheme.fillColor ?? theme.colorScheme.surface,
-                            onUndo: state.bskyProfileData?['displayName'] != null ? () => notifier.resetDisplayName() : null,
+                            onUndo: state.bskyProfileRecord?.displayName != null ? () => notifier.resetDisplayName() : null,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) return 'Display Name is required';
                               if (value.trim().length > 64) return 'Display Name cannot exceed 64 characters';
@@ -217,7 +215,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                             hintText: 'Bio',
                             fillColor: theme.inputDecorationTheme.fillColor ?? theme.colorScheme.surface,
                             maxLines: 3,
-                            onUndo: state.bskyProfileData?['description'] != null ? () => notifier.resetDescription() : null,
+                            onUndo: state.bskyProfileRecord?.description != null ? () => notifier.resetDescription() : null,
                             validator: (value) {
                               if (value != null && value.trim().length > 256) return 'Bio cannot exceed 256 characters';
                               return null; // Bio is optional

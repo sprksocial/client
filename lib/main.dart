@@ -104,9 +104,8 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProxyProvider2<AuthService, ProfileService, CommentsService>(
           create: (context) => CommentsService(context.read<AuthService>(), context.read<ProfileService>()),
-          update:
-              (_, authService, profileService, previousCommentsService) =>
-                  previousCommentsService ?? CommentsService(authService, profileService),
+          update: (_, authService, profileService, previousCommentsService) =>
+              previousCommentsService ?? CommentsService(authService, profileService),
         ),
         ProxyProvider<AuthService, VideoService>(
           create: (context) => VideoService(context.read<AuthService>()),
@@ -114,9 +113,8 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProxyProvider2<AuthService, SettingsService, LabelerManager>(
           create: (context) => LabelerManager(context.read<AuthService>(), context.read<SettingsService>()),
-          update:
-              (_, authService, settingsService, previousLabelerManager) =>
-                  previousLabelerManager ?? LabelerManager(authService, settingsService),
+          update: (_, authService, settingsService, previousLabelerManager) =>
+              previousLabelerManager ?? LabelerManager(authService, settingsService),
         ),
       ],
       child: MaterialApp(
@@ -165,10 +163,10 @@ class MyApp extends StatelessWidget {
                   builder: (context, uploadService, _) {
                     return uploadService.isAnyTaskActive || uploadService.isAnyTaskCompleted
                         ? UploadProgressIndicator(
-                          isUploading: uploadService.isAnyTaskActive,
-                          isCompleted: uploadService.isAnyTaskCompleted && !uploadService.isAnyTaskActive,
-                          onDismiss: () => uploadService.clearCompletedTasks(),
-                        )
+                            isUploading: uploadService.isAnyTaskActive,
+                            isCompleted: uploadService.isAnyTaskCompleted && !uploadService.isAnyTaskActive,
+                            onDismiss: () => uploadService.clearCompletedTasks(),
+                          )
                         : const SizedBox.shrink();
                   },
                 ),

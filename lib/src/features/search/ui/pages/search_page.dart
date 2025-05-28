@@ -1,3 +1,4 @@
+import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -72,7 +73,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 ),
               ),
               Theme(
-                data: Theme.of(context).copyWith(tabBarTheme: const TabBarTheme(dividerColor: Colors.transparent)),
+                data: Theme.of(context).copyWith(tabBarTheme: const TabBarThemeData(dividerColor: Colors.transparent)),
                 child: TabBar(
                   tabs: const [Tab(text: 'Users')],
                   indicatorColor: colorScheme.primary,
@@ -80,7 +81,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   unselectedLabelColor: theme.textTheme.bodyMedium?.color,
                 ),
               ),
-              Expanded(child: TabBarView(children: [UserResults(ref: ref, state: searchState)])),
+              Expanded(
+                child: TabBarView(
+                  children: [UserResults(ref: ref, state: searchState)],
+                ),
+              ),
             ],
           ),
         ),
@@ -101,7 +106,9 @@ class UserResults extends StatelessWidget {
       return const Center(child: CircularProgressIndicator());
     }
     if (state.error != null) {
-      return Center(child: Text(state.error!, style: const TextStyle(color: Colors.red)));
+      return Center(
+        child: Text(state.error!, style: const TextStyle(color: Colors.red)),
+      );
     }
     if (state.query.isEmpty) {
       return const SizedBox.shrink();
@@ -114,15 +121,14 @@ class UserResults extends StatelessWidget {
         final actor = state.searchResults[index];
 
         // Check if the user is being followed
-        final followUri = actor.viewer != null ? actor.viewer!['following'] as String? : null;
-        final isFollowing = followUri != null && followUri.isNotEmpty;
+        final isFollowing = actor.viewer?.following != null;
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: SuggestedAccountCard(
             username: actor.displayName ?? actor.handle,
             handle: '@${actor.handle}',
-            avatarUrl: actor.avatar ?? '',
+            avatarUrl: actor.avatar?.toString() ?? '',
             description: actor.description ?? '',
             onTap: () {
               if (actor.did.isNotEmpty) {
@@ -132,11 +138,8 @@ class UserResults extends StatelessWidget {
             showFollowButton: ref.read(searchProvider.notifier).isCurrentUser(actor.did),
             isFollowing: isFollowing,
             onFollowTap: () => ref.read(searchProvider.notifier).followUser(actor.did),
-            onUnfollowTap: () {
-              if (followUri != null) {
-                ref.read(searchProvider.notifier).unfollowUser(actor.did, followUri);
-              }
-            },
+            onUnfollowTap: () =>
+                ref.read(searchProvider.notifier).unfollowUser(actor.did, actor.viewer?.following ?? AtUri.parse('')),
           ),
         );
       },

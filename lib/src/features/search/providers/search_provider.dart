@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/network/data/repositories/actor_repository.dart';
 import 'package:sparksocial/src/core/network/data/repositories/graph_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
@@ -54,9 +56,9 @@ class Search extends _$Search {
       final actorRepo = _actorRepository;
       final response = await actorRepo.searchActors(query);
 
-      state = state.copyWith(searchResults: response.actors, isLoading: false);
+      state = state.copyWith(searchResults: response, isLoading: false);
 
-      _logger.d('Search completed with ${response.actors.length} results');
+      _logger.d('Search completed with ${response.length} results');
     } catch (e) {
       _logger.e('Failed to search users', error: e);
       state = state.copyWith(error: 'Failed to search users', isLoading: false);
@@ -81,12 +83,8 @@ class Search extends _$Search {
 
       if (userIndex != -1) {
         final user = updatedResults[userIndex];
-        // Create a viewer map with following field if it doesn't exist
-        final viewerMap = user.viewer ?? {};
-        viewerMap['following'] = response.uri;
 
-        // Create updated user with the new viewer map
-        final updatedUser = user.copyWith(youFollow: true, viewer: viewerMap);
+        final updatedUser = user.copyWith(viewer: ActorViewer(following: AtUri.parse(response.uri)));
 
         updatedResults[userIndex] = updatedUser;
         state = state.copyWith(searchResults: updatedResults);
@@ -99,7 +97,7 @@ class Search extends _$Search {
   }
 
   /// Handle unfollowing a user
-  Future<void> unfollowUser(String userDid, String followUri) async {
+  Future<void> unfollowUser(String userDid, AtUri followUri) async {
     try {
       final authRepo = _authRepository;
       if (!authRepo.isAuthenticated) {
@@ -116,12 +114,8 @@ class Search extends _$Search {
 
       if (userIndex != -1) {
         final user = updatedResults[userIndex];
-        // Create a viewer map without following field
-        final viewerMap = user.viewer ?? {};
-        viewerMap.remove('following');
 
-        // Create updated user with the updated viewer map
-        final updatedUser = user.copyWith(youFollow: false, viewer: viewerMap);
+        final updatedUser = user.copyWith(viewer: ActorViewer(following: null));
 
         updatedResults[userIndex] = updatedUser;
         state = state.copyWith(searchResults: updatedResults);

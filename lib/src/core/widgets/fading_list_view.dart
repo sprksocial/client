@@ -36,11 +36,7 @@ class FadingListView extends StatelessWidget {
     for (int i = 0; i < children.length; i++) {
       itemsWithSpacing.add(children[i]);
       if (i < children.length - 1) {
-        itemsWithSpacing.add(
-          isHorizontal 
-              ? SizedBox(width: itemSpacing)
-              : SizedBox(height: itemSpacing)
-        );
+        itemsWithSpacing.add(isHorizontal ? SizedBox(width: itemSpacing) : SizedBox(height: itemSpacing));
       }
     }
 
@@ -49,19 +45,13 @@ class FadingListView extends StatelessWidget {
         ? SingleChildScrollView(
             controller: controller,
             scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: fadeWidth)
-                .add(padding ?? EdgeInsets.zero),
-            child: Row(
-              mainAxisAlignment: mainAxisAlignment,
-              crossAxisAlignment: crossAxisAlignment,
-              children: itemsWithSpacing,
-            ),
+            padding: EdgeInsets.symmetric(horizontal: fadeWidth).add(padding ?? EdgeInsets.zero),
+            child: Row(mainAxisAlignment: mainAxisAlignment, crossAxisAlignment: crossAxisAlignment, children: itemsWithSpacing),
           )
         : SingleChildScrollView(
             controller: controller,
             scrollDirection: Axis.vertical,
-            padding: EdgeInsets.symmetric(vertical: fadeWidth)
-                .add(padding ?? EdgeInsets.zero),
+            padding: EdgeInsets.symmetric(vertical: fadeWidth).add(padding ?? EdgeInsets.zero),
             child: Column(
               mainAxisAlignment: mainAxisAlignment,
               crossAxisAlignment: crossAxisAlignment,
@@ -74,22 +64,12 @@ class FadingListView extends StatelessWidget {
         return LinearGradient(
           begin: isHorizontal ? Alignment.centerLeft : Alignment.topCenter,
           end: isHorizontal ? Alignment.centerRight : Alignment.bottomCenter,
-          colors: const [
-            Colors.transparent,
-            AppColors.white,
-            AppColors.white,
-            Colors.transparent
-          ],
-          stops: [
-            0.0,
-            fadeWidth / bounds.width,
-            1 - (fadeWidth / bounds.width),
-            1.0
-          ],
+          colors: const [Colors.transparent, AppColors.white, AppColors.white, Colors.transparent],
+          stops: [0.0, fadeWidth / bounds.width, 1 - (fadeWidth / bounds.width), 1.0],
         ).createShader(bounds);
       },
       blendMode: BlendMode.dstIn,
       child: content,
     );
   }
-} 
+}

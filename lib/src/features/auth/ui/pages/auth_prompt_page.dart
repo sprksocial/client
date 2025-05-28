@@ -19,18 +19,17 @@ class AuthPromptPage extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: AppTheme.getBackgroundColor(context),
-      appBar:
-          onClose != null
-              ? AppBar(
-                leading: IconButton(
-                  padding: EdgeInsets.zero,
-                  onPressed: onClose,
-                  icon: Icon(FluentIcons.dismiss_24_regular, color: AppTheme.getTextColor(context)),
-                ),
-                backgroundColor: Colors.transparent,
-                elevation: 0,
-              )
-              : null,
+      appBar: onClose != null
+          ? AppBar(
+              leading: IconButton(
+                padding: EdgeInsets.zero,
+                onPressed: onClose,
+                icon: Icon(FluentIcons.dismiss_24_regular, color: AppTheme.getTextColor(context)),
+              ),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+            )
+          : null,
       body: Stack(
         children: [
           Positioned.fill(child: Image.asset('assets/branding/gradient.webp', fit: BoxFit.cover)),

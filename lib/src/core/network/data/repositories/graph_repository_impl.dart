@@ -122,7 +122,7 @@ class GraphRepositoryImpl implements GraphRepository {
   }
 
   @override
-  Future<void> unfollowUser(String followUri) async {
+  Future<void> unfollowUser(AtUri followUri) async {
     _logger.d('Unfollowing user with follow URI: $followUri');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -136,7 +136,7 @@ class GraphRepositoryImpl implements GraphRepository {
         throw Exception('AtProto not initialized');
       }
 
-      await atproto.repo.deleteRecord(uri: AtUri.parse(followUri));
+      await atproto.repo.deleteRecord(uri: followUri);
       _logger.i('User unfollowed successfully');
     });
   }

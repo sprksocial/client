@@ -89,7 +89,10 @@ class _ATAccountDialogActions extends StatelessWidget {
         Expanded(
           child: TextButton(
             onPressed: onLearnMore,
-            child: Text('Learn more', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 16)),
+            child: Text(
+              'Learn more',
+              style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 16),
+            ),
           ),
         ),
         const SizedBox(width: 12),

@@ -24,7 +24,7 @@ mixin _$SearchState {
   bool get isLoading => throw _privateConstructorUsedError;
 
   /// Search results - list of actors
-  List<Actor> get searchResults => throw _privateConstructorUsedError;
+  List<ProfileView> get searchResults => throw _privateConstructorUsedError;
 
   /// Error message if search failed
   String? get error => throw _privateConstructorUsedError;
@@ -49,7 +49,10 @@ abstract class $SearchStateCopyWith<$Res> {
       _$SearchStateCopyWithImpl<$Res, SearchState>;
   @useResult
   $Res call(
-      {bool isLoading, List<Actor> searchResults, String? error, String query});
+      {bool isLoading,
+      List<ProfileView> searchResults,
+      String? error,
+      String query});
 }
 
 /// @nodoc
@@ -80,7 +83,7 @@ class _$SearchStateCopyWithImpl<$Res, $Val extends SearchState>
       searchResults: null == searchResults
           ? _value.searchResults
           : searchResults // ignore: cast_nullable_to_non_nullable
-              as List<Actor>,
+              as List<ProfileView>,
       error: freezed == error
           ? _value.error
           : error // ignore: cast_nullable_to_non_nullable
@@ -102,7 +105,10 @@ abstract class _$$SearchStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {bool isLoading, List<Actor> searchResults, String? error, String query});
+      {bool isLoading,
+      List<ProfileView> searchResults,
+      String? error,
+      String query});
 }
 
 /// @nodoc
@@ -131,7 +137,7 @@ class __$$SearchStateImplCopyWithImpl<$Res>
       searchResults: null == searchResults
           ? _value._searchResults
           : searchResults // ignore: cast_nullable_to_non_nullable
-              as List<Actor>,
+              as List<ProfileView>,
       error: freezed == error
           ? _value.error
           : error // ignore: cast_nullable_to_non_nullable
@@ -149,7 +155,7 @@ class __$$SearchStateImplCopyWithImpl<$Res>
 class _$SearchStateImpl implements _SearchState {
   const _$SearchStateImpl(
       {this.isLoading = false,
-      final List<Actor> searchResults = const [],
+      final List<ProfileView> searchResults = const [],
       this.error,
       this.query = ''})
       : _searchResults = searchResults;
@@ -163,12 +169,12 @@ class _$SearchStateImpl implements _SearchState {
   final bool isLoading;
 
   /// Search results - list of actors
-  final List<Actor> _searchResults;
+  final List<ProfileView> _searchResults;
 
   /// Search results - list of actors
   @override
   @JsonKey()
-  List<Actor> get searchResults {
+  List<ProfileView> get searchResults {
     if (_searchResults is EqualUnmodifiableListView) return _searchResults;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_searchResults);
@@ -225,7 +231,7 @@ class _$SearchStateImpl implements _SearchState {
 abstract class _SearchState implements SearchState {
   const factory _SearchState(
       {final bool isLoading,
-      final List<Actor> searchResults,
+      final List<ProfileView> searchResults,
       final String? error,
       final String query}) = _$SearchStateImpl;
 
@@ -238,7 +244,7 @@ abstract class _SearchState implements SearchState {
 
   /// Search results - list of actors
   @override
-  List<Actor> get searchResults;
+  List<ProfileView> get searchResults;
 
   /// Error message if search failed
   @override

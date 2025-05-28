@@ -19,7 +19,7 @@ class RepoRepositoryImpl implements RepoRepository {
   }
 
   @override
-  Future<(Record, StrongRef)> getRecord({required AtUri uri}) async {
+  Future<({Record record, StrongRef strongRef})> getRecord({required AtUri uri}) async {
     _logger.d('Getting record for URI: $uri');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -33,7 +33,7 @@ class RepoRepositoryImpl implements RepoRepository {
       }
       final result = await atproto.repo.getRecord(uri: uri);
       _logger.d('Record retrieved successfully');
-      return (result.data, StrongRef(uri: result.data.uri, cid: result.data.cid ?? ''));
+      return (record: result.data, strongRef: StrongRef(uri: result.data.uri, cid: result.data.cid ?? ''));
     });
   }
 
@@ -57,7 +57,7 @@ class RepoRepositoryImpl implements RepoRepository {
   }
 
   @override
-  Future<StrongRef> createRecord({required NSID collection, required Record record, String? rkey}) async {
+  Future<StrongRef> createRecord({required NSID collection, required Map<String, dynamic> record, String? rkey}) async {
     _logger.d('Creating record in collection: $collection');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -71,7 +71,7 @@ class RepoRepositoryImpl implements RepoRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final result = await atproto.repo.createRecord(collection: collection, record: record.toJson(), rkey: rkey);
+      final result = await atproto.repo.createRecord(collection: collection, record: record, rkey: rkey);
       _logger.d('Record created successfully');
       return StrongRef(uri: result.data.uri, cid: result.data.cid);
     });

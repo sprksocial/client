@@ -1,10 +1,10 @@
+import 'package:bluesky/bluesky.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../../../core/network/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/data/models/graph_models.dart';
 import '../../../core/network/data/repositories/sprk_repository.dart';
 import '../data/repositories/auth_repository.dart';
-import '../data/models/bsky_follows.dart';
 import '../data/repositories/onboarding_repository_impl.dart';
 import '../data/repositories/onboarding_repository.dart';
 
@@ -28,18 +28,18 @@ Future<bool> hasSparkProfile(Ref ref) async {
 
 /// Provider to get the user's Bluesky profile for import
 @riverpod
-Future<Profile?> bskyProfile(Ref ref) async {
+Future<ProfileRecord?> bskyProfile(Ref ref) async {
   final repository = ref.watch(onboardingRepositoryProvider);
   final profileData = await repository.getBskyProfile();
 
   if (profileData == null) return null;
 
-  return Profile.fromBlueskyActor(profileData);
+  return profileData;
 }
 
 /// Provider to get Bluesky follows
 @riverpod
-Future<BskyFollows> bskyFollows(Ref ref, {String? cursor}) async {
+Future<FollowsResponse> bskyFollows(Ref ref, {String? cursor}) async {
   final repository = ref.watch(onboardingRepositoryProvider);
   return repository.getBskyFollows(cursor: cursor);
 }
@@ -54,14 +54,14 @@ class OnboardingState extends _$OnboardingState {
   }
 
   /// Import Bluesky profile to create a Spark profile
-  Future<void> importProfile(Profile bskyProfile) async {
+  Future<void> importProfile(ProfileRecord bskyProfile) async {
     state = const AsyncLoading();
 
     try {
       final repository = ref.read(onboardingRepositoryProvider);
 
       await repository.createSparkProfile(
-        displayName: bskyProfile.displayName ?? bskyProfile.handle,
+        displayName: bskyProfile.displayName ?? '',
         description: bskyProfile.description ?? '',
         avatar: bskyProfile.avatar,
       );

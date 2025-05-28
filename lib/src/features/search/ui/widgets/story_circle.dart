@@ -35,14 +35,13 @@ class StoryCircle extends StatelessWidget {
                 margin: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  gradient:
-                      isYourStory
-                          ? null
-                          : LinearGradient(
-                            colors: [colorScheme.primary, AppColors.pink],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
+                  gradient: isYourStory
+                      ? null
+                      : LinearGradient(
+                          colors: [colorScheme.primary, AppColors.pink],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
                 ),
                 padding: const EdgeInsets.all(2.5),
                 child: Container(

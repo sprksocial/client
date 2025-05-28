@@ -45,4 +45,4 @@ abstract class LocalStorageInterface {
 
   /// Clear all stored data
   Future<void> clear();
-} 
+}

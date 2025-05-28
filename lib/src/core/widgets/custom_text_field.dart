@@ -23,7 +23,7 @@ class CustomTextField extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    
+
     return TextFormField(
       controller: controller,
       maxLines: maxLines,
@@ -38,25 +38,21 @@ class CustomTextField extends StatelessWidget {
           borderSide: BorderSide(color: colorScheme.outline),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8), 
+          borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: colorScheme.primary),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8), 
+          borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: colorScheme.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8), 
+          borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: colorScheme.error),
         ),
-        suffixIcon: onUndo != null 
-            ? IconButton(
-                icon: const Icon(Icons.undo, size: 20), 
-                onPressed: onUndo, 
-                tooltip: 'Revert',
-              ) 
+        suffixIcon: onUndo != null
+            ? IconButton(icon: const Icon(Icons.undo, size: 20), onPressed: onUndo, tooltip: 'Revert')
             : null,
       ),
     );
   }
-} 
+}

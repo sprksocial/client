@@ -12,12 +12,7 @@ class ReportDialog extends ConsumerStatefulWidget {
   final String postCid;
   final Function(ReportSubject subject, ModerationReasonType reasonType, String? reason, ModerationService? service)? onSubmit;
 
-  const ReportDialog({
-    super.key, 
-    required this.postUri, 
-    required this.postCid, 
-    this.onSubmit
-  });
+  const ReportDialog({super.key, required this.postUri, required this.postCid, this.onSubmit});
 
   @override
   ConsumerState<ReportDialog> createState() => _ReportDialogState();
@@ -48,11 +43,9 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
 
   Future<void> _submitReport() async {
     final subject = ReportSubject.strongRef(
-      data: StrongRef(cid: widget.postCid, uri: AtUri.parse(widget.postUri))
+      data: StrongRef(cid: widget.postCid, uri: AtUri.parse(widget.postUri)),
     );
-    final reason = _additionalInfoController.text.isNotEmpty 
-        ? _additionalInfoController.text 
-        : null;
+    final reason = _additionalInfoController.text.isNotEmpty ? _additionalInfoController.text : null;
 
     setState(() {
       _isSubmitting = true;
@@ -70,12 +63,8 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
         // Get the repository directly and create the report
         final repoRepository = GetIt.instance<SprkRepository>().repo;
         _logger.d('Creating report with reason: ${_selectedReason.value}');
-        
-        final success = await repoRepository.createReport(
-          subject: subject,
-          reasonType: _selectedReason,
-          reason: reason,
-        );
+
+        final success = await repoRepository.createReport(subject: subject, reasonType: _selectedReason, reason: reason);
 
         if (success && mounted) {
           context.router.maybePop();
@@ -111,7 +100,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (final reason in ModerationReasonType.values) 
+            for (final reason in ModerationReasonType.values)
               _ReasonTile(
                 reason: reason,
                 selectedReason: _selectedReason,
@@ -150,10 +139,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
                     border: Border.all(color: theme.colorScheme.error),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Text(
-                    _errorMessage!, 
-                    style: TextStyle(color: theme.colorScheme.error, fontSize: 12)
-                  ),
+                  child: Text(_errorMessage!, style: TextStyle(color: theme.colorScheme.error, fontSize: 12)),
                 ),
               ),
           ],
@@ -171,11 +157,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
             foregroundColor: theme.colorScheme.onPrimary,
           ),
           child: _isSubmitting
-              ? const SizedBox(
-                  width: 16, 
-                  height: 16, 
-                  child: CircularProgressIndicator(strokeWidth: 2)
-                )
+              ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
               : const Text('Submit'),
         ),
       ],
@@ -206,19 +188,9 @@ class _ReasonTile extends StatelessWidget {
     return RadioListTile<ModerationReasonType>(
       title: Text(
         friendlyName,
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: textColor, 
-          fontWeight: FontWeight.w500, 
-          fontSize: 13
-        ),
+        style: theme.textTheme.bodyMedium?.copyWith(color: textColor, fontWeight: FontWeight.w500, fontSize: 13),
       ),
-      subtitle: Text(
-        description, 
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: textColor.withAlpha(179), 
-          fontSize: 10
-        )
-      ),
+      subtitle: Text(description, style: theme.textTheme.bodySmall?.copyWith(color: textColor.withAlpha(179), fontSize: 10)),
       value: reason,
       groupValue: selectedReason,
       activeColor: theme.colorScheme.primary,
@@ -228,4 +200,4 @@ class _ReasonTile extends StatelessWidget {
       onChanged: onChanged,
     );
   }
-} 
+}

@@ -16,14 +16,7 @@ import 'package:sparksocial/src/features/auth/data/repositories/onboarding_repos
 import 'package:sparksocial/src/features/auth/data/repositories/onboarding_repository_impl.dart';
 import 'package:sparksocial/src/features/profile/data/repositories/profile_repository.dart';
 import 'package:sparksocial/src/features/profile/data/repositories/profile_repository_impl.dart';
-import 'package:sparksocial/src/features/upload/data/repositories/upload_repository.dart';
-import 'package:sparksocial/src/features/upload/data/repositories/upload_repository_impl.dart';
-import 'package:sparksocial/src/features/upload/data/repositories/camera_repository_impl.dart';
-import 'package:sparksocial/src/features/upload/data/repositories/camera_repository.dart';
-import 'package:sparksocial/src/features/feed/data/repositories/preload_repository.dart';
-import 'package:sparksocial/src/features/feed/data/repositories/preload_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository_impl.dart';
-import 'package:sparksocial/src/core/network/data/repositories/label_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/actor_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/graph_repository_impl.dart';
 
@@ -91,12 +84,6 @@ Future<void> _registerCore() async {
   // Register theme repository
   sl.registerSingleton<ThemeRepository>(ThemeRepositoryImpl(sl<StorageManager>()));
 
-  // Register LabelRepository
-  sl.registerSingleton<LabelRepository>(LabelRepositoryImpl(sl.get<SprkRepository>()));
-
-  // Register FeedRepository
-  sl.registerSingleton<FeedRepository>(FeedRepositoryImpl(sl.get<SprkRepository>(), sl.get<LabelRepository>()));
-
   // Register ActorRepository
   sl.registerSingleton<ActorRepository>(ActorRepositoryImpl(sl.get<SprkRepository>()));
 
@@ -136,16 +123,10 @@ Future<void> _registerProfile() async {
 /// Registers feed dependencies
 Future<void> _registerFeed() async {
   // Register MediaRepository
-  sl.registerLazySingleton<PreloadRepository>(
-    () => PreloadRepositoryImpl(cacheManager: sl<CacheManagerInterface>(), logService: sl<LogService>()),
-  );
+ 
 }
 
 /// Registers upload dependencies
 Future<void> _registerUpload() async {
-  // Register CameraRepository
-  sl.registerLazySingleton<CameraRepository>(() => CameraRepositoryImpl());
-
-  // Register UploadRepository
-  sl.registerLazySingleton<UploadRepository>(() => UploadRepositoryImpl());
+ 
 }

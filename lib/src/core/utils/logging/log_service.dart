@@ -8,21 +8,21 @@ class LogService {
   SparkLogger getLogger(String name) {
     return LoggerFactory.getLogger(name);
   }
-  
+
   /// Set the global minimum log level
   void setGlobalLogLevel(LogLevel level) {
     LoggerFactory.setGlobalLogLevel(level);
   }
-  
+
   /// Get the app logger
   SparkLogger get appLogger => LoggerFactory.getLogger('App');
-  
+
   /// Get the network logger
   SparkLogger get networkLogger => LoggerFactory.getLogger('Network');
-  
+
   /// Get the database logger
   SparkLogger get databaseLogger => LoggerFactory.getLogger('Database');
-  
+
   /// Get the UI logger
   SparkLogger get uiLogger => LoggerFactory.getLogger('UI');
-} 
+}

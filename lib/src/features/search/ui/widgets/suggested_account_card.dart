@@ -82,32 +82,32 @@ class SuggestedAccountCard extends StatelessWidget {
             if (showFollowButton)
               isFollowing
                   ? GestureDetector(
-                    onTap: onUnfollowTap,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.transparent,
-                        border: Border.all(color: colorScheme.primary, width: 2),
-                        borderRadius: BorderRadius.circular(24),
+                      onTap: onUnfollowTap,
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: Colors.transparent,
+                          border: Border.all(color: colorScheme.primary, width: 2),
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Text(
+                          'Following',
+                          style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w600, fontSize: 14),
+                        ),
                       ),
-                      child: Text(
-                        'Following',
-                        style: TextStyle(color: colorScheme.primary, fontWeight: FontWeight.w600, fontSize: 14),
-                      ),
-                    ),
-                  )
+                    )
                   : GestureDetector(
-                    onTap: onFollowTap,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                      decoration: BoxDecoration(color: colorScheme.primary, borderRadius: BorderRadius.circular(24)),
-                      child: Text(
-                        'Follow',
-                        style: TextStyle(color: colorScheme.onPrimary, fontWeight: FontWeight.w600, fontSize: 14),
+                      onTap: onFollowTap,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        decoration: BoxDecoration(color: colorScheme.primary, borderRadius: BorderRadius.circular(24)),
+                        child: Text(
+                          'Follow',
+                          style: TextStyle(color: colorScheme.onPrimary, fontWeight: FontWeight.w600, fontSize: 14),
+                        ),
                       ),
                     ),
-                  ),
           ],
         ),
       ),

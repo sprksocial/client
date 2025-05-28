@@ -10,12 +10,12 @@ enum LogLevel {
 
   final int value;
   final String name;
-  
+
   const LogLevel(this.value, this.name);
-  
+
   /// Checks if this log level is at least as severe as [other]
   bool isAtLeast(LogLevel other) => value >= other.value;
-  
+
   @override
   String toString() => name;
-} 
+}

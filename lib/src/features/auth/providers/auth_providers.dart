@@ -85,7 +85,7 @@ class Auth extends _$Auth {
   /// [email] - The user email address
   /// [password] - The user password
   /// [inviteCode] - Optional invite code for restricted registrations
-  Future<(bool, String?)> register(String handle, String email, String password, String? inviteCode) async {
+  Future<LoginResult> register(String handle, String email, String password, String? inviteCode) async {
     _logger.i('Registration attempt by service layer');
 
     state = state.copyWith(isLoading: true, error: null);
@@ -93,13 +93,13 @@ class Auth extends _$Auth {
     try {
       final result = await _authRepository.register(handle, email, password, inviteCode);
       _updateState();
-      state = state.copyWith(isLoading: false, error: result.$2);
-      return result;
+      state = state.copyWith(isLoading: false, error: result.error);
+      return LoginResult.success();
     } catch (e, stackTrace) {
       _logger.e('Registration error', error: e, stackTrace: stackTrace);
       final errorMsg = 'Registration failed: ${e.toString()}';
       state = state.copyWith(isLoading: false, error: errorMsg);
-      return (false, errorMsg);
+      return LoginResult.failed(errorMsg);
     }
   }
 

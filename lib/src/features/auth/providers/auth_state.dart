@@ -14,6 +14,6 @@ class AuthState with _$AuthState {
     @Default(false) bool isLoading,
     String? error,
   }) = _AuthState;
-  
+
   const AuthState._();
-} 
+}

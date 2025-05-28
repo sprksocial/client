@@ -46,13 +46,13 @@ final hasSparkProfileProvider = AutoDisposeFutureProvider<bool>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef HasSparkProfileRef = AutoDisposeFutureProviderRef<bool>;
-String _$bskyProfileHash() => r'7aa9c96a7450f09186881c4efd5eebe54e0bad94';
+String _$bskyProfileHash() => r'db1cc5d5ccd8db4720d39fb10bcf025458d0feee';
 
 /// Provider to get the user's Bluesky profile for import
 ///
 /// Copied from [bskyProfile].
 @ProviderFor(bskyProfile)
-final bskyProfileProvider = AutoDisposeFutureProvider<Profile?>.internal(
+final bskyProfileProvider = AutoDisposeFutureProvider<ProfileRecord?>.internal(
   bskyProfile,
   name: r'bskyProfileProvider',
   debugGetCreateSourceHash:
@@ -63,8 +63,8 @@ final bskyProfileProvider = AutoDisposeFutureProvider<Profile?>.internal(
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef BskyProfileRef = AutoDisposeFutureProviderRef<Profile?>;
-String _$bskyFollowsHash() => r'3fe6984a702d2dbadecfc1af721af4d5fa188318';
+typedef BskyProfileRef = AutoDisposeFutureProviderRef<ProfileRecord?>;
+String _$bskyFollowsHash() => r'dc17fea6ca5d431ecc5229c1a40b65adaff74693';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -96,7 +96,7 @@ const bskyFollowsProvider = BskyFollowsFamily();
 /// Provider to get Bluesky follows
 ///
 /// Copied from [bskyFollows].
-class BskyFollowsFamily extends Family<AsyncValue<BskyFollows>> {
+class BskyFollowsFamily extends Family<AsyncValue<FollowsResponse>> {
   /// Provider to get Bluesky follows
   ///
   /// Copied from [bskyFollows].
@@ -140,7 +140,7 @@ class BskyFollowsFamily extends Family<AsyncValue<BskyFollows>> {
 /// Provider to get Bluesky follows
 ///
 /// Copied from [bskyFollows].
-class BskyFollowsProvider extends AutoDisposeFutureProvider<BskyFollows> {
+class BskyFollowsProvider extends AutoDisposeFutureProvider<FollowsResponse> {
   /// Provider to get Bluesky follows
   ///
   /// Copied from [bskyFollows].
@@ -177,7 +177,7 @@ class BskyFollowsProvider extends AutoDisposeFutureProvider<BskyFollows> {
 
   @override
   Override overrideWith(
-    FutureOr<BskyFollows> Function(BskyFollowsRef provider) create,
+    FutureOr<FollowsResponse> Function(BskyFollowsRef provider) create,
   ) {
     return ProviderOverride(
       origin: this,
@@ -194,7 +194,7 @@ class BskyFollowsProvider extends AutoDisposeFutureProvider<BskyFollows> {
   }
 
   @override
-  AutoDisposeFutureProviderElement<BskyFollows> createElement() {
+  AutoDisposeFutureProviderElement<FollowsResponse> createElement() {
     return _BskyFollowsProviderElement(this);
   }
 
@@ -214,20 +214,21 @@ class BskyFollowsProvider extends AutoDisposeFutureProvider<BskyFollows> {
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin BskyFollowsRef on AutoDisposeFutureProviderRef<BskyFollows> {
+mixin BskyFollowsRef on AutoDisposeFutureProviderRef<FollowsResponse> {
   /// The parameter `cursor` of this provider.
   String? get cursor;
 }
 
 class _BskyFollowsProviderElement
-    extends AutoDisposeFutureProviderElement<BskyFollows> with BskyFollowsRef {
+    extends AutoDisposeFutureProviderElement<FollowsResponse>
+    with BskyFollowsRef {
   _BskyFollowsProviderElement(super.provider);
 
   @override
   String? get cursor => (origin as BskyFollowsProvider).cursor;
 }
 
-String _$onboardingStateHash() => r'da760eca010b8dc13d09ffbc6581b4de823ee6ee';
+String _$onboardingStateHash() => r'3eff08994a2ddd3b910b2b426b55f338fdb3a66f';
 
 /// Provider to manage the onboarding state
 ///

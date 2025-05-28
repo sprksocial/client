@@ -37,14 +37,14 @@ extension ThemeModeExtension on ThemeMode {
 @Riverpod(keepAlive: true)
 class Theme extends _$Theme {
   late final ThemeRepository _themeRepository;
-  
+
   @override
   ThemeState build() {
     _themeRepository = GetIt.instance<ThemeRepository>();
     // Initialize with system theme
     return const ThemeState(themeMode: ThemeMode.system);
   }
-  
+
   /// Initialize by loading the saved theme
   Future<void> initialize() async {
     final savedTheme = await _themeRepository.getThemeMode();
@@ -52,23 +52,23 @@ class Theme extends _$Theme {
       state = state.copyWith(themeMode: savedTheme);
     }
   }
-  
+
   /// Change theme and persist the choice
   Future<void> setThemeMode(ThemeMode themeMode) async {
     await _themeRepository.saveThemeMode(themeMode);
     state = state.copyWith(themeMode: themeMode);
   }
-  
+
   /// Toggle between light and dark themes
   Future<void> toggleTheme() async {
     final ThemeMode newThemeMode;
-    
+
     if (state.themeMode == ThemeMode.light) {
       newThemeMode = ThemeMode.dark;
     } else {
       newThemeMode = ThemeMode.light;
     }
-    
+
     await setThemeMode(newThemeMode);
   }
 }

@@ -97,11 +97,7 @@ class MenuActionButton extends StatelessWidget {
       child: SizedBox(
         width: isCompact ? 28 : 36,
         height: isCompact ? 28 : 36,
-        child: Icon(
-          Icons.more_horiz, 
-          color: iconColor, 
-          size: isCompact ? 16 : 25
-        ),
+        child: Icon(Icons.more_horiz, color: iconColor, size: isCompact ? 16 : 25),
       ),
     );
   }
@@ -137,4 +133,4 @@ class CompactMenuButton extends StatelessWidget {
       authorDid: authorDid,
     );
   }
-} 
+}

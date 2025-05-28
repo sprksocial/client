@@ -14,17 +14,10 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
-LoginResult _$LoginResultFromJson(Map<String, dynamic> json) {
-  return _LoginResult.fromJson(json);
-}
-
 /// @nodoc
 mixin _$LoginResult {
   LoginStatus get status => throw _privateConstructorUsedError;
   String? get error => throw _privateConstructorUsedError;
-
-  /// Serializes this LoginResult to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of LoginResult
   /// with the given fields replaced by the non-null parameter values.
@@ -114,12 +107,9 @@ class __$$LoginResultImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
 class _$LoginResultImpl extends _LoginResult {
   const _$LoginResultImpl({required this.status, this.error}) : super._();
-
-  factory _$LoginResultImpl.fromJson(Map<String, dynamic> json) =>
-      _$$LoginResultImplFromJson(json);
 
   @override
   final LoginStatus status;
@@ -140,7 +130,6 @@ class _$LoginResultImpl extends _LoginResult {
             (identical(other.error, error) || other.error == error));
   }
 
-  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(runtimeType, status, error);
 
@@ -151,13 +140,6 @@ class _$LoginResultImpl extends _LoginResult {
   @pragma('vm:prefer-inline')
   _$$LoginResultImplCopyWith<_$LoginResultImpl> get copyWith =>
       __$$LoginResultImplCopyWithImpl<_$LoginResultImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$LoginResultImplToJson(
-      this,
-    );
-  }
 }
 
 abstract class _LoginResult extends LoginResult {
@@ -165,9 +147,6 @@ abstract class _LoginResult extends LoginResult {
       {required final LoginStatus status,
       final String? error}) = _$LoginResultImpl;
   const _LoginResult._() : super._();
-
-  factory _LoginResult.fromJson(Map<String, dynamic> json) =
-      _$LoginResultImpl.fromJson;
 
   @override
   LoginStatus get status;
