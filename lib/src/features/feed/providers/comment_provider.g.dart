@@ -31,10 +31,10 @@ class _SystemHash {
 
 abstract class _$CommentNotifier
     extends BuildlessAutoDisposeNotifier<CommentState> {
-  late final Comment comment;
+  late final InvalidType comment;
 
   CommentState build(
-    Comment comment,
+    InvalidType comment,
   );
 }
 
@@ -49,7 +49,7 @@ class CommentNotifierFamily extends Family<CommentState> {
 
   /// See also [CommentNotifier].
   CommentNotifierProvider call(
-    Comment comment,
+    InvalidType comment,
   ) {
     return CommentNotifierProvider(
       comment,
@@ -85,7 +85,7 @@ class CommentNotifierProvider
     extends AutoDisposeNotifierProviderImpl<CommentNotifier, CommentState> {
   /// See also [CommentNotifier].
   CommentNotifierProvider(
-    Comment comment,
+    InvalidType comment,
   ) : this._internal(
           () => CommentNotifier()..comment = comment,
           from: commentNotifierProvider,
@@ -110,7 +110,7 @@ class CommentNotifierProvider
     required this.comment,
   }) : super.internal();
 
-  final Comment comment;
+  final InvalidType comment;
 
   @override
   CommentState runNotifierBuild(
@@ -161,7 +161,7 @@ class CommentNotifierProvider
 // ignore: unused_element
 mixin CommentNotifierRef on AutoDisposeNotifierProviderRef<CommentState> {
   /// The parameter `comment` of this provider.
-  Comment get comment;
+  InvalidType get comment;
 }
 
 class _CommentNotifierProviderElement
@@ -170,7 +170,7 @@ class _CommentNotifierProviderElement
   _CommentNotifierProviderElement(super.provider);
 
   @override
-  Comment get comment => (origin as CommentNotifierProvider).comment;
+  InvalidType get comment => (origin as CommentNotifierProvider).comment;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

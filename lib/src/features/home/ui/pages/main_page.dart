@@ -35,7 +35,7 @@ class _MainPageState extends ConsumerState<MainPage> {
             onDestinationSelected: (index) {
               if (index == 2) {
                 // Special case for Create button
-                context.router.push(const CreateVideoRoute());
+                context.router.push(const PlaceholderRoute());
               } else {
                 tabsRouter.setActiveIndex(index);
                 ref.read(navigationProvider.notifier).updateIndex(index);

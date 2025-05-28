@@ -6,8 +6,8 @@ part 'actor_models.freezed.dart';
 part 'actor_models.g.dart';
 
 @freezed
-class Viewer with _$Viewer {
-  const factory Viewer({
+class ActorViewer with _$ActorViewer {
+  const factory ActorViewer({
     bool? muted,
     // muted by list: when we add lists add this field
     bool? blockedBy,
@@ -16,9 +16,9 @@ class Viewer with _$Viewer {
     @AtUriConverter() AtUri? following,
     @AtUriConverter() AtUri? followedBy,
     KnownFollowers? followers,
-  }) = _Viewer;
+  }) = _ActorViewer;
 
-  factory Viewer.fromJson(Map<String, dynamic> json) => _$ViewerFromJson(json);
+  factory ActorViewer.fromJson(Map<String, dynamic> json) => _$ActorViewerFromJson(json);
 }
 
 @freezed
@@ -39,7 +39,7 @@ class ProfileViewBasic with _$ProfileViewBasic {
     String? displayName,
     @AtUriConverter() AtUri? avatar,
     // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
-    Viewer? viewer,
+    ActorViewer? viewer,
   }) = _ProfileViewBasic;
 
   factory ProfileViewBasic.fromJson(Map<String, dynamic> json) => _$ProfileViewBasicFromJson(json);
@@ -55,7 +55,7 @@ class ProfileView with _$ProfileView {
     @AtUriConverter() AtUri? avatar,
     // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
     // indexedAt and createdAt
-    Viewer? viewer,
+    ActorViewer? viewer,
     List<Label>? labels,
   }) = _ProfileView;
 
@@ -77,7 +77,7 @@ class ProfileViewDetailed with _$ProfileViewDetailed {
     // joinedViaStarterPack ?????
     // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
     // indexedAt and createdAt
-    Viewer? viewer,
+    ActorViewer? viewer,
     List<Label>? labels,
     StrongRef? pinnedPost, // this is a list if the backend implements https://github.com/sprksocial/spark-back-end/issues/13
   }) = _ProfileViewDetailed;

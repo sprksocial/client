@@ -1,4 +1,0 @@
-enum CameraMode { 
-  photo, 
-  video 
-}

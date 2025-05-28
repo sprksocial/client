@@ -14,12 +14,12 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
-Viewer _$ViewerFromJson(Map<String, dynamic> json) {
-  return _Viewer.fromJson(json);
+ActorViewer _$ActorViewerFromJson(Map<String, dynamic> json) {
+  return _ActorViewer.fromJson(json);
 }
 
 /// @nodoc
-mixin _$Viewer {
+mixin _$ActorViewer {
   bool? get muted =>
       throw _privateConstructorUsedError; // muted by list: when we add lists add this field
   bool? get blockedBy => throw _privateConstructorUsedError;
@@ -32,19 +32,21 @@ mixin _$Viewer {
   AtUri? get followedBy => throw _privateConstructorUsedError;
   KnownFollowers? get followers => throw _privateConstructorUsedError;
 
-  /// Serializes this Viewer to a JSON map.
+  /// Serializes this ActorViewer to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of Viewer
+  /// Create a copy of ActorViewer
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $ViewerCopyWith<Viewer> get copyWith => throw _privateConstructorUsedError;
+  $ActorViewerCopyWith<ActorViewer> get copyWith =>
+      throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $ViewerCopyWith<$Res> {
-  factory $ViewerCopyWith(Viewer value, $Res Function(Viewer) then) =
-      _$ViewerCopyWithImpl<$Res, Viewer>;
+abstract class $ActorViewerCopyWith<$Res> {
+  factory $ActorViewerCopyWith(
+          ActorViewer value, $Res Function(ActorViewer) then) =
+      _$ActorViewerCopyWithImpl<$Res, ActorViewer>;
   @useResult
   $Res call(
       {bool? muted,
@@ -58,16 +60,16 @@ abstract class $ViewerCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$ViewerCopyWithImpl<$Res, $Val extends Viewer>
-    implements $ViewerCopyWith<$Res> {
-  _$ViewerCopyWithImpl(this._value, this._then);
+class _$ActorViewerCopyWithImpl<$Res, $Val extends ActorViewer>
+    implements $ActorViewerCopyWith<$Res> {
+  _$ActorViewerCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of Viewer
+  /// Create a copy of ActorViewer
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -107,7 +109,7 @@ class _$ViewerCopyWithImpl<$Res, $Val extends Viewer>
     ) as $Val);
   }
 
-  /// Create a copy of Viewer
+  /// Create a copy of ActorViewer
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
@@ -123,10 +125,11 @@ class _$ViewerCopyWithImpl<$Res, $Val extends Viewer>
 }
 
 /// @nodoc
-abstract class _$$ViewerImplCopyWith<$Res> implements $ViewerCopyWith<$Res> {
-  factory _$$ViewerImplCopyWith(
-          _$ViewerImpl value, $Res Function(_$ViewerImpl) then) =
-      __$$ViewerImplCopyWithImpl<$Res>;
+abstract class _$$ActorViewerImplCopyWith<$Res>
+    implements $ActorViewerCopyWith<$Res> {
+  factory _$$ActorViewerImplCopyWith(
+          _$ActorViewerImpl value, $Res Function(_$ActorViewerImpl) then) =
+      __$$ActorViewerImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -142,14 +145,14 @@ abstract class _$$ViewerImplCopyWith<$Res> implements $ViewerCopyWith<$Res> {
 }
 
 /// @nodoc
-class __$$ViewerImplCopyWithImpl<$Res>
-    extends _$ViewerCopyWithImpl<$Res, _$ViewerImpl>
-    implements _$$ViewerImplCopyWith<$Res> {
-  __$$ViewerImplCopyWithImpl(
-      _$ViewerImpl _value, $Res Function(_$ViewerImpl) _then)
+class __$$ActorViewerImplCopyWithImpl<$Res>
+    extends _$ActorViewerCopyWithImpl<$Res, _$ActorViewerImpl>
+    implements _$$ActorViewerImplCopyWith<$Res> {
+  __$$ActorViewerImplCopyWithImpl(
+      _$ActorViewerImpl _value, $Res Function(_$ActorViewerImpl) _then)
       : super(_value, _then);
 
-  /// Create a copy of Viewer
+  /// Create a copy of ActorViewer
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
@@ -161,7 +164,7 @@ class __$$ViewerImplCopyWithImpl<$Res>
     Object? followedBy = freezed,
     Object? followers = freezed,
   }) {
-    return _then(_$ViewerImpl(
+    return _then(_$ActorViewerImpl(
       muted: freezed == muted
           ? _value.muted
           : muted // ignore: cast_nullable_to_non_nullable
@@ -192,8 +195,8 @@ class __$$ViewerImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ViewerImpl implements _Viewer {
-  const _$ViewerImpl(
+class _$ActorViewerImpl implements _ActorViewer {
+  const _$ActorViewerImpl(
       {this.muted,
       this.blockedBy,
       @AtUriConverter() this.blocking,
@@ -201,8 +204,8 @@ class _$ViewerImpl implements _Viewer {
       @AtUriConverter() this.followedBy,
       this.followers});
 
-  factory _$ViewerImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ViewerImplFromJson(json);
+  factory _$ActorViewerImpl.fromJson(Map<String, dynamic> json) =>
+      _$$ActorViewerImplFromJson(json);
 
   @override
   final bool? muted;
@@ -224,14 +227,14 @@ class _$ViewerImpl implements _Viewer {
 
   @override
   String toString() {
-    return 'Viewer(muted: $muted, blockedBy: $blockedBy, blocking: $blocking, following: $following, followedBy: $followedBy, followers: $followers)';
+    return 'ActorViewer(muted: $muted, blockedBy: $blockedBy, blocking: $blocking, following: $following, followedBy: $followedBy, followers: $followers)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ViewerImpl &&
+            other is _$ActorViewerImpl &&
             (identical(other.muted, muted) || other.muted == muted) &&
             (identical(other.blockedBy, blockedBy) ||
                 other.blockedBy == blockedBy) &&
@@ -250,32 +253,33 @@ class _$ViewerImpl implements _Viewer {
   int get hashCode => Object.hash(runtimeType, muted, blockedBy, blocking,
       following, followedBy, followers);
 
-  /// Create a copy of Viewer
+  /// Create a copy of ActorViewer
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$ViewerImplCopyWith<_$ViewerImpl> get copyWith =>
-      __$$ViewerImplCopyWithImpl<_$ViewerImpl>(this, _$identity);
+  _$$ActorViewerImplCopyWith<_$ActorViewerImpl> get copyWith =>
+      __$$ActorViewerImplCopyWithImpl<_$ActorViewerImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ViewerImplToJson(
+    return _$$ActorViewerImplToJson(
       this,
     );
   }
 }
 
-abstract class _Viewer implements Viewer {
-  const factory _Viewer(
+abstract class _ActorViewer implements ActorViewer {
+  const factory _ActorViewer(
       {final bool? muted,
       final bool? blockedBy,
       @AtUriConverter() final AtUri? blocking,
       @AtUriConverter() final AtUri? following,
       @AtUriConverter() final AtUri? followedBy,
-      final KnownFollowers? followers}) = _$ViewerImpl;
+      final KnownFollowers? followers}) = _$ActorViewerImpl;
 
-  factory _Viewer.fromJson(Map<String, dynamic> json) = _$ViewerImpl.fromJson;
+  factory _ActorViewer.fromJson(Map<String, dynamic> json) =
+      _$ActorViewerImpl.fromJson;
 
   @override
   bool? get muted; // muted by list: when we add lists add this field
@@ -293,11 +297,11 @@ abstract class _Viewer implements Viewer {
   @override
   KnownFollowers? get followers;
 
-  /// Create a copy of Viewer
+  /// Create a copy of ActorViewer
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ViewerImplCopyWith<_$ViewerImpl> get copyWith =>
+  _$$ActorViewerImplCopyWith<_$ActorViewerImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -490,7 +494,7 @@ mixin _$ProfileViewBasic {
   @AtUriConverter()
   AtUri? get avatar =>
       throw _privateConstructorUsedError; // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
-  Viewer? get viewer => throw _privateConstructorUsedError;
+  ActorViewer? get viewer => throw _privateConstructorUsedError;
 
   /// Serializes this ProfileViewBasic to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -513,9 +517,9 @@ abstract class $ProfileViewBasicCopyWith<$Res> {
       String handle,
       String? displayName,
       @AtUriConverter() AtUri? avatar,
-      Viewer? viewer});
+      ActorViewer? viewer});
 
-  $ViewerCopyWith<$Res>? get viewer;
+  $ActorViewerCopyWith<$Res>? get viewer;
 }
 
 /// @nodoc
@@ -559,7 +563,7 @@ class _$ProfileViewBasicCopyWithImpl<$Res, $Val extends ProfileViewBasic>
       viewer: freezed == viewer
           ? _value.viewer
           : viewer // ignore: cast_nullable_to_non_nullable
-              as Viewer?,
+              as ActorViewer?,
     ) as $Val);
   }
 
@@ -567,12 +571,12 @@ class _$ProfileViewBasicCopyWithImpl<$Res, $Val extends ProfileViewBasic>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $ViewerCopyWith<$Res>? get viewer {
+  $ActorViewerCopyWith<$Res>? get viewer {
     if (_value.viewer == null) {
       return null;
     }
 
-    return $ViewerCopyWith<$Res>(_value.viewer!, (value) {
+    return $ActorViewerCopyWith<$Res>(_value.viewer!, (value) {
       return _then(_value.copyWith(viewer: value) as $Val);
     });
   }
@@ -591,10 +595,10 @@ abstract class _$$ProfileViewBasicImplCopyWith<$Res>
       String handle,
       String? displayName,
       @AtUriConverter() AtUri? avatar,
-      Viewer? viewer});
+      ActorViewer? viewer});
 
   @override
-  $ViewerCopyWith<$Res>? get viewer;
+  $ActorViewerCopyWith<$Res>? get viewer;
 }
 
 /// @nodoc
@@ -636,7 +640,7 @@ class __$$ProfileViewBasicImplCopyWithImpl<$Res>
       viewer: freezed == viewer
           ? _value.viewer
           : viewer // ignore: cast_nullable_to_non_nullable
-              as Viewer?,
+              as ActorViewer?,
     ));
   }
 }
@@ -665,7 +669,7 @@ class _$ProfileViewBasicImpl implements _ProfileViewBasic {
   final AtUri? avatar;
 // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
   @override
-  final Viewer? viewer;
+  final ActorViewer? viewer;
 
   @override
   String toString() {
@@ -713,7 +717,7 @@ abstract class _ProfileViewBasic implements ProfileViewBasic {
       required final String handle,
       final String? displayName,
       @AtUriConverter() final AtUri? avatar,
-      final Viewer? viewer}) = _$ProfileViewBasicImpl;
+      final ActorViewer? viewer}) = _$ProfileViewBasicImpl;
 
   factory _ProfileViewBasic.fromJson(Map<String, dynamic> json) =
       _$ProfileViewBasicImpl.fromJson;
@@ -729,7 +733,7 @@ abstract class _ProfileViewBasic implements ProfileViewBasic {
   AtUri?
       get avatar; // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
   @override
-  Viewer? get viewer;
+  ActorViewer? get viewer;
 
   /// Create a copy of ProfileViewBasic
   /// with the given fields replaced by the non-null parameter values.
@@ -753,7 +757,7 @@ mixin _$ProfileView {
   AtUri? get avatar =>
       throw _privateConstructorUsedError; // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
 // indexedAt and createdAt
-  Viewer? get viewer => throw _privateConstructorUsedError;
+  ActorViewer? get viewer => throw _privateConstructorUsedError;
   List<Label>? get labels => throw _privateConstructorUsedError;
 
   /// Serializes this ProfileView to a JSON map.
@@ -778,10 +782,10 @@ abstract class $ProfileViewCopyWith<$Res> {
       String? displayName,
       String? description,
       @AtUriConverter() AtUri? avatar,
-      Viewer? viewer,
+      ActorViewer? viewer,
       List<Label>? labels});
 
-  $ViewerCopyWith<$Res>? get viewer;
+  $ActorViewerCopyWith<$Res>? get viewer;
 }
 
 /// @nodoc
@@ -831,7 +835,7 @@ class _$ProfileViewCopyWithImpl<$Res, $Val extends ProfileView>
       viewer: freezed == viewer
           ? _value.viewer
           : viewer // ignore: cast_nullable_to_non_nullable
-              as Viewer?,
+              as ActorViewer?,
       labels: freezed == labels
           ? _value.labels
           : labels // ignore: cast_nullable_to_non_nullable
@@ -843,12 +847,12 @@ class _$ProfileViewCopyWithImpl<$Res, $Val extends ProfileView>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $ViewerCopyWith<$Res>? get viewer {
+  $ActorViewerCopyWith<$Res>? get viewer {
     if (_value.viewer == null) {
       return null;
     }
 
-    return $ViewerCopyWith<$Res>(_value.viewer!, (value) {
+    return $ActorViewerCopyWith<$Res>(_value.viewer!, (value) {
       return _then(_value.copyWith(viewer: value) as $Val);
     });
   }
@@ -868,11 +872,11 @@ abstract class _$$ProfileViewImplCopyWith<$Res>
       String? displayName,
       String? description,
       @AtUriConverter() AtUri? avatar,
-      Viewer? viewer,
+      ActorViewer? viewer,
       List<Label>? labels});
 
   @override
-  $ViewerCopyWith<$Res>? get viewer;
+  $ActorViewerCopyWith<$Res>? get viewer;
 }
 
 /// @nodoc
@@ -920,7 +924,7 @@ class __$$ProfileViewImplCopyWithImpl<$Res>
       viewer: freezed == viewer
           ? _value.viewer
           : viewer // ignore: cast_nullable_to_non_nullable
-              as Viewer?,
+              as ActorViewer?,
       labels: freezed == labels
           ? _value._labels
           : labels // ignore: cast_nullable_to_non_nullable
@@ -959,7 +963,7 @@ class _$ProfileViewImpl implements _ProfileView {
 // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
 // indexedAt and createdAt
   @override
-  final Viewer? viewer;
+  final ActorViewer? viewer;
   final List<Label>? _labels;
   @override
   List<Label>? get labels {
@@ -1026,7 +1030,7 @@ abstract class _ProfileView implements ProfileView {
       final String? displayName,
       final String? description,
       @AtUriConverter() final AtUri? avatar,
-      final Viewer? viewer,
+      final ActorViewer? viewer,
       final List<Label>? labels}) = _$ProfileViewImpl;
 
   factory _ProfileView.fromJson(Map<String, dynamic> json) =
@@ -1046,7 +1050,7 @@ abstract class _ProfileView implements ProfileView {
       get avatar; // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
 // indexedAt and createdAt
   @override
-  Viewer? get viewer;
+  ActorViewer? get viewer;
   @override
   List<Label>? get labels;
 
@@ -1078,7 +1082,7 @@ mixin _$ProfileViewDetailed {
       throw _privateConstructorUsedError; // joinedViaStarterPack ?????
 // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
 // indexedAt and createdAt
-  Viewer? get viewer => throw _privateConstructorUsedError;
+  ActorViewer? get viewer => throw _privateConstructorUsedError;
   List<Label>? get labels => throw _privateConstructorUsedError;
   StrongRef? get pinnedPost => throw _privateConstructorUsedError;
 
@@ -1108,11 +1112,11 @@ abstract class $ProfileViewDetailedCopyWith<$Res> {
       int? followersCount,
       int? followingCount,
       int? postsCount,
-      Viewer? viewer,
+      ActorViewer? viewer,
       List<Label>? labels,
       StrongRef? pinnedPost});
 
-  $ViewerCopyWith<$Res>? get viewer;
+  $ActorViewerCopyWith<$Res>? get viewer;
   $StrongRefCopyWith<$Res>? get pinnedPost;
 }
 
@@ -1184,7 +1188,7 @@ class _$ProfileViewDetailedCopyWithImpl<$Res, $Val extends ProfileViewDetailed>
       viewer: freezed == viewer
           ? _value.viewer
           : viewer // ignore: cast_nullable_to_non_nullable
-              as Viewer?,
+              as ActorViewer?,
       labels: freezed == labels
           ? _value.labels
           : labels // ignore: cast_nullable_to_non_nullable
@@ -1200,12 +1204,12 @@ class _$ProfileViewDetailedCopyWithImpl<$Res, $Val extends ProfileViewDetailed>
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $ViewerCopyWith<$Res>? get viewer {
+  $ActorViewerCopyWith<$Res>? get viewer {
     if (_value.viewer == null) {
       return null;
     }
 
-    return $ViewerCopyWith<$Res>(_value.viewer!, (value) {
+    return $ActorViewerCopyWith<$Res>(_value.viewer!, (value) {
       return _then(_value.copyWith(viewer: value) as $Val);
     });
   }
@@ -1243,12 +1247,12 @@ abstract class _$$ProfileViewDetailedImplCopyWith<$Res>
       int? followersCount,
       int? followingCount,
       int? postsCount,
-      Viewer? viewer,
+      ActorViewer? viewer,
       List<Label>? labels,
       StrongRef? pinnedPost});
 
   @override
-  $ViewerCopyWith<$Res>? get viewer;
+  $ActorViewerCopyWith<$Res>? get viewer;
   @override
   $StrongRefCopyWith<$Res>? get pinnedPost;
 }
@@ -1319,7 +1323,7 @@ class __$$ProfileViewDetailedImplCopyWithImpl<$Res>
       viewer: freezed == viewer
           ? _value.viewer
           : viewer // ignore: cast_nullable_to_non_nullable
-              as Viewer?,
+              as ActorViewer?,
       labels: freezed == labels
           ? _value._labels
           : labels // ignore: cast_nullable_to_non_nullable
@@ -1377,7 +1381,7 @@ class _$ProfileViewDetailedImpl implements _ProfileViewDetailed {
 // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
 // indexedAt and createdAt
   @override
-  final Viewer? viewer;
+  final ActorViewer? viewer;
   final List<Label>? _labels;
   @override
   List<Label>? get labels {
@@ -1466,7 +1470,7 @@ abstract class _ProfileViewDetailed implements ProfileViewDetailed {
       final int? followersCount,
       final int? followingCount,
       final int? postsCount,
-      final Viewer? viewer,
+      final ActorViewer? viewer,
       final List<Label>? labels,
       final StrongRef? pinnedPost}) = _$ProfileViewDetailedImpl;
 
@@ -1496,7 +1500,7 @@ abstract class _ProfileViewDetailed implements ProfileViewDetailed {
 // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
 // indexedAt and createdAt
   @override
-  Viewer? get viewer;
+  ActorViewer? get viewer;
   @override
   List<Label>? get labels;
   @override

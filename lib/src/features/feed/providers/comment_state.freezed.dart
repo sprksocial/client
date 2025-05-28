@@ -46,8 +46,6 @@ abstract class $CommentStateCopyWith<$Res> {
       bool isFirstImagePrecached,
       VideoPlayerController? videoController,
       int originalLikeCount});
-
-  $CommentCopyWith<$Res> get comment;
 }
 
 /// @nodoc
@@ -65,7 +63,7 @@ class _$CommentStateCopyWithImpl<$Res, $Val extends CommentState>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? comment = null,
+    Object? comment = freezed,
     Object? showReplies = null,
     Object? isLiked = null,
     Object? isVideoInitialized = null,
@@ -74,7 +72,7 @@ class _$CommentStateCopyWithImpl<$Res, $Val extends CommentState>
     Object? originalLikeCount = null,
   }) {
     return _then(_value.copyWith(
-      comment: null == comment
+      comment: freezed == comment
           ? _value.comment
           : comment // ignore: cast_nullable_to_non_nullable
               as Comment,
@@ -104,16 +102,6 @@ class _$CommentStateCopyWithImpl<$Res, $Val extends CommentState>
               as int,
     ) as $Val);
   }
-
-  /// Create a copy of CommentState
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $CommentCopyWith<$Res> get comment {
-    return $CommentCopyWith<$Res>(_value.comment, (value) {
-      return _then(_value.copyWith(comment: value) as $Val);
-    });
-  }
 }
 
 /// @nodoc
@@ -132,9 +120,6 @@ abstract class _$$CommentStateImplCopyWith<$Res>
       bool isFirstImagePrecached,
       VideoPlayerController? videoController,
       int originalLikeCount});
-
-  @override
-  $CommentCopyWith<$Res> get comment;
 }
 
 /// @nodoc
@@ -150,7 +135,7 @@ class __$$CommentStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? comment = null,
+    Object? comment = freezed,
     Object? showReplies = null,
     Object? isLiked = null,
     Object? isVideoInitialized = null,
@@ -159,7 +144,7 @@ class __$$CommentStateImplCopyWithImpl<$Res>
     Object? originalLikeCount = null,
   }) {
     return _then(_$CommentStateImpl(
-      comment: null == comment
+      comment: freezed == comment
           ? _value.comment
           : comment // ignore: cast_nullable_to_non_nullable
               as Comment,
@@ -233,7 +218,7 @@ class _$CommentStateImpl implements _CommentState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$CommentStateImpl &&
-            (identical(other.comment, comment) || other.comment == comment) &&
+            const DeepCollectionEquality().equals(other.comment, comment) &&
             (identical(other.showReplies, showReplies) ||
                 other.showReplies == showReplies) &&
             (identical(other.isLiked, isLiked) || other.isLiked == isLiked) &&
@@ -250,7 +235,7 @@ class _$CommentStateImpl implements _CommentState {
   @override
   int get hashCode => Object.hash(
       runtimeType,
-      comment,
+      const DeepCollectionEquality().hash(comment),
       showReplies,
       isLiked,
       isVideoInitialized,

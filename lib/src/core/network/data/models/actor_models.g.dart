@@ -6,7 +6,8 @@ part of 'actor_models.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
-_$ViewerImpl _$$ViewerImplFromJson(Map<String, dynamic> json) => _$ViewerImpl(
+_$ActorViewerImpl _$$ActorViewerImplFromJson(Map<String, dynamic> json) =>
+    _$ActorViewerImpl(
       muted: json['muted'] as bool?,
       blockedBy: json['blockedBy'] as bool?,
       blocking: _$JsonConverterFromJson<String, AtUri>(
@@ -20,7 +21,7 @@ _$ViewerImpl _$$ViewerImplFromJson(Map<String, dynamic> json) => _$ViewerImpl(
           : KnownFollowers.fromJson(json['followers'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$$ViewerImplToJson(_$ViewerImpl instance) =>
+Map<String, dynamic> _$$ActorViewerImplToJson(_$ActorViewerImpl instance) =>
     <String, dynamic>{
       'muted': instance.muted,
       'blockedBy': instance.blockedBy,
@@ -70,7 +71,7 @@ _$ProfileViewBasicImpl _$$ProfileViewBasicImplFromJson(
           json['avatar'], const AtUriConverter().fromJson),
       viewer: json['viewer'] == null
           ? null
-          : Viewer.fromJson(json['viewer'] as Map<String, dynamic>),
+          : ActorViewer.fromJson(json['viewer'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$ProfileViewBasicImplToJson(
@@ -94,7 +95,7 @@ _$ProfileViewImpl _$$ProfileViewImplFromJson(Map<String, dynamic> json) =>
           json['avatar'], const AtUriConverter().fromJson),
       viewer: json['viewer'] == null
           ? null
-          : Viewer.fromJson(json['viewer'] as Map<String, dynamic>),
+          : ActorViewer.fromJson(json['viewer'] as Map<String, dynamic>),
       labels: (json['labels'] as List<dynamic>?)
           ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
           .toList(),
@@ -128,7 +129,7 @@ _$ProfileViewDetailedImpl _$$ProfileViewDetailedImplFromJson(
       postsCount: (json['postsCount'] as num?)?.toInt(),
       viewer: json['viewer'] == null
           ? null
-          : Viewer.fromJson(json['viewer'] as Map<String, dynamic>),
+          : ActorViewer.fromJson(json['viewer'] as Map<String, dynamic>),
       labels: (json['labels'] as List<dynamic>?)
           ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
           .toList(),

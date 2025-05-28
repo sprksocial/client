@@ -102,7 +102,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<AuthorFeedResponse> getAuthorFeed(String actor, {int limit = 8, String? cursor}) async {
+  Future<AuthorFeedResponse> getAuthorFeed(String actor, {int limit = 20, String? cursor, bool videosOnly = false}) async {
     _logger.d('Getting author feed for actor: $actor, limit: $limit, cursor: $cursor');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -118,6 +118,12 @@ class FeedRepositoryImpl implements FeedRepository {
 
       final parameters = <String, dynamic>{'actor': actor, 'limit': limit};
 
+      if (videosOnly) {
+        parameters['filter'] = 'posts_with_video';
+      } else {
+        parameters['filter'] = 'posts_with_media';
+      }
+
       if (cursor != null) {
         parameters['cursor'] = cursor;
       }
@@ -130,12 +136,12 @@ class FeedRepositoryImpl implements FeedRepository {
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
       _logger.d('Author feed retrieved successfully');
-      return AuthorFeedResponse.fromJson(result.data as Map<String, dynamic>);
+      return AuthorFeedResponse.fromJson(result.data);
     });
   }
 
   @override
-  Future<LikePostResponse> likePost(String postCid, String postUri) async {
+  Future<StrongRef> likePost(String postCid, String postUri) async {
     _logger.d('Liking post with CID: $postCid, URI: $postUri');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -159,7 +165,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
       _logger.i('Post liked successfully: ${result.data.uri}');
 
-      return LikePostResponse(uri: result.data.uri.toString(), cid: result.data.cid);
+      return result.data;
     });
   }
 
@@ -184,7 +190,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<CommentPostResponse> postComment(
+  Future<StrongRef> postComment(
     String text,
     String parentCid,
     String parentUri, {
@@ -220,7 +226,7 @@ class FeedRepositoryImpl implements FeedRepository {
           Map<String, dynamic>? embedJson;
           if (imageFiles case List<XFile> files when files.isNotEmpty) {
             _logger.d('Uploading ${files.length} images for comment');
-            final List<Map<String, dynamic>> uploadedImageMaps = await _uploadImages(files, altTexts ?? {});
+            final List<Image> uploadedImageMaps = await _uploadImages(files, altTexts ?? {});
             embedJson = {"\$type": "so.sprk.embed.images", "images": uploadedImageMaps};
           }
 
@@ -243,7 +249,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
           _logger.i('Comment posted successfully: ${result.data.uri}');
 
-          return CommentPostResponse(uri: result.data.uri.toString(), cid: result.data.cid);
+          return result.data;
       }
     });
   }
@@ -264,7 +270,7 @@ class FeedRepositoryImpl implements FeedRepository {
           }
 
           if (_client.authRepository.atproto case final atproto?) {
-            final List<Map<String, dynamic>> uploadedImageMaps = await _uploadImages(imageFiles, altTexts);
+            final List<Image> uploadedImageMaps = await _uploadImages(imageFiles, altTexts);
             final embed = {"\$type": "so.sprk.embed.images", 'images': uploadedImageMaps};
 
             final record = {
@@ -288,10 +294,10 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   /// Helper to upload multiple images, stripping EXIF, and return a list of JSON maps for embedding
-  Future<List<Map<String, dynamic>>> _uploadImages(List<XFile> imageFiles, Map<String, String> altTexts) async {
+  Future<List<Image>> _uploadImages(List<XFile> imageFiles, Map<String, String> altTexts) async {
     _logger.d('Processing ${imageFiles.length} images for upload');
 
-    final List<Map<String, dynamic>> uploadedImageMaps = [];
+    final List<Image> uploadedImageMaps = [];
     for (final imageFile in imageFiles) {
       try {
         _logger.d('Processing image: ${imageFile.name}');
@@ -320,11 +326,7 @@ class FeedRepositoryImpl implements FeedRepository {
                     _logger.d('Image uploaded successfully: ${imageFile.name}');
 
                     // Add the uploaded image to our result list
-                    uploadedImageMaps.add({
-                      "\$type": "so.sprk.embed.images#image",
-                      "alt": altTexts[imageFile.path] ?? '',
-                      "image": response.data.blob.toJson(),
-                    });
+                    uploadedImageMaps.add(Image(alt: altTexts[imageFile.path] ?? '', image: response.data.blob));
                     break;
                   default:
                     _logger.e('Failed to upload image blob: ${response.status.code}');
@@ -383,8 +385,15 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<StrongRef> postVideo(BlobReference? videoData, {String description = '', String videoAltText = ''}) async {
-    _logger.d('Posting video with description: $description');
+  Future<StrongRef> postVideo(
+    Blob blob, {
+    String text = '',
+    String alt = '',
+    List<String>? tags,
+    List<String>? langs,
+    List<SelfLabel>? selfLabels,
+  }) async {
+    _logger.d('Posting video with description: $text');
 
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -392,49 +401,29 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('Not authenticated');
       }
 
-      switch (videoData) {
-        case null:
-          _logger.e('Video data is null');
-          throw Exception('Video data is null');
-        case final data:
-          // Create a VideoPost object with the provided data
-          final videoPost = VideoPost.create(text: description, videoData: data.toJson(), videoAltText: videoAltText);
+      final record = PostRecord.video(
+        text: text,
+        embed: VideoEmbed(video: blob, type: 'so.sprk.embed.video', alt: alt),
+        createdAt: DateTime.now(),
+        langs: langs,
+        selfLabels: selfLabels,
+        tags: tags,
+        // TODO: facets here
+      );
 
-          // Use the common implementation
-          return postVideoWithPost(videoPost);
-      }
-    });
-  }
+      // Create the post record
+      final response = await _client.authRepository.atproto!.repo.createRecord(
+        collection: NSID.parse('so.sprk.feed.post'),
+        record: record.toJson(),
+      );
 
-  @override
-  Future<StrongRef> postVideoWithPost(VideoPost videoPost) async {
-    _logger.d('Posting video with prepared VideoPost');
-
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
-      switch (_client.authRepository.atproto) {
-        case null:
-          _logger.e('AtProto not initialized');
-          throw Exception('AtProto not initialized');
-        case final atproto:
-          // Convert the VideoPost to its raw format for the API
-          final postRecord = videoPost.toJson();
-
-          // Create the post record
-          final recordRes = await atproto.repo.createRecord(collection: NSID.parse('so.sprk.feed.post'), record: postRecord);
-
-          switch (recordRes.status) {
-            case HttpStatus.ok:
-              _logger.i('Video posted successfully: ${recordRes.data.uri}');
-              return recordRes.data;
-            default:
-              _logger.e('Failed to post video: ${recordRes.status} ${recordRes.data}');
-              throw Exception('Failed to post video: ${recordRes.status} ${recordRes.data}');
-          }
+      switch (response.status) {
+        case HttpStatus.ok:
+          _logger.i('Video posted successfully: ${response.data.uri}');
+          return response.data;
+        default:
+          _logger.e('Failed to post video: ${response.status} ${response.data}');
+          throw Exception('Failed to post video: ${response.status} ${response.data}');
       }
     });
   }
