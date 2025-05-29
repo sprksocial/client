@@ -133,6 +133,10 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
+  Future<void> _refreshStories() async {
+    await _fetchStoriesTimeline();
+  }
+
   @override
   void dispose() {
     _debounce?.cancel();
@@ -278,28 +282,47 @@ class _SearchScreenState extends State<SearchScreen> {
                   ),
                 ),
               ] else ...[
-                StoriesList(
-                  storiesByAuthor: _storiesByAuthor,
-                  isLoading: _isLoadingStories,
-                  error: _storiesError,
-                  onAddStory: () {
-                    // TODO: Implement add story functionality
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Add story feature coming soon!')));
-                  },
-                ),
                 Expanded(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(FluentIcons.search_24_regular, size: 48, color: AppTheme.getSecondaryTextColor(context)),
-                        const SizedBox(height: 16),
-                        Text('Search for users', style: TextStyle(fontSize: 16, color: AppTheme.getSecondaryTextColor(context))),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Tap the search bar above to find people',
-                          style: TextStyle(fontSize: 14, color: AppTheme.getSecondaryTextColor(context).withValues(alpha: 0.7)),
-                          textAlign: TextAlign.center,
+                  child: RefreshIndicator(
+                    onRefresh: _refreshStories,
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverToBoxAdapter(
+                          child: StoriesList(
+                            storiesByAuthor: _storiesByAuthor,
+                            isLoading: _isLoadingStories,
+                            error: _storiesError,
+                            onAddStory: () {
+                              // TODO: Implement add story functionality
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(const SnackBar(content: Text('Add story feature coming soon!')));
+                            },
+                          ),
+                        ),
+                        SliverFillRemaining(
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(FluentIcons.search_24_regular, size: 48, color: AppTheme.getSecondaryTextColor(context)),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Search for users',
+                                  style: TextStyle(fontSize: 16, color: AppTheme.getSecondaryTextColor(context)),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Tap the search bar above to find people',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: AppTheme.getSecondaryTextColor(context).withValues(alpha: 0.7),
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ],
                     ),

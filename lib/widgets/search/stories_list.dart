@@ -70,14 +70,6 @@ class _StoriesListState extends State<StoriesList> {
           child: Row(
             children: [
               Text('Stories', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: AppTheme.getTextColor(context))),
-              if (widget.isLoading) ...[
-                const SizedBox(width: 8),
-                SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary)),
-                ),
-              ],
             ],
           ),
         ),
