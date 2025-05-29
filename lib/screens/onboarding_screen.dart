@@ -6,9 +6,10 @@ import 'package:provider/provider.dart';
 
 import '../services/auth_service.dart';
 import '../services/onboarding_service.dart';
+import '../services/settings_service.dart';
 import '../utils/app_colors.dart';
 import '../widgets/common/custom_text_field.dart';
-import 'import_follows_screen.dart';
+import 'follow_mode_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -71,16 +72,54 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _handleCustomImport() async {
     if (!_formKey.currentState!.validate()) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (context) => ImportFollowsScreen(
-              displayName: _displayNameController.text.trim(),
-              description: _descriptionController.text.trim(),
-              avatar: _localAvatar,
-            ),
-      ),
-    );
+
+    setState(() {
+      _loading = true;
+    });
+
+    try {
+      if (_bskyProfile == null) {
+        final settingsService = Provider.of<SettingsService>(context, listen: false);
+        await settingsService.setFollowMode(FollowMode.sprk);
+        if (!mounted) return;
+        final authService = Provider.of<AuthService>(context, listen: false);
+        final onboardingService = OnboardingService(authService);
+
+        await onboardingService.finalizeProfileCreation(
+          displayName: _displayNameController.text.trim(),
+          description: _descriptionController.text.trim(),
+          avatar: _localAvatar,
+        );
+
+        if (!mounted) return;
+        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+      } else {
+        if (!mounted) return;
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (context) => FollowModeScreen(
+                  displayName: _displayNameController.text.trim(),
+                  description: _descriptionController.text.trim(),
+                  avatar: _localAvatar,
+                ),
+          ),
+        );
+        if (mounted) {
+          setState(() {
+            _loading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error processing profile: ${e.toString()}')));
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    }
   }
 
   Future<void> _pickAvatar() async {
@@ -122,7 +161,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(backgroundColor: backgroundColor, elevation: 0, title: const Text('Complete your profile')),
+      appBar: AppBar(
+        backgroundColor: backgroundColor,
+        elevation: 0,
+        title: const Text('Complete your profile'),
+        centerTitle: true,
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16),

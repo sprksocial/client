@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import '../config/app_config.dart';
 import '../services/auth_service.dart';
 import '../services/onboarding_service.dart';
+import '../services/settings_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
 import '../widgets/ataccount_dialog.dart';
@@ -58,8 +59,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     if (success) {
+      if (!mounted) return;
+      final settingsService = Provider.of<SettingsService>(context, listen: false);
+      await settingsService.syncFollowModeFromServer();
+
       final onboardingService = OnboardingService(authService);
       final hasSpark = await onboardingService.hasSparkProfile();
+
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed(hasSpark ? '/home' : '/onboarding');
     } else {

@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:bluesky/bluesky.dart' as bs;
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -9,7 +7,6 @@ import 'package:provider/provider.dart';
 
 import '../services/auth_service.dart';
 import '../services/onboarding_service.dart';
-import '../services/sprk_client.dart';
 import '../utils/app_colors.dart';
 
 class ImportFollowsScreen extends StatefulWidget {
@@ -24,15 +21,18 @@ class ImportFollowsScreen extends StatefulWidget {
 
 class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
   bool _loading = true;
+  bool _followingAll = false;
+  String? _statusMessage;
   List<bs.Actor> _filteredFollows = [];
   List<bs.Actor> _allActors = [];
-  final Set<String> _followed = {};
+  Set<String> _followed = {}; // DIDs the user already follows in Spark
+  bool _loadingExistingFollows = false;
   final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _loadFollows();
+    _initialize();
     _searchController.addListener(_onSearchChanged);
   }
 
@@ -43,27 +43,61 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
     super.dispose();
   }
 
-  Future<void> _loadFollows() async {
-    final service = OnboardingService(Provider.of(context, listen: false));
+  // Initialize by loading both existing Spark follows and Bluesky follows
+  Future<void> _initialize() async {
+    await _loadExistingSparkFollows();
+    await _loadBlueskyFollows();
+  }
+
+  // Load existing follows in Spark from PDS
+  Future<void> _loadExistingSparkFollows() async {
+    if (!mounted) return;
+
+    setState(() {
+      _loadingExistingFollows = true;
+    });
+
+    try {
+      final service = OnboardingService(Provider.of<AuthService>(context, listen: false));
+      final sparkFollows = await service.getCurrentSparkFollows();
+
+      if (!mounted) return;
+      setState(() {
+        _followed = sparkFollows;
+        _loadingExistingFollows = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _loadingExistingFollows = false;
+      });
+    }
+  }
+
+  Future<void> _loadBlueskyFollows() async {
+    final service = OnboardingService(Provider.of<AuthService>(context, listen: false));
     final follows = await service.getBskyFollows();
     if (!mounted) return;
+
     // If there are no follows, skip import and finish onboarding immediately
     if (follows.follows.isEmpty) {
       await _finishOnboarding();
       return;
     }
+
     setState(() {
       _allActors = List.from(follows.follows);
       _filteredFollows = _allActors;
       _loading = false;
     });
+
     // Load remaining pages in background
     _prefetchRemainingFollows(follows.cursor);
   }
 
   Future<void> _prefetchRemainingFollows(String? cursor) async {
     if (cursor == null) return;
-    final service = OnboardingService(Provider.of(context, listen: false));
+    final service = OnboardingService(Provider.of<AuthService>(context, listen: false));
     String? nextCursor = cursor;
     while (mounted && nextCursor != null) {
       try {
@@ -90,20 +124,57 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
   }
 
   Future<void> _follow(String did) async {
-    final service = OnboardingService(Provider.of(context, listen: false));
+    final service = OnboardingService(Provider.of<AuthService>(context, listen: false));
     await service.createSparkFollow(did);
     setState(() => _followed.add(did));
   }
 
   Future<void> _followAll() async {
-    final service = OnboardingService(Provider.of(context, listen: false));
-    for (var actor in _allActors) {
-      if (_followed.contains(actor.did)) continue;
-      await service.createSparkFollow(actor.did);
-      _followed.add(actor.did);
+    if (_followingAll) return; // Prevent multiple follow all operations
+
+    setState(() {
+      _followingAll = true;
+      _statusMessage = 'Following accounts...';
+    });
+
+    try {
+      final service = OnboardingService(Provider.of<AuthService>(context, listen: false));
+
+      // Filter out already followed accounts
+      final toFollow = _allActors.map((actor) => actor.did).where((did) => !_followed.contains(did)).toList();
+
+      if (toFollow.isEmpty) {
+        setState(() {
+          _followingAll = false;
+          _statusMessage = null;
+        });
+        return;
+      }
+
+      // Use batch follows to follow accounts
+      final followed = await service.createBatchFollows(toFollow);
+
+      // Update followed status for each account
+      setState(() {
+        _followed.addAll(followed);
+        _followingAll = false;
+        _statusMessage = null;
+      });
+
+      // Show success message
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Successfully followed ${followed.length} accounts')));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error following accounts: ${e.toString()}')));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _followingAll = false;
+          _statusMessage = null;
+        });
+      }
     }
-    if (!mounted) return;
-    setState(() {});
   }
 
   @override
@@ -140,93 +211,128 @@ class _ImportFollowsScreenState extends State<ImportFollowsScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body:
-          _loading
-              ? const Center(child: CircularProgressIndicator(color: Colors.white))
-              : Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text(
-                      'Follow the same accounts you follow on Bluesky?',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        hintText: 'Search',
-                        prefixIcon: const Icon(Icons.search),
-                        filled: true,
-                        fillColor: isDark ? Colors.grey[800] : Colors.grey[200],
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppColors.border),
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(8),
-                          borderSide: BorderSide(color: AppColors.border),
-                        ),
+      body: SafeArea(
+        child:
+            _loading
+                ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                : Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Follow the same accounts you follow on Bluesky?',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 16),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: ListView.separated(
-                        addAutomaticKeepAlives: false,
-                        addRepaintBoundaries: false,
-                        itemCount: _filteredFollows.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 8),
-                        itemBuilder: (context, index) {
-                          final did = _filteredFollows[index];
-                          final isFollowed = _followed.contains(did.did);
-                          return ListTile(
-                            leading: CircleAvatar(backgroundImage: CachedNetworkImageProvider(did.avatar ?? '')),
-                            title: Text(did.displayName ?? ''),
-                            subtitle: Text(did.handle, style: TextStyle(color: AppColors.hintText)),
-                            trailing: OutlinedButton(
-                              onPressed: isFollowed ? null : () => _follow(did.did),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: AppColors.pink),
-                                foregroundColor: AppColors.pink,
-                                disabledForegroundColor: AppColors.pink.withValues(alpha: 0.5),
-                                disabledBackgroundColor: AppColors.pink.withValues(alpha: 0.05),
-                              ),
-                              child: Text(isFollowed ? 'Following' : 'Follow'),
+                      const SizedBox(height: 8),
+                      if (_loadingExistingFollows)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 4),
+                          child: Center(
+                            child: Text(
+                              'Loading your existing follows...',
+                              style: TextStyle(fontSize: 13, fontStyle: FontStyle.italic),
                             ),
-                          );
-                        },
+                          ),
+                        ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Search',
+                          prefixIcon: const Icon(Icons.search),
+                          filled: true,
+                          fillColor: isDark ? Colors.grey[800] : Colors.grey[200],
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: AppColors.border),
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: AppColors.border),
+                          ),
+                        ),
                       ),
-                    ),
-                    ElevatedButton(
-                      onPressed: _followAll,
-                      style: ElevatedButton.styleFrom(backgroundColor: AppColors.pink),
-                      child: const Text('Follow all', style: TextStyle(color: Colors.white)),
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      if (_statusMessage != null)
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
+                              const SizedBox(width: 12),
+                              Expanded(child: Text(_statusMessage!)),
+                            ],
+                          ),
+                        ),
+                      Expanded(
+                        child: ListView.separated(
+                          addAutomaticKeepAlives: false,
+                          addRepaintBoundaries: false,
+                          itemCount: _filteredFollows.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemBuilder: (context, index) {
+                            final actor = _filteredFollows[index];
+                            final isFollowed = _followed.contains(actor.did);
+                            return ListTile(
+                              leading: CircleAvatar(backgroundImage: CachedNetworkImageProvider(actor.avatar ?? '')),
+                              title: Text(actor.displayName ?? ''),
+                              subtitle: Text(actor.handle, style: TextStyle(color: AppColors.hintText)),
+                              trailing: OutlinedButton(
+                                onPressed: isFollowed ? null : () => _follow(actor.did),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: AppColors.pink),
+                                  foregroundColor: AppColors.pink,
+                                  disabledForegroundColor: AppColors.pink.withValues(alpha: 0.5),
+                                  disabledBackgroundColor: AppColors.pink.withValues(alpha: 0.05),
+                                ),
+                                child: Text(isFollowed ? 'Following' : 'Follow'),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      ElevatedButton(
+                        onPressed: _followingAll ? null : _followAll,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.pink,
+                          disabledBackgroundColor: AppColors.pink.withValues(alpha: 0.5),
+                        ),
+                        child: Text(_followingAll ? 'Following...' : 'Follow all', style: const TextStyle(color: Colors.white)),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+      ),
     );
   }
 
   Future<void> _finishOnboarding() async {
-    setState(() => _loading = true);
-    final authService = Provider.of<AuthService>(context, listen: false);
-    dynamic avatarToSend = widget.avatar;
-    if (widget.avatar is Uint8List) {
-      final sprkClient = SprkClient(authService);
-      final resp = await sprkClient.repo.uploadBlob(widget.avatar as Uint8List);
-      if (resp.status.code != 200) throw Exception('Failed to upload avatar blob');
-      avatarToSend = resp.data.blob.toJson();
-    }
-    final onboardingService = OnboardingService(authService);
-    await onboardingService.importCustomProfile(
-      displayName: widget.displayName,
-      description: widget.description,
-      avatar: avatarToSend,
-    );
     if (!mounted) return;
-    Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+    setState(() => _loading = true);
+
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final onboardingService = OnboardingService(authService);
+
+    try {
+      // The avatar (widget.avatar) is passed directly.
+      // finalizeProfileCreation will handle if it's Uint8List or existing data.
+      await onboardingService.finalizeProfileCreation(
+        displayName: widget.displayName,
+        description: widget.description,
+        avatar: widget.avatar,
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error finishing onboarding: ${e.toString()}')));
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+      }
+    }
   }
 }
