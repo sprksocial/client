@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -20,6 +22,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
   int _currentStoryIndex = 0;
   VideoPlayerController? _videoController;
   bool _isVideoInitialized = false;
+  double _dragOffset = 0.0;
+  double _dragScale = 1.0;
 
   @override
   void initState() {
@@ -185,6 +189,80 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
     }
   }
 
+  void _onPanStart(DragStartDetails details) {
+    _pauseStory();
+  }
+
+  void _onPanUpdate(DragUpdateDetails details) {
+    setState(() {
+      _dragOffset += details.delta.dy;
+      _dragOffset = _dragOffset.clamp(0.0, double.infinity);
+
+      final screenHeight = MediaQuery.of(context).size.height;
+      final maxDragDistance = screenHeight * 0.5;
+
+      double visualOffset;
+      if (_dragOffset <= maxDragDistance * 0.7) {
+        visualOffset = _dragOffset;
+      } else {
+        final excess = _dragOffset - (maxDragDistance * 0.7);
+        final resistanceBase = maxDragDistance * 0.7;
+        final maxExcess = maxDragDistance * 0.3;
+
+        final resistanceFactor = 1.0 - (excess / (excess + maxExcess * 0.5));
+        visualOffset = resistanceBase + (excess * resistanceFactor * 0.3);
+      }
+
+      final progress = (visualOffset / maxDragDistance).clamp(0.0, 1.0);
+      _dragScale = (1.0 - (progress * 0.3)).clamp(0.7, 1.0);
+
+      _dragOffset = visualOffset;
+    });
+  }
+
+  void _onPanEnd(DragEndDetails details) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final dismissThreshold = screenHeight * 0.25;
+
+    if (_dragOffset > dismissThreshold) {
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
+    } else {
+      _animateToReset();
+    }
+  }
+
+  void _animateToReset() {
+    final currentOffset = _dragOffset;
+    final currentScale = _dragScale;
+
+    const steps = 30;
+    const stepDuration = Duration(milliseconds: 10);
+
+    int step = 0;
+    Timer.periodic(stepDuration, (timer) {
+      step++;
+      final progress = step / steps;
+
+      final easeOutProgress = 1.0 - (1.0 - progress) * (1.0 - progress);
+
+      setState(() {
+        _dragOffset = currentOffset * (1.0 - easeOutProgress);
+        _dragScale = currentScale + ((1.0 - currentScale) * easeOutProgress);
+      });
+
+      if (step >= steps) {
+        timer.cancel();
+        setState(() {
+          _dragOffset = 0.0;
+          _dragScale = 1.0;
+        });
+        _resumeStory();
+      }
+    });
+  }
+
   void _markCurrentStoryAsViewed() {
     if (_currentStoryIndex < widget.stories.length) {
       final currentStory = widget.stories[_currentStoryIndex];
@@ -213,12 +291,10 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
     if (story.containsKey('embed') && story['embed'] != null) {
       final storyEmbed = story['embed'] as Map<String, dynamic>;
 
-      // Handle video stories - use thumbnail
       if (storyEmbed['\$type'] == 'so.sprk.embed.video#view' && storyEmbed.containsKey('thumbnail')) {
         return storyEmbed['thumbnail'] as String? ?? '';
       }
 
-      // Handle image stories
       if (storyEmbed['\$type'] == 'so.sprk.embed.images#view' && storyEmbed.containsKey('images')) {
         final images = storyEmbed['images'] as List<dynamic>;
         if (images.isNotEmpty) {
@@ -295,128 +371,135 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
         child: GestureDetector(
           onLongPressStart: (_) => _pauseStory(),
           onLongPressEnd: (_) => _resumeStory(),
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(color: Colors.grey[900]),
-                  child: _isVideoStory(currentStory) ? _buildVideoPlayer() : _buildImageViewer(storyImageUrl),
-                ),
-              ),
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: Container(
-                  height: 120,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: 8,
-                left: 16,
-                right: 16,
-                child: Row(
-                  children: List.generate(widget.stories.length, (index) {
-                    return Expanded(
-                      child: Container(
-                        margin: EdgeInsets.only(right: index < widget.stories.length - 1 ? 4 : 0),
-                        child: AnimatedBuilder(
-                          animation: _progressControllers[index],
-                          builder: (context, child) {
-                            double progress = 0.0;
-                            if (index < _currentStoryIndex) {
-                              progress = 1.0;
-                            } else if (index == _currentStoryIndex) {
-                              progress = _progressControllers[index].value;
-                            }
-
-                            return LinearProgressIndicator(
-                              value: progress,
-                              backgroundColor: Colors.white.withValues(alpha: 0.3),
-                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                              minHeight: 2,
-                            );
-                          },
-                        ),
-                      ),
-                    );
-                  }),
-                ),
-              ),
-              Positioned(
-                top: 24,
-                left: 16,
-                right: 16,
-                child: Row(
+          onPanStart: _onPanStart,
+          onPanUpdate: _onPanUpdate,
+          onPanEnd: _onPanEnd,
+          child: Transform.translate(
+            offset: Offset(0, _dragOffset),
+            child: Transform.scale(
+              scale: _dragScale,
+              child: Container(
+                decoration: BoxDecoration(borderRadius: BorderRadius.circular(_dragOffset > 0 ? 12 : 0)),
+                child: Stack(
                   children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
-                      child: ClipOval(
-                        child: CachedNetworkImage(
-                          imageUrl: avatarUrl,
-                          fit: BoxFit.cover,
-                          errorWidget: (context, url, error) {
-                            return Container(
-                              color: Colors.grey[700],
-                              child: const Icon(FluentIcons.person_24_regular, color: Colors.white, size: 20),
-                            );
-                          },
+                    Positioned.fill(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[900],
+                          borderRadius: BorderRadius.circular(_dragOffset > 0 ? 12 : 0),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(_dragOffset > 0 ? 12 : 0),
+                          child: _isVideoStory(currentStory) ? _buildVideoPlayer() : _buildImageViewer(storyImageUrl),
                         ),
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            username,
-                            style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        height: 120,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
                           ),
-                          Text(timeAgo, style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14)),
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      left: 16,
+                      right: 16,
+                      child: Row(
+                        children: List.generate(widget.stories.length, (index) {
+                          return Expanded(
+                            child: Container(
+                              margin: EdgeInsets.only(right: index < widget.stories.length - 1 ? 4 : 0),
+                              child: AnimatedBuilder(
+                                animation: _progressControllers[index],
+                                builder: (context, child) {
+                                  double progress = 0.0;
+                                  if (index < _currentStoryIndex) {
+                                    progress = 1.0;
+                                  } else if (index == _currentStoryIndex) {
+                                    progress = _progressControllers[index].value;
+                                  }
+
+                                  return LinearProgressIndicator(
+                                    value: progress,
+                                    backgroundColor: Colors.white.withValues(alpha: 0.3),
+                                    valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                                    minHeight: 2,
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        }),
+                      ),
+                    ),
+                    Positioned(
+                      top: 24,
+                      left: 16,
+                      right: 16,
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
+                            child: ClipOval(
+                              child: CachedNetworkImage(
+                                imageUrl: avatarUrl,
+                                fit: BoxFit.cover,
+                                errorWidget: (context, url, error) {
+                                  return Container(
+                                    color: Colors.grey[700],
+                                    child: const Icon(FluentIcons.person_24_regular, color: Colors.white, size: 20),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  username,
+                                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                Text(timeAgo, style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14)),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        if (mounted && Navigator.of(context).canPop()) {
-                          Navigator.of(context).pop();
-                        }
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        child: const Icon(FluentIcons.dismiss_24_regular, color: Colors.white, size: 24),
-                      ),
+                    Positioned(
+                      top: 0,
+                      bottom: 0,
+                      left: 0,
+                      width: MediaQuery.of(context).size.width * 0.3,
+                      child: GestureDetector(onTap: _previousStory, child: Container(color: Colors.transparent)),
+                    ),
+                    Positioned(
+                      top: 0,
+                      bottom: 0,
+                      right: 0,
+                      width: MediaQuery.of(context).size.width * 0.3,
+                      child: GestureDetector(onTap: _nextStory, child: Container(color: Colors.transparent)),
                     ),
                   ],
                 ),
               ),
-              Positioned(
-                top: 0,
-                bottom: 0,
-                left: 0,
-                width: MediaQuery.of(context).size.width * 0.3,
-                child: GestureDetector(onTap: _previousStory, child: Container(color: Colors.transparent)),
-              ),
-              Positioned(
-                top: 0,
-                bottom: 0,
-                right: 0,
-                width: MediaQuery.of(context).size.width * 0.3,
-                child: GestureDetector(onTap: _nextStory, child: Container(color: Colors.transparent)),
-              ),
-            ],
+            ),
           ),
         ),
       ),
