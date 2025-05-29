@@ -30,10 +30,9 @@ class ProfileService extends ChangeNotifier {
     try {
       final sprkProfile = await getProfileFullSprk(did, forceRefresh: forceRefresh);
       if (sprkProfile != null) {
-        final viewer = sprkProfile['viewer'] as Map<dynamic, dynamic>?;
         return Profile.fromSparkProfile({
           'actor': sprkProfile,
-          'viewer': {...?viewer, 'following': existingFollowUri},
+          'viewer': sprkProfile['viewer'] as Map<dynamic, dynamic>? ?? {},
           'source': 'spark',
         });
       }
@@ -53,30 +52,8 @@ class ProfileService extends ChangeNotifier {
         final profile = Profile.fromBlueskyActor(bskyProfile);
         final counts = bskyProfile.toJson();
 
-        var followersCount = counts['followersCount'] as int? ?? 0;
-        var followingCount = counts['followsCount'] as int? ?? 0;
-
-        // Try to enhance with Spark data, but don't fail if these calls fail
-        final client = SprkClient(_authService);
-
-        try {
-          final sparkFollowers = await client.graph.getFollowers(did);
-
-          final followers = sparkFollowers.data['followers'] as List;
-          followersCount += followers.length;
-        } catch (e) {
-          debugPrint('Error fetching Spark followers: $e');
-          // Continue anyway
-        }
-
-        try {
-          final sparkFollows = await client.graph.getFollows(did);
-
-          final follows = sparkFollows.data['follows'] as List;
-          followingCount += follows.length;
-        } catch (e) {
-          debugPrint('Error fetching Spark follows: $e');
-        }
+        final followersCount = counts['followersCount'] as int? ?? 0;
+        final followingCount = counts['followsCount'] as int? ?? 0;
 
         return profile.withCounts({
           'followersCount': followersCount,

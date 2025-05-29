@@ -6,9 +6,10 @@ import 'package:provider/provider.dart';
 
 import '../services/auth_service.dart';
 import '../services/onboarding_service.dart';
+import '../services/settings_service.dart';
 import '../utils/app_colors.dart';
 import '../widgets/common/custom_text_field.dart';
-import 'import_follows_screen.dart';
+import 'follow_mode_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -31,14 +32,22 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     super.initState();
     _displayNameController = TextEditingController();
     _descriptionController = TextEditingController();
+    _displayNameController.addListener(_onCredentialsChanged);
+    _descriptionController.addListener(_onCredentialsChanged);
     _loadBskyProfile();
   }
 
   @override
   void dispose() {
+    _displayNameController.removeListener(_onCredentialsChanged);
+    _descriptionController.removeListener(_onCredentialsChanged);
     _displayNameController.dispose();
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  void _onCredentialsChanged() {
+    setState(() {});
   }
 
   Future<void> _loadBskyProfile() async {
@@ -71,16 +80,54 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   Future<void> _handleCustomImport() async {
     if (!_formKey.currentState!.validate()) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (context) => ImportFollowsScreen(
-              displayName: _displayNameController.text.trim(),
-              description: _descriptionController.text.trim(),
-              avatar: _localAvatar,
-            ),
-      ),
-    );
+
+    setState(() {
+      _loading = true;
+    });
+
+    try {
+      if (_bskyProfile == null) {
+        final settingsService = Provider.of<SettingsService>(context, listen: false);
+        await settingsService.setFollowMode(FollowMode.sprk);
+        if (!mounted) return;
+        final authService = Provider.of<AuthService>(context, listen: false);
+        final onboardingService = OnboardingService(authService);
+
+        await onboardingService.finalizeProfileCreation(
+          displayName: _displayNameController.text.trim(),
+          description: _descriptionController.text.trim(),
+          avatar: _localAvatar,
+        );
+
+        if (!mounted) return;
+        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+      } else {
+        if (!mounted) return;
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (context) => FollowModeScreen(
+                  displayName: _displayNameController.text.trim(),
+                  description: _descriptionController.text.trim(),
+                  avatar: _localAvatar,
+                ),
+          ),
+        );
+        if (mounted) {
+          setState(() {
+            _loading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error processing profile: ${e.toString()}')));
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
+    }
   }
 
   Future<void> _pickAvatar() async {
@@ -120,9 +167,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             ? NetworkImage(avatarUrl) as ImageProvider<Object>
             : null;
 
+    final originalDisplayName = _bskyProfile?['value']?['displayName'] as String?;
+    final originalDescription = _bskyProfile?['value']?['description'] as String?;
+
+    final bool canUndoDisplayName =
+        originalDisplayName != null && originalDisplayName.isNotEmpty && _displayNameController.text != originalDisplayName;
+
+    final bool canUndoDescription =
+        originalDescription != null && originalDescription.isNotEmpty && _descriptionController.text != originalDescription;
+
     return Scaffold(
       backgroundColor: backgroundColor,
-      appBar: AppBar(backgroundColor: backgroundColor, elevation: 0, title: const Text('Complete your profile')),
+      appBar: AppBar(
+        backgroundColor: backgroundColor,
+        elevation: 0,
+        title: const Text('Complete your profile'),
+        centerTitle: true,
+      ),
       body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -178,12 +239,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       controller: _displayNameController,
                       hintText: 'Display Name',
                       fillColor: backgroundColor,
-                      onUndo: () {
-                        if (_bskyProfile != null) {
-                          final value = _bskyProfile!['value'] as Map<String, dynamic>?;
-                          setState(() => _displayNameController.text = value?['displayName'] as String? ?? '');
-                        }
-                      },
+                      onUndo:
+                          canUndoDisplayName
+                              ? () {
+                                setState(() => _displayNameController.text = originalDisplayName);
+                              }
+                              : null,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) return 'Display Name is required';
                         return null;
@@ -195,12 +256,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       hintText: 'Bio',
                       fillColor: backgroundColor,
                       maxLines: 3,
-                      onUndo: () {
-                        if (_bskyProfile != null) {
-                          final value = _bskyProfile!['value'] as Map<String, dynamic>?;
-                          setState(() => _descriptionController.text = value?['description'] as String? ?? '');
-                        }
-                      },
+                      onUndo:
+                          canUndoDescription
+                              ? () {
+                                setState(() => _descriptionController.text = originalDescription);
+                              }
+                              : null,
                     ),
                     const SizedBox(height: 24),
                     Align(

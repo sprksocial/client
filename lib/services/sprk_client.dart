@@ -5,6 +5,7 @@ import 'package:atproto/core.dart';
 import 'package:sparksocial/config/app_config.dart';
 
 import 'auth_service.dart';
+import 'settings_service.dart';
 
 /// Client for interacting with Spark API endpoints
 class SprkClient {
@@ -229,6 +230,51 @@ class ActorAPI {
       return await atproto.get(
         NSID.parse('so.sprk.actor.searchActors'),
         parameters: {'q': query},
+        headers: {'atproto-proxy': _client._sprkDid},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+      );
+    });
+  }
+
+  /// Set user preferences
+  ///
+  /// [followMode] The follow mode to set (FollowMode.bsky or FollowMode.sprk)
+  Future<dynamic> putPreferences({required FollowMode followMode}) async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      return await atproto.post(
+        NSID.parse('so.sprk.actor.putPreferences'),
+        body: {'followMode': followMode.name},
+        headers: {'atproto-proxy': _client._sprkDid},
+      );
+    });
+  }
+
+  /// Get user preferences
+  ///
+  /// Returns the user's preferences, including followMode
+  Future<dynamic> getPreferences() async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      return await atproto.get(
+        NSID.parse('so.sprk.actor.getPreferences'),
         headers: {'atproto-proxy': _client._sprkDid},
         to: (jsonMap) => jsonMap,
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),

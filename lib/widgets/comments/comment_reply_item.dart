@@ -14,6 +14,7 @@ class CommentReplyItem extends StatefulWidget {
   final bool isDarkMode;
   final Function(String, String) onReply;
   final String? profileImageUrl;
+  final Function(String)? onUsernameTap;
 
   const CommentReplyItem({
     super.key,
@@ -26,6 +27,7 @@ class CommentReplyItem extends StatefulWidget {
     required this.isDarkMode,
     required this.onReply,
     this.profileImageUrl,
+    this.onUsernameTap,
   });
 
   @override
@@ -51,7 +53,18 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
-        children: [_buildAvatar(), const SizedBox(width: 8), Expanded(child: _buildReplyContent(textColor, secondaryTextColor))],
+        children: [
+          GestureDetector(
+            onTap: () {
+              if (widget.onUsernameTap != null) {
+                widget.onUsernameTap!(widget.userId);
+              }
+            },
+            child: _buildAvatar(),
+          ),
+          const SizedBox(width: 8),
+          Expanded(child: _buildReplyContent(textColor, secondaryTextColor)),
+        ],
       ),
     );
   }
@@ -83,7 +96,14 @@ class _CommentReplyItemState extends State<CommentReplyItem> {
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text(widget.username, style: TextStyle(fontWeight: FontWeight.bold, color: textColor, fontSize: 13)),
+            GestureDetector(
+              onTap: () {
+                if (widget.onUsernameTap != null) {
+                  widget.onUsernameTap!(widget.userId);
+                }
+              },
+              child: Text(widget.username, style: TextStyle(fontWeight: FontWeight.bold, color: textColor, fontSize: 13)),
+            ),
             const SizedBox(width: 6),
             Text(widget.timeAgo, style: TextStyle(fontSize: 11, color: secondaryTextColor)),
           ],

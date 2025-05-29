@@ -39,9 +39,9 @@ class Profile {
       description: actor.description,
       avatarUrl: actor.avatar,
       bannerUrl: null, // Bluesky doesn't have banner
-      followersCount: 0, // These will be set from profile.data
-      followingCount: 0,
-      postsCount: 0,
+      followersCount: actor.followersCount,
+      followingCount: actor.followsCount,
+      postsCount: actor.postsCount,
       isSprk: false,
       isFollowing: actor.viewer.following != null,
       followUri: actor.viewer.following?.toString(),
@@ -61,7 +61,7 @@ class Profile {
       avatarUrl: actor['avatar'] as String?,
       bannerUrl: actor['banner'] as String?,
       followersCount: actor['followersCount'] as int? ?? 0,
-      followingCount: actor['followingCount'] as int? ?? 0,
+      followingCount: actor['followsCount'] as int? ?? 0,
       postsCount: actor['postsCount'] as int? ?? 0,
       isSprk: true,
       isFollowing: viewer?['following'] != null,

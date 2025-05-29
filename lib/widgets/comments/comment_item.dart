@@ -1,19 +1,19 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:sparksocial/services/actions_service.dart';
+import 'package:sparksocial/services/auth_service.dart';
+import 'package:sparksocial/services/mod_service.dart';
 import 'package:sparksocial/widgets/common/user_avatar.dart';
 import 'package:sparksocial/widgets/dialogs/report_dialog.dart';
-import 'package:provider/provider.dart';
-import 'package:sparksocial/services/mod_service.dart';
-import 'package:sparksocial/services/auth_service.dart';
 import 'package:video_player/video_player.dart';
-import 'package:sparksocial/services/actions_service.dart';
 
 import '../../models/comment.dart';
 import '../../utils/app_colors.dart';
+import '../action_buttons/menu_action_button.dart';
 import '../image/image_carousel.dart';
 import 'comment_reply_item.dart';
-import '../action_buttons/menu_action_button.dart';
 
 class CommentItem extends StatefulWidget {
   final String id;
@@ -37,6 +37,7 @@ class CommentItem extends StatefulWidget {
   final bool isLiked;
   final VoidCallback? onLikePressed;
   final VoidCallback? onDeleted;
+  final Function(String)? onUsernameTap;
 
   const CommentItem({
     super.key,
@@ -61,6 +62,7 @@ class CommentItem extends StatefulWidget {
     this.isLiked = false,
     this.onLikePressed,
     this.onDeleted,
+    this.onUsernameTap,
   });
 
   @override
@@ -276,7 +278,14 @@ class _CommentItemState extends State<CommentItem> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildAvatar(),
+              GestureDetector(
+                onTap: () {
+                  if (widget.onUsernameTap != null) {
+                    widget.onUsernameTap!(widget.authorDid);
+                  }
+                },
+                child: _buildAvatar(),
+              ),
               const SizedBox(width: 12),
               Expanded(child: _buildCommentContent(textColor, secondaryTextColor)),
             ],
@@ -313,7 +322,14 @@ class _CommentItemState extends State<CommentItem> {
             Expanded(
               child: Row(
                 children: [
-                  Text(widget.username, style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+                  GestureDetector(
+                    onTap: () {
+                      if (widget.onUsernameTap != null) {
+                        widget.onUsernameTap!(widget.authorDid);
+                      }
+                    },
+                    child: Text(widget.username, style: TextStyle(fontWeight: FontWeight.bold, color: textColor)),
+                  ),
                   const SizedBox(width: 8),
                   Text(widget.timeAgo, style: TextStyle(fontSize: 12, color: secondaryTextColor)),
                 ],
@@ -445,6 +461,7 @@ class _CommentItemState extends State<CommentItem> {
               isDarkMode: widget.isDarkMode,
               onReply: widget.onReply,
               profileImageUrl: reply.profileImageUrl,
+              onUsernameTap: widget.onUsernameTap,
             ),
           ),
         ],
