@@ -5,6 +5,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import '../screens/profile_screen.dart';
 import '../services/story_view_service.dart';
 import '../utils/app_colors.dart';
 
@@ -345,6 +346,24 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
     return '';
   }
 
+  void _navigateToProfile() {
+    final currentStory = widget.stories[_currentStoryIndex];
+    final author = currentStory['author'] as Map<String, dynamic>;
+    final userDid = author['did'] as String?;
+
+    if (userDid != null && userDid.isNotEmpty) {
+      // Pause the current story before navigating
+      _pauseStory();
+
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProfileScreen(did: userDid))).then((_) {
+        // Resume the story when returning from profile
+        if (mounted) {
+          _resumeStory();
+        }
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.stories.isEmpty) {
@@ -447,50 +466,59 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
                       right: 16,
                       child: Row(
                         children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
-                            child: ClipOval(
-                              child: CachedNetworkImage(
-                                imageUrl: avatarUrl,
-                                fit: BoxFit.cover,
-                                errorWidget: (context, url, error) {
-                                  return Container(
-                                    color: Colors.grey[700],
-                                    child: const Icon(FluentIcons.person_24_regular, color: Colors.white, size: 20),
-                                  );
-                                },
+                          GestureDetector(
+                            onTap: _navigateToProfile,
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                              ),
+                              child: ClipOval(
+                                child: CachedNetworkImage(
+                                  imageUrl: avatarUrl,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (context, url, error) {
+                                    return Container(
+                                      color: Colors.grey[700],
+                                      child: const Icon(FluentIcons.person_24_regular, color: Colors.white, size: 20),
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  username,
-                                  style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(timeAgo, style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14)),
-                              ],
+                            child: GestureDetector(
+                              onTap: _navigateToProfile,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    username,
+                                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(timeAgo, style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14)),
+                                ],
+                              ),
                             ),
                           ),
                         ],
                       ),
                     ),
                     Positioned(
-                      top: 0,
+                      top: 80,
                       bottom: 0,
                       left: 0,
                       width: MediaQuery.of(context).size.width * 0.3,
                       child: GestureDetector(onTap: _previousStory, child: Container(color: Colors.transparent)),
                     ),
                     Positioned(
-                      top: 0,
+                      top: 80,
                       bottom: 0,
                       right: 0,
                       width: MediaQuery.of(context).size.width * 0.3,
