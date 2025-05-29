@@ -140,7 +140,9 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
       });
       _startCurrentStory();
     } else {
-      Navigator.of(context).pop();
+      if (mounted && Navigator.of(context).canPop()) {
+        Navigator.of(context).pop();
+      }
     }
   }
 
@@ -387,7 +389,11 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
                       ),
                     ),
                     GestureDetector(
-                      onTap: () => Navigator.of(context).pop(),
+                      onTap: () {
+                        if (mounted && Navigator.of(context).canPop()) {
+                          Navigator.of(context).pop();
+                        }
+                      },
                       child: Container(
                         padding: const EdgeInsets.all(8),
                         child: const Icon(FluentIcons.dismiss_24_regular, color: Colors.white, size: 24),
