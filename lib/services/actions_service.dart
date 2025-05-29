@@ -70,7 +70,7 @@ class ActionsService extends ChangeNotifier {
     // Upload images and prepare embed JSON if provided
     Map<String, dynamic>? embedJson;
     if (imageFiles != null && imageFiles.isNotEmpty) {
-      final List<Map<String, dynamic>> uploadedImageMaps = await _uploadImages(imageFiles, altTexts ?? {});
+      final List<Map<String, dynamic>> uploadedImageMaps = await uploadImages(imageFiles, altTexts ?? {});
       embedJson = {"\$type": "so.sprk.embed.images", "images": uploadedImageMaps};
     }
 
@@ -145,7 +145,7 @@ class ActionsService extends ChangeNotifier {
       throw ArgumentError('At least one image is required for an image post.');
     }
 
-    final List<Map<String, dynamic>> uploadedImageMaps = await _uploadImages(imageFiles, altTexts);
+    final List<Map<String, dynamic>> uploadedImageMaps = await uploadImages(imageFiles, altTexts);
 
     final embed = {"\$type": "so.sprk.embed.images", 'images': uploadedImageMaps};
 
@@ -172,7 +172,7 @@ class ActionsService extends ChangeNotifier {
   }
 
   /// Helper to upload multiple images, stripping EXIF, and return a list of JSON maps for embedding.
-  Future<List<Map<String, dynamic>>> _uploadImages(List<XFile> imageFiles, Map<String, String> altTexts) async {
+  Future<List<Map<String, dynamic>>> uploadImages(List<XFile> imageFiles, Map<String, String> altTexts) async {
     final List<Map<String, dynamic>> uploadedImageMaps = [];
     for (final imageFile in imageFiles) {
       try {
@@ -263,6 +263,26 @@ class ActionsService extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint('Error toggling follow: $e');
+      rethrow;
+    }
+  }
+
+  /// Posts a story with media using the Spark NSID.
+  /// Returns the response from the created story record.
+  Future<dynamic> postStory(Map<String, dynamic> embed) async {
+    final storyRecord = {"\$type": "so.sprk.feed.story", "embed": embed, "createdAt": DateTime.now().toUtc().toIso8601String()};
+
+    try {
+      final response = await _client.repo.createRecord(collection: NSID.parse('so.sprk.feed.story'), record: storyRecord);
+
+      if (response.status.code != 200) {
+        throw Exception('Failed to create story: ${response.status.code} ${response.data}');
+      }
+
+      notifyListeners();
+      return response.data;
+    } catch (e) {
+      debugPrint('Error creating Spark story record: $e');
       rethrow;
     }
   }

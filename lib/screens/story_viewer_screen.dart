@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:video_player/video_player.dart';
 
 import '../services/story_view_service.dart';
 import '../utils/app_colors.dart';
@@ -17,6 +18,8 @@ class StoryViewerScreen extends StatefulWidget {
 class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProviderStateMixin {
   late List<AnimationController> _progressControllers;
   int _currentStoryIndex = 0;
+  VideoPlayerController? _videoController;
+  bool _isVideoInitialized = false;
 
   @override
   void initState() {
@@ -33,6 +36,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
   @override
   void dispose() {
     _markStoriesAsViewedUpToCurrent();
+    _videoController?.dispose();
 
     for (final controller in _progressControllers) {
       controller.dispose();
@@ -40,21 +44,99 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
     super.dispose();
   }
 
-  void _startCurrentStory() {
-    if (_currentStoryIndex < _progressControllers.length) {
-      _markCurrentStoryAsViewed();
-      _progressControllers[_currentStoryIndex].forward().then((_) {
-        if (mounted) {
-          _nextStory();
-        }
+  bool _isVideoStory(Map<String, dynamic> story) {
+    if (story.containsKey('embed') && story['embed'] != null) {
+      final storyEmbed = story['embed'] as Map<String, dynamic>;
+      return storyEmbed['\$type'] == 'so.sprk.embed.video#view';
+    }
+    return false;
+  }
+
+  Future<void> _initializeVideo(String videoUrl) async {
+    _videoController?.dispose();
+    _videoController = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+
+    try {
+      await _videoController!.initialize();
+      _videoController!.setLooping(false);
+      setState(() {
+        _isVideoInitialized = true;
+      });
+
+      // Set the animation controller duration to match video duration
+      final videoDuration = _videoController!.value.duration;
+      _progressControllers[_currentStoryIndex].dispose();
+      _progressControllers[_currentStoryIndex] = AnimationController(
+        duration: videoDuration.inSeconds > 0 ? videoDuration : const Duration(seconds: 5),
+        vsync: this,
+      );
+
+      await _videoController!.play();
+    } catch (e) {
+      setState(() {
+        _isVideoInitialized = false;
       });
     }
   }
 
+  void _startCurrentStory() {
+    if (_currentStoryIndex < _progressControllers.length) {
+      _markCurrentStoryAsViewed();
+
+      final currentStory = widget.stories[_currentStoryIndex];
+
+      if (_isVideoStory(currentStory)) {
+        final videoUrl = _getVideoUrl(currentStory);
+        if (videoUrl.isNotEmpty) {
+          _initializeVideo(videoUrl).then((_) {
+            if (_videoController != null && _isVideoInitialized) {
+              // Start the progress animation
+              _progressControllers[_currentStoryIndex].forward().then((_) {
+                if (mounted) {
+                  _nextStory();
+                }
+              });
+
+              _videoController!.addListener(_videoListener);
+            }
+          });
+        } else {
+          _progressControllers[_currentStoryIndex].forward().then((_) {
+            if (mounted) {
+              _nextStory();
+            }
+          });
+        }
+      } else {
+        _progressControllers[_currentStoryIndex].forward().then((_) {
+          if (mounted) {
+            _nextStory();
+          }
+        });
+      }
+    }
+  }
+
+  void _videoListener() {
+    if (_videoController != null && _videoController!.value.isInitialized) {
+      // Check if video has ended
+      if (_videoController!.value.position >= _videoController!.value.duration) {
+        _videoController!.removeListener(_videoListener);
+        if (mounted) {
+          _nextStory();
+        }
+      }
+    }
+  }
+
   void _nextStory() {
+    _videoController?.removeListener(_videoListener);
+    _videoController?.pause();
+
     if (_currentStoryIndex < widget.stories.length - 1) {
       setState(() {
         _currentStoryIndex++;
+        _isVideoInitialized = false;
       });
       _startCurrentStory();
     } else {
@@ -64,9 +146,13 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
 
   void _previousStory() {
     if (_currentStoryIndex > 0) {
+      _videoController?.removeListener(_videoListener);
+      _videoController?.pause();
       _progressControllers[_currentStoryIndex].reset();
+
       setState(() {
         _currentStoryIndex--;
+        _isVideoInitialized = false;
       });
       _progressControllers[_currentStoryIndex].reset();
       _startCurrentStory();
@@ -75,15 +161,25 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
 
   void _pauseStory() {
     _progressControllers[_currentStoryIndex].stop();
+    _videoController?.pause();
   }
 
   void _resumeStory() {
     if (_progressControllers[_currentStoryIndex].status != AnimationStatus.completed) {
-      _progressControllers[_currentStoryIndex].forward().then((_) {
-        if (mounted) {
-          _nextStory();
-        }
-      });
+      if (_isVideoStory(widget.stories[_currentStoryIndex])) {
+        _videoController?.play();
+        _progressControllers[_currentStoryIndex].forward().then((_) {
+          if (mounted) {
+            _nextStory();
+          }
+        });
+      } else {
+        _progressControllers[_currentStoryIndex].forward().then((_) {
+          if (mounted) {
+            _nextStory();
+          }
+        });
+      }
     }
   }
 
@@ -114,6 +210,13 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
   String _getStoryImageUrl(Map<String, dynamic> story) {
     if (story.containsKey('embed') && story['embed'] != null) {
       final storyEmbed = story['embed'] as Map<String, dynamic>;
+
+      // Handle video stories - use thumbnail
+      if (storyEmbed['\$type'] == 'so.sprk.embed.video#view' && storyEmbed.containsKey('thumbnail')) {
+        return storyEmbed['thumbnail'] as String? ?? '';
+      }
+
+      // Handle image stories
       if (storyEmbed['\$type'] == 'so.sprk.embed.images#view' && storyEmbed.containsKey('images')) {
         final images = storyEmbed['images'] as List<dynamic>;
         if (images.isNotEmpty) {
@@ -154,6 +257,16 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
     return 'now';
   }
 
+  String _getVideoUrl(Map<String, dynamic> story) {
+    if (story.containsKey('embed') && story['embed'] != null) {
+      final storyEmbed = story['embed'] as Map<String, dynamic>;
+      if (storyEmbed['\$type'] == 'so.sprk.embed.video#view' && storyEmbed.containsKey('playlist')) {
+        return storyEmbed['playlist'] as String? ?? '';
+      }
+    }
+    return '';
+  }
+
   @override
   Widget build(BuildContext context) {
     if (widget.stories.isEmpty) {
@@ -185,28 +298,7 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(color: Colors.grey[900]),
-                  child: CachedNetworkImage(
-                    imageUrl: storyImageUrl,
-                    fit: BoxFit.cover,
-                    progressIndicatorBuilder: (context, url, downloadProgress) {
-                      return Center(child: CircularProgressIndicator(value: downloadProgress.progress, color: AppColors.primary));
-                    },
-                    errorWidget: (context, url, error) {
-                      return Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(FluentIcons.image_24_regular, size: 48, color: Colors.white.withValues(alpha: 0.5)),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Failed to load story',
-                              style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 16),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                  child: _isVideoStory(currentStory) ? _buildVideoPlayer() : _buildImageViewer(storyImageUrl),
                 ),
               ),
               Positioned(
@@ -322,6 +414,35 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildVideoPlayer() {
+    if (_videoController != null && _isVideoInitialized) {
+      return AspectRatio(aspectRatio: _videoController!.value.aspectRatio, child: VideoPlayer(_videoController!));
+    }
+    return Center(child: CircularProgressIndicator(color: AppColors.primary));
+  }
+
+  Widget _buildImageViewer(String storyImageUrl) {
+    return CachedNetworkImage(
+      imageUrl: storyImageUrl,
+      fit: BoxFit.cover,
+      progressIndicatorBuilder: (context, url, downloadProgress) {
+        return Center(child: CircularProgressIndicator(value: downloadProgress.progress, color: AppColors.primary));
+      },
+      errorWidget: (context, url, error) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(FluentIcons.image_24_regular, size: 48, color: Colors.white.withValues(alpha: 0.5)),
+              const SizedBox(height: 16),
+              Text('Failed to load story', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 16)),
+            ],
+          ),
+        );
+      },
     );
   }
 }

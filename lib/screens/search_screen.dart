@@ -4,6 +4,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../screens/create_video_screen.dart';
 import '../screens/profile_screen.dart';
 import '../services/actions_service.dart';
 import '../services/auth_service.dart';
@@ -293,10 +294,10 @@ class _SearchScreenState extends State<SearchScreen> {
                             isLoading: _isLoadingStories,
                             error: _storiesError,
                             onAddStory: () {
-                              // TODO: Implement add story functionality
-                              ScaffoldMessenger.of(
+                              Navigator.push(
                                 context,
-                              ).showSnackBar(const SnackBar(content: Text('Add story feature coming soon!')));
+                                MaterialPageRoute(builder: (context) => const CreateVideoScreen(isStoryMode: true)),
+                              );
                             },
                           ),
                         ),

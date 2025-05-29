@@ -14,10 +14,13 @@ import '../widgets/camera/permission_request.dart';
 import '../widgets/camera/recording_bar.dart';
 import 'auth_prompt_screen.dart';
 import 'image_review_screen.dart';
+import 'story_review_screen.dart';
 import 'video_review_screen.dart';
 
 class CreateVideoScreen extends StatefulWidget {
-  const CreateVideoScreen({super.key});
+  final bool isStoryMode;
+
+  const CreateVideoScreen({super.key, this.isStoryMode = false});
 
   @override
   State<CreateVideoScreen> createState() => _CreateVideoScreenState();
@@ -149,7 +152,11 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       if (video != null && mounted) {
         debugPrint('Video selected from gallery: ${video.path}');
 
-        Navigator.push(context, MaterialPageRoute(builder: (context) => VideoReviewScreen(videoPath: video.path)));
+        if (widget.isStoryMode) {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => StoryReviewScreen(videoPath: video.path)));
+        } else {
+          Navigator.push(context, MaterialPageRoute(builder: (context) => VideoReviewScreen(videoPath: video.path)));
+        }
       }
     } catch (e) {
       debugPrint('Error handling video: $e');
@@ -177,17 +184,26 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       return;
     }
 
-    const maxImages = 12;
-
     try {
-      final List<XFile> pickedFiles = await _picker.pickMultiImage(limit: maxImages);
-      if (pickedFiles.isEmpty) return;
-      final List<XFile> limitedFiles = pickedFiles.length > maxImages ? pickedFiles.sublist(0, maxImages) : pickedFiles;
-      debugPrint('${limitedFiles.length} images selected from gallery.');
-      if (!mounted) return;
-      Navigator.push(context, MaterialPageRoute(builder: (context) => ImageReviewScreen(imageFiles: limitedFiles)));
+      if (widget.isStoryMode) {
+        // For stories, only allow one image
+        final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+        if (image != null && mounted) {
+          debugPrint('Image selected from gallery for story: ${image.path}');
+          Navigator.push(context, MaterialPageRoute(builder: (context) => StoryReviewScreen(imageFile: image)));
+        }
+      } else {
+        // For regular posts, allow multiple images
+        const maxImages = 12;
+        final List<XFile> pickedFiles = await _picker.pickMultiImage(limit: maxImages);
+        if (pickedFiles.isEmpty) return;
+        final List<XFile> limitedFiles = pickedFiles.length > maxImages ? pickedFiles.sublist(0, maxImages) : pickedFiles;
+        debugPrint('${limitedFiles.length} images selected from gallery.');
+        if (!mounted) return;
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ImageReviewScreen(imageFiles: limitedFiles)));
+      }
     } catch (e) {
-      debugPrint('Error picking images for post: $e');
+      debugPrint('Error picking images: $e');
       if (!mounted) return;
       showDialog(
         context: context,
@@ -223,6 +239,12 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
       final XFile? photo = await _cameraService.takePhoto();
       if (photo != null) {
         debugPrint('Photo taken: ${photo.path}');
+
+        if (widget.isStoryMode) {
+          if (mounted) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) => StoryReviewScreen(imageFile: photo)));
+          }
+        }
       }
     } catch (e) {
       debugPrint('Error taking photo: $e');
@@ -245,7 +267,11 @@ class _CreateVideoScreenState extends State<CreateVideoScreen> with WidgetsBindi
         if (video != null && mounted) {
           debugPrint('Video recorded: ${video.path}');
           if (mounted) {
-            Navigator.push(context, MaterialPageRoute(builder: (context) => VideoReviewScreen(videoPath: video.path)));
+            if (widget.isStoryMode) {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => StoryReviewScreen(videoPath: video.path)));
+            } else {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => VideoReviewScreen(videoPath: video.path)));
+            }
           }
         }
       } catch (e) {
