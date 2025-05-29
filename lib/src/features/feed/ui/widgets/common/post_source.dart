@@ -20,22 +20,19 @@ class PostSource extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        if (isSprk || true) ...[
-          const SizedBox(width: 4),
-          Container(
-            padding: const EdgeInsets.all(4),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(42),
-              boxShadow: [
-                BoxShadow(color: AppColors.black.withAlpha(30), blurRadius: 4, spreadRadius: 1, offset: const Offset(0, 0)),
-              ],
-            ),
-            child:
-                isSprk
-                    ? SvgPicture.asset('assets/images/sprk.svg', width: 14, height: 14)
-                    : SvgPicture.asset('assets/images/bsky.svg', width: 14, height: 14),
+        const SizedBox(width: 4),
+        Container(
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(42),
+            boxShadow: [
+              BoxShadow(color: AppColors.black.withAlpha(30), blurRadius: 4, spreadRadius: 1, offset: const Offset(0, 0)),
+            ],
           ),
-        ],
+          child: isSprk
+              ? SvgPicture.asset('assets/images/sprk.svg', width: 14, height: 14)
+              : SvgPicture.asset('assets/images/bsky.svg', width: 14, height: 14),
+        ),
       ],
     );
   }

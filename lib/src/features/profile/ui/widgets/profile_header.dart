@@ -1,3 +1,4 @@
+import 'package:atproto_core/atproto_core.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -19,7 +20,7 @@ import 'profile_links.dart'; // Placeholder will be created
 import 'profile_stat_item.dart'; // Placeholder will be created
 
 class ProfileHeader extends StatefulWidget {
-  final actor_models.Profile profile;
+  final actor_models.ProfileViewDetailed profile;
   final bool isCurrentUser;
   final bool isEarlySupporter;
   final VoidCallback onEarlySupporterTap;
@@ -86,8 +87,8 @@ class _ProfileHeaderState extends State<ProfileHeader> {
     }
 
     final Widget avatarWidget;
-    if (widget.profile.avatar case final String av when av.isNotEmpty) {
-      avatarWidget = ClipOval(child: UserAvatar(imageUrl: av, username: displayNameForAvatar, size: 90, borderWidth: 0));
+    if (widget.profile.avatar case final AtUri av when av.toString().isNotEmpty) {
+      avatarWidget = ClipOval(child: UserAvatar(imageUrl: av.toString(), username: displayNameForAvatar, size: 90, borderWidth: 0));
     } else {
       avatarWidget = Icon(
         FluentIcons.person_24_regular,
@@ -186,22 +187,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                   ),
                 ),
               ],
-              if (widget.profile.isSprk) ...[
-                const SizedBox(width: 8),
-                Tooltip(
-                  message: 'Spark Profile',
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(42)),
-                    child: SvgPicture.asset(
-                      'assets/images/sprk.svg',
-                      width: 20,
-                      height: 20,
-                      colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
-                    ),
-                  ),
-                ),
-              ],
             ],
           ),
           const SizedBox(height: 4),
@@ -251,15 +236,15 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                       onPressed: widget.onFollowTap,
                       style: ElevatedButton.styleFrom(
                         backgroundColor:
-                            widget.profile.isFollowing ? theme.colorScheme.surfaceContainerHighest : AppColors.primary,
-                        foregroundColor: widget.profile.isFollowing ? theme.colorScheme.onSurfaceVariant : AppColors.white,
+                            widget.profile.viewer?.following != null ? theme.colorScheme.surfaceContainerHighest : AppColors.primary,
+                        foregroundColor: widget.profile.viewer?.following != null ? theme.colorScheme.onSurfaceVariant : AppColors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
-                          side: widget.profile.isFollowing ? BorderSide(color: theme.colorScheme.outline) : BorderSide.none,
+                          side: widget.profile.viewer?.following != null ? BorderSide(color: theme.colorScheme.outline) : BorderSide.none,
                         ),
                       ),
                       child: Text(
-                        widget.profile.isFollowing ? 'Following' : 'Follow',
+                        widget.profile.viewer?.following != null ? 'Following' : 'Follow',
                         style: const TextStyle(fontWeight: FontWeight.w600),
                       ),
                     ),

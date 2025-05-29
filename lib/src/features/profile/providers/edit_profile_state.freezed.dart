@@ -16,7 +16,7 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$EditProfileState {
-  Profile get profile => throw _privateConstructorUsedError;
+  ProfileViewDetailed get profile => throw _privateConstructorUsedError;
   String get displayName => throw _privateConstructorUsedError;
   String get description => throw _privateConstructorUsedError;
   dynamic get initialAvatar => throw _privateConstructorUsedError;
@@ -37,12 +37,14 @@ abstract class $EditProfileStateCopyWith<$Res> {
       _$EditProfileStateCopyWithImpl<$Res, EditProfileState>;
   @useResult
   $Res call(
-      {Profile profile,
+      {ProfileViewDetailed profile,
       String displayName,
       String description,
       dynamic initialAvatar,
       dynamic localAvatar,
       bool isSaving});
+
+  $ProfileViewDetailedCopyWith<$Res> get profile;
 }
 
 /// @nodoc
@@ -60,7 +62,7 @@ class _$EditProfileStateCopyWithImpl<$Res, $Val extends EditProfileState>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? profile = freezed,
+    Object? profile = null,
     Object? displayName = null,
     Object? description = null,
     Object? initialAvatar = freezed,
@@ -68,10 +70,10 @@ class _$EditProfileStateCopyWithImpl<$Res, $Val extends EditProfileState>
     Object? isSaving = null,
   }) {
     return _then(_value.copyWith(
-      profile: freezed == profile
+      profile: null == profile
           ? _value.profile
           : profile // ignore: cast_nullable_to_non_nullable
-              as Profile,
+              as ProfileViewDetailed,
       displayName: null == displayName
           ? _value.displayName
           : displayName // ignore: cast_nullable_to_non_nullable
@@ -94,6 +96,16 @@ class _$EditProfileStateCopyWithImpl<$Res, $Val extends EditProfileState>
               as bool,
     ) as $Val);
   }
+
+  /// Create a copy of EditProfileState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProfileViewDetailedCopyWith<$Res> get profile {
+    return $ProfileViewDetailedCopyWith<$Res>(_value.profile, (value) {
+      return _then(_value.copyWith(profile: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -105,12 +117,15 @@ abstract class _$$EditProfileStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {Profile profile,
+      {ProfileViewDetailed profile,
       String displayName,
       String description,
       dynamic initialAvatar,
       dynamic localAvatar,
       bool isSaving});
+
+  @override
+  $ProfileViewDetailedCopyWith<$Res> get profile;
 }
 
 /// @nodoc
@@ -126,7 +141,7 @@ class __$$EditProfileStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? profile = freezed,
+    Object? profile = null,
     Object? displayName = null,
     Object? description = null,
     Object? initialAvatar = freezed,
@@ -134,10 +149,10 @@ class __$$EditProfileStateImplCopyWithImpl<$Res>
     Object? isSaving = null,
   }) {
     return _then(_$EditProfileStateImpl(
-      profile: freezed == profile
+      profile: null == profile
           ? _value.profile
           : profile // ignore: cast_nullable_to_non_nullable
-              as Profile,
+              as ProfileViewDetailed,
       displayName: null == displayName
           ? _value.displayName
           : displayName // ignore: cast_nullable_to_non_nullable
@@ -174,7 +189,7 @@ class _$EditProfileStateImpl implements _EditProfileState {
       this.isSaving = false});
 
   @override
-  final Profile profile;
+  final ProfileViewDetailed profile;
   @override
   final String displayName;
   @override
@@ -197,7 +212,7 @@ class _$EditProfileStateImpl implements _EditProfileState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$EditProfileStateImpl &&
-            const DeepCollectionEquality().equals(other.profile, profile) &&
+            (identical(other.profile, profile) || other.profile == profile) &&
             (identical(other.displayName, displayName) ||
                 other.displayName == displayName) &&
             (identical(other.description, description) ||
@@ -213,7 +228,7 @@ class _$EditProfileStateImpl implements _EditProfileState {
   @override
   int get hashCode => Object.hash(
       runtimeType,
-      const DeepCollectionEquality().hash(profile),
+      profile,
       displayName,
       description,
       const DeepCollectionEquality().hash(initialAvatar),
@@ -232,7 +247,7 @@ class _$EditProfileStateImpl implements _EditProfileState {
 
 abstract class _EditProfileState implements EditProfileState {
   const factory _EditProfileState(
-      {required final Profile profile,
+      {required final ProfileViewDetailed profile,
       required final String displayName,
       required final String description,
       final dynamic initialAvatar,
@@ -240,7 +255,7 @@ abstract class _EditProfileState implements EditProfileState {
       final bool isSaving}) = _$EditProfileStateImpl;
 
   @override
-  Profile get profile;
+  ProfileViewDetailed get profile;
   @override
   String get displayName;
   @override

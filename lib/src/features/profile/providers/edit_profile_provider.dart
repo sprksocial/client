@@ -23,7 +23,7 @@ class EditProfile extends _$EditProfile {
   late final SparkLogger logger;
 
   @override
-  EditProfileState build(Profile profile) {
+  EditProfileState build(ProfileViewDetailed profile) {
     _profileRepository = GetIt.instance<ProfileRepository>();
     _authRepository = GetIt.instance<AuthRepository>();
     _logService = GetIt.instance<LogService>();

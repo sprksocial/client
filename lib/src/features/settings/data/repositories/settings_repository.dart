@@ -1,7 +1,4 @@
-import 'package:atproto/atproto.dart';
-import 'package:sparksocial/src/features/settings/data/models/label_preference.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
-import 'package:sparksocial/src/features/settings/data/models/labeler.dart';
 
 abstract class SettingsRepository {
   Future<bool> getFeedBlurEnabled();
@@ -10,22 +7,11 @@ abstract class SettingsRepository {
   Future<bool> getHideAdultContent();
   Future<void> setHideAdultContent(bool value);
   
-  Future<List<Labeler>> getFollowedLabelers();
-  Future<void> setFollowedLabelers(List<Labeler> labelers);
-  
-  Future<Map<Labeler, Map<Label, String>>> getLabelPreferences();
-  // labelerDid: {label: preference}
-  Future<void> saveLabelPreferences(Map<String, Map<Label, String>> preferences);
-  
-  Future<LabelPreference?> getLabelPreference(Label label);
-  Future<void> setLabelPreference(
-    Label label, 
-    LabelPreference preference
-  );
-  
-  Future<void> removeLabelPreference(Label label);
-  Future<void> clearLabelerPreferences(Labeler labeler);
-  
   Future<List<Feed>> getFeeds();
   Future<void> setFeeds(List<Feed> feeds);
+
+  /// You need to pass the length of the feeds list to check if the index is valid
+  /// (in case the user was in the last feed, deleted it and closed the app)
+  Future<int> getSelectedFeedIndex(int length);
+  Future<void> setSelectedFeedIndex(int index);
 }

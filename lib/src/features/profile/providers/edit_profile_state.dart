@@ -6,7 +6,7 @@ part 'edit_profile_state.freezed.dart';
 @freezed
 class EditProfileState with _$EditProfileState {
   const factory EditProfileState({
-    required Profile profile,
+    required ProfileViewDetailed profile,
     required String displayName,
     required String description,
     dynamic initialAvatar,
@@ -14,7 +14,7 @@ class EditProfileState with _$EditProfileState {
     @Default(false) bool isSaving,
   }) = _EditProfileState;
 
-  factory EditProfileState.fromProfile(Profile profile) => EditProfileState(
+  factory EditProfileState.fromProfile(ProfileViewDetailed profile) => EditProfileState(
     profile: profile,
     displayName: profile.displayName ?? '',
     description: profile.description ?? '',

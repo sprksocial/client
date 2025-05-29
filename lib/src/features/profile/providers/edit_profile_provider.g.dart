@@ -6,7 +6,7 @@ part of 'edit_profile_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$editProfileHash() => r'1218064939c16c3289cd3708be27b4ba33ffad98';
+String _$editProfileHash() => r'fdf1ad4e9d4edfb39f020b6e22150c503f409db7';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -31,10 +31,10 @@ class _SystemHash {
 
 abstract class _$EditProfile
     extends BuildlessAutoDisposeNotifier<EditProfileState> {
-  late final InvalidType profile;
+  late final ProfileViewDetailed profile;
 
   EditProfileState build(
-    InvalidType profile,
+    ProfileViewDetailed profile,
   );
 }
 
@@ -57,7 +57,7 @@ class EditProfileFamily extends Family<EditProfileState> {
   ///
   /// Copied from [EditProfile].
   EditProfileProvider call(
-    InvalidType profile,
+    ProfileViewDetailed profile,
   ) {
     return EditProfileProvider(
       profile,
@@ -97,7 +97,7 @@ class EditProfileProvider
   ///
   /// Copied from [EditProfile].
   EditProfileProvider(
-    InvalidType profile,
+    ProfileViewDetailed profile,
   ) : this._internal(
           () => EditProfile()..profile = profile,
           from: editProfileProvider,
@@ -122,7 +122,7 @@ class EditProfileProvider
     required this.profile,
   }) : super.internal();
 
-  final InvalidType profile;
+  final ProfileViewDetailed profile;
 
   @override
   EditProfileState runNotifierBuild(
@@ -173,7 +173,7 @@ class EditProfileProvider
 // ignore: unused_element
 mixin EditProfileRef on AutoDisposeNotifierProviderRef<EditProfileState> {
   /// The parameter `profile` of this provider.
-  InvalidType get profile;
+  ProfileViewDetailed get profile;
 }
 
 class _EditProfileProviderElement
@@ -182,7 +182,7 @@ class _EditProfileProviderElement
   _EditProfileProviderElement(super.provider);
 
   @override
-  InvalidType get profile => (origin as EditProfileProvider).profile;
+  ProfileViewDetailed get profile => (origin as EditProfileProvider).profile;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
 
 @RoutePage()
@@ -19,10 +18,9 @@ class MainPage extends ConsumerStatefulWidget {
 class _MainPageState extends ConsumerState<MainPage> {
   @override
   Widget build(BuildContext context) {
-    final did = ref.read(authProvider).session!.did;
     return AutoTabsRouter(
       key: const ValueKey('mainTabsRouter'),
-      routes: [const FeedsRoute(), const SearchRoute(), const EmptyRoute(), const MessagesRoute(), ProfileRoute(did: did)],
+      routes: [const FeedsRoute(), const SearchRoute(), const EmptyRoute(), const MessagesRoute(), UserProfileRoute()],
       transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);

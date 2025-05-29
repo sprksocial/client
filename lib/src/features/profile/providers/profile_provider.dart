@@ -12,7 +12,6 @@ import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
 part 'profile_provider.g.dart';
 
-
 @riverpod
 class ProfileNotifier extends _$ProfileNotifier {
   late final AuthRepository authRepository;
@@ -40,7 +39,7 @@ class ProfileNotifier extends _$ProfileNotifier {
 
     if (!authRepository.isAuthenticated && effectiveDid == null) {
       logger.i('User not authenticated and no DID provided, showing auth prompt.');
-      state = AsyncData(currentState.copyWith(showAuthPrompt: true, isLoading: false));
+      state = AsyncData(currentState.copyWith(showAuthPrompt: true));
       return;
     }
 
@@ -69,9 +68,7 @@ class ProfileNotifier extends _$ProfileNotifier {
         currentState.copyWith(
           profile: profile,
           isEarlySupporter: isEarlySupporter,
-          isLoading: false,
           showAuthPrompt: false,
-          error: null,
           currentViewDid: effectiveDid,
         ),
       );
@@ -111,14 +108,6 @@ class ProfileNotifier extends _$ProfileNotifier {
     }
   }
 
-  void setSelectedTabIndex(int index) {
-    final currentData = state.asData?.value;
-    if (currentData != null) {
-      state = AsyncData(currentData.copyWith(selectedTabIndex: index));
-      logger.d('Selected tab index set to: $index');
-    }
-  }
-
   bool isCurrentUser() {
     final profileDid = state.asData?.value.profile?.did;
     if (profileDid == null) return false;
@@ -139,15 +128,10 @@ class ProfileNotifier extends _$ProfileNotifier {
       return null;
     }
 
-    logger.d('Toggling follow for profile: ${profile.did}, current follow URI: ${profile.followUri}');
+    logger.d('Toggling follow for profile: ${profile.did}, current follow URI: ${profile.viewer?.following ?? 'none'}');
     final originalStateValue = currentData;
 
-    final bool newIsFollowing = !(profile.isFollowing);
-    final int newFollowersCount = (profile.followersCount) + (newIsFollowing ? 1 : -1);
-
-    state = AsyncData(
-      originalStateValue.copyWith(profile: profile.copyWith(isFollowing: newIsFollowing, followersCount: newFollowersCount)),
-    );
+    final bool newIsFollowing = profile.viewer?.following == null;
 
     try {
       String? newFollowUriResult;
@@ -156,8 +140,8 @@ class ProfileNotifier extends _$ProfileNotifier {
         newFollowUriResult = response.uri;
         logger.i('Successfully followed ${profile.did}. New follow URI: $newFollowUriResult');
       } else {
-        if (profile.followUri != null) {
-          await sprkRepository.graph.unfollowUser(profile.followUri!);
+        if (profile.viewer?.following != null) {
+          await sprkRepository.graph.unfollowUser(profile.viewer!.following!);
           newFollowUriResult = null;
           logger.i('Successfully unfollowed ${profile.did}.');
         } else {
@@ -169,12 +153,7 @@ class ProfileNotifier extends _$ProfileNotifier {
       final refreshedProfile = await profileRepository.getProfile(profile.did, forceRefresh: true);
       final isEarlySupporter = await profileRepository.isEarlySupporter(profile.did);
 
-      state = AsyncData(
-        originalStateValue.copyWith(
-          profile: refreshedProfile?.copyWith(isFollowing: newIsFollowing, followUri: newFollowUriResult),
-          isEarlySupporter: isEarlySupporter,
-        ),
-      );
+      state = AsyncData(originalStateValue.copyWith(profile: refreshedProfile, isEarlySupporter: isEarlySupporter));
       return newFollowUriResult;
     } catch (e, s) {
       logger.e('Error toggling follow for ${profile.did}', error: e, stackTrace: s);

@@ -23,7 +23,7 @@ class _PhotosTabState extends ConsumerState<PhotosTab> with AutomaticKeepAliveCl
   bool _isLoading = false;
   bool _isLoadingMore = false;
   String? _error;
-  List<Post> _posts = [];
+  List<PostView> _posts = [];
   final ScrollController _scrollController = ScrollController();
   String? _cursor;
   late final SparkLogger _logger;

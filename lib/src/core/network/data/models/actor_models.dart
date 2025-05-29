@@ -33,6 +33,7 @@ class KnownFollowers with _$KnownFollowers {
 
 @freezed
 class ProfileViewBasic with _$ProfileViewBasic {
+  const ProfileViewBasic._();
   const factory ProfileViewBasic({
     required String did,
     required String handle,
@@ -41,12 +42,14 @@ class ProfileViewBasic with _$ProfileViewBasic {
     // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
     ActorViewer? viewer,
   }) = _ProfileViewBasic;
+  
 
   factory ProfileViewBasic.fromJson(Map<String, dynamic> json) => _$ProfileViewBasicFromJson(json);
 }
 
 @freezed
 class ProfileView with _$ProfileView {
+  const ProfileView._();
   const factory ProfileView({
     required String did,
     required String handle,
@@ -64,6 +67,7 @@ class ProfileView with _$ProfileView {
 
 @freezed
 class ProfileViewDetailed with _$ProfileViewDetailed {
+  const ProfileViewDetailed._();
   const factory ProfileViewDetailed({
     required String did,
     required String handle,

@@ -16,10 +16,9 @@ import 'package:sparksocial/src/features/feed/providers/comments_tray_provider.d
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:video_player/video_player.dart';
 
-import 'comment_reply_item.dart';
 
 class CommentItem extends ConsumerStatefulWidget {
-  final Comment comment;
+  final PostView comment;
   final String parentPostUri;
   final String parentPostCid;
   const CommentItem({super.key, required this.comment, required this.parentPostUri, required this.parentPostCid});
@@ -118,7 +117,7 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                             isSprk: commentState.comment.isSprk,
                           ).notifier,
                         )
-                        .deleteComment(widget.comment.cid);
+                        .deleteComment(widget.comment.cid.toString());
                     context.router.maybePop();
                   } catch (e) {
                     if (mounted) {
@@ -307,11 +306,7 @@ class _RepliesSection extends StatelessWidget {
         children: [
           const SizedBox(height: 2),
           ...commentState.comment.replies.map(
-            (reply) => CommentReplyItem(
-              reply: reply,
-              parentUri: widget.parentPostUri,
-              parentCid: widget.parentPostCid,
-            ),
+            // TODO: reddit
           ),
         ],
       ),
@@ -462,7 +457,7 @@ class _Avatar extends StatelessWidget {
         border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1),
       ),
       clipBehavior: Clip.antiAlias,
-      child: UserAvatar(imageUrl: widget.comment.profileImageUrl, username: widget.comment.username, size: 36, borderWidth: 0),
+      child: UserAvatar(imageUrl: widget.comment.author.avatar.toString(), username: widget.comment.author.handle, size: 36, borderWidth: 0),
     );
   }
 }

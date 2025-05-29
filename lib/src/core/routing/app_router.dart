@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/routing/pages.dart';
-import 'package:sparksocial/src/features/settings/data/models/feed_setting.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
 import 'package:image_picker/image_picker.dart';
@@ -32,12 +31,16 @@ class AppRouter extends _$AppRouter {
           children: [
             AutoRoute(
               page: FeedRoute.page,
-              path: 'feed/:feedId',
+              path: ':feed', // hardcoded enum string or custom feed uri
               children: [
-                AutoRoute(page: PostRoute.page, path: 'post/:postId'), // TODO: add post route
+                AutoRoute(page: PostRoute.page, path: 'post/:postUri'), // TODO: add post route
               ],
             ),
-            AutoRoute(page: FeedSettingsTabRoute.page, path: '/settings'),
+            AutoRoute(
+              page: FeedSettingsRoute.page,
+              path: 'settings',
+              children: [AutoRoute(page: FeedListRoute.page, path: 'list')],
+            ),
           ],
         ),
         AutoRoute(page: SearchRoute.page, path: 'search'),
@@ -45,9 +48,9 @@ class AppRouter extends _$AppRouter {
         AutoRoute(page: MessagesRoute.page, path: 'messages'),
         AutoRoute(
           page: ProfileRoute.page,
-          path: 'profile/:did',
+          path: 'profile',
           children: [
-            AutoRoute(page: EditProfileRoute.page, path: '/edit'),
+            AutoRoute(page: EditProfileRoute.page, path: 'edit'),
             AutoRoute(
               page: ProfilePhotosRoute.page,
               path: 'photos',
@@ -66,6 +69,17 @@ class AppRouter extends _$AppRouter {
         ),
       ],
     ),
+
+    AutoRoute(page: PostRoute.page, path: '/post/:postId'), // deep linking
+    CustomRoute(
+      page: CommentsTray.page,
+      path: '/comments/:postUri',
+      customRouteBuilder: commmentsTrayBuilder,
+      children: [
+        AutoRoute(page: RepliesRoute.page, path: 'replies/:postUri'), // TODO: add post route
+      ],
+    ),
+
     AutoRoute(page: EmptyRoute.page, path: '/empty'),
     AutoRoute(page: LoginRoute.page, path: '/login'),
     AutoRoute(page: RegisterRoute.page, path: '/register'),
@@ -74,10 +88,21 @@ class AppRouter extends _$AppRouter {
     AutoRoute(page: OnboardingRoute.page, path: '/onboarding/profile'),
     AutoRoute(page: ImportFollowsRoute.page, path: '/onboarding/import-follows'),
 
-    // Upload feature routes
-    AutoRoute(page: CreateVideoRoute.page, path: '/upload/create'),
-    AutoRoute(page: VideoReviewRoute.page, path: '/upload/video-review'),
-    AutoRoute(page: VideoPlaybackRoute.page, path: '/upload/video-playback'),
-    AutoRoute(page: ImageReviewRoute.page, path: '/upload/image-review'),
+    AutoRoute(page: AuthPromptRoute.page, path: '/auth-prompt'),
+
+    // Fallback route
+    AutoRoute(page: SplashRoute.page, path: '*'),
   ];
+
+  Route<T> commmentsTrayBuilder<T>(BuildContext context, Widget child, AutoRoutePage<T> page) { 
+    return ModalBottomSheetRoute(
+      settings: page,
+      builder: (context) => child,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      enableDrag: true,
+      isDismissible: true,
+    );
+  }
 }

@@ -16,10 +16,7 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$ProfileState {
-  int get selectedTabIndex => throw _privateConstructorUsedError;
-  bool get isLoading => throw _privateConstructorUsedError;
-  String? get error => throw _privateConstructorUsedError;
-  Profile? get profile => throw _privateConstructorUsedError;
+  ProfileViewDetailed? get profile => throw _privateConstructorUsedError;
   bool get isEarlySupporter => throw _privateConstructorUsedError;
   bool get showAuthPrompt => throw _privateConstructorUsedError;
   String? get currentViewDid => throw _privateConstructorUsedError;
@@ -38,13 +35,12 @@ abstract class $ProfileStateCopyWith<$Res> {
       _$ProfileStateCopyWithImpl<$Res, ProfileState>;
   @useResult
   $Res call(
-      {int selectedTabIndex,
-      bool isLoading,
-      String? error,
-      Profile? profile,
+      {ProfileViewDetailed? profile,
       bool isEarlySupporter,
       bool showAuthPrompt,
       String? currentViewDid});
+
+  $ProfileViewDetailedCopyWith<$Res>? get profile;
 }
 
 /// @nodoc
@@ -62,31 +58,16 @@ class _$ProfileStateCopyWithImpl<$Res, $Val extends ProfileState>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? selectedTabIndex = null,
-    Object? isLoading = null,
-    Object? error = freezed,
     Object? profile = freezed,
     Object? isEarlySupporter = null,
     Object? showAuthPrompt = null,
     Object? currentViewDid = freezed,
   }) {
     return _then(_value.copyWith(
-      selectedTabIndex: null == selectedTabIndex
-          ? _value.selectedTabIndex
-          : selectedTabIndex // ignore: cast_nullable_to_non_nullable
-              as int,
-      isLoading: null == isLoading
-          ? _value.isLoading
-          : isLoading // ignore: cast_nullable_to_non_nullable
-              as bool,
-      error: freezed == error
-          ? _value.error
-          : error // ignore: cast_nullable_to_non_nullable
-              as String?,
       profile: freezed == profile
           ? _value.profile
           : profile // ignore: cast_nullable_to_non_nullable
-              as Profile?,
+              as ProfileViewDetailed?,
       isEarlySupporter: null == isEarlySupporter
           ? _value.isEarlySupporter
           : isEarlySupporter // ignore: cast_nullable_to_non_nullable
@@ -101,6 +82,20 @@ class _$ProfileStateCopyWithImpl<$Res, $Val extends ProfileState>
               as String?,
     ) as $Val);
   }
+
+  /// Create a copy of ProfileState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProfileViewDetailedCopyWith<$Res>? get profile {
+    if (_value.profile == null) {
+      return null;
+    }
+
+    return $ProfileViewDetailedCopyWith<$Res>(_value.profile!, (value) {
+      return _then(_value.copyWith(profile: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
@@ -112,13 +107,13 @@ abstract class _$$ProfileStateImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {int selectedTabIndex,
-      bool isLoading,
-      String? error,
-      Profile? profile,
+      {ProfileViewDetailed? profile,
       bool isEarlySupporter,
       bool showAuthPrompt,
       String? currentViewDid});
+
+  @override
+  $ProfileViewDetailedCopyWith<$Res>? get profile;
 }
 
 /// @nodoc
@@ -134,31 +129,16 @@ class __$$ProfileStateImplCopyWithImpl<$Res>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? selectedTabIndex = null,
-    Object? isLoading = null,
-    Object? error = freezed,
     Object? profile = freezed,
     Object? isEarlySupporter = null,
     Object? showAuthPrompt = null,
     Object? currentViewDid = freezed,
   }) {
     return _then(_$ProfileStateImpl(
-      selectedTabIndex: null == selectedTabIndex
-          ? _value.selectedTabIndex
-          : selectedTabIndex // ignore: cast_nullable_to_non_nullable
-              as int,
-      isLoading: null == isLoading
-          ? _value.isLoading
-          : isLoading // ignore: cast_nullable_to_non_nullable
-              as bool,
-      error: freezed == error
-          ? _value.error
-          : error // ignore: cast_nullable_to_non_nullable
-              as String?,
       profile: freezed == profile
           ? _value.profile
           : profile // ignore: cast_nullable_to_non_nullable
-              as Profile?,
+              as ProfileViewDetailed?,
       isEarlySupporter: null == isEarlySupporter
           ? _value.isEarlySupporter
           : isEarlySupporter // ignore: cast_nullable_to_non_nullable
@@ -179,24 +159,13 @@ class __$$ProfileStateImplCopyWithImpl<$Res>
 
 class _$ProfileStateImpl implements _ProfileState {
   const _$ProfileStateImpl(
-      {this.selectedTabIndex = 0,
-      this.isLoading = true,
-      this.error,
-      this.profile,
+      {this.profile,
       this.isEarlySupporter = false,
       this.showAuthPrompt = false,
       this.currentViewDid});
 
   @override
-  @JsonKey()
-  final int selectedTabIndex;
-  @override
-  @JsonKey()
-  final bool isLoading;
-  @override
-  final String? error;
-  @override
-  final Profile? profile;
+  final ProfileViewDetailed? profile;
   @override
   @JsonKey()
   final bool isEarlySupporter;
@@ -208,7 +177,7 @@ class _$ProfileStateImpl implements _ProfileState {
 
   @override
   String toString() {
-    return 'ProfileState(selectedTabIndex: $selectedTabIndex, isLoading: $isLoading, error: $error, profile: $profile, isEarlySupporter: $isEarlySupporter, showAuthPrompt: $showAuthPrompt, currentViewDid: $currentViewDid)';
+    return 'ProfileState(profile: $profile, isEarlySupporter: $isEarlySupporter, showAuthPrompt: $showAuthPrompt, currentViewDid: $currentViewDid)';
   }
 
   @override
@@ -216,12 +185,7 @@ class _$ProfileStateImpl implements _ProfileState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ProfileStateImpl &&
-            (identical(other.selectedTabIndex, selectedTabIndex) ||
-                other.selectedTabIndex == selectedTabIndex) &&
-            (identical(other.isLoading, isLoading) ||
-                other.isLoading == isLoading) &&
-            (identical(other.error, error) || other.error == error) &&
-            const DeepCollectionEquality().equals(other.profile, profile) &&
+            (identical(other.profile, profile) || other.profile == profile) &&
             (identical(other.isEarlySupporter, isEarlySupporter) ||
                 other.isEarlySupporter == isEarlySupporter) &&
             (identical(other.showAuthPrompt, showAuthPrompt) ||
@@ -232,14 +196,7 @@ class _$ProfileStateImpl implements _ProfileState {
 
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      selectedTabIndex,
-      isLoading,
-      error,
-      const DeepCollectionEquality().hash(profile),
-      isEarlySupporter,
-      showAuthPrompt,
-      currentViewDid);
+      runtimeType, profile, isEarlySupporter, showAuthPrompt, currentViewDid);
 
   /// Create a copy of ProfileState
   /// with the given fields replaced by the non-null parameter values.
@@ -252,22 +209,13 @@ class _$ProfileStateImpl implements _ProfileState {
 
 abstract class _ProfileState implements ProfileState {
   const factory _ProfileState(
-      {final int selectedTabIndex,
-      final bool isLoading,
-      final String? error,
-      final Profile? profile,
+      {final ProfileViewDetailed? profile,
       final bool isEarlySupporter,
       final bool showAuthPrompt,
       final String? currentViewDid}) = _$ProfileStateImpl;
 
   @override
-  int get selectedTabIndex;
-  @override
-  bool get isLoading;
-  @override
-  String? get error;
-  @override
-  Profile? get profile;
+  ProfileViewDetailed? get profile;
   @override
   bool get isEarlySupporter;
   @override

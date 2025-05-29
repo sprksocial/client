@@ -2,7 +2,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/network/data/models/actor_models.dart' as actor_models; // For Profile
 import 'package:sparksocial/src/core/routing/app_router.dart'; // For EditProfileRoute, LoginRoute
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
@@ -12,7 +11,6 @@ import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_header.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_tabs.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_tab_content.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/early_supporter_sheet.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_menu_sheet.dart';
 import 'package:get_it/get_it.dart';
@@ -29,7 +27,9 @@ class ProfilePage extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => SafeArea(child: Padding(padding: const EdgeInsets.only(top: 20), child: EarlySupporterSheet())),
+      builder: (context) => SafeArea(
+        child: Padding(padding: const EdgeInsets.only(top: 20), child: EarlySupporterSheet()),
+      ),
     );
   }
 
@@ -38,55 +38,19 @@ class ProfilePage extends ConsumerWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder:
-          (bContext) => SafeArea(
-            // Use bContext to avoid context conflict
-            child: Padding(
-              padding: const EdgeInsets.only(top: 20),
-              child: ProfileMenuSheet(
-                onLogout: () {
-                  context.router.maybePop(bContext); // Close sheet first
-                  ref.read(profileNotifierProvider(did: did).notifier).logout();
-                  AutoRouter.of(context).replaceAll([const SplashRoute()]); // Navigate to splash or home after logout
-                },
-              ),
-            ),
-          ),
-    );
-  }
-
-  void _handleReportProfile(BuildContext context, WidgetRef ref, actor_models.Profile profile) {
-    final notifier = ref.read(profileNotifierProvider(did: did).notifier);
-    showDialog(
-      context: context,
-      builder:
-          (dContext) => ReportDialog(
-            // postUri & postCid for profiles are a bit different.
-            // For profiles, the subject is the DID itself.
-            postUri: 'at://${profile.did}/app.bsky.actor.profile/self', // Or just profile.did
-            postCid: profile.did, // Using DID as a placeholder, actual CID not usually needed for profile report subject
-            onSubmit: (subject, reasonType, reason, service) async {
-              try {
-                // The ReportDialog gives reasonType as atp.ModerationReasonType
-                // String reasonTypeString = (reasonType as dynamic).value; // Adapt if ReportDialog gives different type
-
-                final success = await notifier.createReport(
-                  did: profile.did,
-                  reasonType: reasonType, // Pass the enum directly
-                  reason: reason,
-                );
-                if (success) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
-                  }
-                }
-              } catch (e) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
-                }
-              }
+      builder: (bContext) => SafeArea(
+        // Use bContext to avoid context conflict
+        child: Padding(
+          padding: const EdgeInsets.only(top: 20),
+          child: ProfileMenuSheet(
+            onLogout: () {
+              context.router.maybePop(bContext); // Close sheet first
+              ref.read(profileNotifierProvider(did: did).notifier).logout();
+              AutoRouter.of(context).replaceAll([const SplashRoute()]); // Navigate to splash or home after logout
             },
           ),
+        ),
+      ),
     );
   }
 
@@ -100,10 +64,6 @@ class ProfilePage extends ConsumerWidget {
     return profileStateAsync.when(
       data: (state) {
         if (state.showAuthPrompt) {
-          // Option 1: Navigate to a dedicated AuthPromptPage route
-          // AutoRouter.of(context).push(AuthPromptRoute(onClose: () => notifier.hideAuthPrompt()));
-          // Option 2: Show AuthPromptScreen as a modal or inline (less ideal for full page)
-          // For now, replicating old behavior:
           context.router.push(AuthPromptRoute(onClose: () => notifier.hideAuthPrompt()));
         }
 
@@ -125,12 +85,6 @@ class ProfilePage extends ConsumerWidget {
         final authRepository = ref.read(authRepositoryProvider);
         final isAuthenticated = authRepository.isAuthenticated;
 
-        final tabContentWidget = ProfileTabContent(
-          selectedIndex: state.selectedTabIndex,
-          isAuthenticated: isAuthenticated,
-          onLoginPressed: () => AutoRouter.of(context).push(LoginRoute()),
-          did: profile.did,
-        );
 
         return Scaffold(
           backgroundColor: theme.scaffoldBackgroundColor,
@@ -140,8 +94,9 @@ class ProfilePage extends ConsumerWidget {
               profile.displayName ?? profile.handle, // handle is not nullable in core Profile model
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.textTheme.titleLarge?.color),
             ),
-            backgroundColor:
-                theme.brightness == Brightness.dark ? colorScheme.surfaceContainerHighest : colorScheme.surface, // Example colors
+            backgroundColor: theme.brightness == Brightness.dark
+                ? colorScheme.surfaceContainerHighest
+                : colorScheme.surface, // Example colors
             elevation: 0,
             actions: [
               if (isCurrentUser)
@@ -158,7 +113,40 @@ class ProfilePage extends ConsumerWidget {
                   padding: const EdgeInsets.only(right: 8.0),
                   child: MenuActionButton(
                     // Assuming this widget is fine
-                    onPressed: () => _handleReportProfile(context, ref, profile),
+                    onPressed: () => showDialog(
+                      context: context,
+                      useRootNavigator: false,
+                      builder: (dContext) => ReportDialog(
+                        // postUri & postCid for profiles are a bit different.
+                        // For profiles, the subject is the DID itself.
+                        postUri: 'at://${profile.did}/app.bsky.actor.profile/self', // Or just profile.did
+                        postCid:
+                            profile.did, // Using DID as a placeholder, actual CID not usually needed for profile report subject
+                        onSubmit: (subject, reasonType, reason, service) async {
+                          try {
+                            // The ReportDialog gives reasonType as atp.ModerationReasonType
+                            // String reasonTypeString = (reasonType as dynamic).value; // Adapt if ReportDialog gives different type
+
+                            final success = await notifier.createReport(
+                              did: profile.did,
+                              reasonType: reasonType, // Pass the enum directly
+                              reason: reason,
+                            );
+                            if (success) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(
+                                  context,
+                                ).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+                              }
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+                            }
+                          }
+                        },
+                      ),
+                    ),
                     backgroundColor: colorScheme.onSurface.withAlpha(30), // Example adaptive color
                     isProfile: true,
                   ),
@@ -196,7 +184,7 @@ class ProfilePage extends ConsumerWidget {
                       },
                       onShareTap: () => _logger.i('Share profile tapped for ${profile.did}'),
                       onFollowTap: () async {
-                        final initialFollowingStateForSnackbar = profile.isFollowing; // Capture before action
+                        final initialFollowingStateForSnackbar = profile.viewer?.following; // Capture before action
                         try {
                           await notifier.toggleFollow();
                           // Read the latest state AFTER the toggleFollow has completed and updated the state.
@@ -206,12 +194,12 @@ class ProfilePage extends ConsumerWidget {
                           // and auth prompt was not the primary outcome.
                           if (latestProfileState != null &&
                               !latestProfileState.showAuthPrompt &&
-                              latestProfileState.profile?.isFollowing != initialFollowingStateForSnackbar) {
+                              latestProfileState.profile?.viewer?.following != initialFollowingStateForSnackbar) {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    latestProfileState.profile?.isFollowing == true
+                                    latestProfileState.profile?.viewer?.following != null
                                         ? 'Followed successfully'
                                         : 'Unfollowed successfully',
                                   ),
@@ -228,10 +216,9 @@ class ProfilePage extends ConsumerWidget {
                           }
                         }
                       },
-                      onSettingsTap:
-                          () => context.router.push(EditProfileRoute(profile: profile)).then((_) {
-                            notifier.refreshProfile();
-                          }),
+                      onSettingsTap: () => context.router.push(EditProfileRoute(profile: profile)).then((_) {
+                        notifier.refreshProfile();
+                      }),
                     ),
                   ),
                   SliverPersistentHeader(
@@ -251,16 +238,17 @@ class ProfilePage extends ConsumerWidget {
           ),
         );
       },
-      loading:
-          () => Scaffold(backgroundColor: theme.scaffoldBackgroundColor, body: const Center(child: CircularProgressIndicator())),
-      error:
-          (error, stackTrace) => ErrorScreen(
-            context: context,
-            message: error.toString(),
-            stackTrace: stackTrace,
-            onRetry: () => notifier.refreshProfile(),
-            theme: theme,
-          ),
+      loading: () => Scaffold(
+        backgroundColor: theme.scaffoldBackgroundColor,
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, stackTrace) => ErrorScreen(
+        context: context,
+        message: error.toString(),
+        stackTrace: stackTrace,
+        onRetry: () => notifier.refreshProfile(),
+        theme: theme,
+      ),
     );
   }
 }
@@ -290,8 +278,9 @@ class ErrorScreen extends StatelessWidget {
           'Profile',
           style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.textTheme.titleLarge?.color),
         ),
-        backgroundColor:
-            theme.brightness == Brightness.dark ? theme.colorScheme.surfaceContainerHighest : theme.colorScheme.surface,
+        backgroundColor: theme.brightness == Brightness.dark
+            ? theme.colorScheme.surfaceContainerHighest
+            : theme.colorScheme.surface,
         elevation: 0,
       ),
       body: Center(

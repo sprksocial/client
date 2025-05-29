@@ -38,6 +38,10 @@ class ActorRepositoryImpl implements ActorRepository {
         to: (jsonMap) => jsonMap,
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
+      if (result.status != HttpStatus.ok) {
+        _logger.e('Failed to retrieve profile for DID: $did');
+        throw Exception('Failed to retrieve profile for DID: $did');
+      }
       _logger.d('Profile retrieved successfully');
       return ProfileViewDetailed.fromJson(result.data as Map<String, dynamic>);
     });

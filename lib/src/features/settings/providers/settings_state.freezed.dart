@@ -18,9 +18,8 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$SettingsState {
   bool get feedBlurEnabled => throw _privateConstructorUsedError;
   bool get hideAdultContent => throw _privateConstructorUsedError;
-  Map<Labeler, Map<Label, LabelPreference>> get labelPreferences =>
-      throw _privateConstructorUsedError;
   List<Feed> get feeds => throw _privateConstructorUsedError;
+  int get selectedFeedIndex => throw _privateConstructorUsedError;
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -38,8 +37,8 @@ abstract class $SettingsStateCopyWith<$Res> {
   $Res call(
       {bool feedBlurEnabled,
       bool hideAdultContent,
-      Map<Labeler, Map<Label, LabelPreference>> labelPreferences,
-      List<Feed> feeds});
+      List<Feed> feeds,
+      int selectedFeedIndex});
 }
 
 /// @nodoc
@@ -59,8 +58,8 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
   $Res call({
     Object? feedBlurEnabled = null,
     Object? hideAdultContent = null,
-    Object? labelPreferences = null,
     Object? feeds = null,
+    Object? selectedFeedIndex = null,
   }) {
     return _then(_value.copyWith(
       feedBlurEnabled: null == feedBlurEnabled
@@ -71,14 +70,14 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
           ? _value.hideAdultContent
           : hideAdultContent // ignore: cast_nullable_to_non_nullable
               as bool,
-      labelPreferences: null == labelPreferences
-          ? _value.labelPreferences
-          : labelPreferences // ignore: cast_nullable_to_non_nullable
-              as Map<Labeler, Map<Label, LabelPreference>>,
       feeds: null == feeds
           ? _value.feeds
           : feeds // ignore: cast_nullable_to_non_nullable
               as List<Feed>,
+      selectedFeedIndex: null == selectedFeedIndex
+          ? _value.selectedFeedIndex
+          : selectedFeedIndex // ignore: cast_nullable_to_non_nullable
+              as int,
     ) as $Val);
   }
 }
@@ -94,8 +93,8 @@ abstract class _$$SettingsStateImplCopyWith<$Res>
   $Res call(
       {bool feedBlurEnabled,
       bool hideAdultContent,
-      Map<Labeler, Map<Label, LabelPreference>> labelPreferences,
-      List<Feed> feeds});
+      List<Feed> feeds,
+      int selectedFeedIndex});
 }
 
 /// @nodoc
@@ -113,8 +112,8 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
   $Res call({
     Object? feedBlurEnabled = null,
     Object? hideAdultContent = null,
-    Object? labelPreferences = null,
     Object? feeds = null,
+    Object? selectedFeedIndex = null,
   }) {
     return _then(_$SettingsStateImpl(
       feedBlurEnabled: null == feedBlurEnabled
@@ -125,14 +124,14 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
           ? _value.hideAdultContent
           : hideAdultContent // ignore: cast_nullable_to_non_nullable
               as bool,
-      labelPreferences: null == labelPreferences
-          ? _value._labelPreferences
-          : labelPreferences // ignore: cast_nullable_to_non_nullable
-              as Map<Labeler, Map<Label, LabelPreference>>,
       feeds: null == feeds
           ? _value._feeds
           : feeds // ignore: cast_nullable_to_non_nullable
               as List<Feed>,
+      selectedFeedIndex: null == selectedFeedIndex
+          ? _value.selectedFeedIndex
+          : selectedFeedIndex // ignore: cast_nullable_to_non_nullable
+              as int,
     ));
   }
 }
@@ -143,15 +142,13 @@ class _$SettingsStateImpl implements _SettingsState {
   const _$SettingsStateImpl(
       {this.feedBlurEnabled = false,
       this.hideAdultContent = true,
-      final Map<Labeler, Map<Label, LabelPreference>> labelPreferences =
-          const {},
       final List<Feed> feeds = const [
         Feed.hardCoded(hardCodedFeed: HardCodedFeed.following),
         Feed.hardCoded(hardCodedFeed: HardCodedFeed.forYou),
         Feed.hardCoded(hardCodedFeed: HardCodedFeed.latestSprk)
-      ]})
-      : _labelPreferences = labelPreferences,
-        _feeds = feeds;
+      ],
+      this.selectedFeedIndex = 0})
+      : _feeds = feeds;
 
   @override
   @JsonKey()
@@ -159,15 +156,6 @@ class _$SettingsStateImpl implements _SettingsState {
   @override
   @JsonKey()
   final bool hideAdultContent;
-  final Map<Labeler, Map<Label, LabelPreference>> _labelPreferences;
-  @override
-  @JsonKey()
-  Map<Labeler, Map<Label, LabelPreference>> get labelPreferences {
-    if (_labelPreferences is EqualUnmodifiableMapView) return _labelPreferences;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_labelPreferences);
-  }
-
   final List<Feed> _feeds;
   @override
   @JsonKey()
@@ -178,8 +166,12 @@ class _$SettingsStateImpl implements _SettingsState {
   }
 
   @override
+  @JsonKey()
+  final int selectedFeedIndex;
+
+  @override
   String toString() {
-    return 'SettingsState(feedBlurEnabled: $feedBlurEnabled, hideAdultContent: $hideAdultContent, labelPreferences: $labelPreferences, feeds: $feeds)';
+    return 'SettingsState(feedBlurEnabled: $feedBlurEnabled, hideAdultContent: $hideAdultContent, feeds: $feeds, selectedFeedIndex: $selectedFeedIndex)';
   }
 
   @override
@@ -191,9 +183,9 @@ class _$SettingsStateImpl implements _SettingsState {
                 other.feedBlurEnabled == feedBlurEnabled) &&
             (identical(other.hideAdultContent, hideAdultContent) ||
                 other.hideAdultContent == hideAdultContent) &&
-            const DeepCollectionEquality()
-                .equals(other._labelPreferences, _labelPreferences) &&
-            const DeepCollectionEquality().equals(other._feeds, _feeds));
+            const DeepCollectionEquality().equals(other._feeds, _feeds) &&
+            (identical(other.selectedFeedIndex, selectedFeedIndex) ||
+                other.selectedFeedIndex == selectedFeedIndex));
   }
 
   @override
@@ -201,8 +193,8 @@ class _$SettingsStateImpl implements _SettingsState {
       runtimeType,
       feedBlurEnabled,
       hideAdultContent,
-      const DeepCollectionEquality().hash(_labelPreferences),
-      const DeepCollectionEquality().hash(_feeds));
+      const DeepCollectionEquality().hash(_feeds),
+      selectedFeedIndex);
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -217,17 +209,17 @@ abstract class _SettingsState implements SettingsState {
   const factory _SettingsState(
       {final bool feedBlurEnabled,
       final bool hideAdultContent,
-      final Map<Labeler, Map<Label, LabelPreference>> labelPreferences,
-      final List<Feed> feeds}) = _$SettingsStateImpl;
+      final List<Feed> feeds,
+      final int selectedFeedIndex}) = _$SettingsStateImpl;
 
   @override
   bool get feedBlurEnabled;
   @override
   bool get hideAdultContent;
   @override
-  Map<Labeler, Map<Label, LabelPreference>> get labelPreferences;
-  @override
   List<Feed> get feeds;
+  @override
+  int get selectedFeedIndex;
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.

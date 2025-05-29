@@ -12,7 +12,7 @@ import 'package:get_it/get_it.dart';
 /// Edit profile page that allows users to update their profile information
 @RoutePage()
 class EditProfilePage extends ConsumerWidget {
-  final Profile profile;
+  final ProfileViewDetailed profile;
 
   const EditProfilePage({super.key, required this.profile});
 

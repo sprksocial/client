@@ -1,3 +1,4 @@
+import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 
 /// Interface for profile-related operations
@@ -6,7 +7,7 @@ abstract class ProfileRepository {
   /// 
   /// [did] The DID of the profile to get
   /// [forceRefresh] Whether to force a refresh from the network
-  Future<Profile?> getProfile(String did, {bool forceRefresh = false});
+  Future<ProfileViewDetailed?> getProfile(String did, {bool forceRefresh = false});
   
   /// Get profile videos from Spark
   /// 

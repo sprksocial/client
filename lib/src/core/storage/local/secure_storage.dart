@@ -108,7 +108,7 @@ class SecureStorage implements LocalStorageInterface {
   }
 
   @override
-  Future<void> setObject<T>(String key, T value, T Function(Map<String, dynamic> json) fromJson) async {
+  Future<void> setObject<T>(String key, T value) async {
     if (value == null) {
       await remove(key);
       return;
@@ -120,14 +120,14 @@ class SecureStorage implements LocalStorageInterface {
   }
 
   @override
-  Future<T?> getObject<T>(String key, T Function(Map<String, dynamic> json) fromJson) async {
+  Future<T?> getObject<T>(String key) async {
     try {
       final jsonString = await getString(key);
       if (jsonString == null) {
         return null;
       }
       try {
-        return fromJson(jsonDecode(jsonString) as Map<String, dynamic>);
+        return jsonDecode(jsonString) as T;
       } catch (e) {
         return null;
       }

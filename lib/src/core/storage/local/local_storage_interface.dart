@@ -32,10 +32,10 @@ abstract class LocalStorageInterface {
   Future<List<String>?> getStringList(String key);
 
   /// Store any object that can be serialized to JSON
-  Future<void> setObject<T>(String key, T value, T Function(Map<String, dynamic> json) fromJson);
+  Future<void> setObject<T>(String key, T value);
 
   /// Retrieve and deserialize a JSON object
-  Future<T?> getObject<T>(String key, T Function(Map<String, dynamic> json) fromJson);
+  Future<T?> getObject<T>(String key);
 
   /// Check if key exists in storage
   Future<bool> containsKey(String key);

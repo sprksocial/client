@@ -647,13 +647,14 @@ class __$$ProfileViewBasicImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ProfileViewBasicImpl implements _ProfileViewBasic {
+class _$ProfileViewBasicImpl extends _ProfileViewBasic {
   const _$ProfileViewBasicImpl(
       {required this.did,
       required this.handle,
       this.displayName,
       @AtUriConverter() this.avatar,
-      this.viewer});
+      this.viewer})
+      : super._();
 
   factory _$ProfileViewBasicImpl.fromJson(Map<String, dynamic> json) =>
       _$$ProfileViewBasicImplFromJson(json);
@@ -711,13 +712,14 @@ class _$ProfileViewBasicImpl implements _ProfileViewBasic {
   }
 }
 
-abstract class _ProfileViewBasic implements ProfileViewBasic {
+abstract class _ProfileViewBasic extends ProfileViewBasic {
   const factory _ProfileViewBasic(
       {required final String did,
       required final String handle,
       final String? displayName,
       @AtUriConverter() final AtUri? avatar,
       final ActorViewer? viewer}) = _$ProfileViewBasicImpl;
+  const _ProfileViewBasic._() : super._();
 
   factory _ProfileViewBasic.fromJson(Map<String, dynamic> json) =
       _$ProfileViewBasicImpl.fromJson;
@@ -935,7 +937,7 @@ class __$$ProfileViewImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ProfileViewImpl implements _ProfileView {
+class _$ProfileViewImpl extends _ProfileView {
   const _$ProfileViewImpl(
       {required this.did,
       required this.handle,
@@ -944,7 +946,8 @@ class _$ProfileViewImpl implements _ProfileView {
       @AtUriConverter() this.avatar,
       this.viewer,
       final List<Label>? labels})
-      : _labels = labels;
+      : _labels = labels,
+        super._();
 
   factory _$ProfileViewImpl.fromJson(Map<String, dynamic> json) =>
       _$$ProfileViewImplFromJson(json);
@@ -1023,7 +1026,7 @@ class _$ProfileViewImpl implements _ProfileView {
   }
 }
 
-abstract class _ProfileView implements ProfileView {
+abstract class _ProfileView extends ProfileView {
   const factory _ProfileView(
       {required final String did,
       required final String handle,
@@ -1032,6 +1035,7 @@ abstract class _ProfileView implements ProfileView {
       @AtUriConverter() final AtUri? avatar,
       final ActorViewer? viewer,
       final List<Label>? labels}) = _$ProfileViewImpl;
+  const _ProfileView._() : super._();
 
   factory _ProfileView.fromJson(Map<String, dynamic> json) =
       _$ProfileViewImpl.fromJson;
@@ -1338,7 +1342,7 @@ class __$$ProfileViewDetailedImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ProfileViewDetailedImpl implements _ProfileViewDetailed {
+class _$ProfileViewDetailedImpl extends _ProfileViewDetailed {
   const _$ProfileViewDetailedImpl(
       {required this.did,
       required this.handle,
@@ -1352,7 +1356,8 @@ class _$ProfileViewDetailedImpl implements _ProfileViewDetailed {
       this.viewer,
       final List<Label>? labels,
       this.pinnedPost})
-      : _labels = labels;
+      : _labels = labels,
+        super._();
 
   factory _$ProfileViewDetailedImpl.fromJson(Map<String, dynamic> json) =>
       _$$ProfileViewDetailedImplFromJson(json);
@@ -1459,7 +1464,7 @@ class _$ProfileViewDetailedImpl implements _ProfileViewDetailed {
   }
 }
 
-abstract class _ProfileViewDetailed implements ProfileViewDetailed {
+abstract class _ProfileViewDetailed extends ProfileViewDetailed {
   const factory _ProfileViewDetailed(
       {required final String did,
       required final String handle,
@@ -1473,6 +1478,7 @@ abstract class _ProfileViewDetailed implements ProfileViewDetailed {
       final ActorViewer? viewer,
       final List<Label>? labels,
       final StrongRef? pinnedPost}) = _$ProfileViewDetailedImpl;
+  const _ProfileViewDetailed._() : super._();
 
   factory _ProfileViewDetailed.fromJson(Map<String, dynamic> json) =
       _$ProfileViewDetailedImpl.fromJson;

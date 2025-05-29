@@ -6,10 +6,7 @@ part 'profile_state.freezed.dart';
 @freezed
 class ProfileState with _$ProfileState {
   const factory ProfileState({
-    @Default(0) int selectedTabIndex,
-    @Default(true) bool isLoading,
-    String? error,
-    Profile? profile,
+    ProfileViewDetailed? profile,
     @Default(false) bool isEarlySupporter,
     @Default(false) bool showAuthPrompt,
     String? currentViewDid, // To store the DID being viewed or null for current user's own profile

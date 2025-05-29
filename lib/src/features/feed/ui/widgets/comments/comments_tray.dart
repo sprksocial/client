@@ -7,27 +7,7 @@ import 'package:sparksocial/src/features/feed/providers/comments_tray_provider.d
 import 'comment_input.dart';
 import 'comment_item.dart';
 
-/// Shows the comments tray as a modal bottom sheet.
-/// This utility function can be used from any screen that needs to display comments.
-void showCommentsTray({
-  required BuildContext context,
-  required String postUri,
-  required String postCid,
-  required int commentCount,
-  required bool isSprk,
-}) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
-    useSafeArea: true,
-    enableDrag: true,
-    isDismissible: true,
-
-    builder: (context) => CommentsTray(postUri: postUri, postCid: postCid, commentCount: commentCount, isSprk: isSprk),
-  );
-}
-
+@RoutePage()
 class CommentsTray extends ConsumerStatefulWidget {
   final String postUri;
   final String postCid;

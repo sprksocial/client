@@ -7,11 +7,9 @@ class StorageKeys {
   /// Settings
   static const String feedBlurKey = 'feed_blur_enabled';
   static const String hideAdultContentKey = 'hide_adult_content';
-  static const String followingFeedEnabledKey = 'following_feed_enabled';
-  static const String forYouFeedEnabledKey = 'for_you_feed_enabled';
-  static const String latestFeedEnabledKey = 'latest_feed_enabled';
-  static const String selectedFeedTypeKey = 'selected_feed_type';
 
+  static const String feedsKey = 'feeds';
+  static const String selectedFeedIndexKey = 'selected_feed_index';
 
   /// Labelers
   static const String followedLabelers = 'followed_labelers';

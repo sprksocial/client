@@ -26,6 +26,19 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
+    CommentsTray.name: (routeData) {
+      final args = routeData.argsAs<CommentsTrayArgs>();
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: CommentsTray(
+          key: args.key,
+          postUri: args.postUri,
+          postCid: args.postCid,
+          commentCount: args.commentCount,
+          isSprk: args.isSprk,
+        ),
+      );
+    },
     EditProfileRoute.name: (routeData) {
       final args = routeData.argsAs<EditProfileRouteArgs>();
       return AutoRoutePage<dynamic>(
@@ -42,6 +55,12 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const EmptyPage(),
       );
     },
+    FeedListRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const FeedListPage(),
+      );
+    },
     FeedRoute.name: (routeData) {
       final args = routeData.argsAs<FeedRouteArgs>();
       return AutoRoutePage<dynamic>(
@@ -56,15 +75,10 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
-    FeedSettingsTabRoute.name: (routeData) {
-      final args = routeData.argsAs<FeedSettingsTabRouteArgs>();
+    FeedSettingsRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
-        child: FeedSettingsTabPage(
-          key: args.key,
-          feedSettings: args.feedSettings,
-          onToggleChanged: args.onToggleChanged,
-        ),
+        child: const FeedSettingsPage(),
       );
     },
     FeedsRoute.name: (routeData) {
@@ -145,6 +159,12 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const SplashPage(),
       );
     },
+    UserProfileRoute.name: (routeData) {
+      return AutoRoutePage<dynamic>(
+        routeData: routeData,
+        child: const UserProfilePage(),
+      );
+    },
   };
 }
 
@@ -187,11 +207,64 @@ class AuthPromptRouteArgs {
 }
 
 /// generated route for
+/// [CommentsTray]
+class CommentsTray extends PageRouteInfo<CommentsTrayArgs> {
+  CommentsTray({
+    Key? key,
+    required String postUri,
+    required String postCid,
+    required int commentCount,
+    required bool isSprk,
+    List<PageRouteInfo>? children,
+  }) : super(
+          CommentsTray.name,
+          args: CommentsTrayArgs(
+            key: key,
+            postUri: postUri,
+            postCid: postCid,
+            commentCount: commentCount,
+            isSprk: isSprk,
+          ),
+          initialChildren: children,
+        );
+
+  static const String name = 'CommentsTray';
+
+  static const PageInfo<CommentsTrayArgs> page =
+      PageInfo<CommentsTrayArgs>(name);
+}
+
+class CommentsTrayArgs {
+  const CommentsTrayArgs({
+    this.key,
+    required this.postUri,
+    required this.postCid,
+    required this.commentCount,
+    required this.isSprk,
+  });
+
+  final Key? key;
+
+  final String postUri;
+
+  final String postCid;
+
+  final int commentCount;
+
+  final bool isSprk;
+
+  @override
+  String toString() {
+    return 'CommentsTrayArgs{key: $key, postUri: $postUri, postCid: $postCid, commentCount: $commentCount, isSprk: $isSprk}';
+  }
+}
+
+/// generated route for
 /// [EditProfilePage]
 class EditProfileRoute extends PageRouteInfo<EditProfileRouteArgs> {
   EditProfileRoute({
     Key? key,
-    required InvalidType profile,
+    required ProfileViewDetailed profile,
     List<PageRouteInfo>? children,
   }) : super(
           EditProfileRoute.name,
@@ -216,7 +289,7 @@ class EditProfileRouteArgs {
 
   final Key? key;
 
-  final InvalidType profile;
+  final ProfileViewDetailed profile;
 
   @override
   String toString() {
@@ -234,6 +307,20 @@ class EmptyRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'EmptyRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [FeedListPage]
+class FeedListRoute extends PageRouteInfo<void> {
+  const FeedListRoute({List<PageRouteInfo>? children})
+      : super(
+          FeedListRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'FeedListRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }
@@ -296,52 +383,17 @@ class FeedRouteArgs {
 }
 
 /// generated route for
-/// [FeedSettingsTabPage]
-class FeedSettingsTabRoute extends PageRouteInfo<FeedSettingsTabRouteArgs> {
-  FeedSettingsTabRoute({
-    Key? key,
-    required List<FeedSetting> feedSettings,
-    required dynamic Function(
-      String,
-      bool,
-    ) onToggleChanged,
-    List<PageRouteInfo>? children,
-  }) : super(
-          FeedSettingsTabRoute.name,
-          args: FeedSettingsTabRouteArgs(
-            key: key,
-            feedSettings: feedSettings,
-            onToggleChanged: onToggleChanged,
-          ),
+/// [FeedSettingsPage]
+class FeedSettingsRoute extends PageRouteInfo<void> {
+  const FeedSettingsRoute({List<PageRouteInfo>? children})
+      : super(
+          FeedSettingsRoute.name,
           initialChildren: children,
         );
 
-  static const String name = 'FeedSettingsTabRoute';
+  static const String name = 'FeedSettingsRoute';
 
-  static const PageInfo<FeedSettingsTabRouteArgs> page =
-      PageInfo<FeedSettingsTabRouteArgs>(name);
-}
-
-class FeedSettingsTabRouteArgs {
-  const FeedSettingsTabRouteArgs({
-    this.key,
-    required this.feedSettings,
-    required this.onToggleChanged,
-  });
-
-  final Key? key;
-
-  final List<FeedSetting> feedSettings;
-
-  final dynamic Function(
-    String,
-    bool,
-  ) onToggleChanged;
-
-  @override
-  String toString() {
-    return 'FeedSettingsTabRouteArgs{key: $key, feedSettings: $feedSettings, onToggleChanged: $onToggleChanged}';
-  }
+  static const PageInfo<void> page = PageInfo<void>(name);
 }
 
 /// generated route for
@@ -553,6 +605,20 @@ class SplashRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'SplashRoute';
+
+  static const PageInfo<void> page = PageInfo<void>(name);
+}
+
+/// generated route for
+/// [UserProfilePage]
+class UserProfileRoute extends PageRouteInfo<void> {
+  const UserProfileRoute({List<PageRouteInfo>? children})
+      : super(
+          UserProfileRoute.name,
+          initialChildren: children,
+        );
+
+  static const String name = 'UserProfileRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }

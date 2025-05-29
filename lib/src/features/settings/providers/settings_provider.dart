@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import '../data/models/label_preference.dart';
 import 'settings_state.dart';
 import '../data/repositories/settings_repository.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
@@ -30,16 +29,9 @@ class Settings extends _$Settings {
   Future<void> _loadSettings() async {
     final feedBlurEnabled = await _repository.getFeedBlurEnabled();
     final hideAdultContent = await _repository.getHideAdultContent();
-    final followedLabelers = await _repository.getFollowedLabelers();
-    final labelPreferences = await _repository.getLabelPreferences();
+    final feeds = await _repository.getFeeds();
 
-
-    state = state.copyWith(
-      feedBlurEnabled: feedBlurEnabled,
-      hideAdultContent: hideAdultContent,
-      followedLabelers: followedLabelers,
-      labelPreferences: labelPreferences,
-    );
+    state = state.copyWith(feedBlurEnabled: feedBlurEnabled, hideAdultContent: hideAdultContent, feeds: feeds);
   }
 
   /// Sets feed blur setting
@@ -54,137 +46,24 @@ class Settings extends _$Settings {
     state = state.copyWith(hideAdultContent: value);
   }
 
-  /// Sets followed labelers list
-  Future<void> setFollowedLabelers(List<String> labelerDids) async {
-    await _repository.setFollowedLabelers(labelerDids);
-    state = state.copyWith(followedLabelers: labelerDids);
+  /// Sets feeds list
+  Future<void> setFeeds(List<Feed> feeds) async {
+    await _repository.setFeeds(feeds);
+    state = state.copyWith(feeds: feeds);
   }
 
-  /// Adds a labeler to followed labelers list
-  Future<void> addFollowedLabeler(String labelerDid) async {
-    if (!state.followedLabelers.contains(labelerDid)) {
-      final updatedList = [...state.followedLabelers, labelerDid];
-      await _repository.setFollowedLabelers(updatedList);
-      state = state.copyWith(followedLabelers: updatedList);
+  /// Adds a feed to feeds list
+  Future<void> addFeed(Feed feed) async {
+    if (!state.feeds.contains(feed)) {
+      final updatedList = [...state.feeds, feed];
+      await _repository.setFeeds(updatedList);
+      state = state.copyWith(feeds: updatedList);
     }
   }
 
-  /// Removes a labeler from followed labelers list
-  Future<void> removeFollowedLabeler(String labelerDid) async {
-    if (state.followedLabelers.contains(labelerDid)) {
-      final updatedList = state.followedLabelers.where((id) => id != labelerDid).toList();
-      await _repository.setFollowedLabelers(updatedList);
-
-      // Also remove preferences for this labeler
-      await _repository.clearLabelerPreferences(labelerDid);
-
-      // Update state
-      final updatedPrefs = Map<String, Map<String, String>>.from(state.labelPreferences);
-      updatedPrefs.remove(labelerDid);
-
-      state = state.copyWith(followedLabelers: updatedList, labelPreferences: updatedPrefs);
-    }
-  }
-
-  /// Sets a preference for a specific label from a labeler
-  Future<void> setLabelPreference(String labelerDid, String labelValue, LabelPreference preference) async {
-    await _repository.setLabelPreference(labelerDid, labelValue, preference);
-
-    // Update the state
-    final updatedPrefs = Map<String, Map<String, String>>.from(state.labelPreferences);
-    updatedPrefs[labelerDid] ??= {};
-    updatedPrefs[labelerDid]![labelValue] = preference.name;
-
-    state = state.copyWith(labelPreferences: updatedPrefs);
-  }
-
-  /// Removes a preference for a specific label, reverting to the default
-  Future<void> removeLabelPreference(String labelerDid, String labelValue) async {
-    await _repository.removeLabelPreference(labelerDid, labelValue);
-
-    // Update the state
-    if (state.labelPreferences.containsKey(labelerDid)) {
-      final updatedPrefs = Map<String, Map<String, String>>.from(state.labelPreferences);
-      updatedPrefs[labelerDid]?.remove(labelValue);
-
-      state = state.copyWith(labelPreferences: updatedPrefs);
-    }
-  }
-
-  /// Sets preferences in bulk for all labels from a labeler
-  Future<void> setLabelerPreferences(String labelerDid, Map<Label, LabelPreference> preferences) async {
-    // Convert the map of enums to strings
-    final stringPrefs = preferences.map((key, value) => MapEntry(key, value.name));
-
-    // Create a new map with the updated preferences
-    final updatedPrefs = Map<String, Map<Label, String>>.from(state.labelPreferences);
-    updatedPrefs[labelerDid] = stringPrefs;
-
-    // Update repository
-    await _repository.saveLabelPreferences(updatedPrefs);
-
-    // Update state
-    state = state.copyWith(labelPreferences: updatedPrefs);
-  }
-
-  /// Clears all preferences for a specific labeler
-  Future<void> clearLabelerPreferences(String labelerDid) async {
-    await _repository.clearLabelerPreferences(labelerDid);
-
-    // Update state
-    if (state.labelPreferences.containsKey(labelerDid)) {
-      final updatedPrefs = Map<String, Map<String, String>>.from(state.labelPreferences);
-      updatedPrefs.remove(labelerDid);
-
-      state = state.copyWith(labelPreferences: updatedPrefs);
-    }
-  }
-}
-
-/// Convenience extension methods to get label preferences
-extension SettingsLabelPreferences on SettingsState {
-  /// Gets the preference for a specific label from a labeler
-  /// Returns null if no preference is defined
-  LabelPreference? getLabelPreference(String labelerDid, String labelValue) {
-    if (isLoading || !labelPreferences.containsKey(labelerDid)) {
-      return null;
-    }
-
-    final prefValue = labelPreferences[labelerDid]?[labelValue];
-    if (prefValue == null) return null;
-
-    return LabelPreference.values.firstWhere(
-      (e) => e.name == prefValue,
-      orElse: () => LabelPreference.warn, // default
-    );
-  }
-
-  /// Gets the preference for a specific label, or returns the default setting from the label definition
-  LabelPreference getLabelPreferenceOrDefault(String labelerDid, String labelValue, Map<String, dynamic>? labelDefinition) {
-    // First try to get user's explicit preference
-    final userPreference = getLabelPreference(labelerDid, labelValue);
-    if (userPreference != null) {
-      return userPreference;
-    }
-
-    // If no user preference and we have a label definition with defaultSetting
-    if (labelDefinition != null && labelDefinition.containsKey('defaultSetting')) {
-      final defaultSetting = labelDefinition['defaultSetting'] as String;
-
-      // Map the defaultSetting string to LabelPreference
-      switch (defaultSetting) {
-        case 'show':
-          return LabelPreference.show;
-        case 'hide':
-          return LabelPreference.hide;
-        case 'warn':
-          return LabelPreference.warn;
-        default:
-          return LabelPreference.warn; // Fallback default
-      }
-    }
-
-    // Final fallback
-    return LabelPreference.warn;
+  /// Sets selected feed index
+  Future<void> setSelectedFeedIndex(int index) async {
+    await _repository.setSelectedFeedIndex(index);
+    state = state.copyWith(selectedFeedIndex: index);
   }
 }
