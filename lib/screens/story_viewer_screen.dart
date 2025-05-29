@@ -2,42 +2,118 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
+import '../services/story_view_service.dart';
 import '../utils/app_colors.dart';
 
 class StoryViewerScreen extends StatefulWidget {
-  final Map<String, dynamic> story;
+  final List<Map<String, dynamic>> stories;
 
-  const StoryViewerScreen({super.key, required this.story});
+  const StoryViewerScreen({super.key, required this.stories});
 
   @override
   State<StoryViewerScreen> createState() => _StoryViewerScreenState();
 }
 
-class _StoryViewerScreenState extends State<StoryViewerScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _progressController;
+class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProviderStateMixin {
+  late List<AnimationController> _progressControllers;
+  int _currentStoryIndex = 0;
 
   @override
   void initState() {
     super.initState();
 
-    _progressController = AnimationController(duration: const Duration(seconds: 5), vsync: this);
+    _progressControllers = List.generate(
+      widget.stories.length,
+      (index) => AnimationController(duration: const Duration(seconds: 5), vsync: this),
+    );
 
-    _progressController.forward().then((_) {
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-    });
+    _startCurrentStory();
   }
 
   @override
   void dispose() {
-    _progressController.dispose();
+    _markStoriesAsViewedUpToCurrent();
+
+    for (final controller in _progressControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
-  String _getStoryImageUrl() {
-    if (widget.story.containsKey('embed') && widget.story['embed'] != null) {
-      final storyEmbed = widget.story['embed'] as Map<String, dynamic>;
+  void _startCurrentStory() {
+    if (_currentStoryIndex < _progressControllers.length) {
+      _markCurrentStoryAsViewed();
+      _progressControllers[_currentStoryIndex].forward().then((_) {
+        if (mounted) {
+          _nextStory();
+        }
+      });
+    }
+  }
+
+  void _nextStory() {
+    if (_currentStoryIndex < widget.stories.length - 1) {
+      setState(() {
+        _currentStoryIndex++;
+      });
+      _startCurrentStory();
+    } else {
+      Navigator.of(context).pop();
+    }
+  }
+
+  void _previousStory() {
+    if (_currentStoryIndex > 0) {
+      _progressControllers[_currentStoryIndex].reset();
+      setState(() {
+        _currentStoryIndex--;
+      });
+      _progressControllers[_currentStoryIndex].reset();
+      _startCurrentStory();
+    }
+  }
+
+  void _pauseStory() {
+    _progressControllers[_currentStoryIndex].stop();
+  }
+
+  void _resumeStory() {
+    if (_progressControllers[_currentStoryIndex].status != AnimationStatus.completed) {
+      _progressControllers[_currentStoryIndex].forward().then((_) {
+        if (mounted) {
+          _nextStory();
+        }
+      });
+    }
+  }
+
+  void _markCurrentStoryAsViewed() {
+    if (_currentStoryIndex < widget.stories.length) {
+      final currentStory = widget.stories[_currentStoryIndex];
+      final storyUri = currentStory['uri'] as String?;
+      if (storyUri != null) {
+        StoryViewService.instance.markStoryAsViewed(storyUri);
+      }
+    }
+  }
+
+  void _markStoriesAsViewedUpToCurrent() {
+    final viewedStoryUris = <String>[];
+    for (int i = 0; i <= _currentStoryIndex && i < widget.stories.length; i++) {
+      final story = widget.stories[i];
+      final storyUri = story['uri'] as String?;
+      if (storyUri != null) {
+        viewedStoryUris.add(storyUri);
+      }
+    }
+    if (viewedStoryUris.isNotEmpty) {
+      StoryViewService.instance.markStoriesAsViewed(viewedStoryUris);
+    }
+  }
+
+  String _getStoryImageUrl(Map<String, dynamic> story) {
+    if (story.containsKey('embed') && story['embed'] != null) {
+      final storyEmbed = story['embed'] as Map<String, dynamic>;
       if (storyEmbed['\$type'] == 'so.sprk.embed.images#view' && storyEmbed.containsKey('images')) {
         final images = storyEmbed['images'] as List<dynamic>;
         if (images.isNotEmpty) {
@@ -50,13 +126,13 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with SingleTicker
       }
     }
 
-    final author = widget.story['author'] as Map<String, dynamic>;
+    final author = story['author'] as Map<String, dynamic>;
     return author['avatar'] as String? ?? '';
   }
 
-  String _getTimeAgo() {
+  String _getTimeAgo(Map<String, dynamic> story) {
     try {
-      final record = widget.story['record'] as Map<String, dynamic>?;
+      final record = story['record'] as Map<String, dynamic>?;
       if (record != null && record.containsKey('createdAt')) {
         final createdAt = DateTime.parse(record['createdAt'] as String);
         final now = DateTime.now();
@@ -80,17 +156,30 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
-    final author = widget.story['author'] as Map<String, dynamic>;
+    if (widget.stories.isEmpty) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: SafeArea(
+          child: Center(
+            child: Text('No stories available', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 16)),
+          ),
+        ),
+      );
+    }
+
+    final currentStory = widget.stories[_currentStoryIndex];
+    final author = currentStory['author'] as Map<String, dynamic>;
     final username = author['displayName'] as String? ?? author['handle'] as String? ?? 'Unknown';
     final avatarUrl = author['avatar'] as String? ?? '';
-    final storyImageUrl = _getStoryImageUrl();
-    final timeAgo = _getTimeAgo();
+    final storyImageUrl = _getStoryImageUrl(currentStory);
+    final timeAgo = _getTimeAgo(currentStory);
 
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
         child: GestureDetector(
-          onTap: () => Navigator.of(context).pop(),
+          onLongPressStart: (_) => _pauseStory(),
+          onLongPressEnd: (_) => _resumeStory(),
           child: Stack(
             children: [
               Positioned.fill(
@@ -139,16 +228,32 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with SingleTicker
                 top: 8,
                 left: 16,
                 right: 16,
-                child: AnimatedBuilder(
-                  animation: _progressController,
-                  builder: (context, child) {
-                    return LinearProgressIndicator(
-                      value: _progressController.value,
-                      backgroundColor: Colors.white.withValues(alpha: 0.3),
-                      valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                      minHeight: 2,
+                child: Row(
+                  children: List.generate(widget.stories.length, (index) {
+                    return Expanded(
+                      child: Container(
+                        margin: EdgeInsets.only(right: index < widget.stories.length - 1 ? 4 : 0),
+                        child: AnimatedBuilder(
+                          animation: _progressControllers[index],
+                          builder: (context, child) {
+                            double progress = 0.0;
+                            if (index < _currentStoryIndex) {
+                              progress = 1.0;
+                            } else if (index == _currentStoryIndex) {
+                              progress = _progressControllers[index].value;
+                            }
+
+                            return LinearProgressIndicator(
+                              value: progress,
+                              backgroundColor: Colors.white.withValues(alpha: 0.3),
+                              valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                              minHeight: 2,
+                            );
+                          },
+                        ),
+                      ),
                     );
-                  },
+                  }),
                 ),
               ),
               Positioned(
@@ -204,14 +309,14 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with SingleTicker
                 bottom: 0,
                 left: 0,
                 width: MediaQuery.of(context).size.width * 0.3,
-                child: GestureDetector(onTap: () => Navigator.of(context).pop(), child: Container(color: Colors.transparent)),
+                child: GestureDetector(onTap: _previousStory, child: Container(color: Colors.transparent)),
               ),
               Positioned(
                 top: 0,
                 bottom: 0,
                 right: 0,
                 width: MediaQuery.of(context).size.width * 0.3,
-                child: GestureDetector(onTap: () => Navigator.of(context).pop(), child: Container(color: Colors.transparent)),
+                child: GestureDetector(onTap: _nextStory, child: Container(color: Colors.transparent)),
               ),
             ],
           ),

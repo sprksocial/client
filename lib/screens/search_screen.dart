@@ -10,8 +10,8 @@ import '../services/auth_service.dart';
 import '../services/sprk_client.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
-import '../widgets/search/suggested_account_card.dart';
 import '../widgets/search/stories_list.dart';
+import '../widgets/search/suggested_account_card.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -29,7 +29,7 @@ class _SearchScreenState extends State<SearchScreen> {
   String _error = '';
   bool _isSearchActive = false;
 
-  List<dynamic> _apiStories = [];
+  List<dynamic> _storiesByAuthor = [];
   bool _isLoadingStories = false;
   String _storiesError = '';
 
@@ -42,7 +42,17 @@ class _SearchScreenState extends State<SearchScreen> {
 
   void _onSearchFocusChanged() {
     setState(() {
-      _isSearchActive = _searchFocusNode.hasFocus || _searchController.text.isNotEmpty;
+      _isSearchActive = _searchFocusNode.hasFocus;
+    });
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    _searchFocusNode.unfocus();
+    setState(() {
+      _isSearchActive = false;
+      _searchResults = [];
+      _error = '';
     });
   }
 
@@ -99,13 +109,13 @@ class _SearchScreenState extends State<SearchScreen> {
     try {
       final authService = Provider.of<AuthService>(context, listen: false);
       final sprkClient = SprkClient(authService);
-      final response = await sprkClient.feed.getStoriesTimeline(limit: 20);
+      final response = await sprkClient.feed.getStoriesTimeline(limit: 100);
 
       final responseData = response.data;
-      if (responseData is Map<String, dynamic> && responseData.containsKey('stories')) {
-        final stories = responseData['stories'] as List<dynamic>;
+      if (responseData is Map<String, dynamic> && responseData.containsKey('storiesByAuthor')) {
+        final storiesByAuthor = responseData['storiesByAuthor'] as List<dynamic>;
         setState(() {
-          _apiStories = stories;
+          _storiesByAuthor = storiesByAuthor;
           _isLoadingStories = false;
         });
       } else {
@@ -118,7 +128,7 @@ class _SearchScreenState extends State<SearchScreen> {
       setState(() {
         _storiesError = 'Failed to load stories';
         _isLoadingStories = false;
-        _apiStories = [];
+        _storiesByAuthor = [];
       });
     }
   }
@@ -153,6 +163,13 @@ class _SearchScreenState extends State<SearchScreen> {
                   decoration: InputDecoration(
                     hintText: 'Search users',
                     prefixIcon: Icon(FluentIcons.search_24_regular, color: AppTheme.getSecondaryTextColor(context)),
+                    suffixIcon:
+                        _isSearchActive
+                            ? IconButton(
+                              icon: Icon(FluentIcons.dismiss_24_regular, color: AppTheme.getSecondaryTextColor(context)),
+                              onPressed: _clearSearch,
+                            )
+                            : null,
                     filled: true,
                     fillColor: isDarkMode ? Colors.grey[900] : AppColors.lightLavender.withValues(alpha: 0.2),
                     enabledBorder: OutlineInputBorder(
@@ -262,7 +279,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 ),
               ] else ...[
                 StoriesList(
-                  stories: _apiStories,
+                  storiesByAuthor: _storiesByAuthor,
                   isLoading: _isLoadingStories,
                   error: _storiesError,
                   onAddStory: () {
