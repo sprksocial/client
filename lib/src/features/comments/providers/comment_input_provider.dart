@@ -3,8 +3,8 @@ import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/features/feed/providers/comment_input_state.dart';
-import 'package:sparksocial/src/features/feed/providers/comments_tray_provider.dart';
+import 'package:sparksocial/src/features/comments/providers/comment_input_state.dart';
+import 'package:sparksocial/src/features/comments/providers/comments_tray_provider.dart';
 
 part 'comment_input_provider.g.dart';
 

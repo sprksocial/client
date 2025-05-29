@@ -346,12 +346,17 @@ _$VideoPostViewImpl _$$VideoPostViewImplFromJson(Map<String, dynamic> json) =>
       record: PostRecord.fromJson(json['record'] as Map<String, dynamic>),
       isRepost: json['isRepost'] as bool? ?? false,
       indexedAt: DateTime.parse(json['indexedAt'] as String),
+      likeCount: (json['likeCount'] as num?)?.toInt(),
+      replyCount: (json['replyCount'] as num?)?.toInt(),
+      repostCount: (json['repostCount'] as num?)?.toInt(),
+      quoteCount: (json['quoteCount'] as num?)?.toInt(),
       labels: (json['labels'] as List<dynamic>?)
           ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
           .toList(),
       embed: json['embed'] == null
           ? null
           : EmbedView.fromJson(json['embed'] as Map<String, dynamic>),
+      cachedEmbedFile: json['cachedEmbedFile'] as String?,
     );
 
 Map<String, dynamic> _$$VideoPostViewImplToJson(_$VideoPostViewImpl instance) =>
@@ -362,8 +367,13 @@ Map<String, dynamic> _$$VideoPostViewImplToJson(_$VideoPostViewImpl instance) =>
       'record': instance.record,
       'isRepost': instance.isRepost,
       'indexedAt': instance.indexedAt.toIso8601String(),
+      'likeCount': instance.likeCount,
+      'replyCount': instance.replyCount,
+      'repostCount': instance.repostCount,
+      'quoteCount': instance.quoteCount,
       'labels': instance.labels,
       'embed': instance.embed,
+      'cachedEmbedFile': instance.cachedEmbedFile,
     };
 
 _$EmbedViewVideoImpl _$$EmbedViewVideoImplFromJson(Map<String, dynamic> json) =>
@@ -401,22 +411,6 @@ _$FeedSkeletonImpl _$$FeedSkeletonImplFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$$FeedSkeletonImplToJson(_$FeedSkeletonImpl instance) =>
-    <String, dynamic>{
-      'feed': instance.feed,
-      'cursor': instance.cursor,
-    };
-
-_$AuthorFeedResponseImpl _$$AuthorFeedResponseImplFromJson(
-        Map<String, dynamic> json) =>
-    _$AuthorFeedResponseImpl(
-      feed: (json['feed'] as List<dynamic>)
-          .map((e) => FeedViewPost.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      cursor: json['cursor'] as String?,
-    );
-
-Map<String, dynamic> _$$AuthorFeedResponseImplToJson(
-        _$AuthorFeedResponseImpl instance) =>
     <String, dynamic>{
       'feed': instance.feed,
       'cursor': instance.cursor,

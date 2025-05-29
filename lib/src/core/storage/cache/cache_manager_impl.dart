@@ -24,7 +24,6 @@ class CacheManagerImpl implements CacheManagerInterface {
   @override
   Future<File> getFile(String url) async {
     final fileInfo = await defaultCacheManager.getFileFromCache(url);
-
     if (fileInfo != null) {
       return fileInfo.file;
     }

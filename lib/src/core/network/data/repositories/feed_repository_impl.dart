@@ -80,7 +80,12 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<AuthorFeedResponse> getAuthorFeed(String actor, {int limit = 20, String? cursor, bool videosOnly = false}) async {
+  Future<({List<FeedViewPost> posts, String? cursor})> getAuthorFeed(
+    String actor, {
+    int limit = 20,
+    String? cursor,
+    bool videosOnly = false,
+  }) async {
     _logger.d('Getting author feed for actor: $actor, limit: $limit, cursor: $cursor');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -110,7 +115,10 @@ class FeedRepositoryImpl implements FeedRepository {
         NSID.parse('so.sprk.feed.getAuthorFeed'),
         parameters: parameters,
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => AuthorFeedResponse.fromJson(jsonMap),
+        to: (jsonMap) => (
+          posts: (jsonMap['posts'] as List<dynamic>).map((post) => FeedViewPost.fromJson(post)).toList(),
+          cursor: jsonMap['cursor'] as String?,
+        ),
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
       _logger.d('Author feed retrieved successfully');
@@ -486,12 +494,12 @@ class FeedRepositoryImpl implements FeedRepository {
             hydratedFeed.sort((a, b) => b.indexedAt.compareTo(a.indexedAt));
             sprkFeed.addAll(hydratedFeed);
           case HardCodedFeed.mutuals:
-            // TODO: spark mutuals feed
+          // TODO: spark mutuals feed
           case HardCodedFeed.shared:
-            // TODO: spark shared feed
+          // TODO: spark shared feed
         }
       case FeedCustom():
-        // TODO: custom feeds
+      // TODO: custom feeds
       default:
         return (bsky: bskyFeed, sprk: sprkFeed, cursor: null);
     }

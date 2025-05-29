@@ -3,6 +3,7 @@ import 'package:sparksocial/src/features/auth/data/repositories/auth_repository_
 import 'package:sparksocial/src/core/storage/cache/cache_manager_impl.dart';
 import 'package:sparksocial/src/core/theme/data/repositories/theme_repository.dart';
 import 'package:sparksocial/src/core/theme/data/repositories/theme_repository_impl.dart';
+import 'package:sparksocial/src/features/feed/data/repository/post_view_cache_service.dart';
 import 'package:sparksocial/src/features/settings/data/repositories/settings_repository.dart';
 import 'package:sparksocial/src/features/auth/auth.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
@@ -14,7 +15,6 @@ import 'package:sparksocial/src/features/auth/data/repositories/onboarding_repos
 import 'package:sparksocial/src/features/auth/data/repositories/onboarding_repository_impl.dart';
 import 'package:sparksocial/src/features/profile/data/repositories/profile_repository.dart';
 import 'package:sparksocial/src/features/profile/data/repositories/profile_repository_impl.dart';
-import 'package:sparksocial/src/core/network/data/repositories/feed_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/actor_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/graph_repository_impl.dart';
 
@@ -58,6 +58,8 @@ Future<void> _registerCore() async {
   // Initialize storage manager
   final storageManager = StorageManager.instance;
   await storageManager.init();
+
+  await PostViewCacheService().database;
 
   // Register storage manager
   sl.registerSingleton<StorageManager>(storageManager);

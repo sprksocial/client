@@ -5,7 +5,7 @@ publish_to: 'none'
 version: 0.2.0+1
 
 environment:
-  sdk: ^3.8.0
+  sdk: ^3.7.2
 
 dependencies:
   flutter:
@@ -49,7 +49,7 @@ dependencies:
   flutter_secure_storage: ^9.2.4
   atproto_core: ^0.11.2
   multiformats: ^0.2.3
-  did_plc: ^0.0.22
+  sqflite: ^2.4.2
   # Old architecture dependencies
   provider: ^6.1.1
 

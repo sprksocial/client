@@ -28,7 +28,18 @@ class KnownFollowers with _$KnownFollowers {
     required List<String> followersDids, // to avoid circular dependency
   }) = _KnownFollowers;
 
-  factory KnownFollowers.fromJson(Map<String, dynamic> json) => _$KnownFollowersFromJson(json);
+  factory KnownFollowers.fromJson(Map<String, dynamic> json) {
+    switch (json['followers']) {
+      case const (List<ProfileViewBasic>): // the backend returns a list of followers
+        final List<ProfileViewBasic> followers = json['followers'];
+        final List<String> followersDids = followers.map((e) => e.did).toList();
+        final int count = followersDids.length;
+        final newJson = {'count': count, 'followersDids': followersDids};
+        return _$KnownFollowersFromJson(newJson);
+      default: // the cache and memory will be a list of dids
+        return _$KnownFollowersFromJson(json);
+    }
+  }
 }
 
 @freezed
@@ -42,7 +53,6 @@ class ProfileViewBasic with _$ProfileViewBasic {
     // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
     ActorViewer? viewer,
   }) = _ProfileViewBasic;
-  
 
   factory ProfileViewBasic.fromJson(Map<String, dynamic> json) => _$ProfileViewBasicFromJson(json);
 }

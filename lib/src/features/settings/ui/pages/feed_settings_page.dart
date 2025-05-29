@@ -3,15 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 
-void showFeedSettingsSheet(BuildContext context) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true, // Important for full height sheet
-    backgroundColor: Colors.transparent, // Let the sheet handle its own background
-    builder: (context) => FeedSettingsPage(),
-  );
-}
-
 @RoutePage()
 class FeedSettingsPage extends ConsumerWidget {
   const FeedSettingsPage({super.key});

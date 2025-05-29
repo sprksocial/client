@@ -17,4 +17,4 @@ export 'package:sparksocial/src/features/home/ui/pages/empty_page.dart';
 export 'package:sparksocial/src/features/settings/ui/pages/feed_settings_page.dart';
 export 'package:sparksocial/src/features/home/ui/pages/placeholder_page.dart';
 export 'package:sparksocial/src/features/settings/ui/pages/feed_list_page.dart';
-export 'package:sparksocial/src/features/feed/ui/widgets/comments/comments_tray.dart';
+export 'package:sparksocial/src/features/comments/ui/pages/comments_tray.dart';

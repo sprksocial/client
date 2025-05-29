@@ -3949,9 +3949,14 @@ mixin _$PostView {
   PostRecord get record => throw _privateConstructorUsedError;
   bool get isRepost => throw _privateConstructorUsedError;
   DateTime get indexedAt => throw _privateConstructorUsedError;
+  int? get likeCount => throw _privateConstructorUsedError;
+  int? get replyCount => throw _privateConstructorUsedError;
+  int? get repostCount => throw _privateConstructorUsedError;
+  int? get quoteCount => throw _privateConstructorUsedError;
   List<Label>? get labels =>
       throw _privateConstructorUsedError; //SoundView? sound,
-  EmbedView? get embed => throw _privateConstructorUsedError;
+  EmbedView? get embed => throw _privateConstructorUsedError; // aturi
+  String? get cachedEmbedFile => throw _privateConstructorUsedError;
 
   /// Serializes this PostView to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -3975,8 +3980,13 @@ abstract class $PostViewCopyWith<$Res> {
       PostRecord record,
       bool isRepost,
       DateTime indexedAt,
+      int? likeCount,
+      int? replyCount,
+      int? repostCount,
+      int? quoteCount,
       List<Label>? labels,
-      EmbedView? embed});
+      EmbedView? embed,
+      String? cachedEmbedFile});
 
   $ProfileViewBasicCopyWith<$Res> get author;
   $PostRecordCopyWith<$Res> get record;
@@ -4004,8 +4014,13 @@ class _$PostViewCopyWithImpl<$Res, $Val extends PostView>
     Object? record = null,
     Object? isRepost = null,
     Object? indexedAt = null,
+    Object? likeCount = freezed,
+    Object? replyCount = freezed,
+    Object? repostCount = freezed,
+    Object? quoteCount = freezed,
     Object? labels = freezed,
     Object? embed = freezed,
+    Object? cachedEmbedFile = freezed,
   }) {
     return _then(_value.copyWith(
       uri: null == uri
@@ -4032,6 +4047,22 @@ class _$PostViewCopyWithImpl<$Res, $Val extends PostView>
           ? _value.indexedAt
           : indexedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      likeCount: freezed == likeCount
+          ? _value.likeCount
+          : likeCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      replyCount: freezed == replyCount
+          ? _value.replyCount
+          : replyCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      repostCount: freezed == repostCount
+          ? _value.repostCount
+          : repostCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      quoteCount: freezed == quoteCount
+          ? _value.quoteCount
+          : quoteCount // ignore: cast_nullable_to_non_nullable
+              as int?,
       labels: freezed == labels
           ? _value.labels
           : labels // ignore: cast_nullable_to_non_nullable
@@ -4040,6 +4071,10 @@ class _$PostViewCopyWithImpl<$Res, $Val extends PostView>
           ? _value.embed
           : embed // ignore: cast_nullable_to_non_nullable
               as EmbedView?,
+      cachedEmbedFile: freezed == cachedEmbedFile
+          ? _value.cachedEmbedFile
+          : cachedEmbedFile // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 
@@ -4093,8 +4128,13 @@ abstract class _$$VideoPostViewImplCopyWith<$Res>
       PostRecord record,
       bool isRepost,
       DateTime indexedAt,
+      int? likeCount,
+      int? replyCount,
+      int? repostCount,
+      int? quoteCount,
       List<Label>? labels,
-      EmbedView? embed});
+      EmbedView? embed,
+      String? cachedEmbedFile});
 
   @override
   $ProfileViewBasicCopyWith<$Res> get author;
@@ -4123,8 +4163,13 @@ class __$$VideoPostViewImplCopyWithImpl<$Res>
     Object? record = null,
     Object? isRepost = null,
     Object? indexedAt = null,
+    Object? likeCount = freezed,
+    Object? replyCount = freezed,
+    Object? repostCount = freezed,
+    Object? quoteCount = freezed,
     Object? labels = freezed,
     Object? embed = freezed,
+    Object? cachedEmbedFile = freezed,
   }) {
     return _then(_$VideoPostViewImpl(
       uri: null == uri
@@ -4151,6 +4196,22 @@ class __$$VideoPostViewImplCopyWithImpl<$Res>
           ? _value.indexedAt
           : indexedAt // ignore: cast_nullable_to_non_nullable
               as DateTime,
+      likeCount: freezed == likeCount
+          ? _value.likeCount
+          : likeCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      replyCount: freezed == replyCount
+          ? _value.replyCount
+          : replyCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      repostCount: freezed == repostCount
+          ? _value.repostCount
+          : repostCount // ignore: cast_nullable_to_non_nullable
+              as int?,
+      quoteCount: freezed == quoteCount
+          ? _value.quoteCount
+          : quoteCount // ignore: cast_nullable_to_non_nullable
+              as int?,
       labels: freezed == labels
           ? _value._labels
           : labels // ignore: cast_nullable_to_non_nullable
@@ -4159,6 +4220,10 @@ class __$$VideoPostViewImplCopyWithImpl<$Res>
           ? _value.embed
           : embed // ignore: cast_nullable_to_non_nullable
               as EmbedView?,
+      cachedEmbedFile: freezed == cachedEmbedFile
+          ? _value.cachedEmbedFile
+          : cachedEmbedFile // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -4173,8 +4238,13 @@ class _$VideoPostViewImpl extends VideoPostView {
       required this.record,
       this.isRepost = false,
       required this.indexedAt,
+      this.likeCount,
+      this.replyCount,
+      this.repostCount,
+      this.quoteCount,
       final List<Label>? labels,
-      this.embed})
+      this.embed,
+      this.cachedEmbedFile})
       : _labels = labels,
         super._();
 
@@ -4195,6 +4265,14 @@ class _$VideoPostViewImpl extends VideoPostView {
   final bool isRepost;
   @override
   final DateTime indexedAt;
+  @override
+  final int? likeCount;
+  @override
+  final int? replyCount;
+  @override
+  final int? repostCount;
+  @override
+  final int? quoteCount;
   final List<Label>? _labels;
   @override
   List<Label>? get labels {
@@ -4208,10 +4286,13 @@ class _$VideoPostViewImpl extends VideoPostView {
 //SoundView? sound,
   @override
   final EmbedView? embed;
+// aturi
+  @override
+  final String? cachedEmbedFile;
 
   @override
   String toString() {
-    return 'PostView(uri: $uri, cid: $cid, author: $author, record: $record, isRepost: $isRepost, indexedAt: $indexedAt, labels: $labels, embed: $embed)';
+    return 'PostView(uri: $uri, cid: $cid, author: $author, record: $record, isRepost: $isRepost, indexedAt: $indexedAt, likeCount: $likeCount, replyCount: $replyCount, repostCount: $repostCount, quoteCount: $quoteCount, labels: $labels, embed: $embed, cachedEmbedFile: $cachedEmbedFile)';
   }
 
   @override
@@ -4227,14 +4308,37 @@ class _$VideoPostViewImpl extends VideoPostView {
                 other.isRepost == isRepost) &&
             (identical(other.indexedAt, indexedAt) ||
                 other.indexedAt == indexedAt) &&
+            (identical(other.likeCount, likeCount) ||
+                other.likeCount == likeCount) &&
+            (identical(other.replyCount, replyCount) ||
+                other.replyCount == replyCount) &&
+            (identical(other.repostCount, repostCount) ||
+                other.repostCount == repostCount) &&
+            (identical(other.quoteCount, quoteCount) ||
+                other.quoteCount == quoteCount) &&
             const DeepCollectionEquality().equals(other._labels, _labels) &&
-            (identical(other.embed, embed) || other.embed == embed));
+            (identical(other.embed, embed) || other.embed == embed) &&
+            (identical(other.cachedEmbedFile, cachedEmbedFile) ||
+                other.cachedEmbedFile == cachedEmbedFile));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, uri, cid, author, record,
-      isRepost, indexedAt, const DeepCollectionEquality().hash(_labels), embed);
+  int get hashCode => Object.hash(
+      runtimeType,
+      uri,
+      cid,
+      author,
+      record,
+      isRepost,
+      indexedAt,
+      likeCount,
+      replyCount,
+      repostCount,
+      quoteCount,
+      const DeepCollectionEquality().hash(_labels),
+      embed,
+      cachedEmbedFile);
 
   /// Create a copy of PostView
   /// with the given fields replaced by the non-null parameter values.
@@ -4260,8 +4364,13 @@ abstract class VideoPostView extends PostView {
       required final PostRecord record,
       final bool isRepost,
       required final DateTime indexedAt,
+      final int? likeCount,
+      final int? replyCount,
+      final int? repostCount,
+      final int? quoteCount,
       final List<Label>? labels,
-      final EmbedView? embed}) = _$VideoPostViewImpl;
+      final EmbedView? embed,
+      final String? cachedEmbedFile}) = _$VideoPostViewImpl;
   const VideoPostView._() : super._();
 
   factory VideoPostView.fromJson(Map<String, dynamic> json) =
@@ -4281,9 +4390,19 @@ abstract class VideoPostView extends PostView {
   @override
   DateTime get indexedAt;
   @override
+  int? get likeCount;
+  @override
+  int? get replyCount;
+  @override
+  int? get repostCount;
+  @override
+  int? get quoteCount;
+  @override
   List<Label>? get labels; //SoundView? sound,
   @override
-  EmbedView? get embed;
+  EmbedView? get embed; // aturi
+  @override
+  String? get cachedEmbedFile;
 
   /// Create a copy of PostView
   /// with the given fields replaced by the non-null parameter values.
@@ -4892,183 +5011,6 @@ abstract class _FeedSkeleton implements FeedSkeleton {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FeedSkeletonImplCopyWith<_$FeedSkeletonImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-AuthorFeedResponse _$AuthorFeedResponseFromJson(Map<String, dynamic> json) {
-  return _AuthorFeedResponse.fromJson(json);
-}
-
-/// @nodoc
-mixin _$AuthorFeedResponse {
-  List<FeedViewPost> get feed => throw _privateConstructorUsedError;
-  String? get cursor => throw _privateConstructorUsedError;
-
-  /// Serializes this AuthorFeedResponse to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of AuthorFeedResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $AuthorFeedResponseCopyWith<AuthorFeedResponse> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $AuthorFeedResponseCopyWith<$Res> {
-  factory $AuthorFeedResponseCopyWith(
-          AuthorFeedResponse value, $Res Function(AuthorFeedResponse) then) =
-      _$AuthorFeedResponseCopyWithImpl<$Res, AuthorFeedResponse>;
-  @useResult
-  $Res call({List<FeedViewPost> feed, String? cursor});
-}
-
-/// @nodoc
-class _$AuthorFeedResponseCopyWithImpl<$Res, $Val extends AuthorFeedResponse>
-    implements $AuthorFeedResponseCopyWith<$Res> {
-  _$AuthorFeedResponseCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of AuthorFeedResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? feed = null,
-    Object? cursor = freezed,
-  }) {
-    return _then(_value.copyWith(
-      feed: null == feed
-          ? _value.feed
-          : feed // ignore: cast_nullable_to_non_nullable
-              as List<FeedViewPost>,
-      cursor: freezed == cursor
-          ? _value.cursor
-          : cursor // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$AuthorFeedResponseImplCopyWith<$Res>
-    implements $AuthorFeedResponseCopyWith<$Res> {
-  factory _$$AuthorFeedResponseImplCopyWith(_$AuthorFeedResponseImpl value,
-          $Res Function(_$AuthorFeedResponseImpl) then) =
-      __$$AuthorFeedResponseImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({List<FeedViewPost> feed, String? cursor});
-}
-
-/// @nodoc
-class __$$AuthorFeedResponseImplCopyWithImpl<$Res>
-    extends _$AuthorFeedResponseCopyWithImpl<$Res, _$AuthorFeedResponseImpl>
-    implements _$$AuthorFeedResponseImplCopyWith<$Res> {
-  __$$AuthorFeedResponseImplCopyWithImpl(_$AuthorFeedResponseImpl _value,
-      $Res Function(_$AuthorFeedResponseImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of AuthorFeedResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? feed = null,
-    Object? cursor = freezed,
-  }) {
-    return _then(_$AuthorFeedResponseImpl(
-      feed: null == feed
-          ? _value._feed
-          : feed // ignore: cast_nullable_to_non_nullable
-              as List<FeedViewPost>,
-      cursor: freezed == cursor
-          ? _value.cursor
-          : cursor // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$AuthorFeedResponseImpl implements _AuthorFeedResponse {
-  const _$AuthorFeedResponseImpl(
-      {required final List<FeedViewPost> feed, this.cursor})
-      : _feed = feed;
-
-  factory _$AuthorFeedResponseImpl.fromJson(Map<String, dynamic> json) =>
-      _$$AuthorFeedResponseImplFromJson(json);
-
-  final List<FeedViewPost> _feed;
-  @override
-  List<FeedViewPost> get feed {
-    if (_feed is EqualUnmodifiableListView) return _feed;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_feed);
-  }
-
-  @override
-  final String? cursor;
-
-  @override
-  String toString() {
-    return 'AuthorFeedResponse(feed: $feed, cursor: $cursor)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$AuthorFeedResponseImpl &&
-            const DeepCollectionEquality().equals(other._feed, _feed) &&
-            (identical(other.cursor, cursor) || other.cursor == cursor));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-      runtimeType, const DeepCollectionEquality().hash(_feed), cursor);
-
-  /// Create a copy of AuthorFeedResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$AuthorFeedResponseImplCopyWith<_$AuthorFeedResponseImpl> get copyWith =>
-      __$$AuthorFeedResponseImplCopyWithImpl<_$AuthorFeedResponseImpl>(
-          this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$AuthorFeedResponseImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _AuthorFeedResponse implements AuthorFeedResponse {
-  const factory _AuthorFeedResponse(
-      {required final List<FeedViewPost> feed,
-      final String? cursor}) = _$AuthorFeedResponseImpl;
-
-  factory _AuthorFeedResponse.fromJson(Map<String, dynamic> json) =
-      _$AuthorFeedResponseImpl.fromJson;
-
-  @override
-  List<FeedViewPost> get feed;
-  @override
-  String? get cursor;
-
-  /// Create a copy of AuthorFeedResponse
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$AuthorFeedResponseImplCopyWith<_$AuthorFeedResponseImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 

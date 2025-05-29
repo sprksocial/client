@@ -1,6 +1,6 @@
-import 'local_storage_interface.dart';
-import 'shared_prefs_storage.dart';
-import 'secure_storage.dart';
+import 'preferences/local_storage_interface.dart';
+import 'preferences/shared_prefs_storage.dart';
+import 'preferences/secure_storage.dart';
 
 /// Storage manager providing centralized access to different storage implementations
 /// This is the one that should be used to store and retrieve data from the app

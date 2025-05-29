@@ -10,9 +10,9 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/menu_action_button.dart';
 import 'package:sparksocial/src/core/widgets/report_dialog.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
-import 'package:sparksocial/src/features/feed/providers/comment_state.dart';
-import 'package:sparksocial/src/features/feed/providers/comment_provider.dart';
-import 'package:sparksocial/src/features/feed/providers/comments_tray_provider.dart';
+import 'package:sparksocial/src/features/comments/providers/comment_state.dart';
+import 'package:sparksocial/src/features/comments/providers/comment_provider.dart';
+import 'package:sparksocial/src/features/comments/providers/comments_tray_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:video_player/video_player.dart';
 

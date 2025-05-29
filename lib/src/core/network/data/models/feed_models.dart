@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -148,6 +150,7 @@ class PostThread with _$PostThread {
   factory PostThread.fromJson(Map<String, dynamic> json) => _$PostThreadFromJson(json);
 }
 
+/// Skeleton of a ReplyRef. Needs to be hydrated.
 @freezed
 class RecordReplyRef with _$RecordReplyRef {
   const factory RecordReplyRef({required StrongRef root, required StrongRef parent}) = _RecordReplyRef;
@@ -209,14 +212,32 @@ class PostView with _$PostView {
     required PostRecord record,
     @Default(false) bool isRepost,
     required DateTime indexedAt,
+    int? likeCount,
+    int? replyCount,
+    int? repostCount,
+    int? quoteCount,
     List<Label>? labels,
     //SoundView? sound,
     EmbedView? embed, // aturi
+    String? cachedEmbedFile
   }) = VideoPostView;
 
   factory PostView.fromJson(Map<String, dynamic> json) => _$PostViewFromJson(json);
 
   bool get isSprk => RegExp(r'^at://[^/]+/so\.sprk\.feed\.post/[^/]+$').hasMatch(uri.toString());
+
+  String get videoUrl {
+    if (isSprk) {
+      // extract DID from uri
+      final did = uri.hostname;
+      return 'media.sprk.so/video/$did/$cid';
+    } else {
+      if (embed case EmbedViewVideo(:final video)) {
+        return video.playlist.toString();
+      }
+    }
+    return '';
+  }
 }
 
 @Freezed(unionKey: r'$type')
@@ -235,13 +256,6 @@ class FeedSkeleton with _$FeedSkeleton {
   const factory FeedSkeleton({required List<SkeletonFeedPost> feed, String? cursor}) = _FeedSkeleton;
 
   factory FeedSkeleton.fromJson(Map<String, dynamic> json) => _$FeedSkeletonFromJson(json);
-}
-
-@freezed
-class AuthorFeedResponse with _$AuthorFeedResponse {
-  const factory AuthorFeedResponse({required List<FeedViewPost> feed, String? cursor}) = _AuthorFeedResponse;
-
-  factory AuthorFeedResponse.fromJson(Map<String, dynamic> json) => _$AuthorFeedResponseFromJson(json);
 }
 
 @freezed
@@ -375,7 +389,7 @@ class ImageView with _$ImageView {
 @freezed
 class ViewImage with _$ViewImage {
   const ViewImage._();
-  
+
   const factory ViewImage({
     @AtUriConverter() required AtUri thumb,
     @AtUriConverter() required AtUri fullsize,

@@ -11,6 +11,8 @@ abstract class CacheManagerInterface {
   /// Remove a specific file from cache
   Future<void> removeFile(String url);
 
+  
+
   /// Calculate the total size of the cache in bytes
   Future<int> getCacheSize();
 

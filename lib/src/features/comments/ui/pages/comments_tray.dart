@@ -2,10 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/features/feed/providers/comments_tray_provider.dart';
+import 'package:sparksocial/src/features/comments/providers/comments_tray_provider.dart';
 
-import 'comment_input.dart';
-import 'comment_item.dart';
+import '../widgets/comment_input.dart';
+import '../widgets/comment_item.dart';
 
 @RoutePage()
 class CommentsTray extends ConsumerStatefulWidget {

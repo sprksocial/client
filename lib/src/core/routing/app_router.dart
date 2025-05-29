@@ -32,14 +32,8 @@ class AppRouter extends _$AppRouter {
             AutoRoute(
               page: FeedRoute.page,
               path: ':feed', // hardcoded enum string or custom feed uri
-              children: [
-                AutoRoute(page: PostRoute.page, path: 'post/:postUri'), // TODO: add post route
-              ],
-            ),
-            AutoRoute(
-              page: FeedSettingsRoute.page,
-              path: 'settings',
-              children: [AutoRoute(page: FeedListRoute.page, path: 'list')],
+              // no post route here because the PageView has an infinite amount of children
+              // so we need to use a normal PageView that does not use the auto router
             ),
           ],
         ),
@@ -47,7 +41,7 @@ class AppRouter extends _$AppRouter {
         AutoRoute(page: EmptyRoute.page, path: 'create'), // Placeholder for create action
         AutoRoute(page: MessagesRoute.page, path: 'messages'),
         AutoRoute(
-          page: ProfileRoute.page,
+          page: UserProfileRoute.page, // for the current user
           path: 'profile',
           children: [
             AutoRoute(page: EditProfileRoute.page, path: 'edit'),
@@ -70,15 +64,23 @@ class AppRouter extends _$AppRouter {
       ],
     ),
 
-    AutoRoute(page: PostRoute.page, path: '/post/:postId'), // deep linking
+    // Modal bottom sheet routes
     CustomRoute(
-      page: CommentsTray.page,
+      page: CommentsTray.page, // doesn't need to be a child of post route because it's a modal bottom sheet
       path: '/comments/:postUri',
       customRouteBuilder: commmentsTrayBuilder,
-      children: [
-        AutoRoute(page: RepliesRoute.page, path: 'replies/:postUri'), // TODO: add post route
-      ],
+      children: [AutoRoute(page: RepliesRoute.page, path: 'replies/:postUri')],
     ),
+    CustomRoute(
+      page: FeedSettingsRoute.page,
+      path: 'settings',
+      customRouteBuilder: feedSettingsBuilder,
+      children: [AutoRoute(page: FeedListRoute.page, path: 'list')], // settings tabs
+    ),
+
+    // Deep linking routes or routes that will be pushed on top of everything
+    AutoRoute(page: StandalonePostRoute.page, path: '/post/:postId'),
+    AutoRoute(page: ProfileRoute.page, path: '/profile/:did'),
 
     AutoRoute(page: EmptyRoute.page, path: '/empty'),
     AutoRoute(page: LoginRoute.page, path: '/login'),
@@ -94,7 +96,7 @@ class AppRouter extends _$AppRouter {
     AutoRoute(page: SplashRoute.page, path: '*'),
   ];
 
-  Route<T> commmentsTrayBuilder<T>(BuildContext context, Widget child, AutoRoutePage<T> page) { 
+  Route<T> commmentsTrayBuilder<T>(BuildContext context, Widget child, AutoRoutePage<T> page) {
     return ModalBottomSheetRoute(
       settings: page,
       builder: (context) => child,
@@ -103,6 +105,17 @@ class AppRouter extends _$AppRouter {
       useSafeArea: true,
       enableDrag: true,
       isDismissible: true,
+    );
+  }
+
+  Route<T> feedSettingsBuilder<T>(BuildContext context, Widget child, AutoRoutePage<T> page) {
+    return ModalBottomSheetRoute(
+      settings: page,
+      builder: (context) => child,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      useSafeArea: true,
+      enableDrag: true,
     );
   }
 }
