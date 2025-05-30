@@ -176,7 +176,7 @@ Loads posts from the local database into the `uris` list for display.
 ```mermaid
 graph TD
     Start[dbLoad called with currentRemainingCachedPosts] --> A{currentRemainingCachedPosts > 0?};
-    A -- Yes --> B["amountToLoad = min(currentRemainingCachedPosts, n")];
+    A -- Yes --> B["amountToLoad = min(currentRemainingCachedPosts, n)"];
     B --> C{amountToLoad > 0?};
     C -- Yes --> D[Load 'amountToLoad' most recent PostViews from DB];
     D --> E[Add PostViews to 'uris' list];
