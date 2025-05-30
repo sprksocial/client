@@ -13,8 +13,6 @@ import 'package:sparksocial/src/core/network/data/repositories/sprk_repository_i
 import 'package:sparksocial/src/core/settings/repositories/settings_repository_impl.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository_impl.dart';
-import 'package:sparksocial/src/features/profile/data/repositories/profile_repository.dart';
-import 'package:sparksocial/src/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/actor_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/graph_repository_impl.dart';
 
@@ -27,33 +25,6 @@ final GetIt sl = GetIt.instance;
 /// Initializes the service locator with all required dependencies
 /// sl.registerSingleton < Interface > (Implementation)
 Future<void> initServiceLocator() async {
-  // Register core dependencies
-  await _registerCore();
-
-  // Register features dependencies
-  await _registerFeatures();
-}
-
-/// Registers features dependencies
-Future<void> _registerFeatures() async {
-  // Register settings dependencies
-  await _registerSettings();
-
-  // Register onboarding dependencies
-  await _registerOnboarding();
-
-  // Register profile dependencies
-  await _registerProfile();
-
-  // Register feed dependencies
-  await _registerFeed();
-
-  // Register upload dependencies
-  await _registerUpload();
-}
-
-/// Registers core dependencies
-Future<void> _registerCore() async {
   // Register storage dependencies
   // Initialize storage manager
   final storageManager = StorageManager.instance;
@@ -89,41 +60,12 @@ Future<void> _registerCore() async {
 
   // Register GraphRepository
   sl.registerSingleton<GraphRepository>(GraphRepositoryImpl(sl.get<SprkRepository>()));
-}
 
-/// Registers settings dependencies
-Future<void> _registerSettings() async {
   // Register SettingsRepository
   sl.registerSingleton<SettingsRepository>(SettingsRepositoryImpl(sl<StorageManager>()));
-}
 
-/// Registers onboarding dependencies
-Future<void> _registerOnboarding() async {
   // Register OnboardingRepository
   sl.registerLazySingleton<OnboardingRepository>(
     () => OnboardingRepositoryImpl(repoRepository: sl<SprkRepository>().repo, authRepository: sl<AuthRepository>()),
   );
-}
-
-/// Registers profile dependencies
-Future<void> _registerProfile() async {
-  // Register ProfileRepository
-  sl.registerLazySingleton<ProfileRepository>(
-    () => ProfileRepositoryImpl(
-      authRepository: sl<AuthRepository>(),
-      sprkRepository: sl<SprkRepository>(),
-      cacheManager: sl<CacheManagerInterface>(),
-    ),
-  );
-}
-
-/// Registers feed dependencies
-Future<void> _registerFeed() async {
-  // Register MediaRepository
- 
-}
-
-/// Registers upload dependencies
-Future<void> _registerUpload() async {
- 
 }

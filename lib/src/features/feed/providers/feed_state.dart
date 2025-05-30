@@ -11,5 +11,6 @@ abstract class FeedState with _$FeedState {
     required int index,
     required int remainingCachedPosts,
     required bool isFetching,
+    required bool isEndOfFeed,
   }) = _FeedState;
 }

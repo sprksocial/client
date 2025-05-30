@@ -64,10 +64,10 @@ sequenceDiagram
     App->>App: oldIndex = previous index, newIndex = current index
 
     App->>App: Check thresholds for fetching/loading:
-    alt uris.length - newIndex < 10 AND !isFetching
+    alt uris.length - newIndex < n AND !isFetching
         App->>HelperFunctions: Call fetchAndStore()
     end
-    alt uris.length - newIndex < 10
+    alt uris.length - newIndex < n
         App->>HelperFunctions: Call dbLoad()
     end
     alt uris.length - newIndex <= 1 AND !isEndOfFeed
@@ -198,7 +198,7 @@ Fetches new post metadata from the network, downloads their media, and stores th
 ```mermaid
 graph TD
     Start[fetchAndStore called] --> A[Set isFetching = true];
-    A --> B[Repository: Fetch 10 PostViews metadata];
+    A --> B[Repository: Fetch n PostViews metadata];
     B --> C[For each PostView (concurrently)];
     C --> D[Download video/image for PostView];
     D -- Success --> E[Add PostView to DB];
@@ -211,20 +211,20 @@ graph TD
     D -- Failure --> C;
 ```
 *   Sets `isFetching` to `true`.
-*   The `Repository` fetches metadata for 10 new `PostViews`.
+*   The `Repository` fetches metadata for n new `PostViews`.
 *   **Concurrently**, for each fetched `PostView`:
     *   Its associated video/image media is downloaded.
     *   Upon successful download of a post's media:
         *   The `PostView` (now with cached media path) is added to the local DB.
         *   The global `remainingCachedPosts` counter is incremented.
 *   **Crucially**, after the media for **n/2** posts has finished downloading and they are stored in the DB, `isFetching` is set back to `false`.
-    *   This allows `dbLoad()` to potentially be triggered sooner by user scrolling, even if not all 10 posts from the current batch have finished their media downloads.
-    *   The remaining (up to 5) posts from this batch continue downloading their media and being added to the DB in the background.
+    *   This allows `dbLoad()` to potentially be triggered sooner by user scrolling, even if not all n posts from the current batch have finished their media downloads.
+    *   The remaining (up to n/2) posts from this batch continue downloading their media and being added to the DB in the background.
 
 ## Benefits of this Strategy
 
 *   **Smooth Scrolling:** Proactive fetching and loading keep content ready.
 *   **Resource Management:** `SizedBox` placeholders for off-screen content reduce memory and rendering overhead. Only a small window of `FeedPostWidget`s (typically 3) are fully active.
-*   **Responsive UI:** `isFetching` becoming `false` after 5/10 posts are ready allows the UI to feel responsive and less blocked by network operations.
+*   **Responsive UI:** `isFetching` becoming `false` after n/2 posts are ready allows the UI to feel responsive and less blocked by network operations.
 *   **Offline Availability (Partial):** Posts whose media is downloaded and stored in DB are available even if the network is temporarily lost (for those specific posts).
 *   **Efficient Data Usage:** Media is cached, preventing re-downloads.
