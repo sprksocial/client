@@ -13,4 +13,6 @@ abstract class FeedState with _$FeedState {
     required bool isFetching,
     required bool isEndOfFeed,
   }) = _FeedState;
+
+  static const int n = 10; // number of posts to fetch and store at a time
 }
