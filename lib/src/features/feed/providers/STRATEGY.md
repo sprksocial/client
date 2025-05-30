@@ -18,7 +18,7 @@ load() {
 }
 
 loadAndUpdateFirstLoad() {
-  The f most recent PostView uris are loaded from the database into a List<(AtUri)> uris
+  The f most recent uris are loaded from the database into a List<(AtUri)> uris
   uptadedPostViews = getPosts(uris)
   cachePosts(uptadedPostViews)
   uris are added to the external loadedUris list.
@@ -50,6 +50,11 @@ endOfFeed() {
   Watch freshPostCount: The next time it becomes positive, load() is called and external isEndOfFeed is set to false.
 }
 
+endOfNetworkFeed() {
+  isEndOfFeed is set to true.
+  "No more posts" is shown at the bottom of the feed.
+}
+
 User opens the feed for the first time.
 
 loadedUris is a List<(AtUri)> that will be used in a PageView.builder() to build either a FeedPostWidget or a SizedBox.
@@ -60,7 +65,10 @@ Call store(fetch()) to start storing new data into the database.
 Call loadAndUpdateFirstLoad() to load the first posts into the feed.
 
 When the user scrolls down (index increments):
-- If uris.length - index < 10 && !isCaching, store(fetch()) is called again.
+- If uris.length - index < 10 && !isCaching
+  - response = fetch()
+  - If response is empty, endOfNetworkFeed() is called
+  - Otherwise, store(response) is called
 - If uris.length - index < 10, load() is called.
 - If uris.length - index <= 1 && isEndOfFeed = false, endOfFeed() is called.
 - The post at [oldIndex - 1] becomes a SizedBox

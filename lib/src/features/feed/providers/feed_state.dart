@@ -10,9 +10,12 @@ abstract class FeedState with _$FeedState {
     required List<AtUri> uris,
     required int index,
     required int remainingCachedPosts,
-    required bool isFetching,
+    required bool isCaching,
     required bool isEndOfFeed,
+    required bool isEndOfNetworkFeed,
   }) = _FeedState;
 
-  static const int n = 10; // number of posts to fetch and store at a time
+  static const int n = 10; // number of posts to fetch at a time
+  static const int m = 10; // number of posts to load from the database at a time
+  static const int f = 10; // number of posts to load in the first load
 }

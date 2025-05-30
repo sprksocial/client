@@ -166,14 +166,14 @@ class SQLCache {
   }
 
   /// Retrieves multiple PostViews by a list of URI strings. Updates their lastAccessed time.
-  Future<List<PostView>> getPostsByUris(List<String> uriStrings) async {
-    if (uriStrings.isEmpty) return [];
+  Future<List<PostView>> getPostsByUris(List<AtUri> uris) async {
+    if (uris.isEmpty) return [];
     final db = await database;
-    final placeholders = List.generate(uriStrings.length, (index) => '?').join(',');
+    final placeholders = List.generate(uris.length, (index) => '?').join(',');
     final List<Map<String, dynamic>> maps = await db.query(
       _tablePosts,
       where: '$_columnUri IN ($placeholders)',
-      whereArgs: uriStrings,
+      whereArgs: uris.map((uri) => uri.toString()).toList(),
     );
 
     return maps.map((map) => PostView.fromJson(map)).toList();
@@ -190,6 +190,7 @@ class SQLCache {
     );
     return maps.map((map) => PostView.fromJson(map)).toList();
   }
+
   // --- Feed Management ---
 
   /// Caches a Feed object (its metadata).
@@ -283,28 +284,86 @@ class SQLCache {
     return Sqflite.firstIntValue(countResult) ?? 0;
   }
 
-  /// Gets PostView objects for a specific feed, ordered correctly.
-  Future<List<PostView>> getPostsForFeed(
-    String feedIdentifier, {
-    int limit = 20, // Default limit
-    int offset = 0,
-  }) async {
+  /// Retrieves posts for a specific feed, ordered by their last access time
+  /// (most recently accessed first).
+  ///
+  /// Does NOT update the `lastAccessed` timestamp of the retrieved posts.
+  ///
+  /// - [feedIdentifier]: The identifier of the feed.
+  /// - [limit]: The maximum number of posts to retrieve. If null, no limit.
+  /// - [offset]: The number of posts to skip before starting to retrieve. Requires [limit] to be set.
+  Future<List<PostView>> getPostsForFeed(String feedIdentifier, {int? limit, int? offset}) async {
     final db = await database;
-    // SQL to join associations with posts and order them
-    final String query = '''
-      SELECT T2.* FROM $_tableFeedPostAssociations AS T1
-      JOIN $_tablePosts AS T2 ON T1.$_columnPostUriFK = T2.$_columnUri
-      WHERE T1.$_columnFeedIdentifierFK = ?
-      ORDER BY T1.$_columnAssociationOrder ASC
-      LIMIT ? OFFSET ?
+    List<dynamic> arguments = [feedIdentifier];
+    String limitClause = '';
+
+    if (limit != null) {
+      limitClause += ' LIMIT ?';
+      arguments.add(limit);
+      if (offset != null && offset > 0) {
+        // Offset only makes sense if positive
+        limitClause += ' OFFSET ?';
+        arguments.add(offset);
+      }
+    } else if (offset != null && offset > 0) {
+      // If offset is provided without limit, SQLite requires a limit.
+      // Use -1 for "no effective limit" when an offset is present.
+      limitClause += ' LIMIT -1 OFFSET ?';
+      arguments.add(offset);
+    }
+
+    final String sql = '''
+      SELECT p.*
+      FROM $_tablePosts p
+      INNER JOIN $_tableFeedPostAssociations fpa ON p.$_columnUri = fpa.$_columnPostUriFK
+      WHERE fpa.$_columnFeedIdentifierFK = ?
+      ORDER BY p.$_columnLastAccessed DESC
+      $limitClause
     ''';
 
-    final List<Map<String, dynamic>> resultMaps = await db.rawQuery(query, [feedIdentifier, limit, offset]);
-    return resultMaps.map((map) => PostView.fromJson(map)).toList();
+    final List<Map<String, dynamic>> maps = await db.rawQuery(sql, arguments);
+    return maps.map((map) => PostView.fromJson(map)).toList();
+  }
+
+  /// Retrieves post URIs for a specific feed, ordered by their corresponding post's
+  /// last access time (most recently accessed first).
+  ///
+  /// Does NOT update the `lastAccessed` timestamp of any posts.
+  ///
+  /// - [feedIdentifier]: The identifier of the feed.
+  /// - [limit]: The maximum number of URIs to retrieve. If null, no limit.
+  /// - [offset]: The number of URIs to skip before starting to retrieve. Requires [limit] to be set.
+  Future<List<String>> getUrisForFeed(String feedIdentifier, {int? limit, int? offset}) async {
+    final db = await database;
+    List<dynamic> arguments = [feedIdentifier];
+    String limitClause = '';
+
+    if (limit != null) {
+      limitClause += ' LIMIT ?';
+      arguments.add(limit);
+      if (offset != null && offset > 0) {
+        limitClause += ' OFFSET ?';
+        arguments.add(offset);
+      }
+    } else if (offset != null && offset > 0) {
+      limitClause += ' LIMIT -1 OFFSET ?';
+      arguments.add(offset);
+    }
+
+    final String sql = '''
+      SELECT p.$_columnUri
+      FROM $_tablePosts p
+      INNER JOIN $_tableFeedPostAssociations fpa ON p.$_columnUri = fpa.$_columnPostUriFK
+      WHERE fpa.$_columnFeedIdentifierFK = ?
+      ORDER BY p.$_columnLastAccessed DESC
+      $limitClause
+    ''';
+
+    final List<Map<String, dynamic>> maps = await db.rawQuery(sql, arguments);
+    return maps.map((map) => map[_columnUri] as String).toList();
   }
 
   /// Appends posts to a given feed.
-  /// Useful for infinite scrolling where you add new items to the end of a feed.
   /// Assumes postUris are for new posts not already associated with this feed for this "page".
   Future<void> appendPostsToFeed(String feedIdentifier, List<String> postUris) async {
     if (postUris.isEmpty) return;

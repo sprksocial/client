@@ -20,8 +20,9 @@ mixin _$FeedState {
   List<AtUri> get uris => throw _privateConstructorUsedError;
   int get index => throw _privateConstructorUsedError;
   int get remainingCachedPosts => throw _privateConstructorUsedError;
-  bool get isFetching => throw _privateConstructorUsedError;
+  bool get isCaching => throw _privateConstructorUsedError;
   bool get isEndOfFeed => throw _privateConstructorUsedError;
+  bool get isEndOfNetworkFeed => throw _privateConstructorUsedError;
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.
@@ -40,8 +41,9 @@ abstract class $FeedStateCopyWith<$Res> {
       List<AtUri> uris,
       int index,
       int remainingCachedPosts,
-      bool isFetching,
-      bool isEndOfFeed});
+      bool isCaching,
+      bool isEndOfFeed,
+      bool isEndOfNetworkFeed});
 }
 
 /// @nodoc
@@ -63,8 +65,9 @@ class _$FeedStateCopyWithImpl<$Res, $Val extends FeedState>
     Object? uris = null,
     Object? index = null,
     Object? remainingCachedPosts = null,
-    Object? isFetching = null,
+    Object? isCaching = null,
     Object? isEndOfFeed = null,
+    Object? isEndOfNetworkFeed = null,
   }) {
     return _then(_value.copyWith(
       active: null == active
@@ -83,13 +86,17 @@ class _$FeedStateCopyWithImpl<$Res, $Val extends FeedState>
           ? _value.remainingCachedPosts
           : remainingCachedPosts // ignore: cast_nullable_to_non_nullable
               as int,
-      isFetching: null == isFetching
-          ? _value.isFetching
-          : isFetching // ignore: cast_nullable_to_non_nullable
+      isCaching: null == isCaching
+          ? _value.isCaching
+          : isCaching // ignore: cast_nullable_to_non_nullable
               as bool,
       isEndOfFeed: null == isEndOfFeed
           ? _value.isEndOfFeed
           : isEndOfFeed // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isEndOfNetworkFeed: null == isEndOfNetworkFeed
+          ? _value.isEndOfNetworkFeed
+          : isEndOfNetworkFeed // ignore: cast_nullable_to_non_nullable
               as bool,
     ) as $Val);
   }
@@ -108,8 +115,9 @@ abstract class _$$FeedStateImplCopyWith<$Res>
       List<AtUri> uris,
       int index,
       int remainingCachedPosts,
-      bool isFetching,
-      bool isEndOfFeed});
+      bool isCaching,
+      bool isEndOfFeed,
+      bool isEndOfNetworkFeed});
 }
 
 /// @nodoc
@@ -129,8 +137,9 @@ class __$$FeedStateImplCopyWithImpl<$Res>
     Object? uris = null,
     Object? index = null,
     Object? remainingCachedPosts = null,
-    Object? isFetching = null,
+    Object? isCaching = null,
     Object? isEndOfFeed = null,
+    Object? isEndOfNetworkFeed = null,
   }) {
     return _then(_$FeedStateImpl(
       active: null == active
@@ -149,13 +158,17 @@ class __$$FeedStateImplCopyWithImpl<$Res>
           ? _value.remainingCachedPosts
           : remainingCachedPosts // ignore: cast_nullable_to_non_nullable
               as int,
-      isFetching: null == isFetching
-          ? _value.isFetching
-          : isFetching // ignore: cast_nullable_to_non_nullable
+      isCaching: null == isCaching
+          ? _value.isCaching
+          : isCaching // ignore: cast_nullable_to_non_nullable
               as bool,
       isEndOfFeed: null == isEndOfFeed
           ? _value.isEndOfFeed
           : isEndOfFeed // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isEndOfNetworkFeed: null == isEndOfNetworkFeed
+          ? _value.isEndOfNetworkFeed
+          : isEndOfNetworkFeed // ignore: cast_nullable_to_non_nullable
               as bool,
     ));
   }
@@ -169,8 +182,9 @@ class _$FeedStateImpl implements _FeedState {
       required final List<AtUri> uris,
       required this.index,
       required this.remainingCachedPosts,
-      required this.isFetching,
-      required this.isEndOfFeed})
+      required this.isCaching,
+      required this.isEndOfFeed,
+      required this.isEndOfNetworkFeed})
       : _uris = uris;
 
   @override
@@ -188,13 +202,15 @@ class _$FeedStateImpl implements _FeedState {
   @override
   final int remainingCachedPosts;
   @override
-  final bool isFetching;
+  final bool isCaching;
   @override
   final bool isEndOfFeed;
+  @override
+  final bool isEndOfNetworkFeed;
 
   @override
   String toString() {
-    return 'FeedState(active: $active, uris: $uris, index: $index, remainingCachedPosts: $remainingCachedPosts, isFetching: $isFetching, isEndOfFeed: $isEndOfFeed)';
+    return 'FeedState(active: $active, uris: $uris, index: $index, remainingCachedPosts: $remainingCachedPosts, isCaching: $isCaching, isEndOfFeed: $isEndOfFeed, isEndOfNetworkFeed: $isEndOfNetworkFeed)';
   }
 
   @override
@@ -207,10 +223,12 @@ class _$FeedStateImpl implements _FeedState {
             (identical(other.index, index) || other.index == index) &&
             (identical(other.remainingCachedPosts, remainingCachedPosts) ||
                 other.remainingCachedPosts == remainingCachedPosts) &&
-            (identical(other.isFetching, isFetching) ||
-                other.isFetching == isFetching) &&
+            (identical(other.isCaching, isCaching) ||
+                other.isCaching == isCaching) &&
             (identical(other.isEndOfFeed, isEndOfFeed) ||
-                other.isEndOfFeed == isEndOfFeed));
+                other.isEndOfFeed == isEndOfFeed) &&
+            (identical(other.isEndOfNetworkFeed, isEndOfNetworkFeed) ||
+                other.isEndOfNetworkFeed == isEndOfNetworkFeed));
   }
 
   @override
@@ -220,8 +238,9 @@ class _$FeedStateImpl implements _FeedState {
       const DeepCollectionEquality().hash(_uris),
       index,
       remainingCachedPosts,
-      isFetching,
-      isEndOfFeed);
+      isCaching,
+      isEndOfFeed,
+      isEndOfNetworkFeed);
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.
@@ -238,8 +257,9 @@ abstract class _FeedState implements FeedState {
       required final List<AtUri> uris,
       required final int index,
       required final int remainingCachedPosts,
-      required final bool isFetching,
-      required final bool isEndOfFeed}) = _$FeedStateImpl;
+      required final bool isCaching,
+      required final bool isEndOfFeed,
+      required final bool isEndOfNetworkFeed}) = _$FeedStateImpl;
 
   @override
   bool get active;
@@ -250,9 +270,11 @@ abstract class _FeedState implements FeedState {
   @override
   int get remainingCachedPosts;
   @override
-  bool get isFetching;
+  bool get isCaching;
   @override
   bool get isEndOfFeed;
+  @override
+  bool get isEndOfNetworkFeed;
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.

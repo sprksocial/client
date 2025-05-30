@@ -11,8 +11,6 @@ part 'video_player_provider.g.dart';
 
 @riverpod
 class VideoPlayer extends _$VideoPlayer {
-
-  Future<File> get file async =>File.fromRawPath( (await SQLCache().getPost(state.uri.toString()))?.cachedEmbedFile);
   @override
   VideoPlayerState build(AtUri uri) {
     ref.onDispose(dispose);
