@@ -22,14 +22,23 @@ abstract class FeedRepository {
   /// [feed] The feed to get the posts for
   /// [limit] The number of items to return
   /// [cursor] Pagination cursor for the next set of results
-  Future<({List<bsky.FeedView> bsky, List<PostView> sprk, String? cursor})> getPostsByFeed(Feed feed, {int limit = 30, String? cursor});
+  Future<({List<bsky.FeedView> bsky, List<PostView> sprk, String? cursor})> getPostsByFeed(
+    Feed feed, {
+    int limit = 30,
+    String? cursor,
+  });
 
   /// Get an author's feed
   ///
   /// [actor] The DID of the author
   /// [limit] The number of items to return (default 50)
   /// [cursor] Pagination cursor for the next set of results
-  Future<({List<FeedViewPost> posts, String? cursor})> getAuthorFeed(String actor, {int limit = 20, String? cursor, bool videosOnly = false});
+  Future<({List<FeedViewPost> posts, String? cursor})> getAuthorFeed(
+    String actor, {
+    int limit = 20,
+    String? cursor,
+    bool videosOnly = false,
+  });
 
   /// Like a post
   ///
@@ -91,4 +100,9 @@ abstract class FeedRepository {
   /// [parentHeight] The height of the parent post
   /// [bluesky] Whether the thread is a Bluesky thread
   Future<Thread> getThread(AtUri uri, {int depth = 2, int parentHeight = 0, bool bluesky = false});
+
+  /// Check if a user is an early supporter
+  ///
+  /// [did] The DID of the user to check
+  Future<bool> isEarlySupporter(String did);
 }

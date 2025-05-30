@@ -5,7 +5,7 @@ import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:flutter/services.dart';
 
 import 'core/theme/data/models/app_theme.dart';
-import 'core/theme/providers/theme_provider.dart';
+import 'core/theme/domain/theme_provider.dart';
 
 /// SprkApp is the root widget of the new architecture.
 /// As features are migrated, they will be integrated here.

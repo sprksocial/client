@@ -11,4 +11,11 @@ abstract class ActorRepository {
   ///
   /// [query] The search query.
   Future<List<ProfileView>> searchActors(String query);
+
+  /// Update the user's profile
+  ///
+  /// [displayName] The new display name
+  /// [description] The new description
+  /// [avatar] The new avatar (optional)
+  Future<void> updateProfile({required String displayName, required String description, dynamic avatar});
 }

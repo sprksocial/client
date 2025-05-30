@@ -6,6 +6,7 @@ import 'package:sparksocial/src/core/network/data/repositories/actor_repository.
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
+import 'package:atproto/atproto.dart' as atproto;
 
 /// Actor-related API endpoints implementation
 class ActorRepositoryImpl implements ActorRepository {
@@ -72,5 +73,26 @@ class ActorRepositoryImpl implements ActorRepository {
       _logger.d('Actor search completed successfully');
       return (result.data as List).map((e) => ProfileView.fromJson(e as Map<String, dynamic>)).toList();
     });
+  }
+
+   @override
+  Future<void> updateProfile({required String displayName, required String description, dynamic avatar}) async {
+    if (!_client.authRepository.isAuthenticated) {
+      throw Exception('Not authenticated');
+    }
+
+
+    final record = <String, dynamic>{
+      '\$type': 'so.sprk.actor.profile',
+      'displayName': displayName,
+      'description': description,
+      if (avatar != null) 'avatar': avatar,
+    };
+
+    await _client.repo.editRecord(
+      uri: AtUri.parse('at://${_client.authRepository.session!.did}/so.sprk.actor.profile/self'),
+      record: atproto.Record.fromJson(record),
+    );
+
   }
 }
