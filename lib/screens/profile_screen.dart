@@ -20,6 +20,7 @@ import '../widgets/profile/profile_header.dart';
 import '../widgets/profile/profile_tab_content.dart';
 import '../widgets/profile/profile_tabs.dart';
 import 'auth_prompt_screen.dart';
+import 'create_video_screen.dart';
 import 'edit_profile_screen.dart';
 import 'profile_settings_screen.dart';
 
@@ -398,6 +399,9 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
                   onShareTap: () => debugPrint('Share profile tapped'),
                   onFollowTap: () => _checkAuthAndProceed(_handleFollow),
                   onSettingsTap: _handleSettingsTap,
+                  onAddStoryTap: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateVideoScreen(isStoryMode: true)));
+                  },
                 ),
               ),
 

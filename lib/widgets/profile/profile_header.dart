@@ -23,6 +23,7 @@ class ProfileHeader extends StatefulWidget {
   final VoidCallback onShareTap;
   final VoidCallback onFollowTap;
   final VoidCallback onSettingsTap;
+  final VoidCallback onAddStoryTap;
 
   const ProfileHeader({
     super.key,
@@ -34,6 +35,7 @@ class ProfileHeader extends StatefulWidget {
     required this.onShareTap,
     required this.onFollowTap,
     required this.onSettingsTap,
+    required this.onAddStoryTap,
   });
 
   @override
@@ -118,15 +120,18 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                     Positioned(
                       right: 0,
                       bottom: 0,
-                      child: Container(
-                        width: 30,
-                        height: 30,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: AppColors.primary,
-                          border: Border.all(color: isDarkMode ? AppColors.deepPurple : AppColors.white, width: 2),
+                      child: GestureDetector(
+                        onTap: widget.onAddStoryTap,
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: AppColors.primary,
+                            border: Border.all(color: isDarkMode ? AppColors.deepPurple : AppColors.white, width: 2),
+                          ),
+                          child: const Center(child: Icon(FluentIcons.add_24_filled, size: 18, color: AppColors.white)),
                         ),
-                        child: const Center(child: Icon(FluentIcons.add_24_filled, size: 18, color: AppColors.white)),
                       ),
                     ),
                 ],
