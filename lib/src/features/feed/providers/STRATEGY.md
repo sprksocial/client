@@ -134,7 +134,7 @@ graph TD
     B -- Yes --> C[Set isEndOfFeed = true];
     C --> D[Show CircularProgressIndicator at bottom];
     D --> E{Watch remainingCachedPosts};
-    E -- remainingCachedPosts > 0 --> F[Call dbLoad()];
+    E -- remainingCachedPosts > 0 --> F["Call dbLoad()"];
     F --> G[Set isEndOfFeed = false];
     G --> H[Hide CircularProgressIndicator / Load new posts];
     B -- No --> I[Do nothing, already waiting];
@@ -176,7 +176,7 @@ Loads posts from the local database into the `uris` list for display.
 ```mermaid
 graph TD
     Start[dbLoad called with currentRemainingCachedPosts] --> A{currentRemainingCachedPosts > 0?};
-    A -- Yes --> B[amountToLoad = min(currentRemainingCachedPosts, n)];
+    A -- Yes --> B["amountToLoad = min(currentRemainingCachedPosts, n")];
     B --> C{amountToLoad > 0?};
     C -- Yes --> D[Load 'amountToLoad' most recent PostViews from DB];
     D --> E[Add PostViews to 'uris' list];
@@ -199,14 +199,14 @@ Fetches new post metadata from the network, downloads their media, and stores th
 graph TD
     Start[fetchAndStore called] --> A[Set isFetching = true];
     A --> B[Repository: Fetch n PostViews metadata];
-    B --> C[For each PostView (concurrently)];
+    B --> C["For each PostView (concurrently)"];
     C --> D[Download video/image for PostView];
     D -- Success --> E[Add PostView to DB];
     E --> F[Increment global remainingCachedPosts];
     F --> G{Have n/2 posts finished downloading?};
     G -- Yes --> H[Set isFetching = false];
-    H --> I[Continue downloading remaining (up to n/2) posts in background];
-    I --> End[All n (or fewer if error) attempted];
+    H --> I["Continue downloading remaining (up to n/2) posts in background"];
+    I --> End["All n (or fewer if error) attempted"];
     G -- No --> C;
     D -- Failure --> C;
 ```
