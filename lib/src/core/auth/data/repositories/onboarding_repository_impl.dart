@@ -7,7 +7,7 @@ import 'package:sparksocial/src/core/network/data/models/graph_models.dart';
 
 import 'package:sparksocial/src/core/network/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/features/auth/data/repositories/auth_repository.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'onboarding_repository.dart';
 
 class OnboardingRepositoryImpl implements OnboardingRepository {

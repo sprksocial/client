@@ -1,18 +1,18 @@
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository_impl.dart';
 import 'package:sparksocial/src/core/storage/cache/cache_manager_impl.dart';
 import 'package:sparksocial/src/core/theme/data/repositories/theme_repository.dart';
 import 'package:sparksocial/src/core/theme/data/repositories/theme_repository_impl.dart';
-import 'package:sparksocial/src/features/feed/data/repository/post_view_cache_service.dart';
-import 'package:sparksocial/src/features/settings/data/repositories/settings_repository.dart';
+import 'package:sparksocial/src/core/storage/cache/sql_cache.dart';
+import 'package:sparksocial/src/core/settings/repositories/settings_repository.dart';
 import 'package:sparksocial/src/features/auth/auth.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/network/atproto.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/core/network/data/repositories/sprk_repository_impl.dart';
-import 'package:sparksocial/src/features/settings/data/repositories/settings_repository_impl.dart';
-import 'package:sparksocial/src/features/auth/data/repositories/onboarding_repository.dart';
-import 'package:sparksocial/src/features/auth/data/repositories/onboarding_repository_impl.dart';
+import 'package:sparksocial/src/core/settings/repositories/settings_repository_impl.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository_impl.dart';
 import 'package:sparksocial/src/features/profile/data/repositories/profile_repository.dart';
 import 'package:sparksocial/src/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/actor_repository_impl.dart';
@@ -59,7 +59,7 @@ Future<void> _registerCore() async {
   final storageManager = StorageManager.instance;
   await storageManager.init();
 
-  await PostViewCacheService().database;
+  await SQLCache().database;
 
   // Register storage manager
   sl.registerSingleton<StorageManager>(storageManager);

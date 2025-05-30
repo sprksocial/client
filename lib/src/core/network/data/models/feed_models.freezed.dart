@@ -297,7 +297,7 @@ class __$$CustomFeedImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$CustomFeedImpl implements _CustomFeed {
+class _$CustomFeedImpl with DiagnosticableTreeMixin implements _CustomFeed {
   const _$CustomFeedImpl(
       {required this.creator,
       this.name = 'Custom Feed',
@@ -389,8 +389,29 @@ class _$CustomFeedImpl implements _CustomFeed {
   }
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'CustomFeed(creator: $creator, name: $name, description: $description, descriptionFacets: $descriptionFacets, labels: $labels, likeCount: $likeCount, imageUrl: $imageUrl, isDraft: $isDraft, videosOnly: $videosOnly, did: $did, uri: $uri, cid: $cid, hashtagPreferences: $hashtagPreferences, labelPreferences: $labelPreferences)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'CustomFeed'))
+      ..add(DiagnosticsProperty('creator', creator))
+      ..add(DiagnosticsProperty('name', name))
+      ..add(DiagnosticsProperty('description', description))
+      ..add(DiagnosticsProperty('descriptionFacets', descriptionFacets))
+      ..add(DiagnosticsProperty('labels', labels))
+      ..add(DiagnosticsProperty('likeCount', likeCount))
+      ..add(DiagnosticsProperty('imageUrl', imageUrl))
+      ..add(DiagnosticsProperty('isDraft', isDraft))
+      ..add(DiagnosticsProperty('videosOnly', videosOnly))
+      ..add(DiagnosticsProperty('did', did))
+      ..add(DiagnosticsProperty('uri', uri))
+      ..add(DiagnosticsProperty('cid', cid))
+      ..add(DiagnosticsProperty('hashtagPreferences', hashtagPreferences))
+      ..add(DiagnosticsProperty('labelPreferences', labelPreferences));
   }
 
   @override
@@ -634,7 +655,7 @@ class __$$FeedCustomImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$FeedCustomImpl extends FeedCustom {
+class _$FeedCustomImpl extends FeedCustom with DiagnosticableTreeMixin {
   const _$FeedCustomImpl(
       {required this.name,
       @AtUriConverter() required this.uri,
@@ -655,8 +676,17 @@ class _$FeedCustomImpl extends FeedCustom {
   final String $type;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'Feed.custom(name: $name, uri: $uri)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'Feed.custom'))
+      ..add(DiagnosticsProperty('name', name))
+      ..add(DiagnosticsProperty('uri', uri));
   }
 
   @override
@@ -805,7 +835,7 @@ class __$$FeedHardCodedImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$FeedHardCodedImpl extends FeedHardCoded {
+class _$FeedHardCodedImpl extends FeedHardCoded with DiagnosticableTreeMixin {
   const _$FeedHardCodedImpl({required this.hardCodedFeed, final String? $type})
       : $type = $type ?? 'hardCoded',
         super._();
@@ -820,8 +850,16 @@ class _$FeedHardCodedImpl extends FeedHardCoded {
   final String $type;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'Feed.hardCoded(hardCodedFeed: $hardCodedFeed)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'Feed.hardCoded'))
+      ..add(DiagnosticsProperty('hardCodedFeed', hardCodedFeed));
   }
 
   @override
@@ -1023,7 +1061,9 @@ class __$$SkeletonFeedPostImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$SkeletonFeedPostImpl implements _SkeletonFeedPost {
+class _$SkeletonFeedPostImpl
+    with DiagnosticableTreeMixin
+    implements _SkeletonFeedPost {
   const _$SkeletonFeedPostImpl({@AtUriConverter() required this.uri});
 
   factory _$SkeletonFeedPostImpl.fromJson(Map<String, dynamic> json) =>
@@ -1034,8 +1074,16 @@ class _$SkeletonFeedPostImpl implements _SkeletonFeedPost {
   final AtUri uri;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'SkeletonFeedPost(uri: $uri)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'SkeletonFeedPost'))
+      ..add(DiagnosticsProperty('uri', uri));
   }
 
   @override
@@ -1219,7 +1267,9 @@ class __$$FeedViewPostPostImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$FeedViewPostPostImpl implements _FeedViewPostPost {
+class _$FeedViewPostPostImpl
+    with DiagnosticableTreeMixin
+    implements _FeedViewPostPost {
   const _$FeedViewPostPostImpl({required this.post, this.reply});
 
   factory _$FeedViewPostPostImpl.fromJson(Map<String, dynamic> json) =>
@@ -1231,8 +1281,17 @@ class _$FeedViewPostPostImpl implements _FeedViewPostPost {
   final ReplyRef? reply;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'FeedViewPost(post: $post, reply: $reply)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'FeedViewPost'))
+      ..add(DiagnosticsProperty('post', post))
+      ..add(DiagnosticsProperty('reply', reply));
   }
 
   @override
@@ -1450,7 +1509,7 @@ class __$$ReplyRefImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ReplyRefImpl implements _ReplyRef {
+class _$ReplyRefImpl with DiagnosticableTreeMixin implements _ReplyRef {
   const _$ReplyRefImpl(
       {required this.root, required this.parent, this.grandparentAuthor});
 
@@ -1467,8 +1526,18 @@ class _$ReplyRefImpl implements _ReplyRef {
   final ProfileViewBasic? grandparentAuthor;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'ReplyRef(root: $root, parent: $parent, grandparentAuthor: $grandparentAuthor)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'ReplyRef'))
+      ..add(DiagnosticsProperty('root', root))
+      ..add(DiagnosticsProperty('parent', parent))
+      ..add(DiagnosticsProperty('grandparentAuthor', grandparentAuthor));
   }
 
   @override
@@ -1674,7 +1743,8 @@ class __$$ReplyRefPostReferencePostImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ReplyRefPostReferencePostImpl extends ReplyRefPostReferencePost {
+class _$ReplyRefPostReferencePostImpl extends ReplyRefPostReferencePost
+    with DiagnosticableTreeMixin {
   const _$ReplyRefPostReferencePostImpl(
       {required this.post, final String? $type})
       : $type = $type ?? 'so.sprk.feed.defs#post',
@@ -1690,8 +1760,16 @@ class _$ReplyRefPostReferencePostImpl extends ReplyRefPostReferencePost {
   final String $type;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'ReplyRefPostReference.post(post: $post)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'ReplyRefPostReference.post'))
+      ..add(DiagnosticsProperty('post', post));
   }
 
   @override
@@ -1861,7 +1939,7 @@ class __$$ReplyRefPostReferenceNotFoundPostImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$ReplyRefPostReferenceNotFoundPostImpl
-    extends ReplyRefPostReferenceNotFoundPost {
+    extends ReplyRefPostReferenceNotFoundPost with DiagnosticableTreeMixin {
   const _$ReplyRefPostReferenceNotFoundPostImpl(
       {@AtUriConverter() required this.uri,
       required this.notFound,
@@ -1883,8 +1961,17 @@ class _$ReplyRefPostReferenceNotFoundPostImpl
   final String $type;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'ReplyRefPostReference.notFoundPost(uri: $uri, notFound: $notFound)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'ReplyRefPostReference.notFoundPost'))
+      ..add(DiagnosticsProperty('uri', uri))
+      ..add(DiagnosticsProperty('notFound', notFound));
   }
 
   @override
@@ -2079,7 +2166,7 @@ class __$$ReplyRefPostReferenceBlockedPostImplCopyWithImpl<$Res>
 /// @nodoc
 @JsonSerializable()
 class _$ReplyRefPostReferenceBlockedPostImpl
-    extends ReplyRefPostReferenceBlockedPost {
+    extends ReplyRefPostReferenceBlockedPost with DiagnosticableTreeMixin {
   const _$ReplyRefPostReferenceBlockedPostImpl(
       {@AtUriConverter() required this.uri,
       required this.blocked,
@@ -2104,8 +2191,18 @@ class _$ReplyRefPostReferenceBlockedPostImpl
   final String $type;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'ReplyRefPostReference.blockedPost(uri: $uri, blocked: $blocked, author: $author)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'ReplyRefPostReference.blockedPost'))
+      ..add(DiagnosticsProperty('uri', uri))
+      ..add(DiagnosticsProperty('blocked', blocked))
+      ..add(DiagnosticsProperty('author', author));
   }
 
   @override
@@ -2361,7 +2458,9 @@ class __$$BlockedAuthorImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$BlockedAuthorImpl implements _BlockedAuthor {
+class _$BlockedAuthorImpl
+    with DiagnosticableTreeMixin
+    implements _BlockedAuthor {
   const _$BlockedAuthorImpl({required this.did, this.viewer});
 
   factory _$BlockedAuthorImpl.fromJson(Map<String, dynamic> json) =>
@@ -2373,8 +2472,17 @@ class _$BlockedAuthorImpl implements _BlockedAuthor {
   final Viewer? viewer;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'BlockedAuthor(did: $did, viewer: $viewer)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'BlockedAuthor'))
+      ..add(DiagnosticsProperty('did', did))
+      ..add(DiagnosticsProperty('viewer', viewer));
   }
 
   @override
@@ -2553,7 +2661,7 @@ class __$$PostThreadImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$PostThreadImpl implements _PostThread {
+class _$PostThreadImpl with DiagnosticableTreeMixin implements _PostThread {
   const _$PostThreadImpl(
       {required this.post,
       final List<PostView>? parent,
@@ -2587,8 +2695,18 @@ class _$PostThreadImpl implements _PostThread {
   }
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'PostThread(post: $post, parent: $parent, replies: $replies)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'PostThread'))
+      ..add(DiagnosticsProperty('post', post))
+      ..add(DiagnosticsProperty('parent', parent))
+      ..add(DiagnosticsProperty('replies', replies));
   }
 
   @override
@@ -2778,7 +2896,9 @@ class __$$RecordReplyRefImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$RecordReplyRefImpl implements _RecordReplyRef {
+class _$RecordReplyRefImpl
+    with DiagnosticableTreeMixin
+    implements _RecordReplyRef {
   const _$RecordReplyRefImpl({required this.root, required this.parent});
 
   factory _$RecordReplyRefImpl.fromJson(Map<String, dynamic> json) =>
@@ -2790,8 +2910,17 @@ class _$RecordReplyRefImpl implements _RecordReplyRef {
   final StrongRef parent;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'RecordReplyRef(root: $root, parent: $parent)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'RecordReplyRef'))
+      ..add(DiagnosticsProperty('root', root))
+      ..add(DiagnosticsProperty('parent', parent));
   }
 
   @override
@@ -3015,7 +3144,7 @@ class __$$ViewerImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ViewerImpl implements _Viewer {
+class _$ViewerImpl with DiagnosticableTreeMixin implements _Viewer {
   const _$ViewerImpl(
       {@AtUriConverter() this.repost,
       @AtUriConverter() this.like,
@@ -3047,8 +3176,22 @@ class _$ViewerImpl implements _Viewer {
   final bool? pinned;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'Viewer(repost: $repost, like: $like, look: $look, threadMuted: $threadMuted, replyDisabled: $replyDisabled, embeddingDisabled: $embeddingDisabled, pinned: $pinned)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'Viewer'))
+      ..add(DiagnosticsProperty('repost', repost))
+      ..add(DiagnosticsProperty('like', like))
+      ..add(DiagnosticsProperty('look', look))
+      ..add(DiagnosticsProperty('threadMuted', threadMuted))
+      ..add(DiagnosticsProperty('replyDisabled', replyDisabled))
+      ..add(DiagnosticsProperty('embeddingDisabled', embeddingDisabled))
+      ..add(DiagnosticsProperty('pinned', pinned));
   }
 
   @override
@@ -3348,7 +3491,8 @@ class __$$PostRecordVideoImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$PostRecordVideoImpl extends _PostRecordVideo {
+class _$PostRecordVideoImpl extends _PostRecordVideo
+    with DiagnosticableTreeMixin {
   const _$PostRecordVideoImpl(
       {required this.createdAt,
       @JsonKey(defaultValue: '') this.text,
@@ -3419,8 +3563,23 @@ class _$PostRecordVideoImpl extends _PostRecordVideo {
   final Embed? embed;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'PostRecord(createdAt: $createdAt, text: $text, facets: $facets, reply: $reply, langs: $langs, tags: $tags, selfLabels: $selfLabels, embed: $embed)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'PostRecord'))
+      ..add(DiagnosticsProperty('createdAt', createdAt))
+      ..add(DiagnosticsProperty('text', text))
+      ..add(DiagnosticsProperty('facets', facets))
+      ..add(DiagnosticsProperty('reply', reply))
+      ..add(DiagnosticsProperty('langs', langs))
+      ..add(DiagnosticsProperty('tags', tags))
+      ..add(DiagnosticsProperty('selfLabels', selfLabels))
+      ..add(DiagnosticsProperty('embed', embed));
   }
 
   @override
@@ -3637,7 +3796,7 @@ class __$$EmbedVideoImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$EmbedVideoImpl extends EmbedVideo {
+class _$EmbedVideoImpl extends EmbedVideo with DiagnosticableTreeMixin {
   const _$EmbedVideoImpl({required this.video, final String? $type})
       : $type = $type ?? 'so.sprk.embed.video',
         super._();
@@ -3652,8 +3811,16 @@ class _$EmbedVideoImpl extends EmbedVideo {
   final String $type;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'Embed.video(video: $video)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'Embed.video'))
+      ..add(DiagnosticsProperty('video', video));
   }
 
   @override
@@ -3810,7 +3977,7 @@ class __$$EmbedImageImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$EmbedImageImpl extends EmbedImage {
+class _$EmbedImageImpl extends EmbedImage with DiagnosticableTreeMixin {
   const _$EmbedImageImpl({required this.image, final String? $type})
       : $type = $type ?? 'so.sprk.embed.images',
         super._();
@@ -3825,8 +3992,16 @@ class _$EmbedImageImpl extends EmbedImage {
   final String $type;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'Embed.image(image: $image)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'Embed.image'))
+      ..add(DiagnosticsProperty('image', image));
   }
 
   @override
@@ -3955,8 +4130,7 @@ mixin _$PostView {
   int? get quoteCount => throw _privateConstructorUsedError;
   List<Label>? get labels =>
       throw _privateConstructorUsedError; //SoundView? sound,
-  EmbedView? get embed => throw _privateConstructorUsedError; // aturi
-  String? get cachedEmbedFile => throw _privateConstructorUsedError;
+  EmbedView? get embed => throw _privateConstructorUsedError;
 
   /// Serializes this PostView to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -3985,8 +4159,7 @@ abstract class $PostViewCopyWith<$Res> {
       int? repostCount,
       int? quoteCount,
       List<Label>? labels,
-      EmbedView? embed,
-      String? cachedEmbedFile});
+      EmbedView? embed});
 
   $ProfileViewBasicCopyWith<$Res> get author;
   $PostRecordCopyWith<$Res> get record;
@@ -4020,7 +4193,6 @@ class _$PostViewCopyWithImpl<$Res, $Val extends PostView>
     Object? quoteCount = freezed,
     Object? labels = freezed,
     Object? embed = freezed,
-    Object? cachedEmbedFile = freezed,
   }) {
     return _then(_value.copyWith(
       uri: null == uri
@@ -4071,10 +4243,6 @@ class _$PostViewCopyWithImpl<$Res, $Val extends PostView>
           ? _value.embed
           : embed // ignore: cast_nullable_to_non_nullable
               as EmbedView?,
-      cachedEmbedFile: freezed == cachedEmbedFile
-          ? _value.cachedEmbedFile
-          : cachedEmbedFile // ignore: cast_nullable_to_non_nullable
-              as String?,
     ) as $Val);
   }
 
@@ -4133,8 +4301,7 @@ abstract class _$$VideoPostViewImplCopyWith<$Res>
       int? repostCount,
       int? quoteCount,
       List<Label>? labels,
-      EmbedView? embed,
-      String? cachedEmbedFile});
+      EmbedView? embed});
 
   @override
   $ProfileViewBasicCopyWith<$Res> get author;
@@ -4169,7 +4336,6 @@ class __$$VideoPostViewImplCopyWithImpl<$Res>
     Object? quoteCount = freezed,
     Object? labels = freezed,
     Object? embed = freezed,
-    Object? cachedEmbedFile = freezed,
   }) {
     return _then(_$VideoPostViewImpl(
       uri: null == uri
@@ -4220,17 +4386,13 @@ class __$$VideoPostViewImplCopyWithImpl<$Res>
           ? _value.embed
           : embed // ignore: cast_nullable_to_non_nullable
               as EmbedView?,
-      cachedEmbedFile: freezed == cachedEmbedFile
-          ? _value.cachedEmbedFile
-          : cachedEmbedFile // ignore: cast_nullable_to_non_nullable
-              as String?,
     ));
   }
 }
 
 /// @nodoc
 @JsonSerializable()
-class _$VideoPostViewImpl extends VideoPostView {
+class _$VideoPostViewImpl extends VideoPostView with DiagnosticableTreeMixin {
   const _$VideoPostViewImpl(
       {@AtUriConverter() required this.uri,
       required this.cid,
@@ -4243,8 +4405,7 @@ class _$VideoPostViewImpl extends VideoPostView {
       this.repostCount,
       this.quoteCount,
       final List<Label>? labels,
-      this.embed,
-      this.cachedEmbedFile})
+      this.embed})
       : _labels = labels,
         super._();
 
@@ -4286,13 +4447,29 @@ class _$VideoPostViewImpl extends VideoPostView {
 //SoundView? sound,
   @override
   final EmbedView? embed;
-// aturi
-  @override
-  final String? cachedEmbedFile;
 
   @override
-  String toString() {
-    return 'PostView(uri: $uri, cid: $cid, author: $author, record: $record, isRepost: $isRepost, indexedAt: $indexedAt, likeCount: $likeCount, replyCount: $replyCount, repostCount: $repostCount, quoteCount: $quoteCount, labels: $labels, embed: $embed, cachedEmbedFile: $cachedEmbedFile)';
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'PostView(uri: $uri, cid: $cid, author: $author, record: $record, isRepost: $isRepost, indexedAt: $indexedAt, likeCount: $likeCount, replyCount: $replyCount, repostCount: $repostCount, quoteCount: $quoteCount, labels: $labels, embed: $embed)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'PostView'))
+      ..add(DiagnosticsProperty('uri', uri))
+      ..add(DiagnosticsProperty('cid', cid))
+      ..add(DiagnosticsProperty('author', author))
+      ..add(DiagnosticsProperty('record', record))
+      ..add(DiagnosticsProperty('isRepost', isRepost))
+      ..add(DiagnosticsProperty('indexedAt', indexedAt))
+      ..add(DiagnosticsProperty('likeCount', likeCount))
+      ..add(DiagnosticsProperty('replyCount', replyCount))
+      ..add(DiagnosticsProperty('repostCount', repostCount))
+      ..add(DiagnosticsProperty('quoteCount', quoteCount))
+      ..add(DiagnosticsProperty('labels', labels))
+      ..add(DiagnosticsProperty('embed', embed));
   }
 
   @override
@@ -4317,9 +4494,7 @@ class _$VideoPostViewImpl extends VideoPostView {
             (identical(other.quoteCount, quoteCount) ||
                 other.quoteCount == quoteCount) &&
             const DeepCollectionEquality().equals(other._labels, _labels) &&
-            (identical(other.embed, embed) || other.embed == embed) &&
-            (identical(other.cachedEmbedFile, cachedEmbedFile) ||
-                other.cachedEmbedFile == cachedEmbedFile));
+            (identical(other.embed, embed) || other.embed == embed));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -4337,8 +4512,7 @@ class _$VideoPostViewImpl extends VideoPostView {
       repostCount,
       quoteCount,
       const DeepCollectionEquality().hash(_labels),
-      embed,
-      cachedEmbedFile);
+      embed);
 
   /// Create a copy of PostView
   /// with the given fields replaced by the non-null parameter values.
@@ -4369,8 +4543,7 @@ abstract class VideoPostView extends PostView {
       final int? repostCount,
       final int? quoteCount,
       final List<Label>? labels,
-      final EmbedView? embed,
-      final String? cachedEmbedFile}) = _$VideoPostViewImpl;
+      final EmbedView? embed}) = _$VideoPostViewImpl;
   const VideoPostView._() : super._();
 
   factory VideoPostView.fromJson(Map<String, dynamic> json) =
@@ -4400,9 +4573,7 @@ abstract class VideoPostView extends PostView {
   @override
   List<Label>? get labels; //SoundView? sound,
   @override
-  EmbedView? get embed; // aturi
-  @override
-  String? get cachedEmbedFile;
+  EmbedView? get embed;
 
   /// Create a copy of PostView
   /// with the given fields replaced by the non-null parameter values.
@@ -4537,7 +4708,7 @@ class __$$EmbedViewVideoImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$EmbedViewVideoImpl extends EmbedViewVideo {
+class _$EmbedViewVideoImpl extends EmbedViewVideo with DiagnosticableTreeMixin {
   const _$EmbedViewVideoImpl({required this.video, final String? $type})
       : $type = $type ?? 'so.sprk.embed.video#view',
         super._();
@@ -4552,8 +4723,16 @@ class _$EmbedViewVideoImpl extends EmbedViewVideo {
   final String $type;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'EmbedView.video(video: $video)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'EmbedView.video'))
+      ..add(DiagnosticsProperty('video', video));
   }
 
   @override
@@ -4711,7 +4890,7 @@ class __$$EmbedViewImageImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$EmbedViewImageImpl extends EmbedViewImage {
+class _$EmbedViewImageImpl extends EmbedViewImage with DiagnosticableTreeMixin {
   const _$EmbedViewImageImpl({required this.image, final String? $type})
       : $type = $type ?? 'so.sprk.embed.images#view',
         super._();
@@ -4726,8 +4905,16 @@ class _$EmbedViewImageImpl extends EmbedViewImage {
   final String $type;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'EmbedView.image(image: $image)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'EmbedView.image'))
+      ..add(DiagnosticsProperty('image', image));
   }
 
   @override
@@ -4939,7 +5126,7 @@ class __$$FeedSkeletonImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$FeedSkeletonImpl implements _FeedSkeleton {
+class _$FeedSkeletonImpl with DiagnosticableTreeMixin implements _FeedSkeleton {
   const _$FeedSkeletonImpl(
       {required final List<SkeletonFeedPost> feed, this.cursor})
       : _feed = feed;
@@ -4959,8 +5146,17 @@ class _$FeedSkeletonImpl implements _FeedSkeleton {
   final String? cursor;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'FeedSkeleton(feed: $feed, cursor: $cursor)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'FeedSkeleton'))
+      ..add(DiagnosticsProperty('feed', feed))
+      ..add(DiagnosticsProperty('cursor', cursor));
   }
 
   @override
@@ -5126,7 +5322,9 @@ class __$$ImageUploadResultImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ImageUploadResultImpl implements _ImageUploadResult {
+class _$ImageUploadResultImpl
+    with DiagnosticableTreeMixin
+    implements _ImageUploadResult {
   const _$ImageUploadResultImpl(
       {required this.fullsize,
       required this.alt,
@@ -5149,8 +5347,18 @@ class _$ImageUploadResultImpl implements _ImageUploadResult {
   }
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'ImageUploadResult(fullsize: $fullsize, alt: $alt, image: $image)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'ImageUploadResult'))
+      ..add(DiagnosticsProperty('fullsize', fullsize))
+      ..add(DiagnosticsProperty('alt', alt))
+      ..add(DiagnosticsProperty('image', image));
   }
 
   @override
@@ -5314,7 +5522,7 @@ class __$$FacetIndexImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$FacetIndexImpl extends _FacetIndex {
+class _$FacetIndexImpl extends _FacetIndex with DiagnosticableTreeMixin {
   const _$FacetIndexImpl({required this.byteStart, required this.byteEnd})
       : super._();
 
@@ -5330,8 +5538,17 @@ class _$FacetIndexImpl extends _FacetIndex {
   final int byteEnd;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'FacetIndex(byteStart: $byteStart, byteEnd: $byteEnd)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'FacetIndex'))
+      ..add(DiagnosticsProperty('byteStart', byteStart))
+      ..add(DiagnosticsProperty('byteEnd', byteEnd));
   }
 
   @override
@@ -5511,7 +5728,7 @@ class __$$MentionFeatureImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$MentionFeatureImpl extends MentionFeature {
+class _$MentionFeatureImpl extends MentionFeature with DiagnosticableTreeMixin {
   const _$MentionFeatureImpl({required this.did, final String? $type})
       : $type = $type ?? '#mention',
         super._();
@@ -5526,8 +5743,16 @@ class _$MentionFeatureImpl extends MentionFeature {
   final String $type;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'FacetFeature.mention(did: $did)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'FacetFeature.mention'))
+      ..add(DiagnosticsProperty('did', did));
   }
 
   @override
@@ -5679,7 +5904,7 @@ class __$$LinkFeatureImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$LinkFeatureImpl extends LinkFeature {
+class _$LinkFeatureImpl extends LinkFeature with DiagnosticableTreeMixin {
   const _$LinkFeatureImpl(
       {@AtUriConverter() required this.uri, final String? $type})
       : $type = $type ?? '#link',
@@ -5696,8 +5921,16 @@ class _$LinkFeatureImpl extends LinkFeature {
   final String $type;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'FacetFeature.link(uri: $uri)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'FacetFeature.link'))
+      ..add(DiagnosticsProperty('uri', uri));
   }
 
   @override
@@ -5849,7 +6082,7 @@ class __$$TagFeatureImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$TagFeatureImpl extends TagFeature {
+class _$TagFeatureImpl extends TagFeature with DiagnosticableTreeMixin {
   const _$TagFeatureImpl({required this.tag, final String? $type})
       : $type = $type ?? '#tag',
         super._();
@@ -5864,8 +6097,16 @@ class _$TagFeatureImpl extends TagFeature {
   final String $type;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'FacetFeature.tag(tag: $tag)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'FacetFeature.tag'))
+      ..add(DiagnosticsProperty('tag', tag));
   }
 
   @override
@@ -6096,7 +6337,7 @@ class __$$FacetImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$FacetImpl extends _Facet {
+class _$FacetImpl extends _Facet with DiagnosticableTreeMixin {
   const _$FacetImpl(
       {required this.index, required final List<FacetFeature> features})
       : _features = features,
@@ -6121,8 +6362,17 @@ class _$FacetImpl extends _Facet {
   }
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'Facet(index: $index, features: $features)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'Facet'))
+      ..add(DiagnosticsProperty('index', index))
+      ..add(DiagnosticsProperty('features', features));
   }
 
   @override
@@ -6298,7 +6548,7 @@ class __$$VideoEmbedImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$VideoEmbedImpl extends _VideoEmbed {
+class _$VideoEmbedImpl extends _VideoEmbed with DiagnosticableTreeMixin {
   const _$VideoEmbedImpl({required this.video, this.alt}) : super._();
 
   factory _$VideoEmbedImpl.fromJson(Map<String, dynamic> json) =>
@@ -6313,8 +6563,17 @@ class _$VideoEmbedImpl extends _VideoEmbed {
   final String? alt;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'VideoEmbed(video: $video, alt: $alt)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'VideoEmbed'))
+      ..add(DiagnosticsProperty('video', video))
+      ..add(DiagnosticsProperty('alt', alt));
   }
 
   @override
@@ -6501,7 +6760,7 @@ class __$$VideoViewImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$VideoViewImpl extends _VideoView {
+class _$VideoViewImpl extends _VideoView with DiagnosticableTreeMixin {
   const _$VideoViewImpl(
       {required this.cid,
       @AtUriConverter() required this.playlist,
@@ -6524,8 +6783,19 @@ class _$VideoViewImpl extends _VideoView {
   final String? alt;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'VideoView(cid: $cid, playlist: $playlist, thumbnail: $thumbnail, alt: $alt)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'VideoView'))
+      ..add(DiagnosticsProperty('cid', cid))
+      ..add(DiagnosticsProperty('playlist', playlist))
+      ..add(DiagnosticsProperty('thumbnail', thumbnail))
+      ..add(DiagnosticsProperty('alt', alt));
   }
 
   @override
@@ -6681,7 +6951,7 @@ class __$$ImageEmbedImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ImageEmbedImpl extends _ImageEmbed {
+class _$ImageEmbedImpl extends _ImageEmbed with DiagnosticableTreeMixin {
   const _$ImageEmbedImpl({required final List<Image> images})
       : _images = images,
         super._();
@@ -6698,8 +6968,16 @@ class _$ImageEmbedImpl extends _ImageEmbed {
   }
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'ImageEmbed(images: $images)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'ImageEmbed'))
+      ..add(DiagnosticsProperty('images', images));
   }
 
   @override
@@ -6863,7 +7141,7 @@ class __$$ImageImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ImageImpl extends _Image {
+class _$ImageImpl extends _Image with DiagnosticableTreeMixin {
   const _$ImageImpl({required this.image, this.alt}) : super._();
 
   factory _$ImageImpl.fromJson(Map<String, dynamic> json) =>
@@ -6875,8 +7153,17 @@ class _$ImageImpl extends _Image {
   final String? alt;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'Image(image: $image, alt: $alt)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'Image'))
+      ..add(DiagnosticsProperty('image', image))
+      ..add(DiagnosticsProperty('alt', alt));
   }
 
   @override
@@ -7017,7 +7304,7 @@ class __$$ImageViewImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ImageViewImpl extends _ImageView {
+class _$ImageViewImpl extends _ImageView with DiagnosticableTreeMixin {
   const _$ImageViewImpl({required final List<ViewImage> images})
       : _images = images,
         super._();
@@ -7034,8 +7321,16 @@ class _$ImageViewImpl extends _ImageView {
   }
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'ImageView(images: $images)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'ImageView'))
+      ..add(DiagnosticsProperty('images', images));
   }
 
   @override
@@ -7205,7 +7500,7 @@ class __$$ViewImageImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ViewImageImpl extends _ViewImage {
+class _$ViewImageImpl extends _ViewImage with DiagnosticableTreeMixin {
   const _$ViewImageImpl(
       {@AtUriConverter() required this.thumb,
       @AtUriConverter() required this.fullsize,
@@ -7225,8 +7520,18 @@ class _$ViewImageImpl extends _ViewImage {
   final String? alt;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'ViewImage(thumb: $thumb, fullsize: $fullsize, alt: $alt)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'ViewImage'))
+      ..add(DiagnosticsProperty('thumb', thumb))
+      ..add(DiagnosticsProperty('fullsize', fullsize))
+      ..add(DiagnosticsProperty('alt', alt));
   }
 
   @override
@@ -7482,7 +7787,7 @@ class __$$ThreadViewPostImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ThreadViewPostImpl extends ThreadViewPost {
+class _$ThreadViewPostImpl extends ThreadViewPost with DiagnosticableTreeMixin {
   const _$ThreadViewPostImpl(
       {required this.post,
       this.parent,
@@ -7517,8 +7822,19 @@ class _$ThreadViewPostImpl extends ThreadViewPost {
   final String $type;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'Thread.threadViewPost(post: $post, parent: $parent, replies: $replies, context: $context)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'Thread.threadViewPost'))
+      ..add(DiagnosticsProperty('post', post))
+      ..add(DiagnosticsProperty('parent', parent))
+      ..add(DiagnosticsProperty('replies', replies))
+      ..add(DiagnosticsProperty('context', context));
   }
 
   @override
@@ -7698,7 +8014,7 @@ class __$$NotFoundPostImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$NotFoundPostImpl extends NotFoundPost {
+class _$NotFoundPostImpl extends NotFoundPost with DiagnosticableTreeMixin {
   const _$NotFoundPostImpl(
       {@AtUriConverter() required this.uri,
       required this.notFound,
@@ -7719,8 +8035,17 @@ class _$NotFoundPostImpl extends NotFoundPost {
   final String $type;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'Thread.notFoundPost(uri: $uri, notFound: $notFound)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'Thread.notFoundPost'))
+      ..add(DiagnosticsProperty('uri', uri))
+      ..add(DiagnosticsProperty('notFound', notFound));
   }
 
   @override
@@ -7911,7 +8236,7 @@ class __$$BlockedPostImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$BlockedPostImpl extends BlockedPost {
+class _$BlockedPostImpl extends BlockedPost with DiagnosticableTreeMixin {
   const _$BlockedPostImpl(
       {@AtUriConverter() required this.uri,
       required this.blocked,
@@ -7935,8 +8260,18 @@ class _$BlockedPostImpl extends BlockedPost {
   final String $type;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'Thread.blockedPost(uri: $uri, blocked: $blocked, author: $author)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'Thread.blockedPost'))
+      ..add(DiagnosticsProperty('uri', uri))
+      ..add(DiagnosticsProperty('blocked', blocked))
+      ..add(DiagnosticsProperty('author', author));
   }
 
   @override
@@ -8163,7 +8498,9 @@ class __$$ThreadContextImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ThreadContextImpl implements _ThreadContext {
+class _$ThreadContextImpl
+    with DiagnosticableTreeMixin
+    implements _ThreadContext {
   const _$ThreadContextImpl({@AtUriConverter() this.rootAuthorLike});
 
   factory _$ThreadContextImpl.fromJson(Map<String, dynamic> json) =>
@@ -8174,8 +8511,16 @@ class _$ThreadContextImpl implements _ThreadContext {
   final AtUri? rootAuthorLike;
 
   @override
-  String toString() {
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
     return 'ThreadContext(rootAuthorLike: $rootAuthorLike)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'ThreadContext'))
+      ..add(DiagnosticsProperty('rootAuthorLike', rootAuthorLike));
   }
 
   @override

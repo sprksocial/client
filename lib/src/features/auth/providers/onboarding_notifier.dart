@@ -3,9 +3,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:get_it/get_it.dart';
 
-import 'package:sparksocial/src/features/auth/data/models/onboarding_screen_state.dart';
-import 'package:sparksocial/src/features/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/features/auth/data/repositories/onboarding_repository.dart';
+import 'package:sparksocial/src/core/auth/data/models/onboarding_screen_state.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 

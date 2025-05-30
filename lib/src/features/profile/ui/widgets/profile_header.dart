@@ -9,7 +9,7 @@ import 'package:sparksocial/src/core/network/data/models/actor_models.dart' as a
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/utils/text_formatter.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
-import 'package:sparksocial/src/features/auth/data/repositories/identity_repository.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/identity_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';

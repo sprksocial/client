@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'settings_state.dart';
-import '../data/repositories/settings_repository.dart';
+import '../../../core/settings/repositories/settings_repository.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 
 part 'settings_provider.g.dart';

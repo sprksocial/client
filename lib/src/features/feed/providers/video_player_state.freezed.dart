@@ -17,7 +17,9 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$VideoPlayerState {
   VideoPlayerController? get controller => throw _privateConstructorUsedError;
-  File get file => throw _privateConstructorUsedError;
+
+  /// ALL video players will be cached, this is the key in the SQLite database
+  /// use it to get the file path
   @AtUriConverter()
   AtUri get uri => throw _privateConstructorUsedError;
 
@@ -34,10 +36,7 @@ abstract class $VideoPlayerStateCopyWith<$Res> {
           VideoPlayerState value, $Res Function(VideoPlayerState) then) =
       _$VideoPlayerStateCopyWithImpl<$Res, VideoPlayerState>;
   @useResult
-  $Res call(
-      {VideoPlayerController? controller,
-      File file,
-      @AtUriConverter() AtUri uri});
+  $Res call({VideoPlayerController? controller, @AtUriConverter() AtUri uri});
 }
 
 /// @nodoc
@@ -56,7 +55,6 @@ class _$VideoPlayerStateCopyWithImpl<$Res, $Val extends VideoPlayerState>
   @override
   $Res call({
     Object? controller = freezed,
-    Object? file = null,
     Object? uri = null,
   }) {
     return _then(_value.copyWith(
@@ -64,10 +62,6 @@ class _$VideoPlayerStateCopyWithImpl<$Res, $Val extends VideoPlayerState>
           ? _value.controller
           : controller // ignore: cast_nullable_to_non_nullable
               as VideoPlayerController?,
-      file: null == file
-          ? _value.file
-          : file // ignore: cast_nullable_to_non_nullable
-              as File,
       uri: null == uri
           ? _value.uri
           : uri // ignore: cast_nullable_to_non_nullable
@@ -84,10 +78,7 @@ abstract class _$$VideoPlayerStateImplCopyWith<$Res>
       __$$VideoPlayerStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {VideoPlayerController? controller,
-      File file,
-      @AtUriConverter() AtUri uri});
+  $Res call({VideoPlayerController? controller, @AtUriConverter() AtUri uri});
 }
 
 /// @nodoc
@@ -104,7 +95,6 @@ class __$$VideoPlayerStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? controller = freezed,
-    Object? file = null,
     Object? uri = null,
   }) {
     return _then(_$VideoPlayerStateImpl(
@@ -112,10 +102,6 @@ class __$$VideoPlayerStateImplCopyWithImpl<$Res>
           ? _value.controller
           : controller // ignore: cast_nullable_to_non_nullable
               as VideoPlayerController?,
-      file: null == file
-          ? _value.file
-          : file // ignore: cast_nullable_to_non_nullable
-              as File,
       uri: null == uri
           ? _value.uri
           : uri // ignore: cast_nullable_to_non_nullable
@@ -128,21 +114,20 @@ class __$$VideoPlayerStateImplCopyWithImpl<$Res>
 
 class _$VideoPlayerStateImpl implements _VideoPlayerState {
   _$VideoPlayerStateImpl(
-      {this.controller,
-      required this.file,
-      @AtUriConverter() required this.uri});
+      {this.controller, @AtUriConverter() required this.uri});
 
   @override
   final VideoPlayerController? controller;
-  @override
-  final File file;
+
+  /// ALL video players will be cached, this is the key in the SQLite database
+  /// use it to get the file path
   @override
   @AtUriConverter()
   final AtUri uri;
 
   @override
   String toString() {
-    return 'VideoPlayerState(controller: $controller, file: $file, uri: $uri)';
+    return 'VideoPlayerState(controller: $controller, uri: $uri)';
   }
 
   @override
@@ -152,12 +137,11 @@ class _$VideoPlayerStateImpl implements _VideoPlayerState {
             other is _$VideoPlayerStateImpl &&
             (identical(other.controller, controller) ||
                 other.controller == controller) &&
-            (identical(other.file, file) || other.file == file) &&
             (identical(other.uri, uri) || other.uri == uri));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, controller, file, uri);
+  int get hashCode => Object.hash(runtimeType, controller, uri);
 
   /// Create a copy of VideoPlayerState
   /// with the given fields replaced by the non-null parameter values.
@@ -172,13 +156,13 @@ class _$VideoPlayerStateImpl implements _VideoPlayerState {
 abstract class _VideoPlayerState implements VideoPlayerState {
   factory _VideoPlayerState(
       {final VideoPlayerController? controller,
-      required final File file,
       @AtUriConverter() required final AtUri uri}) = _$VideoPlayerStateImpl;
 
   @override
   VideoPlayerController? get controller;
-  @override
-  File get file;
+
+  /// ALL video players will be cached, this is the key in the SQLite database
+  /// use it to get the file path
   @override
   @AtUriConverter()
   AtUri get uri;

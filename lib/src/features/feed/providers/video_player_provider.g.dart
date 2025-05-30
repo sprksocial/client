@@ -6,7 +6,7 @@ part of 'video_player_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$videoPlayerHash() => r'72ccb9e2e50ad8ebd68252ec6717fa2c782018fa';
+String _$videoPlayerHash() => r'cc2e310e691a73480e5699388941607716c80302';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -31,11 +31,9 @@ class _SystemHash {
 
 abstract class _$VideoPlayer
     extends BuildlessAutoDisposeNotifier<VideoPlayerState> {
-  late final File file;
   late final AtUri uri;
 
   VideoPlayerState build(
-    File file,
     AtUri uri,
   );
 }
@@ -51,11 +49,9 @@ class VideoPlayerFamily extends Family<VideoPlayerState> {
 
   /// See also [VideoPlayer].
   VideoPlayerProvider call(
-    File file,
     AtUri uri,
   ) {
     return VideoPlayerProvider(
-      file,
       uri,
     );
   }
@@ -65,7 +61,6 @@ class VideoPlayerFamily extends Family<VideoPlayerState> {
     covariant VideoPlayerProvider provider,
   ) {
     return call(
-      provider.file,
       provider.uri,
     );
   }
@@ -90,12 +85,9 @@ class VideoPlayerProvider
     extends AutoDisposeNotifierProviderImpl<VideoPlayer, VideoPlayerState> {
   /// See also [VideoPlayer].
   VideoPlayerProvider(
-    File file,
     AtUri uri,
   ) : this._internal(
-          () => VideoPlayer()
-            ..file = file
-            ..uri = uri,
+          () => VideoPlayer()..uri = uri,
           from: videoPlayerProvider,
           name: r'videoPlayerProvider',
           debugGetCreateSourceHash:
@@ -105,7 +97,6 @@ class VideoPlayerProvider
           dependencies: VideoPlayerFamily._dependencies,
           allTransitiveDependencies:
               VideoPlayerFamily._allTransitiveDependencies,
-          file: file,
           uri: uri,
         );
 
@@ -116,11 +107,9 @@ class VideoPlayerProvider
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.file,
     required this.uri,
   }) : super.internal();
 
-  final File file;
   final AtUri uri;
 
   @override
@@ -128,7 +117,6 @@ class VideoPlayerProvider
     covariant VideoPlayer notifier,
   ) {
     return notifier.build(
-      file,
       uri,
     );
   }
@@ -138,15 +126,12 @@ class VideoPlayerProvider
     return ProviderOverride(
       origin: this,
       override: VideoPlayerProvider._internal(
-        () => create()
-          ..file = file
-          ..uri = uri,
+        () => create()..uri = uri,
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        file: file,
         uri: uri,
       ),
     );
@@ -160,15 +145,12 @@ class VideoPlayerProvider
 
   @override
   bool operator ==(Object other) {
-    return other is VideoPlayerProvider &&
-        other.file == file &&
-        other.uri == uri;
+    return other is VideoPlayerProvider && other.uri == uri;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, file.hashCode);
     hash = _SystemHash.combine(hash, uri.hashCode);
 
     return _SystemHash.finish(hash);
@@ -178,9 +160,6 @@ class VideoPlayerProvider
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 mixin VideoPlayerRef on AutoDisposeNotifierProviderRef<VideoPlayerState> {
-  /// The parameter `file` of this provider.
-  File get file;
-
   /// The parameter `uri` of this provider.
   AtUri get uri;
 }
@@ -190,8 +169,6 @@ class _VideoPlayerProviderElement
     with VideoPlayerRef {
   _VideoPlayerProviderElement(super.provider);
 
-  @override
-  File get file => (origin as VideoPlayerProvider).file;
   @override
   AtUri get uri => (origin as VideoPlayerProvider).uri;
 }

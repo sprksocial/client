@@ -305,10 +305,17 @@ abstract class _ActorViewer implements ActorViewer {
       throw _privateConstructorUsedError;
 }
 
+KnownFollowers _$KnownFollowersFromJson(Map<String, dynamic> json) {
+  return _KnownFollowers.fromJson(json);
+}
+
 /// @nodoc
 mixin _$KnownFollowers {
   int get count => throw _privateConstructorUsedError;
   List<String> get followersDids => throw _privateConstructorUsedError;
+
+  /// Serializes this KnownFollowers to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
   /// Create a copy of KnownFollowers
   /// with the given fields replaced by the non-null parameter values.
@@ -398,11 +405,14 @@ class __$$KnownFollowersImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-
+@JsonSerializable()
 class _$KnownFollowersImpl implements _KnownFollowers {
   const _$KnownFollowersImpl(
       {required this.count, required final List<String> followersDids})
       : _followersDids = followersDids;
+
+  factory _$KnownFollowersImpl.fromJson(Map<String, dynamic> json) =>
+      _$$KnownFollowersImplFromJson(json);
 
   @override
   final int count;
@@ -429,6 +439,7 @@ class _$KnownFollowersImpl implements _KnownFollowers {
                 .equals(other._followersDids, _followersDids));
   }
 
+  @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
       runtimeType, count, const DeepCollectionEquality().hash(_followersDids));
@@ -441,12 +452,22 @@ class _$KnownFollowersImpl implements _KnownFollowers {
   _$$KnownFollowersImplCopyWith<_$KnownFollowersImpl> get copyWith =>
       __$$KnownFollowersImplCopyWithImpl<_$KnownFollowersImpl>(
           this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$KnownFollowersImplToJson(
+      this,
+    );
+  }
 }
 
 abstract class _KnownFollowers implements KnownFollowers {
   const factory _KnownFollowers(
       {required final int count,
       required final List<String> followersDids}) = _$KnownFollowersImpl;
+
+  factory _KnownFollowers.fromJson(Map<String, dynamic> json) =
+      _$KnownFollowersImpl.fromJson;
 
   @override
   int get count;

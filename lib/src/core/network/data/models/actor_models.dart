@@ -28,18 +28,13 @@ class KnownFollowers with _$KnownFollowers {
     required List<String> followersDids, // to avoid circular dependency
   }) = _KnownFollowers;
 
-  factory KnownFollowers.fromJson(Map<String, dynamic> json) {
-    switch (json['followers']) {
-      case const (List<ProfileViewBasic>): // the backend returns a list of followers
-        final List<ProfileViewBasic> followers = json['followers'];
-        final List<String> followersDids = followers.map((e) => e.did).toList();
-        final int count = followersDids.length;
-        final newJson = {'count': count, 'followersDids': followersDids};
-        return _$KnownFollowersFromJson(newJson);
-      default: // the cache and memory will be a list of dids
-        return _$KnownFollowersFromJson(json);
-    }
-  }
+  factory KnownFollowers.fromJson(Map<String, dynamic> json) => switch (json) {
+    {'followers': final List<ProfileViewBasic> profiles, 'count': final int count} => _$KnownFollowersFromJson({
+      'count': count,
+      'followersDids': profiles.map((e) => e.did).toList(),
+    }),
+    _ => _$KnownFollowersFromJson(json),
+  };
 }
 
 @freezed

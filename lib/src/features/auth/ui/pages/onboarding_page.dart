@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/auth/data/models/onboarding_screen_state.dart'; // Import for OnboardingScreenState
+import 'package:sparksocial/src/core/auth/data/models/onboarding_screen_state.dart'; // Import for OnboardingScreenState
 import 'package:sparksocial/src/features/auth/providers/onboarding_notifier.dart';
 import 'package:sparksocial/src/core/widgets/custom_text_field.dart'; // Corrected path
 

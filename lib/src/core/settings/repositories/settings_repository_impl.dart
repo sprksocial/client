@@ -1,4 +1,4 @@
-import 'package:sparksocial/src/features/settings/data/repositories/settings_repository.dart';
+import 'package:sparksocial/src/core/settings/repositories/settings_repository.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 

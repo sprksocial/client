@@ -33,12 +33,19 @@ class CacheManagerImpl implements CacheManagerInterface {
     return file;
   }
 
+  /// Get a cached file
+  /// Returns null if not found
+  @override
+  Future<File?> getCachedFile(String url) async {
+    return (await defaultCacheManager.getFileFromCache(url))?.file;
+  }
+
   /// Store a file in the cache with the given key
   @override
-  Future<void> putFile(String url, List<int> fileBytes) async {
+  Future<void> putFile(String url, Uint8List fileBytes) async {
     await defaultCacheManager.putFile(
       url,
-      Uint8List.fromList(fileBytes),
+      fileBytes,
       maxAge: const Duration(days: 7), // Cache for 7 days
     );
   }

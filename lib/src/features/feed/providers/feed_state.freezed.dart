@@ -17,9 +17,10 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$FeedState {
   bool get active => throw _privateConstructorUsedError;
-  List<({File? file, Widget page, AtUri uri})> get pages =>
-      throw _privateConstructorUsedError;
+  List<AtUri> get uris => throw _privateConstructorUsedError;
   int get index => throw _privateConstructorUsedError;
+  int get remainingCachedPosts => throw _privateConstructorUsedError;
+  bool get isFetching => throw _privateConstructorUsedError;
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.
@@ -35,8 +36,10 @@ abstract class $FeedStateCopyWith<$Res> {
   @useResult
   $Res call(
       {bool active,
-      List<({File? file, Widget page, AtUri uri})> pages,
-      int index});
+      List<AtUri> uris,
+      int index,
+      int remainingCachedPosts,
+      bool isFetching});
 }
 
 /// @nodoc
@@ -55,22 +58,32 @@ class _$FeedStateCopyWithImpl<$Res, $Val extends FeedState>
   @override
   $Res call({
     Object? active = null,
-    Object? pages = null,
+    Object? uris = null,
     Object? index = null,
+    Object? remainingCachedPosts = null,
+    Object? isFetching = null,
   }) {
     return _then(_value.copyWith(
       active: null == active
           ? _value.active
           : active // ignore: cast_nullable_to_non_nullable
               as bool,
-      pages: null == pages
-          ? _value.pages
-          : pages // ignore: cast_nullable_to_non_nullable
-              as List<({File? file, Widget page, AtUri uri})>,
+      uris: null == uris
+          ? _value.uris
+          : uris // ignore: cast_nullable_to_non_nullable
+              as List<AtUri>,
       index: null == index
           ? _value.index
           : index // ignore: cast_nullable_to_non_nullable
               as int,
+      remainingCachedPosts: null == remainingCachedPosts
+          ? _value.remainingCachedPosts
+          : remainingCachedPosts // ignore: cast_nullable_to_non_nullable
+              as int,
+      isFetching: null == isFetching
+          ? _value.isFetching
+          : isFetching // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 }
@@ -85,8 +98,10 @@ abstract class _$$FeedStateImplCopyWith<$Res>
   @useResult
   $Res call(
       {bool active,
-      List<({File? file, Widget page, AtUri uri})> pages,
-      int index});
+      List<AtUri> uris,
+      int index,
+      int remainingCachedPosts,
+      bool isFetching});
 }
 
 /// @nodoc
@@ -103,22 +118,32 @@ class __$$FeedStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? active = null,
-    Object? pages = null,
+    Object? uris = null,
     Object? index = null,
+    Object? remainingCachedPosts = null,
+    Object? isFetching = null,
   }) {
     return _then(_$FeedStateImpl(
       active: null == active
           ? _value.active
           : active // ignore: cast_nullable_to_non_nullable
               as bool,
-      pages: null == pages
-          ? _value._pages
-          : pages // ignore: cast_nullable_to_non_nullable
-              as List<({File? file, Widget page, AtUri uri})>,
+      uris: null == uris
+          ? _value._uris
+          : uris // ignore: cast_nullable_to_non_nullable
+              as List<AtUri>,
       index: null == index
           ? _value.index
           : index // ignore: cast_nullable_to_non_nullable
               as int,
+      remainingCachedPosts: null == remainingCachedPosts
+          ? _value.remainingCachedPosts
+          : remainingCachedPosts // ignore: cast_nullable_to_non_nullable
+              as int,
+      isFetching: null == isFetching
+          ? _value.isFetching
+          : isFetching // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -128,26 +153,32 @@ class __$$FeedStateImplCopyWithImpl<$Res>
 class _$FeedStateImpl implements _FeedState {
   _$FeedStateImpl(
       {required this.active,
-      required final List<({File? file, Widget page, AtUri uri})> pages,
-      required this.index})
-      : _pages = pages;
+      required final List<AtUri> uris,
+      required this.index,
+      required this.remainingCachedPosts,
+      required this.isFetching})
+      : _uris = uris;
 
   @override
   final bool active;
-  final List<({File? file, Widget page, AtUri uri})> _pages;
+  final List<AtUri> _uris;
   @override
-  List<({File? file, Widget page, AtUri uri})> get pages {
-    if (_pages is EqualUnmodifiableListView) return _pages;
+  List<AtUri> get uris {
+    if (_uris is EqualUnmodifiableListView) return _uris;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_pages);
+    return EqualUnmodifiableListView(_uris);
   }
 
   @override
   final int index;
+  @override
+  final int remainingCachedPosts;
+  @override
+  final bool isFetching;
 
   @override
   String toString() {
-    return 'FeedState(active: $active, pages: $pages, index: $index)';
+    return 'FeedState(active: $active, uris: $uris, index: $index, remainingCachedPosts: $remainingCachedPosts, isFetching: $isFetching)';
   }
 
   @override
@@ -156,13 +187,22 @@ class _$FeedStateImpl implements _FeedState {
         (other.runtimeType == runtimeType &&
             other is _$FeedStateImpl &&
             (identical(other.active, active) || other.active == active) &&
-            const DeepCollectionEquality().equals(other._pages, _pages) &&
-            (identical(other.index, index) || other.index == index));
+            const DeepCollectionEquality().equals(other._uris, _uris) &&
+            (identical(other.index, index) || other.index == index) &&
+            (identical(other.remainingCachedPosts, remainingCachedPosts) ||
+                other.remainingCachedPosts == remainingCachedPosts) &&
+            (identical(other.isFetching, isFetching) ||
+                other.isFetching == isFetching));
   }
 
   @override
   int get hashCode => Object.hash(
-      runtimeType, active, const DeepCollectionEquality().hash(_pages), index);
+      runtimeType,
+      active,
+      const DeepCollectionEquality().hash(_uris),
+      index,
+      remainingCachedPosts,
+      isFetching);
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.
@@ -176,15 +216,21 @@ class _$FeedStateImpl implements _FeedState {
 abstract class _FeedState implements FeedState {
   factory _FeedState(
       {required final bool active,
-      required final List<({File? file, Widget page, AtUri uri})> pages,
-      required final int index}) = _$FeedStateImpl;
+      required final List<AtUri> uris,
+      required final int index,
+      required final int remainingCachedPosts,
+      required final bool isFetching}) = _$FeedStateImpl;
 
   @override
   bool get active;
   @override
-  List<({File? file, Widget page, AtUri uri})> get pages;
+  List<AtUri> get uris;
   @override
   int get index;
+  @override
+  int get remainingCachedPosts;
+  @override
+  bool get isFetching;
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.

@@ -5,7 +5,7 @@ import 'package:sparksocial/src/core/network/data/repositories/feed_repository.d
 import 'package:sparksocial/src/core/network/data/repositories/graph_repository.dart';
 import 'package:sparksocial/src/core/network/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/features/auth/data/repositories/auth_repository.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/network/data/repositories/repo_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository_impl.dart';

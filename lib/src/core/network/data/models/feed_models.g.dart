@@ -356,7 +356,6 @@ _$VideoPostViewImpl _$$VideoPostViewImplFromJson(Map<String, dynamic> json) =>
       embed: json['embed'] == null
           ? null
           : EmbedView.fromJson(json['embed'] as Map<String, dynamic>),
-      cachedEmbedFile: json['cachedEmbedFile'] as String?,
     );
 
 Map<String, dynamic> _$$VideoPostViewImplToJson(_$VideoPostViewImpl instance) =>
@@ -373,7 +372,6 @@ Map<String, dynamic> _$$VideoPostViewImplToJson(_$VideoPostViewImpl instance) =>
       'quoteCount': instance.quoteCount,
       'labels': instance.labels,
       'embed': instance.embed,
-      'cachedEmbedFile': instance.cachedEmbedFile,
     };
 
 _$EmbedViewVideoImpl _$$EmbedViewVideoImplFromJson(Map<String, dynamic> json) =>

@@ -4,7 +4,7 @@ import 'package:atproto/atproto.dart' as atp;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/features/profile/data/repositories/profile_repository.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/features/auth/data/repositories/auth_repository.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_state.dart';
 import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';

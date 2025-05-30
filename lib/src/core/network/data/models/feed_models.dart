@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 import 'actor_models.dart';
@@ -219,7 +218,6 @@ class PostView with _$PostView {
     List<Label>? labels,
     //SoundView? sound,
     EmbedView? embed, // aturi
-    String? cachedEmbedFile
   }) = VideoPostView;
 
   factory PostView.fromJson(Map<String, dynamic> json) => _$PostViewFromJson(json);
