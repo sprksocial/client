@@ -10,43 +10,74 @@ import '../services/story_view_service.dart';
 import '../utils/app_colors.dart';
 
 class StoryViewerScreen extends StatefulWidget {
-  final List<Map<String, dynamic>> stories;
+  final List<Map<String, dynamic>> storiesByAuthor;
+  final int initialUserIndex;
 
-  const StoryViewerScreen({super.key, required this.stories});
+  const StoryViewerScreen({super.key, required this.storiesByAuthor, this.initialUserIndex = 0});
 
   @override
   State<StoryViewerScreen> createState() => _StoryViewerScreenState();
 }
 
 class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProviderStateMixin {
-  late List<AnimationController> _progressControllers;
+  late PageController _pageController;
+  late List<List<AnimationController>> _allProgressControllers;
+  late Map<int, int> _userStoryIndices; // Track story index for each user
+  int _currentUserIndex = 0;
   int _currentStoryIndex = 0;
   VideoPlayerController? _videoController;
   bool _isVideoInitialized = false;
   double _dragOffset = 0.0;
   double _dragScale = 1.0;
+  double _horizontalDragStart = 0.0;
+  bool _isHorizontalDrag = false;
+  bool _isDragging = false;
 
   @override
   void initState() {
     super.initState();
-
-    _progressControllers = List.generate(
-      widget.stories.length,
-      (index) => AnimationController(duration: const Duration(seconds: 5), vsync: this),
-    );
-
+    _currentUserIndex = widget.initialUserIndex.clamp(0, widget.storiesByAuthor.length - 1);
+    _pageController = PageController(initialPage: _currentUserIndex);
+    _userStoryIndices = {};
+    _initializeProgressControllers();
     _startCurrentStory();
+  }
+
+  void _initializeProgressControllers() {
+    _allProgressControllers = [];
+    for (final authorData in widget.storiesByAuthor) {
+      final stories = authorData['stories'] as List<dynamic>;
+      final controllers = List.generate(
+        stories.length,
+        (index) => AnimationController(duration: const Duration(seconds: 5), vsync: this),
+      );
+      _allProgressControllers.add(controllers);
+    }
   }
 
   @override
   void dispose() {
+    _saveCurrentStoryIndex();
     _markStoriesAsViewedUpToCurrent();
     _videoController?.dispose();
+    _pageController.dispose();
 
-    for (final controller in _progressControllers) {
-      controller.dispose();
+    for (final controllerList in _allProgressControllers) {
+      for (final controller in controllerList) {
+        controller.dispose();
+      }
     }
     super.dispose();
+  }
+
+  List<Map<String, dynamic>> get _currentUserStories {
+    if (_currentUserIndex >= widget.storiesByAuthor.length) return [];
+    return (widget.storiesByAuthor[_currentUserIndex]['stories'] as List<dynamic>).cast<Map<String, dynamic>>();
+  }
+
+  Map<String, dynamic> get _currentAuthor {
+    if (_currentUserIndex >= widget.storiesByAuthor.length) return {};
+    return widget.storiesByAuthor[_currentUserIndex]['author'] as Map<String, dynamic>;
   }
 
   bool _isVideoStory(Map<String, dynamic> story) {
@@ -68,10 +99,9 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
         _isVideoInitialized = true;
       });
 
-      // Set the animation controller duration to match video duration
       final videoDuration = _videoController!.value.duration;
-      _progressControllers[_currentStoryIndex].dispose();
-      _progressControllers[_currentStoryIndex] = AnimationController(
+      _allProgressControllers[_currentUserIndex][_currentStoryIndex].dispose();
+      _allProgressControllers[_currentUserIndex][_currentStoryIndex] = AnimationController(
         duration: videoDuration.inSeconds > 0 ? videoDuration : const Duration(seconds: 5),
         vsync: this,
       );
@@ -85,46 +115,45 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
   }
 
   void _startCurrentStory() {
-    if (_currentStoryIndex < _progressControllers.length) {
-      _markCurrentStoryAsViewed();
+    if (_currentUserIndex >= widget.storiesByAuthor.length) return;
+    if (_currentStoryIndex >= _currentUserStories.length) return;
 
-      final currentStory = widget.stories[_currentStoryIndex];
+    _markCurrentStoryAsViewed();
 
-      if (_isVideoStory(currentStory)) {
-        final videoUrl = _getVideoUrl(currentStory);
-        if (videoUrl.isNotEmpty) {
-          _initializeVideo(videoUrl).then((_) {
-            if (_videoController != null && _isVideoInitialized) {
-              // Start the progress animation
-              _progressControllers[_currentStoryIndex].forward().then((_) {
-                if (mounted) {
-                  _nextStory();
-                }
-              });
+    final currentStory = _currentUserStories[_currentStoryIndex];
 
-              _videoController!.addListener(_videoListener);
-            }
-          });
-        } else {
-          _progressControllers[_currentStoryIndex].forward().then((_) {
-            if (mounted) {
-              _nextStory();
-            }
-          });
-        }
+    if (_isVideoStory(currentStory)) {
+      final videoUrl = _getVideoUrl(currentStory);
+      if (videoUrl.isNotEmpty) {
+        _initializeVideo(videoUrl).then((_) {
+          if (_videoController != null && _isVideoInitialized) {
+            _allProgressControllers[_currentUserIndex][_currentStoryIndex].forward().then((_) {
+              if (mounted) {
+                _nextStory();
+              }
+            });
+
+            _videoController!.addListener(_videoListener);
+          }
+        });
       } else {
-        _progressControllers[_currentStoryIndex].forward().then((_) {
+        _allProgressControllers[_currentUserIndex][_currentStoryIndex].forward().then((_) {
           if (mounted) {
             _nextStory();
           }
         });
       }
+    } else {
+      _allProgressControllers[_currentUserIndex][_currentStoryIndex].forward().then((_) {
+        if (mounted) {
+          _nextStory();
+        }
+      });
     }
   }
 
   void _videoListener() {
     if (_videoController != null && _videoController!.value.isInitialized) {
-      // Check if video has ended
       if (_videoController!.value.position >= _videoController!.value.duration) {
         _videoController!.removeListener(_videoListener);
         if (mounted) {
@@ -138,11 +167,46 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
     _videoController?.removeListener(_videoListener);
     _videoController?.pause();
 
-    if (_currentStoryIndex < widget.stories.length - 1) {
+    if (_currentStoryIndex < _currentUserStories.length - 1) {
       setState(() {
         _currentStoryIndex++;
         _isVideoInitialized = false;
       });
+      _saveCurrentStoryIndex();
+      _startCurrentStory();
+    } else {
+      _nextUser();
+    }
+  }
+
+  void _previousStory() {
+    if (_currentStoryIndex > 0) {
+      _videoController?.removeListener(_videoListener);
+      _videoController?.pause();
+      _allProgressControllers[_currentUserIndex][_currentStoryIndex].reset();
+
+      setState(() {
+        _currentStoryIndex--;
+        _isVideoInitialized = false;
+      });
+      _allProgressControllers[_currentUserIndex][_currentStoryIndex].reset();
+      _saveCurrentStoryIndex();
+      _startCurrentStory();
+    } else {
+      _previousUser();
+    }
+  }
+
+  void _nextUser() {
+    if (_currentUserIndex < widget.storiesByAuthor.length - 1) {
+      _saveCurrentStoryIndex();
+      _resetCurrentUserProgress();
+      setState(() {
+        _currentUserIndex++;
+        _currentStoryIndex = _getUserStoryIndex(_currentUserIndex);
+        _isVideoInitialized = false;
+      });
+      _pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
       _startCurrentStory();
     } else {
       if (mounted && Navigator.of(context).canPop()) {
@@ -151,37 +215,53 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
     }
   }
 
-  void _previousStory() {
-    if (_currentStoryIndex > 0) {
-      _videoController?.removeListener(_videoListener);
-      _videoController?.pause();
-      _progressControllers[_currentStoryIndex].reset();
-
+  void _previousUser() {
+    if (_currentUserIndex > 0) {
+      _saveCurrentStoryIndex();
+      _resetCurrentUserProgress();
       setState(() {
-        _currentStoryIndex--;
+        _currentUserIndex--;
+        _currentStoryIndex = _getUserStoryIndex(_currentUserIndex);
         _isVideoInitialized = false;
       });
-      _progressControllers[_currentStoryIndex].reset();
+      _pageController.previousPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
       _startCurrentStory();
     }
   }
 
+  void _resetCurrentUserProgress() {
+    _videoController?.removeListener(_videoListener);
+    _videoController?.pause();
+    for (final controller in _allProgressControllers[_currentUserIndex]) {
+      controller.reset();
+    }
+  }
+
   void _pauseStory() {
-    _progressControllers[_currentStoryIndex].stop();
+    if (_currentUserIndex < _allProgressControllers.length &&
+        _currentStoryIndex < _allProgressControllers[_currentUserIndex].length) {
+      _allProgressControllers[_currentUserIndex][_currentStoryIndex].stop();
+    }
     _videoController?.pause();
   }
 
   void _resumeStory() {
-    if (_progressControllers[_currentStoryIndex].status != AnimationStatus.completed) {
-      if (_isVideoStory(widget.stories[_currentStoryIndex])) {
+    if (_currentUserIndex >= _allProgressControllers.length ||
+        _currentStoryIndex >= _allProgressControllers[_currentUserIndex].length) {
+      return;
+    }
+
+    final controller = _allProgressControllers[_currentUserIndex][_currentStoryIndex];
+    if (controller.status != AnimationStatus.completed) {
+      if (_isVideoStory(_currentUserStories[_currentStoryIndex])) {
         _videoController?.play();
-        _progressControllers[_currentStoryIndex].forward().then((_) {
+        controller.forward().then((_) {
           if (mounted) {
             _nextStory();
           }
         });
       } else {
-        _progressControllers[_currentStoryIndex].forward().then((_) {
+        controller.forward().then((_) {
           if (mounted) {
             _nextStory();
           }
@@ -191,37 +271,79 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
   }
 
   void _onPanStart(DragStartDetails details) {
+    _isDragging = true;
+    _horizontalDragStart = details.globalPosition.dx;
+    _isHorizontalDrag = false; // Reset horizontal drag state
     _pauseStory();
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
-    setState(() {
-      _dragOffset += details.delta.dy;
-      _dragOffset = _dragOffset.clamp(0.0, double.infinity);
+    final horizontalDelta = details.globalPosition.dx - _horizontalDragStart;
+    final verticalDelta = details.delta.dy;
 
-      final screenHeight = MediaQuery.of(context).size.height;
-      final maxDragDistance = screenHeight * 0.5;
-
-      double visualOffset;
-      if (_dragOffset <= maxDragDistance * 0.7) {
-        visualOffset = _dragOffset;
-      } else {
-        final excess = _dragOffset - (maxDragDistance * 0.7);
-        final resistanceBase = maxDragDistance * 0.7;
-        final maxExcess = maxDragDistance * 0.3;
-
-        final resistanceFactor = 1.0 - (excess / (excess + maxExcess * 0.5));
-        visualOffset = resistanceBase + (excess * resistanceFactor * 0.3);
+    // Only consider this a horizontal drag if we haven't started vertical dragging yet
+    // and if the horizontal movement is significantly larger than vertical
+    if (!_isHorizontalDrag && _dragOffset < 5.0) {
+      if (horizontalDelta.abs() > 15 && horizontalDelta.abs() > verticalDelta.abs() * 2) {
+        _isHorizontalDrag = true;
       }
+    }
 
-      final progress = (visualOffset / maxDragDistance).clamp(0.0, 1.0);
-      _dragScale = (1.0 - (progress * 0.3)).clamp(0.7, 1.0);
+    // If we've determined this is a horizontal drag, don't process vertical movement
+    if (_isHorizontalDrag) {
+      return;
+    }
 
-      _dragOffset = visualOffset;
-    });
+    // Only process downward vertical movement for pull-to-dismiss
+    if (verticalDelta > 0) {
+      setState(() {
+        _dragOffset += verticalDelta;
+        _dragOffset = _dragOffset.clamp(0.0, double.infinity);
+
+        final screenHeight = MediaQuery.of(context).size.height;
+        final maxDragDistance = screenHeight * 0.5;
+
+        double visualOffset;
+        if (_dragOffset <= maxDragDistance * 0.7) {
+          visualOffset = _dragOffset;
+        } else {
+          final excess = _dragOffset - (maxDragDistance * 0.7);
+          final resistanceBase = maxDragDistance * 0.7;
+          final maxExcess = maxDragDistance * 0.3;
+
+          final resistanceFactor = 1.0 - (excess / (excess + maxExcess * 0.5));
+          visualOffset = resistanceBase + (excess * resistanceFactor * 0.3);
+        }
+
+        final progress = (visualOffset / maxDragDistance).clamp(0.0, 1.0);
+        _dragScale = (1.0 - (progress * 0.3)).clamp(0.7, 1.0);
+
+        _dragOffset = visualOffset;
+      });
+    }
   }
 
   void _onPanEnd(DragEndDetails details) {
+    if (_isHorizontalDrag) {
+      final horizontalVelocity = details.velocity.pixelsPerSecond.dx;
+      final horizontalDistance = details.globalPosition.dx - _horizontalDragStart;
+
+      // Use both velocity and distance for more reliable horizontal swipe detection
+      if ((horizontalVelocity > 300 || horizontalDistance > 50) && _currentUserIndex > 0) {
+        _previousUser();
+      } else if ((horizontalVelocity < -300 || horizontalDistance < -50) &&
+          _currentUserIndex < widget.storiesByAuthor.length - 1) {
+        _nextUser();
+      } else {
+        // If swipe wasn't strong enough, just resume the story
+        _resumeStory();
+      }
+
+      _isHorizontalDrag = false;
+      _isDragging = false;
+      return;
+    }
+
     final screenHeight = MediaQuery.of(context).size.height;
     final dismissThreshold = screenHeight * 0.25;
 
@@ -232,6 +354,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
     } else {
       _animateToReset();
     }
+
+    _isDragging = false;
   }
 
   void _animateToReset() {
@@ -265,8 +389,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
   }
 
   void _markCurrentStoryAsViewed() {
-    if (_currentStoryIndex < widget.stories.length) {
-      final currentStory = widget.stories[_currentStoryIndex];
+    if (_currentUserIndex < widget.storiesByAuthor.length && _currentStoryIndex < _currentUserStories.length) {
+      final currentStory = _currentUserStories[_currentStoryIndex];
       final storyUri = currentStory['uri'] as String?;
       if (storyUri != null) {
         StoryViewService.instance.markStoryAsViewed(storyUri);
@@ -276,40 +400,21 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
 
   void _markStoriesAsViewedUpToCurrent() {
     final viewedStoryUris = <String>[];
-    for (int i = 0; i <= _currentStoryIndex && i < widget.stories.length; i++) {
-      final story = widget.stories[i];
-      final storyUri = story['uri'] as String?;
-      if (storyUri != null) {
-        viewedStoryUris.add(storyUri);
+    for (int userIndex = 0; userIndex <= _currentUserIndex && userIndex < widget.storiesByAuthor.length; userIndex++) {
+      final stories = (widget.storiesByAuthor[userIndex]['stories'] as List<dynamic>).cast<Map<String, dynamic>>();
+      final maxStoryIndex = userIndex == _currentUserIndex ? _currentStoryIndex : stories.length - 1;
+
+      for (int storyIndex = 0; storyIndex <= maxStoryIndex && storyIndex < stories.length; storyIndex++) {
+        final story = stories[storyIndex];
+        final storyUri = story['uri'] as String?;
+        if (storyUri != null) {
+          viewedStoryUris.add(storyUri);
+        }
       }
     }
     if (viewedStoryUris.isNotEmpty) {
       StoryViewService.instance.markStoriesAsViewed(viewedStoryUris);
     }
-  }
-
-  String _getStoryImageUrl(Map<String, dynamic> story) {
-    if (story.containsKey('embed') && story['embed'] != null) {
-      final storyEmbed = story['embed'] as Map<String, dynamic>;
-
-      if (storyEmbed['\$type'] == 'so.sprk.embed.video#view' && storyEmbed.containsKey('thumbnail')) {
-        return storyEmbed['thumbnail'] as String? ?? '';
-      }
-
-      if (storyEmbed['\$type'] == 'so.sprk.embed.images#view' && storyEmbed.containsKey('images')) {
-        final images = storyEmbed['images'] as List<dynamic>;
-        if (images.isNotEmpty) {
-          final firstImage = images[0] as Map<String, dynamic>;
-          final fullsizeUrl = firstImage['fullsize'] as String?;
-          if (fullsizeUrl != null && fullsizeUrl.isNotEmpty) {
-            return fullsizeUrl;
-          }
-        }
-      }
-    }
-
-    final author = story['author'] as Map<String, dynamic>;
-    return author['avatar'] as String? ?? '';
   }
 
   String _getTimeAgo(Map<String, dynamic> story) {
@@ -347,16 +452,12 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
   }
 
   void _navigateToProfile() {
-    final currentStory = widget.stories[_currentStoryIndex];
-    final author = currentStory['author'] as Map<String, dynamic>;
-    final userDid = author['did'] as String?;
+    final userDid = _currentAuthor['did'] as String?;
 
     if (userDid != null && userDid.isNotEmpty) {
-      // Pause the current story before navigating
       _pauseStory();
 
       Navigator.of(context).push(MaterialPageRoute(builder: (context) => ProfileScreen(did: userDid))).then((_) {
-        // Resume the story when returning from profile
         if (mounted) {
           _resumeStory();
         }
@@ -364,9 +465,17 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
     }
   }
 
+  void _saveCurrentStoryIndex() {
+    _userStoryIndices[_currentUserIndex] = _currentStoryIndex;
+  }
+
+  int _getUserStoryIndex(int userIndex) {
+    return _userStoryIndices[userIndex] ?? 0;
+  }
+
   @override
   Widget build(BuildContext context) {
-    if (widget.stories.isEmpty) {
+    if (widget.storiesByAuthor.isEmpty) {
       return Scaffold(
         backgroundColor: Colors.black,
         body: SafeArea(
@@ -377,156 +486,205 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
       );
     }
 
-    final currentStory = widget.stories[_currentStoryIndex];
-    final author = currentStory['author'] as Map<String, dynamic>;
-    final username = author['displayName'] as String? ?? author['handle'] as String? ?? 'Unknown';
-    final avatarUrl = author['avatar'] as String? ?? '';
-    final storyImageUrl = _getStoryImageUrl(currentStory);
-    final timeAgo = _getTimeAgo(currentStory);
-
     return Scaffold(
       backgroundColor: Colors.black,
       body: SafeArea(
-        child: GestureDetector(
-          onLongPressStart: (_) => _pauseStory(),
-          onLongPressEnd: (_) => _resumeStory(),
-          onPanStart: _onPanStart,
-          onPanUpdate: _onPanUpdate,
-          onPanEnd: _onPanEnd,
-          child: Transform.translate(
-            offset: Offset(0, _dragOffset),
-            child: Transform.scale(
-              scale: _dragScale,
-              child: Container(
-                decoration: BoxDecoration(borderRadius: BorderRadius.circular(_dragOffset > 0 ? 12 : 0)),
-                child: Stack(
-                  children: [
-                    Positioned.fill(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.grey[900],
-                          borderRadius: BorderRadius.circular(_dragOffset > 0 ? 12 : 0),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(_dragOffset > 0 ? 12 : 0),
-                          child: _isVideoStory(currentStory) ? _buildVideoPlayer() : _buildImageViewer(storyImageUrl),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      child: Container(
-                        height: 120,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
-                          ),
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 8,
-                      left: 16,
-                      right: 16,
-                      child: Row(
-                        children: List.generate(widget.stories.length, (index) {
-                          return Expanded(
-                            child: Container(
-                              margin: EdgeInsets.only(right: index < widget.stories.length - 1 ? 4 : 0),
-                              child: AnimatedBuilder(
-                                animation: _progressControllers[index],
-                                builder: (context, child) {
-                                  double progress = 0.0;
-                                  if (index < _currentStoryIndex) {
-                                    progress = 1.0;
-                                  } else if (index == _currentStoryIndex) {
-                                    progress = _progressControllers[index].value;
-                                  }
+        child: PageView.builder(
+          controller: _pageController,
+          physics: const ClampingScrollPhysics(),
+          clipBehavior: Clip.none,
+          onPageChanged: (index) {
+            if (!_isDragging) {
+              _saveCurrentStoryIndex();
+              _resetCurrentUserProgress();
+              setState(() {
+                _currentUserIndex = index;
+                _currentStoryIndex = _getUserStoryIndex(index);
+                _isVideoInitialized = false;
+              });
+              _startCurrentStory();
+            }
+          },
+          itemCount: widget.storiesByAuthor.length,
+          itemBuilder: (context, userIndex) {
+            return _buildStoryView(userIndex);
+          },
+        ),
+      ),
+    );
+  }
 
-                                  return LinearProgressIndicator(
-                                    value: progress,
+  Widget _buildStoryView(int userIndex) {
+    final userStories = (widget.storiesByAuthor[userIndex]['stories'] as List<dynamic>).cast<Map<String, dynamic>>();
+    final author = widget.storiesByAuthor[userIndex]['author'] as Map<String, dynamic>;
+
+    if (userStories.isEmpty) {
+      return Container(
+        color: Colors.black,
+        child: Center(
+          child: Text('No stories available', style: TextStyle(color: Colors.white.withValues(alpha: 0.7), fontSize: 16)),
+        ),
+      );
+    }
+
+    // For non-current users, show the first story as a preview
+    final storyIndex = userIndex == _currentUserIndex ? _currentStoryIndex : 0;
+    final currentStory = userStories[storyIndex];
+    final username = author['displayName'] as String? ?? author['handle'] as String? ?? 'Unknown';
+    final avatarUrl = author['avatar'] as String? ?? '';
+    final storyImageUrl = _getStoryImageUrlForUser(currentStory, author);
+    final timeAgo = _getTimeAgo(currentStory);
+
+    return GestureDetector(
+      onLongPressStart: userIndex == _currentUserIndex ? (_) => _pauseStory() : null,
+      onLongPressEnd: userIndex == _currentUserIndex ? (_) => _resumeStory() : null,
+      onPanStart: userIndex == _currentUserIndex ? _onPanStart : null,
+      onPanUpdate: userIndex == _currentUserIndex ? _onPanUpdate : null,
+      onPanEnd: userIndex == _currentUserIndex ? _onPanEnd : null,
+      child: Transform.translate(
+        offset: userIndex == _currentUserIndex ? Offset(0, _dragOffset) : Offset.zero,
+        child: Transform.scale(
+          scale: userIndex == _currentUserIndex ? _dragScale : 1.0,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(userIndex == _currentUserIndex && _dragOffset > 0 ? 12 : 0),
+            ),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey[900],
+                      borderRadius: BorderRadius.circular(userIndex == _currentUserIndex && _dragOffset > 0 ? 12 : 0),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(userIndex == _currentUserIndex && _dragOffset > 0 ? 12 : 0),
+                      child:
+                          userIndex == _currentUserIndex && _isVideoStory(currentStory)
+                              ? _buildVideoPlayer()
+                              : _buildImageViewer(storyImageUrl),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  child: Container(
+                    height: 120,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
+                      ),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 8,
+                  left: 16,
+                  right: 16,
+                  child: Row(
+                    children: List.generate(userStories.length, (index) {
+                      return Expanded(
+                        child: Container(
+                          margin: EdgeInsets.only(right: index < userStories.length - 1 ? 4 : 0),
+                          child:
+                              userIndex == _currentUserIndex
+                                  ? AnimatedBuilder(
+                                    animation: _allProgressControllers[userIndex][index],
+                                    builder: (context, child) {
+                                      double progress = 0.0;
+                                      if (index < _currentStoryIndex) {
+                                        progress = 1.0;
+                                      } else if (index == _currentStoryIndex) {
+                                        progress = _allProgressControllers[userIndex][index].value;
+                                      }
+
+                                      return LinearProgressIndicator(
+                                        value: progress,
+                                        backgroundColor: Colors.white.withValues(alpha: 0.3),
+                                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                                        minHeight: 2,
+                                      );
+                                    },
+                                  )
+                                  : LinearProgressIndicator(
+                                    value: 0.0,
                                     backgroundColor: Colors.white.withValues(alpha: 0.3),
                                     valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
                                     minHeight: 2,
-                                  );
-                                },
-                              ),
-                            ),
-                          );
-                        }),
-                      ),
-                    ),
-                    Positioned(
-                      top: 24,
-                      left: 16,
-                      right: 16,
-                      child: Row(
-                        children: [
-                          GestureDetector(
-                            onTap: _navigateToProfile,
-                            child: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
-                              ),
-                              child: ClipOval(
-                                child: CachedNetworkImage(
-                                  imageUrl: avatarUrl,
-                                  fit: BoxFit.cover,
-                                  errorWidget: (context, url, error) {
-                                    return Container(
-                                      color: Colors.grey[700],
-                                      child: const Icon(FluentIcons.person_24_regular, color: Colors.white, size: 20),
-                                    );
-                                  },
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: _navigateToProfile,
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    username,
-                                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  Text(timeAgo, style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14)),
-                                ],
-                              ),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+                Positioned(
+                  top: 24,
+                  left: 16,
+                  right: 16,
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: userIndex == _currentUserIndex ? _navigateToProfile : null,
+                        child: Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 2)),
+                          child: ClipOval(
+                            child: CachedNetworkImage(
+                              imageUrl: avatarUrl,
+                              fit: BoxFit.cover,
+                              errorWidget: (context, url, error) {
+                                return Container(
+                                  color: Colors.grey[700],
+                                  child: const Icon(FluentIcons.person_24_regular, color: Colors.white, size: 20),
+                                );
+                              },
                             ),
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                    Positioned(
-                      top: 80,
-                      bottom: 0,
-                      left: 0,
-                      width: MediaQuery.of(context).size.width * 0.3,
-                      child: GestureDetector(onTap: _previousStory, child: Container(color: Colors.transparent)),
-                    ),
-                    Positioned(
-                      top: 80,
-                      bottom: 0,
-                      right: 0,
-                      width: MediaQuery.of(context).size.width * 0.3,
-                      child: GestureDetector(onTap: _nextStory, child: Container(color: Colors.transparent)),
-                    ),
-                  ],
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: GestureDetector(
+                          onTap: userIndex == _currentUserIndex ? _navigateToProfile : null,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                username,
+                                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(timeAgo, style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 14)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
+                if (userIndex == _currentUserIndex) ...[
+                  Positioned(
+                    top: 80,
+                    bottom: 0,
+                    left: 0,
+                    width: MediaQuery.of(context).size.width * 0.3,
+                    child: GestureDetector(onTap: _previousStory, child: Container(color: Colors.transparent)),
+                  ),
+                  Positioned(
+                    top: 80,
+                    bottom: 0,
+                    right: 0,
+                    width: MediaQuery.of(context).size.width * 0.3,
+                    child: GestureDetector(onTap: _nextStory, child: Container(color: Colors.transparent)),
+                  ),
+                ],
+              ],
             ),
           ),
         ),
@@ -561,5 +719,28 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
         );
       },
     );
+  }
+
+  String _getStoryImageUrlForUser(Map<String, dynamic> story, Map<String, dynamic> author) {
+    if (story.containsKey('embed') && story['embed'] != null) {
+      final storyEmbed = story['embed'] as Map<String, dynamic>;
+
+      if (storyEmbed['\$type'] == 'so.sprk.embed.video#view' && storyEmbed.containsKey('thumbnail')) {
+        return storyEmbed['thumbnail'] as String? ?? '';
+      }
+
+      if (storyEmbed['\$type'] == 'so.sprk.embed.images#view' && storyEmbed.containsKey('images')) {
+        final images = storyEmbed['images'] as List<dynamic>;
+        if (images.isNotEmpty) {
+          final firstImage = images[0] as Map<String, dynamic>;
+          final fullsizeUrl = firstImage['fullsize'] as String?;
+          if (fullsizeUrl != null && fullsizeUrl.isNotEmpty) {
+            return fullsizeUrl;
+          }
+        }
+      }
+    }
+
+    return author['avatar'] as String? ?? '';
   }
 }

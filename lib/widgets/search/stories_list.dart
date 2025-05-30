@@ -52,9 +52,15 @@ class _StoriesListState extends State<StoriesList> {
   }
 
   void _openStoryViewer(BuildContext context, List<dynamic> stories, int authorIndex) async {
-    final List<Map<String, dynamic>> storyList = stories.cast<Map<String, dynamic>>();
-
-    await Navigator.of(context).push(MaterialPageRoute(builder: (context) => StoryViewerScreen(stories: storyList)));
+    await Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (context) => StoryViewerScreen(
+              storiesByAuthor: widget.storiesByAuthor.cast<Map<String, dynamic>>(),
+              initialUserIndex: authorIndex,
+            ),
+      ),
+    );
 
     // Reload unviewed counts after returning from story viewer
     _loadUnviewedCounts();
