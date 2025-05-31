@@ -2,10 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/features/comments/providers/comments_tray_provider.dart';
 
-import '../widgets/comment_input.dart';
-import '../widgets/comment_item.dart';
 
 @RoutePage()
 class CommentsTray extends ConsumerStatefulWidget {
@@ -76,26 +73,26 @@ class _CommentsTrayState extends ConsumerState<CommentsTray> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(
-      commentsTrayProvider(
-        postUri: widget.postUri,
-        postCid: widget.postCid,
-        isSprk: widget.isSprk,
-        commentCount: widget.commentCount,
-      ),
-    );
+    // final state = ref.watch(
+    //   commentsTrayProvider(
+    //     postUri: widget.postUri,
+    //     postCid: widget.postCid,
+    //     isSprk: widget.isSprk,
+    //     commentCount: widget.commentCount,
+    //   ),
+    // );
     final height = MediaQuery.of(context).size.height * 0.75;
     final backgroundColor = Theme.of(context).colorScheme.surface;
     final borderColor = Theme.of(context).colorScheme.outline;
     final textColor = Theme.of(context).colorScheme.onSurface;
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    final loadComments = ref.watch(
-      loadCommentsProvider(
-        postUri: widget.postUri,
-        postCid: widget.postCid,
-        isSprk: widget.isSprk,
-      ),
-    );
+    // final loadComments = ref.watch(
+    //   loadCommentsProvider(
+    //     postUri: widget.postUri,
+    //     postCid: widget.postCid,
+    //     isSprk: widget.isSprk,
+    //   ),
+    // );
 
 
     return AnimatedBuilder(
@@ -130,7 +127,8 @@ class _CommentsTrayState extends ConsumerState<CommentsTray> with SingleTickerPr
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            '${state.commentCount} comments',
+                            //'${state.commentCount} comments',
+                            'Working on it...',
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
                           ),
                           IconButton(
@@ -146,40 +144,42 @@ class _CommentsTrayState extends ConsumerState<CommentsTray> with SingleTickerPr
                 ),
               ),
               Expanded(
-                child: loadComments.when(
-                  data: (comments) {
-                    return ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.only(bottom: 16),
-                      itemCount: comments.length,
-                      itemBuilder: (context, index) {
-                        final comment = comments[index];
-                        return CommentItem(
-                          key: ValueKey('comment-${comment.id}'),
-                          comment: comment,
-                          parentPostUri: widget.postUri,
-                          parentPostCid: widget.postCid,
-                        );
-                      },
-                    );
-                  },
-                  error: (error, stackTrace) {
-                    return Center(child: Text('Error: $error'));
-                  },
-                  loading: () {
-                    return const Center(child: CircularProgressIndicator());
-                  },
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(bottom: keyboardHeight),
-                child: CommentInputWidget(
-                  videoId: widget.postUri,
-                  postCid: widget.postCid,
-                  postUri: widget.postUri,
-                  isSprk: widget.isSprk,
-                  focusNode: _focusNode,
-                ),
+                child: Placeholder(),
+              //   child: loadComments.when(
+              //     data: (comments) {
+              //       return ListView.builder(
+              //         controller: _scrollController,
+              //         padding: const EdgeInsets.only(bottom: 16),
+              //         itemCount: comments.length,
+              //         itemBuilder: (context, index) {
+              //           final comment = comments[index];
+              //           return CommentItem(
+              //             key: ValueKey('comment-${comment.id}'),
+              //             comment: comment,
+              //             parentPostUri: widget.postUri,
+              //             parentPostCid: widget.postCid,
+              //           );
+              //         },
+              //       );
+              //     },
+              //     error: (error, stackTrace) {
+              //       return Center(child: Text('Error: $error'));
+              //     },
+              //     loading: () {
+              //       return const Center(child: CircularProgressIndicator());
+              //     },
+              //   ),
+              // ),
+              // Padding(
+              //   padding: EdgeInsets.only(bottom: keyboardHeight),
+              //   child: CommentInputWidget(
+              //     videoId: widget.postUri,
+              //     postCid: widget.postCid,
+              //     postUri: widget.postUri,
+              //     isSprk: widget.isSprk,
+              //     focusNode: _focusNode,
+              //   ),
+              // ),
               ),
             ],
           ),

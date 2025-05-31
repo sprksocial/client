@@ -67,11 +67,7 @@ abstract class _$AppRouter extends RootStackRouter {
         routeData: routeData,
         child: FeedPage(
           key: args.key,
-          feedType: args.feedType,
-          initialPosts: args.initialPosts,
-          initialIndex: args.initialIndex,
-          showBackButton: args.showBackButton,
-          isParentFeedVisible: args.isParentFeedVisible,
+          feed: args.feed,
         ),
       );
     },
@@ -330,21 +326,13 @@ class FeedListRoute extends PageRouteInfo<void> {
 class FeedRoute extends PageRouteInfo<FeedRouteArgs> {
   FeedRoute({
     Key? key,
-    required int feedType,
-    List<void>? initialPosts,
-    int? initialIndex,
-    bool showBackButton = false,
-    required bool isParentFeedVisible,
+    required Feed feed,
     List<PageRouteInfo>? children,
   }) : super(
           FeedRoute.name,
           args: FeedRouteArgs(
             key: key,
-            feedType: feedType,
-            initialPosts: initialPosts,
-            initialIndex: initialIndex,
-            showBackButton: showBackButton,
-            isParentFeedVisible: isParentFeedVisible,
+            feed: feed,
           ),
           initialChildren: children,
         );
@@ -357,28 +345,16 @@ class FeedRoute extends PageRouteInfo<FeedRouteArgs> {
 class FeedRouteArgs {
   const FeedRouteArgs({
     this.key,
-    required this.feedType,
-    this.initialPosts,
-    this.initialIndex,
-    this.showBackButton = false,
-    required this.isParentFeedVisible,
+    required this.feed,
   });
 
   final Key? key;
 
-  final int feedType;
-
-  final List<void>? initialPosts;
-
-  final int? initialIndex;
-
-  final bool showBackButton;
-
-  final bool isParentFeedVisible;
+  final Feed feed;
 
   @override
   String toString() {
-    return 'FeedRouteArgs{key: $key, feedType: $feedType, initialPosts: $initialPosts, initialIndex: $initialIndex, showBackButton: $showBackButton, isParentFeedVisible: $isParentFeedVisible}';
+    return 'FeedRouteArgs{key: $key, feed: $feed}';
   }
 }
 

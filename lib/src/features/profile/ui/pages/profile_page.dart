@@ -10,7 +10,6 @@ import 'package:sparksocial/src/core/widgets/report_dialog.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_header.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_tabs.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/early_supporter_sheet.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_menu_sheet.dart';
 import 'package:get_it/get_it.dart';
@@ -82,8 +81,6 @@ class ProfilePage extends ConsumerWidget {
         }
         final bool isCurrentUser = notifier.isCurrentUser();
 
-        final authRepository = ref.read(authRepositoryProvider);
-        final isAuthenticated = authRepository.isAuthenticated;
 
 
         return Scaffold(
@@ -224,14 +221,10 @@ class ProfilePage extends ConsumerWidget {
                   SliverPersistentHeader(
                     pinned: true,
                     delegate: StickyTabBarDelegate(
-                      child: ProfileTabs(
-                        selectedIndex: state.selectedTabIndex,
-                        onTabSelected: (index) => notifier.setSelectedTabIndex(index),
-                        isAuthenticated: isAuthenticated, // Pass auth status
-                      ),
+                      child: Placeholder(), // TODO: Add profile tabs
                     ),
                   ),
-                  tabContentWidget,
+                  Placeholder(), // TODO: Add tab content
                 ],
               ),
             ),

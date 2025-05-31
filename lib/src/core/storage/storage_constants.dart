@@ -9,7 +9,7 @@ class StorageKeys {
   static const String hideAdultContentKey = 'hide_adult_content';
 
   static const String feedsKey = 'feeds';
-  static const String selectedFeedIndexKey = 'selected_feed_index';
+  static const String activeFeedKey = 'active_feed';
 
   /// Labelers
   static const String followedLabelers = 'followed_labelers';

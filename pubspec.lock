@@ -853,6 +853,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.1"
+  linked_scroll_controller:
+    dependency: transitive
+    description:
+      name: linked_scroll_controller
+      sha256: e6020062bcf4ffc907ee7fd090fa971e65d8dfaac3c62baf601a3ced0b37986a
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.0"
   lints:
     dependency: transitive
     description:
@@ -1117,6 +1125,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.0"
+  reorderable_tabbar:
+    dependency: "direct main"
+    description:
+      name: reorderable_tabbar
+      sha256: dd19d7b6f60f0dec4be02ba0a2c860f9acbe5a392cb8b5b8c1417cbfcbfe923f
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.6"
   riverpod:
     dependency: transitive
     description:
@@ -1354,6 +1370,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.3.1"
+  tab_indicator_styler:
+    dependency: transitive
+    description:
+      name: tab_indicator_styler
+      sha256: "9e7e90367e20f71f3882fc6578fdcced35ab1c66ab20fcb623cdcc20d2796c76"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   term_glyph:
     dependency: transitive
     description:

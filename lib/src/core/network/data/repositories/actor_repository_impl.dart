@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/core/network/data/repositories/actor_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
@@ -75,12 +76,11 @@ class ActorRepositoryImpl implements ActorRepository {
     });
   }
 
-   @override
+  @override
   Future<void> updateProfile({required String displayName, required String description, dynamic avatar}) async {
     if (!_client.authRepository.isAuthenticated) {
       throw Exception('Not authenticated');
     }
-
 
     final record = <String, dynamic>{
       '\$type': 'so.sprk.actor.profile',
@@ -93,6 +93,24 @@ class ActorRepositoryImpl implements ActorRepository {
       uri: AtUri.parse('at://${_client.authRepository.session!.did}/so.sprk.actor.profile/self'),
       record: atproto.Record.fromJson(record),
     );
+  }
 
+  @override
+  Future<bool> isEarlySupporter(String did) async {
+    _logger.d('Checking early supporter status for DID: $did');
+    try {
+      final response = await http.get(Uri.parse('https://spark-match.sparksplatforms.workers.dev/?did=$did'));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final bool isSupporter = data['found'] == true;
+        _logger.d('Early supporter status for $did: $isSupporter');
+        return isSupporter;
+      }
+      _logger.w('Failed to check early supporter status for $did, status code: ${response.statusCode}');
+      return false;
+    } catch (e, s) {
+      _logger.e('Error checking early supporter status for $did', error: e, stackTrace: s);
+      return false;
+    }
   }
 }

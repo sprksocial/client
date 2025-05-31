@@ -3,9 +3,9 @@ import 'dart:typed_data';
 import 'package:atproto/core.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/data/repositories/actor_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/profile/providers/edit_profile_state.dart';
-import 'package:sparksocial/src/features/profile/data/repositories/profile_repository.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
@@ -20,12 +20,14 @@ class EditProfile extends _$EditProfile {
   late final AuthRepository _authRepository;
   late final LogService _logService;
   late final SparkLogger logger;
+  late final ActorRepository actorRepository;
 
   @override
   EditProfileState build(ProfileViewDetailed profile) {
     _authRepository = GetIt.instance<AuthRepository>();
     _logService = GetIt.instance<LogService>();
     logger = _logService.getLogger('EditProfileProvider');
+    actorRepository = GetIt.instance<ActorRepository>();
 
     return EditProfileState.fromProfile(profile);
   }
@@ -91,7 +93,7 @@ class EditProfile extends _$EditProfile {
         avatarToSend = recordData['avatar'];
       }
 
-      await _profileRepository.updateProfile(
+      await actorRepository.updateProfile(
         displayName: state.displayName.trim(),
         description: state.description.trim(),
         avatar: avatarToSend,

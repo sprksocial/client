@@ -102,7 +102,7 @@ class DownloadManager {
 
     task.priority = (task.feed == _activeFeed) ? activeFeedPriority : inactiveFeedPriority;
     _tasks.add(task);
-    _logger.d('Task submitted for ${task.uri} from feed ${task.feed.name}. Queue size: ${_tasks.length}');
+    _logger.d('Task submitted for ${task.uri} from feed ${task.feed.identifier}. Queue size: ${_tasks.length}');
     _processQueue();
   }
 
@@ -166,8 +166,8 @@ class DownloadManager {
   }
 
   Future<void> _executeTask(DownloadTask task) async {
-    _logger.d('Executing task: ${task.uri} for feed ${task.feed.name} with priority ${task.priority}');
-    if (_activeFeed?.name != task.feed.name && task.priority > activeFeedPriority && areTherePendingActiveFeedTasks()) {
+    _logger.d('Executing task: ${task.uri} for feed ${task.feed.identifier} with priority ${task.priority}');
+    if (_activeFeed != task.feed && task.priority > activeFeedPriority && areTherePendingActiveFeedTasks()) {
       _logger.d('Task ${task.uri} is for an inactive feed, but there are still pending active feed tasks. Skipping.');
       return;
     }

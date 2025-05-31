@@ -76,6 +76,9 @@ class Feed with _$Feed {
     return when(custom: (name, did) => name, hardCoded: (hardCodedFeed) => hardCodedFeed.name);
   }
 
+  String get identifier =>
+      when(custom: (name, uri) => uri.toString(), hardCoded: (hardCodedFeed) => 'hardcoded:${hardCodedFeed.name}');
+
   factory Feed.fromJson(Map<String, dynamic> json) => _$FeedFromJson(json);
 }
 

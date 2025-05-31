@@ -5,7 +5,6 @@ import 'package:atproto/core.dart';
 import 'package:atproto/atproto.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:get_it/get_it.dart';
-import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
@@ -463,24 +462,5 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('Failed to load comments: ${e.toString()}');
       }
     });
-  }
-
-  @override
-  Future<bool> isEarlySupporter(String did) async {
-    _logger.d('Checking early supporter status for DID: $did');
-    try {
-      final response = await http.get(Uri.parse('https://spark-match.sparksplatforms.workers.dev/?did=$did'));
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final bool isSupporter = data['found'] == true;
-        _logger.d('Early supporter status for $did: $isSupporter');
-        return isSupporter;
-      }
-      _logger.w('Failed to check early supporter status for $did, status code: ${response.statusCode}');
-      return false;
-    } catch (e, s) {
-      _logger.e('Error checking early supporter status for $did', error: e, stackTrace: s);
-      return false;
-    }
   }
 }

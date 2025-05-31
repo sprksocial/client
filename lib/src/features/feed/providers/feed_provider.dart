@@ -5,7 +5,6 @@ import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
-import 'package:sparksocial/src/core/storage/cache/download_manager.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
@@ -22,13 +21,15 @@ class FeedNotifier extends _$FeedNotifier {
   late final FeedRepository _feedRepository;
   late final SparkLogger _logger;
   late final DownloadManager _downloadManager;
+
   @override
   FeedState build(Feed feed) {
     _sqlCache = GetIt.instance<SQLCache>();
     _feed = feed;
     _feedRepository = GetIt.instance<FeedRepository>();
     _downloadManager = GetIt.instance<DownloadManager>();
-    _logger = GetIt.instance<LogService>().getLogger('FeedNotifier ${feed.name}');
+    _logger = GetIt.instance<LogService>().getLogger('FeedNotifier ${feed.identifier}');
+
     listenSelf((previous, next) {
       final prevFreshCount = previous?.freshPostCount ?? 0;
       // If we were waiting at the end of the feed and new posts have arrived
@@ -56,14 +57,20 @@ class FeedNotifier extends _$FeedNotifier {
     final uris = uriStrings.map((e) => AtUri.parse(e)).toList();
     _initialUris.addAll(uris);
 
-    // updates the posts in the database with new information if they have been edited
-    final updatedPostViews = await _feedRepository.getPosts(uris);
-    await _sqlCache.cachePosts(updatedPostViews);
-    _logger.d('Updated starting posts in database');
+    if (uris.isNotEmpty) {
+      // updates the posts in the database with new information if they have been edited
+      final updatedPostViews = await _feedRepository.getPosts(uris);
+      await _sqlCache.cachePosts(updatedPostViews);
+      _logger.d('Updated starting posts in database');
+    }
 
     // starts fetching and storing new posts
-    final (int _, List<AtUri> fetchedUris, String? cursor) = await fetch();
-    Future.microtask(() => store(fetchedUris, cursor));
+    final (int count, List<AtUri> fetchedUris, String? cursor) = await fetch();
+    if (count > 0) {
+      await store(fetchedUris, cursor);
+    } else {
+      endOfNetworkFeed();
+    }
 
     state = state.copyWith(loadedUris: uris, freshPostCount: 0);
     _logger.d('First load finished');
@@ -121,6 +128,11 @@ class FeedNotifier extends _$FeedNotifier {
           onComplete: (task) {
             increaseFreshPostCount();
             newPostsCached++;
+            // == to only trigger this once
+            // this exists to prevent the feed from being fetched too much
+            // it is divided in half to prevent the feed from getting stuck loading big files
+            // (the other half will keep being downloaded, but you can start downloading another batch to be more efficient)
+            // should use pool to have a limit on the number of concurrent downloads
             if (newPostsCached == (nonExistingPosts.length - errorCount) >> 1) {
               state = state.copyWith(isCaching: false, cursor: cursor);
             }
@@ -131,12 +143,6 @@ class FeedNotifier extends _$FeedNotifier {
           },
         ),
       );
-
-      // == to only trigger this once
-      // this exists to prevent the feed from being fetched too much
-      // it is divided in half to prevent the feed from getting stuck loading big files
-      // (the other half will keep being downloaded, but you can start downloading another batch to be more efficient)
-      // should use pool to have a limit on the number of concurrent downloads
     }
   }
 

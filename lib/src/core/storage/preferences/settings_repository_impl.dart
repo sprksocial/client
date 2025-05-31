@@ -1,4 +1,4 @@
-import 'package:sparksocial/src/core/settings/repositories/settings_repository.dart';
+import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 
@@ -39,16 +39,12 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
-  Future<int> getSelectedFeedIndex(int length) async {
-    final selectedFeedIndex = await _storageManager.preferences.getInt(StorageKeys.selectedFeedIndexKey);
-    if (selectedFeedIndex == null || selectedFeedIndex >= length) {
-      return 0;
-    }
-    return selectedFeedIndex;
+  Future<Feed> getActiveFeed() async {
+    return await _storageManager.preferences.getObject<Feed>(StorageKeys.activeFeedKey) ?? Feed.hardCoded(hardCodedFeed: HardCodedFeed.forYou);
   }
 
   @override
-  Future<void> setSelectedFeedIndex(int index) async {
-    await _storageManager.preferences.setInt(StorageKeys.selectedFeedIndexKey, index);
+  Future<void> setActiveFeed(Feed feed) async {
+    await _storageManager.preferences.setObject<Feed>(StorageKeys.activeFeedKey, feed);
   }
 } 

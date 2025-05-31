@@ -15,6 +15,6 @@ class SettingsState with _$SettingsState {
       Feed.hardCoded(hardCodedFeed: HardCodedFeed.latestSprk),
     ])
     List<Feed> feeds,
-    @Default(0) int selectedFeedIndex,
+    required Feed activeFeed,
   }) = _SettingsState;
 }

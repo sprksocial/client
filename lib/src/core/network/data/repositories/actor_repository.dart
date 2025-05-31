@@ -18,4 +18,9 @@ abstract class ActorRepository {
   /// [description] The new description
   /// [avatar] The new avatar (optional)
   Future<void> updateProfile({required String displayName, required String description, dynamic avatar});
+
+  /// Check if a user is an early supporter
+  ///
+  /// [did] The DID of the user to check
+  Future<bool> isEarlySupporter(String did);
 }

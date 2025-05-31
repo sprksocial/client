@@ -10,8 +10,6 @@ abstract class SettingsRepository {
   Future<List<Feed>> getFeeds();
   Future<void> setFeeds(List<Feed> feeds);
 
-  /// You need to pass the length of the feeds list to check if the index is valid
-  /// (in case the user was in the last feed, deleted it and closed the app)
-  Future<int> getSelectedFeedIndex(int length);
-  Future<void> setSelectedFeedIndex(int index);
+  Future<Feed> getActiveFeed();
+  Future<void> setActiveFeed(Feed feed);
 }

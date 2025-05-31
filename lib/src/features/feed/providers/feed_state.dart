@@ -1,5 +1,6 @@
 import 'package:atproto_core/atproto_core.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 
 part 'feed_state.freezed.dart';
 
@@ -14,6 +15,7 @@ abstract class FeedState with _$FeedState {
     required bool isCaching,
     required bool isEndOfNetworkFeed,
     required String? cursor,
+    Map<AtUri, HardcodedFeedExtraInfo>? extraInfo,
   }) = _FeedState;
 
   int get length => loadedUris.length;

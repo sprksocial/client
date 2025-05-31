@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'settings_state.dart';
-import '../../../core/settings/repositories/settings_repository.dart';
+import '../../../core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 
 part 'settings_provider.g.dart';
@@ -22,7 +22,7 @@ class Settings extends _$Settings {
   SettingsState build() {
     _repository = ref.watch(settingsRepositoryProvider);
     _loadSettings();
-    return const SettingsState();
+    return SettingsState(activeFeed: Feed.hardCoded(hardCodedFeed: HardCodedFeed.forYou));
   }
 
   /// Loads all settings from persistent storage
@@ -62,8 +62,8 @@ class Settings extends _$Settings {
   }
 
   /// Sets selected feed index
-  Future<void> setSelectedFeedIndex(int index) async {
-    await _repository.setSelectedFeedIndex(index);
-    state = state.copyWith(selectedFeedIndex: index);
+  Future<void> setActiveFeed(Feed feed) async {
+    await _repository.setActiveFeed(feed);
+    state = state.copyWith(activeFeed: feed);
   }
 }

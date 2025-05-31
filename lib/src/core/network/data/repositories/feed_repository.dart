@@ -89,8 +89,4 @@ abstract class FeedRepository {
   /// [bluesky] Whether the thread is a Bluesky thread
   Future<Thread> getThread(AtUri uri, {int depth = 2, int parentHeight = 0, bool bluesky = false});
 
-  /// Check if a user is an early supporter
-  ///
-  /// [did] The DID of the user to check
-  Future<bool> isEarlySupporter(String did);
 }

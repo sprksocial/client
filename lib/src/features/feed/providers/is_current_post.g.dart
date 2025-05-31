@@ -1,12 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'feed_option_provider.dart';
+part of 'is_current_post.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$feedOptionHash() => r'61e4cf31eabf0413e063b1bd93f457f3ed2bd28b';
+String _$isCurrentPostHash() => r'cc371f94ab9cfe13b70b184dfc06edb1449e0e74';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,39 +29,33 @@ class _SystemHash {
   }
 }
 
-abstract class _$FeedOption
-    extends BuildlessAutoDisposeNotifier<FeedOptionState> {
-  late final Feed feed;
+/// See also [isCurrentPost].
+@ProviderFor(isCurrentPost)
+const isCurrentPostProvider = IsCurrentPostFamily();
 
-  FeedOptionState build(
+/// See also [isCurrentPost].
+class IsCurrentPostFamily extends Family<bool> {
+  /// See also [isCurrentPost].
+  const IsCurrentPostFamily();
+
+  /// See also [isCurrentPost].
+  IsCurrentPostProvider call(
     Feed feed,
-  );
-}
-
-/// See also [FeedOption].
-@ProviderFor(FeedOption)
-const feedOptionProvider = FeedOptionFamily();
-
-/// See also [FeedOption].
-class FeedOptionFamily extends Family<FeedOptionState> {
-  /// See also [FeedOption].
-  const FeedOptionFamily();
-
-  /// See also [FeedOption].
-  FeedOptionProvider call(
-    Feed feed,
+    int index,
   ) {
-    return FeedOptionProvider(
+    return IsCurrentPostProvider(
       feed,
+      index,
     );
   }
 
   @override
-  FeedOptionProvider getProviderOverride(
-    covariant FeedOptionProvider provider,
+  IsCurrentPostProvider getProviderOverride(
+    covariant IsCurrentPostProvider provider,
   ) {
     return call(
       provider.feed,
+      provider.index,
     );
   }
 
@@ -77,30 +71,35 @@ class FeedOptionFamily extends Family<FeedOptionState> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'feedOptionProvider';
+  String? get name => r'isCurrentPostProvider';
 }
 
-/// See also [FeedOption].
-class FeedOptionProvider
-    extends AutoDisposeNotifierProviderImpl<FeedOption, FeedOptionState> {
-  /// See also [FeedOption].
-  FeedOptionProvider(
+/// See also [isCurrentPost].
+class IsCurrentPostProvider extends AutoDisposeProvider<bool> {
+  /// See also [isCurrentPost].
+  IsCurrentPostProvider(
     Feed feed,
+    int index,
   ) : this._internal(
-          () => FeedOption()..feed = feed,
-          from: feedOptionProvider,
-          name: r'feedOptionProvider',
+          (ref) => isCurrentPost(
+            ref as IsCurrentPostRef,
+            feed,
+            index,
+          ),
+          from: isCurrentPostProvider,
+          name: r'isCurrentPostProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$feedOptionHash,
-          dependencies: FeedOptionFamily._dependencies,
+                  : _$isCurrentPostHash,
+          dependencies: IsCurrentPostFamily._dependencies,
           allTransitiveDependencies:
-              FeedOptionFamily._allTransitiveDependencies,
+              IsCurrentPostFamily._allTransitiveDependencies,
           feed: feed,
+          index: index,
         );
 
-  FeedOptionProvider._internal(
+  IsCurrentPostProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -108,50 +107,48 @@ class FeedOptionProvider
     required super.debugGetCreateSourceHash,
     required super.from,
     required this.feed,
+    required this.index,
   }) : super.internal();
 
   final Feed feed;
+  final int index;
 
   @override
-  FeedOptionState runNotifierBuild(
-    covariant FeedOption notifier,
+  Override overrideWith(
+    bool Function(IsCurrentPostRef provider) create,
   ) {
-    return notifier.build(
-      feed,
-    );
-  }
-
-  @override
-  Override overrideWith(FeedOption Function() create) {
     return ProviderOverride(
       origin: this,
-      override: FeedOptionProvider._internal(
-        () => create()..feed = feed,
+      override: IsCurrentPostProvider._internal(
+        (ref) => create(ref as IsCurrentPostRef),
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
         feed: feed,
+        index: index,
       ),
     );
   }
 
   @override
-  AutoDisposeNotifierProviderElement<FeedOption, FeedOptionState>
-      createElement() {
-    return _FeedOptionProviderElement(this);
+  AutoDisposeProviderElement<bool> createElement() {
+    return _IsCurrentPostProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is FeedOptionProvider && other.feed == feed;
+    return other is IsCurrentPostProvider &&
+        other.feed == feed &&
+        other.index == index;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
     hash = _SystemHash.combine(hash, feed.hashCode);
+    hash = _SystemHash.combine(hash, index.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -159,18 +156,22 @@ class FeedOptionProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin FeedOptionRef on AutoDisposeNotifierProviderRef<FeedOptionState> {
+mixin IsCurrentPostRef on AutoDisposeProviderRef<bool> {
   /// The parameter `feed` of this provider.
   Feed get feed;
+
+  /// The parameter `index` of this provider.
+  int get index;
 }
 
-class _FeedOptionProviderElement
-    extends AutoDisposeNotifierProviderElement<FeedOption, FeedOptionState>
-    with FeedOptionRef {
-  _FeedOptionProviderElement(super.provider);
+class _IsCurrentPostProviderElement extends AutoDisposeProviderElement<bool>
+    with IsCurrentPostRef {
+  _IsCurrentPostProviderElement(super.provider);
 
   @override
-  Feed get feed => (origin as FeedOptionProvider).feed;
+  Feed get feed => (origin as IsCurrentPostProvider).feed;
+  @override
+  int get index => (origin as IsCurrentPostProvider).index;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

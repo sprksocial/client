@@ -23,6 +23,8 @@ mixin _$FeedState {
   bool get isCaching => throw _privateConstructorUsedError;
   bool get isEndOfNetworkFeed => throw _privateConstructorUsedError;
   String? get cursor => throw _privateConstructorUsedError;
+  Map<AtUri, HardcodedFeedExtraInfo>? get extraInfo =>
+      throw _privateConstructorUsedError;
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.
@@ -43,7 +45,8 @@ abstract class $FeedStateCopyWith<$Res> {
       int freshPostCount,
       bool isCaching,
       bool isEndOfNetworkFeed,
-      String? cursor});
+      String? cursor,
+      Map<AtUri, HardcodedFeedExtraInfo>? extraInfo});
 }
 
 /// @nodoc
@@ -68,6 +71,7 @@ class _$FeedStateCopyWithImpl<$Res, $Val extends FeedState>
     Object? isCaching = null,
     Object? isEndOfNetworkFeed = null,
     Object? cursor = freezed,
+    Object? extraInfo = freezed,
   }) {
     return _then(_value.copyWith(
       active: null == active
@@ -98,6 +102,10 @@ class _$FeedStateCopyWithImpl<$Res, $Val extends FeedState>
           ? _value.cursor
           : cursor // ignore: cast_nullable_to_non_nullable
               as String?,
+      extraInfo: freezed == extraInfo
+          ? _value.extraInfo
+          : extraInfo // ignore: cast_nullable_to_non_nullable
+              as Map<AtUri, HardcodedFeedExtraInfo>?,
     ) as $Val);
   }
 }
@@ -117,7 +125,8 @@ abstract class _$$FeedStateImplCopyWith<$Res>
       int freshPostCount,
       bool isCaching,
       bool isEndOfNetworkFeed,
-      String? cursor});
+      String? cursor,
+      Map<AtUri, HardcodedFeedExtraInfo>? extraInfo});
 }
 
 /// @nodoc
@@ -140,6 +149,7 @@ class __$$FeedStateImplCopyWithImpl<$Res>
     Object? isCaching = null,
     Object? isEndOfNetworkFeed = null,
     Object? cursor = freezed,
+    Object? extraInfo = freezed,
   }) {
     return _then(_$FeedStateImpl(
       active: null == active
@@ -170,6 +180,10 @@ class __$$FeedStateImplCopyWithImpl<$Res>
           ? _value.cursor
           : cursor // ignore: cast_nullable_to_non_nullable
               as String?,
+      extraInfo: freezed == extraInfo
+          ? _value._extraInfo
+          : extraInfo // ignore: cast_nullable_to_non_nullable
+              as Map<AtUri, HardcodedFeedExtraInfo>?,
     ));
   }
 }
@@ -184,8 +198,10 @@ class _$FeedStateImpl extends _FeedState {
       required this.freshPostCount,
       required this.isCaching,
       required this.isEndOfNetworkFeed,
-      required this.cursor})
+      required this.cursor,
+      final Map<AtUri, HardcodedFeedExtraInfo>? extraInfo})
       : _loadedUris = loadedUris,
+        _extraInfo = extraInfo,
         super._();
 
   @override
@@ -208,10 +224,19 @@ class _$FeedStateImpl extends _FeedState {
   final bool isEndOfNetworkFeed;
   @override
   final String? cursor;
+  final Map<AtUri, HardcodedFeedExtraInfo>? _extraInfo;
+  @override
+  Map<AtUri, HardcodedFeedExtraInfo>? get extraInfo {
+    final value = _extraInfo;
+    if (value == null) return null;
+    if (_extraInfo is EqualUnmodifiableMapView) return _extraInfo;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableMapView(value);
+  }
 
   @override
   String toString() {
-    return 'FeedState(active: $active, loadedUris: $loadedUris, index: $index, freshPostCount: $freshPostCount, isCaching: $isCaching, isEndOfNetworkFeed: $isEndOfNetworkFeed, cursor: $cursor)';
+    return 'FeedState(active: $active, loadedUris: $loadedUris, index: $index, freshPostCount: $freshPostCount, isCaching: $isCaching, isEndOfNetworkFeed: $isEndOfNetworkFeed, cursor: $cursor, extraInfo: $extraInfo)';
   }
 
   @override
@@ -229,7 +254,9 @@ class _$FeedStateImpl extends _FeedState {
                 other.isCaching == isCaching) &&
             (identical(other.isEndOfNetworkFeed, isEndOfNetworkFeed) ||
                 other.isEndOfNetworkFeed == isEndOfNetworkFeed) &&
-            (identical(other.cursor, cursor) || other.cursor == cursor));
+            (identical(other.cursor, cursor) || other.cursor == cursor) &&
+            const DeepCollectionEquality()
+                .equals(other._extraInfo, _extraInfo));
   }
 
   @override
@@ -241,7 +268,8 @@ class _$FeedStateImpl extends _FeedState {
       freshPostCount,
       isCaching,
       isEndOfNetworkFeed,
-      cursor);
+      cursor,
+      const DeepCollectionEquality().hash(_extraInfo));
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.
@@ -260,7 +288,8 @@ abstract class _FeedState extends FeedState {
       required final int freshPostCount,
       required final bool isCaching,
       required final bool isEndOfNetworkFeed,
-      required final String? cursor}) = _$FeedStateImpl;
+      required final String? cursor,
+      final Map<AtUri, HardcodedFeedExtraInfo>? extraInfo}) = _$FeedStateImpl;
   const _FeedState._() : super._();
 
   @override
@@ -277,6 +306,8 @@ abstract class _FeedState extends FeedState {
   bool get isEndOfNetworkFeed;
   @override
   String? get cursor;
+  @override
+  Map<AtUri, HardcodedFeedExtraInfo>? get extraInfo;
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.

@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:atproto/atproto.dart' as atp;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/features/profile/data/repositories/profile_repository.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:sparksocial/src/core/network/atproto.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_state.dart';
 import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
@@ -15,13 +15,13 @@ part 'profile_provider.g.dart';
 @riverpod
 class ProfileNotifier extends _$ProfileNotifier {
   late final AuthRepository authRepository;
-  late final ProfileRepository profileRepository;
+  late final ActorRepository actorRepository;
   late final SprkRepository sprkRepository;
   late final SparkLogger logger;
 
   ProfileNotifier() {
     authRepository = GetIt.instance<AuthRepository>();
-    profileRepository = GetIt.instance<ProfileRepository>();
+    actorRepository = GetIt.instance<ActorRepository>();
     sprkRepository = GetIt.instance<SprkRepository>();
     logger = GetIt.instance<LogService>().getLogger('ProfileNotifier');
   }
@@ -51,17 +51,11 @@ class ProfileNotifier extends _$ProfileNotifier {
 
     try {
       logger.d('Loading profile for DID: $effectiveDid');
-      final profile = await profileRepository.getProfile(effectiveDid);
-
-      if (profile == null) {
-        logger.w('Profile not found for DID: $effectiveDid');
-        state = AsyncError('Profile not found', StackTrace.current);
-        return;
-      }
+      final profile = await actorRepository.getProfile(effectiveDid);
 
       logger.d('Profile loaded successfully for $effectiveDid: ${profile.handle}');
 
-      final bool isEarlySupporter = await profileRepository.isEarlySupporter(effectiveDid);
+      final bool isEarlySupporter = await actorRepository.isEarlySupporter(effectiveDid);
       logger.d('Early supporter status for $effectiveDid: $isEarlySupporter');
 
       state = AsyncData(
@@ -92,7 +86,6 @@ class ProfileNotifier extends _$ProfileNotifier {
     state = const AsyncLoading();
 
     try {
-      await profileRepository.clearProfileCache(didToRefresh);
       await loadProfileData(didToRefresh, ProfileState(currentViewDid: didToRefresh));
       logger.i('Profile for $didToRefresh refreshed successfully.');
     } catch (e, s) {
@@ -150,8 +143,8 @@ class ProfileNotifier extends _$ProfileNotifier {
         }
       }
 
-      final refreshedProfile = await profileRepository.getProfile(profile.did, forceRefresh: true);
-      final isEarlySupporter = await profileRepository.isEarlySupporter(profile.did);
+      final refreshedProfile = await actorRepository.getProfile(profile.did);
+      final isEarlySupporter = await actorRepository.isEarlySupporter(profile.did);
 
       state = AsyncData(originalStateValue.copyWith(profile: refreshedProfile, isEarlySupporter: isEarlySupporter));
       return newFollowUriResult;

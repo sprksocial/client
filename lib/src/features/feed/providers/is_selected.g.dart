@@ -1,12 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'video_player_provider.dart';
+part of 'is_selected.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$videoPlayerHash() => r'92a3038f7ea806f17ac6cfcadcf8f52d8ef70a2b';
+String _$isSelectedHash() => r'9dea8f5c69445cc372ab2623ff7210642c77edfa';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,39 +29,30 @@ class _SystemHash {
   }
 }
 
-abstract class _$VideoPlayer
-    extends BuildlessAutoDisposeNotifier<VideoPlayerState> {
-  late final AtUri uri;
+/// See also [isSelected].
+@ProviderFor(isSelected)
+const isSelectedProvider = IsSelectedFamily();
 
-  VideoPlayerState build(
-    AtUri uri,
-  );
-}
+/// See also [isSelected].
+class IsSelectedFamily extends Family<bool> {
+  /// See also [isSelected].
+  const IsSelectedFamily();
 
-/// See also [VideoPlayer].
-@ProviderFor(VideoPlayer)
-const videoPlayerProvider = VideoPlayerFamily();
-
-/// See also [VideoPlayer].
-class VideoPlayerFamily extends Family<VideoPlayerState> {
-  /// See also [VideoPlayer].
-  const VideoPlayerFamily();
-
-  /// See also [VideoPlayer].
-  VideoPlayerProvider call(
-    AtUri uri,
+  /// See also [isSelected].
+  IsSelectedProvider call(
+    Feed feed,
   ) {
-    return VideoPlayerProvider(
-      uri,
+    return IsSelectedProvider(
+      feed,
     );
   }
 
   @override
-  VideoPlayerProvider getProviderOverride(
-    covariant VideoPlayerProvider provider,
+  IsSelectedProvider getProviderOverride(
+    covariant IsSelectedProvider provider,
   ) {
     return call(
-      provider.uri,
+      provider.feed,
     );
   }
 
@@ -77,81 +68,75 @@ class VideoPlayerFamily extends Family<VideoPlayerState> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'videoPlayerProvider';
+  String? get name => r'isSelectedProvider';
 }
 
-/// See also [VideoPlayer].
-class VideoPlayerProvider
-    extends AutoDisposeNotifierProviderImpl<VideoPlayer, VideoPlayerState> {
-  /// See also [VideoPlayer].
-  VideoPlayerProvider(
-    AtUri uri,
+/// See also [isSelected].
+class IsSelectedProvider extends AutoDisposeProvider<bool> {
+  /// See also [isSelected].
+  IsSelectedProvider(
+    Feed feed,
   ) : this._internal(
-          () => VideoPlayer()..uri = uri,
-          from: videoPlayerProvider,
-          name: r'videoPlayerProvider',
+          (ref) => isSelected(
+            ref as IsSelectedRef,
+            feed,
+          ),
+          from: isSelectedProvider,
+          name: r'isSelectedProvider',
           debugGetCreateSourceHash:
               const bool.fromEnvironment('dart.vm.product')
                   ? null
-                  : _$videoPlayerHash,
-          dependencies: VideoPlayerFamily._dependencies,
+                  : _$isSelectedHash,
+          dependencies: IsSelectedFamily._dependencies,
           allTransitiveDependencies:
-              VideoPlayerFamily._allTransitiveDependencies,
-          uri: uri,
+              IsSelectedFamily._allTransitiveDependencies,
+          feed: feed,
         );
 
-  VideoPlayerProvider._internal(
+  IsSelectedProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.uri,
+    required this.feed,
   }) : super.internal();
 
-  final AtUri uri;
+  final Feed feed;
 
   @override
-  VideoPlayerState runNotifierBuild(
-    covariant VideoPlayer notifier,
+  Override overrideWith(
+    bool Function(IsSelectedRef provider) create,
   ) {
-    return notifier.build(
-      uri,
-    );
-  }
-
-  @override
-  Override overrideWith(VideoPlayer Function() create) {
     return ProviderOverride(
       origin: this,
-      override: VideoPlayerProvider._internal(
-        () => create()..uri = uri,
+      override: IsSelectedProvider._internal(
+        (ref) => create(ref as IsSelectedRef),
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        uri: uri,
+        feed: feed,
       ),
     );
   }
 
   @override
-  AutoDisposeNotifierProviderElement<VideoPlayer, VideoPlayerState>
-      createElement() {
-    return _VideoPlayerProviderElement(this);
+  AutoDisposeProviderElement<bool> createElement() {
+    return _IsSelectedProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is VideoPlayerProvider && other.uri == uri;
+    return other is IsSelectedProvider && other.feed == feed;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, uri.hashCode);
+    hash = _SystemHash.combine(hash, feed.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -159,18 +144,17 @@ class VideoPlayerProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin VideoPlayerRef on AutoDisposeNotifierProviderRef<VideoPlayerState> {
-  /// The parameter `uri` of this provider.
-  AtUri get uri;
+mixin IsSelectedRef on AutoDisposeProviderRef<bool> {
+  /// The parameter `feed` of this provider.
+  Feed get feed;
 }
 
-class _VideoPlayerProviderElement
-    extends AutoDisposeNotifierProviderElement<VideoPlayer, VideoPlayerState>
-    with VideoPlayerRef {
-  _VideoPlayerProviderElement(super.provider);
+class _IsSelectedProviderElement extends AutoDisposeProviderElement<bool>
+    with IsSelectedRef {
+  _IsSelectedProviderElement(super.provider);
 
   @override
-  AtUri get uri => (origin as VideoPlayerProvider).uri;
+  Feed get feed => (origin as IsSelectedProvider).feed;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

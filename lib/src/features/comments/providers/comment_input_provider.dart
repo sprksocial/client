@@ -4,7 +4,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_input_state.dart';
-import 'package:sparksocial/src/features/comments/providers/comments_tray_provider.dart';
 
 part 'comment_input_provider.g.dart';
 
@@ -82,39 +81,39 @@ class CommentInput extends _$CommentInput {
     updateCanSubmit();
   }
 
-  Future<void> submitComment({
-    required String parentCid,
-    required String parentUri,
-    required bool isSprk,
-    required String? rootCid,
-    required String? rootUri,
-  }) async {
-    if (!state.canSubmit || state.isPosting) return;
-    final trayNotifier = ref.read(commentsTrayProvider(postUri: parentUri, postCid: parentCid, isSprk: isSprk).notifier);
-    final text = state.textController.text.trim();
-    final imagesToUpload = List<XFile>.from(state.selectedImages);
+  // Future<void> submitComment({
+  //   required String parentCid,
+  //   required String parentUri,
+  //   required bool isSprk,
+  //   required String? rootCid,
+  //   required String? rootUri,
+  // }) async {
+  //   if (!state.canSubmit || state.isPosting) return;
+  //   final trayNotifier = ref.read(commentsTrayProvider(postUri: parentUri, postCid: parentCid, isSprk: isSprk).notifier);
+  //   final text = state.textController.text.trim();
+  //   final imagesToUpload = List<XFile>.from(state.selectedImages);
 
-    state = state.copyWith(isPosting: true);
+  //   state = state.copyWith(isPosting: true);
 
-    trayNotifier.postComment(
-      text,
-      parentCid,
-      parentUri,
-      rootCid: rootCid,
-      rootUri: rootUri,
-      imageFiles: imagesToUpload,
-      altTexts: state.altTexts,
-    );
+  //   trayNotifier.postComment(
+  //     text,
+  //     parentCid,
+  //     parentUri,
+  //     rootCid: rootCid,
+  //     rootUri: rootUri,
+  //     imageFiles: imagesToUpload,
+  //     altTexts: state.altTexts,
+  //   );
 
-    state.textController.clear();
-    state.selectedImages.clear();
-    state.altTexts.clear();
-    updateCanSubmit();
-    state = state.copyWith(isPosting: false);
-    trayNotifier.cancelReply();
-  }
+  //   state.textController.clear();
+  //   state.selectedImages.clear();
+  //   state.altTexts.clear();
+  //   updateCanSubmit();
+  //   state = state.copyWith(isPosting: false);
+  //   trayNotifier.cancelReply();
+  // }
 
-  void updateAltText(String imagePath, String altText) {
-    state = state.copyWith(altTexts: {...state.altTexts, imagePath: altText});
-  }
+  // void updateAltText(String imagePath, String altText) {
+  //   state = state.copyWith(altTexts: {...state.altTexts, imagePath: altText});
+  // }
 }

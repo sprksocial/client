@@ -19,7 +19,7 @@ mixin _$SettingsState {
   bool get feedBlurEnabled => throw _privateConstructorUsedError;
   bool get hideAdultContent => throw _privateConstructorUsedError;
   List<Feed> get feeds => throw _privateConstructorUsedError;
-  int get selectedFeedIndex => throw _privateConstructorUsedError;
+  Feed get activeFeed => throw _privateConstructorUsedError;
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -38,7 +38,9 @@ abstract class $SettingsStateCopyWith<$Res> {
       {bool feedBlurEnabled,
       bool hideAdultContent,
       List<Feed> feeds,
-      int selectedFeedIndex});
+      Feed activeFeed});
+
+  $FeedCopyWith<$Res> get activeFeed;
 }
 
 /// @nodoc
@@ -59,7 +61,7 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
     Object? feedBlurEnabled = null,
     Object? hideAdultContent = null,
     Object? feeds = null,
-    Object? selectedFeedIndex = null,
+    Object? activeFeed = null,
   }) {
     return _then(_value.copyWith(
       feedBlurEnabled: null == feedBlurEnabled
@@ -74,11 +76,21 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
           ? _value.feeds
           : feeds // ignore: cast_nullable_to_non_nullable
               as List<Feed>,
-      selectedFeedIndex: null == selectedFeedIndex
-          ? _value.selectedFeedIndex
-          : selectedFeedIndex // ignore: cast_nullable_to_non_nullable
-              as int,
+      activeFeed: null == activeFeed
+          ? _value.activeFeed
+          : activeFeed // ignore: cast_nullable_to_non_nullable
+              as Feed,
     ) as $Val);
+  }
+
+  /// Create a copy of SettingsState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $FeedCopyWith<$Res> get activeFeed {
+    return $FeedCopyWith<$Res>(_value.activeFeed, (value) {
+      return _then(_value.copyWith(activeFeed: value) as $Val);
+    });
   }
 }
 
@@ -94,7 +106,10 @@ abstract class _$$SettingsStateImplCopyWith<$Res>
       {bool feedBlurEnabled,
       bool hideAdultContent,
       List<Feed> feeds,
-      int selectedFeedIndex});
+      Feed activeFeed});
+
+  @override
+  $FeedCopyWith<$Res> get activeFeed;
 }
 
 /// @nodoc
@@ -113,7 +128,7 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
     Object? feedBlurEnabled = null,
     Object? hideAdultContent = null,
     Object? feeds = null,
-    Object? selectedFeedIndex = null,
+    Object? activeFeed = null,
   }) {
     return _then(_$SettingsStateImpl(
       feedBlurEnabled: null == feedBlurEnabled
@@ -128,10 +143,10 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
           ? _value._feeds
           : feeds // ignore: cast_nullable_to_non_nullable
               as List<Feed>,
-      selectedFeedIndex: null == selectedFeedIndex
-          ? _value.selectedFeedIndex
-          : selectedFeedIndex // ignore: cast_nullable_to_non_nullable
-              as int,
+      activeFeed: null == activeFeed
+          ? _value.activeFeed
+          : activeFeed // ignore: cast_nullable_to_non_nullable
+              as Feed,
     ));
   }
 }
@@ -147,7 +162,7 @@ class _$SettingsStateImpl implements _SettingsState {
         Feed.hardCoded(hardCodedFeed: HardCodedFeed.forYou),
         Feed.hardCoded(hardCodedFeed: HardCodedFeed.latestSprk)
       ],
-      this.selectedFeedIndex = 0})
+      required this.activeFeed})
       : _feeds = feeds;
 
   @override
@@ -166,12 +181,11 @@ class _$SettingsStateImpl implements _SettingsState {
   }
 
   @override
-  @JsonKey()
-  final int selectedFeedIndex;
+  final Feed activeFeed;
 
   @override
   String toString() {
-    return 'SettingsState(feedBlurEnabled: $feedBlurEnabled, hideAdultContent: $hideAdultContent, feeds: $feeds, selectedFeedIndex: $selectedFeedIndex)';
+    return 'SettingsState(feedBlurEnabled: $feedBlurEnabled, hideAdultContent: $hideAdultContent, feeds: $feeds, activeFeed: $activeFeed)';
   }
 
   @override
@@ -184,8 +198,8 @@ class _$SettingsStateImpl implements _SettingsState {
             (identical(other.hideAdultContent, hideAdultContent) ||
                 other.hideAdultContent == hideAdultContent) &&
             const DeepCollectionEquality().equals(other._feeds, _feeds) &&
-            (identical(other.selectedFeedIndex, selectedFeedIndex) ||
-                other.selectedFeedIndex == selectedFeedIndex));
+            (identical(other.activeFeed, activeFeed) ||
+                other.activeFeed == activeFeed));
   }
 
   @override
@@ -194,7 +208,7 @@ class _$SettingsStateImpl implements _SettingsState {
       feedBlurEnabled,
       hideAdultContent,
       const DeepCollectionEquality().hash(_feeds),
-      selectedFeedIndex);
+      activeFeed);
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -210,7 +224,7 @@ abstract class _SettingsState implements SettingsState {
       {final bool feedBlurEnabled,
       final bool hideAdultContent,
       final List<Feed> feeds,
-      final int selectedFeedIndex}) = _$SettingsStateImpl;
+      required final Feed activeFeed}) = _$SettingsStateImpl;
 
   @override
   bool get feedBlurEnabled;
@@ -219,7 +233,7 @@ abstract class _SettingsState implements SettingsState {
   @override
   List<Feed> get feeds;
   @override
-  int get selectedFeedIndex;
+  Feed get activeFeed;
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.

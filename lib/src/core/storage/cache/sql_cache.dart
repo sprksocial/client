@@ -104,13 +104,6 @@ class SQLCache {
     await batch.commit(noResult: true);
   }
 
-  // --- Conversion Helpers ---
-
-  // --- Helper for Feed Identifier ---
-  String getFeedIdentifier(Feed feed) {
-    return feed.when(custom: (name, uri) => uri.toString(), hardCoded: (hardCodedFeed) => 'hardcoded:${hardCodedFeed.name}');
-  }
-
   // --- CRUD Operations ---
 
   /// Caches a single PostView. If it already exists, it's updated.
@@ -210,7 +203,7 @@ class SQLCache {
   /// Caches a Feed object (its metadata).
   Future<void> cacheFeed(Feed feed) async {
     final db = await database;
-    final identifier = getFeedIdentifier(feed);
+    final identifier = feed.identifier;
     await db.insert(_tableFeeds, {
       _columnFeedIdentifier: identifier,
       _columnFeedName: feed.name,
@@ -224,7 +217,7 @@ class SQLCache {
 
   /// Deletes a feed and all its associations (due to ON DELETE CASCADE).
   Future<void> deleteFeed(Feed feed) async {
-    final feedIdentifier = getFeedIdentifier(feed);
+    final feedIdentifier = feed.identifier;
     final db = await database;
     await db.delete(_tableFeeds, where: '$_columnFeedIdentifier = ?', whereArgs: [feedIdentifier]);
   }
@@ -235,7 +228,7 @@ class SQLCache {
   /// This will clear any existing posts for this feed and add the new ones in the provided order.
   /// Ensures that the PostViews themselves are cached before calling this.
   Future<void> setPostsForFeed(Feed feed, List<String> postUris) async {
-    final feedIdentifier = getFeedIdentifier(feed);
+    final feedIdentifier = feed.identifier;
     final db = await database;
     await db.transaction((txn) async {
       // 1. Clear existing associations for this feed
@@ -259,7 +252,7 @@ class SQLCache {
   }
 
   Future<int> getPostCountForFeed(Feed feed) async {
-    final feedIdentifier = getFeedIdentifier(feed);
+    final feedIdentifier = feed.identifier;
     final db = await database;
     final countResult = await db.query(
       _tableFeedPostAssociations,
@@ -279,7 +272,7 @@ class SQLCache {
   /// - [limit]: The maximum number of posts to retrieve. If null, no limit.
   /// - [offset]: The number of posts to skip before starting to retrieve. Requires [limit] to be set.
   Future<List<PostView>> getPostsForFeed(Feed feed, {int? limit, int? offset}) async {
-    final feedIdentifier = getFeedIdentifier(feed);
+    final feedIdentifier = feed.identifier;
     final db = await database;
     List<dynamic> arguments = [feedIdentifier];
     String limitClause = '';
@@ -321,7 +314,7 @@ class SQLCache {
   /// - [limit]: The maximum number of URIs to retrieve. If null, no limit.
   /// - [offset]: The number of URIs to skip before starting to retrieve. Requires [limit] to be set.
   Future<List<String>> getUrisForFeed(Feed feed, {int? limit, int? offset}) async {
-    final feedIdentifier = getFeedIdentifier(feed);
+    final feedIdentifier = feed.identifier;
     final db = await database;
     List<dynamic> arguments = [feedIdentifier];
     String limitClause = '';
@@ -355,7 +348,7 @@ class SQLCache {
   /// Assumes postUris are for new posts not already associated with this feed for this "page".
   Future<void> appendPostsToFeed(Feed feed, List<String> postUris) async {
     if (postUris.isEmpty) return;
-    final feedIdentifier = getFeedIdentifier(feed);
+    final feedIdentifier = feed.identifier;
     final db = await database;
 
     await db.transaction((txn) async {
@@ -387,7 +380,7 @@ class SQLCache {
 
   /// Clears all posts associated with a specific feed.
   Future<void> clearPostsFromFeed(Feed feed) async {
-    final feedIdentifier = getFeedIdentifier(feed);
+    final feedIdentifier = feed.identifier;
     final db = await database;
     await db.delete(_tableFeedPostAssociations, where: '$_columnFeedIdentifierFK = ?', whereArgs: [feedIdentifier]);
   }
