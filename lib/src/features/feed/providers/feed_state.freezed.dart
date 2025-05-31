@@ -17,12 +17,12 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$FeedState {
   bool get active => throw _privateConstructorUsedError;
-  List<AtUri> get uris => throw _privateConstructorUsedError;
+  List<AtUri> get loadedUris => throw _privateConstructorUsedError;
   int get index => throw _privateConstructorUsedError;
-  int get remainingCachedPosts => throw _privateConstructorUsedError;
+  int get freshPostCount => throw _privateConstructorUsedError;
   bool get isCaching => throw _privateConstructorUsedError;
-  bool get isEndOfFeed => throw _privateConstructorUsedError;
   bool get isEndOfNetworkFeed => throw _privateConstructorUsedError;
+  String? get cursor => throw _privateConstructorUsedError;
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.
@@ -38,12 +38,12 @@ abstract class $FeedStateCopyWith<$Res> {
   @useResult
   $Res call(
       {bool active,
-      List<AtUri> uris,
+      List<AtUri> loadedUris,
       int index,
-      int remainingCachedPosts,
+      int freshPostCount,
       bool isCaching,
-      bool isEndOfFeed,
-      bool isEndOfNetworkFeed});
+      bool isEndOfNetworkFeed,
+      String? cursor});
 }
 
 /// @nodoc
@@ -62,42 +62,42 @@ class _$FeedStateCopyWithImpl<$Res, $Val extends FeedState>
   @override
   $Res call({
     Object? active = null,
-    Object? uris = null,
+    Object? loadedUris = null,
     Object? index = null,
-    Object? remainingCachedPosts = null,
+    Object? freshPostCount = null,
     Object? isCaching = null,
-    Object? isEndOfFeed = null,
     Object? isEndOfNetworkFeed = null,
+    Object? cursor = freezed,
   }) {
     return _then(_value.copyWith(
       active: null == active
           ? _value.active
           : active // ignore: cast_nullable_to_non_nullable
               as bool,
-      uris: null == uris
-          ? _value.uris
-          : uris // ignore: cast_nullable_to_non_nullable
+      loadedUris: null == loadedUris
+          ? _value.loadedUris
+          : loadedUris // ignore: cast_nullable_to_non_nullable
               as List<AtUri>,
       index: null == index
           ? _value.index
           : index // ignore: cast_nullable_to_non_nullable
               as int,
-      remainingCachedPosts: null == remainingCachedPosts
-          ? _value.remainingCachedPosts
-          : remainingCachedPosts // ignore: cast_nullable_to_non_nullable
+      freshPostCount: null == freshPostCount
+          ? _value.freshPostCount
+          : freshPostCount // ignore: cast_nullable_to_non_nullable
               as int,
       isCaching: null == isCaching
           ? _value.isCaching
           : isCaching // ignore: cast_nullable_to_non_nullable
               as bool,
-      isEndOfFeed: null == isEndOfFeed
-          ? _value.isEndOfFeed
-          : isEndOfFeed // ignore: cast_nullable_to_non_nullable
-              as bool,
       isEndOfNetworkFeed: null == isEndOfNetworkFeed
           ? _value.isEndOfNetworkFeed
           : isEndOfNetworkFeed // ignore: cast_nullable_to_non_nullable
               as bool,
+      cursor: freezed == cursor
+          ? _value.cursor
+          : cursor // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -112,12 +112,12 @@ abstract class _$$FeedStateImplCopyWith<$Res>
   @useResult
   $Res call(
       {bool active,
-      List<AtUri> uris,
+      List<AtUri> loadedUris,
       int index,
-      int remainingCachedPosts,
+      int freshPostCount,
       bool isCaching,
-      bool isEndOfFeed,
-      bool isEndOfNetworkFeed});
+      bool isEndOfNetworkFeed,
+      String? cursor});
 }
 
 /// @nodoc
@@ -134,83 +134,84 @@ class __$$FeedStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? active = null,
-    Object? uris = null,
+    Object? loadedUris = null,
     Object? index = null,
-    Object? remainingCachedPosts = null,
+    Object? freshPostCount = null,
     Object? isCaching = null,
-    Object? isEndOfFeed = null,
     Object? isEndOfNetworkFeed = null,
+    Object? cursor = freezed,
   }) {
     return _then(_$FeedStateImpl(
       active: null == active
           ? _value.active
           : active // ignore: cast_nullable_to_non_nullable
               as bool,
-      uris: null == uris
-          ? _value._uris
-          : uris // ignore: cast_nullable_to_non_nullable
+      loadedUris: null == loadedUris
+          ? _value._loadedUris
+          : loadedUris // ignore: cast_nullable_to_non_nullable
               as List<AtUri>,
       index: null == index
           ? _value.index
           : index // ignore: cast_nullable_to_non_nullable
               as int,
-      remainingCachedPosts: null == remainingCachedPosts
-          ? _value.remainingCachedPosts
-          : remainingCachedPosts // ignore: cast_nullable_to_non_nullable
+      freshPostCount: null == freshPostCount
+          ? _value.freshPostCount
+          : freshPostCount // ignore: cast_nullable_to_non_nullable
               as int,
       isCaching: null == isCaching
           ? _value.isCaching
           : isCaching // ignore: cast_nullable_to_non_nullable
               as bool,
-      isEndOfFeed: null == isEndOfFeed
-          ? _value.isEndOfFeed
-          : isEndOfFeed // ignore: cast_nullable_to_non_nullable
-              as bool,
       isEndOfNetworkFeed: null == isEndOfNetworkFeed
           ? _value.isEndOfNetworkFeed
           : isEndOfNetworkFeed // ignore: cast_nullable_to_non_nullable
               as bool,
+      cursor: freezed == cursor
+          ? _value.cursor
+          : cursor // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
 
 /// @nodoc
 
-class _$FeedStateImpl implements _FeedState {
-  _$FeedStateImpl(
+class _$FeedStateImpl extends _FeedState {
+  const _$FeedStateImpl(
       {required this.active,
-      required final List<AtUri> uris,
+      required final List<AtUri> loadedUris,
       required this.index,
-      required this.remainingCachedPosts,
+      required this.freshPostCount,
       required this.isCaching,
-      required this.isEndOfFeed,
-      required this.isEndOfNetworkFeed})
-      : _uris = uris;
+      required this.isEndOfNetworkFeed,
+      required this.cursor})
+      : _loadedUris = loadedUris,
+        super._();
 
   @override
   final bool active;
-  final List<AtUri> _uris;
+  final List<AtUri> _loadedUris;
   @override
-  List<AtUri> get uris {
-    if (_uris is EqualUnmodifiableListView) return _uris;
+  List<AtUri> get loadedUris {
+    if (_loadedUris is EqualUnmodifiableListView) return _loadedUris;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_uris);
+    return EqualUnmodifiableListView(_loadedUris);
   }
 
   @override
   final int index;
   @override
-  final int remainingCachedPosts;
+  final int freshPostCount;
   @override
   final bool isCaching;
   @override
-  final bool isEndOfFeed;
-  @override
   final bool isEndOfNetworkFeed;
+  @override
+  final String? cursor;
 
   @override
   String toString() {
-    return 'FeedState(active: $active, uris: $uris, index: $index, remainingCachedPosts: $remainingCachedPosts, isCaching: $isCaching, isEndOfFeed: $isEndOfFeed, isEndOfNetworkFeed: $isEndOfNetworkFeed)';
+    return 'FeedState(active: $active, loadedUris: $loadedUris, index: $index, freshPostCount: $freshPostCount, isCaching: $isCaching, isEndOfNetworkFeed: $isEndOfNetworkFeed, cursor: $cursor)';
   }
 
   @override
@@ -219,28 +220,28 @@ class _$FeedStateImpl implements _FeedState {
         (other.runtimeType == runtimeType &&
             other is _$FeedStateImpl &&
             (identical(other.active, active) || other.active == active) &&
-            const DeepCollectionEquality().equals(other._uris, _uris) &&
+            const DeepCollectionEquality()
+                .equals(other._loadedUris, _loadedUris) &&
             (identical(other.index, index) || other.index == index) &&
-            (identical(other.remainingCachedPosts, remainingCachedPosts) ||
-                other.remainingCachedPosts == remainingCachedPosts) &&
+            (identical(other.freshPostCount, freshPostCount) ||
+                other.freshPostCount == freshPostCount) &&
             (identical(other.isCaching, isCaching) ||
                 other.isCaching == isCaching) &&
-            (identical(other.isEndOfFeed, isEndOfFeed) ||
-                other.isEndOfFeed == isEndOfFeed) &&
             (identical(other.isEndOfNetworkFeed, isEndOfNetworkFeed) ||
-                other.isEndOfNetworkFeed == isEndOfNetworkFeed));
+                other.isEndOfNetworkFeed == isEndOfNetworkFeed) &&
+            (identical(other.cursor, cursor) || other.cursor == cursor));
   }
 
   @override
   int get hashCode => Object.hash(
       runtimeType,
       active,
-      const DeepCollectionEquality().hash(_uris),
+      const DeepCollectionEquality().hash(_loadedUris),
       index,
-      remainingCachedPosts,
+      freshPostCount,
       isCaching,
-      isEndOfFeed,
-      isEndOfNetworkFeed);
+      isEndOfNetworkFeed,
+      cursor);
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.
@@ -251,30 +252,31 @@ class _$FeedStateImpl implements _FeedState {
       __$$FeedStateImplCopyWithImpl<_$FeedStateImpl>(this, _$identity);
 }
 
-abstract class _FeedState implements FeedState {
-  factory _FeedState(
+abstract class _FeedState extends FeedState {
+  const factory _FeedState(
       {required final bool active,
-      required final List<AtUri> uris,
+      required final List<AtUri> loadedUris,
       required final int index,
-      required final int remainingCachedPosts,
+      required final int freshPostCount,
       required final bool isCaching,
-      required final bool isEndOfFeed,
-      required final bool isEndOfNetworkFeed}) = _$FeedStateImpl;
+      required final bool isEndOfNetworkFeed,
+      required final String? cursor}) = _$FeedStateImpl;
+  const _FeedState._() : super._();
 
   @override
   bool get active;
   @override
-  List<AtUri> get uris;
+  List<AtUri> get loadedUris;
   @override
   int get index;
   @override
-  int get remainingCachedPosts;
+  int get freshPostCount;
   @override
   bool get isCaching;
   @override
-  bool get isEndOfFeed;
-  @override
   bool get isEndOfNetworkFeed;
+  @override
+  String? get cursor;
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.

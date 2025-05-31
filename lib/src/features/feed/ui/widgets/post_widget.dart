@@ -1,0 +1,1 @@
+// receives SkeletonFeedPost

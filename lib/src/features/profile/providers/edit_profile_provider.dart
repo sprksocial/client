@@ -17,14 +17,12 @@ part 'edit_profile_provider.g.dart';
 /// Provider for editing profile information
 @riverpod
 class EditProfile extends _$EditProfile {
-  late final ProfileRepository _profileRepository;
   late final AuthRepository _authRepository;
   late final LogService _logService;
   late final SparkLogger logger;
 
   @override
   EditProfileState build(ProfileViewDetailed profile) {
-    _profileRepository = GetIt.instance<ProfileRepository>();
     _authRepository = GetIt.instance<AuthRepository>();
     _logService = GetIt.instance<LogService>();
     logger = _logService.getLogger('EditProfileProvider');

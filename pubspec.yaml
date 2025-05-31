@@ -52,6 +52,8 @@ dependencies:
   sqflite: ^2.4.2
   # Old architecture dependencies
   provider: ^6.1.1
+  pool: ^1.5.0
+  collection: ^1.19.1
 
 dev_dependencies:
   flutter_test:

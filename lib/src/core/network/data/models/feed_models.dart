@@ -63,7 +63,7 @@ class CustomFeed with _$CustomFeed {
 ///
 /// Custom Feeds just need a uri, the rest is fetched from the API (if the custom feed is finished, it will be saved in the backend)
 ///
-/// HardCoded feeds are "fake" and completely handled in the frontend
+/// HardCoded feeds are "fake" and completely generated in the frontend
 @freezed
 class Feed with _$Feed {
   const Feed._();
@@ -79,15 +79,26 @@ class Feed with _$Feed {
   factory Feed.fromJson(Map<String, dynamic> json) => _$FeedFromJson(json);
 }
 
+/// Skeleton of a FeedView. Needs to be hydrated.
 @freezed
 class SkeletonFeedPost with _$SkeletonFeedPost {
   const factory SkeletonFeedPost({
     @AtUriConverter() required AtUri uri,
     // "reason": { "type": "union", "refs": ["#reasonRepost", "#reasonPin"] } i think we don't have to use this value for now
     // there's also a String feedContext "Context provided by feed generator that may be passed back alongside interactions."
+    HardcodedFeedExtraInfo? extraInfo, // extra info hardcoded feeds might send to the UI
   }) = _SkeletonFeedPost;
 
   factory SkeletonFeedPost.fromJson(Map<String, dynamic> json) => _$SkeletonFeedPostFromJson(json);
+}
+
+@freezed
+sealed class HardcodedFeedExtraInfo with _$HardcodedFeedExtraInfo {
+  const HardcodedFeedExtraInfo._();
+
+  const factory HardcodedFeedExtraInfo.shared({required ProfileViewBasic from, String? message}) = HardcodedFeedExtraInfoShared;
+
+  factory HardcodedFeedExtraInfo.fromJson(Map<String, dynamic> json) => _$HardcodedFeedExtraInfoFromJson(json);
 }
 
 /// GetTimeline returns a FeedViewPost array
@@ -185,7 +196,7 @@ class PostRecord with _$PostRecord {
     List<SelfLabel>? selfLabels,
     Embed? embed, // blob
     // threadgate
-  }) = _PostRecordVideo;
+  }) = _PostRecord;
 
   factory PostRecord.fromJson(Map<String, dynamic> json) => _$PostRecordFromJson(json);
 }
@@ -218,7 +229,7 @@ class PostView with _$PostView {
     List<Label>? labels,
     //SoundView? sound,
     EmbedView? embed, // aturi
-  }) = VideoPostView;
+  }) = _PostView;
 
   factory PostView.fromJson(Map<String, dynamic> json) => _$PostViewFromJson(json);
 
@@ -236,13 +247,22 @@ class PostView with _$PostView {
     }
     return '';
   }
+
+  List<String> get imageUrls {
+    if (embed case EmbedViewImage(:final image)) {
+      return image.images.map((img) => img.fullsize.toString()).toList();
+    }
+    return [];
+  }
 }
 
 @Freezed(unionKey: r'$type')
 sealed class EmbedView with _$EmbedView {
   const EmbedView._();
+
   @FreezedUnionValue('so.sprk.embed.video#view')
   const factory EmbedView.video({required VideoView video}) = EmbedViewVideo;
+
   @FreezedUnionValue('so.sprk.embed.images#view')
   const factory EmbedView.image({required ImageView image}) = EmbedViewImage;
 

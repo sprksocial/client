@@ -6,7 +6,7 @@ part of 'feed_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$feedNotifierHash() => r'412fbad99efa36b097dc6bfb327bfc5161f32cd3';
+String _$feedNotifierHash() => r'e8501717cda42ab639de11fcf054bc0890737b9b';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,11 +29,11 @@ class _SystemHash {
   }
 }
 
-abstract class _$FeedNotifier extends BuildlessAsyncNotifier<FeedState> {
-  late final AtUri atUri;
+abstract class _$FeedNotifier extends BuildlessNotifier<FeedState> {
+  late final Feed feed;
 
-  FutureOr<FeedState> build(
-    AtUri atUri,
+  FeedState build(
+    Feed feed,
   );
 }
 
@@ -42,16 +42,16 @@ abstract class _$FeedNotifier extends BuildlessAsyncNotifier<FeedState> {
 const feedNotifierProvider = FeedNotifierFamily();
 
 /// See also [FeedNotifier].
-class FeedNotifierFamily extends Family<AsyncValue<FeedState>> {
+class FeedNotifierFamily extends Family<FeedState> {
   /// See also [FeedNotifier].
   const FeedNotifierFamily();
 
   /// See also [FeedNotifier].
   FeedNotifierProvider call(
-    AtUri atUri,
+    Feed feed,
   ) {
     return FeedNotifierProvider(
-      atUri,
+      feed,
     );
   }
 
@@ -60,7 +60,7 @@ class FeedNotifierFamily extends Family<AsyncValue<FeedState>> {
     covariant FeedNotifierProvider provider,
   ) {
     return call(
-      provider.atUri,
+      provider.feed,
     );
   }
 
@@ -81,12 +81,12 @@ class FeedNotifierFamily extends Family<AsyncValue<FeedState>> {
 
 /// See also [FeedNotifier].
 class FeedNotifierProvider
-    extends AsyncNotifierProviderImpl<FeedNotifier, FeedState> {
+    extends NotifierProviderImpl<FeedNotifier, FeedState> {
   /// See also [FeedNotifier].
   FeedNotifierProvider(
-    AtUri atUri,
+    Feed feed,
   ) : this._internal(
-          () => FeedNotifier()..atUri = atUri,
+          () => FeedNotifier()..feed = feed,
           from: feedNotifierProvider,
           name: r'feedNotifierProvider',
           debugGetCreateSourceHash:
@@ -96,7 +96,7 @@ class FeedNotifierProvider
           dependencies: FeedNotifierFamily._dependencies,
           allTransitiveDependencies:
               FeedNotifierFamily._allTransitiveDependencies,
-          atUri: atUri,
+          feed: feed,
         );
 
   FeedNotifierProvider._internal(
@@ -106,17 +106,17 @@ class FeedNotifierProvider
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.atUri,
+    required this.feed,
   }) : super.internal();
 
-  final AtUri atUri;
+  final Feed feed;
 
   @override
-  FutureOr<FeedState> runNotifierBuild(
+  FeedState runNotifierBuild(
     covariant FeedNotifier notifier,
   ) {
     return notifier.build(
-      atUri,
+      feed,
     );
   }
 
@@ -125,31 +125,31 @@ class FeedNotifierProvider
     return ProviderOverride(
       origin: this,
       override: FeedNotifierProvider._internal(
-        () => create()..atUri = atUri,
+        () => create()..feed = feed,
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        atUri: atUri,
+        feed: feed,
       ),
     );
   }
 
   @override
-  AsyncNotifierProviderElement<FeedNotifier, FeedState> createElement() {
+  NotifierProviderElement<FeedNotifier, FeedState> createElement() {
     return _FeedNotifierProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is FeedNotifierProvider && other.atUri == atUri;
+    return other is FeedNotifierProvider && other.feed == feed;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, atUri.hashCode);
+    hash = _SystemHash.combine(hash, feed.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -157,18 +157,18 @@ class FeedNotifierProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin FeedNotifierRef on AsyncNotifierProviderRef<FeedState> {
-  /// The parameter `atUri` of this provider.
-  AtUri get atUri;
+mixin FeedNotifierRef on NotifierProviderRef<FeedState> {
+  /// The parameter `feed` of this provider.
+  Feed get feed;
 }
 
 class _FeedNotifierProviderElement
-    extends AsyncNotifierProviderElement<FeedNotifier, FeedState>
+    extends NotifierProviderElement<FeedNotifier, FeedState>
     with FeedNotifierRef {
   _FeedNotifierProviderElement(super.provider);
 
   @override
-  AtUri get atUri => (origin as FeedNotifierProvider).atUri;
+  Feed get feed => (origin as FeedNotifierProvider).feed;
 }
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

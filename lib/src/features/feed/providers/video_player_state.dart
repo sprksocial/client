@@ -9,8 +9,6 @@ abstract class VideoPlayerState with _$VideoPlayerState {
   factory VideoPlayerState({
     VideoPlayerController? controller,
 
-    /// ALL video players will be cached, this is the key in the SQLite database
-    /// use it to get the file path
     @AtUriConverter() required AtUri uri,
   }) = _VideoPlayerState;
 }

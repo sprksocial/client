@@ -112,12 +112,31 @@ _$SkeletonFeedPostImpl _$$SkeletonFeedPostImplFromJson(
         Map<String, dynamic> json) =>
     _$SkeletonFeedPostImpl(
       uri: const AtUriConverter().fromJson(json['uri'] as String),
+      extraInfo: json['extraInfo'] == null
+          ? null
+          : HardcodedFeedExtraInfo.fromJson(
+              json['extraInfo'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$SkeletonFeedPostImplToJson(
         _$SkeletonFeedPostImpl instance) =>
     <String, dynamic>{
       'uri': const AtUriConverter().toJson(instance.uri),
+      'extraInfo': instance.extraInfo,
+    };
+
+_$HardcodedFeedExtraInfoSharedImpl _$$HardcodedFeedExtraInfoSharedImplFromJson(
+        Map<String, dynamic> json) =>
+    _$HardcodedFeedExtraInfoSharedImpl(
+      from: ProfileViewBasic.fromJson(json['from'] as Map<String, dynamic>),
+      message: json['message'] as String?,
+    );
+
+Map<String, dynamic> _$$HardcodedFeedExtraInfoSharedImplToJson(
+        _$HardcodedFeedExtraInfoSharedImpl instance) =>
+    <String, dynamic>{
+      'from': instance.from,
+      'message': instance.message,
     };
 
 _$FeedViewPostPostImpl _$$FeedViewPostPostImplFromJson(
@@ -278,9 +297,8 @@ Map<String, dynamic> _$$ViewerImplToJson(_$ViewerImpl instance) =>
       'pinned': instance.pinned,
     };
 
-_$PostRecordVideoImpl _$$PostRecordVideoImplFromJson(
-        Map<String, dynamic> json) =>
-    _$PostRecordVideoImpl(
+_$PostRecordImpl _$$PostRecordImplFromJson(Map<String, dynamic> json) =>
+    _$PostRecordImpl(
       createdAt: DateTime.parse(json['createdAt'] as String),
       text: json['text'] as String? ?? '',
       facets: (json['facets'] as List<dynamic>?)
@@ -301,8 +319,7 @@ _$PostRecordVideoImpl _$$PostRecordVideoImplFromJson(
           : Embed.fromJson(json['embed'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$$PostRecordVideoImplToJson(
-        _$PostRecordVideoImpl instance) =>
+Map<String, dynamic> _$$PostRecordImplToJson(_$PostRecordImpl instance) =>
     <String, dynamic>{
       'createdAt': instance.createdAt.toIso8601String(),
       'text': instance.text,
@@ -338,8 +355,8 @@ Map<String, dynamic> _$$EmbedImageImplToJson(_$EmbedImageImpl instance) =>
       r'$type': instance.$type,
     };
 
-_$VideoPostViewImpl _$$VideoPostViewImplFromJson(Map<String, dynamic> json) =>
-    _$VideoPostViewImpl(
+_$PostViewImpl _$$PostViewImplFromJson(Map<String, dynamic> json) =>
+    _$PostViewImpl(
       uri: const AtUriConverter().fromJson(json['uri'] as String),
       cid: CID.fromJson(json['cid'] as Map<String, dynamic>),
       author: ProfileViewBasic.fromJson(json['author'] as Map<String, dynamic>),
@@ -358,7 +375,7 @@ _$VideoPostViewImpl _$$VideoPostViewImplFromJson(Map<String, dynamic> json) =>
           : EmbedView.fromJson(json['embed'] as Map<String, dynamic>),
     );
 
-Map<String, dynamic> _$$VideoPostViewImplToJson(_$VideoPostViewImpl instance) =>
+Map<String, dynamic> _$$PostViewImplToJson(_$PostViewImpl instance) =>
     <String, dynamic>{
       'uri': const AtUriConverter().toJson(instance.uri),
       'cid': instance.cid,

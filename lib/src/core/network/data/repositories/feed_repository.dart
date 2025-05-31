@@ -1,5 +1,4 @@
 import 'package:atproto_core/atproto_core.dart';
-import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:image_picker/image_picker.dart';
 import 'package:atproto/atproto.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
@@ -10,23 +9,12 @@ abstract class FeedRepository {
   ///
   /// [feed] The feed to get the skeleton for
   /// [limit] The number of items to return
-  Future<FeedSkeleton> getFeedSkeleton(AtUri feed, {int limit = 30});
+  Future<FeedSkeleton> getFeedSkeleton(Feed feed, {int? limit, String? cursor});
 
   /// Get posts by URIs (hydrates a skeleton)
   ///
   /// [uris] List of post URIs to fetch
   Future<List<PostView>> getPosts(List<AtUri> uris);
-
-  /// Get posts by feed (custom or hardcoded)
-  ///
-  /// [feed] The feed to get the posts for
-  /// [limit] The number of items to return
-  /// [cursor] Pagination cursor for the next set of results
-  Future<({List<bsky.FeedView> bsky, List<PostView> sprk, String? cursor})> getPostsByFeed(
-    Feed feed, {
-    int limit = 30,
-    String? cursor,
-  });
 
   /// Get an author's feed
   ///

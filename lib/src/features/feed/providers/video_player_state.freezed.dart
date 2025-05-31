@@ -17,9 +17,6 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$VideoPlayerState {
   VideoPlayerController? get controller => throw _privateConstructorUsedError;
-
-  /// ALL video players will be cached, this is the key in the SQLite database
-  /// use it to get the file path
   @AtUriConverter()
   AtUri get uri => throw _privateConstructorUsedError;
 
@@ -118,9 +115,6 @@ class _$VideoPlayerStateImpl implements _VideoPlayerState {
 
   @override
   final VideoPlayerController? controller;
-
-  /// ALL video players will be cached, this is the key in the SQLite database
-  /// use it to get the file path
   @override
   @AtUriConverter()
   final AtUri uri;
@@ -160,9 +154,6 @@ abstract class _VideoPlayerState implements VideoPlayerState {
 
   @override
   VideoPlayerController? get controller;
-
-  /// ALL video players will be cached, this is the key in the SQLite database
-  /// use it to get the file path
   @override
   @AtUriConverter()
   AtUri get uri;

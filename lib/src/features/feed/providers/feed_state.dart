@@ -5,17 +5,21 @@ part 'feed_state.freezed.dart';
 
 @freezed
 abstract class FeedState with _$FeedState {
-  factory FeedState({
+  const FeedState._();
+  const factory FeedState({
     required bool active,
-    required List<AtUri> uris,
+    required List<AtUri> loadedUris,
     required int index,
-    required int remainingCachedPosts,
+    required int freshPostCount,
     required bool isCaching,
-    required bool isEndOfFeed,
     required bool isEndOfNetworkFeed,
+    required String? cursor,
   }) = _FeedState;
 
-  static const int n = 10; // number of posts to fetch at a time
-  static const int m = 10; // number of posts to load from the database at a time
-  static const int f = 10; // number of posts to load in the first load
+  int get length => loadedUris.length;
+
+  static const int fetchLimit = 10; // number of posts to fetch at a time
+  static const int loadLimit = 10; // number of posts to load from the database at a time
+  static const int firstLoadLimit = 10; // number of posts to load in the first load
+  static const int poolSize = fetchLimit + (fetchLimit >> 1); // number of post embeds to cache at a time
 }

@@ -28,7 +28,7 @@ loadAndUpdateFirstLoad() {
 fetch(List<(AtUri)> initialUris) {
   Repository fetches a skeleton of n fetchedUris
   All fetchedUris that are in initialUris are removed from fetchedUris to avoid duplicates
-  return the fetchedUris
+  return the fetchedUris and the amount of posts fetched initially (before filtering duplicates)
 }
 
 store(List<(PostView)> posts) {
@@ -65,11 +65,11 @@ Call store(fetch()) to start storing new data into the database.
 Call loadAndUpdateFirstLoad() to load the first posts into the feed.
 
 When the user scrolls down (index increments):
-- If uris.length - index < 10 && !isCaching
+- If uris.length - index < m && !isCaching
   - response = fetch()
   - If response is empty, endOfNetworkFeed() is called
   - Otherwise, store(response) is called
-- If uris.length - index < 10, load() is called.
+- If uris.length - index < m, load() is called.
 - If uris.length - index <= 1 && isEndOfFeed = false, endOfFeed() is called.
 - The post at [oldIndex - 1] becomes a SizedBox
 - If the post at [oldIndex] is a Video, stop playing it

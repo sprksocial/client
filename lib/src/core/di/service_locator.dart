@@ -1,9 +1,9 @@
 import 'package:get_it/get_it.dart';
+import 'package:pool/pool.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository_impl.dart';
 import 'package:sparksocial/src/core/storage/cache/cache_manager_impl.dart';
 import 'package:sparksocial/src/core/theme/data/repositories/theme_repository.dart';
 import 'package:sparksocial/src/core/theme/data/repositories/theme_repository_impl.dart';
-import 'package:sparksocial/src/core/storage/cache/sql_cache.dart';
 import 'package:sparksocial/src/core/settings/repositories/settings_repository.dart';
 import 'package:sparksocial/src/features/auth/auth.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
@@ -15,6 +15,7 @@ import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repositor
 import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/actor_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/graph_repository_impl.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
 
 // This is the ONLY PLACE IN THE ENTIRE APP where implementations are imported
 // All the other files should import interfaces only (polymorphism) to keep everything decoupled
@@ -30,7 +31,15 @@ Future<void> initServiceLocator() async {
   final storageManager = StorageManager.instance;
   await storageManager.init();
 
-  await SQLCache().database;
+  final sqlCache = SQLCache();
+  await sqlCache.database;
+  sl.registerSingleton<SQLCache>(sqlCache);
+
+  // pool of the amount of concurrent downloads for feed posts
+  final globalCachingPool = Pool(FeedState.poolSize);
+  GetIt.I.registerSingleton<Pool>(globalCachingPool, instanceName: 'CachingPool');
+  // since we might have other pools, we need to access this one by its instance name
+  // _cachingPool = GetIt.instance<Pool>(instanceName: 'CachingPool');
 
   // Register storage manager
   sl.registerSingleton<StorageManager>(storageManager);

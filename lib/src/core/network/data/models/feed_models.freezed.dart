@@ -977,7 +977,10 @@ SkeletonFeedPost _$SkeletonFeedPostFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$SkeletonFeedPost {
   @AtUriConverter()
-  AtUri get uri => throw _privateConstructorUsedError;
+  AtUri get uri =>
+      throw _privateConstructorUsedError; // "reason": { "type": "union", "refs": ["#reasonRepost", "#reasonPin"] } i think we don't have to use this value for now
+// there's also a String feedContext "Context provided by feed generator that may be passed back alongside interactions."
+  HardcodedFeedExtraInfo? get extraInfo => throw _privateConstructorUsedError;
 
   /// Serializes this SkeletonFeedPost to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -995,7 +998,9 @@ abstract class $SkeletonFeedPostCopyWith<$Res> {
           SkeletonFeedPost value, $Res Function(SkeletonFeedPost) then) =
       _$SkeletonFeedPostCopyWithImpl<$Res, SkeletonFeedPost>;
   @useResult
-  $Res call({@AtUriConverter() AtUri uri});
+  $Res call({@AtUriConverter() AtUri uri, HardcodedFeedExtraInfo? extraInfo});
+
+  $HardcodedFeedExtraInfoCopyWith<$Res>? get extraInfo;
 }
 
 /// @nodoc
@@ -1014,13 +1019,32 @@ class _$SkeletonFeedPostCopyWithImpl<$Res, $Val extends SkeletonFeedPost>
   @override
   $Res call({
     Object? uri = null,
+    Object? extraInfo = freezed,
   }) {
     return _then(_value.copyWith(
       uri: null == uri
           ? _value.uri
           : uri // ignore: cast_nullable_to_non_nullable
               as AtUri,
+      extraInfo: freezed == extraInfo
+          ? _value.extraInfo
+          : extraInfo // ignore: cast_nullable_to_non_nullable
+              as HardcodedFeedExtraInfo?,
     ) as $Val);
+  }
+
+  /// Create a copy of SkeletonFeedPost
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $HardcodedFeedExtraInfoCopyWith<$Res>? get extraInfo {
+    if (_value.extraInfo == null) {
+      return null;
+    }
+
+    return $HardcodedFeedExtraInfoCopyWith<$Res>(_value.extraInfo!, (value) {
+      return _then(_value.copyWith(extraInfo: value) as $Val);
+    });
   }
 }
 
@@ -1032,7 +1056,10 @@ abstract class _$$SkeletonFeedPostImplCopyWith<$Res>
       __$$SkeletonFeedPostImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({@AtUriConverter() AtUri uri});
+  $Res call({@AtUriConverter() AtUri uri, HardcodedFeedExtraInfo? extraInfo});
+
+  @override
+  $HardcodedFeedExtraInfoCopyWith<$Res>? get extraInfo;
 }
 
 /// @nodoc
@@ -1049,12 +1076,17 @@ class __$$SkeletonFeedPostImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? uri = null,
+    Object? extraInfo = freezed,
   }) {
     return _then(_$SkeletonFeedPostImpl(
       uri: null == uri
           ? _value.uri
           : uri // ignore: cast_nullable_to_non_nullable
               as AtUri,
+      extraInfo: freezed == extraInfo
+          ? _value.extraInfo
+          : extraInfo // ignore: cast_nullable_to_non_nullable
+              as HardcodedFeedExtraInfo?,
     ));
   }
 }
@@ -1064,7 +1096,8 @@ class __$$SkeletonFeedPostImplCopyWithImpl<$Res>
 class _$SkeletonFeedPostImpl
     with DiagnosticableTreeMixin
     implements _SkeletonFeedPost {
-  const _$SkeletonFeedPostImpl({@AtUriConverter() required this.uri});
+  const _$SkeletonFeedPostImpl(
+      {@AtUriConverter() required this.uri, this.extraInfo});
 
   factory _$SkeletonFeedPostImpl.fromJson(Map<String, dynamic> json) =>
       _$$SkeletonFeedPostImplFromJson(json);
@@ -1072,10 +1105,14 @@ class _$SkeletonFeedPostImpl
   @override
   @AtUriConverter()
   final AtUri uri;
+// "reason": { "type": "union", "refs": ["#reasonRepost", "#reasonPin"] } i think we don't have to use this value for now
+// there's also a String feedContext "Context provided by feed generator that may be passed back alongside interactions."
+  @override
+  final HardcodedFeedExtraInfo? extraInfo;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'SkeletonFeedPost(uri: $uri)';
+    return 'SkeletonFeedPost(uri: $uri, extraInfo: $extraInfo)';
   }
 
   @override
@@ -1083,7 +1120,8 @@ class _$SkeletonFeedPostImpl
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty('type', 'SkeletonFeedPost'))
-      ..add(DiagnosticsProperty('uri', uri));
+      ..add(DiagnosticsProperty('uri', uri))
+      ..add(DiagnosticsProperty('extraInfo', extraInfo));
   }
 
   @override
@@ -1091,12 +1129,14 @@ class _$SkeletonFeedPostImpl
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SkeletonFeedPostImpl &&
-            (identical(other.uri, uri) || other.uri == uri));
+            (identical(other.uri, uri) || other.uri == uri) &&
+            (identical(other.extraInfo, extraInfo) ||
+                other.extraInfo == extraInfo));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, uri);
+  int get hashCode => Object.hash(runtimeType, uri, extraInfo);
 
   /// Create a copy of SkeletonFeedPost
   /// with the given fields replaced by the non-null parameter values.
@@ -1117,14 +1157,19 @@ class _$SkeletonFeedPostImpl
 
 abstract class _SkeletonFeedPost implements SkeletonFeedPost {
   const factory _SkeletonFeedPost(
-      {@AtUriConverter() required final AtUri uri}) = _$SkeletonFeedPostImpl;
+      {@AtUriConverter() required final AtUri uri,
+      final HardcodedFeedExtraInfo? extraInfo}) = _$SkeletonFeedPostImpl;
 
   factory _SkeletonFeedPost.fromJson(Map<String, dynamic> json) =
       _$SkeletonFeedPostImpl.fromJson;
 
   @override
   @AtUriConverter()
-  AtUri get uri;
+  AtUri
+      get uri; // "reason": { "type": "union", "refs": ["#reasonRepost", "#reasonPin"] } i think we don't have to use this value for now
+// there's also a String feedContext "Context provided by feed generator that may be passed back alongside interactions."
+  @override
+  HardcodedFeedExtraInfo? get extraInfo;
 
   /// Create a copy of SkeletonFeedPost
   /// with the given fields replaced by the non-null parameter values.
@@ -1132,6 +1177,297 @@ abstract class _SkeletonFeedPost implements SkeletonFeedPost {
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$SkeletonFeedPostImplCopyWith<_$SkeletonFeedPostImpl> get copyWith =>
       throw _privateConstructorUsedError;
+}
+
+HardcodedFeedExtraInfo _$HardcodedFeedExtraInfoFromJson(
+    Map<String, dynamic> json) {
+  return HardcodedFeedExtraInfoShared.fromJson(json);
+}
+
+/// @nodoc
+mixin _$HardcodedFeedExtraInfo {
+  ProfileViewBasic get from => throw _privateConstructorUsedError;
+  String? get message => throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(ProfileViewBasic from, String? message) shared,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(ProfileViewBasic from, String? message)? shared,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(ProfileViewBasic from, String? message)? shared,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(HardcodedFeedExtraInfoShared value) shared,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(HardcodedFeedExtraInfoShared value)? shared,
+  }) =>
+      throw _privateConstructorUsedError;
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(HardcodedFeedExtraInfoShared value)? shared,
+    required TResult orElse(),
+  }) =>
+      throw _privateConstructorUsedError;
+
+  /// Serializes this HardcodedFeedExtraInfo to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of HardcodedFeedExtraInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $HardcodedFeedExtraInfoCopyWith<HardcodedFeedExtraInfo> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $HardcodedFeedExtraInfoCopyWith<$Res> {
+  factory $HardcodedFeedExtraInfoCopyWith(HardcodedFeedExtraInfo value,
+          $Res Function(HardcodedFeedExtraInfo) then) =
+      _$HardcodedFeedExtraInfoCopyWithImpl<$Res, HardcodedFeedExtraInfo>;
+  @useResult
+  $Res call({ProfileViewBasic from, String? message});
+
+  $ProfileViewBasicCopyWith<$Res> get from;
+}
+
+/// @nodoc
+class _$HardcodedFeedExtraInfoCopyWithImpl<$Res,
+        $Val extends HardcodedFeedExtraInfo>
+    implements $HardcodedFeedExtraInfoCopyWith<$Res> {
+  _$HardcodedFeedExtraInfoCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of HardcodedFeedExtraInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? from = null,
+    Object? message = freezed,
+  }) {
+    return _then(_value.copyWith(
+      from: null == from
+          ? _value.from
+          : from // ignore: cast_nullable_to_non_nullable
+              as ProfileViewBasic,
+      message: freezed == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ) as $Val);
+  }
+
+  /// Create a copy of HardcodedFeedExtraInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProfileViewBasicCopyWith<$Res> get from {
+    return $ProfileViewBasicCopyWith<$Res>(_value.from, (value) {
+      return _then(_value.copyWith(from: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$HardcodedFeedExtraInfoSharedImplCopyWith<$Res>
+    implements $HardcodedFeedExtraInfoCopyWith<$Res> {
+  factory _$$HardcodedFeedExtraInfoSharedImplCopyWith(
+          _$HardcodedFeedExtraInfoSharedImpl value,
+          $Res Function(_$HardcodedFeedExtraInfoSharedImpl) then) =
+      __$$HardcodedFeedExtraInfoSharedImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({ProfileViewBasic from, String? message});
+
+  @override
+  $ProfileViewBasicCopyWith<$Res> get from;
+}
+
+/// @nodoc
+class __$$HardcodedFeedExtraInfoSharedImplCopyWithImpl<$Res>
+    extends _$HardcodedFeedExtraInfoCopyWithImpl<$Res,
+        _$HardcodedFeedExtraInfoSharedImpl>
+    implements _$$HardcodedFeedExtraInfoSharedImplCopyWith<$Res> {
+  __$$HardcodedFeedExtraInfoSharedImplCopyWithImpl(
+      _$HardcodedFeedExtraInfoSharedImpl _value,
+      $Res Function(_$HardcodedFeedExtraInfoSharedImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of HardcodedFeedExtraInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? from = null,
+    Object? message = freezed,
+  }) {
+    return _then(_$HardcodedFeedExtraInfoSharedImpl(
+      from: null == from
+          ? _value.from
+          : from // ignore: cast_nullable_to_non_nullable
+              as ProfileViewBasic,
+      message: freezed == message
+          ? _value.message
+          : message // ignore: cast_nullable_to_non_nullable
+              as String?,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$HardcodedFeedExtraInfoSharedImpl extends HardcodedFeedExtraInfoShared
+    with DiagnosticableTreeMixin {
+  const _$HardcodedFeedExtraInfoSharedImpl({required this.from, this.message})
+      : super._();
+
+  factory _$HardcodedFeedExtraInfoSharedImpl.fromJson(
+          Map<String, dynamic> json) =>
+      _$$HardcodedFeedExtraInfoSharedImplFromJson(json);
+
+  @override
+  final ProfileViewBasic from;
+  @override
+  final String? message;
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'HardcodedFeedExtraInfo.shared(from: $from, message: $message)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'HardcodedFeedExtraInfo.shared'))
+      ..add(DiagnosticsProperty('from', from))
+      ..add(DiagnosticsProperty('message', message));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$HardcodedFeedExtraInfoSharedImpl &&
+            (identical(other.from, from) || other.from == from) &&
+            (identical(other.message, message) || other.message == message));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(runtimeType, from, message);
+
+  /// Create a copy of HardcodedFeedExtraInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$HardcodedFeedExtraInfoSharedImplCopyWith<
+          _$HardcodedFeedExtraInfoSharedImpl>
+      get copyWith => __$$HardcodedFeedExtraInfoSharedImplCopyWithImpl<
+          _$HardcodedFeedExtraInfoSharedImpl>(this, _$identity);
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function(ProfileViewBasic from, String? message) shared,
+  }) {
+    return shared(from, message);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? whenOrNull<TResult extends Object?>({
+    TResult? Function(ProfileViewBasic from, String? message)? shared,
+  }) {
+    return shared?.call(from, message);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeWhen<TResult extends Object?>({
+    TResult Function(ProfileViewBasic from, String? message)? shared,
+    required TResult orElse(),
+  }) {
+    if (shared != null) {
+      return shared(from, message);
+    }
+    return orElse();
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult map<TResult extends Object?>({
+    required TResult Function(HardcodedFeedExtraInfoShared value) shared,
+  }) {
+    return shared(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult? mapOrNull<TResult extends Object?>({
+    TResult? Function(HardcodedFeedExtraInfoShared value)? shared,
+  }) {
+    return shared?.call(this);
+  }
+
+  @override
+  @optionalTypeArgs
+  TResult maybeMap<TResult extends Object?>({
+    TResult Function(HardcodedFeedExtraInfoShared value)? shared,
+    required TResult orElse(),
+  }) {
+    if (shared != null) {
+      return shared(this);
+    }
+    return orElse();
+  }
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$HardcodedFeedExtraInfoSharedImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class HardcodedFeedExtraInfoShared extends HardcodedFeedExtraInfo {
+  const factory HardcodedFeedExtraInfoShared(
+      {required final ProfileViewBasic from,
+      final String? message}) = _$HardcodedFeedExtraInfoSharedImpl;
+  const HardcodedFeedExtraInfoShared._() : super._();
+
+  factory HardcodedFeedExtraInfoShared.fromJson(Map<String, dynamic> json) =
+      _$HardcodedFeedExtraInfoSharedImpl.fromJson;
+
+  @override
+  ProfileViewBasic get from;
+  @override
+  String? get message;
+
+  /// Create a copy of HardcodedFeedExtraInfo
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$HardcodedFeedExtraInfoSharedImplCopyWith<
+          _$HardcodedFeedExtraInfoSharedImpl>
+      get copyWith => throw _privateConstructorUsedError;
 }
 
 FeedViewPost _$FeedViewPostFromJson(Map<String, dynamic> json) {
@@ -3271,7 +3607,7 @@ abstract class _Viewer implements Viewer {
 }
 
 PostRecord _$PostRecordFromJson(Map<String, dynamic> json) {
-  return _PostRecordVideo.fromJson(json);
+  return _PostRecord.fromJson(json);
 }
 
 /// @nodoc
@@ -3407,11 +3743,11 @@ class _$PostRecordCopyWithImpl<$Res, $Val extends PostRecord>
 }
 
 /// @nodoc
-abstract class _$$PostRecordVideoImplCopyWith<$Res>
+abstract class _$$PostRecordImplCopyWith<$Res>
     implements $PostRecordCopyWith<$Res> {
-  factory _$$PostRecordVideoImplCopyWith(_$PostRecordVideoImpl value,
-          $Res Function(_$PostRecordVideoImpl) then) =
-      __$$PostRecordVideoImplCopyWithImpl<$Res>;
+  factory _$$PostRecordImplCopyWith(
+          _$PostRecordImpl value, $Res Function(_$PostRecordImpl) then) =
+      __$$PostRecordImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -3431,11 +3767,11 @@ abstract class _$$PostRecordVideoImplCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$PostRecordVideoImplCopyWithImpl<$Res>
-    extends _$PostRecordCopyWithImpl<$Res, _$PostRecordVideoImpl>
-    implements _$$PostRecordVideoImplCopyWith<$Res> {
-  __$$PostRecordVideoImplCopyWithImpl(
-      _$PostRecordVideoImpl _value, $Res Function(_$PostRecordVideoImpl) _then)
+class __$$PostRecordImplCopyWithImpl<$Res>
+    extends _$PostRecordCopyWithImpl<$Res, _$PostRecordImpl>
+    implements _$$PostRecordImplCopyWith<$Res> {
+  __$$PostRecordImplCopyWithImpl(
+      _$PostRecordImpl _value, $Res Function(_$PostRecordImpl) _then)
       : super(_value, _then);
 
   /// Create a copy of PostRecord
@@ -3452,7 +3788,7 @@ class __$$PostRecordVideoImplCopyWithImpl<$Res>
     Object? selfLabels = freezed,
     Object? embed = freezed,
   }) {
-    return _then(_$PostRecordVideoImpl(
+    return _then(_$PostRecordImpl(
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -3491,9 +3827,8 @@ class __$$PostRecordVideoImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$PostRecordVideoImpl extends _PostRecordVideo
-    with DiagnosticableTreeMixin {
-  const _$PostRecordVideoImpl(
+class _$PostRecordImpl extends _PostRecord with DiagnosticableTreeMixin {
+  const _$PostRecordImpl(
       {required this.createdAt,
       @JsonKey(defaultValue: '') this.text,
       @JsonKey(defaultValue: []) final List<Facet>? facets,
@@ -3508,8 +3843,8 @@ class _$PostRecordVideoImpl extends _PostRecordVideo
         _selfLabels = selfLabels,
         super._();
 
-  factory _$PostRecordVideoImpl.fromJson(Map<String, dynamic> json) =>
-      _$$PostRecordVideoImplFromJson(json);
+  factory _$PostRecordImpl.fromJson(Map<String, dynamic> json) =>
+      _$$PostRecordImplFromJson(json);
 
   @override
   final DateTime createdAt;
@@ -3586,7 +3921,7 @@ class _$PostRecordVideoImpl extends _PostRecordVideo
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$PostRecordVideoImpl &&
+            other is _$PostRecordImpl &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.text, text) || other.text == text) &&
@@ -3617,20 +3952,19 @@ class _$PostRecordVideoImpl extends _PostRecordVideo
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$PostRecordVideoImplCopyWith<_$PostRecordVideoImpl> get copyWith =>
-      __$$PostRecordVideoImplCopyWithImpl<_$PostRecordVideoImpl>(
-          this, _$identity);
+  _$$PostRecordImplCopyWith<_$PostRecordImpl> get copyWith =>
+      __$$PostRecordImplCopyWithImpl<_$PostRecordImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PostRecordVideoImplToJson(
+    return _$$PostRecordImplToJson(
       this,
     );
   }
 }
 
-abstract class _PostRecordVideo extends PostRecord {
-  const factory _PostRecordVideo(
+abstract class _PostRecord extends PostRecord {
+  const factory _PostRecord(
       {required final DateTime createdAt,
       @JsonKey(defaultValue: '') final String? text,
       @JsonKey(defaultValue: []) final List<Facet>? facets,
@@ -3638,11 +3972,11 @@ abstract class _PostRecordVideo extends PostRecord {
       final List<String>? langs,
       final List<String>? tags,
       final List<SelfLabel>? selfLabels,
-      final Embed? embed}) = _$PostRecordVideoImpl;
-  const _PostRecordVideo._() : super._();
+      final Embed? embed}) = _$PostRecordImpl;
+  const _PostRecord._() : super._();
 
-  factory _PostRecordVideo.fromJson(Map<String, dynamic> json) =
-      _$PostRecordVideoImpl.fromJson;
+  factory _PostRecord.fromJson(Map<String, dynamic> json) =
+      _$PostRecordImpl.fromJson;
 
   @override
   DateTime get createdAt;
@@ -3667,7 +4001,7 @@ abstract class _PostRecordVideo extends PostRecord {
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$PostRecordVideoImplCopyWith<_$PostRecordVideoImpl> get copyWith =>
+  _$$PostRecordImplCopyWith<_$PostRecordImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -4112,7 +4446,7 @@ abstract class EmbedImage extends Embed {
 }
 
 PostView _$PostViewFromJson(Map<String, dynamic> json) {
-  return VideoPostView.fromJson(json);
+  return _PostView.fromJson(json);
 }
 
 /// @nodoc
@@ -4282,11 +4616,11 @@ class _$PostViewCopyWithImpl<$Res, $Val extends PostView>
 }
 
 /// @nodoc
-abstract class _$$VideoPostViewImplCopyWith<$Res>
+abstract class _$$PostViewImplCopyWith<$Res>
     implements $PostViewCopyWith<$Res> {
-  factory _$$VideoPostViewImplCopyWith(
-          _$VideoPostViewImpl value, $Res Function(_$VideoPostViewImpl) then) =
-      __$$VideoPostViewImplCopyWithImpl<$Res>;
+  factory _$$PostViewImplCopyWith(
+          _$PostViewImpl value, $Res Function(_$PostViewImpl) then) =
+      __$$PostViewImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call(
@@ -4312,11 +4646,11 @@ abstract class _$$VideoPostViewImplCopyWith<$Res>
 }
 
 /// @nodoc
-class __$$VideoPostViewImplCopyWithImpl<$Res>
-    extends _$PostViewCopyWithImpl<$Res, _$VideoPostViewImpl>
-    implements _$$VideoPostViewImplCopyWith<$Res> {
-  __$$VideoPostViewImplCopyWithImpl(
-      _$VideoPostViewImpl _value, $Res Function(_$VideoPostViewImpl) _then)
+class __$$PostViewImplCopyWithImpl<$Res>
+    extends _$PostViewCopyWithImpl<$Res, _$PostViewImpl>
+    implements _$$PostViewImplCopyWith<$Res> {
+  __$$PostViewImplCopyWithImpl(
+      _$PostViewImpl _value, $Res Function(_$PostViewImpl) _then)
       : super(_value, _then);
 
   /// Create a copy of PostView
@@ -4337,7 +4671,7 @@ class __$$VideoPostViewImplCopyWithImpl<$Res>
     Object? labels = freezed,
     Object? embed = freezed,
   }) {
-    return _then(_$VideoPostViewImpl(
+    return _then(_$PostViewImpl(
       uri: null == uri
           ? _value.uri
           : uri // ignore: cast_nullable_to_non_nullable
@@ -4392,8 +4726,8 @@ class __$$VideoPostViewImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$VideoPostViewImpl extends VideoPostView with DiagnosticableTreeMixin {
-  const _$VideoPostViewImpl(
+class _$PostViewImpl extends _PostView with DiagnosticableTreeMixin {
+  const _$PostViewImpl(
       {@AtUriConverter() required this.uri,
       required this.cid,
       required this.author,
@@ -4409,8 +4743,8 @@ class _$VideoPostViewImpl extends VideoPostView with DiagnosticableTreeMixin {
       : _labels = labels,
         super._();
 
-  factory _$VideoPostViewImpl.fromJson(Map<String, dynamic> json) =>
-      _$$VideoPostViewImplFromJson(json);
+  factory _$PostViewImpl.fromJson(Map<String, dynamic> json) =>
+      _$$PostViewImplFromJson(json);
 
   @override
   @AtUriConverter()
@@ -4476,7 +4810,7 @@ class _$VideoPostViewImpl extends VideoPostView with DiagnosticableTreeMixin {
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$VideoPostViewImpl &&
+            other is _$PostViewImpl &&
             (identical(other.uri, uri) || other.uri == uri) &&
             (identical(other.cid, cid) || other.cid == cid) &&
             (identical(other.author, author) || other.author == author) &&
@@ -4519,19 +4853,19 @@ class _$VideoPostViewImpl extends VideoPostView with DiagnosticableTreeMixin {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$VideoPostViewImplCopyWith<_$VideoPostViewImpl> get copyWith =>
-      __$$VideoPostViewImplCopyWithImpl<_$VideoPostViewImpl>(this, _$identity);
+  _$$PostViewImplCopyWith<_$PostViewImpl> get copyWith =>
+      __$$PostViewImplCopyWithImpl<_$PostViewImpl>(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$VideoPostViewImplToJson(
+    return _$$PostViewImplToJson(
       this,
     );
   }
 }
 
-abstract class VideoPostView extends PostView {
-  const factory VideoPostView(
+abstract class _PostView extends PostView {
+  const factory _PostView(
       {@AtUriConverter() required final AtUri uri,
       required final CID cid,
       required final ProfileViewBasic author,
@@ -4543,11 +4877,11 @@ abstract class VideoPostView extends PostView {
       final int? repostCount,
       final int? quoteCount,
       final List<Label>? labels,
-      final EmbedView? embed}) = _$VideoPostViewImpl;
-  const VideoPostView._() : super._();
+      final EmbedView? embed}) = _$PostViewImpl;
+  const _PostView._() : super._();
 
-  factory VideoPostView.fromJson(Map<String, dynamic> json) =
-      _$VideoPostViewImpl.fromJson;
+  factory _PostView.fromJson(Map<String, dynamic> json) =
+      _$PostViewImpl.fromJson;
 
   @override
   @AtUriConverter()
@@ -4579,7 +4913,7 @@ abstract class VideoPostView extends PostView {
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$VideoPostViewImplCopyWith<_$VideoPostViewImpl> get copyWith =>
+  _$$PostViewImplCopyWith<_$PostViewImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 

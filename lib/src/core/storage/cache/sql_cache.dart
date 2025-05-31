@@ -38,10 +38,6 @@ const String _columnPostUriFK = 'post_uri_fk'; // TEXT, Foreign Key to cached_po
 const String _columnAssociationOrder = 'association_order'; // INTEGER, for ordering posts within a feed
 
 class SQLCache {
-  static final SQLCache _instance = SQLCache._internal();
-  factory SQLCache() => _instance;
-  SQLCache._internal();
-
   static Database? _database;
 
   Future<Database> get database async {
@@ -179,6 +175,24 @@ class SQLCache {
     return maps.map((map) => PostView.fromJson(map)).toList();
   }
 
+  /// Given a list of AtUris, returns a sub-list containing only those URIs
+  /// that are present in the `_tablePosts`. Does not update `lastAccessed`.
+  Future<List<AtUri>> getExistingPostUris(List<AtUri> urisToCheck) async {
+    if (urisToCheck.isEmpty) return [];
+    final db = await database;
+    final placeholders = List.generate(urisToCheck.length, (index) => '?').join(',');
+    final uriStringsToCheck = urisToCheck.map((uri) => uri.toString()).toList();
+
+    final List<Map<String, dynamic>> maps = await db.query(
+      _tablePosts,
+      columns: [_columnUri], // Only need the URI column
+      where: '$_columnUri IN ($placeholders)',
+      whereArgs: uriStringsToCheck,
+    );
+
+    return maps.map((map) => AtUri.parse(map[_columnUri] as String)).toList();
+  }
+
   /// Gets posts ordered by last access time (most recently accessed first).
   Future<List<PostView>> getPostsOrderedByLastAccessed({int limit = 20, int offset = 0}) async {
     final db = await database;
@@ -208,39 +222,9 @@ class SQLCache {
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
-  /// Retrieves a Feed object by its identifier.
-  /// Note: This reconstructs a simplified Feed object.
-  /// If you store more complex Feed data, adjust accordingly.
-  Future<Feed?> getFeed(String feedIdentifier) async {
-    final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query(
-      _tableFeeds,
-      where: '$_columnFeedIdentifier = ?',
-      whereArgs: [feedIdentifier],
-    );
-
-    if (maps.isNotEmpty) {
-      final map = maps.first;
-      final type = map[_columnFeedType] as String;
-      final name = map[_columnFeedName] as String;
-      final identifier = map[_columnFeedIdentifier] as String;
-
-      if (type == 'custom') {
-        return Feed.custom(name: name, uri: AtUri.parse(identifier));
-      } else if (type == 'hardCoded') {
-        final enumName = identifier.replaceFirst('hardcoded:', '');
-        final hardCodedFeed = HardCodedFeed.values.firstWhere(
-          (e) => e.name == enumName,
-          orElse: () => throw Exception('Unknown HardCodedFeed enum name: $enumName'),
-        );
-        return Feed.hardCoded(hardCodedFeed: hardCodedFeed);
-      }
-    }
-    return null;
-  }
-
   /// Deletes a feed and all its associations (due to ON DELETE CASCADE).
-  Future<void> deleteFeed(String feedIdentifier) async {
+  Future<void> deleteFeed(Feed feed) async {
+    final feedIdentifier = getFeedIdentifier(feed);
     final db = await database;
     await db.delete(_tableFeeds, where: '$_columnFeedIdentifier = ?', whereArgs: [feedIdentifier]);
   }
@@ -250,7 +234,8 @@ class SQLCache {
   /// Sets the posts for a given feed.
   /// This will clear any existing posts for this feed and add the new ones in the provided order.
   /// Ensures that the PostViews themselves are cached before calling this.
-  Future<void> setPostsForFeed(String feedIdentifier, List<String> postUris) async {
+  Future<void> setPostsForFeed(Feed feed, List<String> postUris) async {
+    final feedIdentifier = getFeedIdentifier(feed);
     final db = await database;
     await db.transaction((txn) async {
       // 1. Clear existing associations for this feed
@@ -273,7 +258,8 @@ class SQLCache {
     });
   }
 
-  Future<int> getPostCountForFeed(String feedIdentifier) async {
+  Future<int> getPostCountForFeed(Feed feed) async {
+    final feedIdentifier = getFeedIdentifier(feed);
     final db = await database;
     final countResult = await db.query(
       _tableFeedPostAssociations,
@@ -292,7 +278,8 @@ class SQLCache {
   /// - [feedIdentifier]: The identifier of the feed.
   /// - [limit]: The maximum number of posts to retrieve. If null, no limit.
   /// - [offset]: The number of posts to skip before starting to retrieve. Requires [limit] to be set.
-  Future<List<PostView>> getPostsForFeed(String feedIdentifier, {int? limit, int? offset}) async {
+  Future<List<PostView>> getPostsForFeed(Feed feed, {int? limit, int? offset}) async {
+    final feedIdentifier = getFeedIdentifier(feed);
     final db = await database;
     List<dynamic> arguments = [feedIdentifier];
     String limitClause = '';
@@ -333,7 +320,8 @@ class SQLCache {
   /// - [feedIdentifier]: The identifier of the feed.
   /// - [limit]: The maximum number of URIs to retrieve. If null, no limit.
   /// - [offset]: The number of URIs to skip before starting to retrieve. Requires [limit] to be set.
-  Future<List<String>> getUrisForFeed(String feedIdentifier, {int? limit, int? offset}) async {
+  Future<List<String>> getUrisForFeed(Feed feed, {int? limit, int? offset}) async {
+    final feedIdentifier = getFeedIdentifier(feed);
     final db = await database;
     List<dynamic> arguments = [feedIdentifier];
     String limitClause = '';
@@ -365,8 +353,9 @@ class SQLCache {
 
   /// Appends posts to a given feed.
   /// Assumes postUris are for new posts not already associated with this feed for this "page".
-  Future<void> appendPostsToFeed(String feedIdentifier, List<String> postUris) async {
+  Future<void> appendPostsToFeed(Feed feed, List<String> postUris) async {
     if (postUris.isEmpty) return;
+    final feedIdentifier = getFeedIdentifier(feed);
     final db = await database;
 
     await db.transaction((txn) async {
@@ -397,7 +386,8 @@ class SQLCache {
   }
 
   /// Clears all posts associated with a specific feed.
-  Future<void> clearPostsFromFeed(String feedIdentifier) async {
+  Future<void> clearPostsFromFeed(Feed feed) async {
+    final feedIdentifier = getFeedIdentifier(feed);
     final db = await database;
     await db.delete(_tableFeedPostAssociations, where: '$_columnFeedIdentifierFK = ?', whereArgs: [feedIdentifier]);
   }
