@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:pool/pool.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository_impl.dart';
 import 'package:sparksocial/src/core/storage/cache/cache_manager_impl.dart';
+import 'package:sparksocial/src/core/storage/cache/download_manager.dart';
 import 'package:sparksocial/src/core/theme/data/repositories/theme_repository.dart';
 import 'package:sparksocial/src/core/theme/data/repositories/theme_repository_impl.dart';
 import 'package:sparksocial/src/core/settings/repositories/settings_repository.dart';
@@ -35,11 +36,7 @@ Future<void> initServiceLocator() async {
   await sqlCache.database;
   sl.registerSingleton<SQLCache>(sqlCache);
 
-  // pool of the amount of concurrent downloads for feed posts
-  final globalCachingPool = Pool(FeedState.poolSize);
-  GetIt.I.registerSingleton<Pool>(globalCachingPool, instanceName: 'CachingPool');
-  // since we might have other pools, we need to access this one by its instance name
-  // _cachingPool = GetIt.instance<Pool>(instanceName: 'CachingPool');
+  sl.registerSingleton<DownloadManager>(DownloadManager());
 
   // Register storage manager
   sl.registerSingleton<StorageManager>(storageManager);

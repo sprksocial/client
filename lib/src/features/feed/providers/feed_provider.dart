@@ -1,12 +1,11 @@
 import 'dart:math';
 
 import 'package:atproto/core.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
-import 'package:pool/pool.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
+import 'package:sparksocial/src/core/storage/cache/download_manager.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
@@ -21,14 +20,14 @@ class FeedNotifier extends _$FeedNotifier {
   late final SQLCache _sqlCache;
   late final Feed _feed;
   late final FeedRepository _feedRepository;
-  late final CacheManagerInterface _cacheManager;
   late final SparkLogger _logger;
+  late final DownloadManager _downloadManager;
   @override
   FeedState build(Feed feed) {
     _sqlCache = GetIt.instance<SQLCache>();
     _feed = feed;
     _feedRepository = GetIt.instance<FeedRepository>();
-    _cacheManager = GetIt.instance<CacheManagerInterface>();
+    _downloadManager = GetIt.instance<DownloadManager>();
     _logger = GetIt.instance<LogService>().getLogger('FeedNotifier ${feed.name}');
     listenSelf((previous, next) {
       final prevFreshCount = previous?.freshPostCount ?? 0;
@@ -112,40 +111,32 @@ class FeedNotifier extends _$FeedNotifier {
     final nonExistingPosts = await _feedRepository.getPosts(nonExistingUris);
     int newPostsCached = 0;
     int errorCount = 0;
-    final cachingPool = GetIt.instance<Pool>(instanceName: 'CachingPool');
     for (PostView post in nonExistingPosts) {
       // concurrent execution
-      final cachingOperation = cachingPool.withResource(() async {
-        try {
-          // start downloading the embed
-          _logger.d('Downloading embed for post ${post.uri}');
-          switch (post.embed) {
-            case EmbedViewVideo():
-              await _cacheManager.getFile(post.videoUrl);
-            case EmbedViewImage():
-              for (String url in post.imageUrls) {
-                await CachedNetworkImageProvider.defaultCacheManager.downloadFile(url, key: url);
-              }
-            case _:
-              break;
-          }
-          await _sqlCache.cachePost(post);
-          increaseFreshPostCount();
-          newPostsCached++;
-          _logger.d('Downloaded embed and cached post ${post.uri}');
-        } catch (e) {
-          errorCount++;
-        }
-      });
+      _downloadManager.submitTask(
+        DownloadTask(
+          uri: post.uri,
+          post: post,
+          feed: _feed,
+          onComplete: (task) {
+            increaseFreshPostCount();
+            newPostsCached++;
+            if (newPostsCached == (nonExistingPosts.length - errorCount) >> 1) {
+              state = state.copyWith(isCaching: false, cursor: cursor);
+            }
+            _logger.d('Downloaded embed and cached post ${post.uri}');
+          },
+          onError: (task, e, s) {
+            errorCount++;
+          },
+        ),
+      );
 
       // == to only trigger this once
-      // this exists to prevent the feed from being cached too much
+      // this exists to prevent the feed from being fetched too much
       // it is divided in half to prevent the feed from getting stuck loading big files
       // (the other half will keep being downloaded, but you can start downloading another batch to be more efficient)
       // should use pool to have a limit on the number of concurrent downloads
-      if (newPostsCached == (nonExistingPosts.length - errorCount) >> 1) {
-        state = state.copyWith(isCaching: false, cursor: cursor);
-      }
     }
   }
 
@@ -198,5 +189,8 @@ class FeedNotifier extends _$FeedNotifier {
 
   Future<void> setActive(bool active) async {
     state = state.copyWith(active: active);
+    if (active) {
+      _downloadManager.setActiveFeed(_feed); // Inform coordinator
+    }
   }
 }
