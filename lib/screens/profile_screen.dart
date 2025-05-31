@@ -23,6 +23,7 @@ import 'auth_prompt_screen.dart';
 import 'create_video_screen.dart';
 import 'edit_profile_screen.dart';
 import 'profile_settings_screen.dart';
+import 'story_viewer_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final String? did;
@@ -401,6 +402,31 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
                   onSettingsTap: _handleSettingsTap,
                   onAddStoryTap: () {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => const CreateVideoScreen(isStoryMode: true)));
+                  },
+                  onStoriesTap: () {
+                    if (_profile!.stories != null && _profile!.stories!.isNotEmpty) {
+                      final storiesByAuthor = [
+                        {
+                          'author': {
+                            'did': _profile!.did,
+                            'handle': _profile!.username,
+                            'displayName': _profile!.displayName,
+                            'avatar': _profile!.avatarUrl,
+                          },
+                          'stories': _profile!.stories!,
+                        },
+                      ];
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (context) => StoryViewerScreen(
+                                storiesByAuthor: storiesByAuthor.cast<Map<String, dynamic>>(),
+                                initialUserIndex: 0,
+                              ),
+                        ),
+                      );
+                    }
                   },
                 ),
               ),

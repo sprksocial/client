@@ -181,6 +181,30 @@ class FeedAPI {
       );
     });
   }
+
+  /// Get stories by URIs
+  ///
+  /// [uris] List of story URIs to fetch
+  Future<dynamic> getStories(List<String> uris) async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      return await atproto.get(
+        NSID.parse('so.sprk.feed.getStories'),
+        parameters: {'uris': uris},
+        headers: {'atproto-proxy': _client._sprkDid},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+      );
+    });
+  }
 }
 
 /// Actor-related API endpoints

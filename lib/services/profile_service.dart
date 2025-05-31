@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart';
@@ -30,11 +31,36 @@ class ProfileService extends ChangeNotifier {
     try {
       final sprkProfile = await getProfileFullSprk(did, forceRefresh: forceRefresh);
       if (sprkProfile != null) {
-        return Profile.fromSparkProfile({
+        final profile = Profile.fromSparkProfile({
           'actor': sprkProfile,
           'viewer': sprkProfile['viewer'] as Map<dynamic, dynamic>? ?? {},
           'source': 'spark',
         });
+
+        // Hydrate stories if present
+        if (sprkProfile.containsKey('stories') && sprkProfile['stories'] is List) {
+          final storyUris = (sprkProfile['stories'] as List).map((story) => story['uri'] as String).toList();
+
+          if (storyUris.isNotEmpty) {
+            try {
+              final client = SprkClient(_authService);
+              final storiesResponse = await client.feed.getStories(storyUris);
+
+              developer.log('storiesResponse: ${storiesResponse.data}');
+              final hydratedStories = storiesResponse.data['stories'] as List<dynamic>?;
+
+              if (hydratedStories != null) {
+                final stories = hydratedStories.cast<Map<String, dynamic>>();
+                return profile.withStories(stories);
+              }
+            } catch (e) {
+              debugPrint('Error hydrating stories: $e');
+              // Return profile without stories if hydration fails
+            }
+          }
+        }
+
+        return profile;
       }
     } catch (e) {
       debugPrint('Error fetching Spark profile: $e');

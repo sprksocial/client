@@ -24,6 +24,7 @@ class ProfileHeader extends StatefulWidget {
   final VoidCallback onFollowTap;
   final VoidCallback onSettingsTap;
   final VoidCallback onAddStoryTap;
+  final VoidCallback? onStoriesTap;
 
   const ProfileHeader({
     super.key,
@@ -36,6 +37,7 @@ class ProfileHeader extends StatefulWidget {
     required this.onFollowTap,
     required this.onSettingsTap,
     required this.onAddStoryTap,
+    this.onStoriesTap,
   });
 
   @override
@@ -90,30 +92,49 @@ class _ProfileHeaderState extends State<ProfileHeader> {
             children: [
               Stack(
                 children: [
-                  Container(
-                    width: 90,
-                    height: 90,
-                    decoration: BoxDecoration(
-                      color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender, width: 2),
-                    ),
-                    child: Center(
-                      child:
-                          avatar != null && avatar.isNotEmpty
-                              ? ClipOval(
-                                child: UserAvatar(
-                                  imageUrl: avatar,
-                                  username: displayName.isNotEmpty ? displayName : handle,
-                                  size: 90,
-                                  borderWidth: 0,
-                                ),
-                              )
-                              : Icon(
-                                FluentIcons.person_24_regular,
-                                size: 40,
-                                color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
-                              ),
+                  GestureDetector(
+                    onTap: widget.profile.stories != null && widget.profile.stories!.isNotEmpty ? widget.onStoriesTap : null,
+                    child: Container(
+                      width: 90,
+                      height: 90,
+                      decoration: BoxDecoration(
+                        color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color:
+                              widget.profile.stories != null && widget.profile.stories!.isNotEmpty
+                                  ? AppColors.primary
+                                  : (isDarkMode ? AppColors.darkPurple : AppColors.lightLavender),
+                          width: widget.profile.stories != null && widget.profile.stories!.isNotEmpty ? 3 : 2,
+                        ),
+                      ),
+                      child: Container(
+                        margin:
+                            widget.profile.stories != null && widget.profile.stories!.isNotEmpty
+                                ? const EdgeInsets.all(3)
+                                : EdgeInsets.zero,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
+                        ),
+                        child: Center(
+                          child:
+                              avatar != null && avatar.isNotEmpty
+                                  ? ClipOval(
+                                    child: UserAvatar(
+                                      imageUrl: avatar,
+                                      username: displayName.isNotEmpty ? displayName : handle,
+                                      size: widget.profile.stories != null && widget.profile.stories!.isNotEmpty ? 84 : 90,
+                                      borderWidth: 0,
+                                    ),
+                                  )
+                                  : Icon(
+                                    FluentIcons.person_24_regular,
+                                    size: 40,
+                                    color: isDarkMode ? AppColors.textLight : AppColors.textSecondary,
+                                  ),
+                        ),
+                      ),
                     ),
                   ),
                   if (widget.isCurrentUser)

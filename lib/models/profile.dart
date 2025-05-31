@@ -14,6 +14,7 @@ class Profile {
   final bool isSprk; // Whether the profile is from Spark
   final bool isFollowing; // Whether the current user is following this profile
   final String? followUri; // URI of the follow record if following
+  final List<Map<String, dynamic>>? stories; // Hydrated stories data
 
   Profile({
     required this.username,
@@ -28,6 +29,7 @@ class Profile {
     this.isSprk = false,
     this.isFollowing = false,
     this.followUri,
+    this.stories,
   });
 
   /// Create a Profile from a Bluesky actor
@@ -45,6 +47,7 @@ class Profile {
       isSprk: false,
       isFollowing: actor.viewer.following != null,
       followUri: actor.viewer.following?.toString(),
+      stories: null,
     );
   }
 
@@ -66,6 +69,7 @@ class Profile {
       isSprk: true,
       isFollowing: viewer?['following'] != null,
       followUri: viewer?['following'] as String?,
+      stories: null,
     );
   }
 
@@ -93,6 +97,26 @@ class Profile {
       isSprk: isSprk,
       isFollowing: profileData['isFollowing'] as bool? ?? isFollowing,
       followUri: profileData['followUri'] as String? ?? followUri,
+      stories: stories,
+    );
+  }
+
+  /// Create a new Profile with updated stories
+  Profile withStories(List<Map<String, dynamic>>? newStories) {
+    return Profile(
+      username: username,
+      did: did,
+      displayName: displayName,
+      description: description,
+      avatarUrl: avatarUrl,
+      bannerUrl: bannerUrl,
+      followersCount: followersCount,
+      followingCount: followingCount,
+      postsCount: postsCount,
+      isSprk: isSprk,
+      isFollowing: isFollowing,
+      followUri: followUri,
+      stories: newStories,
     );
   }
 
