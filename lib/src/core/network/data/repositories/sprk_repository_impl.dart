@@ -3,6 +3,7 @@ import 'package:sparksocial/src/core/config/app_config.dart';
 import 'package:sparksocial/src/core/network/data/repositories/actor_repository.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/network/data/repositories/graph_repository.dart';
+import 'package:sparksocial/src/core/network/data/repositories/labeler_repository.dart';
 import 'package:sparksocial/src/core/network/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
@@ -10,6 +11,7 @@ import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.d
 import 'package:sparksocial/src/core/network/data/repositories/repo_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/actor_repository_impl.dart';
+import 'package:sparksocial/src/core/network/data/repositories/labeler_repository_impl.dart';
 
 // Feature-specific repositories
 import 'package:sparksocial/src/core/network/data/repositories/graph_repository_impl.dart';
@@ -76,4 +78,7 @@ class SprkRepositoryImpl implements SprkRepository {
 
   @override
   FeedRepository get feed => FeedRepositoryImpl(this);
+
+  @override
+  LabelerRepository get labeler => LabelerRepositoryImpl(this);
 }

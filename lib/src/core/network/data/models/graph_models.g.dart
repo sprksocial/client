@@ -42,7 +42,7 @@ _$FollowUserResponseImpl _$$FollowUserResponseImplFromJson(
         Map<String, dynamic> json) =>
     _$FollowUserResponseImpl(
       uri: json['uri'] as String,
-      cid: json['cid'] as String,
+      cid: CID.fromJson(json['cid'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$FollowUserResponseImplToJson(

@@ -17,14 +17,18 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$FeedState {
   bool get active => throw _privateConstructorUsedError;
-  List<AtUri> get loadedUris => throw _privateConstructorUsedError;
+  List<AtUri> get loadedPosts => throw _privateConstructorUsedError;
   int get index => throw _privateConstructorUsedError;
   int get freshPostCount => throw _privateConstructorUsedError;
   bool get isCaching => throw _privateConstructorUsedError;
   bool get isEndOfNetworkFeed => throw _privateConstructorUsedError;
   String? get cursor => throw _privateConstructorUsedError;
-  Map<AtUri, HardcodedFeedExtraInfo>? get extraInfo =>
-      throw _privateConstructorUsedError;
+  LinkedHashMap<
+      AtUri,
+      ({
+        HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
+        List<Label> postLabels
+      })> get extraInfo => throw _privateConstructorUsedError;
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.
@@ -40,13 +44,19 @@ abstract class $FeedStateCopyWith<$Res> {
   @useResult
   $Res call(
       {bool active,
-      List<AtUri> loadedUris,
+      List<AtUri> loadedPosts,
       int index,
       int freshPostCount,
       bool isCaching,
       bool isEndOfNetworkFeed,
       String? cursor,
-      Map<AtUri, HardcodedFeedExtraInfo>? extraInfo});
+      LinkedHashMap<
+              AtUri,
+              ({
+                HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
+                List<Label> postLabels
+              })>
+          extraInfo});
 }
 
 /// @nodoc
@@ -65,22 +75,22 @@ class _$FeedStateCopyWithImpl<$Res, $Val extends FeedState>
   @override
   $Res call({
     Object? active = null,
-    Object? loadedUris = null,
+    Object? loadedPosts = null,
     Object? index = null,
     Object? freshPostCount = null,
     Object? isCaching = null,
     Object? isEndOfNetworkFeed = null,
     Object? cursor = freezed,
-    Object? extraInfo = freezed,
+    Object? extraInfo = null,
   }) {
     return _then(_value.copyWith(
       active: null == active
           ? _value.active
           : active // ignore: cast_nullable_to_non_nullable
               as bool,
-      loadedUris: null == loadedUris
-          ? _value.loadedUris
-          : loadedUris // ignore: cast_nullable_to_non_nullable
+      loadedPosts: null == loadedPosts
+          ? _value.loadedPosts
+          : loadedPosts // ignore: cast_nullable_to_non_nullable
               as List<AtUri>,
       index: null == index
           ? _value.index
@@ -102,10 +112,15 @@ class _$FeedStateCopyWithImpl<$Res, $Val extends FeedState>
           ? _value.cursor
           : cursor // ignore: cast_nullable_to_non_nullable
               as String?,
-      extraInfo: freezed == extraInfo
+      extraInfo: null == extraInfo
           ? _value.extraInfo
           : extraInfo // ignore: cast_nullable_to_non_nullable
-              as Map<AtUri, HardcodedFeedExtraInfo>?,
+              as LinkedHashMap<
+                  AtUri,
+                  ({
+                    HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
+                    List<Label> postLabels
+                  })>,
     ) as $Val);
   }
 }
@@ -120,13 +135,19 @@ abstract class _$$FeedStateImplCopyWith<$Res>
   @useResult
   $Res call(
       {bool active,
-      List<AtUri> loadedUris,
+      List<AtUri> loadedPosts,
       int index,
       int freshPostCount,
       bool isCaching,
       bool isEndOfNetworkFeed,
       String? cursor,
-      Map<AtUri, HardcodedFeedExtraInfo>? extraInfo});
+      LinkedHashMap<
+              AtUri,
+              ({
+                HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
+                List<Label> postLabels
+              })>
+          extraInfo});
 }
 
 /// @nodoc
@@ -143,22 +164,22 @@ class __$$FeedStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? active = null,
-    Object? loadedUris = null,
+    Object? loadedPosts = null,
     Object? index = null,
     Object? freshPostCount = null,
     Object? isCaching = null,
     Object? isEndOfNetworkFeed = null,
     Object? cursor = freezed,
-    Object? extraInfo = freezed,
+    Object? extraInfo = null,
   }) {
     return _then(_$FeedStateImpl(
       active: null == active
           ? _value.active
           : active // ignore: cast_nullable_to_non_nullable
               as bool,
-      loadedUris: null == loadedUris
-          ? _value._loadedUris
-          : loadedUris // ignore: cast_nullable_to_non_nullable
+      loadedPosts: null == loadedPosts
+          ? _value._loadedPosts
+          : loadedPosts // ignore: cast_nullable_to_non_nullable
               as List<AtUri>,
       index: null == index
           ? _value.index
@@ -180,10 +201,15 @@ class __$$FeedStateImplCopyWithImpl<$Res>
           ? _value.cursor
           : cursor // ignore: cast_nullable_to_non_nullable
               as String?,
-      extraInfo: freezed == extraInfo
-          ? _value._extraInfo
+      extraInfo: null == extraInfo
+          ? _value.extraInfo
           : extraInfo // ignore: cast_nullable_to_non_nullable
-              as Map<AtUri, HardcodedFeedExtraInfo>?,
+              as LinkedHashMap<
+                  AtUri,
+                  ({
+                    HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
+                    List<Label> postLabels
+                  })>,
     ));
   }
 }
@@ -193,25 +219,24 @@ class __$$FeedStateImplCopyWithImpl<$Res>
 class _$FeedStateImpl extends _FeedState {
   const _$FeedStateImpl(
       {required this.active,
-      required final List<AtUri> loadedUris,
+      required final List<AtUri> loadedPosts,
       required this.index,
       required this.freshPostCount,
       required this.isCaching,
       required this.isEndOfNetworkFeed,
       required this.cursor,
-      final Map<AtUri, HardcodedFeedExtraInfo>? extraInfo})
-      : _loadedUris = loadedUris,
-        _extraInfo = extraInfo,
+      required this.extraInfo})
+      : _loadedPosts = loadedPosts,
         super._();
 
   @override
   final bool active;
-  final List<AtUri> _loadedUris;
+  final List<AtUri> _loadedPosts;
   @override
-  List<AtUri> get loadedUris {
-    if (_loadedUris is EqualUnmodifiableListView) return _loadedUris;
+  List<AtUri> get loadedPosts {
+    if (_loadedPosts is EqualUnmodifiableListView) return _loadedPosts;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_loadedUris);
+    return EqualUnmodifiableListView(_loadedPosts);
   }
 
   @override
@@ -224,19 +249,17 @@ class _$FeedStateImpl extends _FeedState {
   final bool isEndOfNetworkFeed;
   @override
   final String? cursor;
-  final Map<AtUri, HardcodedFeedExtraInfo>? _extraInfo;
   @override
-  Map<AtUri, HardcodedFeedExtraInfo>? get extraInfo {
-    final value = _extraInfo;
-    if (value == null) return null;
-    if (_extraInfo is EqualUnmodifiableMapView) return _extraInfo;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(value);
-  }
+  final LinkedHashMap<
+      AtUri,
+      ({
+        HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
+        List<Label> postLabels
+      })> extraInfo;
 
   @override
   String toString() {
-    return 'FeedState(active: $active, loadedUris: $loadedUris, index: $index, freshPostCount: $freshPostCount, isCaching: $isCaching, isEndOfNetworkFeed: $isEndOfNetworkFeed, cursor: $cursor, extraInfo: $extraInfo)';
+    return 'FeedState(active: $active, loadedPosts: $loadedPosts, index: $index, freshPostCount: $freshPostCount, isCaching: $isCaching, isEndOfNetworkFeed: $isEndOfNetworkFeed, cursor: $cursor, extraInfo: $extraInfo)';
   }
 
   @override
@@ -246,7 +269,7 @@ class _$FeedStateImpl extends _FeedState {
             other is _$FeedStateImpl &&
             (identical(other.active, active) || other.active == active) &&
             const DeepCollectionEquality()
-                .equals(other._loadedUris, _loadedUris) &&
+                .equals(other._loadedPosts, _loadedPosts) &&
             (identical(other.index, index) || other.index == index) &&
             (identical(other.freshPostCount, freshPostCount) ||
                 other.freshPostCount == freshPostCount) &&
@@ -255,21 +278,20 @@ class _$FeedStateImpl extends _FeedState {
             (identical(other.isEndOfNetworkFeed, isEndOfNetworkFeed) ||
                 other.isEndOfNetworkFeed == isEndOfNetworkFeed) &&
             (identical(other.cursor, cursor) || other.cursor == cursor) &&
-            const DeepCollectionEquality()
-                .equals(other._extraInfo, _extraInfo));
+            const DeepCollectionEquality().equals(other.extraInfo, extraInfo));
   }
 
   @override
   int get hashCode => Object.hash(
       runtimeType,
       active,
-      const DeepCollectionEquality().hash(_loadedUris),
+      const DeepCollectionEquality().hash(_loadedPosts),
       index,
       freshPostCount,
       isCaching,
       isEndOfNetworkFeed,
       cursor,
-      const DeepCollectionEquality().hash(_extraInfo));
+      const DeepCollectionEquality().hash(extraInfo));
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.
@@ -283,19 +305,25 @@ class _$FeedStateImpl extends _FeedState {
 abstract class _FeedState extends FeedState {
   const factory _FeedState(
       {required final bool active,
-      required final List<AtUri> loadedUris,
+      required final List<AtUri> loadedPosts,
       required final int index,
       required final int freshPostCount,
       required final bool isCaching,
       required final bool isEndOfNetworkFeed,
       required final String? cursor,
-      final Map<AtUri, HardcodedFeedExtraInfo>? extraInfo}) = _$FeedStateImpl;
+      required final LinkedHashMap<
+              AtUri,
+              ({
+                HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
+                List<Label> postLabels
+              })>
+          extraInfo}) = _$FeedStateImpl;
   const _FeedState._() : super._();
 
   @override
   bool get active;
   @override
-  List<AtUri> get loadedUris;
+  List<AtUri> get loadedPosts;
   @override
   int get index;
   @override
@@ -307,7 +335,12 @@ abstract class _FeedState extends FeedState {
   @override
   String? get cursor;
   @override
-  Map<AtUri, HardcodedFeedExtraInfo>? get extraInfo;
+  LinkedHashMap<
+      AtUri,
+      ({
+        HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
+        List<Label> postLabels
+      })> get extraInfo;
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.

@@ -10,14 +10,14 @@ part 'feed_models.g.dart';
 
 /// https://pub.dev/packages/freezed#union-types <= read this to know how to use pattern matching to know the type of the object
 
-enum HardCodedFeed {
+enum HardCodedFeedEnum {
   following('Following'), // posts from people you follow (bsky/sprk)
   mutuals('Mutuals'), // posts from people you follow who follow each other (bsky/sprk)
   forYou('For You'), // hardcoded algorithm for trending posts (bsky/sprk). for now, it's just the TheVids feed (bsky)
   latestSprk('Latest'), // latest sprk posts (sprk)
   shared('Shared'); // posts sent by friends in the dms (bsky/sprk)
 
-  const HardCodedFeed(this.name);
+  const HardCodedFeedEnum(this.name);
   final String name;
 }
 
@@ -70,7 +70,7 @@ class Feed with _$Feed {
   const factory Feed.custom({required String name, @AtUriConverter() required AtUri uri}) = FeedCustom;
 
   /// HardCoded feeds can be "fake", so they don't have a uri
-  const factory Feed.hardCoded({required HardCodedFeed hardCodedFeed}) = FeedHardCoded;
+  const factory Feed.hardCoded({required HardCodedFeedEnum hardCodedFeed,}) = FeedHardCoded;
 
   String get name {
     return when(custom: (name, did) => name, hardCoded: (hardCodedFeed) => hardCodedFeed.name);
@@ -89,7 +89,6 @@ class SkeletonFeedPost with _$SkeletonFeedPost {
     @AtUriConverter() required AtUri uri,
     // "reason": { "type": "union", "refs": ["#reasonRepost", "#reasonPin"] } i think we don't have to use this value for now
     // there's also a String feedContext "Context provided by feed generator that may be passed back alongside interactions."
-    HardcodedFeedExtraInfo? extraInfo, // extra info hardcoded feeds might send to the UI
   }) = _SkeletonFeedPost;
 
   factory SkeletonFeedPost.fromJson(Map<String, dynamic> json) => _$SkeletonFeedPostFromJson(json);
@@ -365,7 +364,7 @@ class VideoView with _$VideoView {
   const VideoView._();
 
   const factory VideoView({
-    required String cid,
+    required CID cid,
     @AtUriConverter() required AtUri playlist,
     @AtUriConverter() required AtUri thumbnail,
     String? alt,

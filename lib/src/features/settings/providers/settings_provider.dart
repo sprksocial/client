@@ -22,7 +22,7 @@ class Settings extends _$Settings {
   SettingsState build() {
     _repository = ref.watch(settingsRepositoryProvider);
     _loadSettings();
-    return SettingsState(activeFeed: Feed.hardCoded(hardCodedFeed: HardCodedFeed.forYou));
+    return SettingsState(activeFeed: Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou));
   }
 
   /// Loads all settings from persistent storage
@@ -46,19 +46,27 @@ class Settings extends _$Settings {
     state = state.copyWith(hideAdultContent: value);
   }
 
-  /// Sets feeds list
-  Future<void> setFeeds(List<Feed> feeds) async {
-    await _repository.setFeeds(feeds);
-    state = state.copyWith(feeds: feeds);
-  }
-
   /// Adds a feed to feeds list
   Future<void> addFeed(Feed feed) async {
     if (!state.feeds.contains(feed)) {
-      final updatedList = [...state.feeds, feed];
-      await _repository.setFeeds(updatedList);
-      state = state.copyWith(feeds: updatedList);
+      await _repository.addFeed(feed);
+      state = state.copyWith(feeds: [...state.feeds, feed]);
     }
+  }
+
+  /// Removes a feed from feeds list
+  Future<void> removeFeed(Feed feed) async {
+    await _repository.removeFeed(feed);
+    state = state.copyWith(feeds: state.feeds.where((f) => f != feed).toList());
+  }
+
+  /// Reorders a feed in feeds list
+  Future<void> reorderFeed(int oldIndex, int newIndex) async {
+    final updatedList = [...state.feeds];
+    final feed = updatedList.removeAt(oldIndex);
+    updatedList.insert(newIndex, feed);
+    await _repository.setFeeds(updatedList);
+    state = state.copyWith(feeds: updatedList);
   }
 
   /// Sets selected feed index

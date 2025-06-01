@@ -14,7 +14,6 @@ import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repositor
 import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/actor_repository_impl.dart';
 import 'package:sparksocial/src/core/network/data/repositories/graph_repository_impl.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
 
 // This is the ONLY PLACE IN THE ENTIRE APP where implementations are imported
 // All the other files should import interfaces only (polymorphism) to keep everything decoupled
@@ -25,21 +24,20 @@ final GetIt sl = GetIt.instance;
 /// Initializes the service locator with all required dependencies
 /// sl.registerSingleton < Interface > (Implementation)
 Future<void> initServiceLocator() async {
+
+  // Register SettingsRepository
+  sl.registerSingleton<SettingsRepository>(SettingsRepositoryImpl(sl<StorageManager>()));
+
   // Register storage dependencies
   // Initialize storage manager
   final storageManager = StorageManager.instance;
   await storageManager.init();
 
-  final sqlCache = SQLCache();
-  await sqlCache.database;
-  sl.registerSingleton<SQLCache>(sqlCache);
-
-  sl.registerSingleton<DownloadManager>(DownloadManager());
-
-  sl.registerSingleton<VideoControllersManager>(VideoControllersManager());
-
   // Register storage manager
   sl.registerSingleton<StorageManager>(storageManager);
+
+  // Register VideoControllersManager
+  sl.registerSingleton<VideoControllersManager>(VideoControllersManager());
 
   // Register cache manager
   sl.registerSingleton<CacheManagerInterface>(CacheManagerImpl.instance);
@@ -66,9 +64,6 @@ Future<void> initServiceLocator() async {
 
   // Register GraphRepository
   sl.registerSingleton<GraphRepository>(GraphRepositoryImpl(sl.get<SprkRepository>()));
-
-  // Register SettingsRepository
-  sl.registerSingleton<SettingsRepository>(SettingsRepositoryImpl(sl<StorageManager>()));
 
   // Register OnboardingRepository
   sl.registerLazySingleton<OnboardingRepository>(

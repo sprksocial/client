@@ -90,39 +90,35 @@ Map<String, dynamic> _$$FeedCustomImplToJson(_$FeedCustomImpl instance) =>
 
 _$FeedHardCodedImpl _$$FeedHardCodedImplFromJson(Map<String, dynamic> json) =>
     _$FeedHardCodedImpl(
-      hardCodedFeed: $enumDecode(_$HardCodedFeedEnumMap, json['hardCodedFeed']),
+      hardCodedFeed:
+          $enumDecode(_$HardCodedFeedEnumEnumMap, json['hardCodedFeed']),
       $type: json['runtimeType'] as String?,
     );
 
 Map<String, dynamic> _$$FeedHardCodedImplToJson(_$FeedHardCodedImpl instance) =>
     <String, dynamic>{
-      'hardCodedFeed': _$HardCodedFeedEnumMap[instance.hardCodedFeed]!,
+      'hardCodedFeed': _$HardCodedFeedEnumEnumMap[instance.hardCodedFeed]!,
       'runtimeType': instance.$type,
     };
 
-const _$HardCodedFeedEnumMap = {
-  HardCodedFeed.following: 'following',
-  HardCodedFeed.mutuals: 'mutuals',
-  HardCodedFeed.forYou: 'forYou',
-  HardCodedFeed.latestSprk: 'latestSprk',
-  HardCodedFeed.shared: 'shared',
+const _$HardCodedFeedEnumEnumMap = {
+  HardCodedFeedEnum.following: 'following',
+  HardCodedFeedEnum.mutuals: 'mutuals',
+  HardCodedFeedEnum.forYou: 'forYou',
+  HardCodedFeedEnum.latestSprk: 'latestSprk',
+  HardCodedFeedEnum.shared: 'shared',
 };
 
 _$SkeletonFeedPostImpl _$$SkeletonFeedPostImplFromJson(
         Map<String, dynamic> json) =>
     _$SkeletonFeedPostImpl(
       uri: const AtUriConverter().fromJson(json['uri'] as String),
-      extraInfo: json['extraInfo'] == null
-          ? null
-          : HardcodedFeedExtraInfo.fromJson(
-              json['extraInfo'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$SkeletonFeedPostImplToJson(
         _$SkeletonFeedPostImpl instance) =>
     <String, dynamic>{
       'uri': const AtUriConverter().toJson(instance.uri),
-      'extraInfo': instance.extraInfo,
     };
 
 _$HardcodedFeedExtraInfoSharedImpl _$$HardcodedFeedExtraInfoSharedImplFromJson(
@@ -523,7 +519,7 @@ Map<String, dynamic> _$$VideoEmbedImplToJson(_$VideoEmbedImpl instance) =>
 
 _$VideoViewImpl _$$VideoViewImplFromJson(Map<String, dynamic> json) =>
     _$VideoViewImpl(
-      cid: json['cid'] as String,
+      cid: CID.fromJson(json['cid'] as Map<String, dynamic>),
       playlist: const AtUriConverter().fromJson(json['playlist'] as String),
       thumbnail: const AtUriConverter().fromJson(json['thumbnail'] as String),
       alt: json['alt'] as String?,

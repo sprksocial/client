@@ -113,7 +113,7 @@ class GraphRepositoryImpl implements GraphRepository {
 
         _logger.i('User followed successfully: ${result.data.uri}');
 
-        return FollowUserResponse(uri: result.data.uri.toString(), cid: result.data.cid);
+        return FollowUserResponse(uri: result.data.uri.toString(), cid: CID.parse(result.data.cid));
       } catch (e) {
         _logger.e('Error in followUser', error: e);
         rethrow;

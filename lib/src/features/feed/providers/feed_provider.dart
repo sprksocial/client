@@ -1,9 +1,12 @@
+import 'dart:collection';
 import 'dart:math';
 
+import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/data/repositories/feed_algorithms/hardcoded_feed_algorithm.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
@@ -24,10 +27,11 @@ class FeedNotifier extends _$FeedNotifier {
 
   @override
   FeedState build(Feed feed) {
-    _sqlCache = GetIt.instance<SQLCache>();
     _feed = feed;
+    final storageManager = GetIt.instance<StorageManager>();
     _feedRepository = GetIt.instance<FeedRepository>();
-    _downloadManager = GetIt.instance<DownloadManager>();
+    _sqlCache = storageManager.sqlCache;
+    _downloadManager = storageManager.downloadManager;
     _logger = GetIt.instance<LogService>().getLogger('FeedNotifier ${feed.identifier}');
 
     listenSelf((previous, next) {
@@ -41,12 +45,13 @@ class FeedNotifier extends _$FeedNotifier {
 
     return FeedState(
       active: true,
-      loadedUris: [],
+      loadedPosts: [],
       index: 0,
       freshPostCount: 0,
       isCaching: true,
       isEndOfNetworkFeed: false,
       cursor: null,
+      extraInfo: LinkedHashMap(),
     );
   }
 
@@ -72,7 +77,31 @@ class FeedNotifier extends _$FeedNotifier {
       endOfNetworkFeed();
     }
 
-    state = state.copyWith(loadedUris: uris, freshPostCount: 0);
+    // gets all extra info for the posts (labels and hardcoded feed extra info)
+    // for example, if it's the shared feed, the posts need to know the profile of the sender and the text of the message
+
+    final List<Label> labels = []; //await _feedRepository.getLabels(uris);
+
+    final extraInfo = LinkedHashMap<AtUri, ({List<Label> postLabels, HardcodedFeedExtraInfo? hardcodedFeedExtraInfo})>.from(
+      state.extraInfo,
+    );
+
+    for (Label label in labels) {
+      final uri = AtUri.parse(label.uri);
+      extraInfo.update(
+        uri,
+        (value) => (postLabels: [...value.postLabels, label], hardcodedFeedExtraInfo: value.hardcodedFeedExtraInfo),
+      );
+    }
+
+    if (feed case FeedHardCoded(:final hardCodedFeed)) {
+      final extraInfoGetter = HardCodedFeedAlgorithm.extraInfoFromEnum(hardCodedFeed);
+      if (extraInfoGetter != null) {
+        final newExtraInfos = await extraInfoGetter(uris);
+        extraInfo.updateAll((key, value) => (postLabels: value.postLabels, hardcodedFeedExtraInfo: newExtraInfos[key]));
+      }
+    }
+    state = state.copyWith(loadedPosts: uris, freshPostCount: 0, extraInfo: extraInfo);
     _logger.d('First load finished');
   }
 
@@ -151,11 +180,26 @@ class FeedNotifier extends _$FeedNotifier {
     final amountToLoad = min(FeedState.loadLimit, state.freshPostCount);
     if (amountToLoad > 0) {
       // this ALWAYS gets new posts (most recent + only the amount of new ones that have been cached)
-      final uris = await _sqlCache.getUrisForFeed(_feed, limit: amountToLoad);
+      final uriStrings = await _sqlCache.getUrisForFeed(_feed, limit: amountToLoad);
+      final uris = uriStrings.map((e) => AtUri.parse(e)).toList();
       _isWaitingForFreshPostsAtEnd = false;
       _logger.d('Loaded $amountToLoad posts from database');
+
+      final loadedPosts = <(AtUri, List<Label>)>[];
+
+      final List<Label> labels = []; //await _feedRepository.getLabels(uris);
+
+      Map<AtUri, List<Label>> postLabelsMap = {};
+      for (Label label in labels) {
+        postLabelsMap.putIfAbsent(AtUri.parse(label.uri), () => []).add(label);
+      }
+
+      for (AtUri uri in uris) {
+        loadedPosts.add((uri, postLabelsMap[uri] ?? []));
+      }
+
       state = state.copyWith(
-        loadedUris: [...state.loadedUris, ...uris.map((e) => AtUri.parse(e))],
+        loadedPosts: [...state.loadedPosts, ...loadedPosts],
         freshPostCount: state.freshPostCount - amountToLoad,
       );
     }

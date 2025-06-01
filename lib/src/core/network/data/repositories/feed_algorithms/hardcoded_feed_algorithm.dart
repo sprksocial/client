@@ -1,3 +1,4 @@
+import 'package:atproto/core.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_algorithms/feed_following.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_algorithms/feed_for_you.dart';
@@ -6,6 +7,7 @@ import 'package:sparksocial/src/core/network/data/repositories/feed_algorithms/f
 import 'package:sparksocial/src/core/network/data/repositories/feed_algorithms/feed_shared.dart';
 
 typedef SkeletonFunction = Future<FeedSkeleton> Function({int? limit, String? cursor});
+typedef ExtraInfoFunction = Future<Map<AtUri, HardcodedFeedExtraInfo>> Function(List<AtUri> uris);
 
 class HardCodedFeedAlgorithm {
   static SkeletonFunction get following => followingSkeletonFunction;
@@ -13,19 +15,29 @@ class HardCodedFeedAlgorithm {
   static SkeletonFunction get forYou => forYouSkeletonFunction;
   static SkeletonFunction get latestSprk => latestSprkSkeletonFunction;
   static SkeletonFunction get shared => sharedSkeletonFunction;
+  static ExtraInfoFunction get sharedExtraInfo => sharedExtraInfoFunction;
 
-  static SkeletonFunction fromEnum(HardCodedFeed feed) {
+  static SkeletonFunction skeletonFromEnum(HardCodedFeedEnum feed) {
     switch (feed) {
-      case HardCodedFeed.following:
+      case HardCodedFeedEnum.following:
         return following;
-      case HardCodedFeed.mutuals:
+      case HardCodedFeedEnum.mutuals:
         return mutuals;
-      case HardCodedFeed.forYou:
+      case HardCodedFeedEnum.forYou:
         return forYou;
-      case HardCodedFeed.latestSprk:
+      case HardCodedFeedEnum.latestSprk:
         return latestSprk;
-      case HardCodedFeed.shared:
+      case HardCodedFeedEnum.shared:
         return shared;
+    }
+  }
+
+  static ExtraInfoFunction? extraInfoFromEnum(HardCodedFeedEnum feed) {
+    switch (feed) {
+      case HardCodedFeedEnum.shared:
+        return sharedExtraInfo;
+      default:
+        return null;
     }
   }
 }

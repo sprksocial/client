@@ -376,7 +376,7 @@ FollowUserResponse _$FollowUserResponseFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$FollowUserResponse {
   String get uri => throw _privateConstructorUsedError;
-  String get cid => throw _privateConstructorUsedError;
+  CID get cid => throw _privateConstructorUsedError;
 
   /// Serializes this FollowUserResponse to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -394,7 +394,7 @@ abstract class $FollowUserResponseCopyWith<$Res> {
           FollowUserResponse value, $Res Function(FollowUserResponse) then) =
       _$FollowUserResponseCopyWithImpl<$Res, FollowUserResponse>;
   @useResult
-  $Res call({String uri, String cid});
+  $Res call({String uri, CID cid});
 }
 
 /// @nodoc
@@ -423,7 +423,7 @@ class _$FollowUserResponseCopyWithImpl<$Res, $Val extends FollowUserResponse>
       cid: null == cid
           ? _value.cid
           : cid // ignore: cast_nullable_to_non_nullable
-              as String,
+              as CID,
     ) as $Val);
   }
 }
@@ -436,7 +436,7 @@ abstract class _$$FollowUserResponseImplCopyWith<$Res>
       __$$FollowUserResponseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({String uri, String cid});
+  $Res call({String uri, CID cid});
 }
 
 /// @nodoc
@@ -463,7 +463,7 @@ class __$$FollowUserResponseImplCopyWithImpl<$Res>
       cid: null == cid
           ? _value.cid
           : cid // ignore: cast_nullable_to_non_nullable
-              as String,
+              as CID,
     ));
   }
 }
@@ -479,7 +479,7 @@ class _$FollowUserResponseImpl implements _FollowUserResponse {
   @override
   final String uri;
   @override
-  final String cid;
+  final CID cid;
 
   @override
   String toString() {
@@ -519,7 +519,7 @@ class _$FollowUserResponseImpl implements _FollowUserResponse {
 abstract class _FollowUserResponse implements FollowUserResponse {
   const factory _FollowUserResponse(
       {required final String uri,
-      required final String cid}) = _$FollowUserResponseImpl;
+      required final CID cid}) = _$FollowUserResponseImpl;
 
   factory _FollowUserResponse.fromJson(Map<String, dynamic> json) =
       _$FollowUserResponseImpl.fromJson;
@@ -527,7 +527,7 @@ abstract class _FollowUserResponse implements FollowUserResponse {
   @override
   String get uri;
   @override
-  String get cid;
+  CID get cid;
 
   /// Create a copy of FollowUserResponse
   /// with the given fields replaced by the non-null parameter values.

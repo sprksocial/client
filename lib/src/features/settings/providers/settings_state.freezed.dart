@@ -158,9 +158,9 @@ class _$SettingsStateImpl implements _SettingsState {
       {this.feedBlurEnabled = false,
       this.hideAdultContent = true,
       final List<Feed> feeds = const [
-        Feed.hardCoded(hardCodedFeed: HardCodedFeed.following),
-        Feed.hardCoded(hardCodedFeed: HardCodedFeed.forYou),
-        Feed.hardCoded(hardCodedFeed: HardCodedFeed.latestSprk)
+        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
+        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
+        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk)
       ],
       required this.activeFeed})
       : _feeds = feeds;

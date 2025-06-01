@@ -14,37 +14,44 @@ class FeedPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(feedNotifierProvider(feed));
     final notifier = ref.watch(feedNotifierProvider(feed).notifier);
+    notifier.loadAndUpdateFirstLoad();
     final pageController = PageController();
 
-    return PageView.builder(
-      controller: pageController,
-      key: PageStorageKey(feed.identifier),
-      itemCount: state.length + (state.isEndOfNetworkFeed ? 1 : 0),
-      scrollDirection: Axis.vertical,
-      pageSnapping: true,
-      restorationId: feed.identifier,
-      onPageChanged: (index) {
-        if (index > state.index) {
-          notifier.scrollDown();
-        }
-        notifier.setIndex(index);
+    return RefreshIndicator(
+      onRefresh: () async {
+        ref.invalidate(feedNotifierProvider(feed));
+        return notifier.loadAndUpdateFirstLoad();
       },
-      itemBuilder: (context, index) {
-        if (!state.active || (index - state.index).abs() > 1) {
-          return SizedBox();
-        } else if (index == state.length) {
-          return NoMorePosts();
-        } else if (index == state.index - 1 && !state.isEndOfNetworkFeed) {
-          return Stack(
-            children: [
-              PostWidget(post: state.posts[index], index: index),
-              Positioned(bottom: 10, left: 0, right: 0, child: CircularProgressIndicator()),
-            ],
-          );
-        } else {
-          return PostWidget(post: state.posts[index], index: index);
-        }
-      },
+      child: PageView.builder(
+        controller: pageController,
+        key: PageStorageKey(feed.identifier),
+        itemCount: state.length + (state.isEndOfNetworkFeed ? 1 : 0),
+        scrollDirection: Axis.vertical,
+        pageSnapping: true,
+        restorationId: feed.identifier,
+        onPageChanged: (index) {
+          if (index > state.index) {
+            notifier.scrollDown();
+          }
+          notifier.setIndex(index);
+        },
+        itemBuilder: (context, index) {
+          if (!state.active || (index - state.index).abs() > 1) {
+            return SizedBox();
+          } else if (index == state.length) {
+            return NoMorePosts();
+          } else if (index == state.index - 1 && !state.isEndOfNetworkFeed) {
+            return Stack(
+              children: [
+                PostWidget(post: state.posts[index], index: index),
+                Positioned(bottom: 10, left: 0, right: 0, child: CircularProgressIndicator()),
+              ],
+            );
+          } else {
+            return PostWidget(post: state.posts[index], index: index);
+          }
+        },
+      ),
     );
   }
 }

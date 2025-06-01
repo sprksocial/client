@@ -555,19 +555,19 @@ mixin _$Feed {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(String name, @AtUriConverter() AtUri uri) custom,
-    required TResult Function(HardCodedFeed hardCodedFeed) hardCoded,
+    required TResult Function(HardCodedFeedEnum hardCodedFeed) hardCoded,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String name, @AtUriConverter() AtUri uri)? custom,
-    TResult? Function(HardCodedFeed hardCodedFeed)? hardCoded,
+    TResult? Function(HardCodedFeedEnum hardCodedFeed)? hardCoded,
   }) =>
       throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String name, @AtUriConverter() AtUri uri)? custom,
-    TResult Function(HardCodedFeed hardCodedFeed)? hardCoded,
+    TResult Function(HardCodedFeedEnum hardCodedFeed)? hardCoded,
     required TResult orElse(),
   }) =>
       throw _privateConstructorUsedError;
@@ -714,7 +714,7 @@ class _$FeedCustomImpl extends FeedCustom with DiagnosticableTreeMixin {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(String name, @AtUriConverter() AtUri uri) custom,
-    required TResult Function(HardCodedFeed hardCodedFeed) hardCoded,
+    required TResult Function(HardCodedFeedEnum hardCodedFeed) hardCoded,
   }) {
     return custom(name, uri);
   }
@@ -723,7 +723,7 @@ class _$FeedCustomImpl extends FeedCustom with DiagnosticableTreeMixin {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String name, @AtUriConverter() AtUri uri)? custom,
-    TResult? Function(HardCodedFeed hardCodedFeed)? hardCoded,
+    TResult? Function(HardCodedFeedEnum hardCodedFeed)? hardCoded,
   }) {
     return custom?.call(name, uri);
   }
@@ -732,7 +732,7 @@ class _$FeedCustomImpl extends FeedCustom with DiagnosticableTreeMixin {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String name, @AtUriConverter() AtUri uri)? custom,
-    TResult Function(HardCodedFeed hardCodedFeed)? hardCoded,
+    TResult Function(HardCodedFeedEnum hardCodedFeed)? hardCoded,
     required TResult orElse(),
   }) {
     if (custom != null) {
@@ -806,7 +806,7 @@ abstract class _$$FeedHardCodedImplCopyWith<$Res> {
           _$FeedHardCodedImpl value, $Res Function(_$FeedHardCodedImpl) then) =
       __$$FeedHardCodedImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({HardCodedFeed hardCodedFeed});
+  $Res call({HardCodedFeedEnum hardCodedFeed});
 }
 
 /// @nodoc
@@ -828,7 +828,7 @@ class __$$FeedHardCodedImplCopyWithImpl<$Res>
       hardCodedFeed: null == hardCodedFeed
           ? _value.hardCodedFeed
           : hardCodedFeed // ignore: cast_nullable_to_non_nullable
-              as HardCodedFeed,
+              as HardCodedFeedEnum,
     ));
   }
 }
@@ -844,7 +844,7 @@ class _$FeedHardCodedImpl extends FeedHardCoded with DiagnosticableTreeMixin {
       _$$FeedHardCodedImplFromJson(json);
 
   @override
-  final HardCodedFeed hardCodedFeed;
+  final HardCodedFeedEnum hardCodedFeed;
 
   @JsonKey(name: 'runtimeType')
   final String $type;
@@ -887,7 +887,7 @@ class _$FeedHardCodedImpl extends FeedHardCoded with DiagnosticableTreeMixin {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(String name, @AtUriConverter() AtUri uri) custom,
-    required TResult Function(HardCodedFeed hardCodedFeed) hardCoded,
+    required TResult Function(HardCodedFeedEnum hardCodedFeed) hardCoded,
   }) {
     return hardCoded(hardCodedFeed);
   }
@@ -896,7 +896,7 @@ class _$FeedHardCodedImpl extends FeedHardCoded with DiagnosticableTreeMixin {
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String name, @AtUriConverter() AtUri uri)? custom,
-    TResult? Function(HardCodedFeed hardCodedFeed)? hardCoded,
+    TResult? Function(HardCodedFeedEnum hardCodedFeed)? hardCoded,
   }) {
     return hardCoded?.call(hardCodedFeed);
   }
@@ -905,7 +905,7 @@ class _$FeedHardCodedImpl extends FeedHardCoded with DiagnosticableTreeMixin {
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String name, @AtUriConverter() AtUri uri)? custom,
-    TResult Function(HardCodedFeed hardCodedFeed)? hardCoded,
+    TResult Function(HardCodedFeedEnum hardCodedFeed)? hardCoded,
     required TResult orElse(),
   }) {
     if (hardCoded != null) {
@@ -954,14 +954,14 @@ class _$FeedHardCodedImpl extends FeedHardCoded with DiagnosticableTreeMixin {
 }
 
 abstract class FeedHardCoded extends Feed {
-  const factory FeedHardCoded({required final HardCodedFeed hardCodedFeed}) =
-      _$FeedHardCodedImpl;
+  const factory FeedHardCoded(
+      {required final HardCodedFeedEnum hardCodedFeed}) = _$FeedHardCodedImpl;
   const FeedHardCoded._() : super._();
 
   factory FeedHardCoded.fromJson(Map<String, dynamic> json) =
       _$FeedHardCodedImpl.fromJson;
 
-  HardCodedFeed get hardCodedFeed;
+  HardCodedFeedEnum get hardCodedFeed;
 
   /// Create a copy of Feed
   /// with the given fields replaced by the non-null parameter values.
@@ -977,10 +977,7 @@ SkeletonFeedPost _$SkeletonFeedPostFromJson(Map<String, dynamic> json) {
 /// @nodoc
 mixin _$SkeletonFeedPost {
   @AtUriConverter()
-  AtUri get uri =>
-      throw _privateConstructorUsedError; // "reason": { "type": "union", "refs": ["#reasonRepost", "#reasonPin"] } i think we don't have to use this value for now
-// there's also a String feedContext "Context provided by feed generator that may be passed back alongside interactions."
-  HardcodedFeedExtraInfo? get extraInfo => throw _privateConstructorUsedError;
+  AtUri get uri => throw _privateConstructorUsedError;
 
   /// Serializes this SkeletonFeedPost to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -998,9 +995,7 @@ abstract class $SkeletonFeedPostCopyWith<$Res> {
           SkeletonFeedPost value, $Res Function(SkeletonFeedPost) then) =
       _$SkeletonFeedPostCopyWithImpl<$Res, SkeletonFeedPost>;
   @useResult
-  $Res call({@AtUriConverter() AtUri uri, HardcodedFeedExtraInfo? extraInfo});
-
-  $HardcodedFeedExtraInfoCopyWith<$Res>? get extraInfo;
+  $Res call({@AtUriConverter() AtUri uri});
 }
 
 /// @nodoc
@@ -1019,32 +1014,13 @@ class _$SkeletonFeedPostCopyWithImpl<$Res, $Val extends SkeletonFeedPost>
   @override
   $Res call({
     Object? uri = null,
-    Object? extraInfo = freezed,
   }) {
     return _then(_value.copyWith(
       uri: null == uri
           ? _value.uri
           : uri // ignore: cast_nullable_to_non_nullable
               as AtUri,
-      extraInfo: freezed == extraInfo
-          ? _value.extraInfo
-          : extraInfo // ignore: cast_nullable_to_non_nullable
-              as HardcodedFeedExtraInfo?,
     ) as $Val);
-  }
-
-  /// Create a copy of SkeletonFeedPost
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $HardcodedFeedExtraInfoCopyWith<$Res>? get extraInfo {
-    if (_value.extraInfo == null) {
-      return null;
-    }
-
-    return $HardcodedFeedExtraInfoCopyWith<$Res>(_value.extraInfo!, (value) {
-      return _then(_value.copyWith(extraInfo: value) as $Val);
-    });
   }
 }
 
@@ -1056,10 +1032,7 @@ abstract class _$$SkeletonFeedPostImplCopyWith<$Res>
       __$$SkeletonFeedPostImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({@AtUriConverter() AtUri uri, HardcodedFeedExtraInfo? extraInfo});
-
-  @override
-  $HardcodedFeedExtraInfoCopyWith<$Res>? get extraInfo;
+  $Res call({@AtUriConverter() AtUri uri});
 }
 
 /// @nodoc
@@ -1076,17 +1049,12 @@ class __$$SkeletonFeedPostImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? uri = null,
-    Object? extraInfo = freezed,
   }) {
     return _then(_$SkeletonFeedPostImpl(
       uri: null == uri
           ? _value.uri
           : uri // ignore: cast_nullable_to_non_nullable
               as AtUri,
-      extraInfo: freezed == extraInfo
-          ? _value.extraInfo
-          : extraInfo // ignore: cast_nullable_to_non_nullable
-              as HardcodedFeedExtraInfo?,
     ));
   }
 }
@@ -1096,8 +1064,7 @@ class __$$SkeletonFeedPostImplCopyWithImpl<$Res>
 class _$SkeletonFeedPostImpl
     with DiagnosticableTreeMixin
     implements _SkeletonFeedPost {
-  const _$SkeletonFeedPostImpl(
-      {@AtUriConverter() required this.uri, this.extraInfo});
+  const _$SkeletonFeedPostImpl({@AtUriConverter() required this.uri});
 
   factory _$SkeletonFeedPostImpl.fromJson(Map<String, dynamic> json) =>
       _$$SkeletonFeedPostImplFromJson(json);
@@ -1105,14 +1072,10 @@ class _$SkeletonFeedPostImpl
   @override
   @AtUriConverter()
   final AtUri uri;
-// "reason": { "type": "union", "refs": ["#reasonRepost", "#reasonPin"] } i think we don't have to use this value for now
-// there's also a String feedContext "Context provided by feed generator that may be passed back alongside interactions."
-  @override
-  final HardcodedFeedExtraInfo? extraInfo;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'SkeletonFeedPost(uri: $uri, extraInfo: $extraInfo)';
+    return 'SkeletonFeedPost(uri: $uri)';
   }
 
   @override
@@ -1120,8 +1083,7 @@ class _$SkeletonFeedPostImpl
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty('type', 'SkeletonFeedPost'))
-      ..add(DiagnosticsProperty('uri', uri))
-      ..add(DiagnosticsProperty('extraInfo', extraInfo));
+      ..add(DiagnosticsProperty('uri', uri));
   }
 
   @override
@@ -1129,14 +1091,12 @@ class _$SkeletonFeedPostImpl
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$SkeletonFeedPostImpl &&
-            (identical(other.uri, uri) || other.uri == uri) &&
-            (identical(other.extraInfo, extraInfo) ||
-                other.extraInfo == extraInfo));
+            (identical(other.uri, uri) || other.uri == uri));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, uri, extraInfo);
+  int get hashCode => Object.hash(runtimeType, uri);
 
   /// Create a copy of SkeletonFeedPost
   /// with the given fields replaced by the non-null parameter values.
@@ -1157,19 +1117,14 @@ class _$SkeletonFeedPostImpl
 
 abstract class _SkeletonFeedPost implements SkeletonFeedPost {
   const factory _SkeletonFeedPost(
-      {@AtUriConverter() required final AtUri uri,
-      final HardcodedFeedExtraInfo? extraInfo}) = _$SkeletonFeedPostImpl;
+      {@AtUriConverter() required final AtUri uri}) = _$SkeletonFeedPostImpl;
 
   factory _SkeletonFeedPost.fromJson(Map<String, dynamic> json) =
       _$SkeletonFeedPostImpl.fromJson;
 
   @override
   @AtUriConverter()
-  AtUri
-      get uri; // "reason": { "type": "union", "refs": ["#reasonRepost", "#reasonPin"] } i think we don't have to use this value for now
-// there's also a String feedContext "Context provided by feed generator that may be passed back alongside interactions."
-  @override
-  HardcodedFeedExtraInfo? get extraInfo;
+  AtUri get uri;
 
   /// Create a copy of SkeletonFeedPost
   /// with the given fields replaced by the non-null parameter values.
@@ -6968,7 +6923,7 @@ VideoView _$VideoViewFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$VideoView {
-  String get cid => throw _privateConstructorUsedError;
+  CID get cid => throw _privateConstructorUsedError;
   @AtUriConverter()
   AtUri get playlist => throw _privateConstructorUsedError;
   @AtUriConverter()
@@ -6991,7 +6946,7 @@ abstract class $VideoViewCopyWith<$Res> {
       _$VideoViewCopyWithImpl<$Res, VideoView>;
   @useResult
   $Res call(
-      {String cid,
+      {CID cid,
       @AtUriConverter() AtUri playlist,
       @AtUriConverter() AtUri thumbnail,
       String? alt});
@@ -7021,7 +6976,7 @@ class _$VideoViewCopyWithImpl<$Res, $Val extends VideoView>
       cid: null == cid
           ? _value.cid
           : cid // ignore: cast_nullable_to_non_nullable
-              as String,
+              as CID,
       playlist: null == playlist
           ? _value.playlist
           : playlist // ignore: cast_nullable_to_non_nullable
@@ -7047,7 +7002,7 @@ abstract class _$$VideoViewImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {String cid,
+      {CID cid,
       @AtUriConverter() AtUri playlist,
       @AtUriConverter() AtUri thumbnail,
       String? alt});
@@ -7075,7 +7030,7 @@ class __$$VideoViewImplCopyWithImpl<$Res>
       cid: null == cid
           ? _value.cid
           : cid // ignore: cast_nullable_to_non_nullable
-              as String,
+              as CID,
       playlist: null == playlist
           ? _value.playlist
           : playlist // ignore: cast_nullable_to_non_nullable
@@ -7106,7 +7061,7 @@ class _$VideoViewImpl extends _VideoView with DiagnosticableTreeMixin {
       _$$VideoViewImplFromJson(json);
 
   @override
-  final String cid;
+  final CID cid;
   @override
   @AtUriConverter()
   final AtUri playlist;
@@ -7167,7 +7122,7 @@ class _$VideoViewImpl extends _VideoView with DiagnosticableTreeMixin {
 
 abstract class _VideoView extends VideoView {
   const factory _VideoView(
-      {required final String cid,
+      {required final CID cid,
       @AtUriConverter() required final AtUri playlist,
       @AtUriConverter() required final AtUri thumbnail,
       final String? alt}) = _$VideoViewImpl;
@@ -7177,7 +7132,7 @@ abstract class _VideoView extends VideoView {
       _$VideoViewImpl.fromJson;
 
   @override
-  String get cid;
+  CID get cid;
   @override
   @AtUriConverter()
   AtUri get playlist;

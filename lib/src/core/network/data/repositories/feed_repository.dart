@@ -19,7 +19,7 @@ abstract class FeedRepository {
   /// Get an author's feed
   ///
   /// [actor] The DID of the author
-  /// [limit] The number of items to return (default 50)
+  /// [limit] The number of items to return (default 20)
   /// [cursor] Pagination cursor for the next set of results
   Future<({List<FeedViewPost> posts, String? cursor})> getAuthorFeed(
     String actor, {
@@ -88,5 +88,13 @@ abstract class FeedRepository {
   /// [parentHeight] The height of the parent post
   /// [bluesky] Whether the thread is a Bluesky thread
   Future<Thread> getThread(AtUri uri, {int depth = 2, int parentHeight = 0, bool bluesky = false});
+
+  /// Get labels for a list of URIs
+  ///
+  /// [uris] List of post URIs to fetch labels for
+  /// [sources] Optional list of label sources (DIDs) to filter on.
+  /// [limit] Optional limit on the number of labels to return.
+  /// [cursor] Optional pagination cursor.
+  Future<({List<Label> labels, String? cursor})> getLabels(List<AtUri> uris, {List<String>? sources, int? limit, String? cursor});
 
 }

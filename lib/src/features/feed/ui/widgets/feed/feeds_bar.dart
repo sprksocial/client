@@ -30,6 +30,7 @@ class FeedsBar extends ConsumerWidget implements PreferredSizeWidget {
           ref.read(settingsProvider.notifier).setActiveFeed(settings.feeds[value]);
           AutoTabsRouter.of(context).setActiveIndex(value);
         },
+        onReorder: ref.watch(settingsProvider.notifier).reorderFeed,
       ),
       actions: [
         IconButton(

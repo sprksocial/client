@@ -10,9 +10,9 @@ class SettingsState with _$SettingsState {
     @Default(false) bool feedBlurEnabled,
     @Default(true) bool hideAdultContent,
     @Default([
-      Feed.hardCoded(hardCodedFeed: HardCodedFeed.following),
-      Feed.hardCoded(hardCodedFeed: HardCodedFeed.forYou),
-      Feed.hardCoded(hardCodedFeed: HardCodedFeed.latestSprk),
+      Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
+      Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
+      Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
     ])
     List<Feed> feeds,
     required Feed activeFeed,

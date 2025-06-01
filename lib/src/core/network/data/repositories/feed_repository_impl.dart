@@ -28,7 +28,7 @@ class FeedRepositoryImpl implements FeedRepository {
     limit ??= 10;
     switch (feed) {
       case FeedHardCoded(:final hardCodedFeed):
-        final skeletonFunction = HardCodedFeedAlgorithm.fromEnum(hardCodedFeed);
+        final skeletonFunction = HardCodedFeedAlgorithm.skeletonFromEnum(hardCodedFeed);
         return skeletonFunction(limit: limit, cursor: cursor);
       case FeedCustom():
         return _client.executeWithRetry(() async {
@@ -461,6 +461,40 @@ class FeedRepositoryImpl implements FeedRepository {
         _logger.e('Failed to load Bluesky comments', error: e);
         throw Exception('Failed to load comments: ${e.toString()}');
       }
+    });
+  }
+
+  @override
+  Future<({List<Label> labels, String? cursor})> getLabels(
+    List<AtUri> uris, {
+    List<String>? sources,
+    int? limit,
+    String? cursor,
+  }) async {
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      List<Label> labels = [];
+
+      final response = await atproto.get(
+        NSID.parse('com.atproto.label.queryLabels'),
+        parameters: {'uris': uris, 'sources': sources, 'limit': limit, 'cursor': cursor},
+      );
+
+      for (final label in response.data['labels'] as List<dynamic>) {
+        labels.add(Label.fromJson(label as Map<String, Object?>));
+      }
+
+      return (labels: labels, cursor: response.data['cursor'] as String?);
     });
   }
 }
