@@ -1,5 +1,5 @@
-import 'package:atproto/atproto.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/data/models/labeler_models.dart';
 
 abstract class SettingsRepository {
   Future<bool> getFeedBlurEnabled();
@@ -16,5 +16,9 @@ abstract class SettingsRepository {
   Future<Feed> getActiveFeed();
   Future<void> setActiveFeed(Feed feed);
 
-  Future<Map<String, List<LabelValueDefinition, 
+  Future<List<String>> getFollowedLabelers();
+  Future<void> setFollowedLabelers(List<String> labelers, List<LabelPreference> labelPreferences);
+
+  Future<LabelPreference> getLabelPreference(String value);
+  Future<void> setLabelPreference(String value, Blurs blurs, Severity severity, bool adultOnly, Setting setting);
 }

@@ -13,8 +13,8 @@ class StorageKeys {
 
   /// Labelers
   static const String followedLabelers = 'followed_labelers';
-  static const String labelerPrefix = 'labeler_';
-  static const String labelPreferencePrefix = 'label_pref_';
+  static const String labelPreferenceKey = 'label_preference';
+  static const String defaultLabelsAreSetupKey = 'default_labels_are_setup';
 
   /// Identity cache
   static const String didToHandleCache = 'did_to_handle_cache';

@@ -26,19 +26,6 @@ abstract class _$AppRouter extends RootStackRouter {
         ),
       );
     },
-    CommentsTray.name: (routeData) {
-      final args = routeData.argsAs<CommentsTrayArgs>();
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: CommentsTray(
-          key: args.key,
-          postUri: args.postUri,
-          postCid: args.postCid,
-          commentCount: args.commentCount,
-          isSprk: args.isSprk,
-        ),
-      );
-    },
     EditProfileRoute.name: (routeData) {
       final args = routeData.argsAs<EditProfileRouteArgs>();
       return AutoRoutePage<dynamic>(
@@ -125,18 +112,6 @@ abstract class _$AppRouter extends RootStackRouter {
         child: const PlaceholderPage(),
       );
     },
-    ProfileRoute.name: (routeData) {
-      final pathParams = routeData.inheritedPathParams;
-      final args = routeData.argsAs<ProfileRouteArgs>(
-          orElse: () => ProfileRouteArgs(did: pathParams.getString('did')));
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: ProfilePage(
-          did: args.did,
-          key: args.key,
-        ),
-      );
-    },
     RegisterRoute.name: (routeData) {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
@@ -153,12 +128,6 @@ abstract class _$AppRouter extends RootStackRouter {
       return AutoRoutePage<dynamic>(
         routeData: routeData,
         child: const SplashPage(),
-      );
-    },
-    UserProfileRoute.name: (routeData) {
-      return AutoRoutePage<dynamic>(
-        routeData: routeData,
-        child: const UserProfilePage(),
       );
     },
   };
@@ -199,59 +168,6 @@ class AuthPromptRouteArgs {
   @override
   String toString() {
     return 'AuthPromptRouteArgs{key: $key, onClose: $onClose}';
-  }
-}
-
-/// generated route for
-/// [CommentsTray]
-class CommentsTray extends PageRouteInfo<CommentsTrayArgs> {
-  CommentsTray({
-    Key? key,
-    required String postUri,
-    required String postCid,
-    required int commentCount,
-    required bool isSprk,
-    List<PageRouteInfo>? children,
-  }) : super(
-          CommentsTray.name,
-          args: CommentsTrayArgs(
-            key: key,
-            postUri: postUri,
-            postCid: postCid,
-            commentCount: commentCount,
-            isSprk: isSprk,
-          ),
-          initialChildren: children,
-        );
-
-  static const String name = 'CommentsTray';
-
-  static const PageInfo<CommentsTrayArgs> page =
-      PageInfo<CommentsTrayArgs>(name);
-}
-
-class CommentsTrayArgs {
-  const CommentsTrayArgs({
-    this.key,
-    required this.postUri,
-    required this.postCid,
-    required this.commentCount,
-    required this.isSprk,
-  });
-
-  final Key? key;
-
-  final String postUri;
-
-  final String postCid;
-
-  final int commentCount;
-
-  final bool isSprk;
-
-  @override
-  String toString() {
-    return 'CommentsTrayArgs{key: $key, postUri: $postUri, postCid: $postCid, commentCount: $commentCount, isSprk: $isSprk}';
   }
 }
 
@@ -505,45 +421,6 @@ class PlaceholderRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
-/// [ProfilePage]
-class ProfileRoute extends PageRouteInfo<ProfileRouteArgs> {
-  ProfileRoute({
-    required String did,
-    Key? key,
-    List<PageRouteInfo>? children,
-  }) : super(
-          ProfileRoute.name,
-          args: ProfileRouteArgs(
-            did: did,
-            key: key,
-          ),
-          rawPathParams: {'did': did},
-          initialChildren: children,
-        );
-
-  static const String name = 'ProfileRoute';
-
-  static const PageInfo<ProfileRouteArgs> page =
-      PageInfo<ProfileRouteArgs>(name);
-}
-
-class ProfileRouteArgs {
-  const ProfileRouteArgs({
-    required this.did,
-    this.key,
-  });
-
-  final String did;
-
-  final Key? key;
-
-  @override
-  String toString() {
-    return 'ProfileRouteArgs{did: $did, key: $key}';
-  }
-}
-
-/// generated route for
 /// [RegisterPage]
 class RegisterRoute extends PageRouteInfo<void> {
   const RegisterRoute({List<PageRouteInfo>? children})
@@ -581,20 +458,6 @@ class SplashRoute extends PageRouteInfo<void> {
         );
 
   static const String name = 'SplashRoute';
-
-  static const PageInfo<void> page = PageInfo<void>(name);
-}
-
-/// generated route for
-/// [UserProfilePage]
-class UserProfileRoute extends PageRouteInfo<void> {
-  const UserProfileRoute({List<PageRouteInfo>? children})
-      : super(
-          UserProfileRoute.name,
-          initialChildren: children,
-        );
-
-  static const String name = 'UserProfileRoute';
 
   static const PageInfo<void> page = PageInfo<void>(name);
 }

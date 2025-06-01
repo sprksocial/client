@@ -67,7 +67,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
         return;
       }
       if (mounted) {
-        context.router.push(ProfileRoute(did: didRes));
+        // context.router.push(ProfileRoute(did: didRes)); TODO
       }
     } catch (e, s) {
       _logger.e('Error resolving handle: $e', error: e, stackTrace: s);

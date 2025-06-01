@@ -52,7 +52,6 @@ dependencies:
   sqflite: ^2.4.2
   pool: ^1.5.0
   collection: ^1.19.1
-  reorderable_tabbar: ^1.0.6
   # Old architecture dependencies
   provider: ^6.1.1
 

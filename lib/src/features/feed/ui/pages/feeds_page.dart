@@ -18,11 +18,11 @@ class FeedsPage extends ConsumerWidget {
       routes.add(FeedRoute(feed: feed));
     }
 
-    return AutoTabsRouter.tabBar(
+    return AutoTabsRouter.pageView(
       routes: routes,
       homeIndex: settings.feeds.indexOf(settings.activeFeed),
-      builder: (context, child, tabController) {
-        return SafeArea(child: Scaffold(appBar: FeedsBar(tabController: tabController), body: child));
+      builder: (context, child, pageController) {
+        return SafeArea(child: Scaffold(appBar: FeedsBar(pageController: pageController), body: child));
       },
     );
   }

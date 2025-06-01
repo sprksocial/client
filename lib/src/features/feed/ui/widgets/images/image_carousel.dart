@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 class ImageCarousel extends StatefulWidget {
   final List<String> imageUrls;
   final List<String>? imageAlts;
-  final ValueChanged<int>? onPageChanged;
   final bool autoPreload;
   final bool disableBackgroundBlur;
 
@@ -14,7 +13,6 @@ class ImageCarousel extends StatefulWidget {
     super.key,
     required this.imageUrls,
     this.imageAlts,
-    this.onPageChanged,
     this.autoPreload = true,
     this.disableBackgroundBlur = false,
   });
@@ -71,7 +69,7 @@ class _ImageCarouselState extends State<ImageCarousel> {
       children: [
         // Background blur if enabled
         if (!widget.disableBackgroundBlur && widget.imageUrls.isNotEmpty)
-          _buildBlurredBackground(widget.imageUrls[_currentIndex], isDarkMode),
+          BlurredBackground(imageUrl: widget.imageUrls[_currentIndex], isDarkMode: isDarkMode),
 
         // Full-screen PageView
         Positioned.fill(
@@ -82,11 +80,10 @@ class _ImageCarouselState extends State<ImageCarousel> {
               setState(() {
                 _currentIndex = index;
               });
-              widget.onPageChanged?.call(index);
             },
             itemBuilder: (context, index) {
               final altText = widget.imageAlts != null && widget.imageAlts!.length > index ? widget.imageAlts![index] : null;
-              return _buildImageItem(widget.imageUrls[index], altText, isDarkMode);
+              return ImageItem(imageUrl: widget.imageUrls[index], altText: altText, isDarkMode: isDarkMode);
             },
           ),
         ),
@@ -103,42 +100,36 @@ class _ImageCarouselState extends State<ImageCarousel> {
     );
   }
 
-  Widget _buildBlurredBackground(String imageUrl, bool isDarkMode) {
-    final backgroundColor = isDarkMode ? Colors.black : Colors.grey[900];
-
-    return Positioned.fill(
-      child: Container(
-        color: backgroundColor,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Blurred background image
-            ClipRect(
-              child: ImageFiltered(
-                imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-                child: Transform.scale(
-                  scale: 1.2,
-                  child: Opacity(
-                    opacity: 0.5,
-                    child: CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(),
-                      errorWidget: (context, url, error) => Container(),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            // Darkened overlay
-            Container(color: isDarkMode ? Colors.black.withAlpha(120) : Colors.black.withAlpha(160)),
-          ],
+  List<Widget> _buildIndicators() {
+    return List.generate(
+      widget.imageUrls.length,
+      (index) => Container(
+        width: 8.0,
+        height: 8.0,
+        margin: const EdgeInsets.symmetric(horizontal: 4.0),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: _currentIndex == index ? Colors.white : Colors.white.withAlpha(128),
         ),
       ),
     );
   }
+}
 
-  Widget _buildImageItem(String imageUrl, String? altText, bool isDarkMode) {
+class ImageItem extends StatelessWidget {
+  const ImageItem({
+    super.key,
+    required this.imageUrl,
+    required this.altText,
+    required this.isDarkMode,
+  });
+
+  final String imageUrl;
+  final String? altText;
+  final bool isDarkMode;
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
         // Image can be tapped to view in fullscreen
@@ -170,17 +161,49 @@ class _ImageCarouselState extends State<ImageCarousel> {
       ),
     );
   }
+}
 
-  List<Widget> _buildIndicators() {
-    return List.generate(
-      widget.imageUrls.length,
-      (index) => Container(
-        width: 8.0,
-        height: 8.0,
-        margin: const EdgeInsets.symmetric(horizontal: 4.0),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: _currentIndex == index ? Colors.white : Colors.white.withAlpha(128),
+class BlurredBackground extends StatelessWidget {
+  const BlurredBackground({
+    super.key,
+    required this.imageUrl,
+    required this.isDarkMode,
+  });
+
+  final String imageUrl;
+  final bool isDarkMode;
+
+  @override
+  Widget build(BuildContext context) {
+    final backgroundColor = isDarkMode ? Colors.black : Colors.grey[900];
+
+    return Positioned.fill(
+      child: Container(
+        color: backgroundColor,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Blurred background image
+            ClipRect(
+              child: ImageFiltered(
+                imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
+                child: Transform.scale(
+                  scale: 1.2,
+                  child: Opacity(
+                    opacity: 0.5,
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Container(),
+                      errorWidget: (context, url, error) => Container(),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Darkened overlay
+            Container(color: isDarkMode ? Colors.black.withAlpha(120) : Colors.black.withAlpha(160)),
+          ],
         ),
       ),
     );

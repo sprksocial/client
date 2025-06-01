@@ -20,7 +20,7 @@ class _MainPageState extends ConsumerState<MainPage> {
   Widget build(BuildContext context) {
     return AutoTabsRouter(
       key: const ValueKey('mainTabsRouter'),
-      routes: [const FeedsRoute(), const SearchRoute(), const EmptyRoute(), const MessagesRoute(), UserProfileRoute()],
+      routes: [const FeedsRoute(), const SearchRoute(), const EmptyRoute(), const MessagesRoute(),], //UserProfileRoute()],
       transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
@@ -64,11 +64,11 @@ class _MainPageState extends ConsumerState<MainPage> {
                 selectedIcon: Icon(FluentIcons.mail_inbox_all_24_filled),
                 label: 'Inbox',
               ),
-              const NavigationDestination(
-                icon: Icon(FluentIcons.person_24_regular),
-                selectedIcon: Icon(FluentIcons.person_24_filled),
-                label: 'Profile',
-              ),
+              // const NavigationDestination(
+              //   icon: Icon(FluentIcons.person_24_regular),
+              //   selectedIcon: Icon(FluentIcons.person_24_filled),
+              //   label: 'Profile',
+              // ),
             ],
           ),
         );

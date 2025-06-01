@@ -487,7 +487,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
       final response = await atproto.get(
         NSID.parse('com.atproto.label.queryLabels'),
-        parameters: {'uris': uris, 'sources': sources, 'limit': limit, 'cursor': cursor},
+        parameters: {'uriPatterns': uris, 'sources': sources, 'limit': limit, 'cursor': cursor},
       );
 
       for (final label in response.data['labels'] as List<dynamic>) {

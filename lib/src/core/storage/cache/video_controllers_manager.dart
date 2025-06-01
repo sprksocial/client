@@ -5,10 +5,24 @@ import 'package:video_player/video_player.dart';
 
 const int _maxVideoControllers = 3;
 
+class ManagedVideoController {
+  final String uri;
+  VideoPlayerController? controller;
+  late final VideoControllersManager _videoControllersManager;
+  ManagedVideoController({required this.uri, this.controller});
+
+  bool get isValid => controller != null;
+
+  Future<void> dispose() async {
+    _videoControllersManager = GetIt.instance<VideoControllersManager>();
+    await _videoControllersManager.releaseVideoController(uri);
+  }
+}
+
 class VideoControllersManager {
   final Pool _pool;
   late final CacheManagerInterface _cacheManager;
-  final Map<String, VideoPlayerController> _controllers = {};
+  final Map<String, ManagedVideoController> _controllers = {};
   final Map<String, PoolResource> _resources = {};
 
   VideoControllersManager() : _pool = Pool(_maxVideoControllers) {
@@ -16,7 +30,7 @@ class VideoControllersManager {
   }
 
   /// Use parsed atUri to get cached videos, use direct url to get network videos.
-  Future<VideoPlayerController> newController(String uri) async {
+  Future<ManagedVideoController> newController(String uri) async {
     if (_controllers.containsKey(uri)) {
       return _controllers[uri]!;
     }
@@ -28,21 +42,27 @@ class VideoControllersManager {
     } else {
       controller = VideoPlayerController.file(file);
     }
-    _controllers[uri] = controller;
+    _controllers[uri] = ManagedVideoController(uri: uri, controller: controller);
     _resources[uri] = resource;
     await controller.initialize();
     controller
-        ..setLooping(true)
+      ..setLooping(true)
       ..pause();
-    return controller;
+    return ManagedVideoController(uri: uri, controller: controller);
   }
 
   Future<void> releaseVideoController(String uri) async {
     if (_controllers.containsKey(uri)) {
-      final controller = _controllers.remove(uri);
+      final managedController = _controllers.remove(uri);
       final resource = _resources.remove(uri);
-      await controller!.pause();
-      await controller.dispose();
+      if (managedController != null) {
+        final controller = managedController.controller;
+        if (controller != null) {
+          await controller.pause();
+          await controller.dispose();
+          managedController.controller = null;
+        }
+      }
       resource?.release();
     }
   }

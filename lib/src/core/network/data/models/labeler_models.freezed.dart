@@ -14,6 +14,264 @@ T _$identity<T>(T value) => value;
 final _privateConstructorUsedError = UnsupportedError(
     'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
 
+LabelPreference _$LabelPreferenceFromJson(Map<String, dynamic> json) {
+  return _LabelPreference.fromJson(json);
+}
+
+/// @nodoc
+mixin _$LabelPreference {
+  String get value => throw _privateConstructorUsedError;
+  Blurs get blurs => throw _privateConstructorUsedError;
+  Severity get severity => throw _privateConstructorUsedError;
+  Setting get defaultSetting => throw _privateConstructorUsedError;
+  Setting get setting => throw _privateConstructorUsedError;
+  bool get adultOnly => throw _privateConstructorUsedError;
+
+  /// Serializes this LabelPreference to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of LabelPreference
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $LabelPreferenceCopyWith<LabelPreference> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $LabelPreferenceCopyWith<$Res> {
+  factory $LabelPreferenceCopyWith(
+          LabelPreference value, $Res Function(LabelPreference) then) =
+      _$LabelPreferenceCopyWithImpl<$Res, LabelPreference>;
+  @useResult
+  $Res call(
+      {String value,
+      Blurs blurs,
+      Severity severity,
+      Setting defaultSetting,
+      Setting setting,
+      bool adultOnly});
+}
+
+/// @nodoc
+class _$LabelPreferenceCopyWithImpl<$Res, $Val extends LabelPreference>
+    implements $LabelPreferenceCopyWith<$Res> {
+  _$LabelPreferenceCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of LabelPreference
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? value = null,
+    Object? blurs = null,
+    Object? severity = null,
+    Object? defaultSetting = null,
+    Object? setting = null,
+    Object? adultOnly = null,
+  }) {
+    return _then(_value.copyWith(
+      value: null == value
+          ? _value.value
+          : value // ignore: cast_nullable_to_non_nullable
+              as String,
+      blurs: null == blurs
+          ? _value.blurs
+          : blurs // ignore: cast_nullable_to_non_nullable
+              as Blurs,
+      severity: null == severity
+          ? _value.severity
+          : severity // ignore: cast_nullable_to_non_nullable
+              as Severity,
+      defaultSetting: null == defaultSetting
+          ? _value.defaultSetting
+          : defaultSetting // ignore: cast_nullable_to_non_nullable
+              as Setting,
+      setting: null == setting
+          ? _value.setting
+          : setting // ignore: cast_nullable_to_non_nullable
+              as Setting,
+      adultOnly: null == adultOnly
+          ? _value.adultOnly
+          : adultOnly // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$LabelPreferenceImplCopyWith<$Res>
+    implements $LabelPreferenceCopyWith<$Res> {
+  factory _$$LabelPreferenceImplCopyWith(_$LabelPreferenceImpl value,
+          $Res Function(_$LabelPreferenceImpl) then) =
+      __$$LabelPreferenceImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {String value,
+      Blurs blurs,
+      Severity severity,
+      Setting defaultSetting,
+      Setting setting,
+      bool adultOnly});
+}
+
+/// @nodoc
+class __$$LabelPreferenceImplCopyWithImpl<$Res>
+    extends _$LabelPreferenceCopyWithImpl<$Res, _$LabelPreferenceImpl>
+    implements _$$LabelPreferenceImplCopyWith<$Res> {
+  __$$LabelPreferenceImplCopyWithImpl(
+      _$LabelPreferenceImpl _value, $Res Function(_$LabelPreferenceImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of LabelPreference
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? value = null,
+    Object? blurs = null,
+    Object? severity = null,
+    Object? defaultSetting = null,
+    Object? setting = null,
+    Object? adultOnly = null,
+  }) {
+    return _then(_$LabelPreferenceImpl(
+      value: null == value
+          ? _value.value
+          : value // ignore: cast_nullable_to_non_nullable
+              as String,
+      blurs: null == blurs
+          ? _value.blurs
+          : blurs // ignore: cast_nullable_to_non_nullable
+              as Blurs,
+      severity: null == severity
+          ? _value.severity
+          : severity // ignore: cast_nullable_to_non_nullable
+              as Severity,
+      defaultSetting: null == defaultSetting
+          ? _value.defaultSetting
+          : defaultSetting // ignore: cast_nullable_to_non_nullable
+              as Setting,
+      setting: null == setting
+          ? _value.setting
+          : setting // ignore: cast_nullable_to_non_nullable
+              as Setting,
+      adultOnly: null == adultOnly
+          ? _value.adultOnly
+          : adultOnly // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$LabelPreferenceImpl implements _LabelPreference {
+  _$LabelPreferenceImpl(
+      {required this.value,
+      required this.blurs,
+      required this.severity,
+      required this.defaultSetting,
+      required this.setting,
+      required this.adultOnly});
+
+  factory _$LabelPreferenceImpl.fromJson(Map<String, dynamic> json) =>
+      _$$LabelPreferenceImplFromJson(json);
+
+  @override
+  final String value;
+  @override
+  final Blurs blurs;
+  @override
+  final Severity severity;
+  @override
+  final Setting defaultSetting;
+  @override
+  final Setting setting;
+  @override
+  final bool adultOnly;
+
+  @override
+  String toString() {
+    return 'LabelPreference(value: $value, blurs: $blurs, severity: $severity, defaultSetting: $defaultSetting, setting: $setting, adultOnly: $adultOnly)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$LabelPreferenceImpl &&
+            (identical(other.value, value) || other.value == value) &&
+            (identical(other.blurs, blurs) || other.blurs == blurs) &&
+            (identical(other.severity, severity) ||
+                other.severity == severity) &&
+            (identical(other.defaultSetting, defaultSetting) ||
+                other.defaultSetting == defaultSetting) &&
+            (identical(other.setting, setting) || other.setting == setting) &&
+            (identical(other.adultOnly, adultOnly) ||
+                other.adultOnly == adultOnly));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+      runtimeType, value, blurs, severity, defaultSetting, setting, adultOnly);
+
+  /// Create a copy of LabelPreference
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$LabelPreferenceImplCopyWith<_$LabelPreferenceImpl> get copyWith =>
+      __$$LabelPreferenceImplCopyWithImpl<_$LabelPreferenceImpl>(
+          this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$LabelPreferenceImplToJson(
+      this,
+    );
+  }
+}
+
+abstract class _LabelPreference implements LabelPreference {
+  factory _LabelPreference(
+      {required final String value,
+      required final Blurs blurs,
+      required final Severity severity,
+      required final Setting defaultSetting,
+      required final Setting setting,
+      required final bool adultOnly}) = _$LabelPreferenceImpl;
+
+  factory _LabelPreference.fromJson(Map<String, dynamic> json) =
+      _$LabelPreferenceImpl.fromJson;
+
+  @override
+  String get value;
+  @override
+  Blurs get blurs;
+  @override
+  Severity get severity;
+  @override
+  Setting get defaultSetting;
+  @override
+  Setting get setting;
+  @override
+  bool get adultOnly;
+
+  /// Create a copy of LabelPreference
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$LabelPreferenceImplCopyWith<_$LabelPreferenceImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
 LabelerView _$LabelerViewFromJson(Map<String, dynamic> json) {
   return _LabelerView.fromJson(json);
 }
@@ -934,7 +1192,8 @@ LabelerPolicies _$LabelerPoliciesFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$LabelerPolicies {
-  List<LabelValue> get labelValues => throw _privateConstructorUsedError;
+  List<String> get labelValues =>
+      throw _privateConstructorUsedError; // knownValues (array of strings, optional): a set of suggested or common values for this field. Values are not limited to this set (aka, not a closed enum).
   List<LabelValueDefinition>? get labelValueDefinitions =>
       throw _privateConstructorUsedError;
 
@@ -955,7 +1214,7 @@ abstract class $LabelerPoliciesCopyWith<$Res> {
       _$LabelerPoliciesCopyWithImpl<$Res, LabelerPolicies>;
   @useResult
   $Res call(
-      {List<LabelValue> labelValues,
+      {List<String> labelValues,
       List<LabelValueDefinition>? labelValueDefinitions});
 }
 
@@ -981,7 +1240,7 @@ class _$LabelerPoliciesCopyWithImpl<$Res, $Val extends LabelerPolicies>
       labelValues: null == labelValues
           ? _value.labelValues
           : labelValues // ignore: cast_nullable_to_non_nullable
-              as List<LabelValue>,
+              as List<String>,
       labelValueDefinitions: freezed == labelValueDefinitions
           ? _value.labelValueDefinitions
           : labelValueDefinitions // ignore: cast_nullable_to_non_nullable
@@ -999,7 +1258,7 @@ abstract class _$$LabelerPoliciesImplCopyWith<$Res>
   @override
   @useResult
   $Res call(
-      {List<LabelValue> labelValues,
+      {List<String> labelValues,
       List<LabelValueDefinition>? labelValueDefinitions});
 }
 
@@ -1023,7 +1282,7 @@ class __$$LabelerPoliciesImplCopyWithImpl<$Res>
       labelValues: null == labelValues
           ? _value._labelValues
           : labelValues // ignore: cast_nullable_to_non_nullable
-              as List<LabelValue>,
+              as List<String>,
       labelValueDefinitions: freezed == labelValueDefinitions
           ? _value._labelValueDefinitions
           : labelValueDefinitions // ignore: cast_nullable_to_non_nullable
@@ -1036,7 +1295,7 @@ class __$$LabelerPoliciesImplCopyWithImpl<$Res>
 @JsonSerializable()
 class _$LabelerPoliciesImpl implements _LabelerPolicies {
   _$LabelerPoliciesImpl(
-      {required final List<LabelValue> labelValues,
+      {required final List<String> labelValues,
       final List<LabelValueDefinition>? labelValueDefinitions})
       : _labelValues = labelValues,
         _labelValueDefinitions = labelValueDefinitions;
@@ -1044,15 +1303,17 @@ class _$LabelerPoliciesImpl implements _LabelerPolicies {
   factory _$LabelerPoliciesImpl.fromJson(Map<String, dynamic> json) =>
       _$$LabelerPoliciesImplFromJson(json);
 
-  final List<LabelValue> _labelValues;
+  final List<String> _labelValues;
   @override
-  List<LabelValue> get labelValues {
+  List<String> get labelValues {
     if (_labelValues is EqualUnmodifiableListView) return _labelValues;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_labelValues);
   }
 
+// knownValues (array of strings, optional): a set of suggested or common values for this field. Values are not limited to this set (aka, not a closed enum).
   final List<LabelValueDefinition>? _labelValueDefinitions;
+// knownValues (array of strings, optional): a set of suggested or common values for this field. Values are not limited to this set (aka, not a closed enum).
   @override
   List<LabelValueDefinition>? get labelValueDefinitions {
     final value = _labelValueDefinitions;
@@ -1105,7 +1366,7 @@ class _$LabelerPoliciesImpl implements _LabelerPolicies {
 
 abstract class _LabelerPolicies implements LabelerPolicies {
   factory _LabelerPolicies(
-          {required final List<LabelValue> labelValues,
+          {required final List<String> labelValues,
           final List<LabelValueDefinition>? labelValueDefinitions}) =
       _$LabelerPoliciesImpl;
 
@@ -1113,7 +1374,8 @@ abstract class _LabelerPolicies implements LabelerPolicies {
       _$LabelerPoliciesImpl.fromJson;
 
   @override
-  List<LabelValue> get labelValues;
+  List<String>
+      get labelValues; // knownValues (array of strings, optional): a set of suggested or common values for this field. Values are not limited to this set (aka, not a closed enum).
   @override
   List<LabelValueDefinition>? get labelValueDefinitions;
 

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:get_it/get_it.dart';
 import 'package:path/path.dart';
+import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -37,7 +38,7 @@ const String _columnFeedIdentifierFK = 'feed_identifier_fk'; // TEXT, Foreign Ke
 const String _columnPostUriFK = 'post_uri_fk'; // TEXT, Foreign Key to cached_posts table
 const String _columnAssociationOrder = 'association_order'; // INTEGER, for ordering posts within a feed
 
-class SQLCache {
+class SQLCacheImpl implements SQLCacheInterface {
   static Database? _database;
 
   Future<Database> get database async {
@@ -107,6 +108,7 @@ class SQLCache {
   // --- CRUD Operations ---
 
   /// Caches a single PostView. If it already exists, it's updated.
+  @override
   Future<void> cachePost(PostView post) async {
     final db = await database;
     final map = post.toJson();
@@ -115,6 +117,7 @@ class SQLCache {
   }
 
   /// Caches a list of PostViews in a batch.
+  @override
   Future<void> cachePosts(List<PostView> posts) async {
     if (posts.isEmpty) return;
     final db = await database;
@@ -127,8 +130,9 @@ class SQLCache {
     await batch.commit(noResult: true);
   }
 
-  /// Retrieves a PostView by its URI string. Updates its lastAccessed time.
+  /// Retrieves a PostView by its URI string.
   /// Returns null if not found.
+  @override
   Future<PostView?> getPost(String uriString) async {
     final db = await database;
     final cacheManager = GetIt.instance<CacheManagerInterface>();
@@ -140,21 +144,13 @@ class SQLCache {
     }
     final List<Map<String, dynamic>> maps = await db.query(_tablePosts, where: '$_columnUri = ?', whereArgs: [uriString]);
 
-    if (maps.isNotEmpty) {
-      // Update last_accessed time
-      await db.update(
-        _tablePosts,
-        {_columnLastAccessed: DateTime.now().millisecondsSinceEpoch},
-        where: '$_columnUri = ?',
-        whereArgs: [uriString],
-      );
+    if (maps.isNotEmpty) return PostView.fromJson(maps.first);
 
-      return PostView.fromJson(maps.first);
-    }
     return null;
   }
 
-  /// Retrieves multiple PostViews by a list of URI strings. Updates their lastAccessed time.
+  /// Retrieves multiple PostViews by a list of URI strings.
+  @override
   Future<List<PostView>> getPostsByUris(List<AtUri> uris) async {
     if (uris.isEmpty) return [];
     final db = await database;
@@ -170,6 +166,7 @@ class SQLCache {
 
   /// Given a list of AtUris, returns a sub-list containing only those URIs
   /// that are present in the `_tablePosts`. Does not update `lastAccessed`.
+  @override
   Future<List<AtUri>> getExistingPostUris(List<AtUri> urisToCheck) async {
     if (urisToCheck.isEmpty) return [];
     final db = await database;
@@ -187,6 +184,7 @@ class SQLCache {
   }
 
   /// Gets posts ordered by last access time (most recently accessed first).
+  @override
   Future<List<PostView>> getPostsOrderedByLastAccessed({int limit = 20, int offset = 0}) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(
@@ -201,6 +199,7 @@ class SQLCache {
   // --- Feed Management ---
 
   /// Caches a Feed object (its metadata).
+  @override
   Future<void> cacheFeed(Feed feed) async {
     final db = await database;
     final identifier = feed.identifier;
@@ -216,6 +215,7 @@ class SQLCache {
   }
 
   /// Deletes a feed and all its associations (due to ON DELETE CASCADE).
+  @override
   Future<void> deleteFeed(Feed feed) async {
     final feedIdentifier = feed.identifier;
     final db = await database;
@@ -227,6 +227,7 @@ class SQLCache {
   /// Sets the posts for a given feed.
   /// This will clear any existing posts for this feed and add the new ones in the provided order.
   /// Ensures that the PostViews themselves are cached before calling this.
+  @override
   Future<void> setPostsForFeed(Feed feed, List<String> postUris) async {
     final feedIdentifier = feed.identifier;
     final db = await database;
@@ -251,6 +252,7 @@ class SQLCache {
     });
   }
 
+  @override
   Future<int> getPostCountForFeed(Feed feed) async {
     final feedIdentifier = feed.identifier;
     final db = await database;
@@ -271,6 +273,7 @@ class SQLCache {
   /// - [feedIdentifier]: The identifier of the feed.
   /// - [limit]: The maximum number of posts to retrieve. If null, no limit.
   /// - [offset]: The number of posts to skip before starting to retrieve. Requires [limit] to be set.
+  @override
   Future<List<PostView>> getPostsForFeed(Feed feed, {int? limit, int? offset}) async {
     final feedIdentifier = feed.identifier;
     final db = await database;
@@ -313,6 +316,7 @@ class SQLCache {
   /// - [feedIdentifier]: The identifier of the feed.
   /// - [limit]: The maximum number of URIs to retrieve. If null, no limit.
   /// - [offset]: The number of URIs to skip before starting to retrieve. Requires [limit] to be set.
+  @override
   Future<List<String>> getUrisForFeed(Feed feed, {int? limit, int? offset}) async {
     final feedIdentifier = feed.identifier;
     final db = await database;
@@ -346,6 +350,7 @@ class SQLCache {
 
   /// Appends posts to a given feed.
   /// Assumes postUris are for new posts not already associated with this feed for this "page".
+  @override
   Future<void> appendPostsToFeed(Feed feed, List<String> postUris) async {
     if (postUris.isEmpty) return;
     final feedIdentifier = feed.identifier;
@@ -379,6 +384,7 @@ class SQLCache {
   }
 
   /// Clears all posts associated with a specific feed.
+  @override
   Future<void> clearPostsFromFeed(Feed feed) async {
     final feedIdentifier = feed.identifier;
     final db = await database;
@@ -388,6 +394,7 @@ class SQLCache {
   // --- Cache Eviction ---
 
   /// Deletes the least recently accessed posts if the cache exceeds [maxSize].
+  @override
   Future<int> evictLeastRecentlyAccessed({required int postsToKeep}) async {
     final db = await database;
     final cacheManager = GetIt.instance<CacheManagerInterface>();
@@ -421,6 +428,7 @@ class SQLCache {
 
   /// Deletes posts older than [maxAge]. See notes in `evictLeastRecentlyAccessed`
   /// regarding file deletion.
+  @override
   Future<int> evictPostsOlderThan(Duration maxAge) async {
     final db = await database;
     final cutoffTimestamp = DateTime.now().subtract(maxAge).millisecondsSinceEpoch;
@@ -441,6 +449,7 @@ class SQLCache {
   }
 
   /// Clears the entire PostView cache from the database.
+  @override
   Future<void> clearAllData() async {
     final db = await database;
     final cacheManager = GetIt.instance<CacheManagerInterface>();
@@ -454,6 +463,7 @@ class SQLCache {
 
   /// Closes the database. Not typically needed for a singleton service
   /// that lives for the app's duration.
+  @override
   Future<void> close() async {
     final db = await database;
     await db.close();

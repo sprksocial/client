@@ -40,48 +40,47 @@ class AppRouter extends _$AppRouter {
         AutoRoute(page: SearchRoute.page, path: 'search'),
         AutoRoute(page: EmptyRoute.page, path: 'create'), // Placeholder for create action
         AutoRoute(page: MessagesRoute.page, path: 'messages'),
-        AutoRoute(
-          page: UserProfileRoute.page, // for the current user
-          path: 'profile',
-          children: [
-            AutoRoute(page: EditProfileRoute.page, path: 'edit'),
-            AutoRoute(
-              page: ProfilePhotosRoute.page,
-              path: 'photos',
-              children: [
-                AutoRoute(page: PostRoute.page, path: 'post/:postId'), // TODO: add post route
-              ],
-            ),
-            AutoRoute(
-              page: ProfileVideosRoute.page,
-              path: 'videos',
-              children: [
-                AutoRoute(page: PostRoute.page, path: 'post/:postId'), // TODO: add post route
-              ],
-            ),
-          ],
-        ),
+        // AutoRoute(
+        //   page: UserProfileRoute.page, // for the current user
+        //   path: 'profile',
+        //   children: [
+        //     AutoRoute(page: EditProfileRoute.page, path: 'edit'),
+        // AutoRoute(
+        //   page: ProfilePhotosRoute.page,
+        //   path: 'photos',
+        //   children: [
+        //     AutoRoute(page: PostRoute.page, path: 'post/:postId'), // TODO: add post route
+        //   ],
+        // ),
+        // AutoRoute(
+        //   page: ProfileVideosRoute.page,
+        //   path: 'videos',
+        //   children: [
+        //     AutoRoute(page: PostRoute.page, path: 'post/:postId'), // TODO: add post route
+        //   ],
+        // ),
       ],
     ),
+    //   ],
+    // ),
 
     // Modal bottom sheet routes
-    CustomRoute(
-      page: CommentsTray.page, // doesn't need to be a child of post route because it's a modal bottom sheet
-      path: '/comments/:postUri',
-      customRouteBuilder: commmentsTrayBuilder,
-      children: [AutoRoute(page: RepliesRoute.page, path: 'replies/:postUri')],
-    ),
+    // CustomRoute(
+    //   page: CommentsTray.page, // doesn't need to be a child of post route because it's a modal bottom sheet
+    //   path: '/comments/:postUri',
+    //   customRouteBuilder: commmentsTrayBuilder,
+    //   // children: [AutoRoute(page: RepliesRoute.page, path: 'replies/:postUri')],
+    // ),
     CustomRoute(
       page: FeedSettingsRoute.page,
-      path: 'settings',
+      path: '/settings',
       customRouteBuilder: feedSettingsBuilder,
       children: [AutoRoute(page: FeedListRoute.page, path: 'list')], // settings tabs
     ),
 
     // Deep linking routes or routes that will be pushed on top of everything
-    AutoRoute(page: StandalonePostRoute.page, path: '/post/:postId'),
-    AutoRoute(page: ProfileRoute.page, path: '/profile/:did'),
-
+    // AutoRoute(page: StandalonePostRoute.page, path: '/post/:postId'),
+    // AutoRoute(page: ProfileRoute.page, path: '/profile/:did'),
     AutoRoute(page: EmptyRoute.page, path: '/empty'),
     AutoRoute(page: LoginRoute.page, path: '/login'),
     AutoRoute(page: RegisterRoute.page, path: '/register'),

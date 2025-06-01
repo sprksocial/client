@@ -8,6 +8,10 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_algorithms/hardcoded_feed_algorithm.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
+import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
+import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
+import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
@@ -19,19 +23,20 @@ part 'feed_provider.g.dart';
 class FeedNotifier extends _$FeedNotifier {
   final _initialUris = <AtUri>{};
   bool _isWaitingForFreshPostsAtEnd = false;
-  late final SQLCache _sqlCache;
+  late final SQLCacheInterface _sqlCache;
   late final Feed _feed;
   late final FeedRepository _feedRepository;
   late final SparkLogger _logger;
-  late final DownloadManager _downloadManager;
+  late final DownloadManagerInterface _downloadManager;
+  late final SettingsRepository _settingsRepository;
 
   @override
   FeedState build(Feed feed) {
     _feed = feed;
-    final storageManager = GetIt.instance<StorageManager>();
-    _feedRepository = GetIt.instance<FeedRepository>();
-    _sqlCache = storageManager.sqlCache;
-    _downloadManager = storageManager.downloadManager;
+    _feedRepository = GetIt.instance<SprkRepository>().feed;
+    _settingsRepository = GetIt.instance<SettingsRepository>();
+    _sqlCache = GetIt.instance<SQLCacheInterface>();
+    _downloadManager = GetIt.instance<DownloadManagerInterface>();
     _logger = GetIt.instance<LogService>().getLogger('FeedNotifier ${feed.identifier}');
 
     listenSelf((previous, next) {
@@ -60,11 +65,30 @@ class FeedNotifier extends _$FeedNotifier {
     // gets the first posts from the database
     final uriStrings = await _sqlCache.getUrisForFeed(_feed, limit: FeedState.firstLoadLimit);
     final uris = uriStrings.map((e) => AtUri.parse(e)).toList();
+
+    // adds the initial uris to the list of initial uris so that they are not fetched again
     _initialUris.addAll(uris);
+
+    // gets the subscribed labels for the posts
+    final followedLabelers = await _settingsRepository.getFollowedLabelers();
+    final (cursor: _, labels: List<Label> labels) = await _feedRepository.getLabels(uris, sources: followedLabelers);
 
     if (uris.isNotEmpty) {
       // updates the posts in the database with new information if they have been edited
       final updatedPostViews = await _feedRepository.getPosts(uris);
+
+      for (var post in updatedPostViews) {
+        labels.addAll(post.labels ?? []); // labels from the post
+        if (post.record.selfLabels != null) {
+          final recordLabels = <Label>[];
+          for (SelfLabel selfLabel in post.record.selfLabels!) {
+            recordLabels.add(
+              Label(uri: post.uri.toString(), value: selfLabel.value, src: post.uri.toString(), createdAt: post.record.createdAt),
+            );
+          }
+          labels.addAll(recordLabels); // self labels
+        }
+      }
       await _sqlCache.cachePosts(updatedPostViews);
       _logger.d('Updated starting posts in database');
     }
@@ -79,19 +103,33 @@ class FeedNotifier extends _$FeedNotifier {
 
     // gets all extra info for the posts (labels and hardcoded feed extra info)
     // for example, if it's the shared feed, the posts need to know the profile of the sender and the text of the message
-
-    final List<Label> labels = []; //await _feedRepository.getLabels(uris);
-
     final extraInfo = LinkedHashMap<AtUri, ({List<Label> postLabels, HardcodedFeedExtraInfo? hardcodedFeedExtraInfo})>.from(
       state.extraInfo,
     );
 
-    for (Label label in labels) {
-      final uri = AtUri.parse(label.uri);
-      extraInfo.update(
-        uri,
-        (value) => (postLabels: [...value.postLabels, label], hardcodedFeedExtraInfo: value.hardcodedFeedExtraInfo),
-      );
+    for (Label newLabel in labels) {
+      final uri = AtUri.parse(newLabel.uri);
+      extraInfo.update(uri, (value) {
+        final existingLabels = value.postLabels;
+
+        // if the new label is already in the existing labels, check if it should replace the existing one
+        if (existingLabels.any((label) => label.value == newLabel.value)) {
+          final existingLabel = existingLabels.firstWhere((label) => label.value == newLabel.value);
+
+          // if the new label says that the existing one is negated or expired, replace the existing one
+          if (((newLabel.ver ?? 0) > (existingLabel.ver ?? 0) && newLabel.isNegate) ||
+              existingLabel.exp != null && existingLabel.exp!.isBefore(DateTime.now())) {
+            existingLabels.remove(existingLabel);
+            return (postLabels: [...existingLabels, newLabel], hardcodedFeedExtraInfo: value.hardcodedFeedExtraInfo);
+          } else {
+            // if the new label is the same as the existing one, do nothing
+            return value;
+          }
+        } else {
+          // if the new label is not in the existing labels, add it
+          return (postLabels: [...existingLabels, newLabel], hardcodedFeedExtraInfo: value.hardcodedFeedExtraInfo);
+        }
+      }, ifAbsent: () => (postLabels: [newLabel], hardcodedFeedExtraInfo: null));
     }
 
     if (feed case FeedHardCoded(:final hardCodedFeed)) {
@@ -180,27 +218,70 @@ class FeedNotifier extends _$FeedNotifier {
     final amountToLoad = min(FeedState.loadLimit, state.freshPostCount);
     if (amountToLoad > 0) {
       // this ALWAYS gets new posts (most recent + only the amount of new ones that have been cached)
-      final uriStrings = await _sqlCache.getUrisForFeed(_feed, limit: amountToLoad);
-      final uris = uriStrings.map((e) => AtUri.parse(e)).toList();
+      final posts = await _sqlCache.getPostsForFeed(_feed, limit: amountToLoad);
+      final uris = posts.map((e) => e.uri).toList();
       _isWaitingForFreshPostsAtEnd = false;
       _logger.d('Loaded $amountToLoad posts from database');
 
-      final loadedPosts = <(AtUri, List<Label>)>[];
+      // gets the subscribed labels for the posts
+      final followedLabelers = await _settingsRepository.getFollowedLabelers();
+      final (cursor: _, labels: List<Label> labels) = await _feedRepository.getLabels(uris, sources: followedLabelers);
 
-      final List<Label> labels = []; //await _feedRepository.getLabels(uris);
-
-      Map<AtUri, List<Label>> postLabelsMap = {};
-      for (Label label in labels) {
-        postLabelsMap.putIfAbsent(AtUri.parse(label.uri), () => []).add(label);
+      for (var post in posts) {
+        labels.addAll(post.labels ?? []); // labels from the post
+        if (post.record.selfLabels != null) {
+          final recordLabels = <Label>[];
+          for (SelfLabel selfLabel in post.record.selfLabels!) {
+            recordLabels.add(
+              Label(uri: post.uri.toString(), value: selfLabel.value, src: post.uri.toString(), createdAt: post.record.createdAt),
+            );
+          }
+          labels.addAll(recordLabels); // self labels
+        }
       }
 
-      for (AtUri uri in uris) {
-        loadedPosts.add((uri, postLabelsMap[uri] ?? []));
+      // gets all extra info for the posts (labels and hardcoded feed extra info)
+      // for example, if it's the shared feed, the posts need to know the profile of the sender and the text of the message
+      final extraInfo = LinkedHashMap<AtUri, ({List<Label> postLabels, HardcodedFeedExtraInfo? hardcodedFeedExtraInfo})>.from(
+        state.extraInfo,
+      );
+
+      for (Label newLabel in labels) {
+        final uri = AtUri.parse(newLabel.uri);
+        extraInfo.update(uri, (value) {
+          final existingLabels = value.postLabels;
+
+          // if the new label is already in the existing labels, check if it should replace the existing one
+          if (existingLabels.any((label) => label.value == newLabel.value)) {
+            final existingLabel = existingLabels.firstWhere((label) => label.value == newLabel.value);
+
+            // if the new label says that the existing one is negated or expired, replace the existing one
+            if (((newLabel.ver ?? 0) > (existingLabel.ver ?? 0) && newLabel.isNegate) ||
+                existingLabel.exp != null && existingLabel.exp!.isBefore(DateTime.now())) {
+              existingLabels.remove(existingLabel);
+              return (postLabels: [...existingLabels, newLabel], hardcodedFeedExtraInfo: value.hardcodedFeedExtraInfo);
+            } else {
+              // if the new label is the same as the existing one, do nothing
+              return value;
+            }
+          } else {
+            // if the new label is not in the existing labels, add it
+            return (postLabels: [...existingLabels, newLabel], hardcodedFeedExtraInfo: value.hardcodedFeedExtraInfo);
+          }
+        }, ifAbsent: () => (postLabels: [newLabel], hardcodedFeedExtraInfo: null));
       }
 
+      if (feed case FeedHardCoded(:final hardCodedFeed)) {
+        final extraInfoGetter = HardCodedFeedAlgorithm.extraInfoFromEnum(hardCodedFeed);
+        if (extraInfoGetter != null) {
+          final newExtraInfos = await extraInfoGetter(uris);
+          extraInfo.updateAll((key, value) => (postLabels: value.postLabels, hardcodedFeedExtraInfo: newExtraInfos[key]));
+        }
+      }
       state = state.copyWith(
-        loadedPosts: [...state.loadedPosts, ...loadedPosts],
+        loadedPosts: [...state.loadedPosts, ...uris],
         freshPostCount: state.freshPostCount - amountToLoad,
+        extraInfo: extraInfo,
       );
     }
   }

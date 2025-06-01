@@ -6,6 +6,82 @@ import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
 part 'labeler_models.freezed.dart';
 part 'labeler_models.g.dart';
 
+const defaultLabels = [
+  "!hide",
+  "!no-promote",
+  "!warn",
+  "!no-unauthenticated",
+  "dmca-violation",
+  "doxxing",
+  "porn",
+  "sexual",
+  "nudity",
+  "nsfl",
+  "gore",
+];
+
+enum Blurs {
+  content('content'),
+  media('media'),
+  none('none');
+
+  final String value;
+  const Blurs(this.value);
+
+  static Blurs fromValue(String value) {
+    if (Blurs.values.any((e) => e.value == value)) {
+      return Blurs.values.firstWhere((e) => e.value == value);
+    }
+    throw Exception('Invalid blur: $value');
+  }
+}
+
+enum Severity {
+  alert('alert'),
+  inform('inform'),
+  none('none');
+
+  final String value;
+  const Severity(this.value);
+
+  static Severity fromValue(String value) {
+    if (Severity.values.any((e) => e.value == value)) {
+      return Severity.values.firstWhere((e) => e.value == value);
+    }
+    throw Exception('Invalid severity: $value');
+  }
+}
+
+enum Setting {
+  hide('hide'),
+  warn('warn'),
+  ignore('ignore');
+
+  final String value;
+  const Setting(this.value);
+
+  static Setting fromValue(String value) {
+    if (Setting.values.any((e) => e.value == value)) {
+      return Setting.values.firstWhere((e) => e.value == value);
+    }
+    throw Exception('Invalid default setting: $value');
+  }
+}
+
+@freezed
+abstract class LabelPreference with _$LabelPreference {
+  factory LabelPreference({
+    required String value,
+    required Blurs blurs,
+    required Severity severity,
+    required Setting defaultSetting,
+    required Setting setting,
+    required bool adultOnly,
+  }) = _LabelPreference;
+
+  factory LabelPreference.fromJson(Map<String, dynamic> json) => _$LabelPreferenceFromJson(json);
+}
+
 @freezed
 abstract class LabelerView with _$LabelerView {
   factory LabelerView({
@@ -50,7 +126,8 @@ abstract class LabelerViewerState with _$LabelerViewerState {
 @freezed
 abstract class LabelerPolicies with _$LabelerPolicies {
   factory LabelerPolicies({
-    required List<LabelValue> labelValues,
+    required List<String>
+    labelValues, // knownValues (array of strings, optional): a set of suggested or common values for this field. Values are not limited to this set (aka, not a closed enum).
     List<LabelValueDefinition>? labelValueDefinitions,
   }) = _LabelerPolicies;
 

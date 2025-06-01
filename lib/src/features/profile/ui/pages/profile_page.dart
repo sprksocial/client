@@ -14,7 +14,7 @@ import 'package:sparksocial/src/features/profile/ui/widgets/early_supporter_shee
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_menu_sheet.dart';
 import 'package:get_it/get_it.dart';
 
-@RoutePage()
+// @RoutePage() TODO
 class ProfilePage extends ConsumerWidget {
   final String did;
   late final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ProfilePage');

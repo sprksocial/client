@@ -1,6 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository_impl.dart';
 import 'package:sparksocial/src/core/storage/cache/cache_manager_impl.dart';
+import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
+import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/theme/data/repositories/theme_repository.dart';
 import 'package:sparksocial/src/core/theme/data/repositories/theme_repository_impl.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
@@ -24,14 +26,23 @@ final GetIt sl = GetIt.instance;
 /// Initializes the service locator with all required dependencies
 /// sl.registerSingleton < Interface > (Implementation)
 Future<void> initServiceLocator() async {
-
-  // Register SettingsRepository
-  sl.registerSingleton<SettingsRepository>(SettingsRepositoryImpl(sl<StorageManager>()));
+  // Register LogService
+  sl.registerSingleton<LogService>(LogService());
 
   // Register storage dependencies
   // Initialize storage manager
   final storageManager = StorageManager.instance;
   await storageManager.init();
+
+  final sqlCache = SQLCacheImpl();
+  await sqlCache.database;
+  sl.registerSingleton<SQLCacheInterface>(sqlCache);
+  
+  // Register cache manager
+  sl.registerSingleton<CacheManagerInterface>(CacheManagerImpl.instance);
+
+  final downloadManager = DownloadManagerImpl();
+  sl.registerSingleton<DownloadManagerInterface>(downloadManager);
 
   // Register storage manager
   sl.registerSingleton<StorageManager>(storageManager);
@@ -39,12 +50,7 @@ Future<void> initServiceLocator() async {
   // Register VideoControllersManager
   sl.registerSingleton<VideoControllersManager>(VideoControllersManager());
 
-  // Register cache manager
-  sl.registerSingleton<CacheManagerInterface>(CacheManagerImpl.instance);
 
-  // Register logging dependencies
-  // Register LogService
-  sl.registerSingleton<LogService>(LogService());
 
   // Register network dependencies
   // Register AuthRepository
@@ -64,6 +70,10 @@ Future<void> initServiceLocator() async {
 
   // Register GraphRepository
   sl.registerSingleton<GraphRepository>(GraphRepositoryImpl(sl.get<SprkRepository>()));
+
+  // Register SettingsRepository
+  sl.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
+  await downloadManager.init();
 
   // Register OnboardingRepository
   sl.registerLazySingleton<OnboardingRepository>(

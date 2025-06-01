@@ -1,13 +1,11 @@
 import 'package:atproto/core.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart'; // For PostView, Feed
 
-// --- Constants and Enums (can be defined here or imported if in separate files) ---
 const int activeFeedPriority = 1;
 const int inactiveFeedPriority = 10;
 
 enum DownloadTaskStatus { pending, active, completed, failed }
 
-// --- DownloadTask Data Class (as provided, used by the interface) ---
 class DownloadTask {
   DownloadTask({
     required this.uri,
@@ -51,11 +49,7 @@ class DownloadTask {
   int get hashCode => uri.hashCode;
 }
 
-// --- Contract Interface for DownloadManager ---
-
-/// Defines the contract for a download manager responsible for
-/// queuing and processing download tasks for feed content.
-abstract class IDownloadManager {
+abstract class DownloadManagerInterface {
 
   /// Sets the currently active feed. Tasks related to the active feed
   /// may be prioritized.
@@ -75,20 +69,4 @@ abstract class IDownloadManager {
   /// This should be called when the manager is no longer needed to prevent
   /// resource leaks and ensure graceful shutdown of ongoing operations.
   Future<void> dispose();
-
-  /// Checks if there are any pending tasks specifically for the currently
-  /// active feed.
-  ///
-  /// Returns `true` if there are pending tasks for the active feed,
-  /// `false` otherwise.
-  bool areTherePendingActiveFeedTasks();
-
-  // Note: Properties like `_activeFeed` (if it were public) would be defined as getters:
-  // Feed? get activeFeed;
-  //
-  // The `_pool`, `_sqlCache`, `_logger`, `_cacheManager`, `_tasks`, `_isProcessing`
-  // are internal implementation details and thus not part of the public interface.
-  //
-  // Methods like `_updateTaskPriorities`, `_cancelAllPendingTasks`, `_processQueue`, `_executeTask`
-  // are also internal and not part of the interface.
 }

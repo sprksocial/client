@@ -4,6 +4,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/common/feed_post_widget.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/common/no_more_posts.dart';
 
 @RoutePage()
 class FeedPage extends ConsumerWidget {
@@ -37,18 +39,18 @@ class FeedPage extends ConsumerWidget {
         },
         itemBuilder: (context, index) {
           if (!state.active || (index - state.index).abs() > 1) {
-            return SizedBox();
+            return const SizedBox();
           } else if (index == state.length) {
-            return NoMorePosts();
+            return const NoMorePosts();
           } else if (index == state.index - 1 && !state.isEndOfNetworkFeed) {
             return Stack(
               children: [
-                PostWidget(post: state.posts[index], index: index),
+                FeedPostWidget(index: index, feed: feed),
                 Positioned(bottom: 10, left: 0, right: 0, child: CircularProgressIndicator()),
               ],
             );
           } else {
-            return PostWidget(post: state.posts[index], index: index);
+            return FeedPostWidget(index: index, feed: feed);
           }
         },
       ),

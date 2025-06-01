@@ -6,6 +6,46 @@ part of 'labeler_models.dart';
 // JsonSerializableGenerator
 // **************************************************************************
 
+_$LabelPreferenceImpl _$$LabelPreferenceImplFromJson(
+        Map<String, dynamic> json) =>
+    _$LabelPreferenceImpl(
+      value: json['value'] as String,
+      blurs: $enumDecode(_$BlursEnumMap, json['blurs']),
+      severity: $enumDecode(_$SeverityEnumMap, json['severity']),
+      defaultSetting: $enumDecode(_$SettingEnumMap, json['defaultSetting']),
+      setting: $enumDecode(_$SettingEnumMap, json['setting']),
+      adultOnly: json['adultOnly'] as bool,
+    );
+
+Map<String, dynamic> _$$LabelPreferenceImplToJson(
+        _$LabelPreferenceImpl instance) =>
+    <String, dynamic>{
+      'value': instance.value,
+      'blurs': _$BlursEnumMap[instance.blurs]!,
+      'severity': _$SeverityEnumMap[instance.severity]!,
+      'defaultSetting': _$SettingEnumMap[instance.defaultSetting]!,
+      'setting': _$SettingEnumMap[instance.setting]!,
+      'adultOnly': instance.adultOnly,
+    };
+
+const _$BlursEnumMap = {
+  Blurs.content: 'content',
+  Blurs.media: 'media',
+  Blurs.none: 'none',
+};
+
+const _$SeverityEnumMap = {
+  Severity.alert: 'alert',
+  Severity.inform: 'inform',
+  Severity.none: 'none',
+};
+
+const _$SettingEnumMap = {
+  Setting.hide: 'hide',
+  Setting.warn: 'warn',
+  Setting.ignore: 'ignore',
+};
+
 _$LabelerViewImpl _$$LabelerViewImplFromJson(Map<String, dynamic> json) =>
     _$LabelerViewImpl(
       uri: const AtUriConverter().fromJson(json['uri'] as String),
@@ -88,7 +128,7 @@ _$LabelerPoliciesImpl _$$LabelerPoliciesImplFromJson(
         Map<String, dynamic> json) =>
     _$LabelerPoliciesImpl(
       labelValues: (json['labelValues'] as List<dynamic>)
-          .map((e) => $enumDecode(_$LabelValueEnumMap, e))
+          .map((e) => e as String)
           .toList(),
       labelValueDefinitions: (json['labelValueDefinitions'] as List<dynamic>?)
           ?.map((e) => LabelValueDefinition.fromJson(e as Map<String, dynamic>))
@@ -98,21 +138,6 @@ _$LabelerPoliciesImpl _$$LabelerPoliciesImplFromJson(
 Map<String, dynamic> _$$LabelerPoliciesImplToJson(
         _$LabelerPoliciesImpl instance) =>
     <String, dynamic>{
-      'labelValues':
-          instance.labelValues.map((e) => _$LabelValueEnumMap[e]!).toList(),
+      'labelValues': instance.labelValues,
       'labelValueDefinitions': instance.labelValueDefinitions,
     };
-
-const _$LabelValueEnumMap = {
-  LabelValue.hide: '!hide',
-  LabelValue.noPromote: '!no-promote',
-  LabelValue.warn: '!warn',
-  LabelValue.noUnauthenticated: '!no-unauthenticated',
-  LabelValue.dmcaViolation: 'dmca-violation',
-  LabelValue.doxxing: 'doxxing',
-  LabelValue.porn: 'porn',
-  LabelValue.sexual: 'sexual',
-  LabelValue.nudity: 'nudity',
-  LabelValue.nsfl: 'nsfl',
-  LabelValue.gore: 'gore',
-};
