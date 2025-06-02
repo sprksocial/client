@@ -1,12 +1,14 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
+import '../models/chat.dart';
+import '../services/chat_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
 import '../widgets/activities/activity_icon.dart';
 import '../widgets/activities/activity_list.dart';
-import '../widgets/common/development_overlay.dart';
-import '../widgets/messages/message_list.dart';
+import '../widgets/messages/conversation_list.dart';
+import 'chat_screen.dart';
 
 class MessagesScreen extends StatefulWidget {
   const MessagesScreen({super.key});
@@ -17,65 +19,9 @@ class MessagesScreen extends StatefulWidget {
 
 class _MessagesScreenState extends State<MessagesScreen> {
   int _selectedTabIndex = 0;
-
-  final List<MessageData> _messages = [
-    MessageData(
-      id: 'msg_1',
-      username: 'Abstergo and 4 more',
-      messagePreview: 'Ooooh thank you so much! ❤️',
-      timeString: 'Wednesday',
-      unreadCount: 1,
-      avatarUrl: 'https://randomuser.me/api/portraits/men/41.jpg',
-    ),
-    MessageData(
-      id: 'msg_2',
-      username: 'Leslie Alexander',
-      messagePreview: 'Makes to a illustrated on all and let me...',
-      timeString: '17:33',
-      unreadCount: null,
-      avatarUrl: 'https://randomuser.me/api/portraits/women/72.jpg',
-    ),
-    MessageData(
-      id: 'msg_3',
-      username: 'Eleanor Pena',
-      messagePreview: 'For sure! Let\'s hangout on Scheduled da...',
-      timeString: '14:32',
-      unreadCount: null,
-      avatarUrl: 'https://randomuser.me/api/portraits/women/53.jpg',
-    ),
-    MessageData(
-      id: 'msg_4',
-      username: 'Devon Lane',
-      messagePreview: 'Hey, I heard that you wanted...',
-      timeString: '18:42',
-      unreadCount: 3,
-      avatarUrl: 'https://randomuser.me/api/portraits/men/86.jpg',
-    ),
-    MessageData(
-      id: 'msg_5',
-      username: 'Esther Howard',
-      messagePreview: '😴 No 😴 I just went to bed right now, ta...',
-      timeString: 'Yesterday',
-      unreadCount: null,
-      avatarUrl: 'https://randomuser.me/api/portraits/women/33.jpg',
-    ),
-    MessageData(
-      id: 'msg_6',
-      username: 'Arlene McCoy',
-      messagePreview: 'But I\'m not really sure how it is but sure!...',
-      timeString: 'Wednesday',
-      unreadCount: null,
-      avatarUrl: 'https://randomuser.me/api/portraits/women/90.jpg',
-    ),
-    MessageData(
-      id: 'msg_7',
-      username: 'Dianne Russell',
-      messagePreview: 'No problem! See you then.',
-      timeString: 'Tuesday',
-      unreadCount: null,
-      avatarUrl: 'https://randomuser.me/api/portraits/women/25.jpg',
-    ),
-  ];
+  final ChatService _chatService = ChatService();
+  List<Conversation> _conversations = [];
+  bool _isLoading = true;
 
   final List<ActivityData> _activities = [
     ActivityData(
@@ -144,6 +90,31 @@ class _MessagesScreenState extends State<MessagesScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _loadConversations();
+  }
+
+  Future<void> _loadConversations() async {
+    try {
+      await _chatService.initialize();
+      final conversations = await _chatService.getConversations();
+      if (mounted) {
+        setState(() {
+          _conversations = conversations;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
@@ -184,7 +155,6 @@ class _MessagesScreenState extends State<MessagesScreen> {
                 Expanded(child: _selectedTabIndex == 0 ? _buildMessagesTab() : _buildActivitiesTab()),
               ],
             ),
-            const DevelopmentOverlay(),
           ],
         ),
       ),
@@ -207,14 +177,14 @@ class _MessagesScreenState extends State<MessagesScreen> {
               isDarkMode: isDarkMode,
             ),
           ),
-          Expanded(
-            child: _buildTabItem(
-              isSelected: _selectedTabIndex == 1,
-              label: 'Activities',
-              onTap: () => setState(() => _selectedTabIndex = 1),
-              isDarkMode: isDarkMode,
-            ),
-          ),
+          // Expanded(
+          //   child: _buildTabItem(
+          //     isSelected: _selectedTabIndex == 1,
+          //     label: 'Activities',
+          //     onTap: () => setState(() => _selectedTabIndex = 1),
+          //     isDarkMode: isDarkMode,
+          //   ),
+          // ),
         ],
       ),
     );
@@ -261,10 +231,24 @@ class _MessagesScreenState extends State<MessagesScreen> {
   }
 
   Widget _buildMessagesTab() {
-    return MessageList(
-      messages: _messages,
-      onMessageTap: (message) {
-        print('Tapped on message: ${message.id}');
+    if (_isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    return ConversationList(
+      conversations: _conversations,
+      onConversationTap: (conversation) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChatScreen(conversation: conversation),
+          ),
+        );
+      },
+      onConversationLongPress: (conversation) {
+        print('Long pressed conversation: ${conversation.id}');
       },
     );
   }

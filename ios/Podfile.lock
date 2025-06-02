@@ -2,6 +2,8 @@ PODS:
   - camera_avfoundation (0.0.1):
     - Flutter
   - Flutter (1.0.0)
+  - flutter_secure_storage (6.0.0):
+    - Flutter
   - fvp (0.30.0):
     - Flutter
     - FlutterMacOS
@@ -34,6 +36,7 @@ PODS:
 DEPENDENCIES:
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - Flutter (from `Flutter`)
+  - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - fvp (from `.symlinks/plugins/fvp/darwin`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - imgly_sdk (from `.symlinks/plugins/imgly_sdk/ios`)
@@ -54,6 +57,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/camera_avfoundation/ios"
   Flutter:
     :path: Flutter
+  flutter_secure_storage:
+    :path: ".symlinks/plugins/flutter_secure_storage/ios"
   fvp:
     :path: ".symlinks/plugins/fvp/darwin"
   image_picker_ios:
@@ -76,6 +81,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   camera_avfoundation: 04b44aeb14070126c6529e5ab82cc7c9fca107cf
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
+  flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
   fvp: 09ac649a31ccdeace1d75d56eee6d114d9d5f332
   image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
   imgly_sdk: eedb78bcf5e4937f2a043e2210dcbbae7a0ec858
