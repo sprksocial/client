@@ -11,14 +11,14 @@ part 'app_router.gr.dart';
 ///
 /// As features are migrated, new routes will be added here
 @AutoRouterConfig()
-class AppRouter extends _$AppRouter {
+class AppRouter extends RootStackRouter {
   @override
   RouteType get defaultRouteType => RouteType.adaptive();
 
   @override
   List<AutoRoute> get routes => [
     // Initial route
-    AutoRoute(page: SplashRoute.page, path: '/', initial: true),
+    AutoRoute(page: SplashRoute.page, path: '/splash', initial: true),
 
     // Main screens
     AutoRoute(
@@ -28,14 +28,6 @@ class AppRouter extends _$AppRouter {
         AutoRoute(
           page: FeedsRoute.page,
           path: 'feeds',
-          children: [
-            AutoRoute(
-              page: FeedRoute.page,
-              path: ':feed', // hardcoded enum string or custom feed uri
-              // no post route here because the PageView has an infinite amount of children
-              // so we need to use a normal PageView that does not use the auto router
-            ),
-          ],
         ),
         AutoRoute(page: SearchRoute.page, path: 'search'),
         AutoRoute(page: EmptyRoute.page, path: 'create'), // Placeholder for create action
@@ -90,9 +82,6 @@ class AppRouter extends _$AppRouter {
     AutoRoute(page: ImportFollowsRoute.page, path: '/onboarding/import-follows'),
 
     AutoRoute(page: AuthPromptRoute.page, path: '/auth-prompt'),
-
-    // Fallback route
-    AutoRoute(page: SplashRoute.page, path: '*'),
   ];
 
   Route<T> commmentsTrayBuilder<T>(BuildContext context, Widget child, AutoRoutePage<T> page) {

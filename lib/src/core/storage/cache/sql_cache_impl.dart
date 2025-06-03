@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:atproto/atproto.dart';
 import 'package:get_it/get_it.dart';
 import 'package:path/path.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
+import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'package:sparksocial/src/core/network/data/models/models.dart';
@@ -12,7 +15,7 @@ import 'package:atproto_core/atproto_core.dart';
 // --- Post Table ---
 const String _tablePosts = 'cached_posts';
 const String _columnUri = 'uri'; // TEXT PRIMARY KEY (post.uri.toString())
-const String _columnCID = 'cid'; // TEXT (post.cid.toString())
+const String _columnString = 'cid'; // TEXT (post.cid.toString())
 const String _columnAuthor = 'author'; // TEXT (JSON string of ProfileViewBasic)
 const String _columnRecord = 'record'; // TEXT (JSON string of PostRecord)
 const String _columnIsRepost = 'isRepost'; // INTEGER (0 or 1)
@@ -40,6 +43,11 @@ const String _columnAssociationOrder = 'association_order'; // INTEGER, for orde
 
 class SQLCacheImpl implements SQLCacheInterface {
   static Database? _database;
+  late final SparkLogger _logger;
+
+  SQLCacheImpl() {
+    _logger = GetIt.instance<LogService>().getLogger('SQLCacheImpl');
+  }
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -63,7 +71,7 @@ class SQLCacheImpl implements SQLCacheInterface {
     batch.execute('''
       CREATE TABLE $_tablePosts (
         $_columnUri TEXT PRIMARY KEY,
-        $_columnCID TEXT NOT NULL,
+        $_columnString TEXT NOT NULL,
         $_columnAuthor TEXT NOT NULL,
         $_columnRecord TEXT NOT NULL,
         $_columnIsRepost INTEGER NOT NULL,
@@ -111,7 +119,7 @@ class SQLCacheImpl implements SQLCacheInterface {
   @override
   Future<void> cachePost(PostView post) async {
     final db = await database;
-    final map = post.toJson();
+    final map = _postViewToMap(post);
     map[_columnLastAccessed] = DateTime.now().millisecondsSinceEpoch;
     await db.insert(_tablePosts, map, conflictAlgorithm: ConflictAlgorithm.replace);
   }
@@ -123,30 +131,45 @@ class SQLCacheImpl implements SQLCacheInterface {
     final db = await database;
     final batch = db.batch();
     for (final post in posts) {
-      final map = post.toJson();
+      final map = _postViewToMap(post);
       map[_columnLastAccessed] = DateTime.now().millisecondsSinceEpoch;
       batch.insert(_tablePosts, map, conflictAlgorithm: ConflictAlgorithm.replace);
     }
     await batch.commit(noResult: true);
   }
 
+  /// Converts a PostView to a Map suitable for SQLite storage.
+  /// Complex nested objects are serialized as JSON strings.
+  /// Sadly, we cannot use `toJson` directly because the nested objects don't become strings.
+  Map<String, dynamic> _postViewToMap(PostView post) {
+    return {
+      _columnUri: post.uri.toString(),
+      _columnString: post.cid,
+      _columnAuthor: jsonEncode(post.author.toJson()),
+      _columnRecord: jsonEncode(post.record.toJson()),
+      _columnIsRepost: post.isRepost ? 1 : 0,
+      _columnIndexedAt: post.indexedAt.toIso8601String(),
+      _columnLikeCount: post.likeCount,
+      _columnReplyCount: post.replyCount,
+      _columnRepostCount: post.repostCount,
+      _columnQuoteCount: post.quoteCount,
+      _columnLabels: post.labels != null ? jsonEncode(post.labels!.map((e) => e.toJson()).toList()) : null,
+      _columnEmbed: post.embed != null ? jsonEncode(post.embed!.toJson()) : null,
+    };
+  }
+
   /// Retrieves a PostView by its URI string.
   /// Returns null if not found.
   @override
-  Future<PostView?> getPost(String uriString) async {
+  Future<PostView> getPost(String uriString) async {
     final db = await database;
-    final cacheManager = GetIt.instance<CacheManagerInterface>();
-    final file = await cacheManager.getCachedFile(uriString);
-    if (file == null) {
-      // delete the post from the database
-      await db.delete(_tablePosts, where: '$_columnUri = ?', whereArgs: [uriString]);
-      return null;
-    }
     final List<Map<String, dynamic>> maps = await db.query(_tablePosts, where: '$_columnUri = ?', whereArgs: [uriString]);
 
-    if (maps.isNotEmpty) return PostView.fromJson(maps.first);
+    _logger.i('Post found in cache: $uriString');
 
-    return null;
+    if (maps.isNotEmpty) return _mapToPostView(maps.first);
+
+    throw Exception('Post not found in cache');
   }
 
   /// Retrieves multiple PostViews by a list of URI strings.
@@ -161,7 +184,7 @@ class SQLCacheImpl implements SQLCacheInterface {
       whereArgs: uris.map((uri) => uri.toString()).toList(),
     );
 
-    return maps.map((map) => PostView.fromJson(map)).toList();
+    return maps.map((map) => _mapToPostView(map)).toList();
   }
 
   /// Given a list of AtUris, returns a sub-list containing only those URIs
@@ -193,7 +216,31 @@ class SQLCacheImpl implements SQLCacheInterface {
       limit: limit,
       offset: offset,
     );
-    return maps.map((map) => PostView.fromJson(map)).toList();
+    return maps.map((map) => _mapToPostView(map)).toList();
+  }
+
+  /// Converts a Map from SQLite back to a PostView.
+  /// JSON strings are deserialized back to complex objects.
+  PostView _mapToPostView(Map<String, dynamic> map) {
+    return PostView(
+      uri: AtUri.parse(map[_columnUri] as String),
+      cid: map[_columnString] as String,
+      author: ProfileViewBasic.fromJson(jsonDecode(map[_columnAuthor] as String)),
+      record: PostRecord.fromJson(jsonDecode(map[_columnRecord] as String)),
+      isRepost: (map[_columnIsRepost] as int) == 1,
+      indexedAt: DateTime.parse(map[_columnIndexedAt] as String),
+      likeCount: map[_columnLikeCount] as int?,
+      replyCount: map[_columnReplyCount] as int?,
+      repostCount: map[_columnRepostCount] as int?,
+      quoteCount: map[_columnQuoteCount] as int?,
+      labels:
+          map[_columnLabels] != null
+              ? (jsonDecode(map[_columnLabels] as String) as List<dynamic>)
+                  .map((e) => Label.fromJson(e as Map<String, dynamic>))
+                  .toList()
+              : null,
+      embed: map[_columnEmbed] != null ? EmbedView.fromJson(jsonDecode(map[_columnEmbed] as String)) : null,
+    );
   }
 
   // --- Feed Management ---
@@ -265,8 +312,8 @@ class SQLCacheImpl implements SQLCacheInterface {
     return Sqflite.firstIntValue(countResult) ?? 0;
   }
 
-  /// Retrieves posts for a specific feed, ordered by their last access time
-  /// (most recently accessed first).
+  /// Retrieves posts for a specific feed, ordered by their association order
+  /// (most recently added to feed first).
   ///
   /// Does NOT update the `lastAccessed` timestamp of the retrieved posts.
   ///
@@ -300,16 +347,16 @@ class SQLCacheImpl implements SQLCacheInterface {
       FROM $_tablePosts p
       INNER JOIN $_tableFeedPostAssociations fpa ON p.$_columnUri = fpa.$_columnPostUriFK
       WHERE fpa.$_columnFeedIdentifierFK = ?
-      ORDER BY p.$_columnLastAccessed DESC
+      ORDER BY fpa.$_columnAssociationOrder DESC
       $limitClause
     ''';
 
     final List<Map<String, dynamic>> maps = await db.rawQuery(sql, arguments);
-    return maps.map((map) => PostView.fromJson(map)).toList();
+    return maps.map((map) => _mapToPostView(map)).toList();
   }
 
-  /// Retrieves post URIs for a specific feed, ordered by their corresponding post's
-  /// last access time (most recently accessed first).
+  /// Retrieves post URIs for a specific feed, ordered by their association order
+  /// (most recently added to feed first).
   ///
   /// Does NOT update the `lastAccessed` timestamp of any posts.
   ///
@@ -340,7 +387,7 @@ class SQLCacheImpl implements SQLCacheInterface {
       FROM $_tablePosts p
       INNER JOIN $_tableFeedPostAssociations fpa ON p.$_columnUri = fpa.$_columnPostUriFK
       WHERE fpa.$_columnFeedIdentifierFK = ?
-      ORDER BY p.$_columnLastAccessed DESC
+      ORDER BY fpa.$_columnAssociationOrder DESC
       $limitClause
     ''';
 
@@ -381,6 +428,53 @@ class SQLCacheImpl implements SQLCacheInterface {
       }
       await batch.commit(noResult: true);
     });
+  }
+
+  /// Gets the maximum association order for a feed.
+  /// Returns -1 if the feed has no posts.
+  @override
+  Future<int> getMaxAssociationOrderForFeed(Feed feed) async {
+    final feedIdentifier = feed.identifier;
+    final db = await database;
+    
+    final List<Map<String, dynamic>> result = await db.query(
+      _tableFeedPostAssociations,
+      columns: ['MAX($_columnAssociationOrder) as max_order'],
+      where: '$_columnFeedIdentifierFK = ?',
+      whereArgs: [feedIdentifier],
+    );
+
+    if (result.isNotEmpty && result.first['max_order'] != null) {
+      return result.first['max_order'] as int;
+    }
+    return -1;
+  }
+
+  /// Retrieves posts for a specific feed that were added after the given association order.
+  /// Ordered by association order (most recently added first).
+  @override
+  Future<List<PostView>> getPostsForFeedAfterOrder(Feed feed, int afterOrder, {int? limit}) async {
+    final feedIdentifier = feed.identifier;
+    final db = await database;
+    List<dynamic> arguments = [feedIdentifier, afterOrder];
+    String limitClause = '';
+
+    if (limit != null) {
+      limitClause += ' LIMIT ?';
+      arguments.add(limit);
+    }
+
+    final String sql = '''
+      SELECT p.*
+      FROM $_tablePosts p
+      INNER JOIN $_tableFeedPostAssociations fpa ON p.$_columnUri = fpa.$_columnPostUriFK
+      WHERE fpa.$_columnFeedIdentifierFK = ? AND fpa.$_columnAssociationOrder > ?
+      ORDER BY fpa.$_columnAssociationOrder DESC
+      $limitClause
+    ''';
+
+    final List<Map<String, dynamic>> maps = await db.rawQuery(sql, arguments);
+    return maps.map((map) => _mapToPostView(map)).toList();
   }
 
   /// Clears all posts associated with a specific feed.

@@ -15,9 +15,10 @@ String _$authRepositoryHash() => r'41c9928f83d8cbdd88f590eb6a832ba065d0e1c8';
 final authRepositoryProvider = AutoDisposeProvider<AuthRepository>.internal(
   authRepository,
   name: r'authRepositoryProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$authRepositoryHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$authRepositoryHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -34,9 +35,10 @@ String _$isAuthenticatedHash() => r'003f7e85bfa5ae774792659ce771b5b59ebf04f8';
 final isAuthenticatedProvider = AutoDisposeProvider<bool>.internal(
   isAuthenticated,
   name: r'isAuthenticatedProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$isAuthenticatedHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$isAuthenticatedHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

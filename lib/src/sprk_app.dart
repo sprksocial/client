@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 
 import 'core/theme/data/models/app_theme.dart';
 import 'core/theme/domain/theme_provider.dart';
+import 'features/settings/providers/settings_provider.dart';
 
 /// SprkApp is the root widget of the new architecture.
 /// As features are migrated, they will be integrated here.
@@ -24,6 +25,7 @@ class _SprkAppState extends ConsumerState<SprkApp> {
     super.initState();
     // Initialize theme provider
     ref.read(themeProvider.notifier).initialize();
+    ref.read(settingsProvider.notifier).loadSettings();
   }
 
   @override

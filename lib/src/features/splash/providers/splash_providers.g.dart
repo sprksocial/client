@@ -14,14 +14,15 @@ String _$splashNotifierHash() => r'444c2a810a5272fa5790ba9ddf230c1b3b5d07c5';
 @ProviderFor(SplashNotifier)
 final splashNotifierProvider =
     AutoDisposeNotifierProvider<SplashNotifier, bool>.internal(
-  SplashNotifier.new,
-  name: r'splashNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$splashNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      SplashNotifier.new,
+      name: r'splashNotifierProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$splashNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$SplashNotifier = AutoDisposeNotifier<bool>;
 // ignore_for_file: type=lint

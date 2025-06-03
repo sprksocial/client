@@ -47,11 +47,6 @@ Future<void> initServiceLocator() async {
   // Register storage manager
   sl.registerSingleton<StorageManager>(storageManager);
 
-  // Register VideoControllersManager
-  sl.registerSingleton<VideoControllersManager>(VideoControllersManager());
-
-
-
   // Register network dependencies
   // Register AuthRepository
   sl.registerSingleton<AuthRepository>(AuthRepositoryImpl());

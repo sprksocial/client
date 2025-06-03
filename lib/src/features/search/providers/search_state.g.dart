@@ -9,7 +9,8 @@ part of 'search_state.dart';
 _$SearchStateImpl _$$SearchStateImplFromJson(Map<String, dynamic> json) =>
     _$SearchStateImpl(
       isLoading: json['isLoading'] as bool? ?? false,
-      searchResults: (json['searchResults'] as List<dynamic>?)
+      searchResults:
+          (json['searchResults'] as List<dynamic>?)
               ?.map((e) => ProfileView.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],

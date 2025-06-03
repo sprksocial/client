@@ -62,7 +62,6 @@ class DownloadManagerImpl implements DownloadManagerInterface {
 
     task.priority = (task.feed == _activeFeed) ? activeFeedPriority : inactiveFeedPriority;
     _tasks.add(task);
-    _logger.d('Task submitted for ${task.uri} from feed ${task.feed.identifier}. Queue size: ${_tasks.length}');
     _processQueue();
   }
 
@@ -99,8 +98,8 @@ class DownloadManagerImpl implements DownloadManagerInterface {
               }
               _tasks.remove(task); // Ensure removal on unhandled pool error
             });
-
         _logger.d('Task ${task.uri} submitted to pool for execution.');
+        task.status = DownloadTaskStatus.submitted;
       }
       if (task.status != DownloadTaskStatus.completed && task.status != DownloadTaskStatus.failed) {
         newTasks.add(task);

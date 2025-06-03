@@ -14,10 +14,7 @@ abstract class SQLCacheInterface {
   Future<void> cachePosts(List<PostView> posts);
 
   /// Retrieves a [PostView] by its URI string.
-  ///
-  /// Returns `null` if the post is not found in the cache or if its
-  /// associated files (e.g., images) are no longer available (implementation dependent).
-  Future<PostView?> getPost(String uriString);
+  Future<PostView> getPost(String uriString);
 
   /// Retrieves multiple [PostView]s by a list of [AtUri]s.
   /// Posts not found in the cache will be omitted from the returned list.
@@ -74,6 +71,18 @@ abstract class SQLCacheInterface {
   /// The new posts are added after the existing posts in the feed's order.
   /// It's assumed that the [PostView]s corresponding to `postUris` are already cached.
   Future<void> appendPostsToFeed(Feed feed, List<String> postUris);
+
+  /// Gets the maximum association order for a feed.
+  /// Returns -1 if the feed has no posts.
+  Future<int> getMaxAssociationOrderForFeed(Feed feed);
+
+  /// Retrieves posts for a specific feed that were added after the given association order.
+  /// Ordered by association order (most recently added first).
+  ///
+  /// - [feed]: The feed for which to retrieve posts.
+  /// - [afterOrder]: Only get posts with association order greater than this value.
+  /// - [limit]: The maximum number of posts to retrieve.
+  Future<List<PostView>> getPostsForFeedAfterOrder(Feed feed, int afterOrder, {int? limit});
 
   /// Clears all associations with a specific [Feed] from the cache.
   /// Neither the feed metadata nor the posts are removed, only the associations.

@@ -7,6 +7,8 @@ part 'actor_models.g.dart';
 
 @freezed
 class ActorViewer with _$ActorViewer {
+  const ActorViewer._();
+  @JsonSerializable(explicitToJson: true)
   const factory ActorViewer({
     bool? muted,
     // muted by list: when we add lists add this field
@@ -23,6 +25,8 @@ class ActorViewer with _$ActorViewer {
 
 @freezed
 class KnownFollowers with _$KnownFollowers {
+  const KnownFollowers._();
+  @JsonSerializable(explicitToJson: true)
   const factory KnownFollowers({
     required int count,
     required List<String> followersDids, // to avoid circular dependency
@@ -40,6 +44,7 @@ class KnownFollowers with _$KnownFollowers {
 @freezed
 class ProfileViewBasic with _$ProfileViewBasic {
   const ProfileViewBasic._();
+  @JsonSerializable(explicitToJson: true)
   const factory ProfileViewBasic({
     required String did,
     required String handle,
@@ -55,6 +60,7 @@ class ProfileViewBasic with _$ProfileViewBasic {
 @freezed
 class ProfileView with _$ProfileView {
   const ProfileView._();
+  @JsonSerializable(explicitToJson: true)
   const factory ProfileView({
     required String did,
     required String handle,
@@ -73,6 +79,7 @@ class ProfileView with _$ProfileView {
 @freezed
 class ProfileViewDetailed with _$ProfileViewDetailed {
   const ProfileViewDetailed._();
+  @JsonSerializable(explicitToJson: true)
   const factory ProfileViewDetailed({
     required String did,
     required String handle,

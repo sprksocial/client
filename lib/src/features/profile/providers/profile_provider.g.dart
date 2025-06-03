@@ -33,9 +33,7 @@ abstract class _$ProfileNotifier
     extends BuildlessAutoDisposeAsyncNotifier<ProfileState> {
   late final String? did;
 
-  FutureOr<ProfileState> build({
-    String? did,
-  });
+  FutureOr<ProfileState> build({String? did});
 }
 
 /// See also [ProfileNotifier].
@@ -48,21 +46,15 @@ class ProfileNotifierFamily extends Family<AsyncValue<ProfileState>> {
   const ProfileNotifierFamily();
 
   /// See also [ProfileNotifier].
-  ProfileNotifierProvider call({
-    String? did,
-  }) {
-    return ProfileNotifierProvider(
-      did: did,
-    );
+  ProfileNotifierProvider call({String? did}) {
+    return ProfileNotifierProvider(did: did);
   }
 
   @override
   ProfileNotifierProvider getProviderOverride(
     covariant ProfileNotifierProvider provider,
   ) {
-    return call(
-      did: provider.did,
-    );
+    return call(did: provider.did);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -81,24 +73,24 @@ class ProfileNotifierFamily extends Family<AsyncValue<ProfileState>> {
 }
 
 /// See also [ProfileNotifier].
-class ProfileNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
-    ProfileNotifier, ProfileState> {
+class ProfileNotifierProvider
+    extends
+        AutoDisposeAsyncNotifierProviderImpl<ProfileNotifier, ProfileState> {
   /// See also [ProfileNotifier].
-  ProfileNotifierProvider({
-    String? did,
-  }) : this._internal(
-          () => ProfileNotifier()..did = did,
-          from: profileNotifierProvider,
-          name: r'profileNotifierProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$profileNotifierHash,
-          dependencies: ProfileNotifierFamily._dependencies,
-          allTransitiveDependencies:
-              ProfileNotifierFamily._allTransitiveDependencies,
-          did: did,
-        );
+  ProfileNotifierProvider({String? did})
+    : this._internal(
+        () => ProfileNotifier()..did = did,
+        from: profileNotifierProvider,
+        name: r'profileNotifierProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$profileNotifierHash,
+        dependencies: ProfileNotifierFamily._dependencies,
+        allTransitiveDependencies:
+            ProfileNotifierFamily._allTransitiveDependencies,
+        did: did,
+      );
 
   ProfileNotifierProvider._internal(
     super._createNotifier, {
@@ -113,12 +105,8 @@ class ProfileNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
   final String? did;
 
   @override
-  FutureOr<ProfileState> runNotifierBuild(
-    covariant ProfileNotifier notifier,
-  ) {
-    return notifier.build(
-      did: did,
-    );
+  FutureOr<ProfileState> runNotifierBuild(covariant ProfileNotifier notifier) {
+    return notifier.build(did: did);
   }
 
   @override
@@ -139,7 +127,7 @@ class ProfileNotifierProvider extends AutoDisposeAsyncNotifierProviderImpl<
 
   @override
   AutoDisposeAsyncNotifierProviderElement<ProfileNotifier, ProfileState>
-      createElement() {
+  createElement() {
     return _ProfileNotifierProviderElement(this);
   }
 
@@ -165,12 +153,14 @@ mixin ProfileNotifierRef on AutoDisposeAsyncNotifierProviderRef<ProfileState> {
 }
 
 class _ProfileNotifierProviderElement
-    extends AutoDisposeAsyncNotifierProviderElement<ProfileNotifier,
-        ProfileState> with ProfileNotifierRef {
+    extends
+        AutoDisposeAsyncNotifierProviderElement<ProfileNotifier, ProfileState>
+    with ProfileNotifierRef {
   _ProfileNotifierProviderElement(super.provider);
 
   @override
   String? get did => (origin as ProfileNotifierProvider).did;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

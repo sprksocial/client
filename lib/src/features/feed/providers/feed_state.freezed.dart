@@ -12,7 +12,8 @@ part of 'feed_state.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$FeedState {
@@ -23,12 +24,12 @@ mixin _$FeedState {
   bool get isCaching => throw _privateConstructorUsedError;
   bool get isEndOfNetworkFeed => throw _privateConstructorUsedError;
   String? get cursor => throw _privateConstructorUsedError;
+  bool get loadingFirstLoad => throw _privateConstructorUsedError;
   LinkedHashMap<
-      AtUri,
-      ({
-        HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
-        List<Label> postLabels
-      })> get extraInfo => throw _privateConstructorUsedError;
+    AtUri,
+    ({HardcodedFeedExtraInfo? hardcodedFeedExtraInfo, List<Label> postLabels})
+  >
+  get extraInfo => throw _privateConstructorUsedError;
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.
@@ -42,21 +43,21 @@ abstract class $FeedStateCopyWith<$Res> {
   factory $FeedStateCopyWith(FeedState value, $Res Function(FeedState) then) =
       _$FeedStateCopyWithImpl<$Res, FeedState>;
   @useResult
-  $Res call(
-      {bool active,
-      List<AtUri> loadedPosts,
-      int index,
-      int freshPostCount,
-      bool isCaching,
-      bool isEndOfNetworkFeed,
-      String? cursor,
-      LinkedHashMap<
-              AtUri,
-              ({
-                HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
-                List<Label> postLabels
-              })>
-          extraInfo});
+  $Res call({
+    bool active,
+    List<AtUri> loadedPosts,
+    int index,
+    int freshPostCount,
+    bool isCaching,
+    bool isEndOfNetworkFeed,
+    String? cursor,
+    bool loadingFirstLoad,
+    LinkedHashMap<
+      AtUri,
+      ({HardcodedFeedExtraInfo? hardcodedFeedExtraInfo, List<Label> postLabels})
+    >
+    extraInfo,
+  });
 }
 
 /// @nodoc
@@ -81,47 +82,65 @@ class _$FeedStateCopyWithImpl<$Res, $Val extends FeedState>
     Object? isCaching = null,
     Object? isEndOfNetworkFeed = null,
     Object? cursor = freezed,
+    Object? loadingFirstLoad = null,
     Object? extraInfo = null,
   }) {
-    return _then(_value.copyWith(
-      active: null == active
-          ? _value.active
-          : active // ignore: cast_nullable_to_non_nullable
-              as bool,
-      loadedPosts: null == loadedPosts
-          ? _value.loadedPosts
-          : loadedPosts // ignore: cast_nullable_to_non_nullable
-              as List<AtUri>,
-      index: null == index
-          ? _value.index
-          : index // ignore: cast_nullable_to_non_nullable
-              as int,
-      freshPostCount: null == freshPostCount
-          ? _value.freshPostCount
-          : freshPostCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      isCaching: null == isCaching
-          ? _value.isCaching
-          : isCaching // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isEndOfNetworkFeed: null == isEndOfNetworkFeed
-          ? _value.isEndOfNetworkFeed
-          : isEndOfNetworkFeed // ignore: cast_nullable_to_non_nullable
-              as bool,
-      cursor: freezed == cursor
-          ? _value.cursor
-          : cursor // ignore: cast_nullable_to_non_nullable
-              as String?,
-      extraInfo: null == extraInfo
-          ? _value.extraInfo
-          : extraInfo // ignore: cast_nullable_to_non_nullable
-              as LinkedHashMap<
-                  AtUri,
-                  ({
-                    HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
-                    List<Label> postLabels
-                  })>,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            active:
+                null == active
+                    ? _value.active
+                    : active // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            loadedPosts:
+                null == loadedPosts
+                    ? _value.loadedPosts
+                    : loadedPosts // ignore: cast_nullable_to_non_nullable
+                        as List<AtUri>,
+            index:
+                null == index
+                    ? _value.index
+                    : index // ignore: cast_nullable_to_non_nullable
+                        as int,
+            freshPostCount:
+                null == freshPostCount
+                    ? _value.freshPostCount
+                    : freshPostCount // ignore: cast_nullable_to_non_nullable
+                        as int,
+            isCaching:
+                null == isCaching
+                    ? _value.isCaching
+                    : isCaching // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            isEndOfNetworkFeed:
+                null == isEndOfNetworkFeed
+                    ? _value.isEndOfNetworkFeed
+                    : isEndOfNetworkFeed // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            cursor:
+                freezed == cursor
+                    ? _value.cursor
+                    : cursor // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            loadingFirstLoad:
+                null == loadingFirstLoad
+                    ? _value.loadingFirstLoad
+                    : loadingFirstLoad // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            extraInfo:
+                null == extraInfo
+                    ? _value.extraInfo
+                    : extraInfo // ignore: cast_nullable_to_non_nullable
+                        as LinkedHashMap<
+                          AtUri,
+                          ({
+                            HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
+                            List<Label> postLabels,
+                          })
+                        >,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -129,25 +148,26 @@ class _$FeedStateCopyWithImpl<$Res, $Val extends FeedState>
 abstract class _$$FeedStateImplCopyWith<$Res>
     implements $FeedStateCopyWith<$Res> {
   factory _$$FeedStateImplCopyWith(
-          _$FeedStateImpl value, $Res Function(_$FeedStateImpl) then) =
-      __$$FeedStateImplCopyWithImpl<$Res>;
+    _$FeedStateImpl value,
+    $Res Function(_$FeedStateImpl) then,
+  ) = __$$FeedStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {bool active,
-      List<AtUri> loadedPosts,
-      int index,
-      int freshPostCount,
-      bool isCaching,
-      bool isEndOfNetworkFeed,
-      String? cursor,
-      LinkedHashMap<
-              AtUri,
-              ({
-                HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
-                List<Label> postLabels
-              })>
-          extraInfo});
+  $Res call({
+    bool active,
+    List<AtUri> loadedPosts,
+    int index,
+    int freshPostCount,
+    bool isCaching,
+    bool isEndOfNetworkFeed,
+    String? cursor,
+    bool loadingFirstLoad,
+    LinkedHashMap<
+      AtUri,
+      ({HardcodedFeedExtraInfo? hardcodedFeedExtraInfo, List<Label> postLabels})
+    >
+    extraInfo,
+  });
 }
 
 /// @nodoc
@@ -155,8 +175,9 @@ class __$$FeedStateImplCopyWithImpl<$Res>
     extends _$FeedStateCopyWithImpl<$Res, _$FeedStateImpl>
     implements _$$FeedStateImplCopyWith<$Res> {
   __$$FeedStateImplCopyWithImpl(
-      _$FeedStateImpl _value, $Res Function(_$FeedStateImpl) _then)
-      : super(_value, _then);
+    _$FeedStateImpl _value,
+    $Res Function(_$FeedStateImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.
@@ -170,64 +191,82 @@ class __$$FeedStateImplCopyWithImpl<$Res>
     Object? isCaching = null,
     Object? isEndOfNetworkFeed = null,
     Object? cursor = freezed,
+    Object? loadingFirstLoad = null,
     Object? extraInfo = null,
   }) {
-    return _then(_$FeedStateImpl(
-      active: null == active
-          ? _value.active
-          : active // ignore: cast_nullable_to_non_nullable
-              as bool,
-      loadedPosts: null == loadedPosts
-          ? _value._loadedPosts
-          : loadedPosts // ignore: cast_nullable_to_non_nullable
-              as List<AtUri>,
-      index: null == index
-          ? _value.index
-          : index // ignore: cast_nullable_to_non_nullable
-              as int,
-      freshPostCount: null == freshPostCount
-          ? _value.freshPostCount
-          : freshPostCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      isCaching: null == isCaching
-          ? _value.isCaching
-          : isCaching // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isEndOfNetworkFeed: null == isEndOfNetworkFeed
-          ? _value.isEndOfNetworkFeed
-          : isEndOfNetworkFeed // ignore: cast_nullable_to_non_nullable
-              as bool,
-      cursor: freezed == cursor
-          ? _value.cursor
-          : cursor // ignore: cast_nullable_to_non_nullable
-              as String?,
-      extraInfo: null == extraInfo
-          ? _value.extraInfo
-          : extraInfo // ignore: cast_nullable_to_non_nullable
-              as LinkedHashMap<
-                  AtUri,
-                  ({
-                    HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
-                    List<Label> postLabels
-                  })>,
-    ));
+    return _then(
+      _$FeedStateImpl(
+        active:
+            null == active
+                ? _value.active
+                : active // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        loadedPosts:
+            null == loadedPosts
+                ? _value._loadedPosts
+                : loadedPosts // ignore: cast_nullable_to_non_nullable
+                    as List<AtUri>,
+        index:
+            null == index
+                ? _value.index
+                : index // ignore: cast_nullable_to_non_nullable
+                    as int,
+        freshPostCount:
+            null == freshPostCount
+                ? _value.freshPostCount
+                : freshPostCount // ignore: cast_nullable_to_non_nullable
+                    as int,
+        isCaching:
+            null == isCaching
+                ? _value.isCaching
+                : isCaching // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        isEndOfNetworkFeed:
+            null == isEndOfNetworkFeed
+                ? _value.isEndOfNetworkFeed
+                : isEndOfNetworkFeed // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        cursor:
+            freezed == cursor
+                ? _value.cursor
+                : cursor // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        loadingFirstLoad:
+            null == loadingFirstLoad
+                ? _value.loadingFirstLoad
+                : loadingFirstLoad // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        extraInfo:
+            null == extraInfo
+                ? _value.extraInfo
+                : extraInfo // ignore: cast_nullable_to_non_nullable
+                    as LinkedHashMap<
+                      AtUri,
+                      ({
+                        HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
+                        List<Label> postLabels,
+                      })
+                    >,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$FeedStateImpl extends _FeedState {
-  const _$FeedStateImpl(
-      {required this.active,
-      required final List<AtUri> loadedPosts,
-      required this.index,
-      required this.freshPostCount,
-      required this.isCaching,
-      required this.isEndOfNetworkFeed,
-      required this.cursor,
-      required this.extraInfo})
-      : _loadedPosts = loadedPosts,
-        super._();
+  const _$FeedStateImpl({
+    required this.active,
+    required final List<AtUri> loadedPosts,
+    required this.index,
+    required this.freshPostCount,
+    required this.isCaching,
+    required this.isEndOfNetworkFeed,
+    required this.cursor,
+    required this.loadingFirstLoad,
+    required this.extraInfo,
+  }) : _loadedPosts = loadedPosts,
+       super._();
 
   @override
   final bool active;
@@ -250,16 +289,17 @@ class _$FeedStateImpl extends _FeedState {
   @override
   final String? cursor;
   @override
+  final bool loadingFirstLoad;
+  @override
   final LinkedHashMap<
-      AtUri,
-      ({
-        HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
-        List<Label> postLabels
-      })> extraInfo;
+    AtUri,
+    ({HardcodedFeedExtraInfo? hardcodedFeedExtraInfo, List<Label> postLabels})
+  >
+  extraInfo;
 
   @override
   String toString() {
-    return 'FeedState(active: $active, loadedPosts: $loadedPosts, index: $index, freshPostCount: $freshPostCount, isCaching: $isCaching, isEndOfNetworkFeed: $isEndOfNetworkFeed, cursor: $cursor, extraInfo: $extraInfo)';
+    return 'FeedState(active: $active, loadedPosts: $loadedPosts, index: $index, freshPostCount: $freshPostCount, isCaching: $isCaching, isEndOfNetworkFeed: $isEndOfNetworkFeed, cursor: $cursor, loadingFirstLoad: $loadingFirstLoad, extraInfo: $extraInfo)';
   }
 
   @override
@@ -268,8 +308,10 @@ class _$FeedStateImpl extends _FeedState {
         (other.runtimeType == runtimeType &&
             other is _$FeedStateImpl &&
             (identical(other.active, active) || other.active == active) &&
-            const DeepCollectionEquality()
-                .equals(other._loadedPosts, _loadedPosts) &&
+            const DeepCollectionEquality().equals(
+              other._loadedPosts,
+              _loadedPosts,
+            ) &&
             (identical(other.index, index) || other.index == index) &&
             (identical(other.freshPostCount, freshPostCount) ||
                 other.freshPostCount == freshPostCount) &&
@@ -278,20 +320,24 @@ class _$FeedStateImpl extends _FeedState {
             (identical(other.isEndOfNetworkFeed, isEndOfNetworkFeed) ||
                 other.isEndOfNetworkFeed == isEndOfNetworkFeed) &&
             (identical(other.cursor, cursor) || other.cursor == cursor) &&
+            (identical(other.loadingFirstLoad, loadingFirstLoad) ||
+                other.loadingFirstLoad == loadingFirstLoad) &&
             const DeepCollectionEquality().equals(other.extraInfo, extraInfo));
   }
 
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      active,
-      const DeepCollectionEquality().hash(_loadedPosts),
-      index,
-      freshPostCount,
-      isCaching,
-      isEndOfNetworkFeed,
-      cursor,
-      const DeepCollectionEquality().hash(extraInfo));
+    runtimeType,
+    active,
+    const DeepCollectionEquality().hash(_loadedPosts),
+    index,
+    freshPostCount,
+    isCaching,
+    isEndOfNetworkFeed,
+    cursor,
+    loadingFirstLoad,
+    const DeepCollectionEquality().hash(extraInfo),
+  );
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.
@@ -303,21 +349,21 @@ class _$FeedStateImpl extends _FeedState {
 }
 
 abstract class _FeedState extends FeedState {
-  const factory _FeedState(
-      {required final bool active,
-      required final List<AtUri> loadedPosts,
-      required final int index,
-      required final int freshPostCount,
-      required final bool isCaching,
-      required final bool isEndOfNetworkFeed,
-      required final String? cursor,
-      required final LinkedHashMap<
-              AtUri,
-              ({
-                HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
-                List<Label> postLabels
-              })>
-          extraInfo}) = _$FeedStateImpl;
+  const factory _FeedState({
+    required final bool active,
+    required final List<AtUri> loadedPosts,
+    required final int index,
+    required final int freshPostCount,
+    required final bool isCaching,
+    required final bool isEndOfNetworkFeed,
+    required final String? cursor,
+    required final bool loadingFirstLoad,
+    required final LinkedHashMap<
+      AtUri,
+      ({HardcodedFeedExtraInfo? hardcodedFeedExtraInfo, List<Label> postLabels})
+    >
+    extraInfo,
+  }) = _$FeedStateImpl;
   const _FeedState._() : super._();
 
   @override
@@ -335,12 +381,13 @@ abstract class _FeedState extends FeedState {
   @override
   String? get cursor;
   @override
+  bool get loadingFirstLoad;
+  @override
   LinkedHashMap<
-      AtUri,
-      ({
-        HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
-        List<Label> postLabels
-      })> get extraInfo;
+    AtUri,
+    ({HardcodedFeedExtraInfo? hardcodedFeedExtraInfo, List<Label> postLabels})
+  >
+  get extraInfo;
 
   /// Create a copy of FeedState
   /// with the given fields replaced by the non-null parameter values.

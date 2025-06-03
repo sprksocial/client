@@ -1,3 +1,5 @@
+// ignore_for_file: dead_code
+
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -5,7 +7,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
 import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
+import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 
 @RoutePage()
 class MainPage extends ConsumerStatefulWidget {
@@ -17,7 +22,25 @@ class MainPage extends ConsumerStatefulWidget {
 
 class _MainPageState extends ConsumerState<MainPage> {
   @override
+  void initState() {
+    super.initState();
+    // Load settings on app start
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(settingsProvider.notifier).loadSettings();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    // Watch all feed providers at this level to keep them alive
+    // when switching between tabs
+    final settings = ref.watch(settingsProvider);
+    final feedStates = <String, FeedState>{};
+    for (final feed in settings.feeds) {
+      final state = ref.watch(feedNotifierProvider(feed));
+      feedStates[feed.name] = state;
+    }
+    
     return AutoTabsRouter(
       key: const ValueKey('mainTabsRouter'),
       routes: [const FeedsRoute(), const SearchRoute(), const EmptyRoute(), const MessagesRoute(),], //UserProfileRoute()],
@@ -27,7 +50,40 @@ class _MainPageState extends ConsumerState<MainPage> {
 
         return Scaffold(
           backgroundColor: Colors.black,
-          body: child,
+          body: Stack(
+            children: [
+              child,
+              
+              // Debug overlay for MainPage (top left)
+              if (true) // Set to false to disable
+                Positioned(
+                  top: 50,
+                  left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.purple.withOpacity(0.7),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Text('MainPage Feed States:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
+                        Text('Tab: ${tabsRouter.activeIndex}', style: const TextStyle(color: Colors.yellow, fontSize: 10)),
+                        const SizedBox(height: 2),
+                        ...feedStates.entries.map((entry) {
+                          return Text(
+                            '${entry.key}: ${entry.value.length}',
+                            style: const TextStyle(color: Colors.white, fontSize: 10),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+            ],
+          ),
           bottomNavigationBar: NavigationBar(
             selectedIndex: tabsRouter.activeIndex,
             onDestinationSelected: (index) {

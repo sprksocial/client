@@ -34,6 +34,7 @@ enum HardCodedFeedEnum {
 /// TODO: make this the same as the lexicon (not implemented yet)
 @freezed
 class CustomFeed with _$CustomFeed {
+  @JsonSerializable(explicitToJson: true)
   const factory CustomFeed({
     required ProfileViewBasic? creator,
     @Default('Custom Feed') String name,
@@ -46,7 +47,7 @@ class CustomFeed with _$CustomFeed {
     @Default(false) bool videosOnly,
     String? did,
     @AtUriConverter() AtUri? uri,
-    CID? cid,
+    String? cid,
 
     @Default({})
     Map<String, bool> hashtagPreferences, // hashtag: only show posts with this hashtag || never show posts with this hashtag
@@ -67,10 +68,12 @@ class CustomFeed with _$CustomFeed {
 @freezed
 class Feed with _$Feed {
   const Feed._();
+  @JsonSerializable(explicitToJson: true)
   const factory Feed.custom({required String name, @AtUriConverter() required AtUri uri}) = FeedCustom;
 
   /// HardCoded feeds can be "fake", so they don't have a uri
-  const factory Feed.hardCoded({required HardCodedFeedEnum hardCodedFeed,}) = FeedHardCoded;
+  @JsonSerializable(explicitToJson: true)
+  const factory Feed.hardCoded({required HardCodedFeedEnum hardCodedFeed}) = FeedHardCoded;
 
   String get name {
     return when(custom: (name, did) => name, hardCoded: (hardCodedFeed) => hardCodedFeed.name);
@@ -85,6 +88,7 @@ class Feed with _$Feed {
 /// Skeleton of a FeedView. Needs to be hydrated.
 @freezed
 class SkeletonFeedPost with _$SkeletonFeedPost {
+  @JsonSerializable(explicitToJson: true)
   const factory SkeletonFeedPost({
     @AtUriConverter() required AtUri uri,
     // "reason": { "type": "union", "refs": ["#reasonRepost", "#reasonPin"] } i think we don't have to use this value for now
@@ -98,6 +102,7 @@ class SkeletonFeedPost with _$SkeletonFeedPost {
 sealed class HardcodedFeedExtraInfo with _$HardcodedFeedExtraInfo {
   const HardcodedFeedExtraInfo._();
 
+  @JsonSerializable(explicitToJson: true)
   const factory HardcodedFeedExtraInfo.shared({required ProfileViewBasic from, String? message}) = HardcodedFeedExtraInfoShared;
 
   factory HardcodedFeedExtraInfo.fromJson(Map<String, dynamic> json) => _$HardcodedFeedExtraInfoFromJson(json);
@@ -106,6 +111,8 @@ sealed class HardcodedFeedExtraInfo with _$HardcodedFeedExtraInfo {
 /// GetTimeline returns a FeedViewPost array
 @freezed
 class FeedViewPost with _$FeedViewPost {
+  const FeedViewPost._();
+  @JsonSerializable(explicitToJson: true)
   const factory FeedViewPost({
     required PostView post,
     ReplyRef? reply,
@@ -118,6 +125,8 @@ class FeedViewPost with _$FeedViewPost {
 
 @freezed
 class ReplyRef with _$ReplyRef {
+  const ReplyRef._();
+  @JsonSerializable(explicitToJson: true)
   const factory ReplyRef({
     required ReplyRefPostReference root, // post, not found or blocked
     required ReplyRefPostReference parent, // post, not found or blocked
@@ -132,13 +141,16 @@ class ReplyRef with _$ReplyRef {
 sealed class ReplyRefPostReference with _$ReplyRefPostReference {
   const ReplyRefPostReference._();
   @FreezedUnionValue('so.sprk.feed.defs#post')
+  @JsonSerializable(explicitToJson: true)
   const factory ReplyRefPostReference.post({required PostView post}) = ReplyRefPostReferencePost;
 
   @FreezedUnionValue('so.sprk.feed.defs#notFoundPost')
+  @JsonSerializable(explicitToJson: true)
   const factory ReplyRefPostReference.notFoundPost({@AtUriConverter() required AtUri uri, required bool notFound}) =
       ReplyRefPostReferenceNotFoundPost;
 
   @FreezedUnionValue('so.sprk.feed.defs#blockedPost')
+  @JsonSerializable(explicitToJson: true)
   const factory ReplyRefPostReference.blockedPost({
     @AtUriConverter() required AtUri uri,
     required bool blocked,
@@ -150,6 +162,8 @@ sealed class ReplyRefPostReference with _$ReplyRefPostReference {
 
 @freezed
 class BlockedAuthor with _$BlockedAuthor {
+  const BlockedAuthor._();
+  @JsonSerializable(explicitToJson: true)
   const factory BlockedAuthor({required String did, Viewer? viewer}) = _BlockedAuthor;
 
   factory BlockedAuthor.fromJson(Map<String, dynamic> json) => _$BlockedAuthorFromJson(json);
@@ -157,6 +171,8 @@ class BlockedAuthor with _$BlockedAuthor {
 
 @freezed
 class PostThread with _$PostThread {
+  const PostThread._();
+  @JsonSerializable(explicitToJson: true)
   const factory PostThread({required PostView post, List<PostView>? parent, List<PostView>? replies}) = _PostThread;
 
   factory PostThread.fromJson(Map<String, dynamic> json) => _$PostThreadFromJson(json);
@@ -165,6 +181,8 @@ class PostThread with _$PostThread {
 /// Skeleton of a ReplyRef. Needs to be hydrated.
 @freezed
 class RecordReplyRef with _$RecordReplyRef {
+  const RecordReplyRef._();
+  @JsonSerializable(explicitToJson: true)
   const factory RecordReplyRef({required StrongRef root, required StrongRef parent}) = _RecordReplyRef;
 
   factory RecordReplyRef.fromJson(Map<String, dynamic> json) => _$RecordReplyRefFromJson(json);
@@ -172,6 +190,8 @@ class RecordReplyRef with _$RecordReplyRef {
 
 @freezed
 class Viewer with _$Viewer {
+  const Viewer._();
+  @JsonSerializable(explicitToJson: true)
   const factory Viewer({
     @AtUriConverter() AtUri? repost,
     @AtUriConverter() AtUri? like,
@@ -188,8 +208,9 @@ class Viewer with _$Viewer {
 @freezed
 class PostRecord with _$PostRecord {
   const PostRecord._();
+  @JsonSerializable(explicitToJson: true)
   const factory PostRecord({
-    required DateTime createdAt,
+    DateTime? createdAt,
     @JsonKey(defaultValue: '') String? text,
     @JsonKey(defaultValue: []) List<Facet>? facets,
     RecordReplyRef? reply,
@@ -207,9 +228,19 @@ class PostRecord with _$PostRecord {
 sealed class Embed with _$Embed {
   const Embed._();
   @FreezedUnionValue('so.sprk.embed.video')
-  const factory Embed.video({required VideoEmbed video}) = EmbedVideo;
+  @JsonSerializable(explicitToJson: true)
+  const factory Embed.video({
+    required Blob video,
+
+    // remaining fields that are in the json
+    // List<Caption> captions,
+    // AspectRatio aspectRatio, {width: int, height: int}
+    String? alt,
+  }) = EmbedVideo;
+
   @FreezedUnionValue('so.sprk.embed.images')
-  const factory Embed.image({required ImageEmbed image}) = EmbedImage;
+  @JsonSerializable(explicitToJson: true)
+  const factory Embed.image({required List<Image> images}) = EmbedImage;
 
   factory Embed.fromJson(Map<String, dynamic> json) => _$EmbedFromJson(json);
 }
@@ -217,9 +248,10 @@ sealed class Embed with _$Embed {
 @freezed
 class PostView with _$PostView {
   const PostView._();
+  @JsonSerializable(explicitToJson: true)
   const factory PostView({
     @AtUriConverter() required AtUri uri,
-    required CID cid,
+    required String cid,
     required ProfileViewBasic author,
     required PostRecord record,
     @Default(false) bool isRepost,
@@ -238,23 +270,21 @@ class PostView with _$PostView {
   bool get isSprk => RegExp(r'^at://[^/]+/so\.sprk\.feed\.post/[^/]+$').hasMatch(uri.toString());
 
   String get videoUrl {
-    if (isSprk) {
-      // extract DID from uri
-      final did = uri.hostname;
-      return 'media.sprk.so/video/$did/$cid';
-    } else {
-      if (embed case EmbedViewVideo(:final video)) {
-        return video.playlist.toString();
-      }
+    switch (embed) {
+      case EmbedViewVideo(:final playlist):
+        return playlist.toString();
+      case _:
+        return '';
     }
-    return '';
   }
 
   List<String> get imageUrls {
-    if (embed case EmbedViewImage(:final image)) {
-      return image.images.map((img) => img.fullsize.toString()).toList();
+    switch (embed) {
+      case EmbedViewImage(:final images):
+        return images.map((img) => img.fullsize.toString()).toList();
+      case _:
+        return [];
     }
-    return [];
   }
 }
 
@@ -263,16 +293,25 @@ sealed class EmbedView with _$EmbedView {
   const EmbedView._();
 
   @FreezedUnionValue('so.sprk.embed.video#view')
-  const factory EmbedView.video({required VideoView video}) = EmbedViewVideo;
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedView.video({
+    required String cid,
+    @AtUriConverter() required AtUri playlist,
+    @AtUriConverter() required AtUri thumbnail,
+    String? alt,
+  }) = EmbedViewVideo;
 
   @FreezedUnionValue('so.sprk.embed.images#view')
-  const factory EmbedView.image({required ImageView image}) = EmbedViewImage;
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedView.image({required List<ViewImage> images}) = EmbedViewImage;
 
   factory EmbedView.fromJson(Map<String, dynamic> json) => _$EmbedViewFromJson(json);
 }
 
 @freezed
 class FeedSkeleton with _$FeedSkeleton {
+  const FeedSkeleton._();
+  @JsonSerializable(explicitToJson: true)
   const factory FeedSkeleton({required List<SkeletonFeedPost> feed, String? cursor}) = _FeedSkeleton;
 
   factory FeedSkeleton.fromJson(Map<String, dynamic> json) => _$FeedSkeletonFromJson(json);
@@ -280,6 +319,8 @@ class FeedSkeleton with _$FeedSkeleton {
 
 @freezed
 class ImageUploadResult with _$ImageUploadResult {
+  const ImageUploadResult._();
+  @JsonSerializable(explicitToJson: true)
   const factory ImageUploadResult({required String fullsize, required String alt, required Map<String, dynamic> image}) =
       _ImageUploadResult;
 
@@ -291,6 +332,7 @@ class ImageUploadResult with _$ImageUploadResult {
 class FacetIndex with _$FacetIndex {
   const FacetIndex._();
 
+  @JsonSerializable(explicitToJson: true)
   const factory FacetIndex({
     /// Start index (inclusive)
     required int byteStart,
@@ -310,14 +352,17 @@ class FacetFeature with _$FacetFeature {
 
   /// Mention feature for referencing a user
   @FreezedUnionValue('#mention')
+  @JsonSerializable(explicitToJson: true)
   const factory FacetFeature.mention({required String did}) = MentionFeature;
 
   /// Link feature for URLs
   @FreezedUnionValue('#link')
+  @JsonSerializable(explicitToJson: true)
   const factory FacetFeature.link({@AtUriConverter() required AtUri uri}) = LinkFeature;
 
   /// Tag feature for hashtags
   @FreezedUnionValue('#tag')
+  @JsonSerializable(explicitToJson: true)
   const factory FacetFeature.tag({required String tag}) = TagFeature;
 
   /// Create a FacetFeature from JSON
@@ -329,6 +374,7 @@ class FacetFeature with _$FacetFeature {
 class Facet with _$Facet {
   const Facet._();
 
+  @JsonSerializable(explicitToJson: true)
   const factory Facet({
     /// Index range for the facet in the text
     required FacetIndex index,
@@ -341,52 +387,11 @@ class Facet with _$Facet {
   factory Facet.fromJson(Map<String, dynamic> json) => _$FacetFromJson(json);
 }
 
-/// Represents a video embed in a post
-@freezed
-class VideoEmbed with _$VideoEmbed {
-  const VideoEmbed._();
-
-  const factory VideoEmbed({
-    required Blob video,
-
-    // remaining fields that are in the json
-    // List<Caption> captions,
-    // AspectRatio aspectRatio, {width: int, height: int}
-    String? alt,
-  }) = _VideoEmbed;
-
-  /// Create a VideoEmbed from JSON
-  factory VideoEmbed.fromJson(Map<String, dynamic> json) => _$VideoEmbedFromJson(json);
-}
-
-@freezed
-class VideoView with _$VideoView {
-  const VideoView._();
-
-  const factory VideoView({
-    required CID cid,
-    @AtUriConverter() required AtUri playlist,
-    @AtUriConverter() required AtUri thumbnail,
-    String? alt,
-    // aspectRatio: {width: int, height: int}
-  }) = _VideoView;
-
-  factory VideoView.fromJson(Map<String, dynamic> json) => _$VideoViewFromJson(json);
-}
-
-@freezed
-class ImageEmbed with _$ImageEmbed {
-  const ImageEmbed._();
-
-  const factory ImageEmbed({required List<Image> images}) = _ImageEmbed;
-
-  factory ImageEmbed.fromJson(Map<String, dynamic> json) => _$ImageEmbedFromJson(json);
-}
-
 @freezed
 class Image with _$Image {
   const Image._();
 
+  @JsonSerializable(explicitToJson: true)
   const factory Image({
     required Blob image,
     String? alt,
@@ -397,19 +402,10 @@ class Image with _$Image {
 }
 
 @freezed
-class ImageView with _$ImageView {
-  const ImageView._();
-
-  const factory ImageView({required List<ViewImage> images}) = _ImageView;
-
-  factory ImageView.fromJson(Map<String, dynamic> json) => _$ImageViewFromJson(json);
-}
-
-// yes. this is different than ImageView. thanks paulinho!
-@freezed
 class ViewImage with _$ViewImage {
   const ViewImage._();
 
+  @JsonSerializable(explicitToJson: true)
   const factory ViewImage({
     @AtUriConverter() required AtUri thumb,
     @AtUriConverter() required AtUri fullsize,
@@ -425,13 +421,16 @@ class Thread with _$Thread {
   const Thread._();
 
   @FreezedUnionValue('so.sprk.feed.defs#threadViewPost')
+  @JsonSerializable(explicitToJson: true)
   const factory Thread.threadViewPost({required PostView post, Thread? parent, List<Thread>? replies, ThreadContext? context}) =
       ThreadViewPost;
 
   @FreezedUnionValue('so.sprk.feed.defs#notFoundPost')
+  @JsonSerializable(explicitToJson: true)
   const factory Thread.notFoundPost({@AtUriConverter() required AtUri uri, required bool notFound}) = NotFoundPost;
 
   @FreezedUnionValue('so.sprk.feed.defs#blockedPost')
+  @JsonSerializable(explicitToJson: true)
   const factory Thread.blockedPost({@AtUriConverter() required AtUri uri, required bool blocked, required BlockedAuthor author}) =
       BlockedPost;
 
@@ -440,6 +439,8 @@ class Thread with _$Thread {
 
 @freezed
 class ThreadContext with _$ThreadContext {
+  const ThreadContext._();
+  @JsonSerializable(explicitToJson: true)
   const factory ThreadContext({@AtUriConverter() AtUri? rootAuthorLike}) = _ThreadContext;
 
   factory ThreadContext.fromJson(Map<String, dynamic> json) => _$ThreadContextFromJson(json);

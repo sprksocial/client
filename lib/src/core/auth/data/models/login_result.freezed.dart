@@ -12,7 +12,8 @@ part of 'login_result.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$LoginResult {
@@ -29,8 +30,9 @@ mixin _$LoginResult {
 /// @nodoc
 abstract class $LoginResultCopyWith<$Res> {
   factory $LoginResultCopyWith(
-          LoginResult value, $Res Function(LoginResult) then) =
-      _$LoginResultCopyWithImpl<$Res, LoginResult>;
+    LoginResult value,
+    $Res Function(LoginResult) then,
+  ) = _$LoginResultCopyWithImpl<$Res, LoginResult>;
   @useResult
   $Res call({LoginStatus status, String? error});
 }
@@ -49,20 +51,22 @@ class _$LoginResultCopyWithImpl<$Res, $Val extends LoginResult>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? status = null,
-    Object? error = freezed,
-  }) {
-    return _then(_value.copyWith(
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as LoginStatus,
-      error: freezed == error
-          ? _value.error
-          : error // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  $Res call({Object? status = null, Object? error = freezed}) {
+    return _then(
+      _value.copyWith(
+            status:
+                null == status
+                    ? _value.status
+                    : status // ignore: cast_nullable_to_non_nullable
+                        as LoginStatus,
+            error:
+                freezed == error
+                    ? _value.error
+                    : error // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -70,8 +74,9 @@ class _$LoginResultCopyWithImpl<$Res, $Val extends LoginResult>
 abstract class _$$LoginResultImplCopyWith<$Res>
     implements $LoginResultCopyWith<$Res> {
   factory _$$LoginResultImplCopyWith(
-          _$LoginResultImpl value, $Res Function(_$LoginResultImpl) then) =
-      __$$LoginResultImplCopyWithImpl<$Res>;
+    _$LoginResultImpl value,
+    $Res Function(_$LoginResultImpl) then,
+  ) = __$$LoginResultImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({LoginStatus status, String? error});
@@ -82,27 +87,29 @@ class __$$LoginResultImplCopyWithImpl<$Res>
     extends _$LoginResultCopyWithImpl<$Res, _$LoginResultImpl>
     implements _$$LoginResultImplCopyWith<$Res> {
   __$$LoginResultImplCopyWithImpl(
-      _$LoginResultImpl _value, $Res Function(_$LoginResultImpl) _then)
-      : super(_value, _then);
+    _$LoginResultImpl _value,
+    $Res Function(_$LoginResultImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of LoginResult
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? status = null,
-    Object? error = freezed,
-  }) {
-    return _then(_$LoginResultImpl(
-      status: null == status
-          ? _value.status
-          : status // ignore: cast_nullable_to_non_nullable
-              as LoginStatus,
-      error: freezed == error
-          ? _value.error
-          : error // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? status = null, Object? error = freezed}) {
+    return _then(
+      _$LoginResultImpl(
+        status:
+            null == status
+                ? _value.status
+                : status // ignore: cast_nullable_to_non_nullable
+                    as LoginStatus,
+        error:
+            freezed == error
+                ? _value.error
+                : error // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
@@ -143,9 +150,10 @@ class _$LoginResultImpl extends _LoginResult {
 }
 
 abstract class _LoginResult extends LoginResult {
-  const factory _LoginResult(
-      {required final LoginStatus status,
-      final String? error}) = _$LoginResultImpl;
+  const factory _LoginResult({
+    required final LoginStatus status,
+    final String? error,
+  }) = _$LoginResultImpl;
   const _LoginResult._() : super._();
 
   @override

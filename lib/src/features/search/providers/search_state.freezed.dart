@@ -12,7 +12,8 @@ part of 'search_state.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 SearchState _$SearchStateFromJson(Map<String, dynamic> json) {
   return _SearchState.fromJson(json);
@@ -45,14 +46,16 @@ mixin _$SearchState {
 /// @nodoc
 abstract class $SearchStateCopyWith<$Res> {
   factory $SearchStateCopyWith(
-          SearchState value, $Res Function(SearchState) then) =
-      _$SearchStateCopyWithImpl<$Res, SearchState>;
+    SearchState value,
+    $Res Function(SearchState) then,
+  ) = _$SearchStateCopyWithImpl<$Res, SearchState>;
   @useResult
-  $Res call(
-      {bool isLoading,
-      List<ProfileView> searchResults,
-      String? error,
-      String query});
+  $Res call({
+    bool isLoading,
+    List<ProfileView> searchResults,
+    String? error,
+    String query,
+  });
 }
 
 /// @nodoc
@@ -75,24 +78,31 @@ class _$SearchStateCopyWithImpl<$Res, $Val extends SearchState>
     Object? error = freezed,
     Object? query = null,
   }) {
-    return _then(_value.copyWith(
-      isLoading: null == isLoading
-          ? _value.isLoading
-          : isLoading // ignore: cast_nullable_to_non_nullable
-              as bool,
-      searchResults: null == searchResults
-          ? _value.searchResults
-          : searchResults // ignore: cast_nullable_to_non_nullable
-              as List<ProfileView>,
-      error: freezed == error
-          ? _value.error
-          : error // ignore: cast_nullable_to_non_nullable
-              as String?,
-      query: null == query
-          ? _value.query
-          : query // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            isLoading:
+                null == isLoading
+                    ? _value.isLoading
+                    : isLoading // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            searchResults:
+                null == searchResults
+                    ? _value.searchResults
+                    : searchResults // ignore: cast_nullable_to_non_nullable
+                        as List<ProfileView>,
+            error:
+                freezed == error
+                    ? _value.error
+                    : error // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            query:
+                null == query
+                    ? _value.query
+                    : query // ignore: cast_nullable_to_non_nullable
+                        as String,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -100,15 +110,17 @@ class _$SearchStateCopyWithImpl<$Res, $Val extends SearchState>
 abstract class _$$SearchStateImplCopyWith<$Res>
     implements $SearchStateCopyWith<$Res> {
   factory _$$SearchStateImplCopyWith(
-          _$SearchStateImpl value, $Res Function(_$SearchStateImpl) then) =
-      __$$SearchStateImplCopyWithImpl<$Res>;
+    _$SearchStateImpl value,
+    $Res Function(_$SearchStateImpl) then,
+  ) = __$$SearchStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {bool isLoading,
-      List<ProfileView> searchResults,
-      String? error,
-      String query});
+  $Res call({
+    bool isLoading,
+    List<ProfileView> searchResults,
+    String? error,
+    String query,
+  });
 }
 
 /// @nodoc
@@ -116,8 +128,9 @@ class __$$SearchStateImplCopyWithImpl<$Res>
     extends _$SearchStateCopyWithImpl<$Res, _$SearchStateImpl>
     implements _$$SearchStateImplCopyWith<$Res> {
   __$$SearchStateImplCopyWithImpl(
-      _$SearchStateImpl _value, $Res Function(_$SearchStateImpl) _then)
-      : super(_value, _then);
+    _$SearchStateImpl _value,
+    $Res Function(_$SearchStateImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of SearchState
   /// with the given fields replaced by the non-null parameter values.
@@ -129,36 +142,42 @@ class __$$SearchStateImplCopyWithImpl<$Res>
     Object? error = freezed,
     Object? query = null,
   }) {
-    return _then(_$SearchStateImpl(
-      isLoading: null == isLoading
-          ? _value.isLoading
-          : isLoading // ignore: cast_nullable_to_non_nullable
-              as bool,
-      searchResults: null == searchResults
-          ? _value._searchResults
-          : searchResults // ignore: cast_nullable_to_non_nullable
-              as List<ProfileView>,
-      error: freezed == error
-          ? _value.error
-          : error // ignore: cast_nullable_to_non_nullable
-              as String?,
-      query: null == query
-          ? _value.query
-          : query // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+    return _then(
+      _$SearchStateImpl(
+        isLoading:
+            null == isLoading
+                ? _value.isLoading
+                : isLoading // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        searchResults:
+            null == searchResults
+                ? _value._searchResults
+                : searchResults // ignore: cast_nullable_to_non_nullable
+                    as List<ProfileView>,
+        error:
+            freezed == error
+                ? _value.error
+                : error // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        query:
+            null == query
+                ? _value.query
+                : query // ignore: cast_nullable_to_non_nullable
+                    as String,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$SearchStateImpl implements _SearchState {
-  const _$SearchStateImpl(
-      {this.isLoading = false,
-      final List<ProfileView> searchResults = const [],
-      this.error,
-      this.query = ''})
-      : _searchResults = searchResults;
+  const _$SearchStateImpl({
+    this.isLoading = false,
+    final List<ProfileView> searchResults = const [],
+    this.error,
+    this.query = '',
+  }) : _searchResults = searchResults;
 
   factory _$SearchStateImpl.fromJson(Map<String, dynamic> json) =>
       _$$SearchStateImplFromJson(json);
@@ -201,16 +220,23 @@ class _$SearchStateImpl implements _SearchState {
             other is _$SearchStateImpl &&
             (identical(other.isLoading, isLoading) ||
                 other.isLoading == isLoading) &&
-            const DeepCollectionEquality()
-                .equals(other._searchResults, _searchResults) &&
+            const DeepCollectionEquality().equals(
+              other._searchResults,
+              _searchResults,
+            ) &&
             (identical(other.error, error) || other.error == error) &&
             (identical(other.query, query) || other.query == query));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, isLoading,
-      const DeepCollectionEquality().hash(_searchResults), error, query);
+  int get hashCode => Object.hash(
+    runtimeType,
+    isLoading,
+    const DeepCollectionEquality().hash(_searchResults),
+    error,
+    query,
+  );
 
   /// Create a copy of SearchState
   /// with the given fields replaced by the non-null parameter values.
@@ -222,18 +248,17 @@ class _$SearchStateImpl implements _SearchState {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SearchStateImplToJson(
-      this,
-    );
+    return _$$SearchStateImplToJson(this);
   }
 }
 
 abstract class _SearchState implements SearchState {
-  const factory _SearchState(
-      {final bool isLoading,
-      final List<ProfileView> searchResults,
-      final String? error,
-      final String query}) = _$SearchStateImpl;
+  const factory _SearchState({
+    final bool isLoading,
+    final List<ProfileView> searchResults,
+    final String? error,
+    final String query,
+  }) = _$SearchStateImpl;
 
   factory _SearchState.fromJson(Map<String, dynamic> json) =
       _$SearchStateImpl.fromJson;

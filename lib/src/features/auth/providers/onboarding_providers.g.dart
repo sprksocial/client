@@ -15,14 +15,15 @@ String _$onboardingRepositoryHash() =>
 @ProviderFor(onboardingRepository)
 final onboardingRepositoryProvider =
     AutoDisposeProvider<OnboardingRepository>.internal(
-  onboardingRepository,
-  name: r'onboardingRepositoryProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$onboardingRepositoryHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      onboardingRepository,
+      name: r'onboardingRepositoryProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$onboardingRepositoryHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
@@ -36,9 +37,10 @@ String _$hasSparkProfileHash() => r'502a1454b05a8aa08bfb953c21a16d4e38a40a65';
 final hasSparkProfileProvider = AutoDisposeFutureProvider<bool>.internal(
   hasSparkProfile,
   name: r'hasSparkProfileProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$hasSparkProfileHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$hasSparkProfileHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -105,21 +107,15 @@ class BskyFollowsFamily extends Family<AsyncValue<FollowsResponse>> {
   /// Provider to get Bluesky follows
   ///
   /// Copied from [bskyFollows].
-  BskyFollowsProvider call({
-    String? cursor,
-  }) {
-    return BskyFollowsProvider(
-      cursor: cursor,
-    );
+  BskyFollowsProvider call({String? cursor}) {
+    return BskyFollowsProvider(cursor: cursor);
   }
 
   @override
   BskyFollowsProvider getProviderOverride(
     covariant BskyFollowsProvider provider,
   ) {
-    return call(
-      cursor: provider.cursor,
-    );
+    return call(cursor: provider.cursor);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -144,24 +140,19 @@ class BskyFollowsProvider extends AutoDisposeFutureProvider<FollowsResponse> {
   /// Provider to get Bluesky follows
   ///
   /// Copied from [bskyFollows].
-  BskyFollowsProvider({
-    String? cursor,
-  }) : this._internal(
-          (ref) => bskyFollows(
-            ref as BskyFollowsRef,
-            cursor: cursor,
-          ),
-          from: bskyFollowsProvider,
-          name: r'bskyFollowsProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$bskyFollowsHash,
-          dependencies: BskyFollowsFamily._dependencies,
-          allTransitiveDependencies:
-              BskyFollowsFamily._allTransitiveDependencies,
-          cursor: cursor,
-        );
+  BskyFollowsProvider({String? cursor})
+    : this._internal(
+        (ref) => bskyFollows(ref as BskyFollowsRef, cursor: cursor),
+        from: bskyFollowsProvider,
+        name: r'bskyFollowsProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$bskyFollowsHash,
+        dependencies: BskyFollowsFamily._dependencies,
+        allTransitiveDependencies: BskyFollowsFamily._allTransitiveDependencies,
+        cursor: cursor,
+      );
 
   BskyFollowsProvider._internal(
     super._createNotifier, {
@@ -236,14 +227,15 @@ String _$onboardingStateHash() => r'3eff08994a2ddd3b910b2b426b55f338fdb3a66f';
 @ProviderFor(OnboardingState)
 final onboardingStateProvider =
     AutoDisposeAsyncNotifierProvider<OnboardingState, void>.internal(
-  OnboardingState.new,
-  name: r'onboardingStateProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$onboardingStateHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      OnboardingState.new,
+      name: r'onboardingStateProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$onboardingStateHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$OnboardingState = AutoDisposeAsyncNotifier<void>;
 // ignore_for_file: type=lint

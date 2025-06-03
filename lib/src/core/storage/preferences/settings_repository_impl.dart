@@ -182,18 +182,26 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
   @override
   Future<List<Feed>> getFeeds() async {
-    return await _storageManager.preferences.getObject<List<Feed>>(StorageKeys.feedsKey) ??
-        [
-          Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
-          Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
-          Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
-        ];
+    final feeds = await _storageManager.preferences.getObject<List<Feed>>(StorageKeys.feedsKey);
+    if (feeds == null) {
+      final defaultFeeds = [
+        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
+        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
+        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
+      ];
+      _storageManager.preferences.setObject<List<Feed>>(StorageKeys.feedsKey, defaultFeeds);
+      return defaultFeeds;
+    }
+    return feeds;
   }
 
   @override
   Future<Feed> getActiveFeed() async {
-    return await _storageManager.preferences.getObject<Feed>(StorageKeys.activeFeedKey) ??
-        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou);
+    final activeFeed = await _storageManager.preferences.getObject<Feed>(StorageKeys.activeFeedKey);
+    if (activeFeed == null) {
+      return Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk);
+    }
+    return activeFeed;
   }
 
   @override

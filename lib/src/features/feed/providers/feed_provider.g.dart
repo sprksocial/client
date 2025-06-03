@@ -6,7 +6,7 @@ part of 'feed_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$feedNotifierHash() => r'503b696186be8ea5412d994596d961557959eebf';
+String _$feedNotifierHash() => r'21e86ac92e8547f0ce93f8e9329a5c3a68df5ccb';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -32,9 +32,7 @@ class _SystemHash {
 abstract class _$FeedNotifier extends BuildlessNotifier<FeedState> {
   late final Feed feed;
 
-  FeedState build(
-    Feed feed,
-  );
+  FeedState build(Feed feed);
 }
 
 /// See also [FeedNotifier].
@@ -47,21 +45,15 @@ class FeedNotifierFamily extends Family<FeedState> {
   const FeedNotifierFamily();
 
   /// See also [FeedNotifier].
-  FeedNotifierProvider call(
-    Feed feed,
-  ) {
-    return FeedNotifierProvider(
-      feed,
-    );
+  FeedNotifierProvider call(Feed feed) {
+    return FeedNotifierProvider(feed);
   }
 
   @override
   FeedNotifierProvider getProviderOverride(
     covariant FeedNotifierProvider provider,
   ) {
-    return call(
-      provider.feed,
-    );
+    return call(provider.feed);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -83,21 +75,20 @@ class FeedNotifierFamily extends Family<FeedState> {
 class FeedNotifierProvider
     extends NotifierProviderImpl<FeedNotifier, FeedState> {
   /// See also [FeedNotifier].
-  FeedNotifierProvider(
-    Feed feed,
-  ) : this._internal(
-          () => FeedNotifier()..feed = feed,
-          from: feedNotifierProvider,
-          name: r'feedNotifierProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$feedNotifierHash,
-          dependencies: FeedNotifierFamily._dependencies,
-          allTransitiveDependencies:
-              FeedNotifierFamily._allTransitiveDependencies,
-          feed: feed,
-        );
+  FeedNotifierProvider(Feed feed)
+    : this._internal(
+        () => FeedNotifier()..feed = feed,
+        from: feedNotifierProvider,
+        name: r'feedNotifierProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$feedNotifierHash,
+        dependencies: FeedNotifierFamily._dependencies,
+        allTransitiveDependencies:
+            FeedNotifierFamily._allTransitiveDependencies,
+        feed: feed,
+      );
 
   FeedNotifierProvider._internal(
     super._createNotifier, {
@@ -112,12 +103,8 @@ class FeedNotifierProvider
   final Feed feed;
 
   @override
-  FeedState runNotifierBuild(
-    covariant FeedNotifier notifier,
-  ) {
-    return notifier.build(
-      feed,
-    );
+  FeedState runNotifierBuild(covariant FeedNotifier notifier) {
+    return notifier.build(feed);
   }
 
   @override
@@ -170,5 +157,6 @@ class _FeedNotifierProviderElement
   @override
   Feed get feed => (origin as FeedNotifierProvider).feed;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

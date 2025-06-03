@@ -8,16 +8,21 @@ part of 'feed_models.dart';
 
 _$CustomFeedImpl _$$CustomFeedImplFromJson(Map<String, dynamic> json) =>
     _$CustomFeedImpl(
-      creator: json['creator'] == null
-          ? null
-          : ProfileViewBasic.fromJson(json['creator'] as Map<String, dynamic>),
+      creator:
+          json['creator'] == null
+              ? null
+              : ProfileViewBasic.fromJson(
+                json['creator'] as Map<String, dynamic>,
+              ),
       name: json['name'] as String? ?? 'Custom Feed',
       description: json['description'] as String? ?? 'Your custom feed',
-      descriptionFacets: (json['descriptionFacets'] as List<dynamic>?)
+      descriptionFacets:
+          (json['descriptionFacets'] as List<dynamic>?)
               ?.map((e) => Facet.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
-      labels: (json['labels'] as List<dynamic>?)
+      labels:
+          (json['labels'] as List<dynamic>?)
               ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
@@ -27,36 +32,39 @@ _$CustomFeedImpl _$$CustomFeedImplFromJson(Map<String, dynamic> json) =>
       videosOnly: json['videosOnly'] as bool? ?? false,
       did: json['did'] as String?,
       uri: _$JsonConverterFromJson<String, AtUri>(
-          json['uri'], const AtUriConverter().fromJson),
-      cid: json['cid'] == null
-          ? null
-          : CID.fromJson(json['cid'] as Map<String, dynamic>),
+        json['uri'],
+        const AtUriConverter().fromJson,
+      ),
+      cid: json['cid'] as String?,
       hashtagPreferences:
           (json['hashtagPreferences'] as Map<String, dynamic>?)?.map(
-                (k, e) => MapEntry(k, e as bool),
-              ) ??
-              const {},
+            (k, e) => MapEntry(k, e as bool),
+          ) ??
+          const {},
       labelPreferences:
           (json['labelPreferences'] as Map<String, dynamic>?)?.map(
-                (k, e) => MapEntry(k, Map<String, bool>.from(e as Map)),
-              ) ??
-              const {},
+            (k, e) => MapEntry(k, Map<String, bool>.from(e as Map)),
+          ) ??
+          const {},
     );
 
 Map<String, dynamic> _$$CustomFeedImplToJson(_$CustomFeedImpl instance) =>
     <String, dynamic>{
-      'creator': instance.creator,
+      'creator': instance.creator?.toJson(),
       'name': instance.name,
       'description': instance.description,
-      'descriptionFacets': instance.descriptionFacets,
-      'labels': instance.labels,
+      'descriptionFacets':
+          instance.descriptionFacets.map((e) => e.toJson()).toList(),
+      'labels': instance.labels.map((e) => e.toJson()).toList(),
       'likeCount': instance.likeCount,
       'imageUrl': instance.imageUrl,
       'isDraft': instance.isDraft,
       'videosOnly': instance.videosOnly,
       'did': instance.did,
       'uri': _$JsonConverterToJson<String, AtUri>(
-          instance.uri, const AtUriConverter().toJson),
+        instance.uri,
+        const AtUriConverter().toJson,
+      ),
       'cid': instance.cid,
       'hashtagPreferences': instance.hashtagPreferences,
       'labelPreferences': instance.labelPreferences,
@@ -65,14 +73,12 @@ Map<String, dynamic> _$$CustomFeedImplToJson(_$CustomFeedImpl instance) =>
 Value? _$JsonConverterFromJson<Json, Value>(
   Object? json,
   Value? Function(Json json) fromJson,
-) =>
-    json == null ? null : fromJson(json as Json);
+) => json == null ? null : fromJson(json as Json);
 
 Json? _$JsonConverterToJson<Json, Value>(
   Value? value,
   Json? Function(Value value) toJson,
-) =>
-    value == null ? null : toJson(value);
+) => value == null ? null : toJson(value);
 
 _$FeedCustomImpl _$$FeedCustomImplFromJson(Map<String, dynamic> json) =>
     _$FeedCustomImpl(
@@ -90,8 +96,10 @@ Map<String, dynamic> _$$FeedCustomImplToJson(_$FeedCustomImpl instance) =>
 
 _$FeedHardCodedImpl _$$FeedHardCodedImplFromJson(Map<String, dynamic> json) =>
     _$FeedHardCodedImpl(
-      hardCodedFeed:
-          $enumDecode(_$HardCodedFeedEnumEnumMap, json['hardCodedFeed']),
+      hardCodedFeed: $enumDecode(
+        _$HardCodedFeedEnumEnumMap,
+        json['hardCodedFeed'],
+      ),
       $type: json['runtimeType'] as String?,
     );
 
@@ -110,147 +118,147 @@ const _$HardCodedFeedEnumEnumMap = {
 };
 
 _$SkeletonFeedPostImpl _$$SkeletonFeedPostImplFromJson(
-        Map<String, dynamic> json) =>
-    _$SkeletonFeedPostImpl(
-      uri: const AtUriConverter().fromJson(json['uri'] as String),
-    );
+  Map<String, dynamic> json,
+) => _$SkeletonFeedPostImpl(
+  uri: const AtUriConverter().fromJson(json['uri'] as String),
+);
 
 Map<String, dynamic> _$$SkeletonFeedPostImplToJson(
-        _$SkeletonFeedPostImpl instance) =>
-    <String, dynamic>{
-      'uri': const AtUriConverter().toJson(instance.uri),
-    };
+  _$SkeletonFeedPostImpl instance,
+) => <String, dynamic>{'uri': const AtUriConverter().toJson(instance.uri)};
 
 _$HardcodedFeedExtraInfoSharedImpl _$$HardcodedFeedExtraInfoSharedImplFromJson(
-        Map<String, dynamic> json) =>
-    _$HardcodedFeedExtraInfoSharedImpl(
-      from: ProfileViewBasic.fromJson(json['from'] as Map<String, dynamic>),
-      message: json['message'] as String?,
-    );
+  Map<String, dynamic> json,
+) => _$HardcodedFeedExtraInfoSharedImpl(
+  from: ProfileViewBasic.fromJson(json['from'] as Map<String, dynamic>),
+  message: json['message'] as String?,
+);
 
 Map<String, dynamic> _$$HardcodedFeedExtraInfoSharedImplToJson(
-        _$HardcodedFeedExtraInfoSharedImpl instance) =>
-    <String, dynamic>{
-      'from': instance.from,
-      'message': instance.message,
-    };
+  _$HardcodedFeedExtraInfoSharedImpl instance,
+) => <String, dynamic>{
+  'from': instance.from.toJson(),
+  'message': instance.message,
+};
 
 _$FeedViewPostPostImpl _$$FeedViewPostPostImplFromJson(
-        Map<String, dynamic> json) =>
-    _$FeedViewPostPostImpl(
-      post: PostView.fromJson(json['post'] as Map<String, dynamic>),
-      reply: json['reply'] == null
+  Map<String, dynamic> json,
+) => _$FeedViewPostPostImpl(
+  post: PostView.fromJson(json['post'] as Map<String, dynamic>),
+  reply:
+      json['reply'] == null
           ? null
           : ReplyRef.fromJson(json['reply'] as Map<String, dynamic>),
-    );
+);
 
 Map<String, dynamic> _$$FeedViewPostPostImplToJson(
-        _$FeedViewPostPostImpl instance) =>
-    <String, dynamic>{
-      'post': instance.post,
-      'reply': instance.reply,
-    };
+  _$FeedViewPostPostImpl instance,
+) => <String, dynamic>{
+  'post': instance.post.toJson(),
+  'reply': instance.reply?.toJson(),
+};
 
 _$ReplyRefImpl _$$ReplyRefImplFromJson(Map<String, dynamic> json) =>
     _$ReplyRefImpl(
-      root:
-          ReplyRefPostReference.fromJson(json['root'] as Map<String, dynamic>),
+      root: ReplyRefPostReference.fromJson(
+        json['root'] as Map<String, dynamic>,
+      ),
       parent: ReplyRefPostReference.fromJson(
-          json['parent'] as Map<String, dynamic>),
-      grandparentAuthor: json['grandparentAuthor'] == null
-          ? null
-          : ProfileViewBasic.fromJson(
-              json['grandparentAuthor'] as Map<String, dynamic>),
+        json['parent'] as Map<String, dynamic>,
+      ),
+      grandparentAuthor:
+          json['grandparentAuthor'] == null
+              ? null
+              : ProfileViewBasic.fromJson(
+                json['grandparentAuthor'] as Map<String, dynamic>,
+              ),
     );
 
 Map<String, dynamic> _$$ReplyRefImplToJson(_$ReplyRefImpl instance) =>
     <String, dynamic>{
-      'root': instance.root,
-      'parent': instance.parent,
-      'grandparentAuthor': instance.grandparentAuthor,
+      'root': instance.root.toJson(),
+      'parent': instance.parent.toJson(),
+      'grandparentAuthor': instance.grandparentAuthor?.toJson(),
     };
 
 _$ReplyRefPostReferencePostImpl _$$ReplyRefPostReferencePostImplFromJson(
-        Map<String, dynamic> json) =>
-    _$ReplyRefPostReferencePostImpl(
-      post: PostView.fromJson(json['post'] as Map<String, dynamic>),
+  Map<String, dynamic> json,
+) => _$ReplyRefPostReferencePostImpl(
+  post: PostView.fromJson(json['post'] as Map<String, dynamic>),
+  $type: json[r'$type'] as String?,
+);
+
+Map<String, dynamic> _$$ReplyRefPostReferencePostImplToJson(
+  _$ReplyRefPostReferencePostImpl instance,
+) => <String, dynamic>{
+  'post': instance.post.toJson(),
+  r'$type': instance.$type,
+};
+
+_$ReplyRefPostReferenceNotFoundPostImpl
+_$$ReplyRefPostReferenceNotFoundPostImplFromJson(Map<String, dynamic> json) =>
+    _$ReplyRefPostReferenceNotFoundPostImpl(
+      uri: const AtUriConverter().fromJson(json['uri'] as String),
+      notFound: json['notFound'] as bool,
       $type: json[r'$type'] as String?,
     );
 
-Map<String, dynamic> _$$ReplyRefPostReferencePostImplToJson(
-        _$ReplyRefPostReferencePostImpl instance) =>
-    <String, dynamic>{
-      'post': instance.post,
-      r'$type': instance.$type,
-    };
-
-_$ReplyRefPostReferenceNotFoundPostImpl
-    _$$ReplyRefPostReferenceNotFoundPostImplFromJson(
-            Map<String, dynamic> json) =>
-        _$ReplyRefPostReferenceNotFoundPostImpl(
-          uri: const AtUriConverter().fromJson(json['uri'] as String),
-          notFound: json['notFound'] as bool,
-          $type: json[r'$type'] as String?,
-        );
-
 Map<String, dynamic> _$$ReplyRefPostReferenceNotFoundPostImplToJson(
-        _$ReplyRefPostReferenceNotFoundPostImpl instance) =>
-    <String, dynamic>{
-      'uri': const AtUriConverter().toJson(instance.uri),
-      'notFound': instance.notFound,
-      r'$type': instance.$type,
-    };
+  _$ReplyRefPostReferenceNotFoundPostImpl instance,
+) => <String, dynamic>{
+  'uri': const AtUriConverter().toJson(instance.uri),
+  'notFound': instance.notFound,
+  r'$type': instance.$type,
+};
 
 _$ReplyRefPostReferenceBlockedPostImpl
-    _$$ReplyRefPostReferenceBlockedPostImplFromJson(
-            Map<String, dynamic> json) =>
-        _$ReplyRefPostReferenceBlockedPostImpl(
-          uri: const AtUriConverter().fromJson(json['uri'] as String),
-          blocked: json['blocked'] as bool,
-          author:
-              BlockedAuthor.fromJson(json['author'] as Map<String, dynamic>),
-          $type: json[r'$type'] as String?,
-        );
+_$$ReplyRefPostReferenceBlockedPostImplFromJson(Map<String, dynamic> json) =>
+    _$ReplyRefPostReferenceBlockedPostImpl(
+      uri: const AtUriConverter().fromJson(json['uri'] as String),
+      blocked: json['blocked'] as bool,
+      author: BlockedAuthor.fromJson(json['author'] as Map<String, dynamic>),
+      $type: json[r'$type'] as String?,
+    );
 
 Map<String, dynamic> _$$ReplyRefPostReferenceBlockedPostImplToJson(
-        _$ReplyRefPostReferenceBlockedPostImpl instance) =>
-    <String, dynamic>{
-      'uri': const AtUriConverter().toJson(instance.uri),
-      'blocked': instance.blocked,
-      'author': instance.author,
-      r'$type': instance.$type,
-    };
+  _$ReplyRefPostReferenceBlockedPostImpl instance,
+) => <String, dynamic>{
+  'uri': const AtUriConverter().toJson(instance.uri),
+  'blocked': instance.blocked,
+  'author': instance.author.toJson(),
+  r'$type': instance.$type,
+};
 
 _$BlockedAuthorImpl _$$BlockedAuthorImplFromJson(Map<String, dynamic> json) =>
     _$BlockedAuthorImpl(
       did: json['did'] as String,
-      viewer: json['viewer'] == null
-          ? null
-          : Viewer.fromJson(json['viewer'] as Map<String, dynamic>),
+      viewer:
+          json['viewer'] == null
+              ? null
+              : Viewer.fromJson(json['viewer'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$BlockedAuthorImplToJson(_$BlockedAuthorImpl instance) =>
-    <String, dynamic>{
-      'did': instance.did,
-      'viewer': instance.viewer,
-    };
+    <String, dynamic>{'did': instance.did, 'viewer': instance.viewer?.toJson()};
 
 _$PostThreadImpl _$$PostThreadImplFromJson(Map<String, dynamic> json) =>
     _$PostThreadImpl(
       post: PostView.fromJson(json['post'] as Map<String, dynamic>),
-      parent: (json['parent'] as List<dynamic>?)
-          ?.map((e) => PostView.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      replies: (json['replies'] as List<dynamic>?)
-          ?.map((e) => PostView.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      parent:
+          (json['parent'] as List<dynamic>?)
+              ?.map((e) => PostView.fromJson(e as Map<String, dynamic>))
+              .toList(),
+      replies:
+          (json['replies'] as List<dynamic>?)
+              ?.map((e) => PostView.fromJson(e as Map<String, dynamic>))
+              .toList(),
     );
 
 Map<String, dynamic> _$$PostThreadImplToJson(_$PostThreadImpl instance) =>
     <String, dynamic>{
-      'post': instance.post,
-      'parent': instance.parent,
-      'replies': instance.replies,
+      'post': instance.post.toJson(),
+      'parent': instance.parent?.map((e) => e.toJson()).toList(),
+      'replies': instance.replies?.map((e) => e.toJson()).toList(),
     };
 
 _$RecordReplyRefImpl _$$RecordReplyRefImplFromJson(Map<String, dynamic> json) =>
@@ -260,33 +268,45 @@ _$RecordReplyRefImpl _$$RecordReplyRefImplFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$$RecordReplyRefImplToJson(
-        _$RecordReplyRefImpl instance) =>
-    <String, dynamic>{
-      'root': instance.root,
-      'parent': instance.parent,
-    };
+  _$RecordReplyRefImpl instance,
+) => <String, dynamic>{
+  'root': instance.root.toJson(),
+  'parent': instance.parent.toJson(),
+};
 
 _$ViewerImpl _$$ViewerImplFromJson(Map<String, dynamic> json) => _$ViewerImpl(
-      repost: _$JsonConverterFromJson<String, AtUri>(
-          json['repost'], const AtUriConverter().fromJson),
-      like: _$JsonConverterFromJson<String, AtUri>(
-          json['like'], const AtUriConverter().fromJson),
-      look: _$JsonConverterFromJson<String, AtUri>(
-          json['look'], const AtUriConverter().fromJson),
-      threadMuted: json['threadMuted'] as bool?,
-      replyDisabled: json['replyDisabled'] as bool?,
-      embeddingDisabled: json['embeddingDisabled'] as bool?,
-      pinned: json['pinned'] as bool?,
-    );
+  repost: _$JsonConverterFromJson<String, AtUri>(
+    json['repost'],
+    const AtUriConverter().fromJson,
+  ),
+  like: _$JsonConverterFromJson<String, AtUri>(
+    json['like'],
+    const AtUriConverter().fromJson,
+  ),
+  look: _$JsonConverterFromJson<String, AtUri>(
+    json['look'],
+    const AtUriConverter().fromJson,
+  ),
+  threadMuted: json['threadMuted'] as bool?,
+  replyDisabled: json['replyDisabled'] as bool?,
+  embeddingDisabled: json['embeddingDisabled'] as bool?,
+  pinned: json['pinned'] as bool?,
+);
 
 Map<String, dynamic> _$$ViewerImplToJson(_$ViewerImpl instance) =>
     <String, dynamic>{
       'repost': _$JsonConverterToJson<String, AtUri>(
-          instance.repost, const AtUriConverter().toJson),
+        instance.repost,
+        const AtUriConverter().toJson,
+      ),
       'like': _$JsonConverterToJson<String, AtUri>(
-          instance.like, const AtUriConverter().toJson),
+        instance.like,
+        const AtUriConverter().toJson,
+      ),
       'look': _$JsonConverterToJson<String, AtUri>(
-          instance.look, const AtUriConverter().toJson),
+        instance.look,
+        const AtUriConverter().toJson,
+      ),
       'threadMuted': instance.threadMuted,
       'replyDisabled': instance.replyDisabled,
       'embeddingDisabled': instance.embeddingDisabled,
@@ -295,66 +315,78 @@ Map<String, dynamic> _$$ViewerImplToJson(_$ViewerImpl instance) =>
 
 _$PostRecordImpl _$$PostRecordImplFromJson(Map<String, dynamic> json) =>
     _$PostRecordImpl(
-      createdAt: DateTime.parse(json['createdAt'] as String),
+      createdAt:
+          json['createdAt'] == null
+              ? null
+              : DateTime.parse(json['createdAt'] as String),
       text: json['text'] as String? ?? '',
-      facets: (json['facets'] as List<dynamic>?)
+      facets:
+          (json['facets'] as List<dynamic>?)
               ?.map((e) => Facet.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      reply: json['reply'] == null
-          ? null
-          : RecordReplyRef.fromJson(json['reply'] as Map<String, dynamic>),
+      reply:
+          json['reply'] == null
+              ? null
+              : RecordReplyRef.fromJson(json['reply'] as Map<String, dynamic>),
       langs:
           (json['langs'] as List<dynamic>?)?.map((e) => e as String).toList(),
       tags: (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList(),
-      selfLabels: (json['selfLabels'] as List<dynamic>?)
-          ?.map((e) => SelfLabel.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      embed: json['embed'] == null
-          ? null
-          : Embed.fromJson(json['embed'] as Map<String, dynamic>),
+      selfLabels:
+          (json['selfLabels'] as List<dynamic>?)
+              ?.map((e) => SelfLabel.fromJson(e as Map<String, dynamic>))
+              .toList(),
+      embed:
+          json['embed'] == null
+              ? null
+              : Embed.fromJson(json['embed'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$PostRecordImplToJson(_$PostRecordImpl instance) =>
     <String, dynamic>{
-      'createdAt': instance.createdAt.toIso8601String(),
+      'createdAt': instance.createdAt?.toIso8601String(),
       'text': instance.text,
-      'facets': instance.facets,
-      'reply': instance.reply,
+      'facets': instance.facets?.map((e) => e.toJson()).toList(),
+      'reply': instance.reply?.toJson(),
       'langs': instance.langs,
       'tags': instance.tags,
-      'selfLabels': instance.selfLabels,
-      'embed': instance.embed,
+      'selfLabels': instance.selfLabels?.map((e) => e.toJson()).toList(),
+      'embed': instance.embed?.toJson(),
     };
 
 _$EmbedVideoImpl _$$EmbedVideoImplFromJson(Map<String, dynamic> json) =>
     _$EmbedVideoImpl(
-      video: VideoEmbed.fromJson(json['video'] as Map<String, dynamic>),
+      video: Blob.fromJson(json['video'] as Map<String, dynamic>),
+      alt: json['alt'] as String?,
       $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$EmbedVideoImplToJson(_$EmbedVideoImpl instance) =>
     <String, dynamic>{
-      'video': instance.video,
+      'video': instance.video.toJson(),
+      'alt': instance.alt,
       r'$type': instance.$type,
     };
 
 _$EmbedImageImpl _$$EmbedImageImplFromJson(Map<String, dynamic> json) =>
     _$EmbedImageImpl(
-      image: ImageEmbed.fromJson(json['image'] as Map<String, dynamic>),
+      images:
+          (json['images'] as List<dynamic>)
+              .map((e) => Image.fromJson(e as Map<String, dynamic>))
+              .toList(),
       $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$EmbedImageImplToJson(_$EmbedImageImpl instance) =>
     <String, dynamic>{
-      'image': instance.image,
+      'images': instance.images.map((e) => e.toJson()).toList(),
       r'$type': instance.$type,
     };
 
 _$PostViewImpl _$$PostViewImplFromJson(Map<String, dynamic> json) =>
     _$PostViewImpl(
       uri: const AtUriConverter().fromJson(json['uri'] as String),
-      cid: CID.fromJson(json['cid'] as Map<String, dynamic>),
+      cid: json['cid'] as String,
       author: ProfileViewBasic.fromJson(json['author'] as Map<String, dynamic>),
       record: PostRecord.fromJson(json['record'] as Map<String, dynamic>),
       isRepost: json['isRepost'] as bool? ?? false,
@@ -363,85 +395,97 @@ _$PostViewImpl _$$PostViewImplFromJson(Map<String, dynamic> json) =>
       replyCount: (json['replyCount'] as num?)?.toInt(),
       repostCount: (json['repostCount'] as num?)?.toInt(),
       quoteCount: (json['quoteCount'] as num?)?.toInt(),
-      labels: (json['labels'] as List<dynamic>?)
-          ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      embed: json['embed'] == null
-          ? null
-          : EmbedView.fromJson(json['embed'] as Map<String, dynamic>),
+      labels:
+          (json['labels'] as List<dynamic>?)
+              ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
+              .toList(),
+      embed:
+          json['embed'] == null
+              ? null
+              : EmbedView.fromJson(json['embed'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$PostViewImplToJson(_$PostViewImpl instance) =>
     <String, dynamic>{
       'uri': const AtUriConverter().toJson(instance.uri),
       'cid': instance.cid,
-      'author': instance.author,
-      'record': instance.record,
+      'author': instance.author.toJson(),
+      'record': instance.record.toJson(),
       'isRepost': instance.isRepost,
       'indexedAt': instance.indexedAt.toIso8601String(),
       'likeCount': instance.likeCount,
       'replyCount': instance.replyCount,
       'repostCount': instance.repostCount,
       'quoteCount': instance.quoteCount,
-      'labels': instance.labels,
-      'embed': instance.embed,
+      'labels': instance.labels?.map((e) => e.toJson()).toList(),
+      'embed': instance.embed?.toJson(),
     };
 
 _$EmbedViewVideoImpl _$$EmbedViewVideoImplFromJson(Map<String, dynamic> json) =>
     _$EmbedViewVideoImpl(
-      video: VideoView.fromJson(json['video'] as Map<String, dynamic>),
+      cid: json['cid'] as String,
+      playlist: const AtUriConverter().fromJson(json['playlist'] as String),
+      thumbnail: const AtUriConverter().fromJson(json['thumbnail'] as String),
+      alt: json['alt'] as String?,
       $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$EmbedViewVideoImplToJson(
-        _$EmbedViewVideoImpl instance) =>
-    <String, dynamic>{
-      'video': instance.video,
-      r'$type': instance.$type,
-    };
+  _$EmbedViewVideoImpl instance,
+) => <String, dynamic>{
+  'cid': instance.cid,
+  'playlist': const AtUriConverter().toJson(instance.playlist),
+  'thumbnail': const AtUriConverter().toJson(instance.thumbnail),
+  'alt': instance.alt,
+  r'$type': instance.$type,
+};
 
 _$EmbedViewImageImpl _$$EmbedViewImageImplFromJson(Map<String, dynamic> json) =>
     _$EmbedViewImageImpl(
-      image: ImageView.fromJson(json['image'] as Map<String, dynamic>),
+      images:
+          (json['images'] as List<dynamic>)
+              .map((e) => ViewImage.fromJson(e as Map<String, dynamic>))
+              .toList(),
       $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$EmbedViewImageImplToJson(
-        _$EmbedViewImageImpl instance) =>
-    <String, dynamic>{
-      'image': instance.image,
-      r'$type': instance.$type,
-    };
+  _$EmbedViewImageImpl instance,
+) => <String, dynamic>{
+  'images': instance.images.map((e) => e.toJson()).toList(),
+  r'$type': instance.$type,
+};
 
 _$FeedSkeletonImpl _$$FeedSkeletonImplFromJson(Map<String, dynamic> json) =>
     _$FeedSkeletonImpl(
-      feed: (json['feed'] as List<dynamic>)
-          .map((e) => SkeletonFeedPost.fromJson(e as Map<String, dynamic>))
-          .toList(),
+      feed:
+          (json['feed'] as List<dynamic>)
+              .map((e) => SkeletonFeedPost.fromJson(e as Map<String, dynamic>))
+              .toList(),
       cursor: json['cursor'] as String?,
     );
 
 Map<String, dynamic> _$$FeedSkeletonImplToJson(_$FeedSkeletonImpl instance) =>
     <String, dynamic>{
-      'feed': instance.feed,
+      'feed': instance.feed.map((e) => e.toJson()).toList(),
       'cursor': instance.cursor,
     };
 
 _$ImageUploadResultImpl _$$ImageUploadResultImplFromJson(
-        Map<String, dynamic> json) =>
-    _$ImageUploadResultImpl(
-      fullsize: json['fullsize'] as String,
-      alt: json['alt'] as String,
-      image: json['image'] as Map<String, dynamic>,
-    );
+  Map<String, dynamic> json,
+) => _$ImageUploadResultImpl(
+  fullsize: json['fullsize'] as String,
+  alt: json['alt'] as String,
+  image: json['image'] as Map<String, dynamic>,
+);
 
 Map<String, dynamic> _$$ImageUploadResultImplToJson(
-        _$ImageUploadResultImpl instance) =>
-    <String, dynamic>{
-      'fullsize': instance.fullsize,
-      'alt': instance.alt,
-      'image': instance.image,
-    };
+  _$ImageUploadResultImpl instance,
+) => <String, dynamic>{
+  'fullsize': instance.fullsize,
+  'alt': instance.alt,
+  'image': instance.image,
+};
 
 _$FacetIndexImpl _$$FacetIndexImplFromJson(Map<String, dynamic> json) =>
     _$FacetIndexImpl(
@@ -462,11 +506,8 @@ _$MentionFeatureImpl _$$MentionFeatureImplFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$$MentionFeatureImplToJson(
-        _$MentionFeatureImpl instance) =>
-    <String, dynamic>{
-      'did': instance.did,
-      r'$type': instance.$type,
-    };
+  _$MentionFeatureImpl instance,
+) => <String, dynamic>{'did': instance.did, r'$type': instance.$type};
 
 _$LinkFeatureImpl _$$LinkFeatureImplFromJson(Map<String, dynamic> json) =>
     _$LinkFeatureImpl(
@@ -487,86 +528,29 @@ _$TagFeatureImpl _$$TagFeatureImplFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$$TagFeatureImplToJson(_$TagFeatureImpl instance) =>
-    <String, dynamic>{
-      'tag': instance.tag,
-      r'$type': instance.$type,
-    };
+    <String, dynamic>{'tag': instance.tag, r'$type': instance.$type};
 
 _$FacetImpl _$$FacetImplFromJson(Map<String, dynamic> json) => _$FacetImpl(
-      index: FacetIndex.fromJson(json['index'] as Map<String, dynamic>),
-      features: (json['features'] as List<dynamic>)
+  index: FacetIndex.fromJson(json['index'] as Map<String, dynamic>),
+  features:
+      (json['features'] as List<dynamic>)
           .map((e) => FacetFeature.fromJson(e as Map<String, dynamic>))
           .toList(),
-    );
+);
 
 Map<String, dynamic> _$$FacetImplToJson(_$FacetImpl instance) =>
     <String, dynamic>{
-      'index': instance.index,
-      'features': instance.features,
-    };
-
-_$VideoEmbedImpl _$$VideoEmbedImplFromJson(Map<String, dynamic> json) =>
-    _$VideoEmbedImpl(
-      video: Blob.fromJson(json['video'] as Map<String, dynamic>),
-      alt: json['alt'] as String?,
-    );
-
-Map<String, dynamic> _$$VideoEmbedImplToJson(_$VideoEmbedImpl instance) =>
-    <String, dynamic>{
-      'video': instance.video,
-      'alt': instance.alt,
-    };
-
-_$VideoViewImpl _$$VideoViewImplFromJson(Map<String, dynamic> json) =>
-    _$VideoViewImpl(
-      cid: CID.fromJson(json['cid'] as Map<String, dynamic>),
-      playlist: const AtUriConverter().fromJson(json['playlist'] as String),
-      thumbnail: const AtUriConverter().fromJson(json['thumbnail'] as String),
-      alt: json['alt'] as String?,
-    );
-
-Map<String, dynamic> _$$VideoViewImplToJson(_$VideoViewImpl instance) =>
-    <String, dynamic>{
-      'cid': instance.cid,
-      'playlist': const AtUriConverter().toJson(instance.playlist),
-      'thumbnail': const AtUriConverter().toJson(instance.thumbnail),
-      'alt': instance.alt,
-    };
-
-_$ImageEmbedImpl _$$ImageEmbedImplFromJson(Map<String, dynamic> json) =>
-    _$ImageEmbedImpl(
-      images: (json['images'] as List<dynamic>)
-          .map((e) => Image.fromJson(e as Map<String, dynamic>))
-          .toList(),
-    );
-
-Map<String, dynamic> _$$ImageEmbedImplToJson(_$ImageEmbedImpl instance) =>
-    <String, dynamic>{
-      'images': instance.images,
+      'index': instance.index.toJson(),
+      'features': instance.features.map((e) => e.toJson()).toList(),
     };
 
 _$ImageImpl _$$ImageImplFromJson(Map<String, dynamic> json) => _$ImageImpl(
-      image: Blob.fromJson(json['image'] as Map<String, dynamic>),
-      alt: json['alt'] as String?,
-    );
+  image: Blob.fromJson(json['image'] as Map<String, dynamic>),
+  alt: json['alt'] as String?,
+);
 
 Map<String, dynamic> _$$ImageImplToJson(_$ImageImpl instance) =>
-    <String, dynamic>{
-      'image': instance.image,
-      'alt': instance.alt,
-    };
-
-_$ImageViewImpl _$$ImageViewImplFromJson(Map<String, dynamic> json) =>
-    _$ImageViewImpl(
-      images: (json['images'] as List<dynamic>)
-          .map((e) => ViewImage.fromJson(e as Map<String, dynamic>))
-          .toList(),
-    );
-
-Map<String, dynamic> _$$ImageViewImplToJson(_$ImageViewImpl instance) =>
-    <String, dynamic>{
-      'images': instance.images,
-    };
+    <String, dynamic>{'image': instance.image.toJson(), 'alt': instance.alt};
 
 _$ViewImageImpl _$$ViewImageImplFromJson(Map<String, dynamic> json) =>
     _$ViewImageImpl(
@@ -585,27 +569,30 @@ Map<String, dynamic> _$$ViewImageImplToJson(_$ViewImageImpl instance) =>
 _$ThreadViewPostImpl _$$ThreadViewPostImplFromJson(Map<String, dynamic> json) =>
     _$ThreadViewPostImpl(
       post: PostView.fromJson(json['post'] as Map<String, dynamic>),
-      parent: json['parent'] == null
-          ? null
-          : Thread.fromJson(json['parent'] as Map<String, dynamic>),
-      replies: (json['replies'] as List<dynamic>?)
-          ?.map((e) => Thread.fromJson(e as Map<String, dynamic>))
-          .toList(),
-      context: json['context'] == null
-          ? null
-          : ThreadContext.fromJson(json['context'] as Map<String, dynamic>),
+      parent:
+          json['parent'] == null
+              ? null
+              : Thread.fromJson(json['parent'] as Map<String, dynamic>),
+      replies:
+          (json['replies'] as List<dynamic>?)
+              ?.map((e) => Thread.fromJson(e as Map<String, dynamic>))
+              .toList(),
+      context:
+          json['context'] == null
+              ? null
+              : ThreadContext.fromJson(json['context'] as Map<String, dynamic>),
       $type: json[r'$type'] as String?,
     );
 
 Map<String, dynamic> _$$ThreadViewPostImplToJson(
-        _$ThreadViewPostImpl instance) =>
-    <String, dynamic>{
-      'post': instance.post,
-      'parent': instance.parent,
-      'replies': instance.replies,
-      'context': instance.context,
-      r'$type': instance.$type,
-    };
+  _$ThreadViewPostImpl instance,
+) => <String, dynamic>{
+  'post': instance.post.toJson(),
+  'parent': instance.parent?.toJson(),
+  'replies': instance.replies?.map((e) => e.toJson()).toList(),
+  'context': instance.context?.toJson(),
+  r'$type': instance.$type,
+};
 
 _$NotFoundPostImpl _$$NotFoundPostImplFromJson(Map<String, dynamic> json) =>
     _$NotFoundPostImpl(
@@ -633,18 +620,22 @@ Map<String, dynamic> _$$BlockedPostImplToJson(_$BlockedPostImpl instance) =>
     <String, dynamic>{
       'uri': const AtUriConverter().toJson(instance.uri),
       'blocked': instance.blocked,
-      'author': instance.author,
+      'author': instance.author.toJson(),
       r'$type': instance.$type,
     };
 
 _$ThreadContextImpl _$$ThreadContextImplFromJson(Map<String, dynamic> json) =>
     _$ThreadContextImpl(
       rootAuthorLike: _$JsonConverterFromJson<String, AtUri>(
-          json['rootAuthorLike'], const AtUriConverter().fromJson),
+        json['rootAuthorLike'],
+        const AtUriConverter().fromJson,
+      ),
     );
 
 Map<String, dynamic> _$$ThreadContextImplToJson(_$ThreadContextImpl instance) =>
     <String, dynamic>{
       'rootAuthorLike': _$JsonConverterToJson<String, AtUri>(
-          instance.rootAuthorLike, const AtUriConverter().toJson),
+        instance.rootAuthorLike,
+        const AtUriConverter().toJson,
+      ),
     };

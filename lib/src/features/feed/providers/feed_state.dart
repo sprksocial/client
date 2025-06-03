@@ -18,6 +18,7 @@ abstract class FeedState with _$FeedState {
     required bool isCaching,
     required bool isEndOfNetworkFeed,
     required String? cursor,
+    required bool loadingFirstLoad,
     required LinkedHashMap<AtUri, ({List<Label> postLabels, HardcodedFeedExtraInfo? hardcodedFeedExtraInfo})> extraInfo,
   }) = _FeedState;
 

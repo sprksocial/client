@@ -157,7 +157,7 @@ class _CommentInputState extends State<CommentInput> {
     final imagesToUpload = List<XFile>.from(_selectedImages); // Copy list
     final actionsService = Provider.of<ActionsService>(context, listen: false);
 
-    // Get the target CID and URI for the comment
+    // Get the target String and URI for the comment
     final targetCid = widget.parentCid ?? widget.postCid;
     final targetUri = widget.parentUri ?? widget.postUri;
 

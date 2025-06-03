@@ -4,7 +4,7 @@ import 'package:sparksocial/src/core/network/data/models/feed_models.dart'; // F
 const int activeFeedPriority = 1;
 const int inactiveFeedPriority = 10;
 
-enum DownloadTaskStatus { pending, active, completed, failed }
+enum DownloadTaskStatus { pending, submitted, active, completed, failed }
 
 class DownloadTask {
   DownloadTask({

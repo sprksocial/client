@@ -70,6 +70,8 @@ enum Setting {
 
 @freezed
 abstract class LabelPreference with _$LabelPreference {
+  const LabelPreference._();
+  @JsonSerializable(explicitToJson: true)
   factory LabelPreference({
     required String value,
     required Blurs blurs,
@@ -84,9 +86,11 @@ abstract class LabelPreference with _$LabelPreference {
 
 @freezed
 abstract class LabelerView with _$LabelerView {
+  const LabelerView._();
+  @JsonSerializable(explicitToJson: true)
   factory LabelerView({
     @AtUriConverter() required AtUri uri,
-    required CID cid,
+    required String cid,
     required ProfileView creator,
     required DateTime indexedAt,
     int? likeCount,
@@ -100,9 +104,11 @@ abstract class LabelerView with _$LabelerView {
 
 @freezed
 abstract class LabelerViewDetailed with _$LabelerViewDetailed {
+  const LabelerViewDetailed._();
+  @JsonSerializable(explicitToJson: true)
   factory LabelerViewDetailed({
     @AtUriConverter() required AtUri uri,
-    required CID cid,
+    required String cid,
     required ProfileView creator,
     required DateTime indexedAt,
     int? likeCount,
@@ -117,6 +123,8 @@ abstract class LabelerViewDetailed with _$LabelerViewDetailed {
 
 @freezed
 abstract class LabelerViewerState with _$LabelerViewerState {
+  const LabelerViewerState._();
+  @JsonSerializable(explicitToJson: true)
   factory LabelerViewerState({@AtUriConverter() required AtUri like, @AtUriConverter() required AtUri look}) =
       _LabelerViewerState;
 
@@ -125,6 +133,8 @@ abstract class LabelerViewerState with _$LabelerViewerState {
 
 @freezed
 abstract class LabelerPolicies with _$LabelerPolicies {
+  const LabelerPolicies._();
+  @JsonSerializable(explicitToJson: true)
   factory LabelerPolicies({
     required List<String>
     labelValues, // knownValues (array of strings, optional): a set of suggested or common values for this field. Values are not limited to this set (aka, not a closed enum).

@@ -12,7 +12,8 @@ part of 'onboarding_screen_state.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$OnboardingScreenState {
@@ -35,27 +36,31 @@ mixin _$OnboardingScreenState {
 
 /// @nodoc
 abstract class $OnboardingScreenStateCopyWith<$Res> {
-  factory $OnboardingScreenStateCopyWith(OnboardingScreenState value,
-          $Res Function(OnboardingScreenState) then) =
-      _$OnboardingScreenStateCopyWithImpl<$Res, OnboardingScreenState>;
+  factory $OnboardingScreenStateCopyWith(
+    OnboardingScreenState value,
+    $Res Function(OnboardingScreenState) then,
+  ) = _$OnboardingScreenStateCopyWithImpl<$Res, OnboardingScreenState>;
   @useResult
-  $Res call(
-      {bool isLoading,
-      ProfileRecord? bskyProfileRecord,
-      String? initialAvatarCid,
-      String? initialAvatarUrl,
-      Uint8List? localAvatarBytes,
-      String displayName,
-      String description,
-      String? errorMessage,
-      String? userDid});
+  $Res call({
+    bool isLoading,
+    ProfileRecord? bskyProfileRecord,
+    String? initialAvatarCid,
+    String? initialAvatarUrl,
+    Uint8List? localAvatarBytes,
+    String displayName,
+    String description,
+    String? errorMessage,
+    String? userDid,
+  });
 
   $ProfileRecordCopyWith<$Res>? get bskyProfileRecord;
 }
 
 /// @nodoc
-class _$OnboardingScreenStateCopyWithImpl<$Res,
-        $Val extends OnboardingScreenState>
+class _$OnboardingScreenStateCopyWithImpl<
+  $Res,
+  $Val extends OnboardingScreenState
+>
     implements $OnboardingScreenStateCopyWith<$Res> {
   _$OnboardingScreenStateCopyWithImpl(this._value, this._then);
 
@@ -79,44 +84,56 @@ class _$OnboardingScreenStateCopyWithImpl<$Res,
     Object? errorMessage = freezed,
     Object? userDid = freezed,
   }) {
-    return _then(_value.copyWith(
-      isLoading: null == isLoading
-          ? _value.isLoading
-          : isLoading // ignore: cast_nullable_to_non_nullable
-              as bool,
-      bskyProfileRecord: freezed == bskyProfileRecord
-          ? _value.bskyProfileRecord
-          : bskyProfileRecord // ignore: cast_nullable_to_non_nullable
-              as ProfileRecord?,
-      initialAvatarCid: freezed == initialAvatarCid
-          ? _value.initialAvatarCid
-          : initialAvatarCid // ignore: cast_nullable_to_non_nullable
-              as String?,
-      initialAvatarUrl: freezed == initialAvatarUrl
-          ? _value.initialAvatarUrl
-          : initialAvatarUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      localAvatarBytes: freezed == localAvatarBytes
-          ? _value.localAvatarBytes
-          : localAvatarBytes // ignore: cast_nullable_to_non_nullable
-              as Uint8List?,
-      displayName: null == displayName
-          ? _value.displayName
-          : displayName // ignore: cast_nullable_to_non_nullable
-              as String,
-      description: null == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String,
-      errorMessage: freezed == errorMessage
-          ? _value.errorMessage
-          : errorMessage // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userDid: freezed == userDid
-          ? _value.userDid
-          : userDid // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            isLoading:
+                null == isLoading
+                    ? _value.isLoading
+                    : isLoading // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            bskyProfileRecord:
+                freezed == bskyProfileRecord
+                    ? _value.bskyProfileRecord
+                    : bskyProfileRecord // ignore: cast_nullable_to_non_nullable
+                        as ProfileRecord?,
+            initialAvatarCid:
+                freezed == initialAvatarCid
+                    ? _value.initialAvatarCid
+                    : initialAvatarCid // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            initialAvatarUrl:
+                freezed == initialAvatarUrl
+                    ? _value.initialAvatarUrl
+                    : initialAvatarUrl // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            localAvatarBytes:
+                freezed == localAvatarBytes
+                    ? _value.localAvatarBytes
+                    : localAvatarBytes // ignore: cast_nullable_to_non_nullable
+                        as Uint8List?,
+            displayName:
+                null == displayName
+                    ? _value.displayName
+                    : displayName // ignore: cast_nullable_to_non_nullable
+                        as String,
+            description:
+                null == description
+                    ? _value.description
+                    : description // ignore: cast_nullable_to_non_nullable
+                        as String,
+            errorMessage:
+                freezed == errorMessage
+                    ? _value.errorMessage
+                    : errorMessage // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            userDid:
+                freezed == userDid
+                    ? _value.userDid
+                    : userDid // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of OnboardingScreenState
@@ -138,21 +155,22 @@ class _$OnboardingScreenStateCopyWithImpl<$Res,
 abstract class _$$OnboardingScreenStateImplCopyWith<$Res>
     implements $OnboardingScreenStateCopyWith<$Res> {
   factory _$$OnboardingScreenStateImplCopyWith(
-          _$OnboardingScreenStateImpl value,
-          $Res Function(_$OnboardingScreenStateImpl) then) =
-      __$$OnboardingScreenStateImplCopyWithImpl<$Res>;
+    _$OnboardingScreenStateImpl value,
+    $Res Function(_$OnboardingScreenStateImpl) then,
+  ) = __$$OnboardingScreenStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {bool isLoading,
-      ProfileRecord? bskyProfileRecord,
-      String? initialAvatarCid,
-      String? initialAvatarUrl,
-      Uint8List? localAvatarBytes,
-      String displayName,
-      String description,
-      String? errorMessage,
-      String? userDid});
+  $Res call({
+    bool isLoading,
+    ProfileRecord? bskyProfileRecord,
+    String? initialAvatarCid,
+    String? initialAvatarUrl,
+    Uint8List? localAvatarBytes,
+    String displayName,
+    String description,
+    String? errorMessage,
+    String? userDid,
+  });
 
   @override
   $ProfileRecordCopyWith<$Res>? get bskyProfileRecord;
@@ -160,12 +178,13 @@ abstract class _$$OnboardingScreenStateImplCopyWith<$Res>
 
 /// @nodoc
 class __$$OnboardingScreenStateImplCopyWithImpl<$Res>
-    extends _$OnboardingScreenStateCopyWithImpl<$Res,
-        _$OnboardingScreenStateImpl>
+    extends
+        _$OnboardingScreenStateCopyWithImpl<$Res, _$OnboardingScreenStateImpl>
     implements _$$OnboardingScreenStateImplCopyWith<$Res> {
-  __$$OnboardingScreenStateImplCopyWithImpl(_$OnboardingScreenStateImpl _value,
-      $Res Function(_$OnboardingScreenStateImpl) _then)
-      : super(_value, _then);
+  __$$OnboardingScreenStateImplCopyWithImpl(
+    _$OnboardingScreenStateImpl _value,
+    $Res Function(_$OnboardingScreenStateImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of OnboardingScreenState
   /// with the given fields replaced by the non-null parameter values.
@@ -182,60 +201,72 @@ class __$$OnboardingScreenStateImplCopyWithImpl<$Res>
     Object? errorMessage = freezed,
     Object? userDid = freezed,
   }) {
-    return _then(_$OnboardingScreenStateImpl(
-      isLoading: null == isLoading
-          ? _value.isLoading
-          : isLoading // ignore: cast_nullable_to_non_nullable
-              as bool,
-      bskyProfileRecord: freezed == bskyProfileRecord
-          ? _value.bskyProfileRecord
-          : bskyProfileRecord // ignore: cast_nullable_to_non_nullable
-              as ProfileRecord?,
-      initialAvatarCid: freezed == initialAvatarCid
-          ? _value.initialAvatarCid
-          : initialAvatarCid // ignore: cast_nullable_to_non_nullable
-              as String?,
-      initialAvatarUrl: freezed == initialAvatarUrl
-          ? _value.initialAvatarUrl
-          : initialAvatarUrl // ignore: cast_nullable_to_non_nullable
-              as String?,
-      localAvatarBytes: freezed == localAvatarBytes
-          ? _value.localAvatarBytes
-          : localAvatarBytes // ignore: cast_nullable_to_non_nullable
-              as Uint8List?,
-      displayName: null == displayName
-          ? _value.displayName
-          : displayName // ignore: cast_nullable_to_non_nullable
-              as String,
-      description: null == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String,
-      errorMessage: freezed == errorMessage
-          ? _value.errorMessage
-          : errorMessage // ignore: cast_nullable_to_non_nullable
-              as String?,
-      userDid: freezed == userDid
-          ? _value.userDid
-          : userDid // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$OnboardingScreenStateImpl(
+        isLoading:
+            null == isLoading
+                ? _value.isLoading
+                : isLoading // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        bskyProfileRecord:
+            freezed == bskyProfileRecord
+                ? _value.bskyProfileRecord
+                : bskyProfileRecord // ignore: cast_nullable_to_non_nullable
+                    as ProfileRecord?,
+        initialAvatarCid:
+            freezed == initialAvatarCid
+                ? _value.initialAvatarCid
+                : initialAvatarCid // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        initialAvatarUrl:
+            freezed == initialAvatarUrl
+                ? _value.initialAvatarUrl
+                : initialAvatarUrl // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        localAvatarBytes:
+            freezed == localAvatarBytes
+                ? _value.localAvatarBytes
+                : localAvatarBytes // ignore: cast_nullable_to_non_nullable
+                    as Uint8List?,
+        displayName:
+            null == displayName
+                ? _value.displayName
+                : displayName // ignore: cast_nullable_to_non_nullable
+                    as String,
+        description:
+            null == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                    as String,
+        errorMessage:
+            freezed == errorMessage
+                ? _value.errorMessage
+                : errorMessage // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        userDid:
+            freezed == userDid
+                ? _value.userDid
+                : userDid // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$OnboardingScreenStateImpl implements _OnboardingScreenState {
-  const _$OnboardingScreenStateImpl(
-      {this.isLoading = true,
-      this.bskyProfileRecord,
-      this.initialAvatarCid,
-      this.initialAvatarUrl,
-      this.localAvatarBytes,
-      this.displayName = '',
-      this.description = '',
-      this.errorMessage,
-      this.userDid});
+  const _$OnboardingScreenStateImpl({
+    this.isLoading = true,
+    this.bskyProfileRecord,
+    this.initialAvatarCid,
+    this.initialAvatarUrl,
+    this.localAvatarBytes,
+    this.displayName = '',
+    this.description = '',
+    this.errorMessage,
+    this.userDid,
+  });
 
   @override
   @JsonKey()
@@ -277,8 +308,10 @@ class _$OnboardingScreenStateImpl implements _OnboardingScreenState {
                 other.initialAvatarCid == initialAvatarCid) &&
             (identical(other.initialAvatarUrl, initialAvatarUrl) ||
                 other.initialAvatarUrl == initialAvatarUrl) &&
-            const DeepCollectionEquality()
-                .equals(other.localAvatarBytes, localAvatarBytes) &&
+            const DeepCollectionEquality().equals(
+              other.localAvatarBytes,
+              localAvatarBytes,
+            ) &&
             (identical(other.displayName, displayName) ||
                 other.displayName == displayName) &&
             (identical(other.description, description) ||
@@ -290,16 +323,17 @@ class _$OnboardingScreenStateImpl implements _OnboardingScreenState {
 
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      isLoading,
-      bskyProfileRecord,
-      initialAvatarCid,
-      initialAvatarUrl,
-      const DeepCollectionEquality().hash(localAvatarBytes),
-      displayName,
-      description,
-      errorMessage,
-      userDid);
+    runtimeType,
+    isLoading,
+    bskyProfileRecord,
+    initialAvatarCid,
+    initialAvatarUrl,
+    const DeepCollectionEquality().hash(localAvatarBytes),
+    displayName,
+    description,
+    errorMessage,
+    userDid,
+  );
 
   /// Create a copy of OnboardingScreenState
   /// with the given fields replaced by the non-null parameter values.
@@ -307,21 +341,25 @@ class _$OnboardingScreenStateImpl implements _OnboardingScreenState {
   @override
   @pragma('vm:prefer-inline')
   _$$OnboardingScreenStateImplCopyWith<_$OnboardingScreenStateImpl>
-      get copyWith => __$$OnboardingScreenStateImplCopyWithImpl<
-          _$OnboardingScreenStateImpl>(this, _$identity);
+  get copyWith =>
+      __$$OnboardingScreenStateImplCopyWithImpl<_$OnboardingScreenStateImpl>(
+        this,
+        _$identity,
+      );
 }
 
 abstract class _OnboardingScreenState implements OnboardingScreenState {
-  const factory _OnboardingScreenState(
-      {final bool isLoading,
-      final ProfileRecord? bskyProfileRecord,
-      final String? initialAvatarCid,
-      final String? initialAvatarUrl,
-      final Uint8List? localAvatarBytes,
-      final String displayName,
-      final String description,
-      final String? errorMessage,
-      final String? userDid}) = _$OnboardingScreenStateImpl;
+  const factory _OnboardingScreenState({
+    final bool isLoading,
+    final ProfileRecord? bskyProfileRecord,
+    final String? initialAvatarCid,
+    final String? initialAvatarUrl,
+    final Uint8List? localAvatarBytes,
+    final String displayName,
+    final String description,
+    final String? errorMessage,
+    final String? userDid,
+  }) = _$OnboardingScreenStateImpl;
 
   @override
   bool get isLoading;
@@ -347,5 +385,5 @@ abstract class _OnboardingScreenState implements OnboardingScreenState {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$OnboardingScreenStateImplCopyWith<_$OnboardingScreenStateImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }

@@ -10,11 +10,16 @@ class CacheManagerImpl implements CacheManagerInterface {
   static final CacheManagerImpl _instance = CacheManagerImpl._();
 
   /// Default cache manager for most files
-  late final DefaultCacheManager defaultCacheManager;
+  late final CacheManager cacheManager;
 
   /// Private constructor
   CacheManagerImpl._() {
-    defaultCacheManager = DefaultCacheManager();
+    cacheManager = CacheManager(
+      Config(
+        'sparksocial',
+        maxNrOfCacheObjects: 100,
+      ),
+    );
   }
 
   /// Get the singleton instance
@@ -23,13 +28,13 @@ class CacheManagerImpl implements CacheManagerInterface {
   /// Get a cached file or download it if not available
   @override
   Future<File> getFile(String url) async {
-    final fileInfo = await defaultCacheManager.getFileFromCache(url);
+    final fileInfo = await cacheManager.getFileFromCache(url);
     if (fileInfo != null) {
       return fileInfo.file;
     }
 
     // File not in cache, download it
-    final file = await defaultCacheManager.getSingleFile(url);
+    final file = await cacheManager.getSingleFile(url);
     return file;
   }
 
@@ -37,13 +42,13 @@ class CacheManagerImpl implements CacheManagerInterface {
   /// Returns null if not found
   @override
   Future<File?> getCachedFile(String url) async {
-    return (await defaultCacheManager.getFileFromCache(url))?.file;
+    return (await cacheManager.getFileFromCache(url))?.file;
   }
 
   /// Store a file in the cache with the given key
   @override
   Future<void> putFile(String url, Uint8List fileBytes) async {
-    await defaultCacheManager.putFile(
+    await cacheManager.putFile(
       url,
       fileBytes,
       maxAge: const Duration(days: 7), // Cache for 7 days
@@ -53,7 +58,7 @@ class CacheManagerImpl implements CacheManagerInterface {
   /// Remove a specific file from cache
   @override
   Future<void> removeFile(String url) async {
-    await defaultCacheManager.removeFile(url);
+    await cacheManager.removeFile(url);
   }
 
   /// Calculate the total size of the cache in bytes
@@ -66,7 +71,7 @@ class CacheManagerImpl implements CacheManagerInterface {
   /// Clear all cached files
   @override
   Future<void> clearCache() async {
-    await defaultCacheManager.emptyCache();
+    await cacheManager.emptyCache();
 
     // Also clear the temp directory
     final tempDir = await getTemporaryDirectory();

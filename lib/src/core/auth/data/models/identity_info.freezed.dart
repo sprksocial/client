@@ -12,7 +12,8 @@ part of 'identity_info.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 IdentityInfo _$IdentityInfoFromJson(Map<String, dynamic> json) {
   return _IdentityInfo.fromJson(json);
@@ -42,8 +43,9 @@ mixin _$IdentityInfo {
 /// @nodoc
 abstract class $IdentityInfoCopyWith<$Res> {
   factory $IdentityInfoCopyWith(
-          IdentityInfo value, $Res Function(IdentityInfo) then) =
-      _$IdentityInfoCopyWithImpl<$Res, IdentityInfo>;
+    IdentityInfo value,
+    $Res Function(IdentityInfo) then,
+  ) = _$IdentityInfoCopyWithImpl<$Res, IdentityInfo>;
   @useResult
   $Res call({String did, String handle, Map<String, dynamic>? didDocument});
 }
@@ -67,20 +69,26 @@ class _$IdentityInfoCopyWithImpl<$Res, $Val extends IdentityInfo>
     Object? handle = null,
     Object? didDocument = freezed,
   }) {
-    return _then(_value.copyWith(
-      did: null == did
-          ? _value.did
-          : did // ignore: cast_nullable_to_non_nullable
-              as String,
-      handle: null == handle
-          ? _value.handle
-          : handle // ignore: cast_nullable_to_non_nullable
-              as String,
-      didDocument: freezed == didDocument
-          ? _value.didDocument
-          : didDocument // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            did:
+                null == did
+                    ? _value.did
+                    : did // ignore: cast_nullable_to_non_nullable
+                        as String,
+            handle:
+                null == handle
+                    ? _value.handle
+                    : handle // ignore: cast_nullable_to_non_nullable
+                        as String,
+            didDocument:
+                freezed == didDocument
+                    ? _value.didDocument
+                    : didDocument // ignore: cast_nullable_to_non_nullable
+                        as Map<String, dynamic>?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -88,8 +96,9 @@ class _$IdentityInfoCopyWithImpl<$Res, $Val extends IdentityInfo>
 abstract class _$$IdentityInfoImplCopyWith<$Res>
     implements $IdentityInfoCopyWith<$Res> {
   factory _$$IdentityInfoImplCopyWith(
-          _$IdentityInfoImpl value, $Res Function(_$IdentityInfoImpl) then) =
-      __$$IdentityInfoImplCopyWithImpl<$Res>;
+    _$IdentityInfoImpl value,
+    $Res Function(_$IdentityInfoImpl) then,
+  ) = __$$IdentityInfoImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String did, String handle, Map<String, dynamic>? didDocument});
@@ -100,8 +109,9 @@ class __$$IdentityInfoImplCopyWithImpl<$Res>
     extends _$IdentityInfoCopyWithImpl<$Res, _$IdentityInfoImpl>
     implements _$$IdentityInfoImplCopyWith<$Res> {
   __$$IdentityInfoImplCopyWithImpl(
-      _$IdentityInfoImpl _value, $Res Function(_$IdentityInfoImpl) _then)
-      : super(_value, _then);
+    _$IdentityInfoImpl _value,
+    $Res Function(_$IdentityInfoImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of IdentityInfo
   /// with the given fields replaced by the non-null parameter values.
@@ -112,31 +122,36 @@ class __$$IdentityInfoImplCopyWithImpl<$Res>
     Object? handle = null,
     Object? didDocument = freezed,
   }) {
-    return _then(_$IdentityInfoImpl(
-      did: null == did
-          ? _value.did
-          : did // ignore: cast_nullable_to_non_nullable
-              as String,
-      handle: null == handle
-          ? _value.handle
-          : handle // ignore: cast_nullable_to_non_nullable
-              as String,
-      didDocument: freezed == didDocument
-          ? _value._didDocument
-          : didDocument // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
-    ));
+    return _then(
+      _$IdentityInfoImpl(
+        did:
+            null == did
+                ? _value.did
+                : did // ignore: cast_nullable_to_non_nullable
+                    as String,
+        handle:
+            null == handle
+                ? _value.handle
+                : handle // ignore: cast_nullable_to_non_nullable
+                    as String,
+        didDocument:
+            freezed == didDocument
+                ? _value._didDocument
+                : didDocument // ignore: cast_nullable_to_non_nullable
+                    as Map<String, dynamic>?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$IdentityInfoImpl implements _IdentityInfo {
-  const _$IdentityInfoImpl(
-      {required this.did,
-      required this.handle,
-      final Map<String, dynamic>? didDocument})
-      : _didDocument = didDocument;
+  const _$IdentityInfoImpl({
+    required this.did,
+    required this.handle,
+    final Map<String, dynamic>? didDocument,
+  }) : _didDocument = didDocument;
 
   factory _$IdentityInfoImpl.fromJson(Map<String, dynamic> json) =>
       _$$IdentityInfoImplFromJson(json);
@@ -174,14 +189,20 @@ class _$IdentityInfoImpl implements _IdentityInfo {
             other is _$IdentityInfoImpl &&
             (identical(other.did, did) || other.did == did) &&
             (identical(other.handle, handle) || other.handle == handle) &&
-            const DeepCollectionEquality()
-                .equals(other._didDocument, _didDocument));
+            const DeepCollectionEquality().equals(
+              other._didDocument,
+              _didDocument,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, did, handle,
-      const DeepCollectionEquality().hash(_didDocument));
+  int get hashCode => Object.hash(
+    runtimeType,
+    did,
+    handle,
+    const DeepCollectionEquality().hash(_didDocument),
+  );
 
   /// Create a copy of IdentityInfo
   /// with the given fields replaced by the non-null parameter values.
@@ -193,17 +214,16 @@ class _$IdentityInfoImpl implements _IdentityInfo {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$IdentityInfoImplToJson(
-      this,
-    );
+    return _$$IdentityInfoImplToJson(this);
   }
 }
 
 abstract class _IdentityInfo implements IdentityInfo {
-  const factory _IdentityInfo(
-      {required final String did,
-      required final String handle,
-      final Map<String, dynamic>? didDocument}) = _$IdentityInfoImpl;
+  const factory _IdentityInfo({
+    required final String did,
+    required final String handle,
+    final Map<String, dynamic>? didDocument,
+  }) = _$IdentityInfoImpl;
 
   factory _IdentityInfo.fromJson(Map<String, dynamic> json) =
       _$IdentityInfoImpl.fromJson;
@@ -235,52 +255,47 @@ mixin _$IdentityState {
     required TResult Function() loading,
     required TResult Function(IdentityInfo identityInfo) success,
     required TResult Function(String message) error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function()? loading,
     TResult? Function(IdentityInfo identityInfo)? success,
     TResult? Function(String message)? error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function()? loading,
     TResult Function(IdentityInfo identityInfo)? success,
     TResult Function(String message)? error,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(_Loading value) loading,
     required TResult Function(_Success value) success,
     required TResult Function(_Error value) error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(_Loading value)? loading,
     TResult? Function(_Success value)? success,
     TResult? Function(_Error value)? error,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(_Loading value)? loading,
     TResult Function(_Success value)? success,
     TResult Function(_Error value)? error,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class $IdentityStateCopyWith<$Res> {
   factory $IdentityStateCopyWith(
-          IdentityState value, $Res Function(IdentityState) then) =
-      _$IdentityStateCopyWithImpl<$Res, IdentityState>;
+    IdentityState value,
+    $Res Function(IdentityState) then,
+  ) = _$IdentityStateCopyWithImpl<$Res, IdentityState>;
 }
 
 /// @nodoc
@@ -300,8 +315,9 @@ class _$IdentityStateCopyWithImpl<$Res, $Val extends IdentityState>
 /// @nodoc
 abstract class _$$LoadingImplCopyWith<$Res> {
   factory _$$LoadingImplCopyWith(
-          _$LoadingImpl value, $Res Function(_$LoadingImpl) then) =
-      __$$LoadingImplCopyWithImpl<$Res>;
+    _$LoadingImpl value,
+    $Res Function(_$LoadingImpl) then,
+  ) = __$$LoadingImplCopyWithImpl<$Res>;
 }
 
 /// @nodoc
@@ -309,8 +325,9 @@ class __$$LoadingImplCopyWithImpl<$Res>
     extends _$IdentityStateCopyWithImpl<$Res, _$LoadingImpl>
     implements _$$LoadingImplCopyWith<$Res> {
   __$$LoadingImplCopyWithImpl(
-      _$LoadingImpl _value, $Res Function(_$LoadingImpl) _then)
-      : super(_value, _then);
+    _$LoadingImpl _value,
+    $Res Function(_$LoadingImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of IdentityState
   /// with the given fields replaced by the non-null parameter values.
@@ -411,8 +428,9 @@ abstract class _Loading implements IdentityState {
 /// @nodoc
 abstract class _$$SuccessImplCopyWith<$Res> {
   factory _$$SuccessImplCopyWith(
-          _$SuccessImpl value, $Res Function(_$SuccessImpl) then) =
-      __$$SuccessImplCopyWithImpl<$Res>;
+    _$SuccessImpl value,
+    $Res Function(_$SuccessImpl) then,
+  ) = __$$SuccessImplCopyWithImpl<$Res>;
   @useResult
   $Res call({IdentityInfo identityInfo});
 
@@ -424,22 +442,23 @@ class __$$SuccessImplCopyWithImpl<$Res>
     extends _$IdentityStateCopyWithImpl<$Res, _$SuccessImpl>
     implements _$$SuccessImplCopyWith<$Res> {
   __$$SuccessImplCopyWithImpl(
-      _$SuccessImpl _value, $Res Function(_$SuccessImpl) _then)
-      : super(_value, _then);
+    _$SuccessImpl _value,
+    $Res Function(_$SuccessImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of IdentityState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? identityInfo = null,
-  }) {
-    return _then(_$SuccessImpl(
-      null == identityInfo
-          ? _value.identityInfo
-          : identityInfo // ignore: cast_nullable_to_non_nullable
-              as IdentityInfo,
-    ));
+  $Res call({Object? identityInfo = null}) {
+    return _then(
+      _$SuccessImpl(
+        null == identityInfo
+            ? _value.identityInfo
+            : identityInfo // ignore: cast_nullable_to_non_nullable
+                as IdentityInfo,
+      ),
+    );
   }
 
   /// Create a copy of IdentityState
@@ -570,8 +589,9 @@ abstract class _Success implements IdentityState {
 /// @nodoc
 abstract class _$$ErrorImplCopyWith<$Res> {
   factory _$$ErrorImplCopyWith(
-          _$ErrorImpl value, $Res Function(_$ErrorImpl) then) =
-      __$$ErrorImplCopyWithImpl<$Res>;
+    _$ErrorImpl value,
+    $Res Function(_$ErrorImpl) then,
+  ) = __$$ErrorImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String message});
 }
@@ -581,22 +601,23 @@ class __$$ErrorImplCopyWithImpl<$Res>
     extends _$IdentityStateCopyWithImpl<$Res, _$ErrorImpl>
     implements _$$ErrorImplCopyWith<$Res> {
   __$$ErrorImplCopyWithImpl(
-      _$ErrorImpl _value, $Res Function(_$ErrorImpl) _then)
-      : super(_value, _then);
+    _$ErrorImpl _value,
+    $Res Function(_$ErrorImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of IdentityState
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? message = null,
-  }) {
-    return _then(_$ErrorImpl(
-      null == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+  $Res call({Object? message = null}) {
+    return _then(
+      _$ErrorImpl(
+        null == message
+            ? _value.message
+            : message // ignore: cast_nullable_to_non_nullable
+                as String,
+      ),
+    );
   }
 }
 

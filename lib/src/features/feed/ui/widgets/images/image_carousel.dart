@@ -1,211 +1,85 @@
-import 'dart:ui';
+import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/storage/cache/cache_manager_interface.dart';
 
-class ImageCarousel extends StatefulWidget {
+class ImageCarousel extends ConsumerStatefulWidget {
+  const ImageCarousel({super.key, required this.imageUrls, this.alts});
   final List<String> imageUrls;
-  final List<String>? imageAlts;
-  final bool autoPreload;
-  final bool disableBackgroundBlur;
-
-  const ImageCarousel({
-    super.key,
-    required this.imageUrls,
-    this.imageAlts,
-    this.autoPreload = true,
-    this.disableBackgroundBlur = false,
-  });
+  final List<String>? alts;
 
   @override
-  State<ImageCarousel> createState() => _ImageCarouselState();
+  ConsumerState<ImageCarousel> createState() => _ImageCarouselState();
 }
 
-class _ImageCarouselState extends State<ImageCarousel> {
-  late PageController _pageController;
-  int _currentIndex = 0;
-  bool _imagesPreloaded = false;
+class _ImageCarouselState extends ConsumerState<ImageCarousel> {
+  late CarouselSliderController carouselController;
+  int currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController(initialPage: 0, keepPage: true);
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_imagesPreloaded) {
-      _preloadImages();
-      _imagesPreloaded = true;
-    }
-  }
-
-  @override
-  void dispose() {
-    _pageController.dispose();
-    super.dispose();
-  }
-
-  void _preloadImages() {
-    if (!widget.autoPreload || widget.imageUrls.isEmpty) return;
-
-    // Preload all images by creating image providers
-    for (final url in widget.imageUrls) {
-      precacheImage(CachedNetworkImageProvider(url), context);
-    }
+    carouselController = CarouselSliderController();
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.imageUrls.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
-
     return Stack(
       children: [
-        // Background blur if enabled
-        if (!widget.disableBackgroundBlur && widget.imageUrls.isNotEmpty)
-          BlurredBackground(imageUrl: widget.imageUrls[_currentIndex], isDarkMode: isDarkMode),
-
-        // Full-screen PageView
-        Positioned.fill(
-          child: PageView.builder(
-            controller: _pageController,
-            itemCount: widget.imageUrls.length,
-            onPageChanged: (index) {
+        CarouselSlider.builder(
+          itemCount: widget.imageUrls.length,
+          carouselController: carouselController,
+          itemBuilder: (context, index, realIndex) {
+            return CachedNetworkImage(
+              imageUrl: widget.imageUrls[index],
+              fit: BoxFit.cover,
+              height: MediaQuery.of(context).size.height,
+              placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+              errorWidget: (context, url, error) => const Center(child: Icon(FluentIcons.error_circle_24_regular)),
+            );
+          },
+          options: CarouselOptions(
+            
+            pageSnapping: true,
+            scrollDirection: Axis.horizontal,
+            aspectRatio: 0.5,
+            height: MediaQuery.of(context).size.height,
+            viewportFraction: 1,
+            enableInfiniteScroll: false,
+            onPageChanged: (index, reason) {
               setState(() {
-                _currentIndex = index;
+                currentIndex = index;
               });
             },
-            itemBuilder: (context, index) {
-              final altText = widget.imageAlts != null && widget.imageAlts!.length > index ? widget.imageAlts![index] : null;
-              return ImageItem(imageUrl: widget.imageUrls[index], altText: altText, isDarkMode: isDarkMode);
-            },
           ),
         ),
-
-        // Indicators at the bottom
-        if (widget.imageUrls.length > 1)
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 16,
-            child: Row(mainAxisAlignment: MainAxisAlignment.center, children: _buildIndicators()),
-          ),
-      ],
-    );
-  }
-
-  List<Widget> _buildIndicators() {
-    return List.generate(
-      widget.imageUrls.length,
-      (index) => Container(
-        width: 8.0,
-        height: 8.0,
-        margin: const EdgeInsets.symmetric(horizontal: 4.0),
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: _currentIndex == index ? Colors.white : Colors.white.withAlpha(128),
-        ),
-      ),
-    );
-  }
-}
-
-class ImageItem extends StatelessWidget {
-  const ImageItem({
-    super.key,
-    required this.imageUrl,
-    required this.altText,
-    required this.isDarkMode,
-  });
-
-  final String imageUrl;
-  final String? altText;
-  final bool isDarkMode;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        // Image can be tapped to view in fullscreen
-        // Add fullscreen view later
-      },
-      child: CachedNetworkImage(
-        imageUrl: imageUrl,
-        imageBuilder: (context, imageProvider) {
-          return Image(
-            image: imageProvider,
-            semanticLabel: altText,
-            fit: BoxFit.contain,
-            width: double.infinity,
-            height: double.infinity,
-          );
-        },
-        placeholder:
-            (context, url) => Container(
-              color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
-              child: Center(
-                child: CircularProgressIndicator(valueColor: AlwaysStoppedAnimation<Color>(Colors.white.withAlpha(140))),
-              ),
-            ),
-        errorWidget:
-            (context, url, error) => Container(
-              color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
-              child: Center(child: Icon(Icons.error_outline, color: Colors.white.withAlpha(140))),
-            ),
-      ),
-    );
-  }
-}
-
-class BlurredBackground extends StatelessWidget {
-  const BlurredBackground({
-    super.key,
-    required this.imageUrl,
-    required this.isDarkMode,
-  });
-
-  final String imageUrl;
-  final bool isDarkMode;
-
-  @override
-  Widget build(BuildContext context) {
-    final backgroundColor = isDarkMode ? Colors.black : Colors.grey[900];
-
-    return Positioned.fill(
-      child: Container(
-        color: backgroundColor,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            // Blurred background image
-            ClipRect(
-              child: ImageFiltered(
-                imageFilter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-                child: Transform.scale(
-                  scale: 1.2,
-                  child: Opacity(
-                    opacity: 0.5,
-                    child: CachedNetworkImage(
-                      imageUrl: imageUrl,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => Container(),
-                      errorWidget: (context, url, error) => Container(),
-                    ),
+        Positioned(
+          bottom: 10,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              ...List.generate(
+                widget.imageUrls.length,
+                (index) => Container(
+                  width: 8.0,
+                  height: 8.0,
+                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: currentIndex == index ? Colors.white : Colors.white.withAlpha(128),
                   ),
                 ),
               ),
-            ),
-            // Darkened overlay
-            Container(color: isDarkMode ? Colors.black.withAlpha(120) : Colors.black.withAlpha(160)),
-          ],
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

@@ -21,7 +21,7 @@ class FollowsResponse with _$FollowsResponse {
 
 @freezed
 class FollowUserResponse with _$FollowUserResponse {
-  const factory FollowUserResponse({required String uri, required CID cid}) = _FollowUserResponse;
+  const factory FollowUserResponse({required String uri, required String cid}) = _FollowUserResponse;
 
   factory FollowUserResponse.fromJson(Map<String, dynamic> json) => _$FollowUserResponseFromJson(json);
 }

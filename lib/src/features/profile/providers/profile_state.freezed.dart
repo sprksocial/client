@@ -12,7 +12,8 @@ part of 'profile_state.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$ProfileState {
@@ -31,14 +32,16 @@ mixin _$ProfileState {
 /// @nodoc
 abstract class $ProfileStateCopyWith<$Res> {
   factory $ProfileStateCopyWith(
-          ProfileState value, $Res Function(ProfileState) then) =
-      _$ProfileStateCopyWithImpl<$Res, ProfileState>;
+    ProfileState value,
+    $Res Function(ProfileState) then,
+  ) = _$ProfileStateCopyWithImpl<$Res, ProfileState>;
   @useResult
-  $Res call(
-      {ProfileViewDetailed? profile,
-      bool isEarlySupporter,
-      bool showAuthPrompt,
-      String? currentViewDid});
+  $Res call({
+    ProfileViewDetailed? profile,
+    bool isEarlySupporter,
+    bool showAuthPrompt,
+    String? currentViewDid,
+  });
 
   $ProfileViewDetailedCopyWith<$Res>? get profile;
 }
@@ -63,24 +66,31 @@ class _$ProfileStateCopyWithImpl<$Res, $Val extends ProfileState>
     Object? showAuthPrompt = null,
     Object? currentViewDid = freezed,
   }) {
-    return _then(_value.copyWith(
-      profile: freezed == profile
-          ? _value.profile
-          : profile // ignore: cast_nullable_to_non_nullable
-              as ProfileViewDetailed?,
-      isEarlySupporter: null == isEarlySupporter
-          ? _value.isEarlySupporter
-          : isEarlySupporter // ignore: cast_nullable_to_non_nullable
-              as bool,
-      showAuthPrompt: null == showAuthPrompt
-          ? _value.showAuthPrompt
-          : showAuthPrompt // ignore: cast_nullable_to_non_nullable
-              as bool,
-      currentViewDid: freezed == currentViewDid
-          ? _value.currentViewDid
-          : currentViewDid // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            profile:
+                freezed == profile
+                    ? _value.profile
+                    : profile // ignore: cast_nullable_to_non_nullable
+                        as ProfileViewDetailed?,
+            isEarlySupporter:
+                null == isEarlySupporter
+                    ? _value.isEarlySupporter
+                    : isEarlySupporter // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            showAuthPrompt:
+                null == showAuthPrompt
+                    ? _value.showAuthPrompt
+                    : showAuthPrompt // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            currentViewDid:
+                freezed == currentViewDid
+                    ? _value.currentViewDid
+                    : currentViewDid // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of ProfileState
@@ -102,15 +112,17 @@ class _$ProfileStateCopyWithImpl<$Res, $Val extends ProfileState>
 abstract class _$$ProfileStateImplCopyWith<$Res>
     implements $ProfileStateCopyWith<$Res> {
   factory _$$ProfileStateImplCopyWith(
-          _$ProfileStateImpl value, $Res Function(_$ProfileStateImpl) then) =
-      __$$ProfileStateImplCopyWithImpl<$Res>;
+    _$ProfileStateImpl value,
+    $Res Function(_$ProfileStateImpl) then,
+  ) = __$$ProfileStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {ProfileViewDetailed? profile,
-      bool isEarlySupporter,
-      bool showAuthPrompt,
-      String? currentViewDid});
+  $Res call({
+    ProfileViewDetailed? profile,
+    bool isEarlySupporter,
+    bool showAuthPrompt,
+    String? currentViewDid,
+  });
 
   @override
   $ProfileViewDetailedCopyWith<$Res>? get profile;
@@ -121,8 +133,9 @@ class __$$ProfileStateImplCopyWithImpl<$Res>
     extends _$ProfileStateCopyWithImpl<$Res, _$ProfileStateImpl>
     implements _$$ProfileStateImplCopyWith<$Res> {
   __$$ProfileStateImplCopyWithImpl(
-      _$ProfileStateImpl _value, $Res Function(_$ProfileStateImpl) _then)
-      : super(_value, _then);
+    _$ProfileStateImpl _value,
+    $Res Function(_$ProfileStateImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of ProfileState
   /// with the given fields replaced by the non-null parameter values.
@@ -134,35 +147,42 @@ class __$$ProfileStateImplCopyWithImpl<$Res>
     Object? showAuthPrompt = null,
     Object? currentViewDid = freezed,
   }) {
-    return _then(_$ProfileStateImpl(
-      profile: freezed == profile
-          ? _value.profile
-          : profile // ignore: cast_nullable_to_non_nullable
-              as ProfileViewDetailed?,
-      isEarlySupporter: null == isEarlySupporter
-          ? _value.isEarlySupporter
-          : isEarlySupporter // ignore: cast_nullable_to_non_nullable
-              as bool,
-      showAuthPrompt: null == showAuthPrompt
-          ? _value.showAuthPrompt
-          : showAuthPrompt // ignore: cast_nullable_to_non_nullable
-              as bool,
-      currentViewDid: freezed == currentViewDid
-          ? _value.currentViewDid
-          : currentViewDid // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$ProfileStateImpl(
+        profile:
+            freezed == profile
+                ? _value.profile
+                : profile // ignore: cast_nullable_to_non_nullable
+                    as ProfileViewDetailed?,
+        isEarlySupporter:
+            null == isEarlySupporter
+                ? _value.isEarlySupporter
+                : isEarlySupporter // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        showAuthPrompt:
+            null == showAuthPrompt
+                ? _value.showAuthPrompt
+                : showAuthPrompt // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        currentViewDid:
+            freezed == currentViewDid
+                ? _value.currentViewDid
+                : currentViewDid // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$ProfileStateImpl implements _ProfileState {
-  const _$ProfileStateImpl(
-      {this.profile,
-      this.isEarlySupporter = false,
-      this.showAuthPrompt = false,
-      this.currentViewDid});
+  const _$ProfileStateImpl({
+    this.profile,
+    this.isEarlySupporter = false,
+    this.showAuthPrompt = false,
+    this.currentViewDid,
+  });
 
   @override
   final ProfileViewDetailed? profile;
@@ -196,7 +216,12 @@ class _$ProfileStateImpl implements _ProfileState {
 
   @override
   int get hashCode => Object.hash(
-      runtimeType, profile, isEarlySupporter, showAuthPrompt, currentViewDid);
+    runtimeType,
+    profile,
+    isEarlySupporter,
+    showAuthPrompt,
+    currentViewDid,
+  );
 
   /// Create a copy of ProfileState
   /// with the given fields replaced by the non-null parameter values.
@@ -208,11 +233,12 @@ class _$ProfileStateImpl implements _ProfileState {
 }
 
 abstract class _ProfileState implements ProfileState {
-  const factory _ProfileState(
-      {final ProfileViewDetailed? profile,
-      final bool isEarlySupporter,
-      final bool showAuthPrompt,
-      final String? currentViewDid}) = _$ProfileStateImpl;
+  const factory _ProfileState({
+    final ProfileViewDetailed? profile,
+    final bool isEarlySupporter,
+    final bool showAuthPrompt,
+    final String? currentViewDid,
+  }) = _$ProfileStateImpl;
 
   @override
   ProfileViewDetailed? get profile;

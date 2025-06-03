@@ -118,7 +118,7 @@ class ProfilePage extends ConsumerWidget {
                         // For profiles, the subject is the DID itself.
                         postUri: 'at://${profile.did}/app.bsky.actor.profile/self', // Or just profile.did
                         postCid:
-                            profile.did, // Using DID as a placeholder, actual CID not usually needed for profile report subject
+                            profile.did, // Using DID as a placeholder, actual String not usually needed for profile report subject
                         onSubmit: (subject, reasonType, reason, service) async {
                           try {
                             // The ReportDialog gives reasonType as atp.ModerationReasonType

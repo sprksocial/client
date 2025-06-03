@@ -16,7 +16,7 @@ class FeedPost {
   List<String> labels;
   final List<String> imageUrls;
   final String uri; // Post URI for likes
-  final String cid; // Post CID for likes
+  final String cid; // Post String for likes
   final bool isSprk; // Whether the post is from Spark
   final String? likeUri; // URI of the user's like if the post is liked
   final bool hasMedia; // Whether the post has media (image or video)
@@ -114,7 +114,7 @@ class FeedPost {
     // Try to get the playlist URL first
     videoUrl = videoEmbed['playlist'] as String?;
 
-    // If no playlist URL, try to extract the video CID to construct a URL
+    // If no playlist URL, try to extract the video String to construct a URL
     if (videoUrl == null || videoUrl.isEmpty) {
       // Get the video blob reference
       final videoBlobData = videoEmbed['video'] as Map<String, dynamic>?;
@@ -132,14 +132,14 @@ class FeedPost {
           blobRef = videoBlobData;
         }
 
-        // Extract the CID from the blob reference
+        // Extract the String from the blob reference
         if (blobRef != null && blobRef['ref'] != null) {
           final ref = blobRef['ref'] as Map<String, dynamic>?;
           if (ref != null && ref.containsKey('\$link')) {
             videoCid = ref['\$link'] as String?;
 
-            // Construct a video URL from the URI and CID
-            // Extract DID and CID from the postUri (format: at://did:plc:abc123/app.bsky.feed.post/cid123)
+            // Construct a video URL from the URI and String
+            // Extract DID and String from the postUri (format: at://did:plc:abc123/app.bsky.feed.post/cid123)
             final uriParts = postUri.split('/');
             if (uriParts.length >= 3) {
               final did = uriParts[0].replaceFirst('at://', '');

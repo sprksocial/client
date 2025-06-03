@@ -12,12 +12,15 @@ String _$onboardingNotifierHash() =>
 /// See also [OnboardingNotifier].
 @ProviderFor(OnboardingNotifier)
 final onboardingNotifierProvider = AutoDisposeAsyncNotifierProvider<
-    OnboardingNotifier, OnboardingScreenState>.internal(
+  OnboardingNotifier,
+  OnboardingScreenState
+>.internal(
   OnboardingNotifier.new,
   name: r'onboardingNotifierProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$onboardingNotifierHash,
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$onboardingNotifierHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

@@ -12,7 +12,8 @@ part of 'auth_state.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$AuthState {
@@ -34,12 +35,13 @@ abstract class $AuthStateCopyWith<$Res> {
   factory $AuthStateCopyWith(AuthState value, $Res Function(AuthState) then) =
       _$AuthStateCopyWithImpl<$Res, AuthState>;
   @useResult
-  $Res call(
-      {bool isAuthenticated,
-      Session? session,
-      ATProto? atproto,
-      bool isLoading,
-      String? error});
+  $Res call({
+    bool isAuthenticated,
+    Session? session,
+    ATProto? atproto,
+    bool isLoading,
+    String? error,
+  });
 
   $SessionCopyWith<$Res>? get session;
 }
@@ -65,28 +67,36 @@ class _$AuthStateCopyWithImpl<$Res, $Val extends AuthState>
     Object? isLoading = null,
     Object? error = freezed,
   }) {
-    return _then(_value.copyWith(
-      isAuthenticated: null == isAuthenticated
-          ? _value.isAuthenticated
-          : isAuthenticated // ignore: cast_nullable_to_non_nullable
-              as bool,
-      session: freezed == session
-          ? _value.session
-          : session // ignore: cast_nullable_to_non_nullable
-              as Session?,
-      atproto: freezed == atproto
-          ? _value.atproto
-          : atproto // ignore: cast_nullable_to_non_nullable
-              as ATProto?,
-      isLoading: null == isLoading
-          ? _value.isLoading
-          : isLoading // ignore: cast_nullable_to_non_nullable
-              as bool,
-      error: freezed == error
-          ? _value.error
-          : error // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            isAuthenticated:
+                null == isAuthenticated
+                    ? _value.isAuthenticated
+                    : isAuthenticated // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            session:
+                freezed == session
+                    ? _value.session
+                    : session // ignore: cast_nullable_to_non_nullable
+                        as Session?,
+            atproto:
+                freezed == atproto
+                    ? _value.atproto
+                    : atproto // ignore: cast_nullable_to_non_nullable
+                        as ATProto?,
+            isLoading:
+                null == isLoading
+                    ? _value.isLoading
+                    : isLoading // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            error:
+                freezed == error
+                    ? _value.error
+                    : error // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of AuthState
@@ -108,16 +118,18 @@ class _$AuthStateCopyWithImpl<$Res, $Val extends AuthState>
 abstract class _$$AuthStateImplCopyWith<$Res>
     implements $AuthStateCopyWith<$Res> {
   factory _$$AuthStateImplCopyWith(
-          _$AuthStateImpl value, $Res Function(_$AuthStateImpl) then) =
-      __$$AuthStateImplCopyWithImpl<$Res>;
+    _$AuthStateImpl value,
+    $Res Function(_$AuthStateImpl) then,
+  ) = __$$AuthStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {bool isAuthenticated,
-      Session? session,
-      ATProto? atproto,
-      bool isLoading,
-      String? error});
+  $Res call({
+    bool isAuthenticated,
+    Session? session,
+    ATProto? atproto,
+    bool isLoading,
+    String? error,
+  });
 
   @override
   $SessionCopyWith<$Res>? get session;
@@ -128,8 +140,9 @@ class __$$AuthStateImplCopyWithImpl<$Res>
     extends _$AuthStateCopyWithImpl<$Res, _$AuthStateImpl>
     implements _$$AuthStateImplCopyWith<$Res> {
   __$$AuthStateImplCopyWithImpl(
-      _$AuthStateImpl _value, $Res Function(_$AuthStateImpl) _then)
-      : super(_value, _then);
+    _$AuthStateImpl _value,
+    $Res Function(_$AuthStateImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of AuthState
   /// with the given fields replaced by the non-null parameter values.
@@ -142,41 +155,48 @@ class __$$AuthStateImplCopyWithImpl<$Res>
     Object? isLoading = null,
     Object? error = freezed,
   }) {
-    return _then(_$AuthStateImpl(
-      isAuthenticated: null == isAuthenticated
-          ? _value.isAuthenticated
-          : isAuthenticated // ignore: cast_nullable_to_non_nullable
-              as bool,
-      session: freezed == session
-          ? _value.session
-          : session // ignore: cast_nullable_to_non_nullable
-              as Session?,
-      atproto: freezed == atproto
-          ? _value.atproto
-          : atproto // ignore: cast_nullable_to_non_nullable
-              as ATProto?,
-      isLoading: null == isLoading
-          ? _value.isLoading
-          : isLoading // ignore: cast_nullable_to_non_nullable
-              as bool,
-      error: freezed == error
-          ? _value.error
-          : error // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$AuthStateImpl(
+        isAuthenticated:
+            null == isAuthenticated
+                ? _value.isAuthenticated
+                : isAuthenticated // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        session:
+            freezed == session
+                ? _value.session
+                : session // ignore: cast_nullable_to_non_nullable
+                    as Session?,
+        atproto:
+            freezed == atproto
+                ? _value.atproto
+                : atproto // ignore: cast_nullable_to_non_nullable
+                    as ATProto?,
+        isLoading:
+            null == isLoading
+                ? _value.isLoading
+                : isLoading // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        error:
+            freezed == error
+                ? _value.error
+                : error // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$AuthStateImpl extends _AuthState {
-  const _$AuthStateImpl(
-      {this.isAuthenticated = false,
-      this.session,
-      this.atproto,
-      this.isLoading = false,
-      this.error})
-      : super._();
+  const _$AuthStateImpl({
+    this.isAuthenticated = false,
+    this.session,
+    this.atproto,
+    this.isLoading = false,
+    this.error,
+  }) : super._();
 
   @override
   @JsonKey()
@@ -212,7 +232,13 @@ class _$AuthStateImpl extends _AuthState {
 
   @override
   int get hashCode => Object.hash(
-      runtimeType, isAuthenticated, session, atproto, isLoading, error);
+    runtimeType,
+    isAuthenticated,
+    session,
+    atproto,
+    isLoading,
+    error,
+  );
 
   /// Create a copy of AuthState
   /// with the given fields replaced by the non-null parameter values.
@@ -224,12 +250,13 @@ class _$AuthStateImpl extends _AuthState {
 }
 
 abstract class _AuthState extends AuthState {
-  const factory _AuthState(
-      {final bool isAuthenticated,
-      final Session? session,
-      final ATProto? atproto,
-      final bool isLoading,
-      final String? error}) = _$AuthStateImpl;
+  const factory _AuthState({
+    final bool isAuthenticated,
+    final Session? session,
+    final ATProto? atproto,
+    final bool isLoading,
+    final String? error,
+  }) = _$AuthStateImpl;
   const _AuthState._() : super._();
 
   @override

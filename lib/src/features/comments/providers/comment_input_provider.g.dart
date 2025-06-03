@@ -54,20 +54,14 @@ class CommentInputFamily extends Family<CommentInputState> {
     TextEditingController textController,
     ImagePicker imagePicker,
   ) {
-    return CommentInputProvider(
-      textController,
-      imagePicker,
-    );
+    return CommentInputProvider(textController, imagePicker);
   }
 
   @override
   CommentInputProvider getProviderOverride(
     covariant CommentInputProvider provider,
   ) {
-    return call(
-      provider.textController,
-      provider.imagePicker,
-    );
+    return call(provider.textController, provider.imagePicker);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -93,21 +87,22 @@ class CommentInputProvider
     TextEditingController textController,
     ImagePicker imagePicker,
   ) : this._internal(
-          () => CommentInput()
-            ..textController = textController
-            ..imagePicker = imagePicker,
-          from: commentInputProvider,
-          name: r'commentInputProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$commentInputHash,
-          dependencies: CommentInputFamily._dependencies,
-          allTransitiveDependencies:
-              CommentInputFamily._allTransitiveDependencies,
-          textController: textController,
-          imagePicker: imagePicker,
-        );
+        () =>
+            CommentInput()
+              ..textController = textController
+              ..imagePicker = imagePicker,
+        from: commentInputProvider,
+        name: r'commentInputProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$commentInputHash,
+        dependencies: CommentInputFamily._dependencies,
+        allTransitiveDependencies:
+            CommentInputFamily._allTransitiveDependencies,
+        textController: textController,
+        imagePicker: imagePicker,
+      );
 
   CommentInputProvider._internal(
     super._createNotifier, {
@@ -124,13 +119,8 @@ class CommentInputProvider
   final ImagePicker imagePicker;
 
   @override
-  CommentInputState runNotifierBuild(
-    covariant CommentInput notifier,
-  ) {
-    return notifier.build(
-      textController,
-      imagePicker,
-    );
+  CommentInputState runNotifierBuild(covariant CommentInput notifier) {
+    return notifier.build(textController, imagePicker);
   }
 
   @override
@@ -138,9 +128,10 @@ class CommentInputProvider
     return ProviderOverride(
       origin: this,
       override: CommentInputProvider._internal(
-        () => create()
-          ..textController = textController
-          ..imagePicker = imagePicker,
+        () =>
+            create()
+              ..textController = textController
+              ..imagePicker = imagePicker,
         from: from,
         name: null,
         dependencies: null,
@@ -154,7 +145,7 @@ class CommentInputProvider
 
   @override
   AutoDisposeNotifierProviderElement<CommentInput, CommentInputState>
-      createElement() {
+  createElement() {
     return _CommentInputProviderElement(this);
   }
 
@@ -196,5 +187,6 @@ class _CommentInputProviderElement
   @override
   ImagePicker get imagePicker => (origin as CommentInputProvider).imagePicker;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

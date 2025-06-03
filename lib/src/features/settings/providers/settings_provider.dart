@@ -21,17 +21,16 @@ class Settings extends _$Settings {
   @override
   SettingsState build() {
     _repository = ref.watch(settingsRepositoryProvider);
-    _loadSettings();
-    return SettingsState(activeFeed: Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou));
+    return SettingsState(activeFeed: Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk));
   }
 
   /// Loads all settings from persistent storage
-  Future<void> _loadSettings() async {
+  Future<void> loadSettings() async {
     final feedBlurEnabled = await _repository.getFeedBlurEnabled();
     final hideAdultContent = await _repository.getHideAdultContent();
     final feeds = await _repository.getFeeds();
 
-    state = state.copyWith(feedBlurEnabled: feedBlurEnabled, hideAdultContent: hideAdultContent, feeds: feeds);
+    state = SettingsState(activeFeed: await _repository.getActiveFeed(), feedBlurEnabled: feedBlurEnabled, hideAdultContent: hideAdultContent, feeds: feeds);
   }
 
   /// Sets feed blur setting
@@ -62,6 +61,9 @@ class Settings extends _$Settings {
 
   /// Reorders a feed in feeds list
   Future<void> reorderFeed(int oldIndex, int newIndex) async {
+    if (newIndex == state.feeds.length) {
+      newIndex = state.feeds.length - 1;
+    }
     final updatedList = [...state.feeds];
     final feed = updatedList.removeAt(oldIndex);
     updatedList.insert(newIndex, feed);

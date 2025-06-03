@@ -33,9 +33,7 @@ abstract class _$EditProfile
     extends BuildlessAutoDisposeNotifier<EditProfileState> {
   late final ProfileViewDetailed profile;
 
-  EditProfileState build(
-    ProfileViewDetailed profile,
-  );
+  EditProfileState build(ProfileViewDetailed profile);
 }
 
 /// Provider for editing profile information
@@ -56,21 +54,15 @@ class EditProfileFamily extends Family<EditProfileState> {
   /// Provider for editing profile information
   ///
   /// Copied from [EditProfile].
-  EditProfileProvider call(
-    ProfileViewDetailed profile,
-  ) {
-    return EditProfileProvider(
-      profile,
-    );
+  EditProfileProvider call(ProfileViewDetailed profile) {
+    return EditProfileProvider(profile);
   }
 
   @override
   EditProfileProvider getProviderOverride(
     covariant EditProfileProvider provider,
   ) {
-    return call(
-      provider.profile,
-    );
+    return call(provider.profile);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -96,21 +88,19 @@ class EditProfileProvider
   /// Provider for editing profile information
   ///
   /// Copied from [EditProfile].
-  EditProfileProvider(
-    ProfileViewDetailed profile,
-  ) : this._internal(
-          () => EditProfile()..profile = profile,
-          from: editProfileProvider,
-          name: r'editProfileProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$editProfileHash,
-          dependencies: EditProfileFamily._dependencies,
-          allTransitiveDependencies:
-              EditProfileFamily._allTransitiveDependencies,
-          profile: profile,
-        );
+  EditProfileProvider(ProfileViewDetailed profile)
+    : this._internal(
+        () => EditProfile()..profile = profile,
+        from: editProfileProvider,
+        name: r'editProfileProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$editProfileHash,
+        dependencies: EditProfileFamily._dependencies,
+        allTransitiveDependencies: EditProfileFamily._allTransitiveDependencies,
+        profile: profile,
+      );
 
   EditProfileProvider._internal(
     super._createNotifier, {
@@ -125,12 +115,8 @@ class EditProfileProvider
   final ProfileViewDetailed profile;
 
   @override
-  EditProfileState runNotifierBuild(
-    covariant EditProfile notifier,
-  ) {
-    return notifier.build(
-      profile,
-    );
+  EditProfileState runNotifierBuild(covariant EditProfile notifier) {
+    return notifier.build(profile);
   }
 
   @override
@@ -151,7 +137,7 @@ class EditProfileProvider
 
   @override
   AutoDisposeNotifierProviderElement<EditProfile, EditProfileState>
-      createElement() {
+  createElement() {
     return _EditProfileProviderElement(this);
   }
 
@@ -184,5 +170,6 @@ class _EditProfileProviderElement
   @override
   ProfileViewDetailed get profile => (origin as EditProfileProvider).profile;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

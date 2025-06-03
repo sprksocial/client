@@ -12,7 +12,8 @@ part of 'feed_models.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 CustomFeed _$CustomFeedFromJson(Map<String, dynamic> json) {
   return _CustomFeed.fromJson(json);
@@ -32,7 +33,7 @@ mixin _$CustomFeed {
   String? get did => throw _privateConstructorUsedError;
   @AtUriConverter()
   AtUri? get uri => throw _privateConstructorUsedError;
-  CID? get cid => throw _privateConstructorUsedError;
+  String? get cid => throw _privateConstructorUsedError;
   Map<String, bool> get hashtagPreferences =>
       throw _privateConstructorUsedError; // hashtag: only show posts with this hashtag || never show posts with this hashtag
   Map<String, Map<String, bool>> get labelPreferences =>
@@ -51,24 +52,26 @@ mixin _$CustomFeed {
 /// @nodoc
 abstract class $CustomFeedCopyWith<$Res> {
   factory $CustomFeedCopyWith(
-          CustomFeed value, $Res Function(CustomFeed) then) =
-      _$CustomFeedCopyWithImpl<$Res, CustomFeed>;
+    CustomFeed value,
+    $Res Function(CustomFeed) then,
+  ) = _$CustomFeedCopyWithImpl<$Res, CustomFeed>;
   @useResult
-  $Res call(
-      {ProfileViewBasic? creator,
-      String name,
-      String description,
-      List<Facet> descriptionFacets,
-      List<Label> labels,
-      int likeCount,
-      String imageUrl,
-      bool isDraft,
-      bool videosOnly,
-      String? did,
-      @AtUriConverter() AtUri? uri,
-      CID? cid,
-      Map<String, bool> hashtagPreferences,
-      Map<String, Map<String, bool>> labelPreferences});
+  $Res call({
+    ProfileViewBasic? creator,
+    String name,
+    String description,
+    List<Facet> descriptionFacets,
+    List<Label> labels,
+    int likeCount,
+    String imageUrl,
+    bool isDraft,
+    bool videosOnly,
+    String? did,
+    @AtUriConverter() AtUri? uri,
+    String? cid,
+    Map<String, bool> hashtagPreferences,
+    Map<String, Map<String, bool>> labelPreferences,
+  });
 
   $ProfileViewBasicCopyWith<$Res>? get creator;
 }
@@ -103,64 +106,81 @@ class _$CustomFeedCopyWithImpl<$Res, $Val extends CustomFeed>
     Object? hashtagPreferences = null,
     Object? labelPreferences = null,
   }) {
-    return _then(_value.copyWith(
-      creator: freezed == creator
-          ? _value.creator
-          : creator // ignore: cast_nullable_to_non_nullable
-              as ProfileViewBasic?,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      description: null == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String,
-      descriptionFacets: null == descriptionFacets
-          ? _value.descriptionFacets
-          : descriptionFacets // ignore: cast_nullable_to_non_nullable
-              as List<Facet>,
-      labels: null == labels
-          ? _value.labels
-          : labels // ignore: cast_nullable_to_non_nullable
-              as List<Label>,
-      likeCount: null == likeCount
-          ? _value.likeCount
-          : likeCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      imageUrl: null == imageUrl
-          ? _value.imageUrl
-          : imageUrl // ignore: cast_nullable_to_non_nullable
-              as String,
-      isDraft: null == isDraft
-          ? _value.isDraft
-          : isDraft // ignore: cast_nullable_to_non_nullable
-              as bool,
-      videosOnly: null == videosOnly
-          ? _value.videosOnly
-          : videosOnly // ignore: cast_nullable_to_non_nullable
-              as bool,
-      did: freezed == did
-          ? _value.did
-          : did // ignore: cast_nullable_to_non_nullable
-              as String?,
-      uri: freezed == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as AtUri?,
-      cid: freezed == cid
-          ? _value.cid
-          : cid // ignore: cast_nullable_to_non_nullable
-              as CID?,
-      hashtagPreferences: null == hashtagPreferences
-          ? _value.hashtagPreferences
-          : hashtagPreferences // ignore: cast_nullable_to_non_nullable
-              as Map<String, bool>,
-      labelPreferences: null == labelPreferences
-          ? _value.labelPreferences
-          : labelPreferences // ignore: cast_nullable_to_non_nullable
-              as Map<String, Map<String, bool>>,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            creator:
+                freezed == creator
+                    ? _value.creator
+                    : creator // ignore: cast_nullable_to_non_nullable
+                        as ProfileViewBasic?,
+            name:
+                null == name
+                    ? _value.name
+                    : name // ignore: cast_nullable_to_non_nullable
+                        as String,
+            description:
+                null == description
+                    ? _value.description
+                    : description // ignore: cast_nullable_to_non_nullable
+                        as String,
+            descriptionFacets:
+                null == descriptionFacets
+                    ? _value.descriptionFacets
+                    : descriptionFacets // ignore: cast_nullable_to_non_nullable
+                        as List<Facet>,
+            labels:
+                null == labels
+                    ? _value.labels
+                    : labels // ignore: cast_nullable_to_non_nullable
+                        as List<Label>,
+            likeCount:
+                null == likeCount
+                    ? _value.likeCount
+                    : likeCount // ignore: cast_nullable_to_non_nullable
+                        as int,
+            imageUrl:
+                null == imageUrl
+                    ? _value.imageUrl
+                    : imageUrl // ignore: cast_nullable_to_non_nullable
+                        as String,
+            isDraft:
+                null == isDraft
+                    ? _value.isDraft
+                    : isDraft // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            videosOnly:
+                null == videosOnly
+                    ? _value.videosOnly
+                    : videosOnly // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            did:
+                freezed == did
+                    ? _value.did
+                    : did // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            uri:
+                freezed == uri
+                    ? _value.uri
+                    : uri // ignore: cast_nullable_to_non_nullable
+                        as AtUri?,
+            cid:
+                freezed == cid
+                    ? _value.cid
+                    : cid // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            hashtagPreferences:
+                null == hashtagPreferences
+                    ? _value.hashtagPreferences
+                    : hashtagPreferences // ignore: cast_nullable_to_non_nullable
+                        as Map<String, bool>,
+            labelPreferences:
+                null == labelPreferences
+                    ? _value.labelPreferences
+                    : labelPreferences // ignore: cast_nullable_to_non_nullable
+                        as Map<String, Map<String, bool>>,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of CustomFeed
@@ -182,25 +202,27 @@ class _$CustomFeedCopyWithImpl<$Res, $Val extends CustomFeed>
 abstract class _$$CustomFeedImplCopyWith<$Res>
     implements $CustomFeedCopyWith<$Res> {
   factory _$$CustomFeedImplCopyWith(
-          _$CustomFeedImpl value, $Res Function(_$CustomFeedImpl) then) =
-      __$$CustomFeedImplCopyWithImpl<$Res>;
+    _$CustomFeedImpl value,
+    $Res Function(_$CustomFeedImpl) then,
+  ) = __$$CustomFeedImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {ProfileViewBasic? creator,
-      String name,
-      String description,
-      List<Facet> descriptionFacets,
-      List<Label> labels,
-      int likeCount,
-      String imageUrl,
-      bool isDraft,
-      bool videosOnly,
-      String? did,
-      @AtUriConverter() AtUri? uri,
-      CID? cid,
-      Map<String, bool> hashtagPreferences,
-      Map<String, Map<String, bool>> labelPreferences});
+  $Res call({
+    ProfileViewBasic? creator,
+    String name,
+    String description,
+    List<Facet> descriptionFacets,
+    List<Label> labels,
+    int likeCount,
+    String imageUrl,
+    bool isDraft,
+    bool videosOnly,
+    String? did,
+    @AtUriConverter() AtUri? uri,
+    String? cid,
+    Map<String, bool> hashtagPreferences,
+    Map<String, Map<String, bool>> labelPreferences,
+  });
 
   @override
   $ProfileViewBasicCopyWith<$Res>? get creator;
@@ -211,8 +233,9 @@ class __$$CustomFeedImplCopyWithImpl<$Res>
     extends _$CustomFeedCopyWithImpl<$Res, _$CustomFeedImpl>
     implements _$$CustomFeedImplCopyWith<$Res> {
   __$$CustomFeedImplCopyWithImpl(
-      _$CustomFeedImpl _value, $Res Function(_$CustomFeedImpl) _then)
-      : super(_value, _then);
+    _$CustomFeedImpl _value,
+    $Res Function(_$CustomFeedImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of CustomFeed
   /// with the given fields replaced by the non-null parameter values.
@@ -234,89 +257,106 @@ class __$$CustomFeedImplCopyWithImpl<$Res>
     Object? hashtagPreferences = null,
     Object? labelPreferences = null,
   }) {
-    return _then(_$CustomFeedImpl(
-      creator: freezed == creator
-          ? _value.creator
-          : creator // ignore: cast_nullable_to_non_nullable
-              as ProfileViewBasic?,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      description: null == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String,
-      descriptionFacets: null == descriptionFacets
-          ? _value._descriptionFacets
-          : descriptionFacets // ignore: cast_nullable_to_non_nullable
-              as List<Facet>,
-      labels: null == labels
-          ? _value._labels
-          : labels // ignore: cast_nullable_to_non_nullable
-              as List<Label>,
-      likeCount: null == likeCount
-          ? _value.likeCount
-          : likeCount // ignore: cast_nullable_to_non_nullable
-              as int,
-      imageUrl: null == imageUrl
-          ? _value.imageUrl
-          : imageUrl // ignore: cast_nullable_to_non_nullable
-              as String,
-      isDraft: null == isDraft
-          ? _value.isDraft
-          : isDraft // ignore: cast_nullable_to_non_nullable
-              as bool,
-      videosOnly: null == videosOnly
-          ? _value.videosOnly
-          : videosOnly // ignore: cast_nullable_to_non_nullable
-              as bool,
-      did: freezed == did
-          ? _value.did
-          : did // ignore: cast_nullable_to_non_nullable
-              as String?,
-      uri: freezed == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as AtUri?,
-      cid: freezed == cid
-          ? _value.cid
-          : cid // ignore: cast_nullable_to_non_nullable
-              as CID?,
-      hashtagPreferences: null == hashtagPreferences
-          ? _value._hashtagPreferences
-          : hashtagPreferences // ignore: cast_nullable_to_non_nullable
-              as Map<String, bool>,
-      labelPreferences: null == labelPreferences
-          ? _value._labelPreferences
-          : labelPreferences // ignore: cast_nullable_to_non_nullable
-              as Map<String, Map<String, bool>>,
-    ));
+    return _then(
+      _$CustomFeedImpl(
+        creator:
+            freezed == creator
+                ? _value.creator
+                : creator // ignore: cast_nullable_to_non_nullable
+                    as ProfileViewBasic?,
+        name:
+            null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                    as String,
+        description:
+            null == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                    as String,
+        descriptionFacets:
+            null == descriptionFacets
+                ? _value._descriptionFacets
+                : descriptionFacets // ignore: cast_nullable_to_non_nullable
+                    as List<Facet>,
+        labels:
+            null == labels
+                ? _value._labels
+                : labels // ignore: cast_nullable_to_non_nullable
+                    as List<Label>,
+        likeCount:
+            null == likeCount
+                ? _value.likeCount
+                : likeCount // ignore: cast_nullable_to_non_nullable
+                    as int,
+        imageUrl:
+            null == imageUrl
+                ? _value.imageUrl
+                : imageUrl // ignore: cast_nullable_to_non_nullable
+                    as String,
+        isDraft:
+            null == isDraft
+                ? _value.isDraft
+                : isDraft // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        videosOnly:
+            null == videosOnly
+                ? _value.videosOnly
+                : videosOnly // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        did:
+            freezed == did
+                ? _value.did
+                : did // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        uri:
+            freezed == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                    as AtUri?,
+        cid:
+            freezed == cid
+                ? _value.cid
+                : cid // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        hashtagPreferences:
+            null == hashtagPreferences
+                ? _value._hashtagPreferences
+                : hashtagPreferences // ignore: cast_nullable_to_non_nullable
+                    as Map<String, bool>,
+        labelPreferences:
+            null == labelPreferences
+                ? _value._labelPreferences
+                : labelPreferences // ignore: cast_nullable_to_non_nullable
+                    as Map<String, Map<String, bool>>,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$CustomFeedImpl with DiagnosticableTreeMixin implements _CustomFeed {
-  const _$CustomFeedImpl(
-      {required this.creator,
-      this.name = 'Custom Feed',
-      this.description = 'Your custom feed',
-      final List<Facet> descriptionFacets = const [],
-      final List<Label> labels = const [],
-      this.likeCount = 0,
-      this.imageUrl = '',
-      this.isDraft = true,
-      this.videosOnly = false,
-      this.did,
-      @AtUriConverter() this.uri,
-      this.cid,
-      final Map<String, bool> hashtagPreferences = const {},
-      final Map<String, Map<String, bool>> labelPreferences = const {}})
-      : _descriptionFacets = descriptionFacets,
-        _labels = labels,
-        _hashtagPreferences = hashtagPreferences,
-        _labelPreferences = labelPreferences;
+  const _$CustomFeedImpl({
+    required this.creator,
+    this.name = 'Custom Feed',
+    this.description = 'Your custom feed',
+    final List<Facet> descriptionFacets = const [],
+    final List<Label> labels = const [],
+    this.likeCount = 0,
+    this.imageUrl = '',
+    this.isDraft = true,
+    this.videosOnly = false,
+    this.did,
+    @AtUriConverter() this.uri,
+    this.cid,
+    final Map<String, bool> hashtagPreferences = const {},
+    final Map<String, Map<String, bool>> labelPreferences = const {},
+  }) : _descriptionFacets = descriptionFacets,
+       _labels = labels,
+       _hashtagPreferences = hashtagPreferences,
+       _labelPreferences = labelPreferences;
 
   factory _$CustomFeedImpl.fromJson(Map<String, dynamic> json) =>
       _$$CustomFeedImplFromJson(json);
@@ -366,7 +406,7 @@ class _$CustomFeedImpl with DiagnosticableTreeMixin implements _CustomFeed {
   @AtUriConverter()
   final AtUri? uri;
   @override
-  final CID? cid;
+  final String? cid;
   final Map<String, bool> _hashtagPreferences;
   @override
   @JsonKey()
@@ -377,9 +417,9 @@ class _$CustomFeedImpl with DiagnosticableTreeMixin implements _CustomFeed {
     return EqualUnmodifiableMapView(_hashtagPreferences);
   }
 
-// hashtag: only show posts with this hashtag || never show posts with this hashtag
+  // hashtag: only show posts with this hashtag || never show posts with this hashtag
   final Map<String, Map<String, bool>> _labelPreferences;
-// hashtag: only show posts with this hashtag || never show posts with this hashtag
+  // hashtag: only show posts with this hashtag || never show posts with this hashtag
   @override
   @JsonKey()
   Map<String, Map<String, bool>> get labelPreferences {
@@ -423,8 +463,10 @@ class _$CustomFeedImpl with DiagnosticableTreeMixin implements _CustomFeed {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.description, description) ||
                 other.description == description) &&
-            const DeepCollectionEquality()
-                .equals(other._descriptionFacets, _descriptionFacets) &&
+            const DeepCollectionEquality().equals(
+              other._descriptionFacets,
+              _descriptionFacets,
+            ) &&
             const DeepCollectionEquality().equals(other._labels, _labels) &&
             (identical(other.likeCount, likeCount) ||
                 other.likeCount == likeCount) &&
@@ -436,30 +478,35 @@ class _$CustomFeedImpl with DiagnosticableTreeMixin implements _CustomFeed {
             (identical(other.did, did) || other.did == did) &&
             (identical(other.uri, uri) || other.uri == uri) &&
             (identical(other.cid, cid) || other.cid == cid) &&
-            const DeepCollectionEquality()
-                .equals(other._hashtagPreferences, _hashtagPreferences) &&
-            const DeepCollectionEquality()
-                .equals(other._labelPreferences, _labelPreferences));
+            const DeepCollectionEquality().equals(
+              other._hashtagPreferences,
+              _hashtagPreferences,
+            ) &&
+            const DeepCollectionEquality().equals(
+              other._labelPreferences,
+              _labelPreferences,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      creator,
-      name,
-      description,
-      const DeepCollectionEquality().hash(_descriptionFacets),
-      const DeepCollectionEquality().hash(_labels),
-      likeCount,
-      imageUrl,
-      isDraft,
-      videosOnly,
-      did,
-      uri,
-      cid,
-      const DeepCollectionEquality().hash(_hashtagPreferences),
-      const DeepCollectionEquality().hash(_labelPreferences));
+    runtimeType,
+    creator,
+    name,
+    description,
+    const DeepCollectionEquality().hash(_descriptionFacets),
+    const DeepCollectionEquality().hash(_labels),
+    likeCount,
+    imageUrl,
+    isDraft,
+    videosOnly,
+    did,
+    uri,
+    cid,
+    const DeepCollectionEquality().hash(_hashtagPreferences),
+    const DeepCollectionEquality().hash(_labelPreferences),
+  );
 
   /// Create a copy of CustomFeed
   /// with the given fields replaced by the non-null parameter values.
@@ -471,29 +518,27 @@ class _$CustomFeedImpl with DiagnosticableTreeMixin implements _CustomFeed {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$CustomFeedImplToJson(
-      this,
-    );
+    return _$$CustomFeedImplToJson(this);
   }
 }
 
 abstract class _CustomFeed implements CustomFeed {
-  const factory _CustomFeed(
-          {required final ProfileViewBasic? creator,
-          final String name,
-          final String description,
-          final List<Facet> descriptionFacets,
-          final List<Label> labels,
-          final int likeCount,
-          final String imageUrl,
-          final bool isDraft,
-          final bool videosOnly,
-          final String? did,
-          @AtUriConverter() final AtUri? uri,
-          final CID? cid,
-          final Map<String, bool> hashtagPreferences,
-          final Map<String, Map<String, bool>> labelPreferences}) =
-      _$CustomFeedImpl;
+  const factory _CustomFeed({
+    required final ProfileViewBasic? creator,
+    final String name,
+    final String description,
+    final List<Facet> descriptionFacets,
+    final List<Label> labels,
+    final int likeCount,
+    final String imageUrl,
+    final bool isDraft,
+    final bool videosOnly,
+    final String? did,
+    @AtUriConverter() final AtUri? uri,
+    final String? cid,
+    final Map<String, bool> hashtagPreferences,
+    final Map<String, Map<String, bool>> labelPreferences,
+  }) = _$CustomFeedImpl;
 
   factory _CustomFeed.fromJson(Map<String, dynamic> json) =
       _$CustomFeedImpl.fromJson;
@@ -522,10 +567,9 @@ abstract class _CustomFeed implements CustomFeed {
   @AtUriConverter()
   AtUri? get uri;
   @override
-  CID? get cid;
+  String? get cid;
   @override
-  Map<String, bool>
-      get hashtagPreferences; // hashtag: only show posts with this hashtag || never show posts with this hashtag
+  Map<String, bool> get hashtagPreferences; // hashtag: only show posts with this hashtag || never show posts with this hashtag
   @override
   Map<String, Map<String, bool>> get labelPreferences;
 
@@ -545,8 +589,12 @@ Feed _$FeedFromJson(Map<String, dynamic> json) {
       return FeedHardCoded.fromJson(json);
 
     default:
-      throw CheckedFromJsonException(json, 'runtimeType', 'Feed',
-          'Invalid union type "${json['runtimeType']}"!');
+      throw CheckedFromJsonException(
+        json,
+        'runtimeType',
+        'Feed',
+        'Invalid union type "${json['runtimeType']}"!',
+      );
   }
 }
 
@@ -556,40 +604,34 @@ mixin _$Feed {
   TResult when<TResult extends Object?>({
     required TResult Function(String name, @AtUriConverter() AtUri uri) custom,
     required TResult Function(HardCodedFeedEnum hardCodedFeed) hardCoded,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String name, @AtUriConverter() AtUri uri)? custom,
     TResult? Function(HardCodedFeedEnum hardCodedFeed)? hardCoded,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String name, @AtUriConverter() AtUri uri)? custom,
     TResult Function(HardCodedFeedEnum hardCodedFeed)? hardCoded,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(FeedCustom value) custom,
     required TResult Function(FeedHardCoded value) hardCoded,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(FeedCustom value)? custom,
     TResult? Function(FeedHardCoded value)? hardCoded,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(FeedCustom value)? custom,
     TResult Function(FeedHardCoded value)? hardCoded,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 
   /// Serializes this Feed to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -618,8 +660,9 @@ class _$FeedCopyWithImpl<$Res, $Val extends Feed>
 /// @nodoc
 abstract class _$$FeedCustomImplCopyWith<$Res> {
   factory _$$FeedCustomImplCopyWith(
-          _$FeedCustomImpl value, $Res Function(_$FeedCustomImpl) then) =
-      __$$FeedCustomImplCopyWithImpl<$Res>;
+    _$FeedCustomImpl value,
+    $Res Function(_$FeedCustomImpl) then,
+  ) = __$$FeedCustomImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String name, @AtUriConverter() AtUri uri});
 }
@@ -629,39 +672,42 @@ class __$$FeedCustomImplCopyWithImpl<$Res>
     extends _$FeedCopyWithImpl<$Res, _$FeedCustomImpl>
     implements _$$FeedCustomImplCopyWith<$Res> {
   __$$FeedCustomImplCopyWithImpl(
-      _$FeedCustomImpl _value, $Res Function(_$FeedCustomImpl) _then)
-      : super(_value, _then);
+    _$FeedCustomImpl _value,
+    $Res Function(_$FeedCustomImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of Feed
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? name = null,
-    Object? uri = null,
-  }) {
-    return _then(_$FeedCustomImpl(
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-    ));
+  $Res call({Object? name = null, Object? uri = null}) {
+    return _then(
+      _$FeedCustomImpl(
+        name:
+            null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                    as String,
+        uri:
+            null == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                    as AtUri,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$FeedCustomImpl extends FeedCustom with DiagnosticableTreeMixin {
-  const _$FeedCustomImpl(
-      {required this.name,
-      @AtUriConverter() required this.uri,
-      final String? $type})
-      : $type = $type ?? 'custom',
-        super._();
+  const _$FeedCustomImpl({
+    required this.name,
+    @AtUriConverter() required this.uri,
+    final String? $type,
+  }) : $type = $type ?? 'custom',
+       super._();
 
   factory _$FeedCustomImpl.fromJson(Map<String, dynamic> json) =>
       _$$FeedCustomImplFromJson(json);
@@ -774,16 +820,15 @@ class _$FeedCustomImpl extends FeedCustom with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FeedCustomImplToJson(
-      this,
-    );
+    return _$$FeedCustomImplToJson(this);
   }
 }
 
 abstract class FeedCustom extends Feed {
-  const factory FeedCustom(
-      {required final String name,
-      @AtUriConverter() required final AtUri uri}) = _$FeedCustomImpl;
+  const factory FeedCustom({
+    required final String name,
+    @AtUriConverter() required final AtUri uri,
+  }) = _$FeedCustomImpl;
   const FeedCustom._() : super._();
 
   factory FeedCustom.fromJson(Map<String, dynamic> json) =
@@ -803,8 +848,9 @@ abstract class FeedCustom extends Feed {
 /// @nodoc
 abstract class _$$FeedHardCodedImplCopyWith<$Res> {
   factory _$$FeedHardCodedImplCopyWith(
-          _$FeedHardCodedImpl value, $Res Function(_$FeedHardCodedImpl) then) =
-      __$$FeedHardCodedImplCopyWithImpl<$Res>;
+    _$FeedHardCodedImpl value,
+    $Res Function(_$FeedHardCodedImpl) then,
+  ) = __$$FeedHardCodedImplCopyWithImpl<$Res>;
   @useResult
   $Res call({HardCodedFeedEnum hardCodedFeed});
 }
@@ -814,31 +860,34 @@ class __$$FeedHardCodedImplCopyWithImpl<$Res>
     extends _$FeedCopyWithImpl<$Res, _$FeedHardCodedImpl>
     implements _$$FeedHardCodedImplCopyWith<$Res> {
   __$$FeedHardCodedImplCopyWithImpl(
-      _$FeedHardCodedImpl _value, $Res Function(_$FeedHardCodedImpl) _then)
-      : super(_value, _then);
+    _$FeedHardCodedImpl _value,
+    $Res Function(_$FeedHardCodedImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of Feed
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? hardCodedFeed = null,
-  }) {
-    return _then(_$FeedHardCodedImpl(
-      hardCodedFeed: null == hardCodedFeed
-          ? _value.hardCodedFeed
-          : hardCodedFeed // ignore: cast_nullable_to_non_nullable
-              as HardCodedFeedEnum,
-    ));
+  $Res call({Object? hardCodedFeed = null}) {
+    return _then(
+      _$FeedHardCodedImpl(
+        hardCodedFeed:
+            null == hardCodedFeed
+                ? _value.hardCodedFeed
+                : hardCodedFeed // ignore: cast_nullable_to_non_nullable
+                    as HardCodedFeedEnum,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$FeedHardCodedImpl extends FeedHardCoded with DiagnosticableTreeMixin {
   const _$FeedHardCodedImpl({required this.hardCodedFeed, final String? $type})
-      : $type = $type ?? 'hardCoded',
-        super._();
+    : $type = $type ?? 'hardCoded',
+      super._();
 
   factory _$FeedHardCodedImpl.fromJson(Map<String, dynamic> json) =>
       _$$FeedHardCodedImplFromJson(json);
@@ -947,15 +996,14 @@ class _$FeedHardCodedImpl extends FeedHardCoded with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FeedHardCodedImplToJson(
-      this,
-    );
+    return _$$FeedHardCodedImplToJson(this);
   }
 }
 
 abstract class FeedHardCoded extends Feed {
-  const factory FeedHardCoded(
-      {required final HardCodedFeedEnum hardCodedFeed}) = _$FeedHardCodedImpl;
+  const factory FeedHardCoded({
+    required final HardCodedFeedEnum hardCodedFeed,
+  }) = _$FeedHardCodedImpl;
   const FeedHardCoded._() : super._();
 
   factory FeedHardCoded.fromJson(Map<String, dynamic> json) =
@@ -992,8 +1040,9 @@ mixin _$SkeletonFeedPost {
 /// @nodoc
 abstract class $SkeletonFeedPostCopyWith<$Res> {
   factory $SkeletonFeedPostCopyWith(
-          SkeletonFeedPost value, $Res Function(SkeletonFeedPost) then) =
-      _$SkeletonFeedPostCopyWithImpl<$Res, SkeletonFeedPost>;
+    SkeletonFeedPost value,
+    $Res Function(SkeletonFeedPost) then,
+  ) = _$SkeletonFeedPostCopyWithImpl<$Res, SkeletonFeedPost>;
   @useResult
   $Res call({@AtUriConverter() AtUri uri});
 }
@@ -1012,24 +1061,27 @@ class _$SkeletonFeedPostCopyWithImpl<$Res, $Val extends SkeletonFeedPost>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? uri = null,
-  }) {
-    return _then(_value.copyWith(
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-    ) as $Val);
+  $Res call({Object? uri = null}) {
+    return _then(
+      _value.copyWith(
+            uri:
+                null == uri
+                    ? _value.uri
+                    : uri // ignore: cast_nullable_to_non_nullable
+                        as AtUri,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$SkeletonFeedPostImplCopyWith<$Res>
     implements $SkeletonFeedPostCopyWith<$Res> {
-  factory _$$SkeletonFeedPostImplCopyWith(_$SkeletonFeedPostImpl value,
-          $Res Function(_$SkeletonFeedPostImpl) then) =
-      __$$SkeletonFeedPostImplCopyWithImpl<$Res>;
+  factory _$$SkeletonFeedPostImplCopyWith(
+    _$SkeletonFeedPostImpl value,
+    $Res Function(_$SkeletonFeedPostImpl) then,
+  ) = __$$SkeletonFeedPostImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({@AtUriConverter() AtUri uri});
@@ -1039,28 +1091,31 @@ abstract class _$$SkeletonFeedPostImplCopyWith<$Res>
 class __$$SkeletonFeedPostImplCopyWithImpl<$Res>
     extends _$SkeletonFeedPostCopyWithImpl<$Res, _$SkeletonFeedPostImpl>
     implements _$$SkeletonFeedPostImplCopyWith<$Res> {
-  __$$SkeletonFeedPostImplCopyWithImpl(_$SkeletonFeedPostImpl _value,
-      $Res Function(_$SkeletonFeedPostImpl) _then)
-      : super(_value, _then);
+  __$$SkeletonFeedPostImplCopyWithImpl(
+    _$SkeletonFeedPostImpl _value,
+    $Res Function(_$SkeletonFeedPostImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of SkeletonFeedPost
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? uri = null,
-  }) {
-    return _then(_$SkeletonFeedPostImpl(
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-    ));
+  $Res call({Object? uri = null}) {
+    return _then(
+      _$SkeletonFeedPostImpl(
+        uri:
+            null == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                    as AtUri,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$SkeletonFeedPostImpl
     with DiagnosticableTreeMixin
     implements _SkeletonFeedPost {
@@ -1105,19 +1160,20 @@ class _$SkeletonFeedPostImpl
   @pragma('vm:prefer-inline')
   _$$SkeletonFeedPostImplCopyWith<_$SkeletonFeedPostImpl> get copyWith =>
       __$$SkeletonFeedPostImplCopyWithImpl<_$SkeletonFeedPostImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$SkeletonFeedPostImplToJson(
-      this,
-    );
+    return _$$SkeletonFeedPostImplToJson(this);
   }
 }
 
 abstract class _SkeletonFeedPost implements SkeletonFeedPost {
-  const factory _SkeletonFeedPost(
-      {@AtUriConverter() required final AtUri uri}) = _$SkeletonFeedPostImpl;
+  const factory _SkeletonFeedPost({
+    @AtUriConverter() required final AtUri uri,
+  }) = _$SkeletonFeedPostImpl;
 
   factory _SkeletonFeedPost.fromJson(Map<String, dynamic> json) =
       _$SkeletonFeedPostImpl.fromJson;
@@ -1135,7 +1191,8 @@ abstract class _SkeletonFeedPost implements SkeletonFeedPost {
 }
 
 HardcodedFeedExtraInfo _$HardcodedFeedExtraInfoFromJson(
-    Map<String, dynamic> json) {
+  Map<String, dynamic> json,
+) {
   return HardcodedFeedExtraInfoShared.fromJson(json);
 }
 
@@ -1146,35 +1203,29 @@ mixin _$HardcodedFeedExtraInfo {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(ProfileViewBasic from, String? message) shared,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(ProfileViewBasic from, String? message)? shared,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(ProfileViewBasic from, String? message)? shared,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(HardcodedFeedExtraInfoShared value) shared,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(HardcodedFeedExtraInfoShared value)? shared,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(HardcodedFeedExtraInfoShared value)? shared,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 
   /// Serializes this HardcodedFeedExtraInfo to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1188,9 +1239,10 @@ mixin _$HardcodedFeedExtraInfo {
 
 /// @nodoc
 abstract class $HardcodedFeedExtraInfoCopyWith<$Res> {
-  factory $HardcodedFeedExtraInfoCopyWith(HardcodedFeedExtraInfo value,
-          $Res Function(HardcodedFeedExtraInfo) then) =
-      _$HardcodedFeedExtraInfoCopyWithImpl<$Res, HardcodedFeedExtraInfo>;
+  factory $HardcodedFeedExtraInfoCopyWith(
+    HardcodedFeedExtraInfo value,
+    $Res Function(HardcodedFeedExtraInfo) then,
+  ) = _$HardcodedFeedExtraInfoCopyWithImpl<$Res, HardcodedFeedExtraInfo>;
   @useResult
   $Res call({ProfileViewBasic from, String? message});
 
@@ -1198,8 +1250,10 @@ abstract class $HardcodedFeedExtraInfoCopyWith<$Res> {
 }
 
 /// @nodoc
-class _$HardcodedFeedExtraInfoCopyWithImpl<$Res,
-        $Val extends HardcodedFeedExtraInfo>
+class _$HardcodedFeedExtraInfoCopyWithImpl<
+  $Res,
+  $Val extends HardcodedFeedExtraInfo
+>
     implements $HardcodedFeedExtraInfoCopyWith<$Res> {
   _$HardcodedFeedExtraInfoCopyWithImpl(this._value, this._then);
 
@@ -1212,20 +1266,22 @@ class _$HardcodedFeedExtraInfoCopyWithImpl<$Res,
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? from = null,
-    Object? message = freezed,
-  }) {
-    return _then(_value.copyWith(
-      from: null == from
-          ? _value.from
-          : from // ignore: cast_nullable_to_non_nullable
-              as ProfileViewBasic,
-      message: freezed == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  $Res call({Object? from = null, Object? message = freezed}) {
+    return _then(
+      _value.copyWith(
+            from:
+                null == from
+                    ? _value.from
+                    : from // ignore: cast_nullable_to_non_nullable
+                        as ProfileViewBasic,
+            message:
+                freezed == message
+                    ? _value.message
+                    : message // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of HardcodedFeedExtraInfo
@@ -1243,9 +1299,9 @@ class _$HardcodedFeedExtraInfoCopyWithImpl<$Res,
 abstract class _$$HardcodedFeedExtraInfoSharedImplCopyWith<$Res>
     implements $HardcodedFeedExtraInfoCopyWith<$Res> {
   factory _$$HardcodedFeedExtraInfoSharedImplCopyWith(
-          _$HardcodedFeedExtraInfoSharedImpl value,
-          $Res Function(_$HardcodedFeedExtraInfoSharedImpl) then) =
-      __$$HardcodedFeedExtraInfoSharedImplCopyWithImpl<$Res>;
+    _$HardcodedFeedExtraInfoSharedImpl value,
+    $Res Function(_$HardcodedFeedExtraInfoSharedImpl) then,
+  ) = __$$HardcodedFeedExtraInfoSharedImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({ProfileViewBasic from, String? message});
@@ -1256,45 +1312,50 @@ abstract class _$$HardcodedFeedExtraInfoSharedImplCopyWith<$Res>
 
 /// @nodoc
 class __$$HardcodedFeedExtraInfoSharedImplCopyWithImpl<$Res>
-    extends _$HardcodedFeedExtraInfoCopyWithImpl<$Res,
-        _$HardcodedFeedExtraInfoSharedImpl>
+    extends
+        _$HardcodedFeedExtraInfoCopyWithImpl<
+          $Res,
+          _$HardcodedFeedExtraInfoSharedImpl
+        >
     implements _$$HardcodedFeedExtraInfoSharedImplCopyWith<$Res> {
   __$$HardcodedFeedExtraInfoSharedImplCopyWithImpl(
-      _$HardcodedFeedExtraInfoSharedImpl _value,
-      $Res Function(_$HardcodedFeedExtraInfoSharedImpl) _then)
-      : super(_value, _then);
+    _$HardcodedFeedExtraInfoSharedImpl _value,
+    $Res Function(_$HardcodedFeedExtraInfoSharedImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of HardcodedFeedExtraInfo
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? from = null,
-    Object? message = freezed,
-  }) {
-    return _then(_$HardcodedFeedExtraInfoSharedImpl(
-      from: null == from
-          ? _value.from
-          : from // ignore: cast_nullable_to_non_nullable
-              as ProfileViewBasic,
-      message: freezed == message
-          ? _value.message
-          : message // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? from = null, Object? message = freezed}) {
+    return _then(
+      _$HardcodedFeedExtraInfoSharedImpl(
+        from:
+            null == from
+                ? _value.from
+                : from // ignore: cast_nullable_to_non_nullable
+                    as ProfileViewBasic,
+        message:
+            freezed == message
+                ? _value.message
+                : message // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$HardcodedFeedExtraInfoSharedImpl extends HardcodedFeedExtraInfoShared
     with DiagnosticableTreeMixin {
   const _$HardcodedFeedExtraInfoSharedImpl({required this.from, this.message})
-      : super._();
+    : super._();
 
   factory _$HardcodedFeedExtraInfoSharedImpl.fromJson(
-          Map<String, dynamic> json) =>
-      _$$HardcodedFeedExtraInfoSharedImplFromJson(json);
+    Map<String, dynamic> json,
+  ) => _$$HardcodedFeedExtraInfoSharedImplFromJson(json);
 
   @override
   final ProfileViewBasic from;
@@ -1334,9 +1395,11 @@ class _$HardcodedFeedExtraInfoSharedImpl extends HardcodedFeedExtraInfoShared
   @override
   @pragma('vm:prefer-inline')
   _$$HardcodedFeedExtraInfoSharedImplCopyWith<
-          _$HardcodedFeedExtraInfoSharedImpl>
-      get copyWith => __$$HardcodedFeedExtraInfoSharedImplCopyWithImpl<
-          _$HardcodedFeedExtraInfoSharedImpl>(this, _$identity);
+    _$HardcodedFeedExtraInfoSharedImpl
+  >
+  get copyWith => __$$HardcodedFeedExtraInfoSharedImplCopyWithImpl<
+    _$HardcodedFeedExtraInfoSharedImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1396,16 +1459,15 @@ class _$HardcodedFeedExtraInfoSharedImpl extends HardcodedFeedExtraInfoShared
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$HardcodedFeedExtraInfoSharedImplToJson(
-      this,
-    );
+    return _$$HardcodedFeedExtraInfoSharedImplToJson(this);
   }
 }
 
 abstract class HardcodedFeedExtraInfoShared extends HardcodedFeedExtraInfo {
-  const factory HardcodedFeedExtraInfoShared(
-      {required final ProfileViewBasic from,
-      final String? message}) = _$HardcodedFeedExtraInfoSharedImpl;
+  const factory HardcodedFeedExtraInfoShared({
+    required final ProfileViewBasic from,
+    final String? message,
+  }) = _$HardcodedFeedExtraInfoSharedImpl;
   const HardcodedFeedExtraInfoShared._() : super._();
 
   factory HardcodedFeedExtraInfoShared.fromJson(Map<String, dynamic> json) =
@@ -1421,8 +1483,9 @@ abstract class HardcodedFeedExtraInfoShared extends HardcodedFeedExtraInfo {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$HardcodedFeedExtraInfoSharedImplCopyWith<
-          _$HardcodedFeedExtraInfoSharedImpl>
-      get copyWith => throw _privateConstructorUsedError;
+    _$HardcodedFeedExtraInfoSharedImpl
+  >
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 FeedViewPost _$FeedViewPostFromJson(Map<String, dynamic> json) {
@@ -1447,8 +1510,9 @@ mixin _$FeedViewPost {
 /// @nodoc
 abstract class $FeedViewPostCopyWith<$Res> {
   factory $FeedViewPostCopyWith(
-          FeedViewPost value, $Res Function(FeedViewPost) then) =
-      _$FeedViewPostCopyWithImpl<$Res, FeedViewPost>;
+    FeedViewPost value,
+    $Res Function(FeedViewPost) then,
+  ) = _$FeedViewPostCopyWithImpl<$Res, FeedViewPost>;
   @useResult
   $Res call({PostView post, ReplyRef? reply});
 
@@ -1470,20 +1534,22 @@ class _$FeedViewPostCopyWithImpl<$Res, $Val extends FeedViewPost>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? post = null,
-    Object? reply = freezed,
-  }) {
-    return _then(_value.copyWith(
-      post: null == post
-          ? _value.post
-          : post // ignore: cast_nullable_to_non_nullable
-              as PostView,
-      reply: freezed == reply
-          ? _value.reply
-          : reply // ignore: cast_nullable_to_non_nullable
-              as ReplyRef?,
-    ) as $Val);
+  $Res call({Object? post = null, Object? reply = freezed}) {
+    return _then(
+      _value.copyWith(
+            post:
+                null == post
+                    ? _value.post
+                    : post // ignore: cast_nullable_to_non_nullable
+                        as PostView,
+            reply:
+                freezed == reply
+                    ? _value.reply
+                    : reply // ignore: cast_nullable_to_non_nullable
+                        as ReplyRef?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of FeedViewPost
@@ -1514,9 +1580,10 @@ class _$FeedViewPostCopyWithImpl<$Res, $Val extends FeedViewPost>
 /// @nodoc
 abstract class _$$FeedViewPostPostImplCopyWith<$Res>
     implements $FeedViewPostCopyWith<$Res> {
-  factory _$$FeedViewPostPostImplCopyWith(_$FeedViewPostPostImpl value,
-          $Res Function(_$FeedViewPostPostImpl) then) =
-      __$$FeedViewPostPostImplCopyWithImpl<$Res>;
+  factory _$$FeedViewPostPostImplCopyWith(
+    _$FeedViewPostPostImpl value,
+    $Res Function(_$FeedViewPostPostImpl) then,
+  ) = __$$FeedViewPostPostImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({PostView post, ReplyRef? reply});
@@ -1531,37 +1598,39 @@ abstract class _$$FeedViewPostPostImplCopyWith<$Res>
 class __$$FeedViewPostPostImplCopyWithImpl<$Res>
     extends _$FeedViewPostCopyWithImpl<$Res, _$FeedViewPostPostImpl>
     implements _$$FeedViewPostPostImplCopyWith<$Res> {
-  __$$FeedViewPostPostImplCopyWithImpl(_$FeedViewPostPostImpl _value,
-      $Res Function(_$FeedViewPostPostImpl) _then)
-      : super(_value, _then);
+  __$$FeedViewPostPostImplCopyWithImpl(
+    _$FeedViewPostPostImpl _value,
+    $Res Function(_$FeedViewPostPostImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of FeedViewPost
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? post = null,
-    Object? reply = freezed,
-  }) {
-    return _then(_$FeedViewPostPostImpl(
-      post: null == post
-          ? _value.post
-          : post // ignore: cast_nullable_to_non_nullable
-              as PostView,
-      reply: freezed == reply
-          ? _value.reply
-          : reply // ignore: cast_nullable_to_non_nullable
-              as ReplyRef?,
-    ));
+  $Res call({Object? post = null, Object? reply = freezed}) {
+    return _then(
+      _$FeedViewPostPostImpl(
+        post:
+            null == post
+                ? _value.post
+                : post // ignore: cast_nullable_to_non_nullable
+                    as PostView,
+        reply:
+            freezed == reply
+                ? _value.reply
+                : reply // ignore: cast_nullable_to_non_nullable
+                    as ReplyRef?,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
-class _$FeedViewPostPostImpl
-    with DiagnosticableTreeMixin
-    implements _FeedViewPostPost {
-  const _$FeedViewPostPostImpl({required this.post, this.reply});
+
+@JsonSerializable(explicitToJson: true)
+class _$FeedViewPostPostImpl extends _FeedViewPostPost
+    with DiagnosticableTreeMixin {
+  const _$FeedViewPostPostImpl({required this.post, this.reply}) : super._();
 
   factory _$FeedViewPostPostImpl.fromJson(Map<String, dynamic> json) =>
       _$$FeedViewPostPostImplFromJson(json);
@@ -1605,20 +1674,22 @@ class _$FeedViewPostPostImpl
   @pragma('vm:prefer-inline')
   _$$FeedViewPostPostImplCopyWith<_$FeedViewPostPostImpl> get copyWith =>
       __$$FeedViewPostPostImplCopyWithImpl<_$FeedViewPostPostImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FeedViewPostPostImplToJson(
-      this,
-    );
+    return _$$FeedViewPostPostImplToJson(this);
   }
 }
 
-abstract class _FeedViewPostPost implements FeedViewPost {
-  const factory _FeedViewPostPost(
-      {required final PostView post,
-      final ReplyRef? reply}) = _$FeedViewPostPostImpl;
+abstract class _FeedViewPostPost extends FeedViewPost {
+  const factory _FeedViewPostPost({
+    required final PostView post,
+    final ReplyRef? reply,
+  }) = _$FeedViewPostPostImpl;
+  const _FeedViewPostPost._() : super._();
 
   factory _FeedViewPostPost.fromJson(Map<String, dynamic> json) =
       _$FeedViewPostPostImpl.fromJson;
@@ -1663,10 +1734,11 @@ abstract class $ReplyRefCopyWith<$Res> {
   factory $ReplyRefCopyWith(ReplyRef value, $Res Function(ReplyRef) then) =
       _$ReplyRefCopyWithImpl<$Res, ReplyRef>;
   @useResult
-  $Res call(
-      {ReplyRefPostReference root,
-      ReplyRefPostReference parent,
-      ProfileViewBasic? grandparentAuthor});
+  $Res call({
+    ReplyRefPostReference root,
+    ReplyRefPostReference parent,
+    ProfileViewBasic? grandparentAuthor,
+  });
 
   $ReplyRefPostReferenceCopyWith<$Res> get root;
   $ReplyRefPostReferenceCopyWith<$Res> get parent;
@@ -1692,20 +1764,26 @@ class _$ReplyRefCopyWithImpl<$Res, $Val extends ReplyRef>
     Object? parent = null,
     Object? grandparentAuthor = freezed,
   }) {
-    return _then(_value.copyWith(
-      root: null == root
-          ? _value.root
-          : root // ignore: cast_nullable_to_non_nullable
-              as ReplyRefPostReference,
-      parent: null == parent
-          ? _value.parent
-          : parent // ignore: cast_nullable_to_non_nullable
-              as ReplyRefPostReference,
-      grandparentAuthor: freezed == grandparentAuthor
-          ? _value.grandparentAuthor
-          : grandparentAuthor // ignore: cast_nullable_to_non_nullable
-              as ProfileViewBasic?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            root:
+                null == root
+                    ? _value.root
+                    : root // ignore: cast_nullable_to_non_nullable
+                        as ReplyRefPostReference,
+            parent:
+                null == parent
+                    ? _value.parent
+                    : parent // ignore: cast_nullable_to_non_nullable
+                        as ReplyRefPostReference,
+            grandparentAuthor:
+                freezed == grandparentAuthor
+                    ? _value.grandparentAuthor
+                    : grandparentAuthor // ignore: cast_nullable_to_non_nullable
+                        as ProfileViewBasic?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of ReplyRef
@@ -1747,14 +1825,16 @@ class _$ReplyRefCopyWithImpl<$Res, $Val extends ReplyRef>
 abstract class _$$ReplyRefImplCopyWith<$Res>
     implements $ReplyRefCopyWith<$Res> {
   factory _$$ReplyRefImplCopyWith(
-          _$ReplyRefImpl value, $Res Function(_$ReplyRefImpl) then) =
-      __$$ReplyRefImplCopyWithImpl<$Res>;
+    _$ReplyRefImpl value,
+    $Res Function(_$ReplyRefImpl) then,
+  ) = __$$ReplyRefImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {ReplyRefPostReference root,
-      ReplyRefPostReference parent,
-      ProfileViewBasic? grandparentAuthor});
+  $Res call({
+    ReplyRefPostReference root,
+    ReplyRefPostReference parent,
+    ProfileViewBasic? grandparentAuthor,
+  });
 
   @override
   $ReplyRefPostReferenceCopyWith<$Res> get root;
@@ -1769,8 +1849,9 @@ class __$$ReplyRefImplCopyWithImpl<$Res>
     extends _$ReplyRefCopyWithImpl<$Res, _$ReplyRefImpl>
     implements _$$ReplyRefImplCopyWith<$Res> {
   __$$ReplyRefImplCopyWithImpl(
-      _$ReplyRefImpl _value, $Res Function(_$ReplyRefImpl) _then)
-      : super(_value, _then);
+    _$ReplyRefImpl _value,
+    $Res Function(_$ReplyRefImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of ReplyRef
   /// with the given fields replaced by the non-null parameter values.
@@ -1781,38 +1862,47 @@ class __$$ReplyRefImplCopyWithImpl<$Res>
     Object? parent = null,
     Object? grandparentAuthor = freezed,
   }) {
-    return _then(_$ReplyRefImpl(
-      root: null == root
-          ? _value.root
-          : root // ignore: cast_nullable_to_non_nullable
-              as ReplyRefPostReference,
-      parent: null == parent
-          ? _value.parent
-          : parent // ignore: cast_nullable_to_non_nullable
-              as ReplyRefPostReference,
-      grandparentAuthor: freezed == grandparentAuthor
-          ? _value.grandparentAuthor
-          : grandparentAuthor // ignore: cast_nullable_to_non_nullable
-              as ProfileViewBasic?,
-    ));
+    return _then(
+      _$ReplyRefImpl(
+        root:
+            null == root
+                ? _value.root
+                : root // ignore: cast_nullable_to_non_nullable
+                    as ReplyRefPostReference,
+        parent:
+            null == parent
+                ? _value.parent
+                : parent // ignore: cast_nullable_to_non_nullable
+                    as ReplyRefPostReference,
+        grandparentAuthor:
+            freezed == grandparentAuthor
+                ? _value.grandparentAuthor
+                : grandparentAuthor // ignore: cast_nullable_to_non_nullable
+                    as ProfileViewBasic?,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
-class _$ReplyRefImpl with DiagnosticableTreeMixin implements _ReplyRef {
-  const _$ReplyRefImpl(
-      {required this.root, required this.parent, this.grandparentAuthor});
+
+@JsonSerializable(explicitToJson: true)
+class _$ReplyRefImpl extends _ReplyRef with DiagnosticableTreeMixin {
+  const _$ReplyRefImpl({
+    required this.root,
+    required this.parent,
+    this.grandparentAuthor,
+  }) : super._();
 
   factory _$ReplyRefImpl.fromJson(Map<String, dynamic> json) =>
       _$$ReplyRefImplFromJson(json);
 
   @override
   final ReplyRefPostReference root;
-// post, not found or blocked
+  // post, not found or blocked
   @override
   final ReplyRefPostReference parent;
-// post, not found or blocked
+  // post, not found or blocked
   @override
   final ProfileViewBasic? grandparentAuthor;
 
@@ -1856,17 +1946,17 @@ class _$ReplyRefImpl with DiagnosticableTreeMixin implements _ReplyRef {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ReplyRefImplToJson(
-      this,
-    );
+    return _$$ReplyRefImplToJson(this);
   }
 }
 
-abstract class _ReplyRef implements ReplyRef {
-  const factory _ReplyRef(
-      {required final ReplyRefPostReference root,
-      required final ReplyRefPostReference parent,
-      final ProfileViewBasic? grandparentAuthor}) = _$ReplyRefImpl;
+abstract class _ReplyRef extends ReplyRef {
+  const factory _ReplyRef({
+    required final ReplyRefPostReference root,
+    required final ReplyRefPostReference parent,
+    final ProfileViewBasic? grandparentAuthor,
+  }) = _$ReplyRefImpl;
+  const _ReplyRef._() : super._();
 
   factory _ReplyRef.fromJson(Map<String, dynamic> json) =
       _$ReplyRefImpl.fromJson;
@@ -1887,7 +1977,8 @@ abstract class _ReplyRef implements ReplyRef {
 }
 
 ReplyRefPostReference _$ReplyRefPostReferenceFromJson(
-    Map<String, dynamic> json) {
+  Map<String, dynamic> json,
+) {
   switch (json['\$type']) {
     case 'so.sprk.feed.defs#post':
       return ReplyRefPostReferencePost.fromJson(json);
@@ -1897,8 +1988,12 @@ ReplyRefPostReference _$ReplyRefPostReferenceFromJson(
       return ReplyRefPostReferenceBlockedPost.fromJson(json);
 
     default:
-      throw CheckedFromJsonException(json, '\$type', 'ReplyRefPostReference',
-          'Invalid union type "${json['\$type']}"!');
+      throw CheckedFromJsonException(
+        json,
+        '\$type',
+        'ReplyRefPostReference',
+        'Invalid union type "${json['\$type']}"!',
+      );
   }
 }
 
@@ -1908,55 +2003,58 @@ mixin _$ReplyRefPostReference {
   TResult when<TResult extends Object?>({
     required TResult Function(PostView post) post,
     required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
-        notFoundPost,
+    notFoundPost,
     required TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)
-        blockedPost,
-  }) =>
-      throw _privateConstructorUsedError;
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )
+    blockedPost,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(PostView post)? post,
     TResult? Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult? Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
-  }) =>
-      throw _privateConstructorUsedError;
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(PostView post)? post,
     TResult Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(ReplyRefPostReferencePost value) post,
     required TResult Function(ReplyRefPostReferenceNotFoundPost value)
-        notFoundPost,
+    notFoundPost,
     required TResult Function(ReplyRefPostReferenceBlockedPost value)
-        blockedPost,
-  }) =>
-      throw _privateConstructorUsedError;
+    blockedPost,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(ReplyRefPostReferencePost value)? post,
     TResult? Function(ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
     TResult? Function(ReplyRefPostReferenceBlockedPost value)? blockedPost,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(ReplyRefPostReferencePost value)? post,
     TResult Function(ReplyRefPostReferenceNotFoundPost value)? notFoundPost,
     TResult Function(ReplyRefPostReferenceBlockedPost value)? blockedPost,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 
   /// Serializes this ReplyRefPostReference to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1964,14 +2062,17 @@ mixin _$ReplyRefPostReference {
 
 /// @nodoc
 abstract class $ReplyRefPostReferenceCopyWith<$Res> {
-  factory $ReplyRefPostReferenceCopyWith(ReplyRefPostReference value,
-          $Res Function(ReplyRefPostReference) then) =
-      _$ReplyRefPostReferenceCopyWithImpl<$Res, ReplyRefPostReference>;
+  factory $ReplyRefPostReferenceCopyWith(
+    ReplyRefPostReference value,
+    $Res Function(ReplyRefPostReference) then,
+  ) = _$ReplyRefPostReferenceCopyWithImpl<$Res, ReplyRefPostReference>;
 }
 
 /// @nodoc
-class _$ReplyRefPostReferenceCopyWithImpl<$Res,
-        $Val extends ReplyRefPostReference>
+class _$ReplyRefPostReferenceCopyWithImpl<
+  $Res,
+  $Val extends ReplyRefPostReference
+>
     implements $ReplyRefPostReferenceCopyWith<$Res> {
   _$ReplyRefPostReferenceCopyWithImpl(this._value, this._then);
 
@@ -1987,9 +2088,9 @@ class _$ReplyRefPostReferenceCopyWithImpl<$Res,
 /// @nodoc
 abstract class _$$ReplyRefPostReferencePostImplCopyWith<$Res> {
   factory _$$ReplyRefPostReferencePostImplCopyWith(
-          _$ReplyRefPostReferencePostImpl value,
-          $Res Function(_$ReplyRefPostReferencePostImpl) then) =
-      __$$ReplyRefPostReferencePostImplCopyWithImpl<$Res>;
+    _$ReplyRefPostReferencePostImpl value,
+    $Res Function(_$ReplyRefPostReferencePostImpl) then,
+  ) = __$$ReplyRefPostReferencePostImplCopyWithImpl<$Res>;
   @useResult
   $Res call({PostView post});
 
@@ -1998,27 +2099,31 @@ abstract class _$$ReplyRefPostReferencePostImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$ReplyRefPostReferencePostImplCopyWithImpl<$Res>
-    extends _$ReplyRefPostReferenceCopyWithImpl<$Res,
-        _$ReplyRefPostReferencePostImpl>
+    extends
+        _$ReplyRefPostReferenceCopyWithImpl<
+          $Res,
+          _$ReplyRefPostReferencePostImpl
+        >
     implements _$$ReplyRefPostReferencePostImplCopyWith<$Res> {
   __$$ReplyRefPostReferencePostImplCopyWithImpl(
-      _$ReplyRefPostReferencePostImpl _value,
-      $Res Function(_$ReplyRefPostReferencePostImpl) _then)
-      : super(_value, _then);
+    _$ReplyRefPostReferencePostImpl _value,
+    $Res Function(_$ReplyRefPostReferencePostImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of ReplyRefPostReference
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? post = null,
-  }) {
-    return _then(_$ReplyRefPostReferencePostImpl(
-      post: null == post
-          ? _value.post
-          : post // ignore: cast_nullable_to_non_nullable
-              as PostView,
-    ));
+  $Res call({Object? post = null}) {
+    return _then(
+      _$ReplyRefPostReferencePostImpl(
+        post:
+            null == post
+                ? _value.post
+                : post // ignore: cast_nullable_to_non_nullable
+                    as PostView,
+      ),
+    );
   }
 
   /// Create a copy of ReplyRefPostReference
@@ -2033,13 +2138,15 @@ class __$$ReplyRefPostReferencePostImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$ReplyRefPostReferencePostImpl extends ReplyRefPostReferencePost
     with DiagnosticableTreeMixin {
-  const _$ReplyRefPostReferencePostImpl(
-      {required this.post, final String? $type})
-      : $type = $type ?? 'so.sprk.feed.defs#post',
-        super._();
+  const _$ReplyRefPostReferencePostImpl({
+    required this.post,
+    final String? $type,
+  }) : $type = $type ?? 'so.sprk.feed.defs#post',
+       super._();
 
   factory _$ReplyRefPostReferencePostImpl.fromJson(Map<String, dynamic> json) =>
       _$$ReplyRefPostReferencePostImplFromJson(json);
@@ -2081,18 +2188,22 @@ class _$ReplyRefPostReferencePostImpl extends ReplyRefPostReferencePost
   @override
   @pragma('vm:prefer-inline')
   _$$ReplyRefPostReferencePostImplCopyWith<_$ReplyRefPostReferencePostImpl>
-      get copyWith => __$$ReplyRefPostReferencePostImplCopyWithImpl<
-          _$ReplyRefPostReferencePostImpl>(this, _$identity);
+  get copyWith => __$$ReplyRefPostReferencePostImplCopyWithImpl<
+    _$ReplyRefPostReferencePostImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(PostView post) post,
     required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
-        notFoundPost,
+    notFoundPost,
     required TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )
+    blockedPost,
   }) {
     return post(this.post);
   }
@@ -2103,8 +2214,11 @@ class _$ReplyRefPostReferencePostImpl extends ReplyRefPostReferencePost
     TResult? Function(PostView post)? post,
     TResult? Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult? Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
   }) {
     return post?.call(this.post);
   }
@@ -2115,8 +2229,11 @@ class _$ReplyRefPostReferencePostImpl extends ReplyRefPostReferencePost
     TResult Function(PostView post)? post,
     TResult Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
     required TResult orElse(),
   }) {
     if (post != null) {
@@ -2130,9 +2247,9 @@ class _$ReplyRefPostReferencePostImpl extends ReplyRefPostReferencePost
   TResult map<TResult extends Object?>({
     required TResult Function(ReplyRefPostReferencePost value) post,
     required TResult Function(ReplyRefPostReferenceNotFoundPost value)
-        notFoundPost,
+    notFoundPost,
     required TResult Function(ReplyRefPostReferenceBlockedPost value)
-        blockedPost,
+    blockedPost,
   }) {
     return post(this);
   }
@@ -2163,9 +2280,7 @@ class _$ReplyRefPostReferencePostImpl extends ReplyRefPostReferencePost
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ReplyRefPostReferencePostImplToJson(
-      this,
-    );
+    return _$$ReplyRefPostReferencePostImplToJson(this);
   }
 }
 
@@ -2183,64 +2298,70 @@ abstract class ReplyRefPostReferencePost extends ReplyRefPostReference {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ReplyRefPostReferencePostImplCopyWith<_$ReplyRefPostReferencePostImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$ReplyRefPostReferenceNotFoundPostImplCopyWith<$Res> {
   factory _$$ReplyRefPostReferenceNotFoundPostImplCopyWith(
-          _$ReplyRefPostReferenceNotFoundPostImpl value,
-          $Res Function(_$ReplyRefPostReferenceNotFoundPostImpl) then) =
-      __$$ReplyRefPostReferenceNotFoundPostImplCopyWithImpl<$Res>;
+    _$ReplyRefPostReferenceNotFoundPostImpl value,
+    $Res Function(_$ReplyRefPostReferenceNotFoundPostImpl) then,
+  ) = __$$ReplyRefPostReferenceNotFoundPostImplCopyWithImpl<$Res>;
   @useResult
   $Res call({@AtUriConverter() AtUri uri, bool notFound});
 }
 
 /// @nodoc
 class __$$ReplyRefPostReferenceNotFoundPostImplCopyWithImpl<$Res>
-    extends _$ReplyRefPostReferenceCopyWithImpl<$Res,
-        _$ReplyRefPostReferenceNotFoundPostImpl>
+    extends
+        _$ReplyRefPostReferenceCopyWithImpl<
+          $Res,
+          _$ReplyRefPostReferenceNotFoundPostImpl
+        >
     implements _$$ReplyRefPostReferenceNotFoundPostImplCopyWith<$Res> {
   __$$ReplyRefPostReferenceNotFoundPostImplCopyWithImpl(
-      _$ReplyRefPostReferenceNotFoundPostImpl _value,
-      $Res Function(_$ReplyRefPostReferenceNotFoundPostImpl) _then)
-      : super(_value, _then);
+    _$ReplyRefPostReferenceNotFoundPostImpl _value,
+    $Res Function(_$ReplyRefPostReferenceNotFoundPostImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of ReplyRefPostReference
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? uri = null,
-    Object? notFound = null,
-  }) {
-    return _then(_$ReplyRefPostReferenceNotFoundPostImpl(
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-      notFound: null == notFound
-          ? _value.notFound
-          : notFound // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
+  $Res call({Object? uri = null, Object? notFound = null}) {
+    return _then(
+      _$ReplyRefPostReferenceNotFoundPostImpl(
+        uri:
+            null == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                    as AtUri,
+        notFound:
+            null == notFound
+                ? _value.notFound
+                : notFound // ignore: cast_nullable_to_non_nullable
+                    as bool,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$ReplyRefPostReferenceNotFoundPostImpl
-    extends ReplyRefPostReferenceNotFoundPost with DiagnosticableTreeMixin {
-  const _$ReplyRefPostReferenceNotFoundPostImpl(
-      {@AtUriConverter() required this.uri,
-      required this.notFound,
-      final String? $type})
-      : $type = $type ?? 'so.sprk.feed.defs#notFoundPost',
-        super._();
+    extends ReplyRefPostReferenceNotFoundPost
+    with DiagnosticableTreeMixin {
+  const _$ReplyRefPostReferenceNotFoundPostImpl({
+    @AtUriConverter() required this.uri,
+    required this.notFound,
+    final String? $type,
+  }) : $type = $type ?? 'so.sprk.feed.defs#notFoundPost',
+       super._();
 
   factory _$ReplyRefPostReferenceNotFoundPostImpl.fromJson(
-          Map<String, dynamic> json) =>
-      _$$ReplyRefPostReferenceNotFoundPostImplFromJson(json);
+    Map<String, dynamic> json,
+  ) => _$$ReplyRefPostReferenceNotFoundPostImplFromJson(json);
 
   @override
   @AtUriConverter()
@@ -2285,19 +2406,24 @@ class _$ReplyRefPostReferenceNotFoundPostImpl
   @override
   @pragma('vm:prefer-inline')
   _$$ReplyRefPostReferenceNotFoundPostImplCopyWith<
-          _$ReplyRefPostReferenceNotFoundPostImpl>
-      get copyWith => __$$ReplyRefPostReferenceNotFoundPostImplCopyWithImpl<
-          _$ReplyRefPostReferenceNotFoundPostImpl>(this, _$identity);
+    _$ReplyRefPostReferenceNotFoundPostImpl
+  >
+  get copyWith => __$$ReplyRefPostReferenceNotFoundPostImplCopyWithImpl<
+    _$ReplyRefPostReferenceNotFoundPostImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(PostView post) post,
     required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
-        notFoundPost,
+    notFoundPost,
     required TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )
+    blockedPost,
   }) {
     return notFoundPost(uri, notFound);
   }
@@ -2308,8 +2434,11 @@ class _$ReplyRefPostReferenceNotFoundPostImpl
     TResult? Function(PostView post)? post,
     TResult? Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult? Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
   }) {
     return notFoundPost?.call(uri, notFound);
   }
@@ -2320,8 +2449,11 @@ class _$ReplyRefPostReferenceNotFoundPostImpl
     TResult Function(PostView post)? post,
     TResult Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
     required TResult orElse(),
   }) {
     if (notFoundPost != null) {
@@ -2335,9 +2467,9 @@ class _$ReplyRefPostReferenceNotFoundPostImpl
   TResult map<TResult extends Object?>({
     required TResult Function(ReplyRefPostReferencePost value) post,
     required TResult Function(ReplyRefPostReferenceNotFoundPost value)
-        notFoundPost,
+    notFoundPost,
     required TResult Function(ReplyRefPostReferenceBlockedPost value)
-        blockedPost,
+    blockedPost,
   }) {
     return notFoundPost(this);
   }
@@ -2368,21 +2500,20 @@ class _$ReplyRefPostReferenceNotFoundPostImpl
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ReplyRefPostReferenceNotFoundPostImplToJson(
-      this,
-    );
+    return _$$ReplyRefPostReferenceNotFoundPostImplToJson(this);
   }
 }
 
 abstract class ReplyRefPostReferenceNotFoundPost extends ReplyRefPostReference {
-  const factory ReplyRefPostReferenceNotFoundPost(
-      {@AtUriConverter() required final AtUri uri,
-      required final bool notFound}) = _$ReplyRefPostReferenceNotFoundPostImpl;
+  const factory ReplyRefPostReferenceNotFoundPost({
+    @AtUriConverter() required final AtUri uri,
+    required final bool notFound,
+  }) = _$ReplyRefPostReferenceNotFoundPostImpl;
   const ReplyRefPostReferenceNotFoundPost._() : super._();
 
   factory ReplyRefPostReferenceNotFoundPost.fromJson(
-          Map<String, dynamic> json) =
-      _$ReplyRefPostReferenceNotFoundPostImpl.fromJson;
+    Map<String, dynamic> json,
+  ) = _$ReplyRefPostReferenceNotFoundPostImpl.fromJson;
 
   @AtUriConverter()
   AtUri get uri;
@@ -2392,16 +2523,17 @@ abstract class ReplyRefPostReferenceNotFoundPost extends ReplyRefPostReference {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ReplyRefPostReferenceNotFoundPostImplCopyWith<
-          _$ReplyRefPostReferenceNotFoundPostImpl>
-      get copyWith => throw _privateConstructorUsedError;
+    _$ReplyRefPostReferenceNotFoundPostImpl
+  >
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 /// @nodoc
 abstract class _$$ReplyRefPostReferenceBlockedPostImplCopyWith<$Res> {
   factory _$$ReplyRefPostReferenceBlockedPostImplCopyWith(
-          _$ReplyRefPostReferenceBlockedPostImpl value,
-          $Res Function(_$ReplyRefPostReferenceBlockedPostImpl) then) =
-      __$$ReplyRefPostReferenceBlockedPostImplCopyWithImpl<$Res>;
+    _$ReplyRefPostReferenceBlockedPostImpl value,
+    $Res Function(_$ReplyRefPostReferenceBlockedPostImpl) then,
+  ) = __$$ReplyRefPostReferenceBlockedPostImplCopyWithImpl<$Res>;
   @useResult
   $Res call({@AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author});
 
@@ -2410,13 +2542,16 @@ abstract class _$$ReplyRefPostReferenceBlockedPostImplCopyWith<$Res> {
 
 /// @nodoc
 class __$$ReplyRefPostReferenceBlockedPostImplCopyWithImpl<$Res>
-    extends _$ReplyRefPostReferenceCopyWithImpl<$Res,
-        _$ReplyRefPostReferenceBlockedPostImpl>
+    extends
+        _$ReplyRefPostReferenceCopyWithImpl<
+          $Res,
+          _$ReplyRefPostReferenceBlockedPostImpl
+        >
     implements _$$ReplyRefPostReferenceBlockedPostImplCopyWith<$Res> {
   __$$ReplyRefPostReferenceBlockedPostImplCopyWithImpl(
-      _$ReplyRefPostReferenceBlockedPostImpl _value,
-      $Res Function(_$ReplyRefPostReferenceBlockedPostImpl) _then)
-      : super(_value, _then);
+    _$ReplyRefPostReferenceBlockedPostImpl _value,
+    $Res Function(_$ReplyRefPostReferenceBlockedPostImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of ReplyRefPostReference
   /// with the given fields replaced by the non-null parameter values.
@@ -2427,20 +2562,25 @@ class __$$ReplyRefPostReferenceBlockedPostImplCopyWithImpl<$Res>
     Object? blocked = null,
     Object? author = null,
   }) {
-    return _then(_$ReplyRefPostReferenceBlockedPostImpl(
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-      blocked: null == blocked
-          ? _value.blocked
-          : blocked // ignore: cast_nullable_to_non_nullable
-              as bool,
-      author: null == author
-          ? _value.author
-          : author // ignore: cast_nullable_to_non_nullable
-              as BlockedAuthor,
-    ));
+    return _then(
+      _$ReplyRefPostReferenceBlockedPostImpl(
+        uri:
+            null == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                    as AtUri,
+        blocked:
+            null == blocked
+                ? _value.blocked
+                : blocked // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        author:
+            null == author
+                ? _value.author
+                : author // ignore: cast_nullable_to_non_nullable
+                    as BlockedAuthor,
+      ),
+    );
   }
 
   /// Create a copy of ReplyRefPostReference
@@ -2455,20 +2595,22 @@ class __$$ReplyRefPostReferenceBlockedPostImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$ReplyRefPostReferenceBlockedPostImpl
-    extends ReplyRefPostReferenceBlockedPost with DiagnosticableTreeMixin {
-  const _$ReplyRefPostReferenceBlockedPostImpl(
-      {@AtUriConverter() required this.uri,
-      required this.blocked,
-      required this.author,
-      final String? $type})
-      : $type = $type ?? 'so.sprk.feed.defs#blockedPost',
-        super._();
+    extends ReplyRefPostReferenceBlockedPost
+    with DiagnosticableTreeMixin {
+  const _$ReplyRefPostReferenceBlockedPostImpl({
+    @AtUriConverter() required this.uri,
+    required this.blocked,
+    required this.author,
+    final String? $type,
+  }) : $type = $type ?? 'so.sprk.feed.defs#blockedPost',
+       super._();
 
   factory _$ReplyRefPostReferenceBlockedPostImpl.fromJson(
-          Map<String, dynamic> json) =>
-      _$$ReplyRefPostReferenceBlockedPostImplFromJson(json);
+    Map<String, dynamic> json,
+  ) => _$$ReplyRefPostReferenceBlockedPostImplFromJson(json);
 
   @override
   @AtUriConverter()
@@ -2516,19 +2658,24 @@ class _$ReplyRefPostReferenceBlockedPostImpl
   @override
   @pragma('vm:prefer-inline')
   _$$ReplyRefPostReferenceBlockedPostImplCopyWith<
-          _$ReplyRefPostReferenceBlockedPostImpl>
-      get copyWith => __$$ReplyRefPostReferenceBlockedPostImplCopyWithImpl<
-          _$ReplyRefPostReferenceBlockedPostImpl>(this, _$identity);
+    _$ReplyRefPostReferenceBlockedPostImpl
+  >
+  get copyWith => __$$ReplyRefPostReferenceBlockedPostImplCopyWithImpl<
+    _$ReplyRefPostReferenceBlockedPostImpl
+  >(this, _$identity);
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
     required TResult Function(PostView post) post,
     required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
-        notFoundPost,
+    notFoundPost,
     required TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )
+    blockedPost,
   }) {
     return blockedPost(uri, blocked, author);
   }
@@ -2539,8 +2686,11 @@ class _$ReplyRefPostReferenceBlockedPostImpl
     TResult? Function(PostView post)? post,
     TResult? Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult? Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
   }) {
     return blockedPost?.call(uri, blocked, author);
   }
@@ -2551,8 +2701,11 @@ class _$ReplyRefPostReferenceBlockedPostImpl
     TResult Function(PostView post)? post,
     TResult Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
     required TResult orElse(),
   }) {
     if (blockedPost != null) {
@@ -2566,9 +2719,9 @@ class _$ReplyRefPostReferenceBlockedPostImpl
   TResult map<TResult extends Object?>({
     required TResult Function(ReplyRefPostReferencePost value) post,
     required TResult Function(ReplyRefPostReferenceNotFoundPost value)
-        notFoundPost,
+    notFoundPost,
     required TResult Function(ReplyRefPostReferenceBlockedPost value)
-        blockedPost,
+    blockedPost,
   }) {
     return blockedPost(this);
   }
@@ -2599,18 +2752,16 @@ class _$ReplyRefPostReferenceBlockedPostImpl
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ReplyRefPostReferenceBlockedPostImplToJson(
-      this,
-    );
+    return _$$ReplyRefPostReferenceBlockedPostImplToJson(this);
   }
 }
 
 abstract class ReplyRefPostReferenceBlockedPost extends ReplyRefPostReference {
-  const factory ReplyRefPostReferenceBlockedPost(
-          {@AtUriConverter() required final AtUri uri,
-          required final bool blocked,
-          required final BlockedAuthor author}) =
-      _$ReplyRefPostReferenceBlockedPostImpl;
+  const factory ReplyRefPostReferenceBlockedPost({
+    @AtUriConverter() required final AtUri uri,
+    required final bool blocked,
+    required final BlockedAuthor author,
+  }) = _$ReplyRefPostReferenceBlockedPostImpl;
   const ReplyRefPostReferenceBlockedPost._() : super._();
 
   factory ReplyRefPostReferenceBlockedPost.fromJson(Map<String, dynamic> json) =
@@ -2625,8 +2776,9 @@ abstract class ReplyRefPostReferenceBlockedPost extends ReplyRefPostReference {
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ReplyRefPostReferenceBlockedPostImplCopyWith<
-          _$ReplyRefPostReferenceBlockedPostImpl>
-      get copyWith => throw _privateConstructorUsedError;
+    _$ReplyRefPostReferenceBlockedPostImpl
+  >
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 BlockedAuthor _$BlockedAuthorFromJson(Map<String, dynamic> json) {
@@ -2651,8 +2803,9 @@ mixin _$BlockedAuthor {
 /// @nodoc
 abstract class $BlockedAuthorCopyWith<$Res> {
   factory $BlockedAuthorCopyWith(
-          BlockedAuthor value, $Res Function(BlockedAuthor) then) =
-      _$BlockedAuthorCopyWithImpl<$Res, BlockedAuthor>;
+    BlockedAuthor value,
+    $Res Function(BlockedAuthor) then,
+  ) = _$BlockedAuthorCopyWithImpl<$Res, BlockedAuthor>;
   @useResult
   $Res call({String did, Viewer? viewer});
 
@@ -2673,20 +2826,22 @@ class _$BlockedAuthorCopyWithImpl<$Res, $Val extends BlockedAuthor>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? did = null,
-    Object? viewer = freezed,
-  }) {
-    return _then(_value.copyWith(
-      did: null == did
-          ? _value.did
-          : did // ignore: cast_nullable_to_non_nullable
-              as String,
-      viewer: freezed == viewer
-          ? _value.viewer
-          : viewer // ignore: cast_nullable_to_non_nullable
-              as Viewer?,
-    ) as $Val);
+  $Res call({Object? did = null, Object? viewer = freezed}) {
+    return _then(
+      _value.copyWith(
+            did:
+                null == did
+                    ? _value.did
+                    : did // ignore: cast_nullable_to_non_nullable
+                        as String,
+            viewer:
+                freezed == viewer
+                    ? _value.viewer
+                    : viewer // ignore: cast_nullable_to_non_nullable
+                        as Viewer?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of BlockedAuthor
@@ -2708,8 +2863,9 @@ class _$BlockedAuthorCopyWithImpl<$Res, $Val extends BlockedAuthor>
 abstract class _$$BlockedAuthorImplCopyWith<$Res>
     implements $BlockedAuthorCopyWith<$Res> {
   factory _$$BlockedAuthorImplCopyWith(
-          _$BlockedAuthorImpl value, $Res Function(_$BlockedAuthorImpl) then) =
-      __$$BlockedAuthorImplCopyWithImpl<$Res>;
+    _$BlockedAuthorImpl value,
+    $Res Function(_$BlockedAuthorImpl) then,
+  ) = __$$BlockedAuthorImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String did, Viewer? viewer});
@@ -2723,36 +2879,37 @@ class __$$BlockedAuthorImplCopyWithImpl<$Res>
     extends _$BlockedAuthorCopyWithImpl<$Res, _$BlockedAuthorImpl>
     implements _$$BlockedAuthorImplCopyWith<$Res> {
   __$$BlockedAuthorImplCopyWithImpl(
-      _$BlockedAuthorImpl _value, $Res Function(_$BlockedAuthorImpl) _then)
-      : super(_value, _then);
+    _$BlockedAuthorImpl _value,
+    $Res Function(_$BlockedAuthorImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of BlockedAuthor
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? did = null,
-    Object? viewer = freezed,
-  }) {
-    return _then(_$BlockedAuthorImpl(
-      did: null == did
-          ? _value.did
-          : did // ignore: cast_nullable_to_non_nullable
-              as String,
-      viewer: freezed == viewer
-          ? _value.viewer
-          : viewer // ignore: cast_nullable_to_non_nullable
-              as Viewer?,
-    ));
+  $Res call({Object? did = null, Object? viewer = freezed}) {
+    return _then(
+      _$BlockedAuthorImpl(
+        did:
+            null == did
+                ? _value.did
+                : did // ignore: cast_nullable_to_non_nullable
+                    as String,
+        viewer:
+            freezed == viewer
+                ? _value.viewer
+                : viewer // ignore: cast_nullable_to_non_nullable
+                    as Viewer?,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
-class _$BlockedAuthorImpl
-    with DiagnosticableTreeMixin
-    implements _BlockedAuthor {
-  const _$BlockedAuthorImpl({required this.did, this.viewer});
+
+@JsonSerializable(explicitToJson: true)
+class _$BlockedAuthorImpl extends _BlockedAuthor with DiagnosticableTreeMixin {
+  const _$BlockedAuthorImpl({required this.did, this.viewer}) : super._();
 
   factory _$BlockedAuthorImpl.fromJson(Map<String, dynamic> json) =>
       _$$BlockedAuthorImplFromJson(json);
@@ -2799,15 +2956,16 @@ class _$BlockedAuthorImpl
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$BlockedAuthorImplToJson(
-      this,
-    );
+    return _$$BlockedAuthorImplToJson(this);
   }
 }
 
-abstract class _BlockedAuthor implements BlockedAuthor {
-  const factory _BlockedAuthor(
-      {required final String did, final Viewer? viewer}) = _$BlockedAuthorImpl;
+abstract class _BlockedAuthor extends BlockedAuthor {
+  const factory _BlockedAuthor({
+    required final String did,
+    final Viewer? viewer,
+  }) = _$BlockedAuthorImpl;
+  const _BlockedAuthor._() : super._();
 
   factory _BlockedAuthor.fromJson(Map<String, dynamic> json) =
       _$BlockedAuthorImpl.fromJson;
@@ -2848,8 +3006,9 @@ mixin _$PostThread {
 /// @nodoc
 abstract class $PostThreadCopyWith<$Res> {
   factory $PostThreadCopyWith(
-          PostThread value, $Res Function(PostThread) then) =
-      _$PostThreadCopyWithImpl<$Res, PostThread>;
+    PostThread value,
+    $Res Function(PostThread) then,
+  ) = _$PostThreadCopyWithImpl<$Res, PostThread>;
   @useResult
   $Res call({PostView post, List<PostView>? parent, List<PostView>? replies});
 
@@ -2875,20 +3034,26 @@ class _$PostThreadCopyWithImpl<$Res, $Val extends PostThread>
     Object? parent = freezed,
     Object? replies = freezed,
   }) {
-    return _then(_value.copyWith(
-      post: null == post
-          ? _value.post
-          : post // ignore: cast_nullable_to_non_nullable
-              as PostView,
-      parent: freezed == parent
-          ? _value.parent
-          : parent // ignore: cast_nullable_to_non_nullable
-              as List<PostView>?,
-      replies: freezed == replies
-          ? _value.replies
-          : replies // ignore: cast_nullable_to_non_nullable
-              as List<PostView>?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            post:
+                null == post
+                    ? _value.post
+                    : post // ignore: cast_nullable_to_non_nullable
+                        as PostView,
+            parent:
+                freezed == parent
+                    ? _value.parent
+                    : parent // ignore: cast_nullable_to_non_nullable
+                        as List<PostView>?,
+            replies:
+                freezed == replies
+                    ? _value.replies
+                    : replies // ignore: cast_nullable_to_non_nullable
+                        as List<PostView>?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of PostThread
@@ -2906,8 +3071,9 @@ class _$PostThreadCopyWithImpl<$Res, $Val extends PostThread>
 abstract class _$$PostThreadImplCopyWith<$Res>
     implements $PostThreadCopyWith<$Res> {
   factory _$$PostThreadImplCopyWith(
-          _$PostThreadImpl value, $Res Function(_$PostThreadImpl) then) =
-      __$$PostThreadImplCopyWithImpl<$Res>;
+    _$PostThreadImpl value,
+    $Res Function(_$PostThreadImpl) then,
+  ) = __$$PostThreadImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({PostView post, List<PostView>? parent, List<PostView>? replies});
@@ -2921,8 +3087,9 @@ class __$$PostThreadImplCopyWithImpl<$Res>
     extends _$PostThreadCopyWithImpl<$Res, _$PostThreadImpl>
     implements _$$PostThreadImplCopyWith<$Res> {
   __$$PostThreadImplCopyWithImpl(
-      _$PostThreadImpl _value, $Res Function(_$PostThreadImpl) _then)
-      : super(_value, _then);
+    _$PostThreadImpl _value,
+    $Res Function(_$PostThreadImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of PostThread
   /// with the given fields replaced by the non-null parameter values.
@@ -2933,32 +3100,39 @@ class __$$PostThreadImplCopyWithImpl<$Res>
     Object? parent = freezed,
     Object? replies = freezed,
   }) {
-    return _then(_$PostThreadImpl(
-      post: null == post
-          ? _value.post
-          : post // ignore: cast_nullable_to_non_nullable
-              as PostView,
-      parent: freezed == parent
-          ? _value._parent
-          : parent // ignore: cast_nullable_to_non_nullable
-              as List<PostView>?,
-      replies: freezed == replies
-          ? _value._replies
-          : replies // ignore: cast_nullable_to_non_nullable
-              as List<PostView>?,
-    ));
+    return _then(
+      _$PostThreadImpl(
+        post:
+            null == post
+                ? _value.post
+                : post // ignore: cast_nullable_to_non_nullable
+                    as PostView,
+        parent:
+            freezed == parent
+                ? _value._parent
+                : parent // ignore: cast_nullable_to_non_nullable
+                    as List<PostView>?,
+        replies:
+            freezed == replies
+                ? _value._replies
+                : replies // ignore: cast_nullable_to_non_nullable
+                    as List<PostView>?,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
-class _$PostThreadImpl with DiagnosticableTreeMixin implements _PostThread {
-  const _$PostThreadImpl(
-      {required this.post,
-      final List<PostView>? parent,
-      final List<PostView>? replies})
-      : _parent = parent,
-        _replies = replies;
+
+@JsonSerializable(explicitToJson: true)
+class _$PostThreadImpl extends _PostThread with DiagnosticableTreeMixin {
+  const _$PostThreadImpl({
+    required this.post,
+    final List<PostView>? parent,
+    final List<PostView>? replies,
+  }) : _parent = parent,
+       _replies = replies,
+       super._();
 
   factory _$PostThreadImpl.fromJson(Map<String, dynamic> json) =>
       _$$PostThreadImplFromJson(json);
@@ -3013,10 +3187,11 @@ class _$PostThreadImpl with DiagnosticableTreeMixin implements _PostThread {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      post,
-      const DeepCollectionEquality().hash(_parent),
-      const DeepCollectionEquality().hash(_replies));
+    runtimeType,
+    post,
+    const DeepCollectionEquality().hash(_parent),
+    const DeepCollectionEquality().hash(_replies),
+  );
 
   /// Create a copy of PostThread
   /// with the given fields replaced by the non-null parameter values.
@@ -3028,17 +3203,17 @@ class _$PostThreadImpl with DiagnosticableTreeMixin implements _PostThread {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PostThreadImplToJson(
-      this,
-    );
+    return _$$PostThreadImplToJson(this);
   }
 }
 
-abstract class _PostThread implements PostThread {
-  const factory _PostThread(
-      {required final PostView post,
-      final List<PostView>? parent,
-      final List<PostView>? replies}) = _$PostThreadImpl;
+abstract class _PostThread extends PostThread {
+  const factory _PostThread({
+    required final PostView post,
+    final List<PostView>? parent,
+    final List<PostView>? replies,
+  }) = _$PostThreadImpl;
+  const _PostThread._() : super._();
 
   factory _PostThread.fromJson(Map<String, dynamic> json) =
       _$PostThreadImpl.fromJson;
@@ -3080,8 +3255,9 @@ mixin _$RecordReplyRef {
 /// @nodoc
 abstract class $RecordReplyRefCopyWith<$Res> {
   factory $RecordReplyRefCopyWith(
-          RecordReplyRef value, $Res Function(RecordReplyRef) then) =
-      _$RecordReplyRefCopyWithImpl<$Res, RecordReplyRef>;
+    RecordReplyRef value,
+    $Res Function(RecordReplyRef) then,
+  ) = _$RecordReplyRefCopyWithImpl<$Res, RecordReplyRef>;
   @useResult
   $Res call({StrongRef root, StrongRef parent});
 
@@ -3103,20 +3279,22 @@ class _$RecordReplyRefCopyWithImpl<$Res, $Val extends RecordReplyRef>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? root = null,
-    Object? parent = null,
-  }) {
-    return _then(_value.copyWith(
-      root: null == root
-          ? _value.root
-          : root // ignore: cast_nullable_to_non_nullable
-              as StrongRef,
-      parent: null == parent
-          ? _value.parent
-          : parent // ignore: cast_nullable_to_non_nullable
-              as StrongRef,
-    ) as $Val);
+  $Res call({Object? root = null, Object? parent = null}) {
+    return _then(
+      _value.copyWith(
+            root:
+                null == root
+                    ? _value.root
+                    : root // ignore: cast_nullable_to_non_nullable
+                        as StrongRef,
+            parent:
+                null == parent
+                    ? _value.parent
+                    : parent // ignore: cast_nullable_to_non_nullable
+                        as StrongRef,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of RecordReplyRef
@@ -3143,9 +3321,10 @@ class _$RecordReplyRefCopyWithImpl<$Res, $Val extends RecordReplyRef>
 /// @nodoc
 abstract class _$$RecordReplyRefImplCopyWith<$Res>
     implements $RecordReplyRefCopyWith<$Res> {
-  factory _$$RecordReplyRefImplCopyWith(_$RecordReplyRefImpl value,
-          $Res Function(_$RecordReplyRefImpl) then) =
-      __$$RecordReplyRefImplCopyWithImpl<$Res>;
+  factory _$$RecordReplyRefImplCopyWith(
+    _$RecordReplyRefImpl value,
+    $Res Function(_$RecordReplyRefImpl) then,
+  ) = __$$RecordReplyRefImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({StrongRef root, StrongRef parent});
@@ -3161,36 +3340,39 @@ class __$$RecordReplyRefImplCopyWithImpl<$Res>
     extends _$RecordReplyRefCopyWithImpl<$Res, _$RecordReplyRefImpl>
     implements _$$RecordReplyRefImplCopyWith<$Res> {
   __$$RecordReplyRefImplCopyWithImpl(
-      _$RecordReplyRefImpl _value, $Res Function(_$RecordReplyRefImpl) _then)
-      : super(_value, _then);
+    _$RecordReplyRefImpl _value,
+    $Res Function(_$RecordReplyRefImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of RecordReplyRef
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? root = null,
-    Object? parent = null,
-  }) {
-    return _then(_$RecordReplyRefImpl(
-      root: null == root
-          ? _value.root
-          : root // ignore: cast_nullable_to_non_nullable
-              as StrongRef,
-      parent: null == parent
-          ? _value.parent
-          : parent // ignore: cast_nullable_to_non_nullable
-              as StrongRef,
-    ));
+  $Res call({Object? root = null, Object? parent = null}) {
+    return _then(
+      _$RecordReplyRefImpl(
+        root:
+            null == root
+                ? _value.root
+                : root // ignore: cast_nullable_to_non_nullable
+                    as StrongRef,
+        parent:
+            null == parent
+                ? _value.parent
+                : parent // ignore: cast_nullable_to_non_nullable
+                    as StrongRef,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
-class _$RecordReplyRefImpl
-    with DiagnosticableTreeMixin
-    implements _RecordReplyRef {
-  const _$RecordReplyRefImpl({required this.root, required this.parent});
+
+@JsonSerializable(explicitToJson: true)
+class _$RecordReplyRefImpl extends _RecordReplyRef
+    with DiagnosticableTreeMixin {
+  const _$RecordReplyRefImpl({required this.root, required this.parent})
+    : super._();
 
   factory _$RecordReplyRefImpl.fromJson(Map<String, dynamic> json) =>
       _$$RecordReplyRefImplFromJson(json);
@@ -3234,20 +3416,22 @@ class _$RecordReplyRefImpl
   @pragma('vm:prefer-inline')
   _$$RecordReplyRefImplCopyWith<_$RecordReplyRefImpl> get copyWith =>
       __$$RecordReplyRefImplCopyWithImpl<_$RecordReplyRefImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$RecordReplyRefImplToJson(
-      this,
-    );
+    return _$$RecordReplyRefImplToJson(this);
   }
 }
 
-abstract class _RecordReplyRef implements RecordReplyRef {
-  const factory _RecordReplyRef(
-      {required final StrongRef root,
-      required final StrongRef parent}) = _$RecordReplyRefImpl;
+abstract class _RecordReplyRef extends RecordReplyRef {
+  const factory _RecordReplyRef({
+    required final StrongRef root,
+    required final StrongRef parent,
+  }) = _$RecordReplyRefImpl;
+  const _RecordReplyRef._() : super._();
 
   factory _RecordReplyRef.fromJson(Map<String, dynamic> json) =
       _$RecordReplyRefImpl.fromJson;
@@ -3296,14 +3480,15 @@ abstract class $ViewerCopyWith<$Res> {
   factory $ViewerCopyWith(Viewer value, $Res Function(Viewer) then) =
       _$ViewerCopyWithImpl<$Res, Viewer>;
   @useResult
-  $Res call(
-      {@AtUriConverter() AtUri? repost,
-      @AtUriConverter() AtUri? like,
-      @AtUriConverter() AtUri? look,
-      bool? threadMuted,
-      bool? replyDisabled,
-      bool? embeddingDisabled,
-      bool? pinned});
+  $Res call({
+    @AtUriConverter() AtUri? repost,
+    @AtUriConverter() AtUri? like,
+    @AtUriConverter() AtUri? look,
+    bool? threadMuted,
+    bool? replyDisabled,
+    bool? embeddingDisabled,
+    bool? pinned,
+  });
 }
 
 /// @nodoc
@@ -3329,54 +3514,66 @@ class _$ViewerCopyWithImpl<$Res, $Val extends Viewer>
     Object? embeddingDisabled = freezed,
     Object? pinned = freezed,
   }) {
-    return _then(_value.copyWith(
-      repost: freezed == repost
-          ? _value.repost
-          : repost // ignore: cast_nullable_to_non_nullable
-              as AtUri?,
-      like: freezed == like
-          ? _value.like
-          : like // ignore: cast_nullable_to_non_nullable
-              as AtUri?,
-      look: freezed == look
-          ? _value.look
-          : look // ignore: cast_nullable_to_non_nullable
-              as AtUri?,
-      threadMuted: freezed == threadMuted
-          ? _value.threadMuted
-          : threadMuted // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      replyDisabled: freezed == replyDisabled
-          ? _value.replyDisabled
-          : replyDisabled // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      embeddingDisabled: freezed == embeddingDisabled
-          ? _value.embeddingDisabled
-          : embeddingDisabled // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      pinned: freezed == pinned
-          ? _value.pinned
-          : pinned // ignore: cast_nullable_to_non_nullable
-              as bool?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            repost:
+                freezed == repost
+                    ? _value.repost
+                    : repost // ignore: cast_nullable_to_non_nullable
+                        as AtUri?,
+            like:
+                freezed == like
+                    ? _value.like
+                    : like // ignore: cast_nullable_to_non_nullable
+                        as AtUri?,
+            look:
+                freezed == look
+                    ? _value.look
+                    : look // ignore: cast_nullable_to_non_nullable
+                        as AtUri?,
+            threadMuted:
+                freezed == threadMuted
+                    ? _value.threadMuted
+                    : threadMuted // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            replyDisabled:
+                freezed == replyDisabled
+                    ? _value.replyDisabled
+                    : replyDisabled // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            embeddingDisabled:
+                freezed == embeddingDisabled
+                    ? _value.embeddingDisabled
+                    : embeddingDisabled // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+            pinned:
+                freezed == pinned
+                    ? _value.pinned
+                    : pinned // ignore: cast_nullable_to_non_nullable
+                        as bool?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$ViewerImplCopyWith<$Res> implements $ViewerCopyWith<$Res> {
   factory _$$ViewerImplCopyWith(
-          _$ViewerImpl value, $Res Function(_$ViewerImpl) then) =
-      __$$ViewerImplCopyWithImpl<$Res>;
+    _$ViewerImpl value,
+    $Res Function(_$ViewerImpl) then,
+  ) = __$$ViewerImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@AtUriConverter() AtUri? repost,
-      @AtUriConverter() AtUri? like,
-      @AtUriConverter() AtUri? look,
-      bool? threadMuted,
-      bool? replyDisabled,
-      bool? embeddingDisabled,
-      bool? pinned});
+  $Res call({
+    @AtUriConverter() AtUri? repost,
+    @AtUriConverter() AtUri? like,
+    @AtUriConverter() AtUri? look,
+    bool? threadMuted,
+    bool? replyDisabled,
+    bool? embeddingDisabled,
+    bool? pinned,
+  });
 }
 
 /// @nodoc
@@ -3384,8 +3581,9 @@ class __$$ViewerImplCopyWithImpl<$Res>
     extends _$ViewerCopyWithImpl<$Res, _$ViewerImpl>
     implements _$$ViewerImplCopyWith<$Res> {
   __$$ViewerImplCopyWithImpl(
-      _$ViewerImpl _value, $Res Function(_$ViewerImpl) _then)
-      : super(_value, _then);
+    _$ViewerImpl _value,
+    $Res Function(_$ViewerImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of Viewer
   /// with the given fields replaced by the non-null parameter values.
@@ -3400,50 +3598,61 @@ class __$$ViewerImplCopyWithImpl<$Res>
     Object? embeddingDisabled = freezed,
     Object? pinned = freezed,
   }) {
-    return _then(_$ViewerImpl(
-      repost: freezed == repost
-          ? _value.repost
-          : repost // ignore: cast_nullable_to_non_nullable
-              as AtUri?,
-      like: freezed == like
-          ? _value.like
-          : like // ignore: cast_nullable_to_non_nullable
-              as AtUri?,
-      look: freezed == look
-          ? _value.look
-          : look // ignore: cast_nullable_to_non_nullable
-              as AtUri?,
-      threadMuted: freezed == threadMuted
-          ? _value.threadMuted
-          : threadMuted // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      replyDisabled: freezed == replyDisabled
-          ? _value.replyDisabled
-          : replyDisabled // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      embeddingDisabled: freezed == embeddingDisabled
-          ? _value.embeddingDisabled
-          : embeddingDisabled // ignore: cast_nullable_to_non_nullable
-              as bool?,
-      pinned: freezed == pinned
-          ? _value.pinned
-          : pinned // ignore: cast_nullable_to_non_nullable
-              as bool?,
-    ));
+    return _then(
+      _$ViewerImpl(
+        repost:
+            freezed == repost
+                ? _value.repost
+                : repost // ignore: cast_nullable_to_non_nullable
+                    as AtUri?,
+        like:
+            freezed == like
+                ? _value.like
+                : like // ignore: cast_nullable_to_non_nullable
+                    as AtUri?,
+        look:
+            freezed == look
+                ? _value.look
+                : look // ignore: cast_nullable_to_non_nullable
+                    as AtUri?,
+        threadMuted:
+            freezed == threadMuted
+                ? _value.threadMuted
+                : threadMuted // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        replyDisabled:
+            freezed == replyDisabled
+                ? _value.replyDisabled
+                : replyDisabled // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        embeddingDisabled:
+            freezed == embeddingDisabled
+                ? _value.embeddingDisabled
+                : embeddingDisabled // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+        pinned:
+            freezed == pinned
+                ? _value.pinned
+                : pinned // ignore: cast_nullable_to_non_nullable
+                    as bool?,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
-class _$ViewerImpl with DiagnosticableTreeMixin implements _Viewer {
-  const _$ViewerImpl(
-      {@AtUriConverter() this.repost,
-      @AtUriConverter() this.like,
-      @AtUriConverter() this.look,
-      this.threadMuted,
-      this.replyDisabled,
-      this.embeddingDisabled,
-      this.pinned});
+
+@JsonSerializable(explicitToJson: true)
+class _$ViewerImpl extends _Viewer with DiagnosticableTreeMixin {
+  const _$ViewerImpl({
+    @AtUriConverter() this.repost,
+    @AtUriConverter() this.like,
+    @AtUriConverter() this.look,
+    this.threadMuted,
+    this.replyDisabled,
+    this.embeddingDisabled,
+    this.pinned,
+  }) : super._();
 
   factory _$ViewerImpl.fromJson(Map<String, dynamic> json) =>
       _$$ViewerImplFromJson(json);
@@ -3504,8 +3713,16 @@ class _$ViewerImpl with DiagnosticableTreeMixin implements _Viewer {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, repost, like, look, threadMuted,
-      replyDisabled, embeddingDisabled, pinned);
+  int get hashCode => Object.hash(
+    runtimeType,
+    repost,
+    like,
+    look,
+    threadMuted,
+    replyDisabled,
+    embeddingDisabled,
+    pinned,
+  );
 
   /// Create a copy of Viewer
   /// with the given fields replaced by the non-null parameter values.
@@ -3517,21 +3734,21 @@ class _$ViewerImpl with DiagnosticableTreeMixin implements _Viewer {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ViewerImplToJson(
-      this,
-    );
+    return _$$ViewerImplToJson(this);
   }
 }
 
-abstract class _Viewer implements Viewer {
-  const factory _Viewer(
-      {@AtUriConverter() final AtUri? repost,
-      @AtUriConverter() final AtUri? like,
-      @AtUriConverter() final AtUri? look,
-      final bool? threadMuted,
-      final bool? replyDisabled,
-      final bool? embeddingDisabled,
-      final bool? pinned}) = _$ViewerImpl;
+abstract class _Viewer extends Viewer {
+  const factory _Viewer({
+    @AtUriConverter() final AtUri? repost,
+    @AtUriConverter() final AtUri? like,
+    @AtUriConverter() final AtUri? look,
+    final bool? threadMuted,
+    final bool? replyDisabled,
+    final bool? embeddingDisabled,
+    final bool? pinned,
+  }) = _$ViewerImpl;
+  const _Viewer._() : super._();
 
   factory _Viewer.fromJson(Map<String, dynamic> json) = _$ViewerImpl.fromJson;
 
@@ -3567,7 +3784,7 @@ PostRecord _$PostRecordFromJson(Map<String, dynamic> json) {
 
 /// @nodoc
 mixin _$PostRecord {
-  DateTime get createdAt => throw _privateConstructorUsedError;
+  DateTime? get createdAt => throw _privateConstructorUsedError;
   @JsonKey(defaultValue: '')
   String? get text => throw _privateConstructorUsedError;
   @JsonKey(defaultValue: [])
@@ -3591,18 +3808,20 @@ mixin _$PostRecord {
 /// @nodoc
 abstract class $PostRecordCopyWith<$Res> {
   factory $PostRecordCopyWith(
-          PostRecord value, $Res Function(PostRecord) then) =
-      _$PostRecordCopyWithImpl<$Res, PostRecord>;
+    PostRecord value,
+    $Res Function(PostRecord) then,
+  ) = _$PostRecordCopyWithImpl<$Res, PostRecord>;
   @useResult
-  $Res call(
-      {DateTime createdAt,
-      @JsonKey(defaultValue: '') String? text,
-      @JsonKey(defaultValue: []) List<Facet>? facets,
-      RecordReplyRef? reply,
-      List<String>? langs,
-      List<String>? tags,
-      List<SelfLabel>? selfLabels,
-      Embed? embed});
+  $Res call({
+    DateTime? createdAt,
+    @JsonKey(defaultValue: '') String? text,
+    @JsonKey(defaultValue: []) List<Facet>? facets,
+    RecordReplyRef? reply,
+    List<String>? langs,
+    List<String>? tags,
+    List<SelfLabel>? selfLabels,
+    Embed? embed,
+  });
 
   $RecordReplyRefCopyWith<$Res>? get reply;
   $EmbedCopyWith<$Res>? get embed;
@@ -3623,7 +3842,7 @@ class _$PostRecordCopyWithImpl<$Res, $Val extends PostRecord>
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? createdAt = null,
+    Object? createdAt = freezed,
     Object? text = freezed,
     Object? facets = freezed,
     Object? reply = freezed,
@@ -3632,40 +3851,51 @@ class _$PostRecordCopyWithImpl<$Res, $Val extends PostRecord>
     Object? selfLabels = freezed,
     Object? embed = freezed,
   }) {
-    return _then(_value.copyWith(
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      text: freezed == text
-          ? _value.text
-          : text // ignore: cast_nullable_to_non_nullable
-              as String?,
-      facets: freezed == facets
-          ? _value.facets
-          : facets // ignore: cast_nullable_to_non_nullable
-              as List<Facet>?,
-      reply: freezed == reply
-          ? _value.reply
-          : reply // ignore: cast_nullable_to_non_nullable
-              as RecordReplyRef?,
-      langs: freezed == langs
-          ? _value.langs
-          : langs // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
-      tags: freezed == tags
-          ? _value.tags
-          : tags // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
-      selfLabels: freezed == selfLabels
-          ? _value.selfLabels
-          : selfLabels // ignore: cast_nullable_to_non_nullable
-              as List<SelfLabel>?,
-      embed: freezed == embed
-          ? _value.embed
-          : embed // ignore: cast_nullable_to_non_nullable
-              as Embed?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            createdAt:
+                freezed == createdAt
+                    ? _value.createdAt
+                    : createdAt // ignore: cast_nullable_to_non_nullable
+                        as DateTime?,
+            text:
+                freezed == text
+                    ? _value.text
+                    : text // ignore: cast_nullable_to_non_nullable
+                        as String?,
+            facets:
+                freezed == facets
+                    ? _value.facets
+                    : facets // ignore: cast_nullable_to_non_nullable
+                        as List<Facet>?,
+            reply:
+                freezed == reply
+                    ? _value.reply
+                    : reply // ignore: cast_nullable_to_non_nullable
+                        as RecordReplyRef?,
+            langs:
+                freezed == langs
+                    ? _value.langs
+                    : langs // ignore: cast_nullable_to_non_nullable
+                        as List<String>?,
+            tags:
+                freezed == tags
+                    ? _value.tags
+                    : tags // ignore: cast_nullable_to_non_nullable
+                        as List<String>?,
+            selfLabels:
+                freezed == selfLabels
+                    ? _value.selfLabels
+                    : selfLabels // ignore: cast_nullable_to_non_nullable
+                        as List<SelfLabel>?,
+            embed:
+                freezed == embed
+                    ? _value.embed
+                    : embed // ignore: cast_nullable_to_non_nullable
+                        as Embed?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of PostRecord
@@ -3701,19 +3931,21 @@ class _$PostRecordCopyWithImpl<$Res, $Val extends PostRecord>
 abstract class _$$PostRecordImplCopyWith<$Res>
     implements $PostRecordCopyWith<$Res> {
   factory _$$PostRecordImplCopyWith(
-          _$PostRecordImpl value, $Res Function(_$PostRecordImpl) then) =
-      __$$PostRecordImplCopyWithImpl<$Res>;
+    _$PostRecordImpl value,
+    $Res Function(_$PostRecordImpl) then,
+  ) = __$$PostRecordImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {DateTime createdAt,
-      @JsonKey(defaultValue: '') String? text,
-      @JsonKey(defaultValue: []) List<Facet>? facets,
-      RecordReplyRef? reply,
-      List<String>? langs,
-      List<String>? tags,
-      List<SelfLabel>? selfLabels,
-      Embed? embed});
+  $Res call({
+    DateTime? createdAt,
+    @JsonKey(defaultValue: '') String? text,
+    @JsonKey(defaultValue: []) List<Facet>? facets,
+    RecordReplyRef? reply,
+    List<String>? langs,
+    List<String>? tags,
+    List<SelfLabel>? selfLabels,
+    Embed? embed,
+  });
 
   @override
   $RecordReplyRefCopyWith<$Res>? get reply;
@@ -3726,15 +3958,16 @@ class __$$PostRecordImplCopyWithImpl<$Res>
     extends _$PostRecordCopyWithImpl<$Res, _$PostRecordImpl>
     implements _$$PostRecordImplCopyWith<$Res> {
   __$$PostRecordImplCopyWithImpl(
-      _$PostRecordImpl _value, $Res Function(_$PostRecordImpl) _then)
-      : super(_value, _then);
+    _$PostRecordImpl _value,
+    $Res Function(_$PostRecordImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of PostRecord
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? createdAt = null,
+    Object? createdAt = freezed,
     Object? text = freezed,
     Object? facets = freezed,
     Object? reply = freezed,
@@ -3743,66 +3976,77 @@ class __$$PostRecordImplCopyWithImpl<$Res>
     Object? selfLabels = freezed,
     Object? embed = freezed,
   }) {
-    return _then(_$PostRecordImpl(
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      text: freezed == text
-          ? _value.text
-          : text // ignore: cast_nullable_to_non_nullable
-              as String?,
-      facets: freezed == facets
-          ? _value._facets
-          : facets // ignore: cast_nullable_to_non_nullable
-              as List<Facet>?,
-      reply: freezed == reply
-          ? _value.reply
-          : reply // ignore: cast_nullable_to_non_nullable
-              as RecordReplyRef?,
-      langs: freezed == langs
-          ? _value._langs
-          : langs // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
-      tags: freezed == tags
-          ? _value._tags
-          : tags // ignore: cast_nullable_to_non_nullable
-              as List<String>?,
-      selfLabels: freezed == selfLabels
-          ? _value._selfLabels
-          : selfLabels // ignore: cast_nullable_to_non_nullable
-              as List<SelfLabel>?,
-      embed: freezed == embed
-          ? _value.embed
-          : embed // ignore: cast_nullable_to_non_nullable
-              as Embed?,
-    ));
+    return _then(
+      _$PostRecordImpl(
+        createdAt:
+            freezed == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                    as DateTime?,
+        text:
+            freezed == text
+                ? _value.text
+                : text // ignore: cast_nullable_to_non_nullable
+                    as String?,
+        facets:
+            freezed == facets
+                ? _value._facets
+                : facets // ignore: cast_nullable_to_non_nullable
+                    as List<Facet>?,
+        reply:
+            freezed == reply
+                ? _value.reply
+                : reply // ignore: cast_nullable_to_non_nullable
+                    as RecordReplyRef?,
+        langs:
+            freezed == langs
+                ? _value._langs
+                : langs // ignore: cast_nullable_to_non_nullable
+                    as List<String>?,
+        tags:
+            freezed == tags
+                ? _value._tags
+                : tags // ignore: cast_nullable_to_non_nullable
+                    as List<String>?,
+        selfLabels:
+            freezed == selfLabels
+                ? _value._selfLabels
+                : selfLabels // ignore: cast_nullable_to_non_nullable
+                    as List<SelfLabel>?,
+        embed:
+            freezed == embed
+                ? _value.embed
+                : embed // ignore: cast_nullable_to_non_nullable
+                    as Embed?,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$PostRecordImpl extends _PostRecord with DiagnosticableTreeMixin {
-  const _$PostRecordImpl(
-      {required this.createdAt,
-      @JsonKey(defaultValue: '') this.text,
-      @JsonKey(defaultValue: []) final List<Facet>? facets,
-      this.reply,
-      final List<String>? langs,
-      final List<String>? tags,
-      final List<SelfLabel>? selfLabels,
-      this.embed})
-      : _facets = facets,
-        _langs = langs,
-        _tags = tags,
-        _selfLabels = selfLabels,
-        super._();
+  const _$PostRecordImpl({
+    this.createdAt,
+    @JsonKey(defaultValue: '') this.text,
+    @JsonKey(defaultValue: []) final List<Facet>? facets,
+    this.reply,
+    final List<String>? langs,
+    final List<String>? tags,
+    final List<SelfLabel>? selfLabels,
+    this.embed,
+  }) : _facets = facets,
+       _langs = langs,
+       _tags = tags,
+       _selfLabels = selfLabels,
+       super._();
 
   factory _$PostRecordImpl.fromJson(Map<String, dynamic> json) =>
       _$$PostRecordImplFromJson(json);
 
   @override
-  final DateTime createdAt;
+  final DateTime? createdAt;
   @override
   @JsonKey(defaultValue: '')
   final String? text;
@@ -3884,23 +4128,26 @@ class _$PostRecordImpl extends _PostRecord with DiagnosticableTreeMixin {
             (identical(other.reply, reply) || other.reply == reply) &&
             const DeepCollectionEquality().equals(other._langs, _langs) &&
             const DeepCollectionEquality().equals(other._tags, _tags) &&
-            const DeepCollectionEquality()
-                .equals(other._selfLabels, _selfLabels) &&
+            const DeepCollectionEquality().equals(
+              other._selfLabels,
+              _selfLabels,
+            ) &&
             (identical(other.embed, embed) || other.embed == embed));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      createdAt,
-      text,
-      const DeepCollectionEquality().hash(_facets),
-      reply,
-      const DeepCollectionEquality().hash(_langs),
-      const DeepCollectionEquality().hash(_tags),
-      const DeepCollectionEquality().hash(_selfLabels),
-      embed);
+    runtimeType,
+    createdAt,
+    text,
+    const DeepCollectionEquality().hash(_facets),
+    reply,
+    const DeepCollectionEquality().hash(_langs),
+    const DeepCollectionEquality().hash(_tags),
+    const DeepCollectionEquality().hash(_selfLabels),
+    embed,
+  );
 
   /// Create a copy of PostRecord
   /// with the given fields replaced by the non-null parameter values.
@@ -3912,29 +4159,28 @@ class _$PostRecordImpl extends _PostRecord with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PostRecordImplToJson(
-      this,
-    );
+    return _$$PostRecordImplToJson(this);
   }
 }
 
 abstract class _PostRecord extends PostRecord {
-  const factory _PostRecord(
-      {required final DateTime createdAt,
-      @JsonKey(defaultValue: '') final String? text,
-      @JsonKey(defaultValue: []) final List<Facet>? facets,
-      final RecordReplyRef? reply,
-      final List<String>? langs,
-      final List<String>? tags,
-      final List<SelfLabel>? selfLabels,
-      final Embed? embed}) = _$PostRecordImpl;
+  const factory _PostRecord({
+    final DateTime? createdAt,
+    @JsonKey(defaultValue: '') final String? text,
+    @JsonKey(defaultValue: []) final List<Facet>? facets,
+    final RecordReplyRef? reply,
+    final List<String>? langs,
+    final List<String>? tags,
+    final List<SelfLabel>? selfLabels,
+    final Embed? embed,
+  }) = _$PostRecordImpl;
   const _PostRecord._() : super._();
 
   factory _PostRecord.fromJson(Map<String, dynamic> json) =
       _$PostRecordImpl.fromJson;
 
   @override
-  DateTime get createdAt;
+  DateTime? get createdAt;
   @override
   @JsonKey(defaultValue: '')
   String? get text;
@@ -3969,7 +4215,11 @@ Embed _$EmbedFromJson(Map<String, dynamic> json) {
 
     default:
       throw CheckedFromJsonException(
-          json, '\$type', 'Embed', 'Invalid union type "${json['\$type']}"!');
+        json,
+        '\$type',
+        'Embed',
+        'Invalid union type "${json['\$type']}"!',
+      );
   }
 }
 
@@ -3977,42 +4227,36 @@ Embed _$EmbedFromJson(Map<String, dynamic> json) {
 mixin _$Embed {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(VideoEmbed video) video,
-    required TResult Function(ImageEmbed image) image,
-  }) =>
-      throw _privateConstructorUsedError;
+    required TResult Function(Blob video, String? alt) video,
+    required TResult Function(List<Image> images) image,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(VideoEmbed video)? video,
-    TResult? Function(ImageEmbed image)? image,
-  }) =>
-      throw _privateConstructorUsedError;
+    TResult? Function(Blob video, String? alt)? video,
+    TResult? Function(List<Image> images)? image,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(VideoEmbed video)? video,
-    TResult Function(ImageEmbed image)? image,
+    TResult Function(Blob video, String? alt)? video,
+    TResult Function(List<Image> images)? image,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(EmbedVideo value) video,
     required TResult Function(EmbedImage value) image,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(EmbedVideo value)? video,
     TResult? Function(EmbedImage value)? image,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(EmbedVideo value)? video,
     TResult Function(EmbedImage value)? image,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 
   /// Serializes this Embed to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -4041,12 +4285,13 @@ class _$EmbedCopyWithImpl<$Res, $Val extends Embed>
 /// @nodoc
 abstract class _$$EmbedVideoImplCopyWith<$Res> {
   factory _$$EmbedVideoImplCopyWith(
-          _$EmbedVideoImpl value, $Res Function(_$EmbedVideoImpl) then) =
-      __$$EmbedVideoImplCopyWithImpl<$Res>;
+    _$EmbedVideoImpl value,
+    $Res Function(_$EmbedVideoImpl) then,
+  ) = __$$EmbedVideoImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({VideoEmbed video});
+  $Res call({Blob video, String? alt});
 
-  $VideoEmbedCopyWith<$Res> get video;
+  $BlobCopyWith<$Res> get video;
 }
 
 /// @nodoc
@@ -4054,54 +4299,67 @@ class __$$EmbedVideoImplCopyWithImpl<$Res>
     extends _$EmbedCopyWithImpl<$Res, _$EmbedVideoImpl>
     implements _$$EmbedVideoImplCopyWith<$Res> {
   __$$EmbedVideoImplCopyWithImpl(
-      _$EmbedVideoImpl _value, $Res Function(_$EmbedVideoImpl) _then)
-      : super(_value, _then);
+    _$EmbedVideoImpl _value,
+    $Res Function(_$EmbedVideoImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of Embed
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? video = null,
-  }) {
-    return _then(_$EmbedVideoImpl(
-      video: null == video
-          ? _value.video
-          : video // ignore: cast_nullable_to_non_nullable
-              as VideoEmbed,
-    ));
+  $Res call({Object? video = null, Object? alt = freezed}) {
+    return _then(
+      _$EmbedVideoImpl(
+        video:
+            null == video
+                ? _value.video
+                : video // ignore: cast_nullable_to_non_nullable
+                    as Blob,
+        alt:
+            freezed == alt
+                ? _value.alt
+                : alt // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 
   /// Create a copy of Embed
   /// with the given fields replaced by the non-null parameter values.
   @override
   @pragma('vm:prefer-inline')
-  $VideoEmbedCopyWith<$Res> get video {
-    return $VideoEmbedCopyWith<$Res>(_value.video, (value) {
+  $BlobCopyWith<$Res> get video {
+    return $BlobCopyWith<$Res>(_value.video, (value) {
       return _then(_value.copyWith(video: value));
     });
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$EmbedVideoImpl extends EmbedVideo with DiagnosticableTreeMixin {
-  const _$EmbedVideoImpl({required this.video, final String? $type})
-      : $type = $type ?? 'so.sprk.embed.video',
-        super._();
+  const _$EmbedVideoImpl({required this.video, this.alt, final String? $type})
+    : $type = $type ?? 'so.sprk.embed.video',
+      super._();
 
   factory _$EmbedVideoImpl.fromJson(Map<String, dynamic> json) =>
       _$$EmbedVideoImplFromJson(json);
 
   @override
-  final VideoEmbed video;
+  final Blob video;
+  // remaining fields that are in the json
+  // List<Caption> captions,
+  // AspectRatio aspectRatio, {width: int, height: int}
+  @override
+  final String? alt;
 
   @JsonKey(name: '\$type')
   final String $type;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'Embed.video(video: $video)';
+    return 'Embed.video(video: $video, alt: $alt)';
   }
 
   @override
@@ -4109,7 +4367,8 @@ class _$EmbedVideoImpl extends EmbedVideo with DiagnosticableTreeMixin {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty('type', 'Embed.video'))
-      ..add(DiagnosticsProperty('video', video));
+      ..add(DiagnosticsProperty('video', video))
+      ..add(DiagnosticsProperty('alt', alt));
   }
 
   @override
@@ -4117,12 +4376,13 @@ class _$EmbedVideoImpl extends EmbedVideo with DiagnosticableTreeMixin {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$EmbedVideoImpl &&
-            (identical(other.video, video) || other.video == video));
+            (identical(other.video, video) || other.video == video) &&
+            (identical(other.alt, alt) || other.alt == alt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, video);
+  int get hashCode => Object.hash(runtimeType, video, alt);
 
   /// Create a copy of Embed
   /// with the given fields replaced by the non-null parameter values.
@@ -4135,30 +4395,30 @@ class _$EmbedVideoImpl extends EmbedVideo with DiagnosticableTreeMixin {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(VideoEmbed video) video,
-    required TResult Function(ImageEmbed image) image,
+    required TResult Function(Blob video, String? alt) video,
+    required TResult Function(List<Image> images) image,
   }) {
-    return video(this.video);
+    return video(this.video, alt);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(VideoEmbed video)? video,
-    TResult? Function(ImageEmbed image)? image,
+    TResult? Function(Blob video, String? alt)? video,
+    TResult? Function(List<Image> images)? image,
   }) {
-    return video?.call(this.video);
+    return video?.call(this.video, alt);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(VideoEmbed video)? video,
-    TResult Function(ImageEmbed image)? image,
+    TResult Function(Blob video, String? alt)? video,
+    TResult Function(List<Image> images)? image,
     required TResult orElse(),
   }) {
     if (video != null) {
-      return video(this.video);
+      return video(this.video, alt);
     }
     return orElse();
   }
@@ -4196,21 +4456,22 @@ class _$EmbedVideoImpl extends EmbedVideo with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$EmbedVideoImplToJson(
-      this,
-    );
+    return _$$EmbedVideoImplToJson(this);
   }
 }
 
 abstract class EmbedVideo extends Embed {
-  const factory EmbedVideo({required final VideoEmbed video}) =
+  const factory EmbedVideo({required final Blob video, final String? alt}) =
       _$EmbedVideoImpl;
   const EmbedVideo._() : super._();
 
   factory EmbedVideo.fromJson(Map<String, dynamic> json) =
       _$EmbedVideoImpl.fromJson;
 
-  VideoEmbed get video;
+  Blob get video; // remaining fields that are in the json
+  // List<Caption> captions,
+  // AspectRatio aspectRatio, {width: int, height: int}
+  String? get alt;
 
   /// Create a copy of Embed
   /// with the given fields replaced by the non-null parameter values.
@@ -4222,12 +4483,11 @@ abstract class EmbedVideo extends Embed {
 /// @nodoc
 abstract class _$$EmbedImageImplCopyWith<$Res> {
   factory _$$EmbedImageImplCopyWith(
-          _$EmbedImageImpl value, $Res Function(_$EmbedImageImpl) then) =
-      __$$EmbedImageImplCopyWithImpl<$Res>;
+    _$EmbedImageImpl value,
+    $Res Function(_$EmbedImageImpl) then,
+  ) = __$$EmbedImageImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({ImageEmbed image});
-
-  $ImageEmbedCopyWith<$Res> get image;
+  $Res call({List<Image> images});
 }
 
 /// @nodoc
@@ -4235,54 +4495,55 @@ class __$$EmbedImageImplCopyWithImpl<$Res>
     extends _$EmbedCopyWithImpl<$Res, _$EmbedImageImpl>
     implements _$$EmbedImageImplCopyWith<$Res> {
   __$$EmbedImageImplCopyWithImpl(
-      _$EmbedImageImpl _value, $Res Function(_$EmbedImageImpl) _then)
-      : super(_value, _then);
+    _$EmbedImageImpl _value,
+    $Res Function(_$EmbedImageImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of Embed
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? image = null,
-  }) {
-    return _then(_$EmbedImageImpl(
-      image: null == image
-          ? _value.image
-          : image // ignore: cast_nullable_to_non_nullable
-              as ImageEmbed,
-    ));
-  }
-
-  /// Create a copy of Embed
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $ImageEmbedCopyWith<$Res> get image {
-    return $ImageEmbedCopyWith<$Res>(_value.image, (value) {
-      return _then(_value.copyWith(image: value));
-    });
+  $Res call({Object? images = null}) {
+    return _then(
+      _$EmbedImageImpl(
+        images:
+            null == images
+                ? _value._images
+                : images // ignore: cast_nullable_to_non_nullable
+                    as List<Image>,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$EmbedImageImpl extends EmbedImage with DiagnosticableTreeMixin {
-  const _$EmbedImageImpl({required this.image, final String? $type})
-      : $type = $type ?? 'so.sprk.embed.images',
-        super._();
+  const _$EmbedImageImpl({
+    required final List<Image> images,
+    final String? $type,
+  }) : _images = images,
+       $type = $type ?? 'so.sprk.embed.images',
+       super._();
 
   factory _$EmbedImageImpl.fromJson(Map<String, dynamic> json) =>
       _$$EmbedImageImplFromJson(json);
 
+  final List<Image> _images;
   @override
-  final ImageEmbed image;
+  List<Image> get images {
+    if (_images is EqualUnmodifiableListView) return _images;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_images);
+  }
 
   @JsonKey(name: '\$type')
   final String $type;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'Embed.image(image: $image)';
+    return 'Embed.image(images: $images)';
   }
 
   @override
@@ -4290,7 +4551,7 @@ class _$EmbedImageImpl extends EmbedImage with DiagnosticableTreeMixin {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty('type', 'Embed.image'))
-      ..add(DiagnosticsProperty('image', image));
+      ..add(DiagnosticsProperty('images', images));
   }
 
   @override
@@ -4298,12 +4559,13 @@ class _$EmbedImageImpl extends EmbedImage with DiagnosticableTreeMixin {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$EmbedImageImpl &&
-            (identical(other.image, image) || other.image == image));
+            const DeepCollectionEquality().equals(other._images, _images));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, image);
+  int get hashCode =>
+      Object.hash(runtimeType, const DeepCollectionEquality().hash(_images));
 
   /// Create a copy of Embed
   /// with the given fields replaced by the non-null parameter values.
@@ -4316,30 +4578,30 @@ class _$EmbedImageImpl extends EmbedImage with DiagnosticableTreeMixin {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(VideoEmbed video) video,
-    required TResult Function(ImageEmbed image) image,
+    required TResult Function(Blob video, String? alt) video,
+    required TResult Function(List<Image> images) image,
   }) {
-    return image(this.image);
+    return image(images);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(VideoEmbed video)? video,
-    TResult? Function(ImageEmbed image)? image,
+    TResult? Function(Blob video, String? alt)? video,
+    TResult? Function(List<Image> images)? image,
   }) {
-    return image?.call(this.image);
+    return image?.call(images);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(VideoEmbed video)? video,
-    TResult Function(ImageEmbed image)? image,
+    TResult Function(Blob video, String? alt)? video,
+    TResult Function(List<Image> images)? image,
     required TResult orElse(),
   }) {
     if (image != null) {
-      return image(this.image);
+      return image(images);
     }
     return orElse();
   }
@@ -4377,21 +4639,19 @@ class _$EmbedImageImpl extends EmbedImage with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$EmbedImageImplToJson(
-      this,
-    );
+    return _$$EmbedImageImplToJson(this);
   }
 }
 
 abstract class EmbedImage extends Embed {
-  const factory EmbedImage({required final ImageEmbed image}) =
+  const factory EmbedImage({required final List<Image> images}) =
       _$EmbedImageImpl;
   const EmbedImage._() : super._();
 
   factory EmbedImage.fromJson(Map<String, dynamic> json) =
       _$EmbedImageImpl.fromJson;
 
-  ImageEmbed get image;
+  List<Image> get images;
 
   /// Create a copy of Embed
   /// with the given fields replaced by the non-null parameter values.
@@ -4408,7 +4668,7 @@ PostView _$PostViewFromJson(Map<String, dynamic> json) {
 mixin _$PostView {
   @AtUriConverter()
   AtUri get uri => throw _privateConstructorUsedError;
-  CID get cid => throw _privateConstructorUsedError;
+  String get cid => throw _privateConstructorUsedError;
   ProfileViewBasic get author => throw _privateConstructorUsedError;
   PostRecord get record => throw _privateConstructorUsedError;
   bool get isRepost => throw _privateConstructorUsedError;
@@ -4436,19 +4696,20 @@ abstract class $PostViewCopyWith<$Res> {
   factory $PostViewCopyWith(PostView value, $Res Function(PostView) then) =
       _$PostViewCopyWithImpl<$Res, PostView>;
   @useResult
-  $Res call(
-      {@AtUriConverter() AtUri uri,
-      CID cid,
-      ProfileViewBasic author,
-      PostRecord record,
-      bool isRepost,
-      DateTime indexedAt,
-      int? likeCount,
-      int? replyCount,
-      int? repostCount,
-      int? quoteCount,
-      List<Label>? labels,
-      EmbedView? embed});
+  $Res call({
+    @AtUriConverter() AtUri uri,
+    String cid,
+    ProfileViewBasic author,
+    PostRecord record,
+    bool isRepost,
+    DateTime indexedAt,
+    int? likeCount,
+    int? replyCount,
+    int? repostCount,
+    int? quoteCount,
+    List<Label>? labels,
+    EmbedView? embed,
+  });
 
   $ProfileViewBasicCopyWith<$Res> get author;
   $PostRecordCopyWith<$Res> get record;
@@ -4483,56 +4744,71 @@ class _$PostViewCopyWithImpl<$Res, $Val extends PostView>
     Object? labels = freezed,
     Object? embed = freezed,
   }) {
-    return _then(_value.copyWith(
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-      cid: null == cid
-          ? _value.cid
-          : cid // ignore: cast_nullable_to_non_nullable
-              as CID,
-      author: null == author
-          ? _value.author
-          : author // ignore: cast_nullable_to_non_nullable
-              as ProfileViewBasic,
-      record: null == record
-          ? _value.record
-          : record // ignore: cast_nullable_to_non_nullable
-              as PostRecord,
-      isRepost: null == isRepost
-          ? _value.isRepost
-          : isRepost // ignore: cast_nullable_to_non_nullable
-              as bool,
-      indexedAt: null == indexedAt
-          ? _value.indexedAt
-          : indexedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      likeCount: freezed == likeCount
-          ? _value.likeCount
-          : likeCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      replyCount: freezed == replyCount
-          ? _value.replyCount
-          : replyCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      repostCount: freezed == repostCount
-          ? _value.repostCount
-          : repostCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      quoteCount: freezed == quoteCount
-          ? _value.quoteCount
-          : quoteCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      labels: freezed == labels
-          ? _value.labels
-          : labels // ignore: cast_nullable_to_non_nullable
-              as List<Label>?,
-      embed: freezed == embed
-          ? _value.embed
-          : embed // ignore: cast_nullable_to_non_nullable
-              as EmbedView?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            uri:
+                null == uri
+                    ? _value.uri
+                    : uri // ignore: cast_nullable_to_non_nullable
+                        as AtUri,
+            cid:
+                null == cid
+                    ? _value.cid
+                    : cid // ignore: cast_nullable_to_non_nullable
+                        as String,
+            author:
+                null == author
+                    ? _value.author
+                    : author // ignore: cast_nullable_to_non_nullable
+                        as ProfileViewBasic,
+            record:
+                null == record
+                    ? _value.record
+                    : record // ignore: cast_nullable_to_non_nullable
+                        as PostRecord,
+            isRepost:
+                null == isRepost
+                    ? _value.isRepost
+                    : isRepost // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            indexedAt:
+                null == indexedAt
+                    ? _value.indexedAt
+                    : indexedAt // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+            likeCount:
+                freezed == likeCount
+                    ? _value.likeCount
+                    : likeCount // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            replyCount:
+                freezed == replyCount
+                    ? _value.replyCount
+                    : replyCount // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            repostCount:
+                freezed == repostCount
+                    ? _value.repostCount
+                    : repostCount // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            quoteCount:
+                freezed == quoteCount
+                    ? _value.quoteCount
+                    : quoteCount // ignore: cast_nullable_to_non_nullable
+                        as int?,
+            labels:
+                freezed == labels
+                    ? _value.labels
+                    : labels // ignore: cast_nullable_to_non_nullable
+                        as List<Label>?,
+            embed:
+                freezed == embed
+                    ? _value.embed
+                    : embed // ignore: cast_nullable_to_non_nullable
+                        as EmbedView?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of PostView
@@ -4574,23 +4850,25 @@ class _$PostViewCopyWithImpl<$Res, $Val extends PostView>
 abstract class _$$PostViewImplCopyWith<$Res>
     implements $PostViewCopyWith<$Res> {
   factory _$$PostViewImplCopyWith(
-          _$PostViewImpl value, $Res Function(_$PostViewImpl) then) =
-      __$$PostViewImplCopyWithImpl<$Res>;
+    _$PostViewImpl value,
+    $Res Function(_$PostViewImpl) then,
+  ) = __$$PostViewImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@AtUriConverter() AtUri uri,
-      CID cid,
-      ProfileViewBasic author,
-      PostRecord record,
-      bool isRepost,
-      DateTime indexedAt,
-      int? likeCount,
-      int? replyCount,
-      int? repostCount,
-      int? quoteCount,
-      List<Label>? labels,
-      EmbedView? embed});
+  $Res call({
+    @AtUriConverter() AtUri uri,
+    String cid,
+    ProfileViewBasic author,
+    PostRecord record,
+    bool isRepost,
+    DateTime indexedAt,
+    int? likeCount,
+    int? replyCount,
+    int? repostCount,
+    int? quoteCount,
+    List<Label>? labels,
+    EmbedView? embed,
+  });
 
   @override
   $ProfileViewBasicCopyWith<$Res> get author;
@@ -4605,8 +4883,9 @@ class __$$PostViewImplCopyWithImpl<$Res>
     extends _$PostViewCopyWithImpl<$Res, _$PostViewImpl>
     implements _$$PostViewImplCopyWith<$Res> {
   __$$PostViewImplCopyWithImpl(
-      _$PostViewImpl _value, $Res Function(_$PostViewImpl) _then)
-      : super(_value, _then);
+    _$PostViewImpl _value,
+    $Res Function(_$PostViewImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of PostView
   /// with the given fields replaced by the non-null parameter values.
@@ -4626,77 +4905,92 @@ class __$$PostViewImplCopyWithImpl<$Res>
     Object? labels = freezed,
     Object? embed = freezed,
   }) {
-    return _then(_$PostViewImpl(
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-      cid: null == cid
-          ? _value.cid
-          : cid // ignore: cast_nullable_to_non_nullable
-              as CID,
-      author: null == author
-          ? _value.author
-          : author // ignore: cast_nullable_to_non_nullable
-              as ProfileViewBasic,
-      record: null == record
-          ? _value.record
-          : record // ignore: cast_nullable_to_non_nullable
-              as PostRecord,
-      isRepost: null == isRepost
-          ? _value.isRepost
-          : isRepost // ignore: cast_nullable_to_non_nullable
-              as bool,
-      indexedAt: null == indexedAt
-          ? _value.indexedAt
-          : indexedAt // ignore: cast_nullable_to_non_nullable
-              as DateTime,
-      likeCount: freezed == likeCount
-          ? _value.likeCount
-          : likeCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      replyCount: freezed == replyCount
-          ? _value.replyCount
-          : replyCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      repostCount: freezed == repostCount
-          ? _value.repostCount
-          : repostCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      quoteCount: freezed == quoteCount
-          ? _value.quoteCount
-          : quoteCount // ignore: cast_nullable_to_non_nullable
-              as int?,
-      labels: freezed == labels
-          ? _value._labels
-          : labels // ignore: cast_nullable_to_non_nullable
-              as List<Label>?,
-      embed: freezed == embed
-          ? _value.embed
-          : embed // ignore: cast_nullable_to_non_nullable
-              as EmbedView?,
-    ));
+    return _then(
+      _$PostViewImpl(
+        uri:
+            null == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                    as AtUri,
+        cid:
+            null == cid
+                ? _value.cid
+                : cid // ignore: cast_nullable_to_non_nullable
+                    as String,
+        author:
+            null == author
+                ? _value.author
+                : author // ignore: cast_nullable_to_non_nullable
+                    as ProfileViewBasic,
+        record:
+            null == record
+                ? _value.record
+                : record // ignore: cast_nullable_to_non_nullable
+                    as PostRecord,
+        isRepost:
+            null == isRepost
+                ? _value.isRepost
+                : isRepost // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        indexedAt:
+            null == indexedAt
+                ? _value.indexedAt
+                : indexedAt // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+        likeCount:
+            freezed == likeCount
+                ? _value.likeCount
+                : likeCount // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        replyCount:
+            freezed == replyCount
+                ? _value.replyCount
+                : replyCount // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        repostCount:
+            freezed == repostCount
+                ? _value.repostCount
+                : repostCount // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        quoteCount:
+            freezed == quoteCount
+                ? _value.quoteCount
+                : quoteCount // ignore: cast_nullable_to_non_nullable
+                    as int?,
+        labels:
+            freezed == labels
+                ? _value._labels
+                : labels // ignore: cast_nullable_to_non_nullable
+                    as List<Label>?,
+        embed:
+            freezed == embed
+                ? _value.embed
+                : embed // ignore: cast_nullable_to_non_nullable
+                    as EmbedView?,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$PostViewImpl extends _PostView with DiagnosticableTreeMixin {
-  const _$PostViewImpl(
-      {@AtUriConverter() required this.uri,
-      required this.cid,
-      required this.author,
-      required this.record,
-      this.isRepost = false,
-      required this.indexedAt,
-      this.likeCount,
-      this.replyCount,
-      this.repostCount,
-      this.quoteCount,
-      final List<Label>? labels,
-      this.embed})
-      : _labels = labels,
-        super._();
+  const _$PostViewImpl({
+    @AtUriConverter() required this.uri,
+    required this.cid,
+    required this.author,
+    required this.record,
+    this.isRepost = false,
+    required this.indexedAt,
+    this.likeCount,
+    this.replyCount,
+    this.repostCount,
+    this.quoteCount,
+    final List<Label>? labels,
+    this.embed,
+  }) : _labels = labels,
+       super._();
 
   factory _$PostViewImpl.fromJson(Map<String, dynamic> json) =>
       _$$PostViewImplFromJson(json);
@@ -4705,7 +4999,7 @@ class _$PostViewImpl extends _PostView with DiagnosticableTreeMixin {
   @AtUriConverter()
   final AtUri uri;
   @override
-  final CID cid;
+  final String cid;
   @override
   final ProfileViewBasic author;
   @override
@@ -4733,7 +5027,7 @@ class _$PostViewImpl extends _PostView with DiagnosticableTreeMixin {
     return EqualUnmodifiableListView(value);
   }
 
-//SoundView? sound,
+  //SoundView? sound,
   @override
   final EmbedView? embed;
 
@@ -4789,19 +5083,20 @@ class _$PostViewImpl extends _PostView with DiagnosticableTreeMixin {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      uri,
-      cid,
-      author,
-      record,
-      isRepost,
-      indexedAt,
-      likeCount,
-      replyCount,
-      repostCount,
-      quoteCount,
-      const DeepCollectionEquality().hash(_labels),
-      embed);
+    runtimeType,
+    uri,
+    cid,
+    author,
+    record,
+    isRepost,
+    indexedAt,
+    likeCount,
+    replyCount,
+    repostCount,
+    quoteCount,
+    const DeepCollectionEquality().hash(_labels),
+    embed,
+  );
 
   /// Create a copy of PostView
   /// with the given fields replaced by the non-null parameter values.
@@ -4813,26 +5108,25 @@ class _$PostViewImpl extends _PostView with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$PostViewImplToJson(
-      this,
-    );
+    return _$$PostViewImplToJson(this);
   }
 }
 
 abstract class _PostView extends PostView {
-  const factory _PostView(
-      {@AtUriConverter() required final AtUri uri,
-      required final CID cid,
-      required final ProfileViewBasic author,
-      required final PostRecord record,
-      final bool isRepost,
-      required final DateTime indexedAt,
-      final int? likeCount,
-      final int? replyCount,
-      final int? repostCount,
-      final int? quoteCount,
-      final List<Label>? labels,
-      final EmbedView? embed}) = _$PostViewImpl;
+  const factory _PostView({
+    @AtUriConverter() required final AtUri uri,
+    required final String cid,
+    required final ProfileViewBasic author,
+    required final PostRecord record,
+    final bool isRepost,
+    required final DateTime indexedAt,
+    final int? likeCount,
+    final int? replyCount,
+    final int? repostCount,
+    final int? quoteCount,
+    final List<Label>? labels,
+    final EmbedView? embed,
+  }) = _$PostViewImpl;
   const _PostView._() : super._();
 
   factory _PostView.fromJson(Map<String, dynamic> json) =
@@ -4842,7 +5136,7 @@ abstract class _PostView extends PostView {
   @AtUriConverter()
   AtUri get uri;
   @override
-  CID get cid;
+  String get cid;
   @override
   ProfileViewBasic get author;
   @override
@@ -4880,8 +5174,12 @@ EmbedView _$EmbedViewFromJson(Map<String, dynamic> json) {
       return EmbedViewImage.fromJson(json);
 
     default:
-      throw CheckedFromJsonException(json, '\$type', 'EmbedView',
-          'Invalid union type "${json['\$type']}"!');
+      throw CheckedFromJsonException(
+        json,
+        '\$type',
+        'EmbedView',
+        'Invalid union type "${json['\$type']}"!',
+      );
   }
 }
 
@@ -4889,42 +5187,54 @@ EmbedView _$EmbedViewFromJson(Map<String, dynamic> json) {
 mixin _$EmbedView {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(VideoView video) video,
-    required TResult Function(ImageView image) image,
-  }) =>
-      throw _privateConstructorUsedError;
+    required TResult Function(
+      String cid,
+      @AtUriConverter() AtUri playlist,
+      @AtUriConverter() AtUri thumbnail,
+      String? alt,
+    )
+    video,
+    required TResult Function(List<ViewImage> images) image,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(VideoView video)? video,
-    TResult? Function(ImageView image)? image,
-  }) =>
-      throw _privateConstructorUsedError;
+    TResult? Function(
+      String cid,
+      @AtUriConverter() AtUri playlist,
+      @AtUriConverter() AtUri thumbnail,
+      String? alt,
+    )?
+    video,
+    TResult? Function(List<ViewImage> images)? image,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(VideoView video)? video,
-    TResult Function(ImageView image)? image,
+    TResult Function(
+      String cid,
+      @AtUriConverter() AtUri playlist,
+      @AtUriConverter() AtUri thumbnail,
+      String? alt,
+    )?
+    video,
+    TResult Function(List<ViewImage> images)? image,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(EmbedViewVideo value) video,
     required TResult Function(EmbedViewImage value) image,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(EmbedViewVideo value)? video,
     TResult? Function(EmbedViewImage value)? image,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(EmbedViewVideo value)? video,
     TResult Function(EmbedViewImage value)? image,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 
   /// Serializes this EmbedView to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -4952,13 +5262,17 @@ class _$EmbedViewCopyWithImpl<$Res, $Val extends EmbedView>
 
 /// @nodoc
 abstract class _$$EmbedViewVideoImplCopyWith<$Res> {
-  factory _$$EmbedViewVideoImplCopyWith(_$EmbedViewVideoImpl value,
-          $Res Function(_$EmbedViewVideoImpl) then) =
-      __$$EmbedViewVideoImplCopyWithImpl<$Res>;
+  factory _$$EmbedViewVideoImplCopyWith(
+    _$EmbedViewVideoImpl value,
+    $Res Function(_$EmbedViewVideoImpl) then,
+  ) = __$$EmbedViewVideoImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({VideoView video});
-
-  $VideoViewCopyWith<$Res> get video;
+  $Res call({
+    String cid,
+    @AtUriConverter() AtUri playlist,
+    @AtUriConverter() AtUri thumbnail,
+    String? alt,
+  });
 }
 
 /// @nodoc
@@ -4966,54 +5280,80 @@ class __$$EmbedViewVideoImplCopyWithImpl<$Res>
     extends _$EmbedViewCopyWithImpl<$Res, _$EmbedViewVideoImpl>
     implements _$$EmbedViewVideoImplCopyWith<$Res> {
   __$$EmbedViewVideoImplCopyWithImpl(
-      _$EmbedViewVideoImpl _value, $Res Function(_$EmbedViewVideoImpl) _then)
-      : super(_value, _then);
+    _$EmbedViewVideoImpl _value,
+    $Res Function(_$EmbedViewVideoImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of EmbedView
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? video = null,
+    Object? cid = null,
+    Object? playlist = null,
+    Object? thumbnail = null,
+    Object? alt = freezed,
   }) {
-    return _then(_$EmbedViewVideoImpl(
-      video: null == video
-          ? _value.video
-          : video // ignore: cast_nullable_to_non_nullable
-              as VideoView,
-    ));
-  }
-
-  /// Create a copy of EmbedView
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $VideoViewCopyWith<$Res> get video {
-    return $VideoViewCopyWith<$Res>(_value.video, (value) {
-      return _then(_value.copyWith(video: value));
-    });
+    return _then(
+      _$EmbedViewVideoImpl(
+        cid:
+            null == cid
+                ? _value.cid
+                : cid // ignore: cast_nullable_to_non_nullable
+                    as String,
+        playlist:
+            null == playlist
+                ? _value.playlist
+                : playlist // ignore: cast_nullable_to_non_nullable
+                    as AtUri,
+        thumbnail:
+            null == thumbnail
+                ? _value.thumbnail
+                : thumbnail // ignore: cast_nullable_to_non_nullable
+                    as AtUri,
+        alt:
+            freezed == alt
+                ? _value.alt
+                : alt // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$EmbedViewVideoImpl extends EmbedViewVideo with DiagnosticableTreeMixin {
-  const _$EmbedViewVideoImpl({required this.video, final String? $type})
-      : $type = $type ?? 'so.sprk.embed.video#view',
-        super._();
+  const _$EmbedViewVideoImpl({
+    required this.cid,
+    @AtUriConverter() required this.playlist,
+    @AtUriConverter() required this.thumbnail,
+    this.alt,
+    final String? $type,
+  }) : $type = $type ?? 'so.sprk.embed.video#view',
+       super._();
 
   factory _$EmbedViewVideoImpl.fromJson(Map<String, dynamic> json) =>
       _$$EmbedViewVideoImplFromJson(json);
 
   @override
-  final VideoView video;
+  final String cid;
+  @override
+  @AtUriConverter()
+  final AtUri playlist;
+  @override
+  @AtUriConverter()
+  final AtUri thumbnail;
+  @override
+  final String? alt;
 
   @JsonKey(name: '\$type')
   final String $type;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'EmbedView.video(video: $video)';
+    return 'EmbedView.video(cid: $cid, playlist: $playlist, thumbnail: $thumbnail, alt: $alt)';
   }
 
   @override
@@ -5021,7 +5361,10 @@ class _$EmbedViewVideoImpl extends EmbedViewVideo with DiagnosticableTreeMixin {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty('type', 'EmbedView.video'))
-      ..add(DiagnosticsProperty('video', video));
+      ..add(DiagnosticsProperty('cid', cid))
+      ..add(DiagnosticsProperty('playlist', playlist))
+      ..add(DiagnosticsProperty('thumbnail', thumbnail))
+      ..add(DiagnosticsProperty('alt', alt));
   }
 
   @override
@@ -5029,12 +5372,17 @@ class _$EmbedViewVideoImpl extends EmbedViewVideo with DiagnosticableTreeMixin {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$EmbedViewVideoImpl &&
-            (identical(other.video, video) || other.video == video));
+            (identical(other.cid, cid) || other.cid == cid) &&
+            (identical(other.playlist, playlist) ||
+                other.playlist == playlist) &&
+            (identical(other.thumbnail, thumbnail) ||
+                other.thumbnail == thumbnail) &&
+            (identical(other.alt, alt) || other.alt == alt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, video);
+  int get hashCode => Object.hash(runtimeType, cid, playlist, thumbnail, alt);
 
   /// Create a copy of EmbedView
   /// with the given fields replaced by the non-null parameter values.
@@ -5043,35 +5391,55 @@ class _$EmbedViewVideoImpl extends EmbedViewVideo with DiagnosticableTreeMixin {
   @pragma('vm:prefer-inline')
   _$$EmbedViewVideoImplCopyWith<_$EmbedViewVideoImpl> get copyWith =>
       __$$EmbedViewVideoImplCopyWithImpl<_$EmbedViewVideoImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(VideoView video) video,
-    required TResult Function(ImageView image) image,
+    required TResult Function(
+      String cid,
+      @AtUriConverter() AtUri playlist,
+      @AtUriConverter() AtUri thumbnail,
+      String? alt,
+    )
+    video,
+    required TResult Function(List<ViewImage> images) image,
   }) {
-    return video(this.video);
+    return video(cid, playlist, thumbnail, alt);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(VideoView video)? video,
-    TResult? Function(ImageView image)? image,
+    TResult? Function(
+      String cid,
+      @AtUriConverter() AtUri playlist,
+      @AtUriConverter() AtUri thumbnail,
+      String? alt,
+    )?
+    video,
+    TResult? Function(List<ViewImage> images)? image,
   }) {
-    return video?.call(this.video);
+    return video?.call(cid, playlist, thumbnail, alt);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(VideoView video)? video,
-    TResult Function(ImageView image)? image,
+    TResult Function(
+      String cid,
+      @AtUriConverter() AtUri playlist,
+      @AtUriConverter() AtUri thumbnail,
+      String? alt,
+    )?
+    video,
+    TResult Function(List<ViewImage> images)? image,
     required TResult orElse(),
   }) {
     if (video != null) {
-      return video(this.video);
+      return video(cid, playlist, thumbnail, alt);
     }
     return orElse();
   }
@@ -5109,21 +5477,28 @@ class _$EmbedViewVideoImpl extends EmbedViewVideo with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$EmbedViewVideoImplToJson(
-      this,
-    );
+    return _$$EmbedViewVideoImplToJson(this);
   }
 }
 
 abstract class EmbedViewVideo extends EmbedView {
-  const factory EmbedViewVideo({required final VideoView video}) =
-      _$EmbedViewVideoImpl;
+  const factory EmbedViewVideo({
+    required final String cid,
+    @AtUriConverter() required final AtUri playlist,
+    @AtUriConverter() required final AtUri thumbnail,
+    final String? alt,
+  }) = _$EmbedViewVideoImpl;
   const EmbedViewVideo._() : super._();
 
   factory EmbedViewVideo.fromJson(Map<String, dynamic> json) =
       _$EmbedViewVideoImpl.fromJson;
 
-  VideoView get video;
+  String get cid;
+  @AtUriConverter()
+  AtUri get playlist;
+  @AtUriConverter()
+  AtUri get thumbnail;
+  String? get alt;
 
   /// Create a copy of EmbedView
   /// with the given fields replaced by the non-null parameter values.
@@ -5134,13 +5509,12 @@ abstract class EmbedViewVideo extends EmbedView {
 
 /// @nodoc
 abstract class _$$EmbedViewImageImplCopyWith<$Res> {
-  factory _$$EmbedViewImageImplCopyWith(_$EmbedViewImageImpl value,
-          $Res Function(_$EmbedViewImageImpl) then) =
-      __$$EmbedViewImageImplCopyWithImpl<$Res>;
+  factory _$$EmbedViewImageImplCopyWith(
+    _$EmbedViewImageImpl value,
+    $Res Function(_$EmbedViewImageImpl) then,
+  ) = __$$EmbedViewImageImplCopyWithImpl<$Res>;
   @useResult
-  $Res call({ImageView image});
-
-  $ImageViewCopyWith<$Res> get image;
+  $Res call({List<ViewImage> images});
 }
 
 /// @nodoc
@@ -5148,54 +5522,55 @@ class __$$EmbedViewImageImplCopyWithImpl<$Res>
     extends _$EmbedViewCopyWithImpl<$Res, _$EmbedViewImageImpl>
     implements _$$EmbedViewImageImplCopyWith<$Res> {
   __$$EmbedViewImageImplCopyWithImpl(
-      _$EmbedViewImageImpl _value, $Res Function(_$EmbedViewImageImpl) _then)
-      : super(_value, _then);
+    _$EmbedViewImageImpl _value,
+    $Res Function(_$EmbedViewImageImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of EmbedView
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? image = null,
-  }) {
-    return _then(_$EmbedViewImageImpl(
-      image: null == image
-          ? _value.image
-          : image // ignore: cast_nullable_to_non_nullable
-              as ImageView,
-    ));
-  }
-
-  /// Create a copy of EmbedView
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $ImageViewCopyWith<$Res> get image {
-    return $ImageViewCopyWith<$Res>(_value.image, (value) {
-      return _then(_value.copyWith(image: value));
-    });
+  $Res call({Object? images = null}) {
+    return _then(
+      _$EmbedViewImageImpl(
+        images:
+            null == images
+                ? _value._images
+                : images // ignore: cast_nullable_to_non_nullable
+                    as List<ViewImage>,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$EmbedViewImageImpl extends EmbedViewImage with DiagnosticableTreeMixin {
-  const _$EmbedViewImageImpl({required this.image, final String? $type})
-      : $type = $type ?? 'so.sprk.embed.images#view',
-        super._();
+  const _$EmbedViewImageImpl({
+    required final List<ViewImage> images,
+    final String? $type,
+  }) : _images = images,
+       $type = $type ?? 'so.sprk.embed.images#view',
+       super._();
 
   factory _$EmbedViewImageImpl.fromJson(Map<String, dynamic> json) =>
       _$$EmbedViewImageImplFromJson(json);
 
+  final List<ViewImage> _images;
   @override
-  final ImageView image;
+  List<ViewImage> get images {
+    if (_images is EqualUnmodifiableListView) return _images;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_images);
+  }
 
   @JsonKey(name: '\$type')
   final String $type;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'EmbedView.image(image: $image)';
+    return 'EmbedView.image(images: $images)';
   }
 
   @override
@@ -5203,7 +5578,7 @@ class _$EmbedViewImageImpl extends EmbedViewImage with DiagnosticableTreeMixin {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty('type', 'EmbedView.image'))
-      ..add(DiagnosticsProperty('image', image));
+      ..add(DiagnosticsProperty('images', images));
   }
 
   @override
@@ -5211,12 +5586,13 @@ class _$EmbedViewImageImpl extends EmbedViewImage with DiagnosticableTreeMixin {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$EmbedViewImageImpl &&
-            (identical(other.image, image) || other.image == image));
+            const DeepCollectionEquality().equals(other._images, _images));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, image);
+  int get hashCode =>
+      Object.hash(runtimeType, const DeepCollectionEquality().hash(_images));
 
   /// Create a copy of EmbedView
   /// with the given fields replaced by the non-null parameter values.
@@ -5225,35 +5601,55 @@ class _$EmbedViewImageImpl extends EmbedViewImage with DiagnosticableTreeMixin {
   @pragma('vm:prefer-inline')
   _$$EmbedViewImageImplCopyWith<_$EmbedViewImageImpl> get copyWith =>
       __$$EmbedViewImageImplCopyWithImpl<_$EmbedViewImageImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(VideoView video) video,
-    required TResult Function(ImageView image) image,
+    required TResult Function(
+      String cid,
+      @AtUriConverter() AtUri playlist,
+      @AtUriConverter() AtUri thumbnail,
+      String? alt,
+    )
+    video,
+    required TResult Function(List<ViewImage> images) image,
   }) {
-    return image(this.image);
+    return image(images);
   }
 
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(VideoView video)? video,
-    TResult? Function(ImageView image)? image,
+    TResult? Function(
+      String cid,
+      @AtUriConverter() AtUri playlist,
+      @AtUriConverter() AtUri thumbnail,
+      String? alt,
+    )?
+    video,
+    TResult? Function(List<ViewImage> images)? image,
   }) {
-    return image?.call(this.image);
+    return image?.call(images);
   }
 
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(VideoView video)? video,
-    TResult Function(ImageView image)? image,
+    TResult Function(
+      String cid,
+      @AtUriConverter() AtUri playlist,
+      @AtUriConverter() AtUri thumbnail,
+      String? alt,
+    )?
+    video,
+    TResult Function(List<ViewImage> images)? image,
     required TResult orElse(),
   }) {
     if (image != null) {
-      return image(this.image);
+      return image(images);
     }
     return orElse();
   }
@@ -5291,21 +5687,19 @@ class _$EmbedViewImageImpl extends EmbedViewImage with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$EmbedViewImageImplToJson(
-      this,
-    );
+    return _$$EmbedViewImageImplToJson(this);
   }
 }
 
 abstract class EmbedViewImage extends EmbedView {
-  const factory EmbedViewImage({required final ImageView image}) =
+  const factory EmbedViewImage({required final List<ViewImage> images}) =
       _$EmbedViewImageImpl;
   const EmbedViewImage._() : super._();
 
   factory EmbedViewImage.fromJson(Map<String, dynamic> json) =
       _$EmbedViewImageImpl.fromJson;
 
-  ImageView get image;
+  List<ViewImage> get images;
 
   /// Create a copy of EmbedView
   /// with the given fields replaced by the non-null parameter values.
@@ -5336,8 +5730,9 @@ mixin _$FeedSkeleton {
 /// @nodoc
 abstract class $FeedSkeletonCopyWith<$Res> {
   factory $FeedSkeletonCopyWith(
-          FeedSkeleton value, $Res Function(FeedSkeleton) then) =
-      _$FeedSkeletonCopyWithImpl<$Res, FeedSkeleton>;
+    FeedSkeleton value,
+    $Res Function(FeedSkeleton) then,
+  ) = _$FeedSkeletonCopyWithImpl<$Res, FeedSkeleton>;
   @useResult
   $Res call({List<SkeletonFeedPost> feed, String? cursor});
 }
@@ -5356,20 +5751,22 @@ class _$FeedSkeletonCopyWithImpl<$Res, $Val extends FeedSkeleton>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? feed = null,
-    Object? cursor = freezed,
-  }) {
-    return _then(_value.copyWith(
-      feed: null == feed
-          ? _value.feed
-          : feed // ignore: cast_nullable_to_non_nullable
-              as List<SkeletonFeedPost>,
-      cursor: freezed == cursor
-          ? _value.cursor
-          : cursor // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  $Res call({Object? feed = null, Object? cursor = freezed}) {
+    return _then(
+      _value.copyWith(
+            feed:
+                null == feed
+                    ? _value.feed
+                    : feed // ignore: cast_nullable_to_non_nullable
+                        as List<SkeletonFeedPost>,
+            cursor:
+                freezed == cursor
+                    ? _value.cursor
+                    : cursor // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -5377,8 +5774,9 @@ class _$FeedSkeletonCopyWithImpl<$Res, $Val extends FeedSkeleton>
 abstract class _$$FeedSkeletonImplCopyWith<$Res>
     implements $FeedSkeletonCopyWith<$Res> {
   factory _$$FeedSkeletonImplCopyWith(
-          _$FeedSkeletonImpl value, $Res Function(_$FeedSkeletonImpl) then) =
-      __$$FeedSkeletonImplCopyWithImpl<$Res>;
+    _$FeedSkeletonImpl value,
+    $Res Function(_$FeedSkeletonImpl) then,
+  ) = __$$FeedSkeletonImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({List<SkeletonFeedPost> feed, String? cursor});
@@ -5389,36 +5787,41 @@ class __$$FeedSkeletonImplCopyWithImpl<$Res>
     extends _$FeedSkeletonCopyWithImpl<$Res, _$FeedSkeletonImpl>
     implements _$$FeedSkeletonImplCopyWith<$Res> {
   __$$FeedSkeletonImplCopyWithImpl(
-      _$FeedSkeletonImpl _value, $Res Function(_$FeedSkeletonImpl) _then)
-      : super(_value, _then);
+    _$FeedSkeletonImpl _value,
+    $Res Function(_$FeedSkeletonImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of FeedSkeleton
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? feed = null,
-    Object? cursor = freezed,
-  }) {
-    return _then(_$FeedSkeletonImpl(
-      feed: null == feed
-          ? _value._feed
-          : feed // ignore: cast_nullable_to_non_nullable
-              as List<SkeletonFeedPost>,
-      cursor: freezed == cursor
-          ? _value.cursor
-          : cursor // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? feed = null, Object? cursor = freezed}) {
+    return _then(
+      _$FeedSkeletonImpl(
+        feed:
+            null == feed
+                ? _value._feed
+                : feed // ignore: cast_nullable_to_non_nullable
+                    as List<SkeletonFeedPost>,
+        cursor:
+            freezed == cursor
+                ? _value.cursor
+                : cursor // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
-class _$FeedSkeletonImpl with DiagnosticableTreeMixin implements _FeedSkeleton {
-  const _$FeedSkeletonImpl(
-      {required final List<SkeletonFeedPost> feed, this.cursor})
-      : _feed = feed;
+
+@JsonSerializable(explicitToJson: true)
+class _$FeedSkeletonImpl extends _FeedSkeleton with DiagnosticableTreeMixin {
+  const _$FeedSkeletonImpl({
+    required final List<SkeletonFeedPost> feed,
+    this.cursor,
+  }) : _feed = feed,
+       super._();
 
   factory _$FeedSkeletonImpl.fromJson(Map<String, dynamic> json) =>
       _$$FeedSkeletonImplFromJson(json);
@@ -5460,7 +5863,10 @@ class _$FeedSkeletonImpl with DiagnosticableTreeMixin implements _FeedSkeleton {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, const DeepCollectionEquality().hash(_feed), cursor);
+    runtimeType,
+    const DeepCollectionEquality().hash(_feed),
+    cursor,
+  );
 
   /// Create a copy of FeedSkeleton
   /// with the given fields replaced by the non-null parameter values.
@@ -5472,16 +5878,16 @@ class _$FeedSkeletonImpl with DiagnosticableTreeMixin implements _FeedSkeleton {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FeedSkeletonImplToJson(
-      this,
-    );
+    return _$$FeedSkeletonImplToJson(this);
   }
 }
 
-abstract class _FeedSkeleton implements FeedSkeleton {
-  const factory _FeedSkeleton(
-      {required final List<SkeletonFeedPost> feed,
-      final String? cursor}) = _$FeedSkeletonImpl;
+abstract class _FeedSkeleton extends FeedSkeleton {
+  const factory _FeedSkeleton({
+    required final List<SkeletonFeedPost> feed,
+    final String? cursor,
+  }) = _$FeedSkeletonImpl;
+  const _FeedSkeleton._() : super._();
 
   factory _FeedSkeleton.fromJson(Map<String, dynamic> json) =
       _$FeedSkeletonImpl.fromJson;
@@ -5522,8 +5928,9 @@ mixin _$ImageUploadResult {
 /// @nodoc
 abstract class $ImageUploadResultCopyWith<$Res> {
   factory $ImageUploadResultCopyWith(
-          ImageUploadResult value, $Res Function(ImageUploadResult) then) =
-      _$ImageUploadResultCopyWithImpl<$Res, ImageUploadResult>;
+    ImageUploadResult value,
+    $Res Function(ImageUploadResult) then,
+  ) = _$ImageUploadResultCopyWithImpl<$Res, ImageUploadResult>;
   @useResult
   $Res call({String fullsize, String alt, Map<String, dynamic> image});
 }
@@ -5547,29 +5954,36 @@ class _$ImageUploadResultCopyWithImpl<$Res, $Val extends ImageUploadResult>
     Object? alt = null,
     Object? image = null,
   }) {
-    return _then(_value.copyWith(
-      fullsize: null == fullsize
-          ? _value.fullsize
-          : fullsize // ignore: cast_nullable_to_non_nullable
-              as String,
-      alt: null == alt
-          ? _value.alt
-          : alt // ignore: cast_nullable_to_non_nullable
-              as String,
-      image: null == image
-          ? _value.image
-          : image // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            fullsize:
+                null == fullsize
+                    ? _value.fullsize
+                    : fullsize // ignore: cast_nullable_to_non_nullable
+                        as String,
+            alt:
+                null == alt
+                    ? _value.alt
+                    : alt // ignore: cast_nullable_to_non_nullable
+                        as String,
+            image:
+                null == image
+                    ? _value.image
+                    : image // ignore: cast_nullable_to_non_nullable
+                        as Map<String, dynamic>,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$ImageUploadResultImplCopyWith<$Res>
     implements $ImageUploadResultCopyWith<$Res> {
-  factory _$$ImageUploadResultImplCopyWith(_$ImageUploadResultImpl value,
-          $Res Function(_$ImageUploadResultImpl) then) =
-      __$$ImageUploadResultImplCopyWithImpl<$Res>;
+  factory _$$ImageUploadResultImplCopyWith(
+    _$ImageUploadResultImpl value,
+    $Res Function(_$ImageUploadResultImpl) then,
+  ) = __$$ImageUploadResultImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String fullsize, String alt, Map<String, dynamic> image});
@@ -5579,9 +5993,10 @@ abstract class _$$ImageUploadResultImplCopyWith<$Res>
 class __$$ImageUploadResultImplCopyWithImpl<$Res>
     extends _$ImageUploadResultCopyWithImpl<$Res, _$ImageUploadResultImpl>
     implements _$$ImageUploadResultImplCopyWith<$Res> {
-  __$$ImageUploadResultImplCopyWithImpl(_$ImageUploadResultImpl _value,
-      $Res Function(_$ImageUploadResultImpl) _then)
-      : super(_value, _then);
+  __$$ImageUploadResultImplCopyWithImpl(
+    _$ImageUploadResultImpl _value,
+    $Res Function(_$ImageUploadResultImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of ImageUploadResult
   /// with the given fields replaced by the non-null parameter values.
@@ -5592,33 +6007,39 @@ class __$$ImageUploadResultImplCopyWithImpl<$Res>
     Object? alt = null,
     Object? image = null,
   }) {
-    return _then(_$ImageUploadResultImpl(
-      fullsize: null == fullsize
-          ? _value.fullsize
-          : fullsize // ignore: cast_nullable_to_non_nullable
-              as String,
-      alt: null == alt
-          ? _value.alt
-          : alt // ignore: cast_nullable_to_non_nullable
-              as String,
-      image: null == image
-          ? _value._image
-          : image // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>,
-    ));
+    return _then(
+      _$ImageUploadResultImpl(
+        fullsize:
+            null == fullsize
+                ? _value.fullsize
+                : fullsize // ignore: cast_nullable_to_non_nullable
+                    as String,
+        alt:
+            null == alt
+                ? _value.alt
+                : alt // ignore: cast_nullable_to_non_nullable
+                    as String,
+        image:
+            null == image
+                ? _value._image
+                : image // ignore: cast_nullable_to_non_nullable
+                    as Map<String, dynamic>,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
-class _$ImageUploadResultImpl
-    with DiagnosticableTreeMixin
-    implements _ImageUploadResult {
-  const _$ImageUploadResultImpl(
-      {required this.fullsize,
-      required this.alt,
-      required final Map<String, dynamic> image})
-      : _image = image;
+
+@JsonSerializable(explicitToJson: true)
+class _$ImageUploadResultImpl extends _ImageUploadResult
+    with DiagnosticableTreeMixin {
+  const _$ImageUploadResultImpl({
+    required this.fullsize,
+    required this.alt,
+    required final Map<String, dynamic> image,
+  }) : _image = image,
+       super._();
 
   factory _$ImageUploadResultImpl.fromJson(Map<String, dynamic> json) =>
       _$$ImageUploadResultImplFromJson(json);
@@ -5664,7 +6085,11 @@ class _$ImageUploadResultImpl
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, fullsize, alt, const DeepCollectionEquality().hash(_image));
+    runtimeType,
+    fullsize,
+    alt,
+    const DeepCollectionEquality().hash(_image),
+  );
 
   /// Create a copy of ImageUploadResult
   /// with the given fields replaced by the non-null parameter values.
@@ -5673,21 +6098,23 @@ class _$ImageUploadResultImpl
   @pragma('vm:prefer-inline')
   _$$ImageUploadResultImplCopyWith<_$ImageUploadResultImpl> get copyWith =>
       __$$ImageUploadResultImplCopyWithImpl<_$ImageUploadResultImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ImageUploadResultImplToJson(
-      this,
-    );
+    return _$$ImageUploadResultImplToJson(this);
   }
 }
 
-abstract class _ImageUploadResult implements ImageUploadResult {
-  const factory _ImageUploadResult(
-      {required final String fullsize,
-      required final String alt,
-      required final Map<String, dynamic> image}) = _$ImageUploadResultImpl;
+abstract class _ImageUploadResult extends ImageUploadResult {
+  const factory _ImageUploadResult({
+    required final String fullsize,
+    required final String alt,
+    required final Map<String, dynamic> image,
+  }) = _$ImageUploadResultImpl;
+  const _ImageUploadResult._() : super._();
 
   factory _ImageUploadResult.fromJson(Map<String, dynamic> json) =
       _$ImageUploadResultImpl.fromJson;
@@ -5732,8 +6159,9 @@ mixin _$FacetIndex {
 /// @nodoc
 abstract class $FacetIndexCopyWith<$Res> {
   factory $FacetIndexCopyWith(
-          FacetIndex value, $Res Function(FacetIndex) then) =
-      _$FacetIndexCopyWithImpl<$Res, FacetIndex>;
+    FacetIndex value,
+    $Res Function(FacetIndex) then,
+  ) = _$FacetIndexCopyWithImpl<$Res, FacetIndex>;
   @useResult
   $Res call({int byteStart, int byteEnd});
 }
@@ -5752,20 +6180,22 @@ class _$FacetIndexCopyWithImpl<$Res, $Val extends FacetIndex>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? byteStart = null,
-    Object? byteEnd = null,
-  }) {
-    return _then(_value.copyWith(
-      byteStart: null == byteStart
-          ? _value.byteStart
-          : byteStart // ignore: cast_nullable_to_non_nullable
-              as int,
-      byteEnd: null == byteEnd
-          ? _value.byteEnd
-          : byteEnd // ignore: cast_nullable_to_non_nullable
-              as int,
-    ) as $Val);
+  $Res call({Object? byteStart = null, Object? byteEnd = null}) {
+    return _then(
+      _value.copyWith(
+            byteStart:
+                null == byteStart
+                    ? _value.byteStart
+                    : byteStart // ignore: cast_nullable_to_non_nullable
+                        as int,
+            byteEnd:
+                null == byteEnd
+                    ? _value.byteEnd
+                    : byteEnd // ignore: cast_nullable_to_non_nullable
+                        as int,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -5773,8 +6203,9 @@ class _$FacetIndexCopyWithImpl<$Res, $Val extends FacetIndex>
 abstract class _$$FacetIndexImplCopyWith<$Res>
     implements $FacetIndexCopyWith<$Res> {
   factory _$$FacetIndexImplCopyWith(
-          _$FacetIndexImpl value, $Res Function(_$FacetIndexImpl) then) =
-      __$$FacetIndexImplCopyWithImpl<$Res>;
+    _$FacetIndexImpl value,
+    $Res Function(_$FacetIndexImpl) then,
+  ) = __$$FacetIndexImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({int byteStart, int byteEnd});
@@ -5785,35 +6216,38 @@ class __$$FacetIndexImplCopyWithImpl<$Res>
     extends _$FacetIndexCopyWithImpl<$Res, _$FacetIndexImpl>
     implements _$$FacetIndexImplCopyWith<$Res> {
   __$$FacetIndexImplCopyWithImpl(
-      _$FacetIndexImpl _value, $Res Function(_$FacetIndexImpl) _then)
-      : super(_value, _then);
+    _$FacetIndexImpl _value,
+    $Res Function(_$FacetIndexImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of FacetIndex
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? byteStart = null,
-    Object? byteEnd = null,
-  }) {
-    return _then(_$FacetIndexImpl(
-      byteStart: null == byteStart
-          ? _value.byteStart
-          : byteStart // ignore: cast_nullable_to_non_nullable
-              as int,
-      byteEnd: null == byteEnd
-          ? _value.byteEnd
-          : byteEnd // ignore: cast_nullable_to_non_nullable
-              as int,
-    ));
+  $Res call({Object? byteStart = null, Object? byteEnd = null}) {
+    return _then(
+      _$FacetIndexImpl(
+        byteStart:
+            null == byteStart
+                ? _value.byteStart
+                : byteStart // ignore: cast_nullable_to_non_nullable
+                    as int,
+        byteEnd:
+            null == byteEnd
+                ? _value.byteEnd
+                : byteEnd // ignore: cast_nullable_to_non_nullable
+                    as int,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$FacetIndexImpl extends _FacetIndex with DiagnosticableTreeMixin {
   const _$FacetIndexImpl({required this.byteStart, required this.byteEnd})
-      : super._();
+    : super._();
 
   factory _$FacetIndexImpl.fromJson(Map<String, dynamic> json) =>
       _$$FacetIndexImplFromJson(json);
@@ -5864,16 +6298,15 @@ class _$FacetIndexImpl extends _FacetIndex with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FacetIndexImplToJson(
-      this,
-    );
+    return _$$FacetIndexImplToJson(this);
   }
 }
 
 abstract class _FacetIndex extends FacetIndex {
-  const factory _FacetIndex(
-      {required final int byteStart,
-      required final int byteEnd}) = _$FacetIndexImpl;
+  const factory _FacetIndex({
+    required final int byteStart,
+    required final int byteEnd,
+  }) = _$FacetIndexImpl;
   const _FacetIndex._() : super._();
 
   factory _FacetIndex.fromJson(Map<String, dynamic> json) =
@@ -5905,8 +6338,12 @@ FacetFeature _$FacetFeatureFromJson(Map<String, dynamic> json) {
       return TagFeature.fromJson(json);
 
     default:
-      throw CheckedFromJsonException(json, '\$type', 'FacetFeature',
-          'Invalid union type "${json['\$type']}"!');
+      throw CheckedFromJsonException(
+        json,
+        '\$type',
+        'FacetFeature',
+        'Invalid union type "${json['\$type']}"!',
+      );
   }
 }
 
@@ -5917,45 +6354,39 @@ mixin _$FacetFeature {
     required TResult Function(String did) mention,
     required TResult Function(@AtUriConverter() AtUri uri) link,
     required TResult Function(String tag) tag,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
     TResult? Function(String did)? mention,
     TResult? Function(@AtUriConverter() AtUri uri)? link,
     TResult? Function(String tag)? tag,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
     TResult Function(String did)? mention,
     TResult Function(@AtUriConverter() AtUri uri)? link,
     TResult Function(String tag)? tag,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(MentionFeature value) mention,
     required TResult Function(LinkFeature value) link,
     required TResult Function(TagFeature value) tag,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(MentionFeature value)? mention,
     TResult? Function(LinkFeature value)? link,
     TResult? Function(TagFeature value)? tag,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(MentionFeature value)? mention,
     TResult Function(LinkFeature value)? link,
     TResult Function(TagFeature value)? tag,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 
   /// Serializes this FacetFeature to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -5964,8 +6395,9 @@ mixin _$FacetFeature {
 /// @nodoc
 abstract class $FacetFeatureCopyWith<$Res> {
   factory $FacetFeatureCopyWith(
-          FacetFeature value, $Res Function(FacetFeature) then) =
-      _$FacetFeatureCopyWithImpl<$Res, FacetFeature>;
+    FacetFeature value,
+    $Res Function(FacetFeature) then,
+  ) = _$FacetFeatureCopyWithImpl<$Res, FacetFeature>;
 }
 
 /// @nodoc
@@ -5984,9 +6416,10 @@ class _$FacetFeatureCopyWithImpl<$Res, $Val extends FacetFeature>
 
 /// @nodoc
 abstract class _$$MentionFeatureImplCopyWith<$Res> {
-  factory _$$MentionFeatureImplCopyWith(_$MentionFeatureImpl value,
-          $Res Function(_$MentionFeatureImpl) then) =
-      __$$MentionFeatureImplCopyWithImpl<$Res>;
+  factory _$$MentionFeatureImplCopyWith(
+    _$MentionFeatureImpl value,
+    $Res Function(_$MentionFeatureImpl) then,
+  ) = __$$MentionFeatureImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String did});
 }
@@ -5996,31 +6429,34 @@ class __$$MentionFeatureImplCopyWithImpl<$Res>
     extends _$FacetFeatureCopyWithImpl<$Res, _$MentionFeatureImpl>
     implements _$$MentionFeatureImplCopyWith<$Res> {
   __$$MentionFeatureImplCopyWithImpl(
-      _$MentionFeatureImpl _value, $Res Function(_$MentionFeatureImpl) _then)
-      : super(_value, _then);
+    _$MentionFeatureImpl _value,
+    $Res Function(_$MentionFeatureImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of FacetFeature
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? did = null,
-  }) {
-    return _then(_$MentionFeatureImpl(
-      did: null == did
-          ? _value.did
-          : did // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+  $Res call({Object? did = null}) {
+    return _then(
+      _$MentionFeatureImpl(
+        did:
+            null == did
+                ? _value.did
+                : did // ignore: cast_nullable_to_non_nullable
+                    as String,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$MentionFeatureImpl extends MentionFeature with DiagnosticableTreeMixin {
   const _$MentionFeatureImpl({required this.did, final String? $type})
-      : $type = $type ?? '#mention',
-        super._();
+    : $type = $type ?? '#mention',
+      super._();
 
   factory _$MentionFeatureImpl.fromJson(Map<String, dynamic> json) =>
       _$$MentionFeatureImplFromJson(json);
@@ -6063,7 +6499,9 @@ class _$MentionFeatureImpl extends MentionFeature with DiagnosticableTreeMixin {
   @pragma('vm:prefer-inline')
   _$$MentionFeatureImplCopyWith<_$MentionFeatureImpl> get copyWith =>
       __$$MentionFeatureImplCopyWithImpl<_$MentionFeatureImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
@@ -6135,9 +6573,7 @@ class _$MentionFeatureImpl extends MentionFeature with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MentionFeatureImplToJson(
-      this,
-    );
+    return _$$MentionFeatureImplToJson(this);
   }
 }
 
@@ -6161,8 +6597,9 @@ abstract class MentionFeature extends FacetFeature {
 /// @nodoc
 abstract class _$$LinkFeatureImplCopyWith<$Res> {
   factory _$$LinkFeatureImplCopyWith(
-          _$LinkFeatureImpl value, $Res Function(_$LinkFeatureImpl) then) =
-      __$$LinkFeatureImplCopyWithImpl<$Res>;
+    _$LinkFeatureImpl value,
+    $Res Function(_$LinkFeatureImpl) then,
+  ) = __$$LinkFeatureImplCopyWithImpl<$Res>;
   @useResult
   $Res call({@AtUriConverter() AtUri uri});
 }
@@ -6172,32 +6609,36 @@ class __$$LinkFeatureImplCopyWithImpl<$Res>
     extends _$FacetFeatureCopyWithImpl<$Res, _$LinkFeatureImpl>
     implements _$$LinkFeatureImplCopyWith<$Res> {
   __$$LinkFeatureImplCopyWithImpl(
-      _$LinkFeatureImpl _value, $Res Function(_$LinkFeatureImpl) _then)
-      : super(_value, _then);
+    _$LinkFeatureImpl _value,
+    $Res Function(_$LinkFeatureImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of FacetFeature
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? uri = null,
-  }) {
-    return _then(_$LinkFeatureImpl(
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-    ));
+  $Res call({Object? uri = null}) {
+    return _then(
+      _$LinkFeatureImpl(
+        uri:
+            null == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                    as AtUri,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$LinkFeatureImpl extends LinkFeature with DiagnosticableTreeMixin {
-  const _$LinkFeatureImpl(
-      {@AtUriConverter() required this.uri, final String? $type})
-      : $type = $type ?? '#link',
-        super._();
+  const _$LinkFeatureImpl({
+    @AtUriConverter() required this.uri,
+    final String? $type,
+  }) : $type = $type ?? '#link',
+       super._();
 
   factory _$LinkFeatureImpl.fromJson(Map<String, dynamic> json) =>
       _$$LinkFeatureImplFromJson(json);
@@ -6312,9 +6753,7 @@ class _$LinkFeatureImpl extends LinkFeature with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$LinkFeatureImplToJson(
-      this,
-    );
+    return _$$LinkFeatureImplToJson(this);
   }
 }
 
@@ -6339,8 +6778,9 @@ abstract class LinkFeature extends FacetFeature {
 /// @nodoc
 abstract class _$$TagFeatureImplCopyWith<$Res> {
   factory _$$TagFeatureImplCopyWith(
-          _$TagFeatureImpl value, $Res Function(_$TagFeatureImpl) then) =
-      __$$TagFeatureImplCopyWithImpl<$Res>;
+    _$TagFeatureImpl value,
+    $Res Function(_$TagFeatureImpl) then,
+  ) = __$$TagFeatureImplCopyWithImpl<$Res>;
   @useResult
   $Res call({String tag});
 }
@@ -6350,31 +6790,34 @@ class __$$TagFeatureImplCopyWithImpl<$Res>
     extends _$FacetFeatureCopyWithImpl<$Res, _$TagFeatureImpl>
     implements _$$TagFeatureImplCopyWith<$Res> {
   __$$TagFeatureImplCopyWithImpl(
-      _$TagFeatureImpl _value, $Res Function(_$TagFeatureImpl) _then)
-      : super(_value, _then);
+    _$TagFeatureImpl _value,
+    $Res Function(_$TagFeatureImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of FacetFeature
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? tag = null,
-  }) {
-    return _then(_$TagFeatureImpl(
-      tag: null == tag
-          ? _value.tag
-          : tag // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+  $Res call({Object? tag = null}) {
+    return _then(
+      _$TagFeatureImpl(
+        tag:
+            null == tag
+                ? _value.tag
+                : tag // ignore: cast_nullable_to_non_nullable
+                    as String,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$TagFeatureImpl extends TagFeature with DiagnosticableTreeMixin {
   const _$TagFeatureImpl({required this.tag, final String? $type})
-      : $type = $type ?? '#tag',
-        super._();
+    : $type = $type ?? '#tag',
+      super._();
 
   factory _$TagFeatureImpl.fromJson(Map<String, dynamic> json) =>
       _$$TagFeatureImplFromJson(json);
@@ -6488,9 +6931,7 @@ class _$TagFeatureImpl extends TagFeature with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$TagFeatureImplToJson(
-      this,
-    );
+    return _$$TagFeatureImplToJson(this);
   }
 }
 
@@ -6555,20 +6996,22 @@ class _$FacetCopyWithImpl<$Res, $Val extends Facet>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? index = null,
-    Object? features = null,
-  }) {
-    return _then(_value.copyWith(
-      index: null == index
-          ? _value.index
-          : index // ignore: cast_nullable_to_non_nullable
-              as FacetIndex,
-      features: null == features
-          ? _value.features
-          : features // ignore: cast_nullable_to_non_nullable
-              as List<FacetFeature>,
-    ) as $Val);
+  $Res call({Object? index = null, Object? features = null}) {
+    return _then(
+      _value.copyWith(
+            index:
+                null == index
+                    ? _value.index
+                    : index // ignore: cast_nullable_to_non_nullable
+                        as FacetIndex,
+            features:
+                null == features
+                    ? _value.features
+                    : features // ignore: cast_nullable_to_non_nullable
+                        as List<FacetFeature>,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of Facet
@@ -6585,8 +7028,9 @@ class _$FacetCopyWithImpl<$Res, $Val extends Facet>
 /// @nodoc
 abstract class _$$FacetImplCopyWith<$Res> implements $FacetCopyWith<$Res> {
   factory _$$FacetImplCopyWith(
-          _$FacetImpl value, $Res Function(_$FacetImpl) then) =
-      __$$FacetImplCopyWithImpl<$Res>;
+    _$FacetImpl value,
+    $Res Function(_$FacetImpl) then,
+  ) = __$$FacetImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({FacetIndex index, List<FacetFeature> features});
@@ -6600,37 +7044,41 @@ class __$$FacetImplCopyWithImpl<$Res>
     extends _$FacetCopyWithImpl<$Res, _$FacetImpl>
     implements _$$FacetImplCopyWith<$Res> {
   __$$FacetImplCopyWithImpl(
-      _$FacetImpl _value, $Res Function(_$FacetImpl) _then)
-      : super(_value, _then);
+    _$FacetImpl _value,
+    $Res Function(_$FacetImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of Facet
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? index = null,
-    Object? features = null,
-  }) {
-    return _then(_$FacetImpl(
-      index: null == index
-          ? _value.index
-          : index // ignore: cast_nullable_to_non_nullable
-              as FacetIndex,
-      features: null == features
-          ? _value._features
-          : features // ignore: cast_nullable_to_non_nullable
-              as List<FacetFeature>,
-    ));
+  $Res call({Object? index = null, Object? features = null}) {
+    return _then(
+      _$FacetImpl(
+        index:
+            null == index
+                ? _value.index
+                : index // ignore: cast_nullable_to_non_nullable
+                    as FacetIndex,
+        features:
+            null == features
+                ? _value._features
+                : features // ignore: cast_nullable_to_non_nullable
+                    as List<FacetFeature>,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$FacetImpl extends _Facet with DiagnosticableTreeMixin {
-  const _$FacetImpl(
-      {required this.index, required final List<FacetFeature> features})
-      : _features = features,
-        super._();
+  const _$FacetImpl({
+    required this.index,
+    required final List<FacetFeature> features,
+  }) : _features = features,
+       super._();
 
   factory _$FacetImpl.fromJson(Map<String, dynamic> json) =>
       _$$FacetImplFromJson(json);
@@ -6676,7 +7124,10 @@ class _$FacetImpl extends _Facet with DiagnosticableTreeMixin {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, index, const DeepCollectionEquality().hash(_features));
+    runtimeType,
+    index,
+    const DeepCollectionEquality().hash(_features),
+  );
 
   /// Create a copy of Facet
   /// with the given fields replaced by the non-null parameter values.
@@ -6688,16 +7139,15 @@ class _$FacetImpl extends _Facet with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FacetImplToJson(
-      this,
-    );
+    return _$$FacetImplToJson(this);
   }
 }
 
 abstract class _Facet extends Facet {
-  const factory _Facet(
-      {required final FacetIndex index,
-      required final List<FacetFeature> features}) = _$FacetImpl;
+  const factory _Facet({
+    required final FacetIndex index,
+    required final List<FacetFeature> features,
+  }) = _$FacetImpl;
   const _Facet._() : super._();
 
   factory _Facet.fromJson(Map<String, dynamic> json) = _$FacetImpl.fromJson;
@@ -6715,605 +7165,6 @@ abstract class _Facet extends Facet {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$FacetImplCopyWith<_$FacetImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-VideoEmbed _$VideoEmbedFromJson(Map<String, dynamic> json) {
-  return _VideoEmbed.fromJson(json);
-}
-
-/// @nodoc
-mixin _$VideoEmbed {
-  Blob get video =>
-      throw _privateConstructorUsedError; // remaining fields that are in the json
-// List<Caption> captions,
-// AspectRatio aspectRatio, {width: int, height: int}
-  String? get alt => throw _privateConstructorUsedError;
-
-  /// Serializes this VideoEmbed to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of VideoEmbed
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $VideoEmbedCopyWith<VideoEmbed> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $VideoEmbedCopyWith<$Res> {
-  factory $VideoEmbedCopyWith(
-          VideoEmbed value, $Res Function(VideoEmbed) then) =
-      _$VideoEmbedCopyWithImpl<$Res, VideoEmbed>;
-  @useResult
-  $Res call({Blob video, String? alt});
-
-  $BlobCopyWith<$Res> get video;
-}
-
-/// @nodoc
-class _$VideoEmbedCopyWithImpl<$Res, $Val extends VideoEmbed>
-    implements $VideoEmbedCopyWith<$Res> {
-  _$VideoEmbedCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of VideoEmbed
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? video = null,
-    Object? alt = freezed,
-  }) {
-    return _then(_value.copyWith(
-      video: null == video
-          ? _value.video
-          : video // ignore: cast_nullable_to_non_nullable
-              as Blob,
-      alt: freezed == alt
-          ? _value.alt
-          : alt // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
-
-  /// Create a copy of VideoEmbed
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $BlobCopyWith<$Res> get video {
-    return $BlobCopyWith<$Res>(_value.video, (value) {
-      return _then(_value.copyWith(video: value) as $Val);
-    });
-  }
-}
-
-/// @nodoc
-abstract class _$$VideoEmbedImplCopyWith<$Res>
-    implements $VideoEmbedCopyWith<$Res> {
-  factory _$$VideoEmbedImplCopyWith(
-          _$VideoEmbedImpl value, $Res Function(_$VideoEmbedImpl) then) =
-      __$$VideoEmbedImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({Blob video, String? alt});
-
-  @override
-  $BlobCopyWith<$Res> get video;
-}
-
-/// @nodoc
-class __$$VideoEmbedImplCopyWithImpl<$Res>
-    extends _$VideoEmbedCopyWithImpl<$Res, _$VideoEmbedImpl>
-    implements _$$VideoEmbedImplCopyWith<$Res> {
-  __$$VideoEmbedImplCopyWithImpl(
-      _$VideoEmbedImpl _value, $Res Function(_$VideoEmbedImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of VideoEmbed
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? video = null,
-    Object? alt = freezed,
-  }) {
-    return _then(_$VideoEmbedImpl(
-      video: null == video
-          ? _value.video
-          : video // ignore: cast_nullable_to_non_nullable
-              as Blob,
-      alt: freezed == alt
-          ? _value.alt
-          : alt // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$VideoEmbedImpl extends _VideoEmbed with DiagnosticableTreeMixin {
-  const _$VideoEmbedImpl({required this.video, this.alt}) : super._();
-
-  factory _$VideoEmbedImpl.fromJson(Map<String, dynamic> json) =>
-      _$$VideoEmbedImplFromJson(json);
-
-  @override
-  final Blob video;
-// remaining fields that are in the json
-// List<Caption> captions,
-// AspectRatio aspectRatio, {width: int, height: int}
-  @override
-  final String? alt;
-
-  @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'VideoEmbed(video: $video, alt: $alt)';
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('type', 'VideoEmbed'))
-      ..add(DiagnosticsProperty('video', video))
-      ..add(DiagnosticsProperty('alt', alt));
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$VideoEmbedImpl &&
-            (identical(other.video, video) || other.video == video) &&
-            (identical(other.alt, alt) || other.alt == alt));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(runtimeType, video, alt);
-
-  /// Create a copy of VideoEmbed
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$VideoEmbedImplCopyWith<_$VideoEmbedImpl> get copyWith =>
-      __$$VideoEmbedImplCopyWithImpl<_$VideoEmbedImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$VideoEmbedImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _VideoEmbed extends VideoEmbed {
-  const factory _VideoEmbed({required final Blob video, final String? alt}) =
-      _$VideoEmbedImpl;
-  const _VideoEmbed._() : super._();
-
-  factory _VideoEmbed.fromJson(Map<String, dynamic> json) =
-      _$VideoEmbedImpl.fromJson;
-
-  @override
-  Blob get video; // remaining fields that are in the json
-// List<Caption> captions,
-// AspectRatio aspectRatio, {width: int, height: int}
-  @override
-  String? get alt;
-
-  /// Create a copy of VideoEmbed
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$VideoEmbedImplCopyWith<_$VideoEmbedImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-VideoView _$VideoViewFromJson(Map<String, dynamic> json) {
-  return _VideoView.fromJson(json);
-}
-
-/// @nodoc
-mixin _$VideoView {
-  CID get cid => throw _privateConstructorUsedError;
-  @AtUriConverter()
-  AtUri get playlist => throw _privateConstructorUsedError;
-  @AtUriConverter()
-  AtUri get thumbnail => throw _privateConstructorUsedError;
-  String? get alt => throw _privateConstructorUsedError;
-
-  /// Serializes this VideoView to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of VideoView
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $VideoViewCopyWith<VideoView> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $VideoViewCopyWith<$Res> {
-  factory $VideoViewCopyWith(VideoView value, $Res Function(VideoView) then) =
-      _$VideoViewCopyWithImpl<$Res, VideoView>;
-  @useResult
-  $Res call(
-      {CID cid,
-      @AtUriConverter() AtUri playlist,
-      @AtUriConverter() AtUri thumbnail,
-      String? alt});
-}
-
-/// @nodoc
-class _$VideoViewCopyWithImpl<$Res, $Val extends VideoView>
-    implements $VideoViewCopyWith<$Res> {
-  _$VideoViewCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of VideoView
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? cid = null,
-    Object? playlist = null,
-    Object? thumbnail = null,
-    Object? alt = freezed,
-  }) {
-    return _then(_value.copyWith(
-      cid: null == cid
-          ? _value.cid
-          : cid // ignore: cast_nullable_to_non_nullable
-              as CID,
-      playlist: null == playlist
-          ? _value.playlist
-          : playlist // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-      thumbnail: null == thumbnail
-          ? _value.thumbnail
-          : thumbnail // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-      alt: freezed == alt
-          ? _value.alt
-          : alt // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$VideoViewImplCopyWith<$Res>
-    implements $VideoViewCopyWith<$Res> {
-  factory _$$VideoViewImplCopyWith(
-          _$VideoViewImpl value, $Res Function(_$VideoViewImpl) then) =
-      __$$VideoViewImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call(
-      {CID cid,
-      @AtUriConverter() AtUri playlist,
-      @AtUriConverter() AtUri thumbnail,
-      String? alt});
-}
-
-/// @nodoc
-class __$$VideoViewImplCopyWithImpl<$Res>
-    extends _$VideoViewCopyWithImpl<$Res, _$VideoViewImpl>
-    implements _$$VideoViewImplCopyWith<$Res> {
-  __$$VideoViewImplCopyWithImpl(
-      _$VideoViewImpl _value, $Res Function(_$VideoViewImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of VideoView
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? cid = null,
-    Object? playlist = null,
-    Object? thumbnail = null,
-    Object? alt = freezed,
-  }) {
-    return _then(_$VideoViewImpl(
-      cid: null == cid
-          ? _value.cid
-          : cid // ignore: cast_nullable_to_non_nullable
-              as CID,
-      playlist: null == playlist
-          ? _value.playlist
-          : playlist // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-      thumbnail: null == thumbnail
-          ? _value.thumbnail
-          : thumbnail // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-      alt: freezed == alt
-          ? _value.alt
-          : alt // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$VideoViewImpl extends _VideoView with DiagnosticableTreeMixin {
-  const _$VideoViewImpl(
-      {required this.cid,
-      @AtUriConverter() required this.playlist,
-      @AtUriConverter() required this.thumbnail,
-      this.alt})
-      : super._();
-
-  factory _$VideoViewImpl.fromJson(Map<String, dynamic> json) =>
-      _$$VideoViewImplFromJson(json);
-
-  @override
-  final CID cid;
-  @override
-  @AtUriConverter()
-  final AtUri playlist;
-  @override
-  @AtUriConverter()
-  final AtUri thumbnail;
-  @override
-  final String? alt;
-
-  @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'VideoView(cid: $cid, playlist: $playlist, thumbnail: $thumbnail, alt: $alt)';
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('type', 'VideoView'))
-      ..add(DiagnosticsProperty('cid', cid))
-      ..add(DiagnosticsProperty('playlist', playlist))
-      ..add(DiagnosticsProperty('thumbnail', thumbnail))
-      ..add(DiagnosticsProperty('alt', alt));
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$VideoViewImpl &&
-            (identical(other.cid, cid) || other.cid == cid) &&
-            (identical(other.playlist, playlist) ||
-                other.playlist == playlist) &&
-            (identical(other.thumbnail, thumbnail) ||
-                other.thumbnail == thumbnail) &&
-            (identical(other.alt, alt) || other.alt == alt));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(runtimeType, cid, playlist, thumbnail, alt);
-
-  /// Create a copy of VideoView
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$VideoViewImplCopyWith<_$VideoViewImpl> get copyWith =>
-      __$$VideoViewImplCopyWithImpl<_$VideoViewImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$VideoViewImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _VideoView extends VideoView {
-  const factory _VideoView(
-      {required final CID cid,
-      @AtUriConverter() required final AtUri playlist,
-      @AtUriConverter() required final AtUri thumbnail,
-      final String? alt}) = _$VideoViewImpl;
-  const _VideoView._() : super._();
-
-  factory _VideoView.fromJson(Map<String, dynamic> json) =
-      _$VideoViewImpl.fromJson;
-
-  @override
-  CID get cid;
-  @override
-  @AtUriConverter()
-  AtUri get playlist;
-  @override
-  @AtUriConverter()
-  AtUri get thumbnail;
-  @override
-  String? get alt;
-
-  /// Create a copy of VideoView
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$VideoViewImplCopyWith<_$VideoViewImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-ImageEmbed _$ImageEmbedFromJson(Map<String, dynamic> json) {
-  return _ImageEmbed.fromJson(json);
-}
-
-/// @nodoc
-mixin _$ImageEmbed {
-  List<Image> get images => throw _privateConstructorUsedError;
-
-  /// Serializes this ImageEmbed to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of ImageEmbed
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $ImageEmbedCopyWith<ImageEmbed> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $ImageEmbedCopyWith<$Res> {
-  factory $ImageEmbedCopyWith(
-          ImageEmbed value, $Res Function(ImageEmbed) then) =
-      _$ImageEmbedCopyWithImpl<$Res, ImageEmbed>;
-  @useResult
-  $Res call({List<Image> images});
-}
-
-/// @nodoc
-class _$ImageEmbedCopyWithImpl<$Res, $Val extends ImageEmbed>
-    implements $ImageEmbedCopyWith<$Res> {
-  _$ImageEmbedCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of ImageEmbed
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? images = null,
-  }) {
-    return _then(_value.copyWith(
-      images: null == images
-          ? _value.images
-          : images // ignore: cast_nullable_to_non_nullable
-              as List<Image>,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$ImageEmbedImplCopyWith<$Res>
-    implements $ImageEmbedCopyWith<$Res> {
-  factory _$$ImageEmbedImplCopyWith(
-          _$ImageEmbedImpl value, $Res Function(_$ImageEmbedImpl) then) =
-      __$$ImageEmbedImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({List<Image> images});
-}
-
-/// @nodoc
-class __$$ImageEmbedImplCopyWithImpl<$Res>
-    extends _$ImageEmbedCopyWithImpl<$Res, _$ImageEmbedImpl>
-    implements _$$ImageEmbedImplCopyWith<$Res> {
-  __$$ImageEmbedImplCopyWithImpl(
-      _$ImageEmbedImpl _value, $Res Function(_$ImageEmbedImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of ImageEmbed
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? images = null,
-  }) {
-    return _then(_$ImageEmbedImpl(
-      images: null == images
-          ? _value._images
-          : images // ignore: cast_nullable_to_non_nullable
-              as List<Image>,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$ImageEmbedImpl extends _ImageEmbed with DiagnosticableTreeMixin {
-  const _$ImageEmbedImpl({required final List<Image> images})
-      : _images = images,
-        super._();
-
-  factory _$ImageEmbedImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ImageEmbedImplFromJson(json);
-
-  final List<Image> _images;
-  @override
-  List<Image> get images {
-    if (_images is EqualUnmodifiableListView) return _images;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_images);
-  }
-
-  @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'ImageEmbed(images: $images)';
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('type', 'ImageEmbed'))
-      ..add(DiagnosticsProperty('images', images));
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ImageEmbedImpl &&
-            const DeepCollectionEquality().equals(other._images, _images));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(_images));
-
-  /// Create a copy of ImageEmbed
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$ImageEmbedImplCopyWith<_$ImageEmbedImpl> get copyWith =>
-      __$$ImageEmbedImplCopyWithImpl<_$ImageEmbedImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ImageEmbedImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _ImageEmbed extends ImageEmbed {
-  const factory _ImageEmbed({required final List<Image> images}) =
-      _$ImageEmbedImpl;
-  const _ImageEmbed._() : super._();
-
-  factory _ImageEmbed.fromJson(Map<String, dynamic> json) =
-      _$ImageEmbedImpl.fromJson;
-
-  @override
-  List<Image> get images;
-
-  /// Create a copy of ImageEmbed
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ImageEmbedImplCopyWith<_$ImageEmbedImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -7359,20 +7210,22 @@ class _$ImageCopyWithImpl<$Res, $Val extends Image>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? image = null,
-    Object? alt = freezed,
-  }) {
-    return _then(_value.copyWith(
-      image: null == image
-          ? _value.image
-          : image // ignore: cast_nullable_to_non_nullable
-              as Blob,
-      alt: freezed == alt
-          ? _value.alt
-          : alt // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+  $Res call({Object? image = null, Object? alt = freezed}) {
+    return _then(
+      _value.copyWith(
+            image:
+                null == image
+                    ? _value.image
+                    : image // ignore: cast_nullable_to_non_nullable
+                        as Blob,
+            alt:
+                freezed == alt
+                    ? _value.alt
+                    : alt // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of Image
@@ -7389,8 +7242,9 @@ class _$ImageCopyWithImpl<$Res, $Val extends Image>
 /// @nodoc
 abstract class _$$ImageImplCopyWith<$Res> implements $ImageCopyWith<$Res> {
   factory _$$ImageImplCopyWith(
-          _$ImageImpl value, $Res Function(_$ImageImpl) then) =
-      __$$ImageImplCopyWithImpl<$Res>;
+    _$ImageImpl value,
+    $Res Function(_$ImageImpl) then,
+  ) = __$$ImageImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({Blob image, String? alt});
@@ -7404,32 +7258,35 @@ class __$$ImageImplCopyWithImpl<$Res>
     extends _$ImageCopyWithImpl<$Res, _$ImageImpl>
     implements _$$ImageImplCopyWith<$Res> {
   __$$ImageImplCopyWithImpl(
-      _$ImageImpl _value, $Res Function(_$ImageImpl) _then)
-      : super(_value, _then);
+    _$ImageImpl _value,
+    $Res Function(_$ImageImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of Image
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? image = null,
-    Object? alt = freezed,
-  }) {
-    return _then(_$ImageImpl(
-      image: null == image
-          ? _value.image
-          : image // ignore: cast_nullable_to_non_nullable
-              as Blob,
-      alt: freezed == alt
-          ? _value.alt
-          : alt // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+  $Res call({Object? image = null, Object? alt = freezed}) {
+    return _then(
+      _$ImageImpl(
+        image:
+            null == image
+                ? _value.image
+                : image // ignore: cast_nullable_to_non_nullable
+                    as Blob,
+        alt:
+            freezed == alt
+                ? _value.alt
+                : alt // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$ImageImpl extends _Image with DiagnosticableTreeMixin {
   const _$ImageImpl({required this.image, this.alt}) : super._();
 
@@ -7478,9 +7335,7 @@ class _$ImageImpl extends _Image with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ImageImplToJson(
-      this,
-    );
+    return _$$ImageImplToJson(this);
   }
 }
 
@@ -7501,172 +7356,6 @@ abstract class _Image extends Image {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ImageImplCopyWith<_$ImageImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-ImageView _$ImageViewFromJson(Map<String, dynamic> json) {
-  return _ImageView.fromJson(json);
-}
-
-/// @nodoc
-mixin _$ImageView {
-  List<ViewImage> get images => throw _privateConstructorUsedError;
-
-  /// Serializes this ImageView to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of ImageView
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $ImageViewCopyWith<ImageView> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $ImageViewCopyWith<$Res> {
-  factory $ImageViewCopyWith(ImageView value, $Res Function(ImageView) then) =
-      _$ImageViewCopyWithImpl<$Res, ImageView>;
-  @useResult
-  $Res call({List<ViewImage> images});
-}
-
-/// @nodoc
-class _$ImageViewCopyWithImpl<$Res, $Val extends ImageView>
-    implements $ImageViewCopyWith<$Res> {
-  _$ImageViewCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of ImageView
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? images = null,
-  }) {
-    return _then(_value.copyWith(
-      images: null == images
-          ? _value.images
-          : images // ignore: cast_nullable_to_non_nullable
-              as List<ViewImage>,
-    ) as $Val);
-  }
-}
-
-/// @nodoc
-abstract class _$$ImageViewImplCopyWith<$Res>
-    implements $ImageViewCopyWith<$Res> {
-  factory _$$ImageViewImplCopyWith(
-          _$ImageViewImpl value, $Res Function(_$ImageViewImpl) then) =
-      __$$ImageViewImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({List<ViewImage> images});
-}
-
-/// @nodoc
-class __$$ImageViewImplCopyWithImpl<$Res>
-    extends _$ImageViewCopyWithImpl<$Res, _$ImageViewImpl>
-    implements _$$ImageViewImplCopyWith<$Res> {
-  __$$ImageViewImplCopyWithImpl(
-      _$ImageViewImpl _value, $Res Function(_$ImageViewImpl) _then)
-      : super(_value, _then);
-
-  /// Create a copy of ImageView
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? images = null,
-  }) {
-    return _then(_$ImageViewImpl(
-      images: null == images
-          ? _value._images
-          : images // ignore: cast_nullable_to_non_nullable
-              as List<ViewImage>,
-    ));
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$ImageViewImpl extends _ImageView with DiagnosticableTreeMixin {
-  const _$ImageViewImpl({required final List<ViewImage> images})
-      : _images = images,
-        super._();
-
-  factory _$ImageViewImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ImageViewImplFromJson(json);
-
-  final List<ViewImage> _images;
-  @override
-  List<ViewImage> get images {
-    if (_images is EqualUnmodifiableListView) return _images;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_images);
-  }
-
-  @override
-  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'ImageView(images: $images)';
-  }
-
-  @override
-  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
-    super.debugFillProperties(properties);
-    properties
-      ..add(DiagnosticsProperty('type', 'ImageView'))
-      ..add(DiagnosticsProperty('images', images));
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$ImageViewImpl &&
-            const DeepCollectionEquality().equals(other._images, _images));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode =>
-      Object.hash(runtimeType, const DeepCollectionEquality().hash(_images));
-
-  /// Create a copy of ImageView
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$ImageViewImplCopyWith<_$ImageViewImpl> get copyWith =>
-      __$$ImageViewImplCopyWithImpl<_$ImageViewImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ImageViewImplToJson(
-      this,
-    );
-  }
-}
-
-abstract class _ImageView extends ImageView {
-  const factory _ImageView({required final List<ViewImage> images}) =
-      _$ImageViewImpl;
-  const _ImageView._() : super._();
-
-  factory _ImageView.fromJson(Map<String, dynamic> json) =
-      _$ImageViewImpl.fromJson;
-
-  @override
-  List<ViewImage> get images;
-
-  /// Create a copy of ImageView
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ImageViewImplCopyWith<_$ImageViewImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
@@ -7697,10 +7386,11 @@ abstract class $ViewImageCopyWith<$Res> {
   factory $ViewImageCopyWith(ViewImage value, $Res Function(ViewImage) then) =
       _$ViewImageCopyWithImpl<$Res, ViewImage>;
   @useResult
-  $Res call(
-      {@AtUriConverter() AtUri thumb,
-      @AtUriConverter() AtUri fullsize,
-      String? alt});
+  $Res call({
+    @AtUriConverter() AtUri thumb,
+    @AtUriConverter() AtUri fullsize,
+    String? alt,
+  });
 }
 
 /// @nodoc
@@ -7722,20 +7412,26 @@ class _$ViewImageCopyWithImpl<$Res, $Val extends ViewImage>
     Object? fullsize = null,
     Object? alt = freezed,
   }) {
-    return _then(_value.copyWith(
-      thumb: null == thumb
-          ? _value.thumb
-          : thumb // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-      fullsize: null == fullsize
-          ? _value.fullsize
-          : fullsize // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-      alt: freezed == alt
-          ? _value.alt
-          : alt // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            thumb:
+                null == thumb
+                    ? _value.thumb
+                    : thumb // ignore: cast_nullable_to_non_nullable
+                        as AtUri,
+            fullsize:
+                null == fullsize
+                    ? _value.fullsize
+                    : fullsize // ignore: cast_nullable_to_non_nullable
+                        as AtUri,
+            alt:
+                freezed == alt
+                    ? _value.alt
+                    : alt // ignore: cast_nullable_to_non_nullable
+                        as String?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -7743,14 +7439,16 @@ class _$ViewImageCopyWithImpl<$Res, $Val extends ViewImage>
 abstract class _$$ViewImageImplCopyWith<$Res>
     implements $ViewImageCopyWith<$Res> {
   factory _$$ViewImageImplCopyWith(
-          _$ViewImageImpl value, $Res Function(_$ViewImageImpl) then) =
-      __$$ViewImageImplCopyWithImpl<$Res>;
+    _$ViewImageImpl value,
+    $Res Function(_$ViewImageImpl) then,
+  ) = __$$ViewImageImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {@AtUriConverter() AtUri thumb,
-      @AtUriConverter() AtUri fullsize,
-      String? alt});
+  $Res call({
+    @AtUriConverter() AtUri thumb,
+    @AtUriConverter() AtUri fullsize,
+    String? alt,
+  });
 }
 
 /// @nodoc
@@ -7758,8 +7456,9 @@ class __$$ViewImageImplCopyWithImpl<$Res>
     extends _$ViewImageCopyWithImpl<$Res, _$ViewImageImpl>
     implements _$$ViewImageImplCopyWith<$Res> {
   __$$ViewImageImplCopyWithImpl(
-      _$ViewImageImpl _value, $Res Function(_$ViewImageImpl) _then)
-      : super(_value, _then);
+    _$ViewImageImpl _value,
+    $Res Function(_$ViewImageImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of ViewImage
   /// with the given fields replaced by the non-null parameter values.
@@ -7770,31 +7469,37 @@ class __$$ViewImageImplCopyWithImpl<$Res>
     Object? fullsize = null,
     Object? alt = freezed,
   }) {
-    return _then(_$ViewImageImpl(
-      thumb: null == thumb
-          ? _value.thumb
-          : thumb // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-      fullsize: null == fullsize
-          ? _value.fullsize
-          : fullsize // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-      alt: freezed == alt
-          ? _value.alt
-          : alt // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$ViewImageImpl(
+        thumb:
+            null == thumb
+                ? _value.thumb
+                : thumb // ignore: cast_nullable_to_non_nullable
+                    as AtUri,
+        fullsize:
+            null == fullsize
+                ? _value.fullsize
+                : fullsize // ignore: cast_nullable_to_non_nullable
+                    as AtUri,
+        alt:
+            freezed == alt
+                ? _value.alt
+                : alt // ignore: cast_nullable_to_non_nullable
+                    as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$ViewImageImpl extends _ViewImage with DiagnosticableTreeMixin {
-  const _$ViewImageImpl(
-      {@AtUriConverter() required this.thumb,
-      @AtUriConverter() required this.fullsize,
-      this.alt})
-      : super._();
+  const _$ViewImageImpl({
+    @AtUriConverter() required this.thumb,
+    @AtUriConverter() required this.fullsize,
+    this.alt,
+  }) : super._();
 
   factory _$ViewImageImpl.fromJson(Map<String, dynamic> json) =>
       _$$ViewImageImplFromJson(json);
@@ -7848,17 +7553,16 @@ class _$ViewImageImpl extends _ViewImage with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ViewImageImplToJson(
-      this,
-    );
+    return _$$ViewImageImplToJson(this);
   }
 }
 
 abstract class _ViewImage extends ViewImage {
-  const factory _ViewImage(
-      {@AtUriConverter() required final AtUri thumb,
-      @AtUriConverter() required final AtUri fullsize,
-      final String? alt}) = _$ViewImageImpl;
+  const factory _ViewImage({
+    @AtUriConverter() required final AtUri thumb,
+    @AtUriConverter() required final AtUri fullsize,
+    final String? alt,
+  }) = _$ViewImageImpl;
   const _ViewImage._() : super._();
 
   factory _ViewImage.fromJson(Map<String, dynamic> json) =
@@ -7892,7 +7596,11 @@ Thread _$ThreadFromJson(Map<String, dynamic> json) {
 
     default:
       throw CheckedFromJsonException(
-          json, '\$type', 'Thread', 'Invalid union type "${json['\$type']}"!');
+        json,
+        '\$type',
+        'Thread',
+        'Invalid union type "${json['\$type']}"!',
+      );
   }
 }
 
@@ -7900,61 +7608,76 @@ Thread _$ThreadFromJson(Map<String, dynamic> json) {
 mixin _$Thread {
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(PostView post, Thread? parent,
-            List<Thread>? replies, ThreadContext? context)
-        threadViewPost,
-    required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
-        notFoundPost,
     required TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)
-        blockedPost,
-  }) =>
-      throw _privateConstructorUsedError;
+      PostView post,
+      Thread? parent,
+      List<Thread>? replies,
+      ThreadContext? context,
+    )
+    threadViewPost,
+    required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
+    notFoundPost,
+    required TResult Function(
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )
+    blockedPost,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(PostView post, Thread? parent, List<Thread>? replies,
-            ThreadContext? context)?
-        threadViewPost,
+    TResult? Function(
+      PostView post,
+      Thread? parent,
+      List<Thread>? replies,
+      ThreadContext? context,
+    )?
+    threadViewPost,
     TResult? Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult? Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
-  }) =>
-      throw _privateConstructorUsedError;
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(PostView post, Thread? parent, List<Thread>? replies,
-            ThreadContext? context)?
-        threadViewPost,
+    TResult Function(
+      PostView post,
+      Thread? parent,
+      List<Thread>? replies,
+      ThreadContext? context,
+    )?
+    threadViewPost,
     TResult Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult map<TResult extends Object?>({
     required TResult Function(ThreadViewPost value) threadViewPost,
     required TResult Function(NotFoundPost value) notFoundPost,
     required TResult Function(BlockedPost value) blockedPost,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult? mapOrNull<TResult extends Object?>({
     TResult? Function(ThreadViewPost value)? threadViewPost,
     TResult? Function(NotFoundPost value)? notFoundPost,
     TResult? Function(BlockedPost value)? blockedPost,
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
   @optionalTypeArgs
   TResult maybeMap<TResult extends Object?>({
     TResult Function(ThreadViewPost value)? threadViewPost,
     TResult Function(NotFoundPost value)? notFoundPost,
     TResult Function(BlockedPost value)? blockedPost,
     required TResult orElse(),
-  }) =>
-      throw _privateConstructorUsedError;
+  }) => throw _privateConstructorUsedError;
 
   /// Serializes this Thread to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -7982,15 +7705,17 @@ class _$ThreadCopyWithImpl<$Res, $Val extends Thread>
 
 /// @nodoc
 abstract class _$$ThreadViewPostImplCopyWith<$Res> {
-  factory _$$ThreadViewPostImplCopyWith(_$ThreadViewPostImpl value,
-          $Res Function(_$ThreadViewPostImpl) then) =
-      __$$ThreadViewPostImplCopyWithImpl<$Res>;
+  factory _$$ThreadViewPostImplCopyWith(
+    _$ThreadViewPostImpl value,
+    $Res Function(_$ThreadViewPostImpl) then,
+  ) = __$$ThreadViewPostImplCopyWithImpl<$Res>;
   @useResult
-  $Res call(
-      {PostView post,
-      Thread? parent,
-      List<Thread>? replies,
-      ThreadContext? context});
+  $Res call({
+    PostView post,
+    Thread? parent,
+    List<Thread>? replies,
+    ThreadContext? context,
+  });
 
   $PostViewCopyWith<$Res> get post;
   $ThreadCopyWith<$Res>? get parent;
@@ -8002,8 +7727,9 @@ class __$$ThreadViewPostImplCopyWithImpl<$Res>
     extends _$ThreadCopyWithImpl<$Res, _$ThreadViewPostImpl>
     implements _$$ThreadViewPostImplCopyWith<$Res> {
   __$$ThreadViewPostImplCopyWithImpl(
-      _$ThreadViewPostImpl _value, $Res Function(_$ThreadViewPostImpl) _then)
-      : super(_value, _then);
+    _$ThreadViewPostImpl _value,
+    $Res Function(_$ThreadViewPostImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of Thread
   /// with the given fields replaced by the non-null parameter values.
@@ -8015,24 +7741,30 @@ class __$$ThreadViewPostImplCopyWithImpl<$Res>
     Object? replies = freezed,
     Object? context = freezed,
   }) {
-    return _then(_$ThreadViewPostImpl(
-      post: null == post
-          ? _value.post
-          : post // ignore: cast_nullable_to_non_nullable
-              as PostView,
-      parent: freezed == parent
-          ? _value.parent
-          : parent // ignore: cast_nullable_to_non_nullable
-              as Thread?,
-      replies: freezed == replies
-          ? _value._replies
-          : replies // ignore: cast_nullable_to_non_nullable
-              as List<Thread>?,
-      context: freezed == context
-          ? _value.context
-          : context // ignore: cast_nullable_to_non_nullable
-              as ThreadContext?,
-    ));
+    return _then(
+      _$ThreadViewPostImpl(
+        post:
+            null == post
+                ? _value.post
+                : post // ignore: cast_nullable_to_non_nullable
+                    as PostView,
+        parent:
+            freezed == parent
+                ? _value.parent
+                : parent // ignore: cast_nullable_to_non_nullable
+                    as Thread?,
+        replies:
+            freezed == replies
+                ? _value._replies
+                : replies // ignore: cast_nullable_to_non_nullable
+                    as List<Thread>?,
+        context:
+            freezed == context
+                ? _value.context
+                : context // ignore: cast_nullable_to_non_nullable
+                    as ThreadContext?,
+      ),
+    );
   }
 
   /// Create a copy of Thread
@@ -8075,17 +7807,18 @@ class __$$ThreadViewPostImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$ThreadViewPostImpl extends ThreadViewPost with DiagnosticableTreeMixin {
-  const _$ThreadViewPostImpl(
-      {required this.post,
-      this.parent,
-      final List<Thread>? replies,
-      this.context,
-      final String? $type})
-      : _replies = replies,
-        $type = $type ?? 'so.sprk.feed.defs#threadViewPost',
-        super._();
+  const _$ThreadViewPostImpl({
+    required this.post,
+    this.parent,
+    final List<Thread>? replies,
+    this.context,
+    final String? $type,
+  }) : _replies = replies,
+       $type = $type ?? 'so.sprk.feed.defs#threadViewPost',
+       super._();
 
   factory _$ThreadViewPostImpl.fromJson(Map<String, dynamic> json) =>
       _$$ThreadViewPostImplFromJson(json);
@@ -8139,8 +7872,13 @@ class _$ThreadViewPostImpl extends ThreadViewPost with DiagnosticableTreeMixin {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, post, parent,
-      const DeepCollectionEquality().hash(_replies), context);
+  int get hashCode => Object.hash(
+    runtimeType,
+    post,
+    parent,
+    const DeepCollectionEquality().hash(_replies),
+    context,
+  );
 
   /// Create a copy of Thread
   /// with the given fields replaced by the non-null parameter values.
@@ -8149,19 +7887,28 @@ class _$ThreadViewPostImpl extends ThreadViewPost with DiagnosticableTreeMixin {
   @pragma('vm:prefer-inline')
   _$$ThreadViewPostImplCopyWith<_$ThreadViewPostImpl> get copyWith =>
       __$$ThreadViewPostImplCopyWithImpl<_$ThreadViewPostImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(PostView post, Thread? parent,
-            List<Thread>? replies, ThreadContext? context)
-        threadViewPost,
-    required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
-        notFoundPost,
     required TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)
-        blockedPost,
+      PostView post,
+      Thread? parent,
+      List<Thread>? replies,
+      ThreadContext? context,
+    )
+    threadViewPost,
+    required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
+    notFoundPost,
+    required TResult Function(
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )
+    blockedPost,
   }) {
     return threadViewPost(post, parent, replies, context);
   }
@@ -8169,13 +7916,20 @@ class _$ThreadViewPostImpl extends ThreadViewPost with DiagnosticableTreeMixin {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(PostView post, Thread? parent, List<Thread>? replies,
-            ThreadContext? context)?
-        threadViewPost,
+    TResult? Function(
+      PostView post,
+      Thread? parent,
+      List<Thread>? replies,
+      ThreadContext? context,
+    )?
+    threadViewPost,
     TResult? Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult? Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
   }) {
     return threadViewPost?.call(post, parent, replies, context);
   }
@@ -8183,13 +7937,20 @@ class _$ThreadViewPostImpl extends ThreadViewPost with DiagnosticableTreeMixin {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(PostView post, Thread? parent, List<Thread>? replies,
-            ThreadContext? context)?
-        threadViewPost,
+    TResult Function(
+      PostView post,
+      Thread? parent,
+      List<Thread>? replies,
+      ThreadContext? context,
+    )?
+    threadViewPost,
     TResult Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
     required TResult orElse(),
   }) {
     if (threadViewPost != null) {
@@ -8234,18 +7995,17 @@ class _$ThreadViewPostImpl extends ThreadViewPost with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ThreadViewPostImplToJson(
-      this,
-    );
+    return _$$ThreadViewPostImplToJson(this);
   }
 }
 
 abstract class ThreadViewPost extends Thread {
-  const factory ThreadViewPost(
-      {required final PostView post,
-      final Thread? parent,
-      final List<Thread>? replies,
-      final ThreadContext? context}) = _$ThreadViewPostImpl;
+  const factory ThreadViewPost({
+    required final PostView post,
+    final Thread? parent,
+    final List<Thread>? replies,
+    final ThreadContext? context,
+  }) = _$ThreadViewPostImpl;
   const ThreadViewPost._() : super._();
 
   factory ThreadViewPost.fromJson(Map<String, dynamic> json) =
@@ -8266,8 +8026,9 @@ abstract class ThreadViewPost extends Thread {
 /// @nodoc
 abstract class _$$NotFoundPostImplCopyWith<$Res> {
   factory _$$NotFoundPostImplCopyWith(
-          _$NotFoundPostImpl value, $Res Function(_$NotFoundPostImpl) then) =
-      __$$NotFoundPostImplCopyWithImpl<$Res>;
+    _$NotFoundPostImpl value,
+    $Res Function(_$NotFoundPostImpl) then,
+  ) = __$$NotFoundPostImplCopyWithImpl<$Res>;
   @useResult
   $Res call({@AtUriConverter() AtUri uri, bool notFound});
 }
@@ -8277,39 +8038,42 @@ class __$$NotFoundPostImplCopyWithImpl<$Res>
     extends _$ThreadCopyWithImpl<$Res, _$NotFoundPostImpl>
     implements _$$NotFoundPostImplCopyWith<$Res> {
   __$$NotFoundPostImplCopyWithImpl(
-      _$NotFoundPostImpl _value, $Res Function(_$NotFoundPostImpl) _then)
-      : super(_value, _then);
+    _$NotFoundPostImpl _value,
+    $Res Function(_$NotFoundPostImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of Thread
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? uri = null,
-    Object? notFound = null,
-  }) {
-    return _then(_$NotFoundPostImpl(
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-      notFound: null == notFound
-          ? _value.notFound
-          : notFound // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
+  $Res call({Object? uri = null, Object? notFound = null}) {
+    return _then(
+      _$NotFoundPostImpl(
+        uri:
+            null == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                    as AtUri,
+        notFound:
+            null == notFound
+                ? _value.notFound
+                : notFound // ignore: cast_nullable_to_non_nullable
+                    as bool,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$NotFoundPostImpl extends NotFoundPost with DiagnosticableTreeMixin {
-  const _$NotFoundPostImpl(
-      {@AtUriConverter() required this.uri,
-      required this.notFound,
-      final String? $type})
-      : $type = $type ?? 'so.sprk.feed.defs#notFoundPost',
-        super._();
+  const _$NotFoundPostImpl({
+    @AtUriConverter() required this.uri,
+    required this.notFound,
+    final String? $type,
+  }) : $type = $type ?? 'so.sprk.feed.defs#notFoundPost',
+       super._();
 
   factory _$NotFoundPostImpl.fromJson(Map<String, dynamic> json) =>
       _$$NotFoundPostImplFromJson(json);
@@ -8362,14 +8126,21 @@ class _$NotFoundPostImpl extends NotFoundPost with DiagnosticableTreeMixin {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(PostView post, Thread? parent,
-            List<Thread>? replies, ThreadContext? context)
-        threadViewPost,
-    required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
-        notFoundPost,
     required TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)
-        blockedPost,
+      PostView post,
+      Thread? parent,
+      List<Thread>? replies,
+      ThreadContext? context,
+    )
+    threadViewPost,
+    required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
+    notFoundPost,
+    required TResult Function(
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )
+    blockedPost,
   }) {
     return notFoundPost(uri, notFound);
   }
@@ -8377,13 +8148,20 @@ class _$NotFoundPostImpl extends NotFoundPost with DiagnosticableTreeMixin {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(PostView post, Thread? parent, List<Thread>? replies,
-            ThreadContext? context)?
-        threadViewPost,
+    TResult? Function(
+      PostView post,
+      Thread? parent,
+      List<Thread>? replies,
+      ThreadContext? context,
+    )?
+    threadViewPost,
     TResult? Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult? Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
   }) {
     return notFoundPost?.call(uri, notFound);
   }
@@ -8391,13 +8169,20 @@ class _$NotFoundPostImpl extends NotFoundPost with DiagnosticableTreeMixin {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(PostView post, Thread? parent, List<Thread>? replies,
-            ThreadContext? context)?
-        threadViewPost,
+    TResult Function(
+      PostView post,
+      Thread? parent,
+      List<Thread>? replies,
+      ThreadContext? context,
+    )?
+    threadViewPost,
     TResult Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
     required TResult orElse(),
   }) {
     if (notFoundPost != null) {
@@ -8442,16 +8227,15 @@ class _$NotFoundPostImpl extends NotFoundPost with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$NotFoundPostImplToJson(
-      this,
-    );
+    return _$$NotFoundPostImplToJson(this);
   }
 }
 
 abstract class NotFoundPost extends Thread {
-  const factory NotFoundPost(
-      {@AtUriConverter() required final AtUri uri,
-      required final bool notFound}) = _$NotFoundPostImpl;
+  const factory NotFoundPost({
+    @AtUriConverter() required final AtUri uri,
+    required final bool notFound,
+  }) = _$NotFoundPostImpl;
   const NotFoundPost._() : super._();
 
   factory NotFoundPost.fromJson(Map<String, dynamic> json) =
@@ -8471,8 +8255,9 @@ abstract class NotFoundPost extends Thread {
 /// @nodoc
 abstract class _$$BlockedPostImplCopyWith<$Res> {
   factory _$$BlockedPostImplCopyWith(
-          _$BlockedPostImpl value, $Res Function(_$BlockedPostImpl) then) =
-      __$$BlockedPostImplCopyWithImpl<$Res>;
+    _$BlockedPostImpl value,
+    $Res Function(_$BlockedPostImpl) then,
+  ) = __$$BlockedPostImplCopyWithImpl<$Res>;
   @useResult
   $Res call({@AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author});
 
@@ -8484,8 +8269,9 @@ class __$$BlockedPostImplCopyWithImpl<$Res>
     extends _$ThreadCopyWithImpl<$Res, _$BlockedPostImpl>
     implements _$$BlockedPostImplCopyWith<$Res> {
   __$$BlockedPostImplCopyWithImpl(
-      _$BlockedPostImpl _value, $Res Function(_$BlockedPostImpl) _then)
-      : super(_value, _then);
+    _$BlockedPostImpl _value,
+    $Res Function(_$BlockedPostImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of Thread
   /// with the given fields replaced by the non-null parameter values.
@@ -8496,20 +8282,25 @@ class __$$BlockedPostImplCopyWithImpl<$Res>
     Object? blocked = null,
     Object? author = null,
   }) {
-    return _then(_$BlockedPostImpl(
-      uri: null == uri
-          ? _value.uri
-          : uri // ignore: cast_nullable_to_non_nullable
-              as AtUri,
-      blocked: null == blocked
-          ? _value.blocked
-          : blocked // ignore: cast_nullable_to_non_nullable
-              as bool,
-      author: null == author
-          ? _value.author
-          : author // ignore: cast_nullable_to_non_nullable
-              as BlockedAuthor,
-    ));
+    return _then(
+      _$BlockedPostImpl(
+        uri:
+            null == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                    as AtUri,
+        blocked:
+            null == blocked
+                ? _value.blocked
+                : blocked // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        author:
+            null == author
+                ? _value.author
+                : author // ignore: cast_nullable_to_non_nullable
+                    as BlockedAuthor,
+      ),
+    );
   }
 
   /// Create a copy of Thread
@@ -8524,15 +8315,16 @@ class __$$BlockedPostImplCopyWithImpl<$Res>
 }
 
 /// @nodoc
-@JsonSerializable()
+
+@JsonSerializable(explicitToJson: true)
 class _$BlockedPostImpl extends BlockedPost with DiagnosticableTreeMixin {
-  const _$BlockedPostImpl(
-      {@AtUriConverter() required this.uri,
-      required this.blocked,
-      required this.author,
-      final String? $type})
-      : $type = $type ?? 'so.sprk.feed.defs#blockedPost',
-        super._();
+  const _$BlockedPostImpl({
+    @AtUriConverter() required this.uri,
+    required this.blocked,
+    required this.author,
+    final String? $type,
+  }) : $type = $type ?? 'so.sprk.feed.defs#blockedPost',
+       super._();
 
   factory _$BlockedPostImpl.fromJson(Map<String, dynamic> json) =>
       _$$BlockedPostImplFromJson(json);
@@ -8588,14 +8380,21 @@ class _$BlockedPostImpl extends BlockedPost with DiagnosticableTreeMixin {
   @override
   @optionalTypeArgs
   TResult when<TResult extends Object?>({
-    required TResult Function(PostView post, Thread? parent,
-            List<Thread>? replies, ThreadContext? context)
-        threadViewPost,
-    required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
-        notFoundPost,
     required TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)
-        blockedPost,
+      PostView post,
+      Thread? parent,
+      List<Thread>? replies,
+      ThreadContext? context,
+    )
+    threadViewPost,
+    required TResult Function(@AtUriConverter() AtUri uri, bool notFound)
+    notFoundPost,
+    required TResult Function(
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )
+    blockedPost,
   }) {
     return blockedPost(uri, blocked, author);
   }
@@ -8603,13 +8402,20 @@ class _$BlockedPostImpl extends BlockedPost with DiagnosticableTreeMixin {
   @override
   @optionalTypeArgs
   TResult? whenOrNull<TResult extends Object?>({
-    TResult? Function(PostView post, Thread? parent, List<Thread>? replies,
-            ThreadContext? context)?
-        threadViewPost,
+    TResult? Function(
+      PostView post,
+      Thread? parent,
+      List<Thread>? replies,
+      ThreadContext? context,
+    )?
+    threadViewPost,
     TResult? Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult? Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
   }) {
     return blockedPost?.call(uri, blocked, author);
   }
@@ -8617,13 +8423,20 @@ class _$BlockedPostImpl extends BlockedPost with DiagnosticableTreeMixin {
   @override
   @optionalTypeArgs
   TResult maybeWhen<TResult extends Object?>({
-    TResult Function(PostView post, Thread? parent, List<Thread>? replies,
-            ThreadContext? context)?
-        threadViewPost,
+    TResult Function(
+      PostView post,
+      Thread? parent,
+      List<Thread>? replies,
+      ThreadContext? context,
+    )?
+    threadViewPost,
     TResult Function(@AtUriConverter() AtUri uri, bool notFound)? notFoundPost,
     TResult Function(
-            @AtUriConverter() AtUri uri, bool blocked, BlockedAuthor author)?
-        blockedPost,
+      @AtUriConverter() AtUri uri,
+      bool blocked,
+      BlockedAuthor author,
+    )?
+    blockedPost,
     required TResult orElse(),
   }) {
     if (blockedPost != null) {
@@ -8668,17 +8481,16 @@ class _$BlockedPostImpl extends BlockedPost with DiagnosticableTreeMixin {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$BlockedPostImplToJson(
-      this,
-    );
+    return _$$BlockedPostImplToJson(this);
   }
 }
 
 abstract class BlockedPost extends Thread {
-  const factory BlockedPost(
-      {@AtUriConverter() required final AtUri uri,
-      required final bool blocked,
-      required final BlockedAuthor author}) = _$BlockedPostImpl;
+  const factory BlockedPost({
+    @AtUriConverter() required final AtUri uri,
+    required final bool blocked,
+    required final BlockedAuthor author,
+  }) = _$BlockedPostImpl;
   const BlockedPost._() : super._();
 
   factory BlockedPost.fromJson(Map<String, dynamic> json) =
@@ -8718,8 +8530,9 @@ mixin _$ThreadContext {
 /// @nodoc
 abstract class $ThreadContextCopyWith<$Res> {
   factory $ThreadContextCopyWith(
-          ThreadContext value, $Res Function(ThreadContext) then) =
-      _$ThreadContextCopyWithImpl<$Res, ThreadContext>;
+    ThreadContext value,
+    $Res Function(ThreadContext) then,
+  ) = _$ThreadContextCopyWithImpl<$Res, ThreadContext>;
   @useResult
   $Res call({@AtUriConverter() AtUri? rootAuthorLike});
 }
@@ -8738,15 +8551,17 @@ class _$ThreadContextCopyWithImpl<$Res, $Val extends ThreadContext>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? rootAuthorLike = freezed,
-  }) {
-    return _then(_value.copyWith(
-      rootAuthorLike: freezed == rootAuthorLike
-          ? _value.rootAuthorLike
-          : rootAuthorLike // ignore: cast_nullable_to_non_nullable
-              as AtUri?,
-    ) as $Val);
+  $Res call({Object? rootAuthorLike = freezed}) {
+    return _then(
+      _value.copyWith(
+            rootAuthorLike:
+                freezed == rootAuthorLike
+                    ? _value.rootAuthorLike
+                    : rootAuthorLike // ignore: cast_nullable_to_non_nullable
+                        as AtUri?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -8754,8 +8569,9 @@ class _$ThreadContextCopyWithImpl<$Res, $Val extends ThreadContext>
 abstract class _$$ThreadContextImplCopyWith<$Res>
     implements $ThreadContextCopyWith<$Res> {
   factory _$$ThreadContextImplCopyWith(
-          _$ThreadContextImpl value, $Res Function(_$ThreadContextImpl) then) =
-      __$$ThreadContextImplCopyWithImpl<$Res>;
+    _$ThreadContextImpl value,
+    $Res Function(_$ThreadContextImpl) then,
+  ) = __$$ThreadContextImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({@AtUriConverter() AtUri? rootAuthorLike});
@@ -8766,31 +8582,33 @@ class __$$ThreadContextImplCopyWithImpl<$Res>
     extends _$ThreadContextCopyWithImpl<$Res, _$ThreadContextImpl>
     implements _$$ThreadContextImplCopyWith<$Res> {
   __$$ThreadContextImplCopyWithImpl(
-      _$ThreadContextImpl _value, $Res Function(_$ThreadContextImpl) _then)
-      : super(_value, _then);
+    _$ThreadContextImpl _value,
+    $Res Function(_$ThreadContextImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of ThreadContext
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? rootAuthorLike = freezed,
-  }) {
-    return _then(_$ThreadContextImpl(
-      rootAuthorLike: freezed == rootAuthorLike
-          ? _value.rootAuthorLike
-          : rootAuthorLike // ignore: cast_nullable_to_non_nullable
-              as AtUri?,
-    ));
+  $Res call({Object? rootAuthorLike = freezed}) {
+    return _then(
+      _$ThreadContextImpl(
+        rootAuthorLike:
+            freezed == rootAuthorLike
+                ? _value.rootAuthorLike
+                : rootAuthorLike // ignore: cast_nullable_to_non_nullable
+                    as AtUri?,
+      ),
+    );
   }
 }
 
 /// @nodoc
-@JsonSerializable()
-class _$ThreadContextImpl
-    with DiagnosticableTreeMixin
-    implements _ThreadContext {
-  const _$ThreadContextImpl({@AtUriConverter() this.rootAuthorLike});
+
+@JsonSerializable(explicitToJson: true)
+class _$ThreadContextImpl extends _ThreadContext with DiagnosticableTreeMixin {
+  const _$ThreadContextImpl({@AtUriConverter() this.rootAuthorLike})
+    : super._();
 
   factory _$ThreadContextImpl.fromJson(Map<String, dynamic> json) =>
       _$$ThreadContextImplFromJson(json);
@@ -8835,15 +8653,15 @@ class _$ThreadContextImpl
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ThreadContextImplToJson(
-      this,
-    );
+    return _$$ThreadContextImplToJson(this);
   }
 }
 
-abstract class _ThreadContext implements ThreadContext {
-  const factory _ThreadContext(
-      {@AtUriConverter() final AtUri? rootAuthorLike}) = _$ThreadContextImpl;
+abstract class _ThreadContext extends ThreadContext {
+  const factory _ThreadContext({
+    @AtUriConverter() final AtUri? rootAuthorLike,
+  }) = _$ThreadContextImpl;
+  const _ThreadContext._() : super._();
 
   factory _ThreadContext.fromJson(Map<String, dynamic> json) =
       _$ThreadContextImpl.fromJson;

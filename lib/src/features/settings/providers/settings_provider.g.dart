@@ -15,19 +15,20 @@ String _$settingsRepositoryHash() =>
 @ProviderFor(settingsRepository)
 final settingsRepositoryProvider =
     AutoDisposeProvider<SettingsRepository>.internal(
-  settingsRepository,
-  name: r'settingsRepositoryProvider',
-  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-      ? null
-      : _$settingsRepositoryHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      settingsRepository,
+      name: r'settingsRepositoryProvider',
+      debugGetCreateSourceHash:
+          const bool.fromEnvironment('dart.vm.product')
+              ? null
+              : _$settingsRepositoryHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SettingsRepositoryRef = AutoDisposeProviderRef<SettingsRepository>;
-String _$settingsHash() => r'a43e3f877ddb862ccef4fa816f64527c9889ff52';
+String _$settingsHash() => r'785706b7e50488b814c0f61b3d8e48bc21d4fdd9';
 
 /// StateNotifier for managing settings state
 ///

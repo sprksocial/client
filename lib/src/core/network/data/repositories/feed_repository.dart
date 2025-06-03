@@ -30,7 +30,7 @@ abstract class FeedRepository {
 
   /// Like a post
   ///
-  /// [postCid] The CID of the post to like
+  /// [postCid] The String of the post to like
   /// [postUri] The URI of the post to like
   Future<StrongRef> likePost(String postCid, AtUri postUri);
 
@@ -48,9 +48,9 @@ abstract class FeedRepository {
   /// Post a comment to a post
   ///
   /// [text] The text content of the comment
-  /// [parentCid] The CID of the parent post
+  /// [parentCid] The String of the parent post
   /// [parentUri] The URI of the parent post
-  /// [rootCid] The CID of the root post (optional, defaults to parent if not provided)
+  /// [rootCid] The String of the root post (optional, defaults to parent if not provided)
   /// [rootUri] The URI of the root post (optional, defaults to parent if not provided)
   /// [imageFiles] List of image files to attach (optional)
   /// [altTexts] Map of file paths to alt texts (optional)

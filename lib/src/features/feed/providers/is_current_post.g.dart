@@ -39,24 +39,15 @@ class IsCurrentPostFamily extends Family<bool> {
   const IsCurrentPostFamily();
 
   /// See also [isCurrentPost].
-  IsCurrentPostProvider call(
-    Feed feed,
-    int index,
-  ) {
-    return IsCurrentPostProvider(
-      feed,
-      index,
-    );
+  IsCurrentPostProvider call(Feed feed, int index) {
+    return IsCurrentPostProvider(feed, index);
   }
 
   @override
   IsCurrentPostProvider getProviderOverride(
     covariant IsCurrentPostProvider provider,
   ) {
-    return call(
-      provider.feed,
-      provider.index,
-    );
+    return call(provider.feed, provider.index);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -77,27 +68,21 @@ class IsCurrentPostFamily extends Family<bool> {
 /// See also [isCurrentPost].
 class IsCurrentPostProvider extends AutoDisposeProvider<bool> {
   /// See also [isCurrentPost].
-  IsCurrentPostProvider(
-    Feed feed,
-    int index,
-  ) : this._internal(
-          (ref) => isCurrentPost(
-            ref as IsCurrentPostRef,
-            feed,
-            index,
-          ),
-          from: isCurrentPostProvider,
-          name: r'isCurrentPostProvider',
-          debugGetCreateSourceHash:
-              const bool.fromEnvironment('dart.vm.product')
-                  ? null
-                  : _$isCurrentPostHash,
-          dependencies: IsCurrentPostFamily._dependencies,
-          allTransitiveDependencies:
-              IsCurrentPostFamily._allTransitiveDependencies,
-          feed: feed,
-          index: index,
-        );
+  IsCurrentPostProvider(Feed feed, int index)
+    : this._internal(
+        (ref) => isCurrentPost(ref as IsCurrentPostRef, feed, index),
+        from: isCurrentPostProvider,
+        name: r'isCurrentPostProvider',
+        debugGetCreateSourceHash:
+            const bool.fromEnvironment('dart.vm.product')
+                ? null
+                : _$isCurrentPostHash,
+        dependencies: IsCurrentPostFamily._dependencies,
+        allTransitiveDependencies:
+            IsCurrentPostFamily._allTransitiveDependencies,
+        feed: feed,
+        index: index,
+      );
 
   IsCurrentPostProvider._internal(
     super._createNotifier, {
@@ -114,9 +99,7 @@ class IsCurrentPostProvider extends AutoDisposeProvider<bool> {
   final int index;
 
   @override
-  Override overrideWith(
-    bool Function(IsCurrentPostRef provider) create,
-  ) {
+  Override overrideWith(bool Function(IsCurrentPostRef provider) create) {
     return ProviderOverride(
       origin: this,
       override: IsCurrentPostProvider._internal(
@@ -173,5 +156,6 @@ class _IsCurrentPostProviderElement extends AutoDisposeProviderElement<bool>
   @override
   int get index => (origin as IsCurrentPostProvider).index;
 }
+
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

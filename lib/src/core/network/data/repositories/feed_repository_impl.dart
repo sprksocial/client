@@ -8,7 +8,7 @@ import 'package:get_it/get_it.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
-import 'package:sparksocial/src/core/network/data/repositories/feed_algorithms/hardcoded_feed_algorithm.dart';
+import 'package:sparksocial/src/core/feed_algorithms/hardcoded_feed_algorithm.dart';
 import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
@@ -79,7 +79,11 @@ class FeedRepositoryImpl implements FeedRepository {
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) {
           final posts = jsonMap['posts'] as List<dynamic>;
-          return posts.map((post) => PostView.fromJson(post)).toList();
+          final postViews = <PostView>[];
+          for (final post in posts) {
+            postViews.add(PostView.fromJson(post));
+          }
+          return postViews;
         },
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
@@ -151,7 +155,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
   @override
   Future<StrongRef> likePost(String postCid, AtUri postUri) async {
-    _logger.d('Liking post with CID: $postCid, URI: $postUri');
+    _logger.d('Liking post with String: $postCid, URI: $postUri');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
@@ -406,7 +410,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
       final record = PostRecord(
         text: text,
-        embed: Embed.video(video: VideoEmbed(video: blob, alt: alt)),
+        embed: Embed.video(video: blob, alt: alt),
         createdAt: DateTime.now(),
         langs: langs,
         selfLabels: selfLabels,
@@ -489,6 +493,10 @@ class FeedRepositoryImpl implements FeedRepository {
         NSID.parse('com.atproto.label.queryLabels'),
         parameters: {'uriPatterns': uris, 'sources': sources, 'limit': limit, 'cursor': cursor},
       );
+
+      if (response.data case EmptyData()) {
+        return (labels: labels, cursor: null);
+      }
 
       for (final label in response.data['labels'] as List<dynamic>) {
         labels.add(Label.fromJson(label as Map<String, Object?>));

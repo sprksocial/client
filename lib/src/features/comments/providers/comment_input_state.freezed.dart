@@ -12,7 +12,8 @@ part of 'comment_input_state.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$CommentInputState {
@@ -34,16 +35,18 @@ mixin _$CommentInputState {
 /// @nodoc
 abstract class $CommentInputStateCopyWith<$Res> {
   factory $CommentInputStateCopyWith(
-          CommentInputState value, $Res Function(CommentInputState) then) =
-      _$CommentInputStateCopyWithImpl<$Res, CommentInputState>;
+    CommentInputState value,
+    $Res Function(CommentInputState) then,
+  ) = _$CommentInputStateCopyWithImpl<$Res, CommentInputState>;
   @useResult
-  $Res call(
-      {bool canSubmit,
-      bool isPosting,
-      List<XFile> selectedImages,
-      Map<String, String> altTexts,
-      TextEditingController textController,
-      ImagePicker imagePicker});
+  $Res call({
+    bool canSubmit,
+    bool isPosting,
+    List<XFile> selectedImages,
+    Map<String, String> altTexts,
+    TextEditingController textController,
+    ImagePicker imagePicker,
+  });
 }
 
 /// @nodoc
@@ -68,59 +71,71 @@ class _$CommentInputStateCopyWithImpl<$Res, $Val extends CommentInputState>
     Object? textController = null,
     Object? imagePicker = null,
   }) {
-    return _then(_value.copyWith(
-      canSubmit: null == canSubmit
-          ? _value.canSubmit
-          : canSubmit // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isPosting: null == isPosting
-          ? _value.isPosting
-          : isPosting // ignore: cast_nullable_to_non_nullable
-              as bool,
-      selectedImages: null == selectedImages
-          ? _value.selectedImages
-          : selectedImages // ignore: cast_nullable_to_non_nullable
-              as List<XFile>,
-      altTexts: null == altTexts
-          ? _value.altTexts
-          : altTexts // ignore: cast_nullable_to_non_nullable
-              as Map<String, String>,
-      textController: null == textController
-          ? _value.textController
-          : textController // ignore: cast_nullable_to_non_nullable
-              as TextEditingController,
-      imagePicker: null == imagePicker
-          ? _value.imagePicker
-          : imagePicker // ignore: cast_nullable_to_non_nullable
-              as ImagePicker,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            canSubmit:
+                null == canSubmit
+                    ? _value.canSubmit
+                    : canSubmit // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            isPosting:
+                null == isPosting
+                    ? _value.isPosting
+                    : isPosting // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            selectedImages:
+                null == selectedImages
+                    ? _value.selectedImages
+                    : selectedImages // ignore: cast_nullable_to_non_nullable
+                        as List<XFile>,
+            altTexts:
+                null == altTexts
+                    ? _value.altTexts
+                    : altTexts // ignore: cast_nullable_to_non_nullable
+                        as Map<String, String>,
+            textController:
+                null == textController
+                    ? _value.textController
+                    : textController // ignore: cast_nullable_to_non_nullable
+                        as TextEditingController,
+            imagePicker:
+                null == imagePicker
+                    ? _value.imagePicker
+                    : imagePicker // ignore: cast_nullable_to_non_nullable
+                        as ImagePicker,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$CommentInputStateImplCopyWith<$Res>
     implements $CommentInputStateCopyWith<$Res> {
-  factory _$$CommentInputStateImplCopyWith(_$CommentInputStateImpl value,
-          $Res Function(_$CommentInputStateImpl) then) =
-      __$$CommentInputStateImplCopyWithImpl<$Res>;
+  factory _$$CommentInputStateImplCopyWith(
+    _$CommentInputStateImpl value,
+    $Res Function(_$CommentInputStateImpl) then,
+  ) = __$$CommentInputStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {bool canSubmit,
-      bool isPosting,
-      List<XFile> selectedImages,
-      Map<String, String> altTexts,
-      TextEditingController textController,
-      ImagePicker imagePicker});
+  $Res call({
+    bool canSubmit,
+    bool isPosting,
+    List<XFile> selectedImages,
+    Map<String, String> altTexts,
+    TextEditingController textController,
+    ImagePicker imagePicker,
+  });
 }
 
 /// @nodoc
 class __$$CommentInputStateImplCopyWithImpl<$Res>
     extends _$CommentInputStateCopyWithImpl<$Res, _$CommentInputStateImpl>
     implements _$$CommentInputStateImplCopyWith<$Res> {
-  __$$CommentInputStateImplCopyWithImpl(_$CommentInputStateImpl _value,
-      $Res Function(_$CommentInputStateImpl) _then)
-      : super(_value, _then);
+  __$$CommentInputStateImplCopyWithImpl(
+    _$CommentInputStateImpl _value,
+    $Res Function(_$CommentInputStateImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of CommentInputState
   /// with the given fields replaced by the non-null parameter values.
@@ -134,47 +149,55 @@ class __$$CommentInputStateImplCopyWithImpl<$Res>
     Object? textController = null,
     Object? imagePicker = null,
   }) {
-    return _then(_$CommentInputStateImpl(
-      canSubmit: null == canSubmit
-          ? _value.canSubmit
-          : canSubmit // ignore: cast_nullable_to_non_nullable
-              as bool,
-      isPosting: null == isPosting
-          ? _value.isPosting
-          : isPosting // ignore: cast_nullable_to_non_nullable
-              as bool,
-      selectedImages: null == selectedImages
-          ? _value._selectedImages
-          : selectedImages // ignore: cast_nullable_to_non_nullable
-              as List<XFile>,
-      altTexts: null == altTexts
-          ? _value._altTexts
-          : altTexts // ignore: cast_nullable_to_non_nullable
-              as Map<String, String>,
-      textController: null == textController
-          ? _value.textController
-          : textController // ignore: cast_nullable_to_non_nullable
-              as TextEditingController,
-      imagePicker: null == imagePicker
-          ? _value.imagePicker
-          : imagePicker // ignore: cast_nullable_to_non_nullable
-              as ImagePicker,
-    ));
+    return _then(
+      _$CommentInputStateImpl(
+        canSubmit:
+            null == canSubmit
+                ? _value.canSubmit
+                : canSubmit // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        isPosting:
+            null == isPosting
+                ? _value.isPosting
+                : isPosting // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        selectedImages:
+            null == selectedImages
+                ? _value._selectedImages
+                : selectedImages // ignore: cast_nullable_to_non_nullable
+                    as List<XFile>,
+        altTexts:
+            null == altTexts
+                ? _value._altTexts
+                : altTexts // ignore: cast_nullable_to_non_nullable
+                    as Map<String, String>,
+        textController:
+            null == textController
+                ? _value.textController
+                : textController // ignore: cast_nullable_to_non_nullable
+                    as TextEditingController,
+        imagePicker:
+            null == imagePicker
+                ? _value.imagePicker
+                : imagePicker // ignore: cast_nullable_to_non_nullable
+                    as ImagePicker,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$CommentInputStateImpl implements _CommentInputState {
-  const _$CommentInputStateImpl(
-      {this.canSubmit = false,
-      this.isPosting = false,
-      final List<XFile> selectedImages = const [],
-      final Map<String, String> altTexts = const {},
-      required this.textController,
-      required this.imagePicker})
-      : _selectedImages = selectedImages,
-        _altTexts = altTexts;
+  const _$CommentInputStateImpl({
+    this.canSubmit = false,
+    this.isPosting = false,
+    final List<XFile> selectedImages = const [],
+    final Map<String, String> altTexts = const {},
+    required this.textController,
+    required this.imagePicker,
+  }) : _selectedImages = selectedImages,
+       _altTexts = altTexts;
 
   @override
   @JsonKey()
@@ -219,8 +242,10 @@ class _$CommentInputStateImpl implements _CommentInputState {
                 other.canSubmit == canSubmit) &&
             (identical(other.isPosting, isPosting) ||
                 other.isPosting == isPosting) &&
-            const DeepCollectionEquality()
-                .equals(other._selectedImages, _selectedImages) &&
+            const DeepCollectionEquality().equals(
+              other._selectedImages,
+              _selectedImages,
+            ) &&
             const DeepCollectionEquality().equals(other._altTexts, _altTexts) &&
             (identical(other.textController, textController) ||
                 other.textController == textController) &&
@@ -230,13 +255,14 @@ class _$CommentInputStateImpl implements _CommentInputState {
 
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      canSubmit,
-      isPosting,
-      const DeepCollectionEquality().hash(_selectedImages),
-      const DeepCollectionEquality().hash(_altTexts),
-      textController,
-      imagePicker);
+    runtimeType,
+    canSubmit,
+    isPosting,
+    const DeepCollectionEquality().hash(_selectedImages),
+    const DeepCollectionEquality().hash(_altTexts),
+    textController,
+    imagePicker,
+  );
 
   /// Create a copy of CommentInputState
   /// with the given fields replaced by the non-null parameter values.
@@ -245,17 +271,20 @@ class _$CommentInputStateImpl implements _CommentInputState {
   @pragma('vm:prefer-inline')
   _$$CommentInputStateImplCopyWith<_$CommentInputStateImpl> get copyWith =>
       __$$CommentInputStateImplCopyWithImpl<_$CommentInputStateImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 }
 
 abstract class _CommentInputState implements CommentInputState {
-  const factory _CommentInputState(
-      {final bool canSubmit,
-      final bool isPosting,
-      final List<XFile> selectedImages,
-      final Map<String, String> altTexts,
-      required final TextEditingController textController,
-      required final ImagePicker imagePicker}) = _$CommentInputStateImpl;
+  const factory _CommentInputState({
+    final bool canSubmit,
+    final bool isPosting,
+    final List<XFile> selectedImages,
+    final Map<String, String> altTexts,
+    required final TextEditingController textController,
+    required final ImagePicker imagePicker,
+  }) = _$CommentInputStateImpl;
 
   @override
   bool get canSubmit;

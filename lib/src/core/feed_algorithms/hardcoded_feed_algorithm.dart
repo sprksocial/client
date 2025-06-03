@@ -1,10 +1,10 @@
 import 'package:atproto/core.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/network/data/repositories/feed_algorithms/feed_following.dart';
-import 'package:sparksocial/src/core/network/data/repositories/feed_algorithms/feed_for_you.dart';
-import 'package:sparksocial/src/core/network/data/repositories/feed_algorithms/feed_mutuals.dart';
-import 'package:sparksocial/src/core/network/data/repositories/feed_algorithms/feed_latest_sprk.dart';
-import 'package:sparksocial/src/core/network/data/repositories/feed_algorithms/feed_shared.dart';
+import 'package:sparksocial/src/core/feed_algorithms/feed_following.dart';
+import 'package:sparksocial/src/core/feed_algorithms/feed_for_you.dart';
+import 'package:sparksocial/src/core/feed_algorithms/feed_mutuals.dart';
+import 'package:sparksocial/src/core/feed_algorithms/feed_latest_sprk.dart';
+import 'package:sparksocial/src/core/feed_algorithms/feed_shared.dart';
 
 typedef SkeletonFunction = Future<FeedSkeleton> Function({int? limit, String? cursor});
 typedef ExtraInfoFunction = Future<Map<AtUri, HardcodedFeedExtraInfo>> Function(List<AtUri> uris);

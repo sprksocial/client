@@ -12,7 +12,8 @@ part of 'settings_state.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 /// @nodoc
 mixin _$SettingsState {
@@ -31,14 +32,16 @@ mixin _$SettingsState {
 /// @nodoc
 abstract class $SettingsStateCopyWith<$Res> {
   factory $SettingsStateCopyWith(
-          SettingsState value, $Res Function(SettingsState) then) =
-      _$SettingsStateCopyWithImpl<$Res, SettingsState>;
+    SettingsState value,
+    $Res Function(SettingsState) then,
+  ) = _$SettingsStateCopyWithImpl<$Res, SettingsState>;
   @useResult
-  $Res call(
-      {bool feedBlurEnabled,
-      bool hideAdultContent,
-      List<Feed> feeds,
-      Feed activeFeed});
+  $Res call({
+    bool feedBlurEnabled,
+    bool hideAdultContent,
+    List<Feed> feeds,
+    Feed activeFeed,
+  });
 
   $FeedCopyWith<$Res> get activeFeed;
 }
@@ -63,24 +66,31 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
     Object? feeds = null,
     Object? activeFeed = null,
   }) {
-    return _then(_value.copyWith(
-      feedBlurEnabled: null == feedBlurEnabled
-          ? _value.feedBlurEnabled
-          : feedBlurEnabled // ignore: cast_nullable_to_non_nullable
-              as bool,
-      hideAdultContent: null == hideAdultContent
-          ? _value.hideAdultContent
-          : hideAdultContent // ignore: cast_nullable_to_non_nullable
-              as bool,
-      feeds: null == feeds
-          ? _value.feeds
-          : feeds // ignore: cast_nullable_to_non_nullable
-              as List<Feed>,
-      activeFeed: null == activeFeed
-          ? _value.activeFeed
-          : activeFeed // ignore: cast_nullable_to_non_nullable
-              as Feed,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            feedBlurEnabled:
+                null == feedBlurEnabled
+                    ? _value.feedBlurEnabled
+                    : feedBlurEnabled // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            hideAdultContent:
+                null == hideAdultContent
+                    ? _value.hideAdultContent
+                    : hideAdultContent // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            feeds:
+                null == feeds
+                    ? _value.feeds
+                    : feeds // ignore: cast_nullable_to_non_nullable
+                        as List<Feed>,
+            activeFeed:
+                null == activeFeed
+                    ? _value.activeFeed
+                    : activeFeed // ignore: cast_nullable_to_non_nullable
+                        as Feed,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of SettingsState
@@ -98,15 +108,17 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
 abstract class _$$SettingsStateImplCopyWith<$Res>
     implements $SettingsStateCopyWith<$Res> {
   factory _$$SettingsStateImplCopyWith(
-          _$SettingsStateImpl value, $Res Function(_$SettingsStateImpl) then) =
-      __$$SettingsStateImplCopyWithImpl<$Res>;
+    _$SettingsStateImpl value,
+    $Res Function(_$SettingsStateImpl) then,
+  ) = __$$SettingsStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {bool feedBlurEnabled,
-      bool hideAdultContent,
-      List<Feed> feeds,
-      Feed activeFeed});
+  $Res call({
+    bool feedBlurEnabled,
+    bool hideAdultContent,
+    List<Feed> feeds,
+    Feed activeFeed,
+  });
 
   @override
   $FeedCopyWith<$Res> get activeFeed;
@@ -117,8 +129,9 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
     extends _$SettingsStateCopyWithImpl<$Res, _$SettingsStateImpl>
     implements _$$SettingsStateImplCopyWith<$Res> {
   __$$SettingsStateImplCopyWithImpl(
-      _$SettingsStateImpl _value, $Res Function(_$SettingsStateImpl) _then)
-      : super(_value, _then);
+    _$SettingsStateImpl _value,
+    $Res Function(_$SettingsStateImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -130,40 +143,46 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
     Object? feeds = null,
     Object? activeFeed = null,
   }) {
-    return _then(_$SettingsStateImpl(
-      feedBlurEnabled: null == feedBlurEnabled
-          ? _value.feedBlurEnabled
-          : feedBlurEnabled // ignore: cast_nullable_to_non_nullable
-              as bool,
-      hideAdultContent: null == hideAdultContent
-          ? _value.hideAdultContent
-          : hideAdultContent // ignore: cast_nullable_to_non_nullable
-              as bool,
-      feeds: null == feeds
-          ? _value._feeds
-          : feeds // ignore: cast_nullable_to_non_nullable
-              as List<Feed>,
-      activeFeed: null == activeFeed
-          ? _value.activeFeed
-          : activeFeed // ignore: cast_nullable_to_non_nullable
-              as Feed,
-    ));
+    return _then(
+      _$SettingsStateImpl(
+        feedBlurEnabled:
+            null == feedBlurEnabled
+                ? _value.feedBlurEnabled
+                : feedBlurEnabled // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        hideAdultContent:
+            null == hideAdultContent
+                ? _value.hideAdultContent
+                : hideAdultContent // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        feeds:
+            null == feeds
+                ? _value._feeds
+                : feeds // ignore: cast_nullable_to_non_nullable
+                    as List<Feed>,
+        activeFeed:
+            null == activeFeed
+                ? _value.activeFeed
+                : activeFeed // ignore: cast_nullable_to_non_nullable
+                    as Feed,
+      ),
+    );
   }
 }
 
 /// @nodoc
 
 class _$SettingsStateImpl implements _SettingsState {
-  const _$SettingsStateImpl(
-      {this.feedBlurEnabled = false,
-      this.hideAdultContent = true,
-      final List<Feed> feeds = const [
-        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
-        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
-        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk)
-      ],
-      required this.activeFeed})
-      : _feeds = feeds;
+  const _$SettingsStateImpl({
+    this.feedBlurEnabled = false,
+    this.hideAdultContent = true,
+    final List<Feed> feeds = const [
+      Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
+      Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
+      Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
+    ],
+    required this.activeFeed,
+  }) : _feeds = feeds;
 
   @override
   @JsonKey()
@@ -204,11 +223,12 @@ class _$SettingsStateImpl implements _SettingsState {
 
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      feedBlurEnabled,
-      hideAdultContent,
-      const DeepCollectionEquality().hash(_feeds),
-      activeFeed);
+    runtimeType,
+    feedBlurEnabled,
+    hideAdultContent,
+    const DeepCollectionEquality().hash(_feeds),
+    activeFeed,
+  );
 
   /// Create a copy of SettingsState
   /// with the given fields replaced by the non-null parameter values.
@@ -220,11 +240,12 @@ class _$SettingsStateImpl implements _SettingsState {
 }
 
 abstract class _SettingsState implements SettingsState {
-  const factory _SettingsState(
-      {final bool feedBlurEnabled,
-      final bool hideAdultContent,
-      final List<Feed> feeds,
-      required final Feed activeFeed}) = _$SettingsStateImpl;
+  const factory _SettingsState({
+    final bool feedBlurEnabled,
+    final bool hideAdultContent,
+    final List<Feed> feeds,
+    required final Feed activeFeed,
+  }) = _$SettingsStateImpl;
 
   @override
   bool get feedBlurEnabled;
