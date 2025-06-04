@@ -21,6 +21,10 @@ class ProfileService extends ChangeNotifier {
 
   String _getSprkCacheKey(String did) => 'sprk_profile_$did';
 
+  String _getBskyFeedCacheKey(String did) => 'bsky_feed_$did';
+
+  String _getSprkFeedCacheKey(String did) => 'sprk_feed_$did';
+
   Future<Profile?> getProfile(String did, {bool forceRefresh = false}) async {
     if (!_authService.isAuthenticated) return null;
 
@@ -176,13 +180,38 @@ class ProfileService extends ChangeNotifier {
     await _cacheManager.removeFile(_getSprkCacheKey(did));
   }
 
-  Future<Map<String, dynamic>?> getProfileVideosSprk(String did) async {
+  // Clear all feed caches for a specific DID
+  Future<void> clearFeedCache(String did) async {
+    await _cacheManager.removeFile(_getBskyFeedCacheKey(did));
+    await _cacheManager.removeFile(_getSprkFeedCacheKey(did));
+  }
+
+  // Clear all caches (profile + feed) for a specific DID
+  Future<void> clearAllCache(String did) async {
+    await clearProfileCache(did);
+    await clearFeedCache(did);
+  }
+
+  Future<Map<String, dynamic>?> getProfileVideosSprk(String did, {bool forceRefresh = false}) async {
     if (!_authService.isAuthenticated) {
       return null;
     }
 
+    final cacheKey = _getSprkFeedCacheKey(did);
+
+    if (!forceRefresh) {
+      try {
+        final cacheFile = await _cacheManager.getFileFromCache(cacheKey);
+        if (cacheFile != null) {
+          final jsonString = await cacheFile.file.readAsString();
+          return json.decode(jsonString);
+        }
+      } catch (e) {
+        debugPrint('Error reading Sprk feed from cache: $e');
+      }
+    }
+
     try {
-      // Check for existing follow first
       String? existingFollowUri;
       try {
         final existingFollows = await _authService.atproto!.repo.listRecords(
@@ -190,7 +219,6 @@ class ProfileService extends ChangeNotifier {
           collection: NSID.parse('so.sprk.graph.follow'),
         );
 
-        // Find the follow record for this DID if it exists
         for (final record in existingFollows.data.records) {
           if (record.value['subject'] == did) {
             existingFollowUri = record.uri.toString();
@@ -198,7 +226,7 @@ class ProfileService extends ChangeNotifier {
           }
         }
       } catch (e) {
-        debugPrint('Error checking existing follows: $e');
+        debugPrint('Error checking existing follows for Sprk feed: $e');
       }
 
       final client = SprkClient(_authService);
@@ -209,8 +237,10 @@ class ProfileService extends ChangeNotifier {
       }
 
       final data = response.data;
-
       data['viewer'] = {'following': existingFollowUri};
+
+      final jsonString = json.encode(data);
+      await _cacheManager.putFile(cacheKey, Uint8List.fromList(utf8.encode(jsonString)), key: cacheKey, maxAge: cacheDuration);
 
       return data;
     } catch (e) {
@@ -218,13 +248,26 @@ class ProfileService extends ChangeNotifier {
     }
   }
 
-  Future<Map<String, dynamic>?> getProfileVideosBsky(String did) async {
+  Future<Map<String, dynamic>?> getProfileVideosBsky(String did, {bool forceRefresh = false}) async {
     if (!_authService.isAuthenticated) {
       return null;
     }
 
+    final cacheKey = _getBskyFeedCacheKey(did);
+
+    if (!forceRefresh) {
+      try {
+        final cacheFile = await _cacheManager.getFileFromCache(cacheKey);
+        if (cacheFile != null) {
+          final jsonString = await cacheFile.file.readAsString();
+          return json.decode(jsonString);
+        }
+      } catch (e) {
+        debugPrint('Error reading Bsky feed from cache: $e');
+      }
+    }
+
     try {
-      // Check for existing follow first
       String? existingFollowUri;
       try {
         final existingFollows = await _authService.atproto!.repo.listRecords(
@@ -232,7 +275,6 @@ class ProfileService extends ChangeNotifier {
           collection: NSID.parse('so.sprk.graph.follow'),
         );
 
-        // Find the follow record for this DID if it exists
         for (final record in existingFollows.data.records) {
           if (record.value['subject'] == did) {
             existingFollowUri = record.uri.toString();
@@ -240,14 +282,18 @@ class ProfileService extends ChangeNotifier {
           }
         }
       } catch (e) {
-        debugPrint('Error checking existing follows: $e');
+        debugPrint('Error checking existing follows for Bsky feed: $e');
       }
 
       final bsky = Bluesky.fromSession(_authService.session!);
       final response = await bsky.feed.getAuthorFeed(actor: did, filter: FeedFilter.postsWithVideo);
+
       final feed = response.data.toJson();
-      // Add follow status to the response
       feed['viewer'] = {'following': existingFollowUri};
+
+      final jsonString = json.encode(feed);
+      await _cacheManager.putFile(cacheKey, Uint8List.fromList(utf8.encode(jsonString)), key: cacheKey, maxAge: cacheDuration);
+
       return feed;
     } catch (e) {
       throw Exception('Failed to fetch profile: $e');

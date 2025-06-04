@@ -9,7 +9,6 @@ import '../services/onboarding_service.dart';
 import '../services/settings_service.dart';
 import '../utils/app_colors.dart';
 import '../widgets/common/custom_text_field.dart';
-import 'follow_mode_screen.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -86,39 +85,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     });
 
     try {
-      if (_bskyProfile == null) {
-        final settingsService = Provider.of<SettingsService>(context, listen: false);
-        await settingsService.setFollowMode(FollowMode.sprk);
-        if (!mounted) return;
-        final authService = Provider.of<AuthService>(context, listen: false);
-        final onboardingService = OnboardingService(authService);
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final settingsService = Provider.of<SettingsService>(context, listen: false);
+      final onboardingService = OnboardingService(authService);
 
-        await onboardingService.finalizeProfileCreation(
-          displayName: _displayNameController.text.trim(),
-          description: _descriptionController.text.trim(),
-          avatar: _localAvatar,
-        );
+      // Always default to Bluesky synced mode
+      await settingsService.setFollowMode(FollowMode.bsky);
 
-        if (!mounted) return;
-        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
-      } else {
-        if (!mounted) return;
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder:
-                (context) => FollowModeScreen(
-                  displayName: _displayNameController.text.trim(),
-                  description: _descriptionController.text.trim(),
-                  avatar: _localAvatar,
-                ),
-          ),
-        );
-        if (mounted) {
-          setState(() {
-            _loading = false;
-          });
-        }
-      }
+      if (!mounted) return;
+
+      await onboardingService.finalizeProfileCreation(
+        displayName: _displayNameController.text.trim(),
+        description: _descriptionController.text.trim(),
+        avatar: _localAvatar,
+      );
+
+      if (!mounted) return;
+      Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error processing profile: ${e.toString()}')));

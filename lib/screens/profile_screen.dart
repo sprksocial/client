@@ -39,8 +39,8 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
   String? _error;
   Profile? _profile;
   bool _isEarlySupporter = false;
+  int _refreshKey = 0;
 
-  // Keep this screen in memory when navigating
   @override
   bool get wantKeepAlive => true;
 
@@ -88,8 +88,6 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
 
     try {
       final profileService = Provider.of<ProfileService>(context, listen: false);
-
-      // Load profile data first
       final profile = await profileService.getProfile(targetDid);
 
       if (!mounted) return;
@@ -99,7 +97,6 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
         _isLoading = false;
       });
 
-      // Check early supporter status independently
       _checkEarlySupporter(targetDid)
           .then((isSupporter) {
             if (mounted) {
@@ -110,7 +107,6 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
           })
           .catchError((e) {
             debugPrint('Error checking early supporter status: $e');
-            // Keep default value (false) on error
           });
     } catch (e) {
       if (!mounted) return;
@@ -119,7 +115,6 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
         _error = e.toString();
         _isLoading = false;
       });
-      debugPrint('Unexpected error in _loadProfile: $e');
     }
   }
 
@@ -172,7 +167,6 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
     }
   }
 
-  /// Navigate to EditProfileScreen and refresh profile on update
   void _navigateToEdit() {
     if (_profile == null) return;
     Navigator.of(context).push<bool>(MaterialPageRoute(builder: (context) => EditProfileScreen(profile: _profile!))).then((
@@ -201,7 +195,8 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
 
       if (!mounted) return;
 
-      // Update the profile data with new follow status
+      final newFollowersCount = _profile!.followersCount + (newFollowUri != null ? 1 : -1);
+
       setState(() {
         _profile = Profile(
           username: _profile!.username,
@@ -210,7 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
           description: _profile!.description,
           avatarUrl: _profile!.avatarUrl,
           bannerUrl: _profile!.bannerUrl,
-          followersCount: _profile!.followersCount + (newFollowUri != null ? 1 : -1),
+          followersCount: newFollowersCount,
           followingCount: _profile!.followingCount,
           postsCount: _profile!.postsCount,
           isSprk: _profile!.isSprk,
@@ -219,13 +214,8 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
         );
       });
 
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(newFollowUri != null ? 'Followed successfully' : 'Unfollowed successfully'),
-          backgroundColor: Colors.green,
-        ),
-      );
+      final message = newFollowUri != null ? 'Followed successfully' : 'Unfollowed successfully';
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), backgroundColor: Colors.green));
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red));
@@ -243,10 +233,9 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
       builder:
           (context) => ReportDialog(
             postUri: 'at://$did/app.bsky.actor.profile/self',
-            postCid: 'profile', // Using placeholder, the DID is the important part
+            postCid: 'profile',
             onSubmit: (subject, reasonType, reason, service) async {
               try {
-                // Create report for a profile
                 final result = await modService.createReport(
                   subject: ReportSubject.repoRef(data: RepoRef(did: did)),
                   reasonType: reasonType,
@@ -267,24 +256,24 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
     );
   }
 
-  /// Refreshes the profile by forcing a refetch from the server and clearing cache
   Future<void> _refreshProfile() async {
     if (!mounted) return;
 
     final targetDid = widget.did ?? Provider.of<AuthService>(context, listen: false).session?.did;
+
     if (targetDid == null) return;
 
     try {
       final profileService = Provider.of<ProfileService>(context, listen: false);
 
-      await profileService.clearProfileCache(targetDid);
-
+      await profileService.clearAllCache(targetDid);
       final profile = await profileService.getProfile(targetDid, forceRefresh: true);
 
       if (!mounted) return;
 
       setState(() {
         _profile = profile;
+        _refreshKey++;
       });
 
       final isSupporter = await _checkEarlySupporter(targetDid);
@@ -307,7 +296,7 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    super.build(context);
 
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
@@ -346,6 +335,7 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
       isAuthenticated: isAuthenticated,
       onLoginPressed: _handleLogin,
       did: _profile!.did,
+      refreshKey: _refreshKey,
     );
 
     return Scaffold(
@@ -387,7 +377,6 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
           child: CustomScrollView(
             key: PageStorageKey<String>('profile_${widget.did ?? 'current'}'),
             slivers: [
-              // Profile header
               SliverToBoxAdapter(
                 child: ProfileHeader(
                   profile: _profile!,
@@ -400,8 +389,6 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
                   onSettingsTap: _handleSettingsTap,
                 ),
               ),
-
-              // Tab bar (pinned)
               SliverPersistentHeader(
                 pinned: true,
                 delegate: StickyTabBarDelegate(
@@ -412,8 +399,6 @@ class _ProfileScreenState extends State<ProfileScreen> with AutomaticKeepAliveCl
                   ),
                 ),
               ),
-
-              // Dynamic tab content
               ...tabContent.getTabContent(),
             ],
           ),
