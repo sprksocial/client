@@ -81,8 +81,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
   }
 
   bool _isVideoStory(Map<String, dynamic> story) {
-    if (story.containsKey('embed') && story['embed'] != null) {
-      final storyEmbed = story['embed'] as Map<String, dynamic>;
+    if (story.containsKey('media') && story['media'] != null) {
+      final storyEmbed = story['media'] as Map<String, dynamic>;
       return storyEmbed['\$type'] == 'so.sprk.embed.video#view';
     }
     return false;
@@ -442,8 +442,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
   }
 
   String _getVideoUrl(Map<String, dynamic> story) {
-    if (story.containsKey('embed') && story['embed'] != null) {
-      final storyEmbed = story['embed'] as Map<String, dynamic>;
+    if (story.containsKey('media') && story['media'] != null) {
+      final storyEmbed = story['media'] as Map<String, dynamic>;
       if (storyEmbed['\$type'] == 'so.sprk.embed.video#view' && storyEmbed.containsKey('playlist')) {
         return storyEmbed['playlist'] as String? ?? '';
       }
@@ -722,8 +722,8 @@ class _StoryViewerScreenState extends State<StoryViewerScreen> with TickerProvid
   }
 
   String _getStoryImageUrlForUser(Map<String, dynamic> story, Map<String, dynamic> author) {
-    if (story.containsKey('embed') && story['embed'] != null) {
-      final storyEmbed = story['embed'] as Map<String, dynamic>;
+    if (story.containsKey('media') && story['media'] != null) {
+      final storyEmbed = story['media'] as Map<String, dynamic>;
 
       if (storyEmbed['\$type'] == 'so.sprk.embed.video#view' && storyEmbed.containsKey('thumbnail')) {
         return storyEmbed['thumbnail'] as String? ?? '';

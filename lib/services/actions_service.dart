@@ -289,7 +289,7 @@ class ActionsService extends ChangeNotifier {
   /// Posts a story with media using the Spark NSID.
   /// Returns the response from the created story record.
   Future<dynamic> postStory(Map<String, dynamic> embed) async {
-    final storyRecord = {"\$type": "so.sprk.feed.story", "embed": embed, "createdAt": DateTime.now().toUtc().toIso8601String()};
+    final storyRecord = {"\$type": "so.sprk.feed.story", "media": embed, "createdAt": DateTime.now().toUtc().toIso8601String()};
 
     try {
       final response = await _client.repo.createRecord(collection: NSID.parse('so.sprk.feed.story'), record: storyRecord);
