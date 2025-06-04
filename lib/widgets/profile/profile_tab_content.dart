@@ -11,8 +11,15 @@ class ProfileTabContent {
   final bool isAuthenticated;
   final VoidCallback onLoginPressed;
   final String? did;
+  final int refreshKey;
 
-  const ProfileTabContent({required this.selectedIndex, required this.isAuthenticated, required this.onLoginPressed, this.did});
+  const ProfileTabContent({
+    required this.selectedIndex,
+    required this.isAuthenticated,
+    required this.onLoginPressed,
+    this.did,
+    this.refreshKey = 0,
+  });
 
   List<Widget> getTabContent() {
     // Early return for auth check
@@ -36,9 +43,9 @@ class ProfileTabContent {
   Widget _buildSelectedTabContent() {
     switch (selectedIndex) {
       case 0:
-        return VideosTab(did: did);
+        return VideosTab(key: ValueKey('videos_$refreshKey'), did: did);
       case 1:
-        return PhotosTab(did: did);
+        return PhotosTab(key: ValueKey('photos_$refreshKey'), did: did);
       case 2:
         return ContentGridTab(icon: FluentIcons.heart_24_regular, type: 'favorites', itemCount: 30);
       case 3:

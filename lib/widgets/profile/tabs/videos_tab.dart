@@ -65,7 +65,7 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
       _cursor = null;
     });
 
-    await _fetchPosts();
+    await _fetchPosts(forceRefresh: true);
   }
 
   Future<void> _loadMorePosts() async {
@@ -78,7 +78,7 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
     await _fetchPosts(isLoadingMore: true);
   }
 
-  Future<void> _fetchPosts({bool isLoadingMore = false}) async {
+  Future<void> _fetchPosts({bool isLoadingMore = false, bool forceRefresh = false}) async {
     if (!mounted) return;
 
     try {
@@ -96,8 +96,8 @@ class _VideosTabState extends State<VideosTab> with AutomaticKeepAliveClientMixi
         return;
       }
 
-      final resultBsky = await profileService.getProfileVideosBsky(targetDid);
-      final resultSprk = isLoadingMore ? null : await profileService.getProfileVideosSprk(targetDid);
+      final resultBsky = await profileService.getProfileVideosBsky(targetDid, forceRefresh: forceRefresh);
+      final resultSprk = isLoadingMore ? null : await profileService.getProfileVideosSprk(targetDid, forceRefresh: forceRefresh);
 
       if (!mounted) return;
 
