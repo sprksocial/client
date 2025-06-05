@@ -72,8 +72,12 @@ class ActionsService extends ChangeNotifier {
     // Upload images and prepare embed JSON if provided
     Map<String, dynamic>? embedJson;
     if (imageFiles != null && imageFiles.isNotEmpty) {
-      final List<Map<String, dynamic>> uploadedImageMaps = await _uploadImages(imageFiles, altTexts ?? {});
-      embedJson = {"\$type": "so.sprk.embed.images", "images": uploadedImageMaps};
+      final List<Map<String, dynamic>> uploadedBlobs = await _uploadImageBlobs(imageFiles, altTexts ?? {});
+      final List<Map<String, dynamic>> sparkImages =
+          uploadedBlobs.map((blobData) {
+            return {"\$type": "so.sprk.embed.images#image", "alt": blobData["alt"], "image": blobData["blob"]};
+          }).toList();
+      embedJson = {"\$type": "so.sprk.embed.images", "images": sparkImages};
     }
 
     // If root isn't provided, use parent as root
@@ -142,40 +146,35 @@ class ActionsService extends ChangeNotifier {
 
   /// Posts a new feed item with text and images using the Spark NSID.
   /// Returns the StrongRef of the created post record.
-  Future<dynamic> postImageFeed(String text, List<XFile> imageFiles, Map<String, String> altTexts) async {
+  Future<dynamic> postImageFeedSprk(String text, List<XFile> imageFiles, Map<String, String> altTexts) async {
     if (imageFiles.isEmpty) {
       throw ArgumentError('At least one image is required for an image post.');
     }
 
-    final List<Map<String, dynamic>> uploadedImageMaps = await _uploadImages(imageFiles, altTexts);
-
-    final embed = {"\$type": "so.sprk.embed.images", 'images': uploadedImageMaps};
-
-    try {
-      final response = await _client.repo.createRecord(
-        collection: NSID.parse('so.sprk.feed.post'),
-        record: {
-          "\$type": "so.sprk.feed.post",
-          'text': text,
-          'embed': embed,
-          'createdAt': DateTime.now().toUtc().toIso8601String(),
-        },
-      );
-
-      if (response.status.code != 200) {
-        throw Exception('Failed to create image post: ${response.status.code} ${response.data}');
-      }
-
-      return response.data;
-    } catch (e) {
-      debugPrint('Error creating Spark image post record: $e');
-      rethrow;
-    }
+    // Upload blobs and create Spark post
+    final List<Map<String, dynamic>> uploadedBlobs = await _uploadImageBlobs(imageFiles, altTexts);
+    return await _createSparkPost(text, uploadedBlobs);
   }
 
-  /// Helper to upload multiple images, stripping EXIF, and return a list of JSON maps for embedding.
-  Future<List<Map<String, dynamic>>> _uploadImages(List<XFile> imageFiles, Map<String, String> altTexts) async {
-    final List<Map<String, dynamic>> uploadedImageMaps = [];
+  /// Posts the same content to both Spark and Bluesky, uploading images once and reusing blobs
+  Future<Map<String, dynamic>> postImageToBoth(String text, List<XFile> imageFiles, Map<String, String> altTexts) async {
+    if (imageFiles.isEmpty) {
+      throw ArgumentError('At least one image is required for an image post.');
+    }
+
+    // Upload blobs once
+    final List<Map<String, dynamic>> uploadedBlobs = await _uploadImageBlobs(imageFiles, altTexts);
+
+    // Create both posts using the same blobs
+    final sparkResponse = await _createSparkPost(text, uploadedBlobs);
+    final bskyResponse = await _createBlueSkyPost(text, uploadedBlobs);
+
+    return {'spark': sparkResponse, 'bluesky': bskyResponse};
+  }
+
+  /// Uploads image blobs and returns blob references with metadata
+  Future<List<Map<String, dynamic>>> _uploadImageBlobs(List<XFile> imageFiles, Map<String, String> altTexts) async {
+    final List<Map<String, dynamic>> uploadedBlobs = [];
     for (final imageFile in imageFiles) {
       try {
         final originalBytes = await imageFile.readAsBytes();
@@ -193,17 +192,75 @@ class ActionsService extends ChangeNotifier {
           throw Exception('Blob upload failed for ${imageFile.name}: ${response.status.code}');
         }
 
-        uploadedImageMaps.add({
-          "\$type": "so.sprk.embed.images#image",
-          "alt": altTexts[imageFile.path] ?? '',
-          "image": response.data.blob.toJson(),
-        });
+        uploadedBlobs.add({"alt": altTexts[imageFile.path] ?? '', "blob": response.data.blob.toJson()});
       } catch (e) {
         debugPrint('Error processing/uploading image ${imageFile.name}: $e');
-        rethrow; // Rethrow to indicate failure
+        rethrow;
       }
     }
-    return uploadedImageMaps;
+    return uploadedBlobs;
+  }
+
+  /// Creates a Spark post using pre-uploaded blobs
+  Future<dynamic> _createSparkPost(String text, List<Map<String, dynamic>> uploadedBlobs) async {
+    final List<Map<String, dynamic>> sparkImages =
+        uploadedBlobs.map((blobData) {
+          return {"\$type": "so.sprk.embed.images#image", "alt": blobData["alt"], "image": blobData["blob"]};
+        }).toList();
+
+    final embed = {"\$type": "so.sprk.embed.images", 'images': sparkImages};
+
+    try {
+      final response = await _client.repo.createRecord(
+        collection: NSID.parse('so.sprk.feed.post'),
+        record: {
+          "\$type": "so.sprk.feed.post",
+          'text': text,
+          'embed': embed,
+          'createdAt': DateTime.now().toUtc().toIso8601String(),
+        },
+      );
+
+      if (response.status.code != 200) {
+        throw Exception('Failed to create Spark image post: ${response.status.code} ${response.data}');
+      }
+
+      return response.data;
+    } catch (e) {
+      debugPrint('Error creating Spark image post record: $e');
+      rethrow;
+    }
+  }
+
+  /// Creates a Bluesky post using pre-uploaded blobs
+  Future<dynamic> _createBlueSkyPost(String text, List<Map<String, dynamic>> uploadedBlobs) async {
+    final List<Map<String, dynamic>> bskyImages =
+        uploadedBlobs.map((blobData) {
+          return {"alt": blobData["alt"], "image": blobData["blob"]};
+        }).toList();
+
+    final embed = {"\$type": "app.bsky.embed.images", 'images': bskyImages};
+
+    try {
+      final response = await _client.repo.createRecord(
+        collection: NSID.parse('app.bsky.feed.post'),
+        record: {
+          "\$type": "app.bsky.feed.post",
+          'text': text,
+          'embed': embed,
+          'createdAt': DateTime.now().toUtc().toIso8601String(),
+        },
+      );
+
+      if (response.status.code != 200) {
+        throw Exception('Failed to create Bluesky image post: ${response.status.code} ${response.data}');
+      }
+
+      return response.data;
+    } catch (e) {
+      debugPrint('Error creating Bluesky image post record: $e');
+      rethrow;
+    }
   }
 
   Future<dynamic> followUser(String did) async {

@@ -9,6 +9,7 @@ import '../services/actions_service.dart';
 import '../services/upload_service.dart';
 import '../utils/app_colors.dart';
 import '../widgets/image/alt_text_editor_dialog.dart';
+import '../services/settings_service.dart';
 
 void showFullscreenImage(BuildContext context, XFile imageFile) {
   showDialog(
@@ -106,6 +107,7 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
     });
     try {
       final actionsService = Provider.of<ActionsService>(context, listen: false);
+      final settingsService = Provider.of<SettingsService>(context, listen: false);
       final uploadService = Provider.of<UploadService>(context, listen: false);
       final description = _descriptionController.text;
       final taskId = uploadService.registerTask('image');
@@ -113,7 +115,16 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
       if (mounted) {
         Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
       }
-      await actionsService.postImageFeed(description, _imageFiles, _altTexts);
+
+      // Check if cross-posting is enabled
+      if (settingsService.postToBskyEnabled) {
+        // Upload once and post to both platforms using the same blobs
+        await actionsService.postImageToBoth(description, _imageFiles, _altTexts);
+      } else {
+        // Only post to Spark
+        await actionsService.postImageFeedSprk(description, _imageFiles, _altTexts);
+      }
+
       uploadService.completeTask(taskId);
     } catch (e) {
       debugPrint('Failed to post images: $e');
@@ -302,6 +313,36 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
                             counterText: '',
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Bluesky Cross-posting Switch
+                      Consumer<SettingsService>(
+                        builder: (context, settingsService, _) {
+                          return Container(
+                            decoration: BoxDecoration(color: inputBackgroundColor, borderRadius: BorderRadius.circular(8)),
+                            child: ListTile(
+                              title: Text('Post to Bluesky', style: TextStyle(color: textColor, fontSize: 16)),
+                              // subtitle: Text(
+                              //   'Also post this image to your Bluesky feed',
+                              //   style: TextStyle(color: hintColor, fontSize: 12),
+                              // ),
+                              trailing: Switch(
+                                value: settingsService.postToBskyEnabled,
+                                onChanged: (value) {
+                                  settingsService.setPostToBsky(value);
+                                },
+                                activeColor: AppColors.pink,
+                                inactiveThumbColor: Colors.grey.shade400,
+                                inactiveTrackColor: Colors.grey.shade600,
+                                trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                              ),
+                              onTap: () {
+                                settingsService.setPostToBsky(!settingsService.postToBskyEnabled);
+                              },
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),

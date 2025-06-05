@@ -24,11 +24,13 @@ class SettingsService extends ChangeNotifier {
   static const String _labelerPreferencesKey = 'labeler_preferences';
   static const String _hideAdultContentKey = 'hide_adult_content';
   static const String _keyFollowMode = 'profile_follow_mode';
+  static const String _postToBskyKey = 'post_to_bsky_enabled';
 
   SharedPreferences? _prefs;
   bool _isLoading = true;
   bool _feedBlurEnabled = false;
   bool _hideAdultContent = true;
+  bool _postToBskyEnabled = false;
   List<String> _followedLabelers = [];
   FollowMode _followMode = FollowMode.sprk;
   final AuthService _authService;
@@ -63,6 +65,7 @@ class SettingsService extends ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get feedBlurEnabled => _feedBlurEnabled;
   bool get hideAdultContent => _hideAdultContent;
+  bool get postToBskyEnabled => _postToBskyEnabled;
   List<String> get followedLabelers => List.unmodifiable(_followedLabelers);
   FollowMode get followMode => _followMode;
 
@@ -73,6 +76,7 @@ class SettingsService extends ChangeNotifier {
     _prefs = await SharedPreferences.getInstance();
     _feedBlurEnabled = _prefs?.getBool(_feedBlurKey) ?? false;
     _hideAdultContent = _prefs?.getBool(_hideAdultContentKey) ?? true; // Default to true if not set
+    _postToBskyEnabled = _prefs?.getBool(_postToBskyKey) ?? false;
     _followedLabelers = _prefs?.getStringList(_followedLabelersKey) ?? [];
 
     // Load the cached follow mode as a temporary value
@@ -103,6 +107,13 @@ class SettingsService extends ChangeNotifier {
     if (_isLoading) await _loadSettings();
     _hideAdultContent = value;
     await _prefs?.setBool(_hideAdultContentKey, value);
+    notifyListeners();
+  }
+
+  Future<void> setPostToBsky(bool value) async {
+    if (_isLoading) await _loadSettings();
+    _postToBskyEnabled = value;
+    await _prefs?.setBool(_postToBskyKey, value);
     notifyListeners();
   }
 
