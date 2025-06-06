@@ -267,12 +267,23 @@ class ActionsService extends ChangeNotifier {
         final sparkRkey = sparkUri.split('/').last;
         final sparkLink = 'https://watch.sprk.so/?uri=$userDid/$sparkRkey';
 
-        // Add link to text if text is not empty, otherwise just use the link
-        if (text.isNotEmpty) {
-          finalText = '$text\n\n$sparkLink';
-        } else {
-          finalText = '🔗 View all images: $sparkLink';
+        if (text.isEmpty) {
+          finalText = sparkLink;
+          return;
         }
+
+        final linkWithNewlines = '\n\n$sparkLink';
+        final availableTextLength = 300 - linkWithNewlines.length;
+
+        if (text.length <= availableTextLength) {
+          finalText = '$text$linkWithNewlines';
+          return;
+        }
+
+        final ellipsis = '...';
+        final croppedTextLength = availableTextLength - ellipsis.length;
+        final croppedText = text.substring(0, croppedTextLength);
+        finalText = '$croppedText$ellipsis$linkWithNewlines';
       }
       // No embed for text-only post
     } else {
