@@ -82,12 +82,9 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
       // Process the video and get blob reference
       final videoBlobRef = await videoService.processVideo(widget.videoPath);
 
-      // Check if cross-posting is enabled
       if (settingsService.postToBskyEnabled) {
-        // Post to both platforms using the same blob
         await actionsService.postVideoToBoth(description, videoBlobRef!, _videoAltText);
       } else {
-        // Only post to Spark
         await actionsService.postVideoSprk(description, videoBlobRef!, _videoAltText);
       }
 
@@ -190,7 +187,7 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
                                   bottom: 12,
                                   right: 12,
                                   child: Material(
-                                    color: Colors.black.withOpacity(0.5),
+                                    color: Colors.black.withValues(alpha: 0.5),
                                     borderRadius: BorderRadius.circular(8),
                                     child: InkWell(
                                       onTap: () async {
@@ -249,7 +246,7 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
                           maxLength: 300,
                           decoration: InputDecoration(
                             hintText: 'Add a description... (optional)',
-                            hintStyle: TextStyle(color: textColor.withOpacity(0.5)),
+                            hintStyle: TextStyle(color: textColor.withValues(alpha: 0.5)),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.zero,
                             isDense: true,
@@ -298,7 +295,7 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
                     backgroundColor: AppColors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+                    disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
                   ),
                   child:
                       _isPosting

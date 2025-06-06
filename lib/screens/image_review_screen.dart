@@ -201,7 +201,7 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
                                             mainAxisSize: MainAxisSize.min,
                                             children: [
                                               Material(
-                                                color: Colors.black.withOpacity(0.5),
+                                                color: Colors.black.withValues(alpha: 0.5),
                                                 borderRadius: BorderRadius.circular(8),
                                                 child: InkWell(
                                                   onTap: () => _editAltText(image),
@@ -231,7 +231,7 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
                                               ),
                                               const SizedBox(width: 8),
                                               Material(
-                                                color: Colors.black.withOpacity(0.5),
+                                                color: Colors.black.withValues(alpha: 0.5),
                                                 shape: const CircleBorder(),
                                                 child: InkWell(
                                                   onTap: () {
@@ -264,7 +264,7 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                     decoration: BoxDecoration(
-                                      color: Colors.black.withOpacity(0.5),
+                                      color: Colors.black.withValues(alpha: 0.5),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: Text(
@@ -288,7 +288,7 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
                           ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.primary,
-                            disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+                            disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
                             foregroundColor: buttonTextColor,
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -386,7 +386,7 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
                     backgroundColor: AppColors.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    disabledBackgroundColor: AppColors.primary.withOpacity(0.5),
+                    disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
                   ),
                   child:
                       _isPosting

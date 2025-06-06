@@ -1,13 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:sparksocial/config/app_config.dart';
 import 'package:sparksocial/services/auth_service.dart';
-import 'package:flutter/foundation.dart';
 
 class VideoService {
   final AuthService _authService;
@@ -38,8 +36,6 @@ class VideoService {
         throw Exception('Video file is empty');
       }
 
-      print('Video file size: ${videoBytes.length} bytes');
-
       final pdsService = authAtProto.service;
       final serviceTokenRes = await authAtProto.server.getServiceAuth(
         aud: 'did:web:$pdsService',
@@ -67,7 +63,6 @@ class VideoService {
 
       return responseData;
     } catch (e) {
-      print('Error processing video: $e');
       rethrow;
     }
   }
@@ -90,58 +85,4 @@ class VideoService {
     }
   }
 
-  Future<StrongRef> postVideo(Map<String, dynamic>? videoData, {String description = '', String videoAltText = ''}) async {
-    final authAtProto = _authService.atproto;
-    if (authAtProto == null || authAtProto.session == null) {
-      throw Exception('AtProto not initialized');
-    }
-
-    if (videoData == null) {
-      debugPrint('Video data is null');
-      throw Exception('Video data is null');
-    }
-
-    // Create a proper Blob reference - this is what we need for the AT Protocol
-    Map<String, dynamic> blobRef;
-
-    // The server response might contain the blob directly or it might be wrapped
-    if (videoData.containsKey('blobRef')) {
-      debugPrint('Video data contains blobRef: $videoData');
-      blobRef = videoData['blobRef'];
-    } else if (videoData.containsKey('\$type') && videoData['\$type'] == 'blob') {
-      // Response directly is a blob reference
-      debugPrint('Video data is a blob reference: $videoData');
-      blobRef = videoData;
-    } else if (videoData.containsKey('success') && videoData.containsKey('blobRef')) {
-      // Response has blobRef inside with success field
-      debugPrint('Video data has blobRef with success field: $videoData');
-      blobRef = videoData['blobRef'];
-    } else {
-      throw Exception('Invalid video data - missing blob reference');
-    }
-
-    final postText = description.isNotEmpty ? description : '';
-
-    // Create a properly formatted AT Protocol post record
-    final postRecord = {
-      '\$type': 'so.sprk.feed.post',
-      'text': postText,
-      'embed': {'\$type': 'so.sprk.embed.video', 'video': blobRef},
-      'createdAt': DateTime.now().toUtc().toIso8601String(),
-    };
-
-    // Add alt text only if provided
-    if (videoAltText.isNotEmpty) {
-      (postRecord['embed'] as Map<String, dynamic>)['alt'] = videoAltText;
-    }
-
-    // Create the post record
-    final recordRes = await authAtProto.repo.createRecord(collection: NSID.parse('so.sprk.feed.post'), record: postRecord);
-
-    if (recordRes.status != HttpStatus.ok) {
-      throw Exception('Failed to post video: ${recordRes.status} ${recordRes.data}');
-    }
-
-    return recordRes.data;
-  }
 }
