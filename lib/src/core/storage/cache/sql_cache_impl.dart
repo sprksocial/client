@@ -243,6 +243,12 @@ class SQLCacheImpl implements SQLCacheInterface {
     );
   }
 
+  @override
+  Future<void> updatePost(PostView post) async {
+    final db = await database;
+    await db.update(_tablePosts, _postViewToMap(post), where: '$_columnUri = ?', whereArgs: [post.uri.toString()]);
+  }
+
   // --- Feed Management ---
 
   /// Caches a Feed object (its metadata).
@@ -430,51 +436,13 @@ class SQLCacheImpl implements SQLCacheInterface {
     });
   }
 
-  /// Gets the maximum association order for a feed.
-  /// Returns -1 if the feed has no posts.
   @override
-  Future<int> getMaxAssociationOrderForFeed(Feed feed) async {
-    final feedIdentifier = feed.identifier;
+  Future<void> deletePost(AtUri uri) async {
     final db = await database;
-    
-    final List<Map<String, dynamic>> result = await db.query(
-      _tableFeedPostAssociations,
-      columns: ['MAX($_columnAssociationOrder) as max_order'],
-      where: '$_columnFeedIdentifierFK = ?',
-      whereArgs: [feedIdentifier],
-    );
-
-    if (result.isNotEmpty && result.first['max_order'] != null) {
-      return result.first['max_order'] as int;
-    }
-    return -1;
-  }
-
-  /// Retrieves posts for a specific feed that were added after the given association order.
-  /// Ordered by association order (most recently added first).
-  @override
-  Future<List<PostView>> getPostsForFeedAfterOrder(Feed feed, int afterOrder, {int? limit}) async {
-    final feedIdentifier = feed.identifier;
-    final db = await database;
-    List<dynamic> arguments = [feedIdentifier, afterOrder];
-    String limitClause = '';
-
-    if (limit != null) {
-      limitClause += ' LIMIT ?';
-      arguments.add(limit);
-    }
-
-    final String sql = '''
-      SELECT p.*
-      FROM $_tablePosts p
-      INNER JOIN $_tableFeedPostAssociations fpa ON p.$_columnUri = fpa.$_columnPostUriFK
-      WHERE fpa.$_columnFeedIdentifierFK = ? AND fpa.$_columnAssociationOrder > ?
-      ORDER BY fpa.$_columnAssociationOrder DESC
-      $limitClause
-    ''';
-
-    final List<Map<String, dynamic>> maps = await db.rawQuery(sql, arguments);
-    return maps.map((map) => _mapToPostView(map)).toList();
+    final batch = db.batch();
+    batch.delete(_tablePosts, where: '$_columnUri = ?', whereArgs: [uri.toString()]);
+    batch.delete(_tableFeedPostAssociations, where: '$_columnPostUriFK = ?', whereArgs: [uri.toString()]);
+    await batch.commit(noResult: true);
   }
 
   /// Clears all posts associated with a specific feed.

@@ -221,6 +221,13 @@ class PostRecord with _$PostRecord {
     // threadgate
   }) = _PostRecord;
 
+  List<String> get hashtags => tags ?? _extractHashtags(text ?? '');
+
+  List<String> _extractHashtags(String text) {
+    final regex = RegExp(r'#(\w+)');
+    return regex.allMatches(text).map((match) => match.group(1)!).toList();
+  }
+
   factory PostRecord.fromJson(Map<String, dynamic> json) => _$PostRecordFromJson(json);
 }
 
@@ -261,6 +268,7 @@ class PostView with _$PostView {
     int? repostCount,
     int? quoteCount,
     List<Label>? labels,
+    Viewer? viewer,
     //SoundView? sound,
     EmbedView? embed, // aturi
   }) = _PostView;

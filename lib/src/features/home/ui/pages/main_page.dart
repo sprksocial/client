@@ -7,10 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
 import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 
 @RoutePage()
 class MainPage extends ConsumerStatefulWidget {
@@ -24,26 +22,19 @@ class _MainPageState extends ConsumerState<MainPage> {
   @override
   void initState() {
     super.initState();
-    // Load settings on app start
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(settingsProvider.notifier).loadSettings();
-    });
+    // Settings are now loaded automatically in the provider's build method
+    // No need to manually call loadSettings() here
   }
 
   @override
   Widget build(BuildContext context) {
-    // Watch all feed providers at this level to keep them alive
-    // when switching between tabs
+    // Don't watch feed providers at this level as it causes unnecessary disposal/recreation
+    // when settings change. Feed providers are managed by their individual pages.
     final settings = ref.watch(settingsProvider);
-    final feedStates = <String, FeedState>{};
-    for (final feed in settings.feeds) {
-      final state = ref.watch(feedNotifierProvider(feed));
-      feedStates[feed.name] = state;
-    }
-    
+
     return AutoTabsRouter(
       key: const ValueKey('mainTabsRouter'),
-      routes: [const FeedsRoute(), const SearchRoute(), const EmptyRoute(), const MessagesRoute(),], //UserProfileRoute()],
+      routes: [const FeedsRoute(), const SearchRoute(), const EmptyRoute(), const MessagesRoute(), const UserProfileRoute()],
       transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
@@ -53,31 +44,25 @@ class _MainPageState extends ConsumerState<MainPage> {
           body: Stack(
             children: [
               child,
-              
+
               // Debug overlay for MainPage (top left)
-              if (true) // Set to false to disable
+              if (false) // Disabled debug overlay
                 Positioned(
                   top: 50,
                   left: 10,
                   child: Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.purple.withOpacity(0.7),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+                    decoration: BoxDecoration(color: Colors.purple.withOpacity(0.7), borderRadius: BorderRadius.circular(8)),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Text('MainPage Feed States:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
+                        const Text('MainPage:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
                         Text('Tab: ${tabsRouter.activeIndex}', style: const TextStyle(color: Colors.yellow, fontSize: 10)),
-                        const SizedBox(height: 2),
-                        ...feedStates.entries.map((entry) {
-                          return Text(
-                            '${entry.key}: ${entry.value.length}',
-                            style: const TextStyle(color: Colors.white, fontSize: 10),
-                          );
-                        }),
+                        Text(
+                          'Active Feed: ${settings.activeFeed.name}',
+                          style: const TextStyle(color: Colors.white, fontSize: 10),
+                        ),
                       ],
                     ),
                   ),
@@ -120,11 +105,11 @@ class _MainPageState extends ConsumerState<MainPage> {
                 selectedIcon: Icon(FluentIcons.mail_inbox_all_24_filled),
                 label: 'Inbox',
               ),
-              // const NavigationDestination(
-              //   icon: Icon(FluentIcons.person_24_regular),
-              //   selectedIcon: Icon(FluentIcons.person_24_filled),
-              //   label: 'Profile',
-              // ),
+              const NavigationDestination(
+                icon: Icon(FluentIcons.person_24_regular),
+                selectedIcon: Icon(FluentIcons.person_24_filled),
+                label: 'Profile',
+              ),
             ],
           ),
         );

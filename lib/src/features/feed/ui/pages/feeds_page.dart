@@ -4,7 +4,6 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
 import 'package:sparksocial/src/features/feed/ui/pages/feed_page.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/feeds_bar.dart';
@@ -81,8 +80,8 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
         final state = feedStates[feed]!;
         final notifier = ref.read(feedNotifierProvider(feed).notifier);
         
-        // Only load if the feed is empty and not already loading
-        if (state.length == 0 && !state.loadingFirstLoad && !state.isEndOfNetworkFeed) {
+        // Only load if the feed is empty and not already loading and active
+        if (state.length == 0 && !state.loadingFirstLoad && !state.isEndOfNetworkFeed && feed == activeFeed) {
           notifier.loadAndUpdateFirstLoad();
         }
       }
@@ -108,6 +107,7 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
     
     return SafeArea(
       child: Scaffold(
+        extendBodyBehindAppBar: true,
         appBar: FeedsBar(pageController: _pageController!),
         body: Stack(
           children: [

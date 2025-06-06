@@ -28,7 +28,7 @@ final settingsRepositoryProvider =
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SettingsRepositoryRef = AutoDisposeProviderRef<SettingsRepository>;
-String _$settingsHash() => r'785706b7e50488b814c0f61b3d8e48bc21d4fdd9';
+String _$settingsHash() => r'0854f744ce8b397cb4c2dc703b25419a181eafbd';
 
 /// StateNotifier for managing settings state
 ///

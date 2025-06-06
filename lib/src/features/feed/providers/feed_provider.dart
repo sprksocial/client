@@ -3,7 +3,6 @@ import 'dart:math';
 
 import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
-import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
@@ -25,16 +24,14 @@ class FeedNotifier extends _$FeedNotifier {
   final _initialUris = <AtUri>{};
   bool _isWaitingForFreshPostsAtEnd = false;
   bool _isLoadingInProgress = false;
+  bool _isLoading = false;
   late final SQLCacheInterface _sqlCache;
   late Feed _feed;
   late final FeedRepository _feedRepository;
   late final SparkLogger _logger;
   late final DownloadManagerInterface _downloadManager;
   late final SettingsRepository _settingsRepository;
-  
-  // Track the highest association order from initial load
-  int? _initialLoadMaxOrder;
-  
+
   // Add a flag to track if this notifier has been built before
   bool _hasBeenBuilt = false;
   FeedState? _preservedState;
@@ -42,7 +39,7 @@ class FeedNotifier extends _$FeedNotifier {
   @override
   FeedState build(Feed feed) {
     _feed = feed;
-    
+
     // Initialize logger first for debugging
     if (!_isInitialized()) {
       _feedRepository = GetIt.instance<SprkRepository>().feed;
@@ -55,26 +52,30 @@ class FeedNotifier extends _$FeedNotifier {
     }
 
     listenSelf((previous, next) {
-      final prevFreshCount = previous?.freshPostCount ?? 0;
       // If we were waiting at the end of the feed and new posts have arrived
-      if (_isWaitingForFreshPostsAtEnd && next.freshPostCount > 0 && prevFreshCount == 0) {
+      if (_isWaitingForFreshPostsAtEnd && next.freshPostCount > 0) {
         _logger.d('New posts arrived! Loading...');
         Future.microtask(() => load()); // Prevent synchronous execution during state change
       }
+
+      // Update preserved state whenever state changes
+      _preservedState = next;
     });
 
     var isActive = ref.watch(settingsProvider).activeFeed == feed;
-    
+
     // If this notifier has been built before and we have preserved state, use it
     if (_hasBeenBuilt && _preservedState != null) {
       _logger.d('Restoring preserved state for ${feed.identifier}: ${_preservedState!.length} posts');
       final restoredState = _preservedState!.copyWith(active: isActive);
+      // Update preserved state with the new active status
+      _preservedState = restoredState;
       return restoredState;
     }
-    
+
     _hasBeenBuilt = true;
     _logger.d('Creating fresh state for ${feed.identifier}');
-    
+
     // Only return fresh state on first initialization
     final freshState = FeedState(
       active: isActive,
@@ -87,17 +88,9 @@ class FeedNotifier extends _$FeedNotifier {
       extraInfo: LinkedHashMap(),
       loadingFirstLoad: false,
     );
-    
+
     _preservedState = freshState;
     return freshState;
-  }
-  
-  // Override state setter to preserve state
-  @override
-  set state(FeedState newState) {
-    _preservedState = newState;
-    super.state = newState;
-    _logger.d('State updated for ${_feed.identifier}: ${newState.length} posts, active: ${newState.active}');
   }
 
   bool _isInitialized() {
@@ -111,7 +104,7 @@ class FeedNotifier extends _$FeedNotifier {
   }
 
   Future<void> loadAndUpdateFirstLoad() async {
-    if (_isLoadingInProgress) {
+    if (_isLoadingInProgress || _isLoading) {
       _logger.w('Load already in progress, skipping duplicate call');
       return;
     }
@@ -129,10 +122,6 @@ class FeedNotifier extends _$FeedNotifier {
       // adds the initial uris to the list of initial uris so that they are not fetched again
       _initialUris.addAll(uris);
       _logger.d('Initial uris loaded: ${uris.length}');
-      
-      // Track the max association order from initial load - ALWAYS set this
-      _initialLoadMaxOrder = await _sqlCache.getMaxAssociationOrderForFeed(_feed);
-      _logger.d('Initial load max association order: $_initialLoadMaxOrder');
 
       if (uris.isNotEmpty) {
         // gets the subscribed labels for the posts
@@ -158,11 +147,16 @@ class FeedNotifier extends _$FeedNotifier {
         _logger.d('Updated starting posts in database');
       }
 
+      // Store the cursor from the initial fetch
+      String? newCursor = state.cursor;
+      int fetchedCount = 0;
       // starts fetching and storing new posts
       if (!state.isEndOfNetworkFeed) {
         final (int count, List<AtUri> fetchedUris, String? cursor) = await fetch();
+        newCursor = cursor;
+        fetchedCount = count;
         if (count > 0) {
-          await store(fetchedUris, cursor);
+          await store(fetchedUris);
         } else {
           endOfNetworkFeed();
         }
@@ -201,14 +195,21 @@ class FeedNotifier extends _$FeedNotifier {
           extraInfo.updateAll((key, value) => (postLabels: value.postLabels, hardcodedFeedExtraInfo: newExtraInfos[key]));
         }
       }
+      bool loadingFirstLoad;
+      if (uris.isNotEmpty) {
+        loadingFirstLoad = false;
+      } else {
+        loadingFirstLoad = fetchedCount != 0;
+      }
 
       state = state.copyWith(
-        loadedPosts: uris, 
+        loadedPosts: uris,
         freshPostCount: 0, // Set to 0 as per strategy
-        extraInfo: extraInfo, 
-        loadingFirstLoad: false // Always set to false after loading
+        extraInfo: extraInfo,
+        cursor: newCursor, // Store the cursor from fetch
+        loadingFirstLoad: loadingFirstLoad,
       );
-      _isWaitingForFreshPostsAtEnd = uris.isEmpty;
+      _isWaitingForFreshPostsAtEnd = state.length <= 1;
       _logger.d('First load finished with ${uris.length} posts');
     } catch (e, stackTrace) {
       _logger.e('Error in loadAndUpdateFirstLoad: $e', stackTrace: stackTrace);
@@ -219,14 +220,14 @@ class FeedNotifier extends _$FeedNotifier {
   }
 
   Future<(int, List<AtUri>, String?)> fetch() async {
-    _logger.d('Fetching started. Current cursor: ${state.cursor}');
+    _logger.d('Fetching started.');
     // gets the skeleton of the feed
     final skeleton = await _feedRepository.getFeedSkeleton(_feed, limit: FeedState.fetchLimit, cursor: state.cursor);
     final fetchedUris = skeleton.feed.map((e) => e.uri).toList();
 
     // remove fetched uris that were present when the feed was first loaded
     final filteredUris = fetchedUris.where((uri) => !_initialUris.contains(uri)).toList();
-    _logger.d('Fetched ${skeleton.feed.length} posts, filtered to ${filteredUris.length}. New cursor: ${skeleton.cursor}');
+    _logger.d('Fetched ${skeleton.feed.length} posts, filtered to ${filteredUris.length}');
     return (skeleton.feed.length, filteredUris, skeleton.cursor);
   }
 
@@ -234,9 +235,9 @@ class FeedNotifier extends _$FeedNotifier {
     state = state.copyWith(freshPostCount: state.freshPostCount + 1);
   }
 
-  Future<void> store(List<AtUri> uris, String? cursor) async {
-    _logger.d('Store called with ${uris.length} URIs. Current freshPostCount: ${state.freshPostCount}. Cursor: $cursor');
-    state = state.copyWith(isCaching: true, cursor: cursor); // Set cursor immediately
+  Future<void> store(List<AtUri> uris) async {
+    _logger.d('Store called with ${uris.length} URIs. Current freshPostCount: ${state.freshPostCount}');
+    state = state.copyWith(isCaching: true); // Set cursor immediately
     int updatedPostCount = 0;
 
     // checks if the posts have already been cached
@@ -246,11 +247,12 @@ class FeedNotifier extends _$FeedNotifier {
       _logger.d('Found ${existingUris.length} existing posts in cache');
       final posts = await _feedRepository.getPosts(existingUris);
       await _sqlCache.cachePosts(posts);
-      
+      await _sqlCache.appendPostsToFeed(_feed, existingUris.map((e) => e.toString()).toList());
+
       // Only increment freshPostCount for posts that aren't already in loadedPosts
       final newExistingUris = existingUris.where((uri) => !state.loadedPosts.contains(uri)).toList();
       updatedPostCount = newExistingUris.length;
-      
+
       if (updatedPostCount > 0) {
         _logger.d('Updated $updatedPostCount posts in database (${existingUris.length - updatedPostCount} were already loaded)');
         state = state.copyWith(freshPostCount: state.freshPostCount + updatedPostCount);
@@ -295,7 +297,6 @@ class FeedNotifier extends _$FeedNotifier {
               state = state.copyWith(isCaching: false); // cursor already set above
               _logger.d('Set isCaching to false after downloading $newPostsCached posts');
             }
-            _logger.d('Downloaded embed and cached post ${post.uri}');
           },
           onError: (task, e, s) {
             errorCount++;
@@ -307,30 +308,30 @@ class FeedNotifier extends _$FeedNotifier {
   }
 
   Future<void> load() async {
+    if (_isLoading) return;
+    _isLoading = true;
     // loads the next (loadLimit) posts from the database
     final amountToLoad = min(FeedState.loadLimit, state.freshPostCount);
     if (amountToLoad > 0) {
-      // Get posts that were added AFTER the initial load
-      final afterOrder = _initialLoadMaxOrder ?? -1;
-      _logger.d('Loading posts after association order: $afterOrder, amount to load: $amountToLoad');
-      
-      final posts = await _sqlCache.getPostsForFeedAfterOrder(_feed, afterOrder, limit: amountToLoad);
-      final uris = posts.map((e) => e.uri).toList();
-      
-      _logger.d('Database returned ${posts.length} posts after order $afterOrder: ${uris.map((u) => u.toString()).take(3).join(', ')}${uris.length > 3 ? '...' : ''}');
-      
+      final posts = await _sqlCache.getPostsForFeed(_feed, limit: amountToLoad);
+      // yeah this is O(n²). but i spent too much time trying to avoid repeated posts
+      final uris = posts.map((e) => e.uri).toList().where((uri) => !state.loadedPosts.contains(uri)).toList();
+
+      _logger.d('Database returned ${posts.length} posts');
+
       // Filter out posts that are already in loadedPosts to avoid duplicates
       final newUris = uris.where((uri) => !state.loadedPosts.contains(uri)).toList();
-      
+
       if (newUris.isEmpty) {
         _logger.d('No new posts to load (all ${uris.length} were already loaded)');
         // Still need to decrement freshPostCount since those posts were "consumed"
         state = state.copyWith(freshPostCount: max(0, state.freshPostCount - amountToLoad));
+        _isLoading = false;
         return;
       }
-      
-      _isWaitingForFreshPostsAtEnd = false;
-      _logger.d('Loaded ${newUris.length} fresh posts from database (after order $afterOrder). Already loaded: ${uris.length - newUris.length}');
+
+      _isWaitingForFreshPostsAtEnd = amountToLoad <= 1; // edge case where only one post is loaded
+      _logger.d('Loaded ${newUris.length} fresh posts from database. Already loaded: ${uris.length - newUris.length}');
 
       // gets the subscribed labels for the posts
       final followedLabelers = await _settingsRepository.getFollowedLabelers();
@@ -395,11 +396,12 @@ class FeedNotifier extends _$FeedNotifier {
         extraInfo: extraInfo,
         loadingFirstLoad: false,
       );
-      
+
       _logger.d('Load complete. Total loaded posts: ${state.loadedPosts.length}, remaining fresh: ${state.freshPostCount}');
     } else {
       _logger.d('No fresh posts available to load (freshPostCount: ${state.freshPostCount})');
     }
+    _isLoading = false;
   }
 
   Future<void> endOfNetworkFeed() async {
@@ -425,7 +427,9 @@ class FeedNotifier extends _$FeedNotifier {
           // it's over. the user will have to open the app again to see new posts (if there are any)
           endOfNetworkFeed();
         } else {
-          store(fetchedUris, cursor);
+          // Store the new cursor and then store the fetched posts
+          state = state.copyWith(cursor: cursor);
+          store(fetchedUris);
         }
       }
     }
@@ -439,5 +443,9 @@ class FeedNotifier extends _$FeedNotifier {
     if (active) {
       _downloadManager.setActiveFeed(_feed); // Inform coordinator
     }
+  }
+
+  Future<void> removePost(AtUri uri) async {
+    state = state.copyWith(loadedPosts: state.loadedPosts.where((e) => e != uri).toList());
   }
 }

@@ -72,17 +72,6 @@ abstract class SQLCacheInterface {
   /// It's assumed that the [PostView]s corresponding to `postUris` are already cached.
   Future<void> appendPostsToFeed(Feed feed, List<String> postUris);
 
-  /// Gets the maximum association order for a feed.
-  /// Returns -1 if the feed has no posts.
-  Future<int> getMaxAssociationOrderForFeed(Feed feed);
-
-  /// Retrieves posts for a specific feed that were added after the given association order.
-  /// Ordered by association order (most recently added first).
-  ///
-  /// - [feed]: The feed for which to retrieve posts.
-  /// - [afterOrder]: Only get posts with association order greater than this value.
-  /// - [limit]: The maximum number of posts to retrieve.
-  Future<List<PostView>> getPostsForFeedAfterOrder(Feed feed, int afterOrder, {int? limit});
 
   /// Clears all associations with a specific [Feed] from the cache.
   /// Neither the feed metadata nor the posts are removed, only the associations.
@@ -94,6 +83,14 @@ abstract class SQLCacheInterface {
   /// Returns the number of posts actually deleted.
   /// This may also involve deleting associated cached files (implementation dependent).
   Future<int> evictLeastRecentlyAccessed({required int postsToKeep});
+
+  /// Deletes a post from the cache and all its associations.
+  Future<void> deletePost(AtUri uri);
+
+  /// Silently updates a post in the cache. (does not update the lastAccessed timestamp)
+  /// This is used to update the post in the cache when the user likes or unlikes a post.
+  /// If the lastAccessed timestamp was updated, the post would be loaded again in the next batch.
+  Future<void> updatePost(PostView post);
 
   /// Deletes posts older than the specified [maxAge].
   ///

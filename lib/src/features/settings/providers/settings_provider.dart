@@ -1,6 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'settings_state.dart';
 import '../../../core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
@@ -17,20 +19,38 @@ SettingsRepository settingsRepository(Ref ref) {
 @Riverpod(keepAlive: true)
 class Settings extends _$Settings {
   late final SettingsRepository _repository;
+  late final SparkLogger _logger;
 
   @override
   SettingsState build() {
     _repository = ref.watch(settingsRepositoryProvider);
+    _logger = GetIt.instance<LogService>().getLogger('Settings');
+    // Load settings asynchronously but return a temporary state immediately
+    // This prevents blocking the UI while loading
+    Future.microtask(() => loadSettings());
+    
+    // Return temporary default state that will be replaced by loadSettings()
     return SettingsState(activeFeed: Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk));
   }
 
   /// Loads all settings from persistent storage
   Future<void> loadSettings() async {
-    final feedBlurEnabled = await _repository.getFeedBlurEnabled();
-    final hideAdultContent = await _repository.getHideAdultContent();
-    final feeds = await _repository.getFeeds();
+    try {
+      final feedBlurEnabled = await _repository.getFeedBlurEnabled();
+      final hideAdultContent = await _repository.getHideAdultContent();
+      final feeds = await _repository.getFeeds();
+      final activeFeed = await _repository.getActiveFeed();
 
-    state = SettingsState(activeFeed: await _repository.getActiveFeed(), feedBlurEnabled: feedBlurEnabled, hideAdultContent: hideAdultContent, feeds: feeds);
+      state = SettingsState(
+        activeFeed: activeFeed,
+        feedBlurEnabled: feedBlurEnabled,
+        hideAdultContent: hideAdultContent,
+        feeds: feeds,
+      );
+    } catch (e) {
+      // If loading fails, keep the default state
+      _logger.e('Error loading settings: $e');
+    }
   }
 
   /// Sets feed blur setting

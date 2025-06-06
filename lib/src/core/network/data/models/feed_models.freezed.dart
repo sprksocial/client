@@ -4677,8 +4677,8 @@ mixin _$PostView {
   int? get replyCount => throw _privateConstructorUsedError;
   int? get repostCount => throw _privateConstructorUsedError;
   int? get quoteCount => throw _privateConstructorUsedError;
-  List<Label>? get labels =>
-      throw _privateConstructorUsedError; //SoundView? sound,
+  List<Label>? get labels => throw _privateConstructorUsedError;
+  Viewer? get viewer => throw _privateConstructorUsedError; //SoundView? sound,
   EmbedView? get embed => throw _privateConstructorUsedError;
 
   /// Serializes this PostView to a JSON map.
@@ -4708,11 +4708,13 @@ abstract class $PostViewCopyWith<$Res> {
     int? repostCount,
     int? quoteCount,
     List<Label>? labels,
+    Viewer? viewer,
     EmbedView? embed,
   });
 
   $ProfileViewBasicCopyWith<$Res> get author;
   $PostRecordCopyWith<$Res> get record;
+  $ViewerCopyWith<$Res>? get viewer;
   $EmbedViewCopyWith<$Res>? get embed;
 }
 
@@ -4742,6 +4744,7 @@ class _$PostViewCopyWithImpl<$Res, $Val extends PostView>
     Object? repostCount = freezed,
     Object? quoteCount = freezed,
     Object? labels = freezed,
+    Object? viewer = freezed,
     Object? embed = freezed,
   }) {
     return _then(
@@ -4801,6 +4804,11 @@ class _$PostViewCopyWithImpl<$Res, $Val extends PostView>
                     ? _value.labels
                     : labels // ignore: cast_nullable_to_non_nullable
                         as List<Label>?,
+            viewer:
+                freezed == viewer
+                    ? _value.viewer
+                    : viewer // ignore: cast_nullable_to_non_nullable
+                        as Viewer?,
             embed:
                 freezed == embed
                     ? _value.embed
@@ -4828,6 +4836,20 @@ class _$PostViewCopyWithImpl<$Res, $Val extends PostView>
   $PostRecordCopyWith<$Res> get record {
     return $PostRecordCopyWith<$Res>(_value.record, (value) {
       return _then(_value.copyWith(record: value) as $Val);
+    });
+  }
+
+  /// Create a copy of PostView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ViewerCopyWith<$Res>? get viewer {
+    if (_value.viewer == null) {
+      return null;
+    }
+
+    return $ViewerCopyWith<$Res>(_value.viewer!, (value) {
+      return _then(_value.copyWith(viewer: value) as $Val);
     });
   }
 
@@ -4867,6 +4889,7 @@ abstract class _$$PostViewImplCopyWith<$Res>
     int? repostCount,
     int? quoteCount,
     List<Label>? labels,
+    Viewer? viewer,
     EmbedView? embed,
   });
 
@@ -4874,6 +4897,8 @@ abstract class _$$PostViewImplCopyWith<$Res>
   $ProfileViewBasicCopyWith<$Res> get author;
   @override
   $PostRecordCopyWith<$Res> get record;
+  @override
+  $ViewerCopyWith<$Res>? get viewer;
   @override
   $EmbedViewCopyWith<$Res>? get embed;
 }
@@ -4903,6 +4928,7 @@ class __$$PostViewImplCopyWithImpl<$Res>
     Object? repostCount = freezed,
     Object? quoteCount = freezed,
     Object? labels = freezed,
+    Object? viewer = freezed,
     Object? embed = freezed,
   }) {
     return _then(
@@ -4962,6 +4988,11 @@ class __$$PostViewImplCopyWithImpl<$Res>
                 ? _value._labels
                 : labels // ignore: cast_nullable_to_non_nullable
                     as List<Label>?,
+        viewer:
+            freezed == viewer
+                ? _value.viewer
+                : viewer // ignore: cast_nullable_to_non_nullable
+                    as Viewer?,
         embed:
             freezed == embed
                 ? _value.embed
@@ -4988,6 +5019,7 @@ class _$PostViewImpl extends _PostView with DiagnosticableTreeMixin {
     this.repostCount,
     this.quoteCount,
     final List<Label>? labels,
+    this.viewer,
     this.embed,
   }) : _labels = labels,
        super._();
@@ -5027,13 +5059,15 @@ class _$PostViewImpl extends _PostView with DiagnosticableTreeMixin {
     return EqualUnmodifiableListView(value);
   }
 
+  @override
+  final Viewer? viewer;
   //SoundView? sound,
   @override
   final EmbedView? embed;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'PostView(uri: $uri, cid: $cid, author: $author, record: $record, isRepost: $isRepost, indexedAt: $indexedAt, likeCount: $likeCount, replyCount: $replyCount, repostCount: $repostCount, quoteCount: $quoteCount, labels: $labels, embed: $embed)';
+    return 'PostView(uri: $uri, cid: $cid, author: $author, record: $record, isRepost: $isRepost, indexedAt: $indexedAt, likeCount: $likeCount, replyCount: $replyCount, repostCount: $repostCount, quoteCount: $quoteCount, labels: $labels, viewer: $viewer, embed: $embed)';
   }
 
   @override
@@ -5052,6 +5086,7 @@ class _$PostViewImpl extends _PostView with DiagnosticableTreeMixin {
       ..add(DiagnosticsProperty('repostCount', repostCount))
       ..add(DiagnosticsProperty('quoteCount', quoteCount))
       ..add(DiagnosticsProperty('labels', labels))
+      ..add(DiagnosticsProperty('viewer', viewer))
       ..add(DiagnosticsProperty('embed', embed));
   }
 
@@ -5077,6 +5112,7 @@ class _$PostViewImpl extends _PostView with DiagnosticableTreeMixin {
             (identical(other.quoteCount, quoteCount) ||
                 other.quoteCount == quoteCount) &&
             const DeepCollectionEquality().equals(other._labels, _labels) &&
+            (identical(other.viewer, viewer) || other.viewer == viewer) &&
             (identical(other.embed, embed) || other.embed == embed));
   }
 
@@ -5095,6 +5131,7 @@ class _$PostViewImpl extends _PostView with DiagnosticableTreeMixin {
     repostCount,
     quoteCount,
     const DeepCollectionEquality().hash(_labels),
+    viewer,
     embed,
   );
 
@@ -5125,6 +5162,7 @@ abstract class _PostView extends PostView {
     final int? repostCount,
     final int? quoteCount,
     final List<Label>? labels,
+    final Viewer? viewer,
     final EmbedView? embed,
   }) = _$PostViewImpl;
   const _PostView._() : super._();
@@ -5154,7 +5192,9 @@ abstract class _PostView extends PostView {
   @override
   int? get quoteCount;
   @override
-  List<Label>? get labels; //SoundView? sound,
+  List<Label>? get labels;
+  @override
+  Viewer? get viewer; //SoundView? sound,
   @override
   EmbedView? get embed;
 

@@ -60,6 +60,53 @@ class AuthPromptRouteArgs {
 }
 
 /// generated route for
+/// [CommentsPage]
+class CommentsRoute extends PageRouteInfo<CommentsRouteArgs> {
+  CommentsRoute({
+    Key? key,
+    required String postUri,
+    List<PageRouteInfo>? children,
+  }) : super(
+         CommentsRoute.name,
+         args: CommentsRouteArgs(key: key, postUri: postUri),
+         initialChildren: children,
+       );
+
+  static const String name = 'CommentsRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<CommentsRouteArgs>();
+      return CommentsPage(key: args.key, postUri: args.postUri);
+    },
+  );
+}
+
+class CommentsRouteArgs {
+  const CommentsRouteArgs({this.key, required this.postUri});
+
+  final Key? key;
+
+  final String postUri;
+
+  @override
+  String toString() {
+    return 'CommentsRouteArgs{key: $key, postUri: $postUri}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! CommentsRouteArgs) return false;
+    return key == other.key && postUri == other.postUri;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ postUri.hashCode;
+}
+
+/// generated route for
 /// [EditProfilePage]
 class EditProfileRoute extends PageRouteInfo<EditProfileRouteArgs> {
   EditProfileRoute({
@@ -326,6 +373,54 @@ class PlaceholderRoute extends PageRouteInfo<void> {
 }
 
 /// generated route for
+/// [ProfilePage]
+class ProfileRoute extends PageRouteInfo<ProfileRouteArgs> {
+  ProfileRoute({required String did, Key? key, List<PageRouteInfo>? children})
+    : super(
+        ProfileRoute.name,
+        args: ProfileRouteArgs(did: did, key: key),
+        rawPathParams: {'did': did},
+        initialChildren: children,
+      );
+
+  static const String name = 'ProfileRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final pathParams = data.inheritedPathParams;
+      final args = data.argsAs<ProfileRouteArgs>(
+        orElse: () => ProfileRouteArgs(did: pathParams.getString('did')),
+      );
+      return ProfilePage(did: args.did, key: args.key);
+    },
+  );
+}
+
+class ProfileRouteArgs {
+  const ProfileRouteArgs({required this.did, this.key});
+
+  final String did;
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'ProfileRouteArgs{did: $did, key: $key}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ProfileRouteArgs) return false;
+    return did == other.did && key == other.key;
+  }
+
+  @override
+  int get hashCode => did.hashCode ^ key.hashCode;
+}
+
+/// generated route for
 /// [RegisterPage]
 class RegisterRoute extends PageRouteInfo<void> {
   const RegisterRoute({List<PageRouteInfo>? children})
@@ -369,6 +464,69 @@ class SplashRoute extends PageRouteInfo<void> {
     name,
     builder: (data) {
       return const SplashPage();
+    },
+  );
+}
+
+/// generated route for
+/// [StandalonePostPage]
+class StandalonePostRoute extends PageRouteInfo<StandalonePostRouteArgs> {
+  StandalonePostRoute({
+    Key? key,
+    required String postUri,
+    List<PageRouteInfo>? children,
+  }) : super(
+         StandalonePostRoute.name,
+         args: StandalonePostRouteArgs(key: key, postUri: postUri),
+         initialChildren: children,
+       );
+
+  static const String name = 'StandalonePostRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<StandalonePostRouteArgs>();
+      return StandalonePostPage(key: args.key, postUri: args.postUri);
+    },
+  );
+}
+
+class StandalonePostRouteArgs {
+  const StandalonePostRouteArgs({this.key, required this.postUri});
+
+  final Key? key;
+
+  final String postUri;
+
+  @override
+  String toString() {
+    return 'StandalonePostRouteArgs{key: $key, postUri: $postUri}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! StandalonePostRouteArgs) return false;
+    return key == other.key && postUri == other.postUri;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ postUri.hashCode;
+}
+
+/// generated route for
+/// [UserProfilePage]
+class UserProfileRoute extends PageRouteInfo<void> {
+  const UserProfileRoute({List<PageRouteInfo>? children})
+    : super(UserProfileRoute.name, initialChildren: children);
+
+  static const String name = 'UserProfileRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const UserProfilePage();
     },
   );
 }

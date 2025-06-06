@@ -1,4 +1,3 @@
-import 'package:atproto/core.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
 

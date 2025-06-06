@@ -1,0 +1,151 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
+import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
+
+class FeedPostWidget extends ConsumerStatefulWidget {
+  const FeedPostWidget({super.key, required this.index, required this.feed});
+
+  final int index;
+  final Feed feed;
+
+  @override
+  ConsumerState<FeedPostWidget> createState() => _FeedPostWidgetState();
+}
+
+class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
+  Future<dynamic>? _postFuture;
+  String? _lastPostUri;
+  final GlobalKey<PostVideoPlayerState> _videoPlayerKey = GlobalKey<PostVideoPlayerState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPost();
+  }
+
+  void _loadPost() {
+    final feedState = ref.read(feedNotifierProvider(widget.feed));
+    if (widget.index < feedState.loadedPosts.length) {
+      final postUri = feedState.loadedPosts[widget.index];
+      final currentUri = postUri.toString();
+
+      // Only create new future if URI changed
+      if (_lastPostUri != currentUri) {
+        _lastPostUri = currentUri;
+        _postFuture = GetIt.instance<SQLCacheInterface>().getPost(currentUri);
+      }
+    }
+  }
+
+  @override
+  void didUpdateWidget(FeedPostWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload if index or feed changed
+    if (oldWidget.index != widget.index || oldWidget.feed != widget.feed) {
+      _loadPost();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Check if we need to reload post due to state changes
+    final feedState = ref.watch(feedNotifierProvider(widget.feed));
+    final navigationState = ref.watch(navigationProvider);
+    
+    // Check if user is not on feeds tab (index 0)
+    final isOnFeedsTab = navigationState.currentIndex == 0;
+    
+    if (widget.index < feedState.loadedPosts.length) {
+      final postUri = feedState.loadedPosts[widget.index];
+      final currentUri = postUri.toString();
+
+      if (_lastPostUri != currentUri) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _loadPost();
+            });
+          }
+        });
+      }
+    }
+
+    if (_postFuture == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    
+    // If user is not on feeds tab, show empty container to dispose video
+    if (!isOnFeedsTab) {
+      return const SizedBox.shrink();
+    }
+
+    return FutureBuilder(
+      future: _postFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+          final postData = snapshot.data! as PostView;
+
+          return Stack(
+            children: [
+              // Main content
+              switch (postData.embed) {
+                EmbedViewVideo() => PostVideoPlayer(
+                  key: _videoPlayerKey,
+                  videoUrl: postData.videoUrl,
+                  feed: widget.feed,
+                  index: widget.index,
+                ),
+                EmbedViewImage() => ImageCarousel(imageUrls: postData.imageUrls),
+                _ => const SizedBox.shrink(),
+              },
+
+              // Side action bar
+              Positioned(
+                bottom: 4,
+                right: 4,
+                child: SideActionBar(
+                  post: postData,
+                  likeCount: '${postData.likeCount ?? 0}',
+                  commentCount: '${postData.replyCount ?? 0}',
+                  shareCount: '${postData.repostCount ?? 0}',
+                  isLiked: postData.viewer?.like != null,
+                  profileImageUrl: postData.author.avatar.toString(),
+                  isImage: postData.embed is EmbedViewImage,
+                ),
+              ),
+
+              Positioned(
+                bottom: 8,
+                left: 4,
+                right: 80,
+                child: InfoBar(
+                  username: postData.author.handle,
+                  description: postData.record.text ?? '',
+                  hashtags: postData.record.hashtags,
+                  isSprk: postData.uri.toString().contains('so.sprk'),
+                  onUsernameTap: () {
+                    context.router.push(ProfileRoute(did: postData.author.did));
+                  },
+                ),
+              ),
+            ],
+          );
+        }
+        if (snapshot.hasError) {
+          return Center(child: Text('Error loading post: ${snapshot.error}', style: const TextStyle(color: Colors.white)));
+        }
+        return const Center(child: CircularProgressIndicator());
+      },
+    );
+  }
+}

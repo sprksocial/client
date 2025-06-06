@@ -5,7 +5,7 @@ import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 
 import 'profile_page.dart';
 
-// @RoutePage() TODO
+@RoutePage()
 class UserProfilePage extends ConsumerWidget {
   const UserProfilePage({super.key});
 

@@ -14,12 +14,24 @@ import 'package:sparksocial/src/features/profile/ui/widgets/early_supporter_shee
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_menu_sheet.dart';
 import 'package:get_it/get_it.dart';
 
-// @RoutePage() TODO
-class ProfilePage extends ConsumerWidget {
+@RoutePage()
+class ProfilePage extends ConsumerStatefulWidget {
   final String did;
+
+  const ProfilePage({@PathParam('did') required this.did, super.key});
+
+  @override
+  ConsumerState<ProfilePage> createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends ConsumerState<ProfilePage> {
   late final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ProfilePage');
 
-  ProfilePage({@PathParam('did') required this.did, super.key});
+  @override
+  void dispose() {
+    // Ensure we don't have any lingering references before disposal
+    super.dispose();
+  }
 
   void _showEarlySupporterInfo(BuildContext context) {
     showModalBottomSheet(
@@ -44,7 +56,7 @@ class ProfilePage extends ConsumerWidget {
           child: ProfileMenuSheet(
             onLogout: () {
               context.router.maybePop(bContext); // Close sheet first
-              ref.read(profileNotifierProvider(did: did).notifier).logout();
+              ref.read(profileNotifierProvider(did: widget.did).notifier).logout();
               AutoRouter.of(context).replaceAll([const SplashRoute()]); // Navigate to splash or home after logout
             },
           ),
@@ -54,9 +66,9 @@ class ProfilePage extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final profileStateAsync = ref.watch(profileNotifierProvider(did: did));
-    final notifier = ref.read(profileNotifierProvider(did: did).notifier);
+  Widget build(BuildContext context) {
+    final profileStateAsync = ref.watch(profileNotifierProvider(did: widget.did));
+    final notifier = ref.read(profileNotifierProvider(did: widget.did).notifier);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -154,7 +166,7 @@ class ProfilePage extends ConsumerWidget {
             child: RefreshIndicator(
               onRefresh: () => notifier.refreshProfile(),
               child: CustomScrollView(
-                key: PageStorageKey<String>('profile_$did'), // Use the passed did
+                key: PageStorageKey<String>('profile_${widget.did}'), // Use the passed did
                 slivers: [
                   SliverToBoxAdapter(
                     child: ProfileHeader(
@@ -185,7 +197,7 @@ class ProfilePage extends ConsumerWidget {
                         try {
                           await notifier.toggleFollow();
                           // Read the latest state AFTER the toggleFollow has completed and updated the state.
-                          final latestProfileState = ref.read(profileNotifierProvider(did: did)).asData?.value;
+                          final latestProfileState = ref.read(profileNotifierProvider(did: widget.  did)).asData?.value;
 
                           // Only show snackbar if an actual follow/unfollow action occurred
                           // and auth prompt was not the primary outcome.

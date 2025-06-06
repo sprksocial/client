@@ -15,12 +15,29 @@ class TimeDisplay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      decoration: BoxDecoration(color: AppColors.black.withAlpha(128), borderRadius: BorderRadius.circular(8)),
-      child: Text(
-        '${_formatDuration(position)}/${_formatDuration(duration)}',
-        style: const TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 16),
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: AppColors.black.withAlpha(180), 
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.black.withAlpha(100),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Text(
+          '${_formatDuration(position)} / ${_formatDuration(duration)}',
+          style: const TextStyle(
+            color: AppColors.white, 
+            fontWeight: FontWeight.bold, 
+            fontSize: 16,
+            letterSpacing: 0.5,
+          ),
+        ),
       ),
     );
   }

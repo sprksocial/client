@@ -137,19 +137,37 @@ class DownloadManagerImpl implements DownloadManagerInterface {
 
       task.status = DownloadTaskStatus.active;
 
-      // Actual caching work// start downloading the embed
+      // Actual caching work - start downloading the embed
       switch (task.post.embed) {
         case EmbedViewVideo():
+          var cachedFile = await _cacheManager.getCachedFile(task.post.videoUrl);
+          if (cachedFile != null) {
+            _logger.d('Video file already cached: ${task.post.videoUrl}');
+            break;
+          }
+          // Download the video and ensure it's cached
           await _cacheManager.getFile(task.post.videoUrl);
+          // Verify the file is actually cached before proceeding
+          cachedFile = await _cacheManager.getCachedFile(task.post.videoUrl);
+          if (cachedFile == null) {
+            throw Exception('Video file was not properly cached after download: ${task.post.videoUrl}');
+          }
+          _logger.d('Video file successfully cached: ${task.post.videoUrl}');
           break;
         case EmbedViewImage():
           for (String url in task.post.imageUrls) {
-            await CachedNetworkImageProvider.defaultCacheManager.downloadFile(url, key: url);
+            // Download the image and verify it's cached
+            final fileInfo = await CachedNetworkImageProvider.defaultCacheManager.downloadFile(url, key: url);
+            if (fileInfo.statusCode != 200) {
+              _logger.w('Image file was not properly cached after download: $url');
+            }
           }
           break;
         case _:
           break;
       }
+      
+      // Only store the post in the database AFTER the media files are successfully cached
       await _sqlCache.cachePost(task.post);
       await _sqlCache.cacheFeed(task.feed);
       await _sqlCache.appendPostsToFeed(task.feed, [task.post.uri.toString()]);

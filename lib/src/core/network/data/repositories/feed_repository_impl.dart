@@ -170,7 +170,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
       final likeRecord = {
         "\$type": "so.sprk.feed.like",
-        "subject": {"cid": postCid, "uri": postUri},
+        "subject": {"cid": postCid, "uri": postUri.toString()},
         "createdAt": DateTime.now().toUtc().toIso8601String(),
       };
 

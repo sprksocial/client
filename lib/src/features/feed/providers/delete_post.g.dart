@@ -1,12 +1,12 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'feed_provider.dart';
+part of 'delete_post.dart';
 
 // **************************************************************************
 // RiverpodGenerator
 // **************************************************************************
 
-String _$feedNotifierHash() => r'c8d8947a64bf98bfde7727097118c74058f42061';
+String _$deletePostHash() => r'9171b4c24eb434a746ee95dfb53318830dcb7907';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -29,31 +29,25 @@ class _SystemHash {
   }
 }
 
-abstract class _$FeedNotifier extends BuildlessNotifier<FeedState> {
-  late final Feed feed;
+/// See also [deletePost].
+@ProviderFor(deletePost)
+const deletePostProvider = DeletePostFamily();
 
-  FeedState build(Feed feed);
-}
+/// See also [deletePost].
+class DeletePostFamily extends Family<AsyncValue<void>> {
+  /// See also [deletePost].
+  const DeletePostFamily();
 
-/// See also [FeedNotifier].
-@ProviderFor(FeedNotifier)
-const feedNotifierProvider = FeedNotifierFamily();
-
-/// See also [FeedNotifier].
-class FeedNotifierFamily extends Family<FeedState> {
-  /// See also [FeedNotifier].
-  const FeedNotifierFamily();
-
-  /// See also [FeedNotifier].
-  FeedNotifierProvider call(Feed feed) {
-    return FeedNotifierProvider(feed);
+  /// See also [deletePost].
+  DeletePostProvider call(AtUri postUri) {
+    return DeletePostProvider(postUri);
   }
 
   @override
-  FeedNotifierProvider getProviderOverride(
-    covariant FeedNotifierProvider provider,
+  DeletePostProvider getProviderOverride(
+    covariant DeletePostProvider provider,
   ) {
-    return call(provider.feed);
+    return call(provider.postUri);
   }
 
   static const Iterable<ProviderOrFamily>? _dependencies = null;
@@ -68,75 +62,70 @@ class FeedNotifierFamily extends Family<FeedState> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'feedNotifierProvider';
+  String? get name => r'deletePostProvider';
 }
 
-/// See also [FeedNotifier].
-class FeedNotifierProvider
-    extends NotifierProviderImpl<FeedNotifier, FeedState> {
-  /// See also [FeedNotifier].
-  FeedNotifierProvider(Feed feed)
+/// See also [deletePost].
+class DeletePostProvider extends AutoDisposeFutureProvider<void> {
+  /// See also [deletePost].
+  DeletePostProvider(AtUri postUri)
     : this._internal(
-        () => FeedNotifier()..feed = feed,
-        from: feedNotifierProvider,
-        name: r'feedNotifierProvider',
+        (ref) => deletePost(ref as DeletePostRef, postUri),
+        from: deletePostProvider,
+        name: r'deletePostProvider',
         debugGetCreateSourceHash:
             const bool.fromEnvironment('dart.vm.product')
                 ? null
-                : _$feedNotifierHash,
-        dependencies: FeedNotifierFamily._dependencies,
-        allTransitiveDependencies:
-            FeedNotifierFamily._allTransitiveDependencies,
-        feed: feed,
+                : _$deletePostHash,
+        dependencies: DeletePostFamily._dependencies,
+        allTransitiveDependencies: DeletePostFamily._allTransitiveDependencies,
+        postUri: postUri,
       );
 
-  FeedNotifierProvider._internal(
+  DeletePostProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
     required super.allTransitiveDependencies,
     required super.debugGetCreateSourceHash,
     required super.from,
-    required this.feed,
+    required this.postUri,
   }) : super.internal();
 
-  final Feed feed;
+  final AtUri postUri;
 
   @override
-  FeedState runNotifierBuild(covariant FeedNotifier notifier) {
-    return notifier.build(feed);
-  }
-
-  @override
-  Override overrideWith(FeedNotifier Function() create) {
+  Override overrideWith(
+    FutureOr<void> Function(DeletePostRef provider) create,
+  ) {
     return ProviderOverride(
       origin: this,
-      override: FeedNotifierProvider._internal(
-        () => create()..feed = feed,
+      override: DeletePostProvider._internal(
+        (ref) => create(ref as DeletePostRef),
         from: from,
         name: null,
         dependencies: null,
         allTransitiveDependencies: null,
         debugGetCreateSourceHash: null,
-        feed: feed,
+        postUri: postUri,
       ),
     );
   }
 
   @override
-  NotifierProviderElement<FeedNotifier, FeedState> createElement() {
-    return _FeedNotifierProviderElement(this);
+  AutoDisposeFutureProviderElement<void> createElement() {
+    return _DeletePostProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is FeedNotifierProvider && other.feed == feed;
+    return other is DeletePostProvider && other.postUri == postUri;
   }
 
   @override
   int get hashCode {
     var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, feed.hashCode);
+    hash = _SystemHash.combine(hash, postUri.hashCode);
 
     return _SystemHash.finish(hash);
   }
@@ -144,18 +133,17 @@ class FeedNotifierProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin FeedNotifierRef on NotifierProviderRef<FeedState> {
-  /// The parameter `feed` of this provider.
-  Feed get feed;
+mixin DeletePostRef on AutoDisposeFutureProviderRef<void> {
+  /// The parameter `postUri` of this provider.
+  AtUri get postUri;
 }
 
-class _FeedNotifierProviderElement
-    extends NotifierProviderElement<FeedNotifier, FeedState>
-    with FeedNotifierRef {
-  _FeedNotifierProviderElement(super.provider);
+class _DeletePostProviderElement extends AutoDisposeFutureProviderElement<void>
+    with DeletePostRef {
+  _DeletePostProviderElement(super.provider);
 
   @override
-  Feed get feed => (origin as FeedNotifierProvider).feed;
+  AtUri get postUri => (origin as DeletePostProvider).postUri;
 }
 
 // ignore_for_file: type=lint

@@ -132,7 +132,7 @@ class UserResults extends StatelessWidget {
             description: actor.description ?? '',
             onTap: () {
               if (actor.did.isNotEmpty) {
-                // context.router.push(ProfileRoute(did: actor.did)); TODO
+                context.router.push(ProfileRoute(did: actor.did));
               }
             },
             showFollowButton: ref.read(searchProvider.notifier).isCurrentUser(actor.did),

@@ -399,6 +399,10 @@ _$PostViewImpl _$$PostViewImplFromJson(Map<String, dynamic> json) =>
           (json['labels'] as List<dynamic>?)
               ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
               .toList(),
+      viewer:
+          json['viewer'] == null
+              ? null
+              : Viewer.fromJson(json['viewer'] as Map<String, dynamic>),
       embed:
           json['embed'] == null
               ? null
@@ -418,6 +422,7 @@ Map<String, dynamic> _$$PostViewImplToJson(_$PostViewImpl instance) =>
       'repostCount': instance.repostCount,
       'quoteCount': instance.quoteCount,
       'labels': instance.labels?.map((e) => e.toJson()).toList(),
+      'viewer': instance.viewer?.toJson(),
       'embed': instance.embed?.toJson(),
     };
 

@@ -1,12 +1,9 @@
-import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/storage/cache/cache_manager_interface.dart';
 
 class ImageCarousel extends ConsumerStatefulWidget {
   const ImageCarousel({super.key, required this.imageUrls, this.alts});
@@ -25,6 +22,7 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
   void initState() {
     super.initState();
     carouselController = CarouselSliderController();
+    currentIndex = widget.imageUrls.length - 1; // Start at the last image index to match initialPage
   }
 
   @override
@@ -37,14 +35,15 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
           itemBuilder: (context, index, realIndex) {
             return CachedNetworkImage(
               imageUrl: widget.imageUrls[index],
-              fit: BoxFit.cover,
+              fit: BoxFit.contain,
               height: MediaQuery.of(context).size.height,
               placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
               errorWidget: (context, url, error) => const Center(child: Icon(FluentIcons.error_circle_24_regular)),
             );
           },
           options: CarouselOptions(
-            
+            initialPage: widget.imageUrls.length - 1,
+            reverse: true,
             pageSnapping: true,
             scrollDirection: Axis.horizontal,
             aspectRatio: 0.5,
@@ -60,6 +59,8 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
         ),
         Positioned(
           bottom: 10,
+          left: 0,
+          right: 0,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
@@ -72,7 +73,7 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
                   margin: const EdgeInsets.symmetric(horizontal: 4.0),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: currentIndex == index ? Colors.white : Colors.white.withAlpha(128),
+                    color: currentIndex == widget.imageUrls.length - index - 1 ? Colors.white : Colors.white.withAlpha(128),
                   ),
                 ),
               ),

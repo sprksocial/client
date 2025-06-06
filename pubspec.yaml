@@ -52,8 +52,8 @@ dependencies:
   pool: ^1.5.0
   collection: ^1.19.1
   # Old architecture dependencies
-  provider: ^6.1.1
   carousel_slider: ^5.0.0
+  smooth_video_progress: ^0.0.4
 
 dev_dependencies:
   flutter_test:

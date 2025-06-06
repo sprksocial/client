@@ -36,6 +36,8 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
     final settings = ref.watch(settingsProvider);
     
     return AppBar(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
       title: SizedBox(
         height: 40,
         child: ReorderableListView.builder(
@@ -148,9 +150,9 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                         Text(
                           feed.name,
                           style: TextStyle(
-                            color: AppColors.lightLavender,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                            fontSize: 14,
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w800,
+                            fontSize: 18,
                           ),
                         ),
                       ],

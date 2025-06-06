@@ -1,10 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/routing/pages.dart';
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:video_player/video_player.dart';
 part 'app_router.gr.dart';
 
 /// Router configuration for the application
@@ -25,44 +22,35 @@ class AppRouter extends RootStackRouter {
       page: MainRoute.page,
       path: '/main',
       children: [
-        AutoRoute(
-          page: FeedsRoute.page,
-          path: 'feeds',
-        ),
+        AutoRoute(page: FeedsRoute.page, path: 'feeds'),
         AutoRoute(page: SearchRoute.page, path: 'search'),
         AutoRoute(page: EmptyRoute.page, path: 'create'), // Placeholder for create action
         AutoRoute(page: MessagesRoute.page, path: 'messages'),
-        // AutoRoute(
-        //   page: UserProfileRoute.page, // for the current user
-        //   path: 'profile',
-        //   children: [
-        //     AutoRoute(page: EditProfileRoute.page, path: 'edit'),
-        // AutoRoute(
-        //   page: ProfilePhotosRoute.page,
-        //   path: 'photos',
-        //   children: [
-        //     AutoRoute(page: PostRoute.page, path: 'post/:postId'), // TODO: add post route
-        //   ],
-        // ),
-        // AutoRoute(
-        //   page: ProfileVideosRoute.page,
-        //   path: 'videos',
-        //   children: [
-        //     AutoRoute(page: PostRoute.page, path: 'post/:postId'), // TODO: add post route
-        //   ],
-        // ),
+        AutoRoute(
+          page: UserProfileRoute.page, // for the current user
+          path: 'profile',
+          children: [
+            AutoRoute(page: EditProfileRoute.page, path: 'edit'),
+            // AutoRoute(
+            //   page: ProfilePhotosRoute.page,
+            //   path: 'photos',
+            // ),
+            // AutoRoute(
+            //   page: ProfileVideosRoute.page,
+            //   path: 'videos',
+            // ),
+          ],
+        ),
       ],
     ),
-    //   ],
-    // ),
 
     // Modal bottom sheet routes
-    // CustomRoute(
-    //   page: CommentsTray.page, // doesn't need to be a child of post route because it's a modal bottom sheet
-    //   path: '/comments/:postUri',
-    //   customRouteBuilder: commmentsTrayBuilder,
-    //   // children: [AutoRoute(page: RepliesRoute.page, path: 'replies/:postUri')],
-    // ),
+    CustomRoute(
+      page: CommentsRoute.page, // doesn't need to be a child of post route because it's a modal bottom sheet
+      path: '/comments/:postUri',
+      customRouteBuilder: commmentsTrayBuilder,
+      // children: [AutoRoute(page: RepliesRoute.page, path: 'replies/:postUri')],
+    ),
     CustomRoute(
       page: FeedSettingsRoute.page,
       path: '/settings',
@@ -71,8 +59,21 @@ class AppRouter extends RootStackRouter {
     ),
 
     // Deep linking routes or routes that will be pushed on top of everything
-    // AutoRoute(page: StandalonePostRoute.page, path: '/post/:postId'),
-    // AutoRoute(page: ProfileRoute.page, path: '/profile/:did'),
+    AutoRoute(page: StandalonePostRoute.page, path: '/post/:postUri'),
+    AutoRoute(
+      page: ProfileRoute.page,
+      path: '/profile/:did',
+      children: [
+        // AutoRoute(
+        //   page: ProfilePhotosRoute.page,
+        //   path: 'photos',
+        // ),
+        // AutoRoute(
+        //   page: ProfileVideosRoute.page,
+        //   path: 'videos',
+        // ),
+      ],
+    ),
     AutoRoute(page: EmptyRoute.page, path: '/empty'),
     AutoRoute(page: LoginRoute.page, path: '/login'),
     AutoRoute(page: RegisterRoute.page, path: '/register'),

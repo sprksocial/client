@@ -97,12 +97,19 @@ Generate code, corrections, and refactorings that comply with the basic principl
       │   ├── network/           # ATProto client, API base
       │   ├── routing/           # AutoRoute setup
       │   ├── storage/           # Local storage utilities
+      │   │   ├── cache/         # Cache management
+      │   │   └── preferences/   # Settings and preferences
       │   ├── theme/             # Theme definitions
-      │   ├── l10n/              # Localization
+      │   ├── auth/              # Authentication system
+      │   │   └── data/
+      │   │       └── repositories/
+      │   ├── feed_algorithms/   # Feed algorithms
+      │   ├── l10n/              # Localization (when implemented)
       │   ├── widgets/           # Common widgets
       │   └── utils/             # Shared utilities
+      │       └── logging/       # Logging framework
       └── features/              # Feature modules
-          └── feature/                   
+          └── feature/           # (auth, feed, profile, etc.)
               ├── data/          # Data layer for this feature
               │   ├── repositories/   
               │   └── models/
@@ -112,42 +119,40 @@ Generate code, corrections, and refactorings that comply with the basic principl
                   └── widgets/
     ```
 
-
   Folder structure explanation:
   - `lib/src/core/`: Contains all shared code that's used across multiple features.
     - `config/`: Holds application-wide configurations, such as environment settings, API keys, or feature flags.
-    - `di/`: Manages dependency injection setup, typically using a library like GetIt to register and resolve dependencies.
-    - `network/`: Handles all network-related functionality, including the ATProto client, API base classes, HTTP interceptors, and connection management. Use only methods included in the ATProto API.
+    - `di/`: Manages dependency injection setup using GetIt to register and resolve dependencies.
+    - `network/`: Handles all network-related functionality, including the ATProto client, API base classes, and repositories. Use only methods included in the ATProto API.
     - `routing/`: Contains the AutoRoute setup, including route definitions, guards, and navigation helpers.
-    - `storage/`: Contains utilities for local storage, such as secure storage, shared preferences, and other persistence mechanisms.
+    - `storage/`: Contains utilities for local storage.
+      - `cache/`: Cache management with SQL-based implementation, download manager, and cache interfaces.
+      - `preferences/`: Settings, storage manager, secure storage, and shared preferences.
     - `theme/`: Defines the application's themes, including colors, typography, and component styles for different modes (e.g., light/dark).
-    - `l10n/`: Manages localization and internationalization, including translation files and setup.
-    - `widgets/`: Houses reusable UI components that are used across multiple features, like custom buttons, text fields, loading indicators, etc.
-    - `utils/`: Includes utility functions and helpers that are used throughout the app, such as date formatters, string manipulators, and common constants.
+    - `auth/`: Centralized authentication system with repositories for auth operations.
+    - `feed_algorithms/`: Contains feed algorithms and related logic.
+    - `l10n/`: Manages localization and internationalization (when implemented).
+    - `widgets/`: Houses reusable UI components that are used across multiple features.
+    - `utils/`: Includes utility functions and helpers.
+      - `logging/`: Complete logging framework with different log levels, outputs, and predefined loggers.
 
-  
   - `lib/src/features/`: Contains feature-specific modules, where each feature is a self-contained unit.
-    - `feature/`: A specific feature module (e.g., auth, feed, profile).
+    - Current features: `auth`, `feed`, `profile`, `splash`, `settings`, `comments`, `search`, `messages`, `home`
+    - Each feature follows the same structure:
       - `data/`: Handles all data-related concerns for the feature.
-        - `repositories/`: Implements data access logic, combining remote and local data sources.
-        - `models/`: Defines data models specific to this feature, including serialization/deserialization.
-      - `providers/`: Contains Riverpod providers that manage the state and business logic for this feature.
-      - `ui/`: Contains all UI components for this feature.
-        - `pages/`: Defines complete screens or pages within the feature.
-        - `widgets/`: Contains feature-specific reusable UI components.
-  
-  - `lib/main.dart`: The entry point of the application that initializes the app, sets up providers, and defines the root widget.
-  - `lib/src/sprk_app.dart`: The MaterialApp.
+      - `providers/`: Contains Riverpod providers that manage the state and business logic.
+      - `ui/`: Contains all UI components with `pages/` and `widgets/` subdirectories.
 
 - The backend is using AT Protocol. Any interfacing between frontend and backend will use the AT Protocol API
 - Use repository pattern for data persistence
-  - see cache if you need to cache data
-  - use the cache manager in `@lib/src/storage/cache_manager.dart`
+  - Use the cache manager: `CacheManagerInterface` from GetIt
+  - Use SQL cache: `SQLCacheInterface` from GetIt
+  - Use download manager: `DownloadManagerInterface` from GetIt
 - Use Riverpod to manage state
   - see keepAlive if you need to keep the state alive
   - use riverpod annotations
 - Use freezed to manage UI states
-- Use getIt to manage dependencies
+- Use GetIt to manage dependencies
   - Use singleton for services and repositories
   - Use factory for use cases
   - Use lazy singleton for controllers
@@ -155,9 +160,9 @@ Generate code, corrections, and refactorings that comply with the basic principl
   - Use extras to pass data between pages
 - Use extensions to manage reusable code
 - Use ThemeData to manage themes
-- Use AppLocalizations to manage translations
+- Use AppLocalizations to manage translations (when implemented)
 - Use constants to manage constants values
-- Use `@lib/src/core/storage/local/storage_manager.dart` to manage storage
+- Use `StorageManager` from GetIt to manage storage
 - When a widget tree becomes too deep, it can lead to longer build times and increased memory usage. Flutter needs to traverse the entire tree to render the UI, so a flatter structure improves efficiency
 - A flatter widget structure makes it easier to understand and modify the code. Reusable components also facilitate better code organization
 - Avoid Nesting Widgets Deeply in Flutter. Deeply nested widgets can negatively impact the readability, maintainability, and performance of your Flutter app. Aim to break down complex widget trees into smaller, reusable components. This not only makes your code cleaner but also enhances the performance by reducing the build complexity
@@ -167,16 +172,30 @@ Generate code, corrections, and refactorings that comply with the basic principl
 - Use Flutter 3.x features.
 - Always use withAlpha instead of withOpacity
 - Never use relative paths in imports
-- Register pages in `@lib/src/core/routing/pages.dart` and routes in `@lib/src/core/routing/app_router.dart`
+- Register pages in `lib/src/core/routing/pages.dart` and routes in `lib/src/core/routing/app_router.dart`
 - Avoid functions that return widgets
-- Use `@lib/src/core/utils/logging/` for logging
-- Storage keys are always stored at `@lib/src/storage/storage_constants.dart`
+- Use `lib/src/core/utils/logging/` for logging - get `LogService` from GetIt
+- Storage keys are always stored at `lib/src/core/storage/preferences/storage_constants.dart`
 - Repositories should always have an interface and an implementation (thing_repository.dart, thing_repository_impl.dart)
-- For storage, get a storage manager from the get it
-- For cache, get a cache manager interface from the get it
-- For auth, get a AuthRepository from the get it
-- For API calls, check if `@lib/src/core/network/data/repositories/sprk_repository.dart` already has that method in its contract
-    - If it does, get it from the get it
-- Don't forget to add repositories to the service locator at `@lib/src/core/di/service_locator.dart`
+- For storage, get a `StorageManager` from GetIt
+- For cache, get a `CacheManagerInterface` from GetIt
+- For auth, get an `AuthRepository` from GetIt
+- For API calls, check if `lib/src/core/network/data/repositories/sprk_repository.dart` already has that method in its contract
+    - If it does, get `SprkRepository` from GetIt
+- Available repositories in service locator:
+  - `LogService` - Logging service
+  - `SQLCacheInterface` - SQL-based cache
+  - `CacheManagerInterface` - Cache manager
+  - `DownloadManagerInterface` - Download manager
+  - `StorageManager` - Storage management
+  - `AuthRepository` - Authentication
+  - `SprkRepository` - Main API repository
+  - `IdentityRepository` - User identity
+  - `ThemeRepository` - Theme management
+  - `ActorRepository` - Actor operations
+  - `GraphRepository` - Graph operations
+  - `SettingsRepository` - Settings management
+  - `OnboardingRepository` - Onboarding flow
+- Don't forget to add new repositories to the service locator at `lib/src/core/di/service_locator.dart`
 
  
