@@ -318,29 +318,56 @@ class _ImageReviewScreenState extends State<ImageReviewScreen> {
                       // Bluesky Cross-posting Switch
                       Consumer<SettingsService>(
                         builder: (context, settingsService, _) {
-                          return Container(
-                            decoration: BoxDecoration(color: inputBackgroundColor, borderRadius: BorderRadius.circular(8)),
-                            child: ListTile(
-                              title: Text('Post to Bluesky', style: TextStyle(color: textColor, fontSize: 16)),
-                              // subtitle: Text(
-                              //   'Also post this image to your Bluesky feed',
-                              //   style: TextStyle(color: hintColor, fontSize: 12),
-                              // ),
-                              trailing: Switch(
-                                value: settingsService.postToBskyEnabled,
-                                onChanged: (value) {
-                                  settingsService.setPostToBsky(value);
-                                },
-                                activeColor: AppColors.pink,
-                                inactiveThumbColor: Colors.grey.shade400,
-                                inactiveTrackColor: Colors.grey.shade600,
-                                trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                          final hasMoreThan4Images = _imageFiles.length > 4;
+                          final showWarning = settingsService.postToBskyEnabled && hasMoreThan4Images;
+
+                          return Column(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(color: inputBackgroundColor, borderRadius: BorderRadius.circular(8)),
+                                child: ListTile(
+                                  title: Text('Post to Bluesky', style: TextStyle(color: textColor, fontSize: 16)),
+                                  trailing: Switch(
+                                    value: settingsService.postToBskyEnabled,
+                                    onChanged: (value) {
+                                      settingsService.setPostToBsky(value);
+                                    },
+                                    activeColor: AppColors.pink,
+                                    inactiveThumbColor: Colors.grey.shade400,
+                                    inactiveTrackColor: Colors.grey.shade600,
+                                    trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                                  ),
+                                  onTap: () {
+                                    settingsService.setPostToBsky(!settingsService.postToBskyEnabled);
+                                  },
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                ),
                               ),
-                              onTap: () {
-                                settingsService.setPostToBsky(!settingsService.postToBskyEnabled);
-                              },
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                            ),
+                              if (showWarning) ...[
+                                const SizedBox(height: 12),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withValues(alpha: 0.1),
+                                    border: Border.all(color: Colors.orange.withValues(alpha: 0.3)),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Bluesky supports max 4 images. Your Bluesky post will link to the full Spark post instead.',
+                                          style: TextStyle(color: Colors.orange, fontSize: 13, fontWeight: FontWeight.w500),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
                           );
                         },
                       ),

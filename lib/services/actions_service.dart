@@ -165,9 +165,11 @@ class ActionsService extends ChangeNotifier {
     // Upload blobs once
     final List<Map<String, dynamic>> uploadedBlobs = await _uploadImageBlobs(imageFiles, altTexts);
 
-    // Create both posts using the same blobs
+    // Create Spark post first
     final sparkResponse = await _createSparkPost(text, uploadedBlobs);
-    final bskyResponse = await _createBlueSkyPost(text, uploadedBlobs);
+
+    // Create Bluesky post, passing Spark post info for linking if needed
+    final bskyResponse = await _createBlueSkyPost(text, uploadedBlobs, sparkPostData: sparkResponse);
 
     return {'spark': sparkResponse, 'bluesky': bskyResponse};
   }
@@ -233,24 +235,53 @@ class ActionsService extends ChangeNotifier {
   }
 
   /// Creates a Bluesky post using pre-uploaded blobs
-  Future<dynamic> _createBlueSkyPost(String text, List<Map<String, dynamic>> uploadedBlobs) async {
-    final List<Map<String, dynamic>> bskyImages =
-        uploadedBlobs.map((blobData) {
-          return {"alt": blobData["alt"], "image": blobData["blob"]};
-        }).toList();
+  Future<dynamic> _createBlueSkyPost(String text, List<Map<String, dynamic>> uploadedBlobs, {dynamic sparkPostData}) async {
+    Map<String, dynamic>? embed;
+    String finalText = text;
 
-    final embed = {"\$type": "app.bsky.embed.images", 'images': bskyImages};
+    // Check if we have more than 4 images (Bluesky limit)
+    if (uploadedBlobs.length > 4) {
+      // Create a text-only post with link to Spark post
+      if (sparkPostData != null) {
+        final userDid = _authService.session?.did ?? '';
+        // sparkPostData is the response.data, which has a uri property
+        final sparkUri = (sparkPostData as dynamic).uri.toString();
+
+        // Extract rkey from the Spark post URI (format: at://did/collection/rkey)
+        final sparkRkey = sparkUri.split('/').last;
+        final sparkLink = 'https://watch.sprk.so/?uri=$userDid/$sparkRkey';
+
+        // Add link to text if text is not empty, otherwise just use the link
+        if (text.isNotEmpty) {
+          finalText = '$text\n\n$sparkLink';
+        } else {
+          finalText = '🔗 View all images: $sparkLink';
+        }
+      }
+      // No embed for text-only post
+    } else {
+      // Use images normally (4 or fewer)
+      final List<Map<String, dynamic>> bskyImages =
+          uploadedBlobs.take(4).map((blobData) {
+            return {"alt": blobData["alt"], "image": blobData["blob"]};
+          }).toList();
+
+      embed = {"\$type": "app.bsky.embed.images", 'images': bskyImages};
+    }
 
     try {
-      final response = await _client.repo.createRecord(
-        collection: NSID.parse('app.bsky.feed.post'),
-        record: {
-          "\$type": "app.bsky.feed.post",
-          'text': text,
-          'embed': embed,
-          'createdAt': DateTime.now().toUtc().toIso8601String(),
-        },
-      );
+      Map<String, dynamic> record = {
+        "\$type": "app.bsky.feed.post",
+        'text': finalText,
+        'createdAt': DateTime.now().toUtc().toIso8601String(),
+      };
+
+      // Add embed only if we have images to show
+      if (embed != null) {
+        record['embed'] = embed;
+      }
+
+      final response = await _client.repo.createRecord(collection: NSID.parse('app.bsky.feed.post'), record: record);
 
       if (response.status.code != 200) {
         throw Exception('Failed to create Bluesky image post: ${response.status.code} ${response.data}');
