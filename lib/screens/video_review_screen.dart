@@ -7,6 +7,8 @@ import 'package:video_player/video_player.dart';
 
 import '../services/upload_service.dart';
 import '../services/video_service.dart';
+import '../services/settings_service.dart';
+import '../services/actions_service.dart';
 import '../utils/app_colors.dart';
 import '../widgets/image/alt_text_editor_dialog.dart';
 import '../widgets/video_review/video_thumbnail.dart';
@@ -64,6 +66,8 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
     try {
       final uploadService = Provider.of<UploadService>(context, listen: false);
       final videoService = Provider.of<VideoService>(context, listen: false);
+      final settingsService = Provider.of<SettingsService>(context, listen: false);
+      final actionsService = Provider.of<ActionsService>(context, listen: false);
       final description = _descriptionController.text;
 
       // Register a new upload task
@@ -78,8 +82,14 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
       // Process the video and get blob reference
       final videoBlobRef = await videoService.processVideo(widget.videoPath);
 
-      // Post the video with the blob reference
-      await videoService.postVideo(videoBlobRef, description: description, videoAltText: _videoAltText);
+      // Check if cross-posting is enabled
+      if (settingsService.postToBskyEnabled) {
+        // Post to both platforms using the same blob
+        await actionsService.postVideoToBoth(description, videoBlobRef!, _videoAltText);
+      } else {
+        // Only post to Spark
+        await actionsService.postVideoSprk(description, videoBlobRef!, _videoAltText);
+      }
 
       // Mark task as completed
       uploadService.completeTask(taskId);
@@ -246,6 +256,32 @@ class _VideoReviewScreenState extends State<VideoReviewScreen> {
                             counterText: '',
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Bluesky Cross-posting Switch
+                      Consumer<SettingsService>(
+                        builder: (context, settingsService, _) {
+                          return Container(
+                            decoration: BoxDecoration(color: inputBackgroundColor, borderRadius: BorderRadius.circular(8)),
+                            child: ListTile(
+                              title: Text('Post to Bluesky', style: TextStyle(color: textColor, fontSize: 16)),
+                              trailing: Switch(
+                                value: settingsService.postToBskyEnabled,
+                                onChanged: (value) {
+                                  settingsService.setPostToBsky(value);
+                                },
+                                activeColor: AppColors.pink,
+                                inactiveThumbColor: Colors.grey.shade400,
+                                inactiveTrackColor: Colors.grey.shade600,
+                                trackOutlineColor: WidgetStateProperty.all(Colors.transparent),
+                              ),
+                              onTap: () {
+                                settingsService.setPostToBsky(!settingsService.postToBskyEnabled);
+                              },
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),

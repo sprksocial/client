@@ -156,6 +156,22 @@ class ActionsService extends ChangeNotifier {
     return await _createSparkPost(text, uploadedBlobs);
   }
 
+  /// Posts a new video feed item to Spark only
+  Future<dynamic> postVideoSprk(String text, Map<String, dynamic> videoBlobData, String videoAltText) async {
+    return await _createSparkVideoPost(text, videoBlobData, videoAltText);
+  }
+
+  /// Posts the same video content to both Spark and Bluesky, reusing the same blob
+  Future<Map<String, dynamic>> postVideoToBoth(String text, Map<String, dynamic> videoBlobData, String videoAltText) async {
+    // Create Spark post first
+    final sparkResponse = await _createSparkVideoPost(text, videoBlobData, videoAltText);
+
+    // Create Bluesky post, passing Spark post info for potential linking if needed
+    final bskyResponse = await _createBlueSkyVideoPost(text, videoBlobData, videoAltText, sparkPostData: sparkResponse);
+
+    return {'spark': sparkResponse, 'bluesky': bskyResponse};
+  }
+
   /// Posts the same content to both Spark and Bluesky, uploading images once and reusing blobs
   Future<Map<String, dynamic>> postImageToBoth(String text, List<XFile> imageFiles, Map<String, String> altTexts) async {
     if (imageFiles.isEmpty) {
@@ -290,6 +306,75 @@ class ActionsService extends ChangeNotifier {
       return response.data;
     } catch (e) {
       debugPrint('Error creating Bluesky image post record: $e');
+      rethrow;
+    }
+  }
+
+  /// Creates a Spark video post using pre-processed video blob
+  Future<dynamic> _createSparkVideoPost(String text, Map<String, dynamic> videoBlobData, String videoAltText) async {
+    if (videoBlobData['\$type'] != 'blob') {
+      throw Exception('Invalid video data - expected blob type');
+    }
+
+    try {
+      Map<String, dynamic> record = {
+        "\$type": "so.sprk.feed.post",
+        'text': text,
+        'embed': {'\$type': 'so.sprk.embed.video', 'video': videoBlobData},
+        'createdAt': DateTime.now().toUtc().toIso8601String(),
+      };
+
+      // Add alt text if provided
+      if (videoAltText.isNotEmpty) {
+        (record['embed'] as Map<String, dynamic>)['alt'] = videoAltText;
+      }
+
+      final response = await _client.repo.createRecord(collection: NSID.parse('so.sprk.feed.post'), record: record);
+
+      if (response.status.code != 200) {
+        throw Exception('Failed to create Spark video post: ${response.status.code} ${response.data}');
+      }
+
+      return response.data;
+    } catch (e) {
+      debugPrint('Error creating Spark video post record: $e');
+      rethrow;
+    }
+  }
+
+  /// Creates a Bluesky video post using pre-processed video blob
+  Future<dynamic> _createBlueSkyVideoPost(
+    String text,
+    Map<String, dynamic> videoBlobData,
+    String videoAltText, {
+    dynamic sparkPostData,
+  }) async {
+    if (videoBlobData['\$type'] != 'blob') {
+      throw Exception('Invalid video data - expected blob type');
+    }
+
+    try {
+      Map<String, dynamic> record = {
+        "\$type": "app.bsky.feed.post",
+        'text': text,
+        'embed': {'\$type': 'app.bsky.embed.video', 'video': videoBlobData},
+        'createdAt': DateTime.now().toUtc().toIso8601String(),
+      };
+
+      // Add alt text if provided
+      if (videoAltText.isNotEmpty) {
+        (record['embed'] as Map<String, dynamic>)['alt'] = videoAltText;
+      }
+
+      final response = await _client.repo.createRecord(collection: NSID.parse('app.bsky.feed.post'), record: record);
+
+      if (response.status.code != 200) {
+        throw Exception('Failed to create Bluesky video post: ${response.status.code} ${response.data}');
+      }
+
+      return response.data;
+    } catch (e) {
+      debugPrint('Error creating Bluesky video post record: $e');
       rethrow;
     }
   }
