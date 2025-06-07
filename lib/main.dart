@@ -1,11 +1,9 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart'; 
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:fvp/fvp.dart' as fvp;
-
-
 
 import 'src/core/di/service_locator.dart';
 import 'src/core/theme/data/models/app_theme.dart';
@@ -15,7 +13,6 @@ import 'src/sprk_app.dart';
 
 // Global RouteObserver instance
 final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,17 +28,15 @@ void main() async {
 
   fvp.registerWith();
 
+  // Initialize dependencies for new architecture
+  await configureDependencies();
 
-    // Initialize dependencies for new architecture
-    await configureDependencies();
+  // Setup logging for production/debug
+  _setupLogging();
 
-    // Setup logging for production/debug
-    _setupLogging();
-
-    // Create a ProviderContainer with the Riverpod logger
-    final container = riverpod.ProviderContainer(observers: [SparkRiverpodLogger()]);
-    runApp(riverpod.UncontrolledProviderScope(container: container, child: SprkApp()));
-
+  // Create a ProviderContainer with the Riverpod logger
+  final container = riverpod.ProviderContainer(observers: [SparkRiverpodLogger()]);
+  runApp(riverpod.UncontrolledProviderScope(container: container, child: SprkApp()));
 }
 
 /// Setup logging framework based on environment

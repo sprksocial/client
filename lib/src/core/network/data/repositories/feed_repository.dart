@@ -14,7 +14,7 @@ abstract class FeedRepository {
   /// Get posts by URIs (hydrates a skeleton)
   ///
   /// [uris] List of post URIs to fetch
-  Future<List<PostView>> getPosts(List<AtUri> uris);
+  Future<List<PostView>> getPosts(List<AtUri> uris, {bool bluesky = false});
 
   /// Get an author's feed
   ///

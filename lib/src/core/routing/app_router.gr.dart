@@ -65,10 +65,11 @@ class CommentsRoute extends PageRouteInfo<CommentsRouteArgs> {
   CommentsRoute({
     Key? key,
     required String postUri,
+    required bool isSprk,
     List<PageRouteInfo>? children,
   }) : super(
          CommentsRoute.name,
-         args: CommentsRouteArgs(key: key, postUri: postUri),
+         args: CommentsRouteArgs(key: key, postUri: postUri, isSprk: isSprk),
          initialChildren: children,
        );
 
@@ -78,32 +79,44 @@ class CommentsRoute extends PageRouteInfo<CommentsRouteArgs> {
     name,
     builder: (data) {
       final args = data.argsAs<CommentsRouteArgs>();
-      return CommentsPage(key: args.key, postUri: args.postUri);
+      return CommentsPage(
+        key: args.key,
+        postUri: args.postUri,
+        isSprk: args.isSprk,
+      );
     },
   );
 }
 
 class CommentsRouteArgs {
-  const CommentsRouteArgs({this.key, required this.postUri});
+  const CommentsRouteArgs({
+    this.key,
+    required this.postUri,
+    required this.isSprk,
+  });
 
   final Key? key;
 
   final String postUri;
 
+  final bool isSprk;
+
   @override
   String toString() {
-    return 'CommentsRouteArgs{key: $key, postUri: $postUri}';
+    return 'CommentsRouteArgs{key: $key, postUri: $postUri, isSprk: $isSprk}';
   }
 
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
     if (other is! CommentsRouteArgs) return false;
-    return key == other.key && postUri == other.postUri;
+    return key == other.key &&
+        postUri == other.postUri &&
+        isSprk == other.isSprk;
   }
 
   @override
-  int get hashCode => key.hashCode ^ postUri.hashCode;
+  int get hashCode => key.hashCode ^ postUri.hashCode ^ isSprk.hashCode;
 }
 
 /// generated route for
@@ -434,6 +447,53 @@ class RegisterRoute extends PageRouteInfo<void> {
       return const RegisterPage();
     },
   );
+}
+
+/// generated route for
+/// [RepliesPage]
+class RepliesRoute extends PageRouteInfo<RepliesRouteArgs> {
+  RepliesRoute({
+    Key? key,
+    required String postUri,
+    List<PageRouteInfo>? children,
+  }) : super(
+         RepliesRoute.name,
+         args: RepliesRouteArgs(key: key, postUri: postUri),
+         initialChildren: children,
+       );
+
+  static const String name = 'RepliesRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final args = data.argsAs<RepliesRouteArgs>();
+      return RepliesPage(key: args.key, postUri: args.postUri);
+    },
+  );
+}
+
+class RepliesRouteArgs {
+  const RepliesRouteArgs({this.key, required this.postUri});
+
+  final Key? key;
+
+  final String postUri;
+
+  @override
+  String toString() {
+    return 'RepliesRouteArgs{key: $key, postUri: $postUri}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! RepliesRouteArgs) return false;
+    return key == other.key && postUri == other.postUri;
+  }
+
+  @override
+  int get hashCode => key.hashCode ^ postUri.hashCode;
 }
 
 /// generated route for

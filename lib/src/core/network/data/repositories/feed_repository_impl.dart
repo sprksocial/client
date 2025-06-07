@@ -59,8 +59,13 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<List<PostView>> getPosts(List<AtUri> uris) async {
+  Future<List<PostView>> getPosts(List<AtUri> uris, {bool bluesky = false}) async {
     _logger.d('Getting posts for URIs: ${uris.length} URIs');
+    if (bluesky) {
+      final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
+      final posts = await bluesky.feed.getPosts(uris: uris.map((uri) => AtUri.parse(uri.toString())).toList());
+      return posts.data.posts.map((post) => PostView.fromJson(post.toJson())).toList();
+    }
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');

@@ -1,5 +1,6 @@
 import 'dart:io'; // Import for File
 
+import 'package:atproto_core/atproto_core.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,7 @@ import 'package:image_picker/image_picker.dart'; // Import image_picker
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_input_state.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_input_provider.dart';
+import 'package:sparksocial/src/features/comments/providers/comments_page_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 
@@ -138,29 +140,26 @@ class _ReplyingToNotice extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Placeholder();
-    // final trayNotifier = ref.read(
-    //   commentsTrayProvider(postUri: widget.postUri, postCid: widget.postCid, isSprk: widget.isSprk).notifier,
-    // );
-    // return Container(
-    //   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-    //   decoration: BoxDecoration(
-    //     color: inputBackgroundColor,
-    //     borderRadius: BorderRadius.circular(8),
-    //     border: Border.all(color: borderColor, width: 0.5),
-    //   ),
-    //   child: Row(
-    //     children: [
-    //       Expanded(child: Text('Replying to ${widget.replyingToUsername}', style: TextStyle(color: textColor, fontSize: 13))),
-    //       IconButton(
-    //         padding: EdgeInsets.zero,
-    //         constraints: const BoxConstraints(),
-    //         onPressed: trayNotifier.cancelReply,
-    //         icon: Icon(FluentIcons.dismiss_24_regular, size: 16, color: textColor),
-    //       ),
-    //     ],
-    //   ),
-    // );
+    final trayNotifier = ref.read(commentsPageProvider(postUri: AtUri.parse(widget.postUri)).notifier);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: inputBackgroundColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: borderColor, width: 0.5),
+      ),
+      child: Row(
+        children: [
+          Expanded(child: Text('Replying to ${widget.replyingToUsername}', style: TextStyle(color: textColor, fontSize: 13))),
+          IconButton(
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+            onPressed: trayNotifier.cancelReply,
+            icon: Icon(FluentIcons.dismiss_24_regular, size: 16, color: textColor),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -193,7 +192,7 @@ class _UserAvatar extends ConsumerWidget {
             ),
           ),
       data: (profile) {
-        if (profile.profile?.avatar == null || profile.profile?.avatar == '') {
+        if (profile.profile?.avatar == null) {
           return Container(
             width: 28,
             height: 28,
@@ -206,14 +205,14 @@ class _UserAvatar extends ConsumerWidget {
         return Container(
           width: 28,
           height: 28,
-          // decoration: BoxDecoration(
-          //   shape: BoxShape.circle,
-          //   image: DecorationImage(image: NetworkImage(profile.profile!.avatar!)),
-          // ),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            image: DecorationImage(image: NetworkImage(profile.profile!.avatar.toString())),
+          ),
         );
       },
     );
-    return SizedBox(); // in theory this should never be reached, but it's here to satisfy the compiler
+    return const SizedBox(); // in theory this should never be reached, but it's here to satisfy the compiler
   }
 }
 
@@ -272,16 +271,17 @@ class _TextField extends StatelessWidget {
                     size: 20,
                     color: state.canSubmit ? Theme.of(context).colorScheme.primary : placeholderColor,
                   ),
-                  onPressed: () {}
-                      // state.canSubmit
-                      //     ? () => notifier.submitComment(
-                      //       parentCid: widget.postCid,
-                      //       parentUri: widget.postUri,
-                      //       isSprk: widget.isSprk,
-                      //       rootCid: widget.rootCid,
-                      //       rootUri: widget.rootUri,
-                      //     )
-                      //     : null,
+                  onPressed: () {
+                    if (state.canSubmit) {
+                      notifier.submitComment(
+                        parentCid: widget.postCid,
+                        parentUri: widget.postUri,
+                        isSprk: widget.isSprk,
+                        rootCid: widget.rootCid,
+                        rootUri: widget.rootUri,
+                      );
+                    }
+                  },
                 ),
       ),
       style: TextStyle(color: textColor, fontSize: 14),

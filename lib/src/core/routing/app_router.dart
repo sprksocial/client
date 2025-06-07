@@ -49,7 +49,7 @@ class AppRouter extends RootStackRouter {
       page: CommentsRoute.page, // doesn't need to be a child of post route because it's a modal bottom sheet
       path: '/comments/:postUri',
       customRouteBuilder: commmentsTrayBuilder,
-      // children: [AutoRoute(page: RepliesRoute.page, path: 'replies/:postUri')],
+      children: [AutoRoute(page: RepliesRoute.page, path: 'replies/:postUri')],
     ),
     CustomRoute(
       page: FeedSettingsRoute.page,

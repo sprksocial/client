@@ -151,7 +151,9 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
       
       // Then handle auto-play/pause based on visibility (only if on feeds tab and user hasn't manually interacted)
       if (isOnFeedsTab && widget.feed != null && widget.index != null) {
-        _handleAutoPlayPause(ref.watch(feedNotifierProvider(widget.feed!)).index == widget.index);
+        if (mounted) {
+          _handleAutoPlayPause(ref.watch(feedNotifierProvider(widget.feed!)).index == widget.index);
+        }
       }
     });
 

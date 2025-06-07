@@ -1,14 +1,19 @@
+import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
+import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/features/comments/providers/comments_page_provider.dart';
+import 'package:sparksocial/src/features/comments/ui/widgets/comment_input.dart';
+import 'package:sparksocial/src/features/comments/ui/widgets/comment_item.dart';
 
 @RoutePage()
 class CommentsPage extends ConsumerStatefulWidget {
   final String postUri;
+  final bool isSprk;
 
-  const CommentsPage({super.key, required this.postUri});
+  const CommentsPage({super.key, required this.postUri, required this.isSprk});
 
   @override
   ConsumerState<CommentsPage> createState() => _CommentsPageState();
@@ -20,7 +25,6 @@ class _CommentsPageState extends ConsumerState<CommentsPage> with SingleTickerPr
   final _scrollController = ScrollController();
   final _focusNode = FocusNode();
 
-
   @override
   void initState() {
     super.initState();
@@ -30,8 +34,6 @@ class _CommentsPageState extends ConsumerState<CommentsPage> with SingleTickerPr
 
     // Add focus listener to scroll to bottom when comment field receives focus
     _focusNode.addListener(_focusListener);
-
-    
   }
 
   @override
@@ -70,27 +72,12 @@ class _CommentsPageState extends ConsumerState<CommentsPage> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    // final state = ref.watch(
-    //   commentsTrayProvider(
-    //     postUri: widget.postUri,
-    //     postCid: widget.postCid,
-    //     isSprk: widget.isSprk,
-    //     commentCount: widget.commentCount,
-    //   ),
-    // );
+    final state = ref.watch(commentsPageProvider(postUri: AtUri.parse(widget.postUri)));
     final height = MediaQuery.of(context).size.height * 0.75;
     final backgroundColor = Theme.of(context).colorScheme.surface;
     final borderColor = Theme.of(context).colorScheme.outline;
     final textColor = Theme.of(context).colorScheme.onSurface;
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    // final loadComments = ref.watch(
-    //   loadCommentsProvider(
-    //     postUri: widget.postUri,
-    //     postCid: widget.postCid,
-    //     isSprk: widget.isSprk,
-    //   ),
-    // );
-
 
     return AnimatedBuilder(
       animation: _animation,
@@ -124,8 +111,7 @@ class _CommentsPageState extends ConsumerState<CommentsPage> with SingleTickerPr
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            //'${state.commentCount} comments',
-                            'Working on it...',
+                            '${state.value?.thread.post.replyCount} comments',
                             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
                           ),
                           IconButton(
@@ -141,42 +127,35 @@ class _CommentsPageState extends ConsumerState<CommentsPage> with SingleTickerPr
                 ),
               ),
               Expanded(
-                child: Placeholder(),
-              //   child: loadComments.when(
-              //     data: (comments) {
-              //       return ListView.builder(
-              //         controller: _scrollController,
-              //         padding: const EdgeInsets.only(bottom: 16),
-              //         itemCount: comments.length,
-              //         itemBuilder: (context, index) {
-              //           final comment = comments[index];
-              //           return CommentItem(
-              //             key: ValueKey('comment-${comment.id}'),
-              //             comment: comment,
-              //             parentPostUri: widget.postUri,
-              //             parentPostCid: widget.postCid,
-              //           );
-              //         },
-              //       );
-              //     },
-              //     error: (error, stackTrace) {
-              //       return Center(child: Text('Error: $error'));
-              //     },
-              //     loading: () {
-              //       return const Center(child: CircularProgressIndicator());
-              //     },
-              //   ),
-              // ),
-              // Padding(
-              //   padding: EdgeInsets.only(bottom: keyboardHeight),
-              //   child: CommentInputWidget(
-              //     videoId: widget.postUri,
-              //     postCid: widget.postCid,
-              //     postUri: widget.postUri,
-              //     isSprk: widget.isSprk,
-              //     focusNode: _focusNode,
-              //   ),
-              // ),
+                child: state.when(
+                  data: (data) {
+                    return ListView.builder(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.only(bottom: 16),
+                      itemCount: data.thread.replies?.length ?? 0,
+                      itemBuilder: (context, index) {
+                        final comment = data.thread.replies?[index] as ThreadViewPost;
+                        return CommentItem(key: ValueKey('comment-${comment.post.cid}'), thread: comment);
+                      },
+                    );
+                  },
+                  error: (error, stackTrace) {
+                    return Center(child: Text('Error: $error'));
+                  },
+                  loading: () {
+                    return const Center(child: CircularProgressIndicator());
+                  },
+                ),
+              ),
+              Padding(
+                padding: EdgeInsets.only(bottom: keyboardHeight),
+                child: CommentInputWidget(
+                  videoId: widget.postUri,
+                  postCid: state.value!.thread.post.cid,
+                  postUri: widget.postUri,
+                  isSprk: state.value!.thread.post.isSprk,
+                  focusNode: _focusNode,
+                ),
               ),
             ],
           ),

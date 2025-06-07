@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:atproto/core.dart';
+import 'package:bluesky/bluesky.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/core/network/data/repositories/actor_repository.dart';
@@ -42,7 +43,11 @@ class ActorRepositoryImpl implements ActorRepository {
       );
       if (result.status != HttpStatus.ok) {
         _logger.e('Failed to retrieve profile for DID: $did');
-        throw Exception('Failed to retrieve profile for DID: $did');
+        _logger.i('Trying to get profile from bluesky');
+        final bluesky = Bluesky.fromSession(_client.authRepository.session!);
+        final profile = await bluesky.actor.getProfile(actor: did);
+        _logger.d('Profile retrieved successfully from bluesky');
+        return ProfileViewDetailed.fromJson(profile.toJson());
       }
       _logger.d('Profile retrieved successfully');
       return ProfileViewDetailed.fromJson(result.data as Map<String, dynamic>);

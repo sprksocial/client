@@ -22,7 +22,6 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
   void initState() {
     super.initState();
     carouselController = CarouselSliderController();
-    currentIndex = widget.imageUrls.length - 1; // Start at the last image index to match initialPage
   }
 
   @override
@@ -33,17 +32,27 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
           itemCount: widget.imageUrls.length,
           carouselController: carouselController,
           itemBuilder: (context, index, realIndex) {
-            return CachedNetworkImage(
-              imageUrl: widget.imageUrls[index],
-              fit: BoxFit.contain,
-              height: MediaQuery.of(context).size.height,
-              placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-              errorWidget: (context, url, error) => const Center(child: Icon(FluentIcons.error_circle_24_regular)),
+            return Stack(
+              children: [
+                CachedNetworkImage(
+                imageUrl: widget.imageUrls[realIndex],
+                fit: BoxFit.contain,
+                height: MediaQuery.of(context).size.height,
+                placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                errorWidget: (context, url, error) => const Center(child: Icon(FluentIcons.error_circle_24_regular)),
+              ),
+              if (widget.alts != null && widget.alts![realIndex] != '')
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: Text(widget.alts![realIndex]),
+                ),
+              ],
             );
           },
           options: CarouselOptions(
-            initialPage: widget.imageUrls.length - 1,
-            reverse: true,
+            initialPage: 0,
             pageSnapping: true,
             scrollDirection: Axis.horizontal,
             aspectRatio: 0.5,
@@ -73,7 +82,7 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
                   margin: const EdgeInsets.symmetric(horizontal: 4.0),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: currentIndex == widget.imageUrls.length - index - 1 ? Colors.white : Colors.white.withAlpha(128),
+                    color: currentIndex == index ? Colors.white : Colors.white.withAlpha(128),
                   ),
                 ),
               ),
