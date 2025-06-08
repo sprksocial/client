@@ -1,3 +1,4 @@
+import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -19,7 +20,8 @@ import 'package:video_player/video_player.dart';
 
 class CommentItem extends ConsumerStatefulWidget {
   final ThreadViewPost thread;
-  const CommentItem({super.key, required this.thread});
+  final AtUri mainPostUri;
+  const CommentItem({super.key, required this.thread, required this.mainPostUri});
 
   @override
   ConsumerState<CommentItem> createState() => _CommentItemState();
@@ -110,10 +112,12 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                 style: TextButton.styleFrom(foregroundColor: Colors.red),
                 onPressed: () async {
                   try {
-                    ref
-                        .read(commentsPageProvider(postUri: (widget.thread.parent! as ThreadViewPost).post.uri).notifier)
-                        .deleteComment(commentState.thread.post.cid);
-                    context.router.maybePop();
+                    await ref
+                        .read(commentsPageProvider(postUri: widget.mainPostUri).notifier)
+                        .deleteComment(commentState.thread.post.uri.toString());
+                    if (context.mounted) {
+                      await context.router.maybePop(); // to close the menu below
+                    }
                   } catch (e) {
                     if (mounted) {
                       scaffoldMessenger.showSnackBar(SnackBar(content: Text('Failed to delete comment: $e')));
@@ -166,7 +170,7 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                commentState.thread.post.indexedAt.toLocal().toString(),
+                                _formatDate(commentState.thread.post.indexedAt.toLocal().toString()),
                                 style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color),
                               ),
                             ],
@@ -275,6 +279,26 @@ class _CommentItemState extends ConsumerState<CommentItem> {
       ],
     );
   }
+
+  String _formatDate(String dateTimeString) {
+    final dateTime = DateTime.parse(dateTimeString);
+    final now = DateTime.now();
+    final difference = now.difference(dateTime);
+
+    if (difference.inDays > 365) {
+      return '${(difference.inDays / 365).floor()}y';
+    } else if (difference.inDays > 30) {
+      return '${(difference.inDays / 30).floor()}mo';
+    } else if (difference.inDays > 0) {
+      return '${difference.inDays}d';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m';
+    } else {
+      return 'now';
+    }
+  }
 }
 
 class _RepliesSection extends StatelessWidget {
@@ -305,8 +329,7 @@ class _ActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final notifier = ref.read(CommentNotifierProvider(commentState.thread).notifier);
-    final trayNotifier = ref.read(commentsPageProvider(postUri: (widget.thread.parent! as ThreadViewPost).post.uri).notifier);
+    final notifier = ref.read(commentNotifierProvider(commentState.thread).notifier);
     return Row(
       children: [
         TextButton(
@@ -324,7 +347,7 @@ class _ActionButtons extends StatelessWidget {
                 color: commentState.isLiked ? AppColors.red : secondaryTextColor,
               ),
               const SizedBox(width: 4),
-              Text(commentState.thread.post.likeCount.toString(), style: TextStyle(fontSize: 12, color: secondaryTextColor)),
+              Text(commentState.likeCount.toString(), style: TextStyle(fontSize: 12, color: secondaryTextColor)),
             ],
           ),
         ),
@@ -336,38 +359,11 @@ class _ActionButtons extends StatelessWidget {
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
-          onPressed:
-              () => trayNotifier.replyToComment(commentState.thread.post.author.did, commentState.thread.post.author.handle),
+          onPressed: () {
+            context.router.push(RepliesRoute(postUri: commentState.thread.post.uri.toString()));
+          },
           child: Text('Reply', style: TextStyle(fontSize: 12, color: secondaryTextColor)),
         ),
-
-        if (commentState.thread.post.replyCount != null && commentState.thread.post.replyCount! > 0) ...[
-          const SizedBox(width: 16),
-          TextButton(
-            style: TextButton.styleFrom(
-              padding: EdgeInsets.zero,
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            onPressed: () => context.router.push(RepliesRoute(postUri: commentState.thread.post.uri.toString())),
-            child: Row(
-              children: [
-                Icon(
-                  commentState.thread.replies?.length != null && commentState.thread.replies!.isNotEmpty
-                      ? FluentIcons.chevron_up_24_regular
-                      : FluentIcons.chevron_down_24_regular,
-                  size: 16,
-                  color: secondaryTextColor,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  '${commentState.thread.post.replyCount} ${commentState.thread.post.replyCount == 1 ? 'reply' : 'replies'}',
-                  style: TextStyle(fontSize: 12, color: AppColors.blue),
-                ),
-              ],
-            ),
-          ),
-        ],
       ],
     );
   }
@@ -427,20 +423,11 @@ class _Avatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 1),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: UserAvatar(
-        imageUrl: widget.thread.post.author.avatar.toString(),
-        username: widget.thread.post.author.handle,
-        size: 36,
-        borderWidth: 0,
-      ),
+    return UserAvatar(
+      imageUrl: widget.thread.post.author.avatar.toString(),
+      username: widget.thread.post.author.handle,
+      size: 36,
+      borderWidth: 0,
     );
   }
 }

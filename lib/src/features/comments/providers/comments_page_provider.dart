@@ -2,19 +2,24 @@ import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
+import 'package:sparksocial/src/core/network/atproto.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/features/comments/providers/comments_page_state.dart';
+import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/post/feed_post_widget.dart';
 
 part 'comments_page_provider.g.dart';
 
 @riverpod
 class CommentsPage extends _$CommentsPage {
   late final FeedRepository feedRepository;
+  
   @override
   Future<CommentsPageState> build({required AtUri postUri}) async {
-    feedRepository = GetIt.instance<FeedRepository>();
+    // Keep the provider alive to prevent unnecessary rebuilds
+    ref.keepAlive();
+    
+    feedRepository = GetIt.instance<SprkRepository>().feed;
     // try to get from cache, if not found, fetch from network
     final sqlCache = GetIt.instance<SQLCacheInterface>();
     try {
@@ -32,6 +37,7 @@ class CommentsPage extends _$CommentsPage {
       }
       throw Exception('Post not found');
     } catch (e) {
+      // If cache fails, fetch from network
       List<PostView> networkPost;
       try {
         networkPost = await feedRepository.getPosts([postUri], bluesky: false);
@@ -62,8 +68,22 @@ class CommentsPage extends _$CommentsPage {
     List<XFile>? imageFiles,
     Map<String, String>? altTexts,
   }) async {
-    final feedRepository = GetIt.instance<FeedRepository>();
-    final response = await feedRepository.postComment(
+    final feedRepository = GetIt.instance<SprkRepository>().feed;
+    final sqlCache = GetIt.instance<SQLCacheInterface>();
+    
+    // Check if we currently have state data, but don't fail if we don't
+    // as the state might become loading during execution
+    final currentState = state.value;
+    bool wasSprkPost = true; // Default assumption
+    
+    if (currentState != null) {
+      wasSprkPost = currentState.thread.post.isSprk;
+    } else {
+      // If state is not available, try to determine from URI
+      wasSprkPost = parentUri.contains('so.sprk');
+    }
+    
+    await feedRepository.postComment(
       text,
       parentCid,
       AtUri.parse(parentUri),
@@ -72,28 +92,28 @@ class CommentsPage extends _$CommentsPage {
       imageFiles: imageFiles,
       altTexts: altTexts,
     );
-    final thread = await feedRepository.getThread(response.uri, bluesky: !state.value!.thread.post.isSprk, depth: 1);
+    
+    // Refresh the thread to get the latest comments
+    final thread = await feedRepository.getThread(AtUri.parse(parentUri), bluesky: !wasSprkPost, depth: 1);
     switch (thread) {
-      case ThreadViewPost(:final post):
-        // add the new comment to the thread and increase the reply count
-        final currentThread = state.value!.thread;
-        final currentReplies = currentThread.replies ?? <Thread>[];
-        final newReply = ThreadViewPost(
-          post: post,
-          parent: currentThread,
-          replies: null,
-        );
-        final updatedReplies = [...currentReplies, newReply];
-        final updatedPost = currentThread.post.copyWith(
-          replyCount: (currentThread.post.replyCount ?? 0) + 1,
-        );
-        final updatedThread = currentThread.copyWith(
-          post: updatedPost,
-          replies: updatedReplies,
-        );
+      case ThreadViewPost():
+        // Simply use the refreshed thread data from the server
+        // This ensures we have the most up-to-date comments and counts
+        // Clear reply state when updating with new thread data
         state = AsyncValue.data(
-          state.value!.copyWith(thread: updatedThread),
+          CommentsPageState(
+            thread: thread,
+          ),
         );
+        
+        // Update the cached post with the new reply count so it shows up in feeds
+        try {
+          await sqlCache.updatePost(thread.post);
+          // Trigger feed UI update by incrementing the update counter
+          ref.read(postUpdateProvider(thread.post.uri.toString()).notifier).state++;
+        } catch (e) {
+          // Ignore cache update errors, the UI will still work
+        }
       case NotFoundPost():
         throw Exception('Post not found');
       case BlockedPost():
@@ -102,42 +122,38 @@ class CommentsPage extends _$CommentsPage {
   }
 
   Future<void> deleteComment(String commentUri) async {
-    final currentThread = state.value!.thread;
-    final newComments =
-        currentThread.replies?.where((comment) {
-          if (comment is ThreadViewPost) {
-            return comment.post.uri != AtUri.parse(commentUri);
-          }
-          return false;
-        }).toList();
-    // remove the comment from the thread and decrease the reply count
-    final updatedPost = currentThread.post.copyWith(
-      replyCount: (currentThread.post.replyCount ?? 0) - 1,
-    );
-    final updatedThread = currentThread.copyWith(
-      post: updatedPost,
-      replies: newComments,
-    );
-    state = AsyncValue.data(
-      state.value!.copyWith(thread: updatedThread),
-    );
+    final sqlCache = GetIt.instance<SQLCacheInterface>();
+    
+    // Capture current state before making async calls
+    final currentState = state.value;
+    if (currentState == null) {
+      throw Exception('Cannot delete comment: comments not loaded');
+    }
+    
+    // Delete the comment first
     await feedRepository.deletePost(AtUri.parse(commentUri));
-  }
-
-  void replyToComment(String userId, String username, {String? parentUri, String? parentCid}) {
-    state = AsyncValue.data(
-      state.value!.copyWith(
-        replyingToUsername: username,
-        replyingToId: userId,
-        replyingToUri: parentUri,
-        replyingToCid: parentCid,
-      ),
-    );
-  }
-
-  void cancelReply() {
-    state = AsyncValue.data(
-      state.value!.copyWith(replyingToUsername: null, replyingToId: null, replyingToUri: null, replyingToCid: null),
-    );
+    
+    // Refresh the thread to get the latest comments and counts
+    final thread = await feedRepository.getThread(currentState.thread.post.uri, bluesky: !currentState.thread.post.isSprk, depth: 1);
+    switch (thread) {
+      case ThreadViewPost():
+        // Use the refreshed thread data from the server
+        state = AsyncValue.data(
+          currentState.copyWith(thread: thread),
+        );
+        
+        // Update the cached post with the new reply count so it shows up in feeds
+        try {
+          await sqlCache.updatePost(thread.post);
+          // Trigger feed UI update by incrementing the update counter
+          ref.read(postUpdateProvider(thread.post.uri.toString()).notifier).state++;
+        } catch (e) {
+          // Ignore cache update errors, the UI will still work
+        }
+      case NotFoundPost():
+        throw Exception('Post not found');
+      case BlockedPost():
+        throw Exception('Post is blocked');
+    }
   }
 }

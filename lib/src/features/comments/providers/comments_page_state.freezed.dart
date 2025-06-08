@@ -17,10 +17,6 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$CommentsPageState {
-  String? get replyingToUsername => throw _privateConstructorUsedError;
-  String? get replyingToId => throw _privateConstructorUsedError;
-  String? get replyingToUri => throw _privateConstructorUsedError;
-  String? get replyingToCid => throw _privateConstructorUsedError;
   ThreadViewPost get thread => throw _privateConstructorUsedError;
 
   /// Create a copy of CommentsPageState
@@ -37,13 +33,7 @@ abstract class $CommentsPageStateCopyWith<$Res> {
     $Res Function(CommentsPageState) then,
   ) = _$CommentsPageStateCopyWithImpl<$Res, CommentsPageState>;
   @useResult
-  $Res call({
-    String? replyingToUsername,
-    String? replyingToId,
-    String? replyingToUri,
-    String? replyingToCid,
-    ThreadViewPost thread,
-  });
+  $Res call({ThreadViewPost thread});
 }
 
 /// @nodoc
@@ -60,35 +50,9 @@ class _$CommentsPageStateCopyWithImpl<$Res, $Val extends CommentsPageState>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? replyingToUsername = freezed,
-    Object? replyingToId = freezed,
-    Object? replyingToUri = freezed,
-    Object? replyingToCid = freezed,
-    Object? thread = freezed,
-  }) {
+  $Res call({Object? thread = freezed}) {
     return _then(
       _value.copyWith(
-            replyingToUsername:
-                freezed == replyingToUsername
-                    ? _value.replyingToUsername
-                    : replyingToUsername // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            replyingToId:
-                freezed == replyingToId
-                    ? _value.replyingToId
-                    : replyingToId // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            replyingToUri:
-                freezed == replyingToUri
-                    ? _value.replyingToUri
-                    : replyingToUri // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            replyingToCid:
-                freezed == replyingToCid
-                    ? _value.replyingToCid
-                    : replyingToCid // ignore: cast_nullable_to_non_nullable
-                        as String?,
             thread:
                 freezed == thread
                     ? _value.thread
@@ -109,13 +73,7 @@ abstract class _$$CommentsPageStateImplCopyWith<$Res>
   ) = __$$CommentsPageStateImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    String? replyingToUsername,
-    String? replyingToId,
-    String? replyingToUri,
-    String? replyingToCid,
-    ThreadViewPost thread,
-  });
+  $Res call({ThreadViewPost thread});
 }
 
 /// @nodoc
@@ -131,35 +89,9 @@ class __$$CommentsPageStateImplCopyWithImpl<$Res>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? replyingToUsername = freezed,
-    Object? replyingToId = freezed,
-    Object? replyingToUri = freezed,
-    Object? replyingToCid = freezed,
-    Object? thread = freezed,
-  }) {
+  $Res call({Object? thread = freezed}) {
     return _then(
       _$CommentsPageStateImpl(
-        replyingToUsername:
-            freezed == replyingToUsername
-                ? _value.replyingToUsername
-                : replyingToUsername // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        replyingToId:
-            freezed == replyingToId
-                ? _value.replyingToId
-                : replyingToId // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        replyingToUri:
-            freezed == replyingToUri
-                ? _value.replyingToUri
-                : replyingToUri // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        replyingToCid:
-            freezed == replyingToCid
-                ? _value.replyingToCid
-                : replyingToCid // ignore: cast_nullable_to_non_nullable
-                    as String?,
         thread:
             freezed == thread
                 ? _value.thread
@@ -173,28 +105,14 @@ class __$$CommentsPageStateImplCopyWithImpl<$Res>
 /// @nodoc
 
 class _$CommentsPageStateImpl implements _CommentsPageState {
-  const _$CommentsPageStateImpl({
-    this.replyingToUsername,
-    this.replyingToId,
-    this.replyingToUri,
-    this.replyingToCid,
-    required this.thread,
-  });
+  const _$CommentsPageStateImpl({required this.thread});
 
-  @override
-  final String? replyingToUsername;
-  @override
-  final String? replyingToId;
-  @override
-  final String? replyingToUri;
-  @override
-  final String? replyingToCid;
   @override
   final ThreadViewPost thread;
 
   @override
   String toString() {
-    return 'CommentsPageState(replyingToUsername: $replyingToUsername, replyingToId: $replyingToId, replyingToUri: $replyingToUri, replyingToCid: $replyingToCid, thread: $thread)';
+    return 'CommentsPageState(thread: $thread)';
   }
 
   @override
@@ -202,26 +120,12 @@ class _$CommentsPageStateImpl implements _CommentsPageState {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$CommentsPageStateImpl &&
-            (identical(other.replyingToUsername, replyingToUsername) ||
-                other.replyingToUsername == replyingToUsername) &&
-            (identical(other.replyingToId, replyingToId) ||
-                other.replyingToId == replyingToId) &&
-            (identical(other.replyingToUri, replyingToUri) ||
-                other.replyingToUri == replyingToUri) &&
-            (identical(other.replyingToCid, replyingToCid) ||
-                other.replyingToCid == replyingToCid) &&
             const DeepCollectionEquality().equals(other.thread, thread));
   }
 
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    replyingToUsername,
-    replyingToId,
-    replyingToUri,
-    replyingToCid,
-    const DeepCollectionEquality().hash(thread),
-  );
+  int get hashCode =>
+      Object.hash(runtimeType, const DeepCollectionEquality().hash(thread));
 
   /// Create a copy of CommentsPageState
   /// with the given fields replaced by the non-null parameter values.
@@ -236,22 +140,9 @@ class _$CommentsPageStateImpl implements _CommentsPageState {
 }
 
 abstract class _CommentsPageState implements CommentsPageState {
-  const factory _CommentsPageState({
-    final String? replyingToUsername,
-    final String? replyingToId,
-    final String? replyingToUri,
-    final String? replyingToCid,
-    required final ThreadViewPost thread,
-  }) = _$CommentsPageStateImpl;
+  const factory _CommentsPageState({required final ThreadViewPost thread}) =
+      _$CommentsPageStateImpl;
 
-  @override
-  String? get replyingToUsername;
-  @override
-  String? get replyingToId;
-  @override
-  String? get replyingToUri;
-  @override
-  String? get replyingToCid;
   @override
   ThreadViewPost get thread;
 

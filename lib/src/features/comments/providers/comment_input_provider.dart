@@ -97,22 +97,29 @@ class CommentInput extends _$CommentInput {
 
     state = state.copyWith(isPosting: true);
 
-    trayNotifier.postComment(
-      text,
-      parentCid,
-      parentUri,
-      rootCid: rootCid,
-      rootUri: rootUri,
-      imageFiles: imagesToUpload,
-      altTexts: state.altTexts,
-    );
+    try {
+      await trayNotifier.postComment(
+        text,
+        parentCid,
+        parentUri,
+        rootCid: rootCid,
+        rootUri: rootUri,
+        imageFiles: imagesToUpload,
+        altTexts: state.altTexts,
+      );
 
-    state.textController.clear();
-    state.selectedImages.clear();
-    state.altTexts.clear();
-    updateCanSubmit();
-    state = state.copyWith(isPosting: false);
-    trayNotifier.cancelReply();
+      state.textController.clear();
+      updateCanSubmit();
+      state = state.copyWith(isPosting: false, selectedImages: [], altTexts: {});
+    } catch (e) {
+      // If posting fails, just reset isPosting but keep the form data
+      state = state.copyWith(isPosting: false);
+      
+      // Log the error for debugging
+      _logger.e('Error posting comment: $e');
+      
+      rethrow;
+    }
   }
 
   void updateAltText(String imagePath, String altText) {

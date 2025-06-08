@@ -44,16 +44,16 @@ class SideActionBar extends ConsumerStatefulWidget {
 }
 
 class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
-  late PostView _post;
   bool _isLiked = false;
   late String _commentCount;
+  PostView? _currentPost; // Track the current post state locally
 
   @override
   void initState() {
     super.initState();
     _isLiked = widget.isLiked;
     _commentCount = widget.commentCount;
-    _post = widget.post;
+    _currentPost = widget.post; // Initialize with the original post
   }
 
   @override
@@ -69,28 +69,69 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
         _commentCount = widget.commentCount;
       });
     }
+    if (oldWidget.post != widget.post) {
+      setState(() {
+        _currentPost = widget.post;
+      });
+    }
   }
 
   Future<void> _handleLike() async {
     setState(() {
       _isLiked = !_isLiked;
     });
-    if (_isLiked) {
-      final newLike = ref.read(likePostProvider(widget.post.cid, widget.post.uri));
-      newLike.whenData((data) {
-        final newViewer = Viewer(like: data.uri);
-        _post = _post.copyWith(viewer: _post.viewer?.copyWith(like: data.uri) ?? newViewer);
+
+    try {
+      if (_isLiked) {
+        // Like the post
+        final currentPost = _currentPost ?? widget.post;
+        final newLike = await ref.read(likePostProvider(currentPost.cid, currentPost.uri).future);
+
+        // Update the post's viewer field with the new like reference
+        final updatedPost = currentPost.copyWith(
+          viewer:
+              currentPost.viewer?.copyWith(like: newLike.uri) ?? Viewer(like: newLike.uri, repost: currentPost.viewer?.repost),
+        );
+
+        // Update cache with the modified post
+        await GetIt.instance<SQLCacheInterface>().updatePost(updatedPost);
+
+        // Update the local post reference
+        _currentPost = updatedPost;
+      } else {
+        // Unlike the post
+        final currentPost = _currentPost ?? widget.post;
+        if (currentPost.viewer?.like != null) {
+          await ref.read(unlikePostProvider(AtUri.parse(currentPost.viewer!.like!.toString())).future);
+
+          // Update the post's viewer field to remove the like reference
+          final updatedPost = currentPost.copyWith(
+            viewer: currentPost.viewer?.copyWith(like: null) ?? Viewer(like: null, repost: currentPost.viewer?.repost),
+          );
+
+          // Update cache with the modified post
+          await GetIt.instance<SQLCacheInterface>().updatePost(updatedPost);
+
+          // Update the local post reference
+          _currentPost = updatedPost;
+        }
+      }
+    } catch (e) {
+      // Revert the UI state if the operation failed
+      setState(() {
+        _isLiked = !_isLiked;
       });
-      await GetIt.instance<SQLCacheInterface>().updatePost(widget.post);
-    } else {
-      ref.read(unlikePostProvider(AtUri.parse(_post.viewer!.like!.toString())));
-      _post = _post.copyWith(viewer: _post.viewer?.copyWith(like: null));
-      await GetIt.instance<SQLCacheInterface>().updatePost(widget.post);
+
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to ${_isLiked ? 'like' : 'unlike'} post: $e')));
+      }
     }
   }
 
   void _handleShare() {
-    String postUri = widget.post.uri.toString();
+    final currentPost = _currentPost ?? widget.post;
+    String postUri = currentPost.uri.toString();
     String shareUrl;
     String embedCode = '';
     bool showEmbed = true;
@@ -146,9 +187,10 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
   }
 
   void _handleReport(BuildContext context) {
+    final currentPost = _currentPost ?? widget.post;
     showDialog(
       context: context,
-      builder: (context) => ReportDialog(postUri: widget.post.uri.toString(), postCid: widget.post.cid),
+      builder: (context) => ReportDialog(postUri: currentPost.uri.toString(), postCid: currentPost.cid),
     );
   }
 
@@ -179,7 +221,8 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
     if (!shouldDelete || !mounted) return;
 
     try {
-      ref.read(deletePostProvider(AtUri.parse(widget.post.uri.toString())));
+      final currentPost = _currentPost ?? widget.post;
+      ref.read(deletePostProvider(AtUri.parse(currentPost.uri.toString())));
       messenger.showSnackBar(const SnackBar(content: Text('Post deleted successfully!')));
     } catch (e) {
       if (mounted) {
@@ -189,11 +232,13 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
   }
 
   void _handleProfilePressed() {
-    context.router.push(ProfileRoute(did: widget.post.author.did));
+    final currentPost = _currentPost ?? widget.post;
+    context.router.push(ProfileRoute(did: currentPost.author.did));
   }
 
   void _handleCommentPressed() {
-    context.router.push(CommentsRoute(postUri: widget.post.uri.toString(), isSprk: widget.post.isSprk));
+    final currentPost = _currentPost ?? widget.post;
+    context.router.push(CommentsRoute(postUri: currentPost.uri.toString(), isSprk: currentPost.isSprk));
   }
 
   @override
@@ -204,13 +249,13 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
         const SizedBox(height: 20),
 
         LikeActionButton(
-          count: (int.parse(widget.likeCount) + (_post.viewer?.like != null ? 1 : 0)).toString(),
+          count: (int.parse(widget.likeCount) + (_isLiked ? 1 : 0)).toString(),
           isLiked: _isLiked,
           onPressed: _handleLike,
         ),
         const SizedBox(height: 20),
 
-        CommentActionButton(count: _commentCount, onPressed: _handleCommentPressed),
+        CommentActionButton(count: (_currentPost?.replyCount ?? int.tryParse(widget.commentCount) ?? 0).toString(), onPressed: _handleCommentPressed),
         const SizedBox(height: 20),
 
         // Only show share button for videos, not for images
@@ -228,7 +273,7 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
             }
           },
           isOnVideo: true,
-          authorDid: widget.post.author.did,
+          authorDid: (_currentPost ?? widget.post).author.did,
         ),
         const SizedBox(height: 20),
       ],

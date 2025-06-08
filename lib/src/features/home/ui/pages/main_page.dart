@@ -22,16 +22,10 @@ class _MainPageState extends ConsumerState<MainPage> {
   @override
   void initState() {
     super.initState();
-    // Settings are now loaded automatically in the provider's build method
-    // No need to manually call loadSettings() here
   }
 
   @override
   Widget build(BuildContext context) {
-    // Don't watch feed providers at this level as it causes unnecessary disposal/recreation
-    // when settings change. Feed providers are managed by their individual pages.
-    final settings = ref.watch(settingsProvider);
-
     return AutoTabsRouter(
       key: const ValueKey('mainTabsRouter'),
       routes: [const FeedsRoute(), const SearchRoute(), const EmptyRoute(), const MessagesRoute(), const UserProfileRoute()],
@@ -41,34 +35,7 @@ class _MainPageState extends ConsumerState<MainPage> {
 
         return Scaffold(
           backgroundColor: Colors.black,
-          body: Stack(
-            children: [
-              child,
-
-              // Debug overlay for MainPage (top left)
-              if (false) // Disabled debug overlay
-                Positioned(
-                  top: 50,
-                  left: 10,
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: Colors.purple.withOpacity(0.7), borderRadius: BorderRadius.circular(8)),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Text('MainPage:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 10)),
-                        Text('Tab: ${tabsRouter.activeIndex}', style: const TextStyle(color: Colors.yellow, fontSize: 10)),
-                        Text(
-                          'Active Feed: ${settings.activeFeed.name}',
-                          style: const TextStyle(color: Colors.white, fontSize: 10),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-            ],
-          ),
+          body: child,
           bottomNavigationBar: NavigationBar(
             selectedIndex: tabsRouter.activeIndex,
             onDestinationSelected: (index) {

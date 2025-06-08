@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
+import 'package:sparksocial/src/core/network/atproto.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_state.dart';
+import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/post/feed_post_widget.dart';
 import 'package:video_player/video_player.dart';
 
 part 'comment_provider.g.dart';
@@ -16,7 +17,7 @@ part 'comment_provider.g.dart';
 class CommentNotifier extends _$CommentNotifier {
   @override
   CommentState build(Thread thread) {
-    _feedRepository = GetIt.instance<FeedRepository>();
+    _feedRepository = GetIt.instance<SprkRepository>().feed;
     ref.onDispose(() {
       state.videoController?.dispose();
     });
@@ -35,18 +36,56 @@ class CommentNotifier extends _$CommentNotifier {
   late final FeedRepository _feedRepository;
 
   Future<void> toggleLike() async {
-    if (state.thread.post.viewer?.like != null) {
-      await _feedRepository.unlikePost(state.thread.post.viewer!.like!);
-      state = state.copyWith(
-        thread: state.thread.copyWith(post: state.thread.post.copyWith(viewer: state.thread.post.viewer!.copyWith(like: null))),
+    final wasLiked = state.isLiked;
+    final currentLikeCount = state.thread.post.likeCount ?? 0;
+    
+    try {
+      if (wasLiked) {
+        // Capture the like reference before optimistic update
+        final likeUri = state.thread.post.viewer!.like!;
+        
+        // Optimistically update UI for unlike
+        final updatedPost = state.thread.post.copyWith(
+          viewer: state.thread.post.viewer?.copyWith(like: null),
+          likeCount: currentLikeCount - 1,
+        );
+        state = state.copyWith(
+          thread: state.thread.copyWith(post: updatedPost),
+        );
+        
+        // Perform the actual unlike using the captured reference
+        await _feedRepository.unlikePost(likeUri);
+        
+        // Trigger UI updates
+        ref.read(postUpdateProvider(state.thread.post.uri.toString()).notifier).state++;
+      } else {
+        // Optimistically update UI for like
+        final response = await _feedRepository.likePost(state.thread.post.cid, state.thread.post.uri);
+        
+        final updatedPost = state.thread.post.copyWith(
+          viewer: state.thread.post.viewer?.copyWith(like: response.uri) ?? 
+                  Viewer(like: response.uri),
+          likeCount: currentLikeCount + 1,
+        );
+        state = state.copyWith(
+          thread: state.thread.copyWith(post: updatedPost),
+        );
+        
+        // Trigger UI updates
+        ref.read(postUpdateProvider(state.thread.post.uri.toString()).notifier).state++;
+      }
+    } catch (e) {
+      // Revert optimistic update on error
+      final revertedPost = state.thread.post.copyWith(
+        viewer: wasLiked 
+          ? state.thread.post.viewer?.copyWith(like: state.thread.post.viewer?.like)
+          : state.thread.post.viewer?.copyWith(like: null),
+        likeCount: currentLikeCount,
       );
-    } else {
-      final response = await _feedRepository.likePost(state.thread.post.cid, state.thread.post.uri);
       state = state.copyWith(
-        thread: state.thread.copyWith(
-          post: state.thread.post.copyWith(viewer: state.thread.post.viewer!.copyWith(like: response.uri)),
-        ),
+        thread: state.thread.copyWith(post: revertedPost),
       );
+      rethrow;
     }
   }
 
@@ -81,7 +120,7 @@ Future<StrongRef> postComment(
   List<XFile>? imageFiles,
   Map<String, String>? altTexts,
 }) async {
-  final feedRepository = GetIt.instance<FeedRepository>();
+  final feedRepository = GetIt.instance<SprkRepository>().feed;
   return await feedRepository.postComment(
     text,
     parentCid,

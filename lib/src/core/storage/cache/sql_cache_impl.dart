@@ -25,6 +25,7 @@ const String _columnReplyCount = 'replyCount'; // INTEGER
 const String _columnRepostCount = 'repostCount'; // INTEGER
 const String _columnQuoteCount = 'quoteCount'; // INTEGER
 const String _columnLabels = 'labels'; // TEXT (JSON string of List<Label>)
+const String _columnViewer = 'viewer'; // TEXT (JSON string of Viewer)
 const String _columnEmbed = 'embed'; // TEXT (JSON string of EmbedView)
 const String _columnLastAccessed = 'lastAccessed'; // INTEGER (timestamp for LRU)
 
@@ -59,9 +60,9 @@ class SQLCacheImpl implements SQLCacheInterface {
     String path = join(await getDatabasesPath(), 'sparksocial_sql_cache.db');
     return await openDatabase(
       path,
-      version: 1, // Increment this if you change the schema
+      version: 2, // Increment this if you change the schema
       onCreate: _onCreate,
-      // onUpgrade: _onUpgrade, // Define this if you plan schema migrations
+      onUpgrade: _onUpgrade, // Define this if you plan schema migrations
     );
   }
 
@@ -81,6 +82,7 @@ class SQLCacheImpl implements SQLCacheInterface {
         $_columnRepostCount INTEGER,
         $_columnQuoteCount INTEGER,
         $_columnLabels TEXT,
+        $_columnViewer TEXT,
         $_columnEmbed TEXT,
         $_columnLastAccessed INTEGER NOT NULL
       )
@@ -111,6 +113,13 @@ class SQLCacheImpl implements SQLCacheInterface {
       CREATE INDEX idx_feed_posts ON $_tableFeedPostAssociations ($_columnFeedIdentifierFK, $_columnAssociationOrder)
     ''');
     await batch.commit(noResult: true);
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      // Add the viewer column to existing posts table
+      await db.execute('ALTER TABLE $_tablePosts ADD COLUMN $_columnViewer TEXT');
+    }
   }
 
   // --- CRUD Operations ---
@@ -154,6 +163,7 @@ class SQLCacheImpl implements SQLCacheInterface {
       _columnRepostCount: post.repostCount,
       _columnQuoteCount: post.quoteCount,
       _columnLabels: post.labels != null ? jsonEncode(post.labels!.map((e) => e.toJson()).toList()) : null,
+      _columnViewer: post.viewer != null ? jsonEncode(post.viewer!.toJson()) : null,
       _columnEmbed: post.embed != null ? jsonEncode(post.embed!.toJson()) : null,
     };
   }
@@ -239,6 +249,7 @@ class SQLCacheImpl implements SQLCacheInterface {
                   .map((e) => Label.fromJson(e as Map<String, dynamic>))
                   .toList()
               : null,
+      viewer: map[_columnViewer] != null ? Viewer.fromJson(jsonDecode(map[_columnViewer] as String)) : null,
       embed: map[_columnEmbed] != null ? EmbedView.fromJson(jsonDecode(map[_columnEmbed] as String)) : null,
     );
   }

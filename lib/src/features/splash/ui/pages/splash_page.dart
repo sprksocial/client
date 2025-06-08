@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
@@ -11,6 +12,8 @@ import 'package:sparksocial/src/core/auth/data/repositories/auth_repository_impl
 import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/splash/providers/splash_providers.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
+import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 
 @RoutePage()
@@ -22,74 +25,169 @@ class SplashPage extends ConsumerStatefulWidget {
 }
 
 class _SplashPageState extends ConsumerState<SplashPage> {
-  final AssetImage _introImage = const AssetImage('assets/branding/intro.webp');
   final _logger = GetIt.instance<LogService>().getLogger('SplashPage');
+  bool _isNavigating = false;
+  bool _hasStartedFeedLoading = false;
 
   @override
   void initState() {
     super.initState();
-    _checkAuthentication();
+    _initializeApp();
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!ref.read(splashNotifierProvider)) {
-      precacheImage(_introImage, context).then((_) {
-        if (!mounted) return;
-        ref.read(splashNotifierProvider.notifier).setImageLoaded(true);
-      });
+  void dispose() {
+    // Always remove splash screen when disposing splash page
+    FlutterNativeSplash.remove();
+    super.dispose();
+  }
+
+  Future<void> _initializeApp() async {
+    try {
+      // Step 1: Check authentication
+      final authRepository = GetIt.instance<AuthRepository>();
+      final onboardingRepository = GetIt.instance<OnboardingRepository>();
+
+      // Wait for AuthRepository to complete its internal initialization
+      if (authRepository is AuthRepositoryImpl) {
+        try {
+          await authRepository.initializationComplete;
+        } catch (e) {
+          _logger.e('AuthRepository initialization failed', error: e);
+        }
+      }
+
+      // Wait for auth provider to finish loading
+      while (ref.read(authProvider).isLoading) {
+        await Future.delayed(const Duration(milliseconds: 10));
+      }
+
+      final bool isSessionValid = await authRepository.validateSession();
+
+      if (!mounted) return;
+
+      // If session is not valid, navigate to login immediately
+      if (!isSessionValid) {
+        _navigateToLogin();
+        return;
+      }
+
+      // Check if Spark profile exists
+      final hasSpark = await onboardingRepository.hasSparkProfile();
+
+      if (!mounted) return;
+
+      if (!hasSpark) {
+        _navigateToRegister();
+        return;
+      }
+
+      // Step 2: User is authenticated and has profile - initialize feed loading
+      await _initializeFeedLoading();
+      
+      // Step 3: Wait for app to be ready and then navigate
+      _waitForAppReadyAndNavigate();
+
+    } catch (e) {
+      _logger.e('Error during app initialization', error: e);
+      if (mounted) {
+        _navigateToLogin();
+      }
     }
   }
 
-  Future<void> _checkAuthentication() async {
-    final authRepository = GetIt.instance<AuthRepository>();
-    final onboardingRepository = GetIt.instance<OnboardingRepository>();
+  Future<void> _initializeFeedLoading() async {
+    try {
+      _logger.d('Initializing feed loading...');
+      
+      // Wait for settings to be loaded
+      final settingsNotifier = ref.read(settingsProvider.notifier);
+      await settingsNotifier.loadSettings();
+      
+      if (!mounted) return;
+      
+      // Get the active feed and start loading it
+      final activeFeed = ref.read(settingsProvider).activeFeed;
+      _logger.d('Active feed: ${activeFeed.name}');
+      
+      // Get the feed notifier and start loading
+      final feedNotifier = ref.read(feedNotifierProvider(activeFeed).notifier);
+      
+      // Start the first load (don't await - let it load in background)
+      feedNotifier.loadAndUpdateFirstLoad();
+      _hasStartedFeedLoading = true;
+      
+      _logger.d('Feed loading started');
+    } catch (e) {
+      _logger.e('Error initializing feed loading', error: e);
+      // Continue anyway - don't block app startup
+      _hasStartedFeedLoading = true;
+    }
+  }
 
-    // Wait for AuthRepository to complete its internal initialization (e.g., loading session from storage)
-    if (authRepository is AuthRepositoryImpl) {
-      try {
-        await authRepository.initializationComplete;
-      } catch (e) {
-        _logger.e('AuthRepository initialization failed', error: e);
+  void _waitForAppReadyAndNavigate() {
+    if (!_hasStartedFeedLoading) return;
+    
+    // Use a timer to periodically check if app is ready
+    Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      if (!mounted) {
+        timer.cancel();
+        return;
       }
-    }
+      
+      try {
+        final isAppReady = ref.read(appReadyProvider);
+        if (isAppReady) {
+          timer.cancel();
+          _logger.d('App is ready, navigating to main page');
+          _navigateToMain();
+        }
+      } catch (e) {
+        // If there's an error checking readiness, continue after timeout
+        _logger.w('Error checking app readiness: $e');
+      }
+    });
+    
+    // Fallback timeout - don't wait forever
+    Timer(const Duration(seconds: 15), () {
+      if (mounted && !_isNavigating) {
+        _logger.w('App readiness timeout, navigating anyway');
+        _navigateToMain();
+      }
+    });
+  }
 
-    while (ref.read(authProvider).isLoading) {
-      await Future.delayed(const Duration(milliseconds: 10));
-    }
+  void _navigateToLogin() {
+    if (_isNavigating || !mounted) return;
+    _isNavigating = true;
+    FlutterNativeSplash.remove();
+    context.router.replaceAll([const LoginRoute()]);
+  }
 
-    final bool isSessionValid = await authRepository.validateSession();
+  void _navigateToRegister() {
+    if (_isNavigating || !mounted) return;
+    _isNavigating = true;
+    FlutterNativeSplash.remove();
+    context.router.replaceAll([const RegisterRoute()]);
+  }
 
-    if (!mounted) return;
-
-    if (!isSessionValid) {
-      context.router.replaceAll([const LoginRoute()]);
-      return;
-    }
-
-    // Check if Spark profile exists
-    final hasSpark = await onboardingRepository.hasSparkProfile();
-
-    if (!mounted) return;
-
-    if (hasSpark) {
-      context.router.replaceAll([const MainRoute()]);
-    } else {
-      context.router.replaceAll([const RegisterRoute()]);
-    }
+  void _navigateToMain() {
+    if (_isNavigating || !mounted) return;
+    _isNavigating = true;
+    FlutterNativeSplash.remove();
+    context.router.replaceAll([const MainRoute()]);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isImageLoaded = ref.watch(splashNotifierProvider);
-
-    return Scaffold(
+    // Show a minimal loading screen while keeping native splash active
+    return const Scaffold(
       backgroundColor: AppColors.black,
-      body:
-          isImageLoaded
-              ? SizedBox.expand(child: Image(image: _introImage, fit: BoxFit.cover))
-              : Center(child: CircularProgressIndicator(color: AppColors.white)),
+      body: Center(
+        child: CircularProgressIndicator(
+          color: AppColors.white,
+        ),
+      ),
     );
   }
 }

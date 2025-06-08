@@ -18,12 +18,10 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$CommentState {
   ThreadViewPost get thread => throw _privateConstructorUsedError;
-  bool get isLiked => throw _privateConstructorUsedError;
   bool get isVideoInitialized => throw _privateConstructorUsedError;
   bool get isFirstImagePrecached => throw _privateConstructorUsedError;
   VideoPlayerController? get videoController =>
       throw _privateConstructorUsedError;
-  int get originalLikeCount => throw _privateConstructorUsedError;
 
   /// Create a copy of CommentState
   /// with the given fields replaced by the non-null parameter values.
@@ -41,11 +39,9 @@ abstract class $CommentStateCopyWith<$Res> {
   @useResult
   $Res call({
     ThreadViewPost thread,
-    bool isLiked,
     bool isVideoInitialized,
     bool isFirstImagePrecached,
     VideoPlayerController? videoController,
-    int originalLikeCount,
   });
 }
 
@@ -65,11 +61,9 @@ class _$CommentStateCopyWithImpl<$Res, $Val extends CommentState>
   @override
   $Res call({
     Object? thread = freezed,
-    Object? isLiked = null,
     Object? isVideoInitialized = null,
     Object? isFirstImagePrecached = null,
     Object? videoController = freezed,
-    Object? originalLikeCount = null,
   }) {
     return _then(
       _value.copyWith(
@@ -78,11 +72,6 @@ class _$CommentStateCopyWithImpl<$Res, $Val extends CommentState>
                     ? _value.thread
                     : thread // ignore: cast_nullable_to_non_nullable
                         as ThreadViewPost,
-            isLiked:
-                null == isLiked
-                    ? _value.isLiked
-                    : isLiked // ignore: cast_nullable_to_non_nullable
-                        as bool,
             isVideoInitialized:
                 null == isVideoInitialized
                     ? _value.isVideoInitialized
@@ -98,11 +87,6 @@ class _$CommentStateCopyWithImpl<$Res, $Val extends CommentState>
                     ? _value.videoController
                     : videoController // ignore: cast_nullable_to_non_nullable
                         as VideoPlayerController?,
-            originalLikeCount:
-                null == originalLikeCount
-                    ? _value.originalLikeCount
-                    : originalLikeCount // ignore: cast_nullable_to_non_nullable
-                        as int,
           )
           as $Val,
     );
@@ -120,11 +104,9 @@ abstract class _$$CommentStateImplCopyWith<$Res>
   @useResult
   $Res call({
     ThreadViewPost thread,
-    bool isLiked,
     bool isVideoInitialized,
     bool isFirstImagePrecached,
     VideoPlayerController? videoController,
-    int originalLikeCount,
   });
 }
 
@@ -143,11 +125,9 @@ class __$$CommentStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? thread = freezed,
-    Object? isLiked = null,
     Object? isVideoInitialized = null,
     Object? isFirstImagePrecached = null,
     Object? videoController = freezed,
-    Object? originalLikeCount = null,
   }) {
     return _then(
       _$CommentStateImpl(
@@ -156,11 +136,6 @@ class __$$CommentStateImplCopyWithImpl<$Res>
                 ? _value.thread
                 : thread // ignore: cast_nullable_to_non_nullable
                     as ThreadViewPost,
-        isLiked:
-            null == isLiked
-                ? _value.isLiked
-                : isLiked // ignore: cast_nullable_to_non_nullable
-                    as bool,
         isVideoInitialized:
             null == isVideoInitialized
                 ? _value.isVideoInitialized
@@ -176,11 +151,6 @@ class __$$CommentStateImplCopyWithImpl<$Res>
                 ? _value.videoController
                 : videoController // ignore: cast_nullable_to_non_nullable
                     as VideoPlayerController?,
-        originalLikeCount:
-            null == originalLikeCount
-                ? _value.originalLikeCount
-                : originalLikeCount // ignore: cast_nullable_to_non_nullable
-                    as int,
       ),
     );
   }
@@ -188,21 +158,16 @@ class __$$CommentStateImplCopyWithImpl<$Res>
 
 /// @nodoc
 
-class _$CommentStateImpl implements _CommentState {
+class _$CommentStateImpl extends _CommentState {
   const _$CommentStateImpl({
     required this.thread,
-    this.isLiked = false,
     this.isVideoInitialized = false,
     this.isFirstImagePrecached = false,
     this.videoController,
-    this.originalLikeCount = 0,
-  });
+  }) : super._();
 
   @override
   final ThreadViewPost thread;
-  @override
-  @JsonKey()
-  final bool isLiked;
   @override
   @JsonKey()
   final bool isVideoInitialized;
@@ -211,13 +176,10 @@ class _$CommentStateImpl implements _CommentState {
   final bool isFirstImagePrecached;
   @override
   final VideoPlayerController? videoController;
-  @override
-  @JsonKey()
-  final int originalLikeCount;
 
   @override
   String toString() {
-    return 'CommentState(thread: $thread, isLiked: $isLiked, isVideoInitialized: $isVideoInitialized, isFirstImagePrecached: $isFirstImagePrecached, videoController: $videoController, originalLikeCount: $originalLikeCount)';
+    return 'CommentState(thread: $thread, isVideoInitialized: $isVideoInitialized, isFirstImagePrecached: $isFirstImagePrecached, videoController: $videoController)';
   }
 
   @override
@@ -226,26 +188,21 @@ class _$CommentStateImpl implements _CommentState {
         (other.runtimeType == runtimeType &&
             other is _$CommentStateImpl &&
             const DeepCollectionEquality().equals(other.thread, thread) &&
-            (identical(other.isLiked, isLiked) || other.isLiked == isLiked) &&
             (identical(other.isVideoInitialized, isVideoInitialized) ||
                 other.isVideoInitialized == isVideoInitialized) &&
             (identical(other.isFirstImagePrecached, isFirstImagePrecached) ||
                 other.isFirstImagePrecached == isFirstImagePrecached) &&
             (identical(other.videoController, videoController) ||
-                other.videoController == videoController) &&
-            (identical(other.originalLikeCount, originalLikeCount) ||
-                other.originalLikeCount == originalLikeCount));
+                other.videoController == videoController));
   }
 
   @override
   int get hashCode => Object.hash(
     runtimeType,
     const DeepCollectionEquality().hash(thread),
-    isLiked,
     isVideoInitialized,
     isFirstImagePrecached,
     videoController,
-    originalLikeCount,
   );
 
   /// Create a copy of CommentState
@@ -257,28 +214,23 @@ class _$CommentStateImpl implements _CommentState {
       __$$CommentStateImplCopyWithImpl<_$CommentStateImpl>(this, _$identity);
 }
 
-abstract class _CommentState implements CommentState {
+abstract class _CommentState extends CommentState {
   const factory _CommentState({
     required final ThreadViewPost thread,
-    final bool isLiked,
     final bool isVideoInitialized,
     final bool isFirstImagePrecached,
     final VideoPlayerController? videoController,
-    final int originalLikeCount,
   }) = _$CommentStateImpl;
+  const _CommentState._() : super._();
 
   @override
   ThreadViewPost get thread;
-  @override
-  bool get isLiked;
   @override
   bool get isVideoInitialized;
   @override
   bool get isFirstImagePrecached;
   @override
   VideoPlayerController? get videoController;
-  @override
-  int get originalLikeCount;
 
   /// Create a copy of CommentState
   /// with the given fields replaced by the non-null parameter values.

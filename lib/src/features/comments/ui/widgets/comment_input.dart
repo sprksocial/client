@@ -1,6 +1,5 @@
 import 'dart:io'; // Import for File
 
-import 'package:atproto_core/atproto_core.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +7,6 @@ import 'package:image_picker/image_picker.dart'; // Import image_picker
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_input_state.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_input_provider.dart';
-import 'package:sparksocial/src/features/comments/providers/comments_page_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 
@@ -16,7 +14,6 @@ import 'emoji_picker.dart';
 
 class CommentInputWidget extends ConsumerStatefulWidget {
   final String videoId;
-  final String? replyingToUsername;
   // Video post info
   final String postCid;
   final String postUri;
@@ -29,7 +26,6 @@ class CommentInputWidget extends ConsumerStatefulWidget {
   const CommentInputWidget({
     super.key,
     required this.videoId,
-    this.replyingToUsername,
     required this.postCid,
     required this.postUri,
     this.focusNode,
@@ -57,10 +53,7 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
     final session = ref.watch(authProvider).session;
     return Container(
       padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5)),
-      ),
+
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -72,17 +65,6 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
           ),
 
           const SizedBox(height: 8),
-
-          if (widget.replyingToUsername != null)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: _ReplyingToNotice(
-                widget: widget,
-                inputBackgroundColor: Theme.of(context).colorScheme.surface,
-                borderColor: Theme.of(context).colorScheme.outline,
-                textColor: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
 
           // Updated input row with centered alignment
           Container(
@@ -119,44 +101,6 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
           // Selected Images Preview (only show if images are selected)
           if (state.selectedImages.isNotEmpty)
             Padding(padding: const EdgeInsets.only(top: 8.0), child: _SelectedImagesPreview(state: state, notifier: notifier)),
-        ],
-      ),
-    );
-  }
-}
-
-class _ReplyingToNotice extends ConsumerWidget {
-  const _ReplyingToNotice({
-    required this.widget,
-    required this.inputBackgroundColor,
-    required this.borderColor,
-    required this.textColor,
-  });
-
-  final CommentInputWidget widget;
-  final Color inputBackgroundColor;
-  final Color borderColor;
-  final Color textColor;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final trayNotifier = ref.read(commentsPageProvider(postUri: AtUri.parse(widget.postUri)).notifier);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: inputBackgroundColor,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: borderColor, width: 0.5),
-      ),
-      child: Row(
-        children: [
-          Expanded(child: Text('Replying to ${widget.replyingToUsername}', style: TextStyle(color: textColor, fontSize: 13))),
-          IconButton(
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            onPressed: trayNotifier.cancelReply,
-            icon: Icon(FluentIcons.dismiss_24_regular, size: 16, color: textColor),
-          ),
         ],
       ),
     );
@@ -236,11 +180,6 @@ class _TextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String hint = 'Add a comment...';
-    if (widget.replyingToUsername != null) {
-      hint = 'Reply to ${widget.replyingToUsername}...';
-    } else if (state.selectedImages.isNotEmpty && state.textController.text.isEmpty) {
-      hint = 'Add a caption... (optional)';
-    }
 
     return TextField(
       controller: state.textController,
@@ -273,12 +212,18 @@ class _TextField extends StatelessWidget {
                   ),
                   onPressed: () {
                     if (state.canSubmit) {
+                      // Use reply info if available, otherwise use main post info
+                      final parentCid = widget.postCid;
+                      final parentUri = widget.postUri;
+                      final rootCid = widget.rootCid;
+                      final rootUri = widget.rootUri;
+
                       notifier.submitComment(
-                        parentCid: widget.postCid,
-                        parentUri: widget.postUri,
+                        parentCid: parentCid,
+                        parentUri: parentUri,
                         isSprk: widget.isSprk,
-                        rootCid: widget.rootCid,
-                        rootUri: widget.rootUri,
+                        rootCid: rootCid,
+                        rootUri: rootUri,
                       );
                     }
                   },
@@ -340,7 +285,7 @@ class _SelectedImagesPreview extends StatelessWidget {
         itemCount: state.selectedImages.length,
         itemBuilder: (context, index) {
           final imageFile = state.selectedImages[index];
-          final alt = state.altTexts[imageFile.path] ?? '';
+          final alt = state.altTexts[imageFile.path];
           return Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: Stack(
@@ -368,10 +313,10 @@ class _SelectedImagesPreview extends StatelessWidget {
                       onTap: () async {
                         final result = await showDialog<String>(
                           context: context,
-                          builder: (context) => AltTextEditorDialog(imageFile: imageFile, initialAltText: alt),
+                          builder: (context) => AltTextEditorDialog(imageFile: imageFile, initialAltText: alt ?? ''),
                         );
                         if (result != null) {
-                          // notifier.updateAltText(imageFile.path, result.trim());
+                          notifier.updateAltText(imageFile.path, result.trim());
                         }
                       },
                       borderRadius: BorderRadius.circular(8),

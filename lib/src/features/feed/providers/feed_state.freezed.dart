@@ -21,7 +21,6 @@ mixin _$FeedState {
   List<AtUri> get loadedPosts => throw _privateConstructorUsedError;
   int get index => throw _privateConstructorUsedError;
   int get freshPostCount => throw _privateConstructorUsedError;
-  bool get isCaching => throw _privateConstructorUsedError;
   bool get isEndOfNetworkFeed => throw _privateConstructorUsedError;
   String? get cursor => throw _privateConstructorUsedError;
   bool get loadingFirstLoad => throw _privateConstructorUsedError;
@@ -48,7 +47,6 @@ abstract class $FeedStateCopyWith<$Res> {
     List<AtUri> loadedPosts,
     int index,
     int freshPostCount,
-    bool isCaching,
     bool isEndOfNetworkFeed,
     String? cursor,
     bool loadingFirstLoad,
@@ -79,7 +77,6 @@ class _$FeedStateCopyWithImpl<$Res, $Val extends FeedState>
     Object? loadedPosts = null,
     Object? index = null,
     Object? freshPostCount = null,
-    Object? isCaching = null,
     Object? isEndOfNetworkFeed = null,
     Object? cursor = freezed,
     Object? loadingFirstLoad = null,
@@ -107,11 +104,6 @@ class _$FeedStateCopyWithImpl<$Res, $Val extends FeedState>
                     ? _value.freshPostCount
                     : freshPostCount // ignore: cast_nullable_to_non_nullable
                         as int,
-            isCaching:
-                null == isCaching
-                    ? _value.isCaching
-                    : isCaching // ignore: cast_nullable_to_non_nullable
-                        as bool,
             isEndOfNetworkFeed:
                 null == isEndOfNetworkFeed
                     ? _value.isEndOfNetworkFeed
@@ -158,7 +150,6 @@ abstract class _$$FeedStateImplCopyWith<$Res>
     List<AtUri> loadedPosts,
     int index,
     int freshPostCount,
-    bool isCaching,
     bool isEndOfNetworkFeed,
     String? cursor,
     bool loadingFirstLoad,
@@ -188,7 +179,6 @@ class __$$FeedStateImplCopyWithImpl<$Res>
     Object? loadedPosts = null,
     Object? index = null,
     Object? freshPostCount = null,
-    Object? isCaching = null,
     Object? isEndOfNetworkFeed = null,
     Object? cursor = freezed,
     Object? loadingFirstLoad = null,
@@ -216,11 +206,6 @@ class __$$FeedStateImplCopyWithImpl<$Res>
                 ? _value.freshPostCount
                 : freshPostCount // ignore: cast_nullable_to_non_nullable
                     as int,
-        isCaching:
-            null == isCaching
-                ? _value.isCaching
-                : isCaching // ignore: cast_nullable_to_non_nullable
-                    as bool,
         isEndOfNetworkFeed:
             null == isEndOfNetworkFeed
                 ? _value.isEndOfNetworkFeed
@@ -260,7 +245,6 @@ class _$FeedStateImpl extends _FeedState {
     required final List<AtUri> loadedPosts,
     required this.index,
     required this.freshPostCount,
-    required this.isCaching,
     required this.isEndOfNetworkFeed,
     required this.cursor,
     required this.loadingFirstLoad,
@@ -283,8 +267,6 @@ class _$FeedStateImpl extends _FeedState {
   @override
   final int freshPostCount;
   @override
-  final bool isCaching;
-  @override
   final bool isEndOfNetworkFeed;
   @override
   final String? cursor;
@@ -299,7 +281,7 @@ class _$FeedStateImpl extends _FeedState {
 
   @override
   String toString() {
-    return 'FeedState(active: $active, loadedPosts: $loadedPosts, index: $index, freshPostCount: $freshPostCount, isCaching: $isCaching, isEndOfNetworkFeed: $isEndOfNetworkFeed, cursor: $cursor, loadingFirstLoad: $loadingFirstLoad, extraInfo: $extraInfo)';
+    return 'FeedState(active: $active, loadedPosts: $loadedPosts, index: $index, freshPostCount: $freshPostCount, isEndOfNetworkFeed: $isEndOfNetworkFeed, cursor: $cursor, loadingFirstLoad: $loadingFirstLoad, extraInfo: $extraInfo)';
   }
 
   @override
@@ -315,8 +297,6 @@ class _$FeedStateImpl extends _FeedState {
             (identical(other.index, index) || other.index == index) &&
             (identical(other.freshPostCount, freshPostCount) ||
                 other.freshPostCount == freshPostCount) &&
-            (identical(other.isCaching, isCaching) ||
-                other.isCaching == isCaching) &&
             (identical(other.isEndOfNetworkFeed, isEndOfNetworkFeed) ||
                 other.isEndOfNetworkFeed == isEndOfNetworkFeed) &&
             (identical(other.cursor, cursor) || other.cursor == cursor) &&
@@ -332,7 +312,6 @@ class _$FeedStateImpl extends _FeedState {
     const DeepCollectionEquality().hash(_loadedPosts),
     index,
     freshPostCount,
-    isCaching,
     isEndOfNetworkFeed,
     cursor,
     loadingFirstLoad,
@@ -354,7 +333,6 @@ abstract class _FeedState extends FeedState {
     required final List<AtUri> loadedPosts,
     required final int index,
     required final int freshPostCount,
-    required final bool isCaching,
     required final bool isEndOfNetworkFeed,
     required final String? cursor,
     required final bool loadingFirstLoad,
@@ -374,8 +352,6 @@ abstract class _FeedState extends FeedState {
   int get index;
   @override
   int get freshPostCount;
-  @override
-  bool get isCaching;
   @override
   bool get isEndOfNetworkFeed;
   @override

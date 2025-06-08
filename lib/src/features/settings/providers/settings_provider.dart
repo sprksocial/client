@@ -25,21 +25,35 @@ class Settings extends _$Settings {
   SettingsState build() {
     _repository = ref.watch(settingsRepositoryProvider);
     _logger = GetIt.instance<LogService>().getLogger('Settings');
+    
     // Load settings asynchronously but return a temporary state immediately
     // This prevents blocking the UI while loading
     Future.microtask(() => loadSettings());
     
     // Return temporary default state that will be replaced by loadSettings()
-    return SettingsState(activeFeed: Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk));
+    return SettingsState(
+      activeFeed: Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
+      feedBlurEnabled: false,
+      hideAdultContent: true,
+      feeds: [
+        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
+        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
+        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
+      ],
+    );
   }
 
   /// Loads all settings from persistent storage
   Future<void> loadSettings() async {
     try {
+      _logger.d('Loading settings from storage...');
+      
       final feedBlurEnabled = await _repository.getFeedBlurEnabled();
       final hideAdultContent = await _repository.getHideAdultContent();
       final feeds = await _repository.getFeeds();
       final activeFeed = await _repository.getActiveFeed();
+
+      _logger.d('Settings loaded - activeFeed: ${activeFeed.name}, feeds: ${feeds.map((f) => f.name).join(', ')}');
 
       state = SettingsState(
         activeFeed: activeFeed,
@@ -47,6 +61,8 @@ class Settings extends _$Settings {
         hideAdultContent: hideAdultContent,
         feeds: feeds,
       );
+      
+      _logger.d('Settings state updated successfully');
     } catch (e) {
       // If loading fails, keep the default state
       _logger.e('Error loading settings: $e');
@@ -95,5 +111,11 @@ class Settings extends _$Settings {
   Future<void> setActiveFeed(Feed feed) async {
     await _repository.setActiveFeed(feed);
     state = state.copyWith(activeFeed: feed);
+  }
+
+  /// Debug method to reload settings and verify persistence
+  Future<void> reloadSettingsForTesting() async {
+    _logger.d('Manually reloading settings for testing...');
+    await loadSettings();
   }
 }

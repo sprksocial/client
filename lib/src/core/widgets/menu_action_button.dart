@@ -52,8 +52,8 @@ class MenuActionButton extends StatelessWidget {
                 ListTile(
                   leading: const Icon(Icons.delete_outline, color: Colors.red),
                   title: Text('Delete', style: TextStyle(color: Colors.red)),
-                  onTap: () {
-                    context.router.maybePop();
+                  onTap: () async {
+                    await context.router.maybePop();
                     if (onDeletePressed != null) {
                       onDeletePressed!();
                     }

@@ -51,8 +51,7 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
           !state.loadingFirstLoad &&
           state.length == 0 &&
           !state.isEndOfNetworkFeed &&
-          !_isRefreshing &&
-          !state.isCaching) {
+          !_isRefreshing) {
         _hasInitialized = true;
         notifier.loadAndUpdateFirstLoad();
       }

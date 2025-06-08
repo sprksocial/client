@@ -15,7 +15,6 @@ abstract class FeedState with _$FeedState {
     required List<AtUri> loadedPosts,
     required int index,
     required int freshPostCount,
-    required bool isCaching,
     required bool isEndOfNetworkFeed,
     required String? cursor,
     required bool loadingFirstLoad,

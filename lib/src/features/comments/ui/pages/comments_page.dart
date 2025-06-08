@@ -4,6 +4,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/comments/providers/comments_page_provider.dart';
 import 'package:sparksocial/src/features/comments/ui/widgets/comment_input.dart';
 import 'package:sparksocial/src/features/comments/ui/widgets/comment_item.dart';
@@ -22,8 +23,6 @@ class CommentsPage extends ConsumerStatefulWidget {
 class _CommentsPageState extends ConsumerState<CommentsPage> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _animation;
-  final _scrollController = ScrollController();
-  final _focusNode = FocusNode();
 
   @override
   void initState() {
@@ -31,14 +30,81 @@ class _CommentsPageState extends ConsumerState<CommentsPage> with SingleTickerPr
     _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
     _animation = CurvedAnimation(parent: _animationController, curve: Curves.easeOut);
     _animationController.forward();
-
-    // Add focus listener to scroll to bottom when comment field receives focus
-    _focusNode.addListener(_focusListener);
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final height = MediaQuery.of(context).size.height * 0.75;
+    final backgroundColor = Theme.of(context).colorScheme.surface;
+
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.translate(offset: Offset(0, height * (1 - _animation.value)), child: child);
+      },
+      child: SafeArea(
+        child: Container(
+          height: height,
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+          ),
+          child: ClipRRect(
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+            child: AutoRouter(),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// New wrapper page for the main comments view
+@RoutePage()
+class CommentsListPage extends ConsumerStatefulWidget {
+  const CommentsListPage({super.key});
+
+  @override
+  ConsumerState<CommentsListPage> createState() => _CommentsListPageState();
+}
+
+class _CommentsListPageState extends ConsumerState<CommentsListPage> {
+  final _scrollController = ScrollController();
+  final _focusNode = FocusNode();
+  late final AtUri _postAtUri;
+  late final String _postUri;
+  late final bool _isSprk;
+  bool _initialized = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Add focus listener to scroll to bottom when comment field receives focus
+    _focusNode.addListener(_focusListener);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      // Get parameters from parent route
+      final parentRoute = context.routeData.parent!;
+      final parentArgs = parentRoute.argsAs<CommentsRouteArgs>();
+      _postUri = parentArgs.postUri;
+      _isSprk = parentArgs.isSprk;
+      _postAtUri = AtUri.parse(_postUri);
+      _initialized = true;
+    }
+  }
+
+  @override
+  void dispose() {
     _scrollController.dispose();
     _focusNode.removeListener(_focusListener);
     _focusNode.dispose();
@@ -55,9 +121,7 @@ class _CommentsPageState extends ConsumerState<CommentsPage> with SingleTickerPr
   }
 
   void _closeComments() {
-    _animationController.reverse().then((_) {
-      context.router.maybePop();
-    });
+    context.router.maybePop();
   }
 
   void _scrollToBottom() {
@@ -72,95 +136,105 @@ class _CommentsPageState extends ConsumerState<CommentsPage> with SingleTickerPr
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(commentsPageProvider(postUri: AtUri.parse(widget.postUri)));
-    final height = MediaQuery.of(context).size.height * 0.75;
-    final backgroundColor = Theme.of(context).colorScheme.surface;
+    final state = ref.watch(commentsPageProvider(postUri: _postAtUri));
     final borderColor = Theme.of(context).colorScheme.outline;
     final textColor = Theme.of(context).colorScheme.onSurface;
-    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 
-    return AnimatedBuilder(
-      animation: _animation,
-      builder: (context, child) {
-        return Transform.translate(offset: Offset(0, height * (1 - _animation.value)), child: child);
-      },
-      child: SafeArea(
-        child: Container(
-          height: height,
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
-            border: Border.all(color: Theme.of(context).colorScheme.outline.withAlpha(128)),
-          ),
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(border: Border(bottom: BorderSide(color: borderColor, width: 0.2))),
           child: Column(
             children: [
               Container(
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                decoration: BoxDecoration(border: Border(bottom: BorderSide(color: borderColor, width: 0.5))),
-                child: Column(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(color: borderColor, borderRadius: BorderRadius.circular(2)),
+              ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(color: borderColor, borderRadius: BorderRadius.circular(2)),
+                    Text(
+                      '${state.value?.thread.post.replyCount ?? 'Loading'} comments',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
                     ),
-                    const SizedBox(height: 12),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            '${state.value?.thread.post.replyCount} comments',
-                            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
-                          ),
-                          IconButton(
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            onPressed: _closeComments,
-                            icon: Icon(FluentIcons.dismiss_24_regular, color: textColor),
-                          ),
-                        ],
-                      ),
+                    IconButton(
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints(),
+                      onPressed: _closeComments,
+                      icon: Icon(FluentIcons.dismiss_24_regular, color: textColor),
                     ),
                   ],
-                ),
-              ),
-              Expanded(
-                child: state.when(
-                  data: (data) {
-                    return ListView.builder(
-                      controller: _scrollController,
-                      padding: const EdgeInsets.only(bottom: 16),
-                      itemCount: data.thread.replies?.length ?? 0,
-                      itemBuilder: (context, index) {
-                        final comment = data.thread.replies?[index] as ThreadViewPost;
-                        return CommentItem(key: ValueKey('comment-${comment.post.cid}'), thread: comment);
-                      },
-                    );
-                  },
-                  error: (error, stackTrace) {
-                    return Center(child: Text('Error: $error'));
-                  },
-                  loading: () {
-                    return const Center(child: CircularProgressIndicator());
-                  },
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(bottom: keyboardHeight),
-                child: CommentInputWidget(
-                  videoId: widget.postUri,
-                  postCid: state.value!.thread.post.cid,
-                  postUri: widget.postUri,
-                  isSprk: state.value!.thread.post.isSprk,
-                  focusNode: _focusNode,
                 ),
               ),
             ],
           ),
         ),
-      ),
+        Expanded(
+          child: state.when(
+            data: (data) {
+              return ListView.builder(
+                controller: _scrollController,
+                padding: const EdgeInsets.only(bottom: 16),
+                itemCount: data.thread.replies?.length ?? 0,
+                itemBuilder: (context, index) {
+                  final comment = data.thread.replies?[index] as ThreadViewPost;
+                  return CommentItem(key: ValueKey('comment-${comment.post.cid}'), thread: comment, mainPostUri: _postAtUri);
+                },
+              );
+            },
+            error: (error, stackTrace) {
+              return Center(child: Text('Error: $error'));
+            },
+            loading: () {
+              return const Center(child: CircularProgressIndicator());
+            },
+          ),
+        ),
+        state.when(
+          data:
+              (data) => _KeyboardAwareCommentInput(
+                videoId: _postUri,
+                postCid: data.thread.post.cid,
+                postUri: _postUri,
+                isSprk: _isSprk,
+                focusNode: _focusNode,
+              ),
+          error: (error, stackTrace) => const SizedBox.shrink(),
+          loading: () => const SizedBox.shrink(),
+        ),
+      ],
+    );
+  }
+}
+
+// Separate widget to handle keyboard awareness without rebuilding the provider
+class _KeyboardAwareCommentInput extends StatelessWidget {
+  final String videoId;
+  final String postCid;
+  final String postUri;
+  final bool isSprk;
+  final FocusNode focusNode;
+
+  const _KeyboardAwareCommentInput({
+    required this.videoId,
+    required this.postCid,
+    required this.postUri,
+    required this.isSprk,
+    required this.focusNode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: keyboardHeight),
+      child: CommentInputWidget(videoId: videoId, postCid: postCid, postUri: postUri, isSprk: isSprk, focusNode: focusNode),
     );
   }
 }

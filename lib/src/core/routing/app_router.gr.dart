@@ -60,6 +60,22 @@ class AuthPromptRouteArgs {
 }
 
 /// generated route for
+/// [CommentsListPage]
+class CommentsListRoute extends PageRouteInfo<void> {
+  const CommentsListRoute({List<PageRouteInfo>? children})
+    : super(CommentsListRoute.name, initialChildren: children);
+
+  static const String name = 'CommentsListRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      return const CommentsListPage();
+    },
+  );
+}
+
+/// generated route for
 /// [CommentsPage]
 class CommentsRoute extends PageRouteInfo<CommentsRouteArgs> {
   CommentsRoute({

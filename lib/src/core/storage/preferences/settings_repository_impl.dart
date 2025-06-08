@@ -4,14 +4,18 @@ import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
+import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
   late final SQLCacheInterface _sqlCache;
   late final StorageManager _storageManager;
+  late final SparkLogger _logger;
 
   SettingsRepositoryImpl() {
     _sqlCache = GetIt.instance<SQLCacheInterface>();
     _storageManager = GetIt.instance<StorageManager>();
+    _logger = GetIt.instance<LogService>().getLogger('SettingsRepository');
     _setupDefaultLabelPreferences();
   }
 
@@ -177,36 +181,72 @@ class SettingsRepositoryImpl implements SettingsRepository {
 
   @override
   Future<void> setFeeds(List<Feed> feeds) async {
-    await _storageManager.preferences.setObject<List<Feed>>(StorageKeys.feedsKey, feeds);
+    _logger.d('Saving feeds: ${feeds.map((f) => f.name).join(', ')}');
+    // Manually serialize feeds to JSON
+    final feedsJson = feeds.map((feed) => feed.toJson()).toList();
+    await _storageManager.preferences.setObject<List<Map<String, dynamic>>>(StorageKeys.feedsKey, feedsJson);
+    _logger.d('Feeds saved successfully');
   }
 
   @override
   Future<List<Feed>> getFeeds() async {
-    final feeds = await _storageManager.preferences.getObject<List<Feed>>(StorageKeys.feedsKey);
-    if (feeds == null) {
+    _logger.d('Loading feeds from storage...');
+    final feedsJson = await _storageManager.preferences.getObject<List<dynamic>>(StorageKeys.feedsKey);
+    if (feedsJson == null) {
+      _logger.d('No feeds found in storage, using defaults');
       final defaultFeeds = [
         Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
         Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
         Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
       ];
-      _storageManager.preferences.setObject<List<Feed>>(StorageKeys.feedsKey, defaultFeeds);
+      await setFeeds(defaultFeeds);
       return defaultFeeds;
     }
-    return feeds;
+    
+    try {
+      // Convert the JSON objects back to Feed objects
+      final feeds = feedsJson.map((json) => Feed.fromJson(json as Map<String, dynamic>)).toList();
+      _logger.d('Loaded feeds from storage: ${feeds.map((f) => f.name).join(', ')}');
+      return feeds;
+    } catch (e) {
+      _logger.e('Error deserializing feeds: $e');
+      // If deserialization fails, return defaults
+      final defaultFeeds = [
+        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
+        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
+        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
+      ];
+      await setFeeds(defaultFeeds);
+      return defaultFeeds;
+    }
   }
 
   @override
   Future<Feed> getActiveFeed() async {
-    final activeFeed = await _storageManager.preferences.getObject<Feed>(StorageKeys.activeFeedKey);
-    if (activeFeed == null) {
+    _logger.d('Loading active feed from storage...');
+    final activeFeedJson = await _storageManager.preferences.getObject<Map<String, dynamic>>(StorageKeys.activeFeedKey);
+    if (activeFeedJson == null) {
+      _logger.d('No active feed found in storage, using default (Latest)');
       return Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk);
     }
-    return activeFeed;
+    
+    try {
+      final activeFeed = Feed.fromJson(activeFeedJson);
+      _logger.d('Loaded active feed from storage: ${activeFeed.name}');
+      return activeFeed;
+    } catch (e) {
+      _logger.e('Error deserializing active feed: $e');
+      // If deserialization fails, return default
+      return Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk);
+    }
   }
 
   @override
   Future<void> setActiveFeed(Feed feed) async {
-    await _storageManager.preferences.setObject<Feed>(StorageKeys.activeFeedKey, feed);
+    _logger.d('Saving active feed: ${feed.name}');
+    // Manually serialize feed to JSON
+    await _storageManager.preferences.setObject<Map<String, dynamic>>(StorageKeys.activeFeedKey, feed.toJson());
+    _logger.d('Active feed saved successfully');
   }
 
   @override

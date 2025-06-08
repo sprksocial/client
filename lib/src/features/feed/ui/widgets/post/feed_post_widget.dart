@@ -5,6 +5,7 @@ import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
+import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
@@ -25,6 +26,7 @@ class FeedPostWidget extends ConsumerStatefulWidget {
 class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
   Future<dynamic>? _postFuture;
   String? _lastPostUri;
+  int? _lastUpdateCount;
   final GlobalKey<PostVideoPlayerState> _videoPlayerKey = GlobalKey<PostVideoPlayerState>();
 
   @override
@@ -39,11 +41,9 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
       final postUri = feedState.loadedPosts[widget.index];
       final currentUri = postUri.toString();
 
-      // Only create new future if URI changed
-      if (_lastPostUri != currentUri) {
-        _lastPostUri = currentUri;
-        _postFuture = GetIt.instance<SQLCacheInterface>().getPost(currentUri);
-      }
+      // Create new future if URI changed or if we need to force refresh
+      _lastPostUri = currentUri;
+      _postFuture = GetIt.instance<SQLCacheInterface>().getPost(currentUri);
     }
   }
 
@@ -69,7 +69,11 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
       final postUri = feedState.loadedPosts[widget.index];
       final currentUri = postUri.toString();
 
-      if (_lastPostUri != currentUri) {
+      // Watch for post updates to trigger reload
+      final updateCount = ref.watch(postUpdateProvider(currentUri));
+      
+      if (_lastPostUri != currentUri || _lastUpdateCount != updateCount) {
+        _lastUpdateCount = updateCount;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
             setState(() {

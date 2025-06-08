@@ -235,7 +235,7 @@ class FeedRepositoryImpl implements FeedRepository {
           final effectiveRootUri = rootUri ?? parentUri;
 
           // Determine if target is a Spark post or Bluesky post
-          final postType = switch (parentUri.origin) {
+          final postType = switch (parentUri.toString()) {
             String uri when uri.contains('sprk') => "so.sprk.feed.post",
             _ => "app.bsky.feed.post",
           };
@@ -252,8 +252,8 @@ class FeedRepositoryImpl implements FeedRepository {
             "\$type": postType,
             "text": text,
             "reply": {
-              "root": {"cid": effectiveRootCid, "uri": effectiveRootUri},
-              "parent": {"cid": parentCid, "uri": parentUri},
+              "root": {"cid": effectiveRootCid, "uri": effectiveRootUri.toString()},
+              "parent": {"cid": parentCid, "uri": parentUri.toString()},
             },
             "createdAt": DateTime.now().toUtc().toIso8601String(),
           };
@@ -458,11 +458,14 @@ class FeedRepositoryImpl implements FeedRepository {
 
       try {
         // Get the post thread
-        final source = bluesky ? 'app.bsky.feed.getPostThread' : 'so.sprk.feed.getThread';
+        final source = bluesky ? 'app.bsky.feed.getPostThread' : 'so.sprk.feed.getPostThread';
         final response = await atproto.get(
           NSID.parse(source),
           parameters: {'uri': uri.toString(), 'depth': depth, 'parentHeight': parentHeight},
-          to: (jsonMap) => Thread.fromJson(jsonMap),
+          headers: {'atproto-proxy': _client.sprkDid},
+          to: (jsonMap) {
+            return Thread.fromJson(jsonMap['thread'] as Map<String, dynamic>);
+          },
         );
 
         return response.data;

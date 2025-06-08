@@ -89,7 +89,7 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(onPressed: () => context.router.maybePop(), child: const Text('Cancel')),
+                  TextButton(onPressed: () => context.router.maybePop(_controller.text), child: const Text('Cancel')),
                   const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: () => context.router.maybePop(_controller.text),

@@ -6,12 +6,18 @@ part 'comment_state.freezed.dart';
 
 @freezed
 class CommentState with _$CommentState {
+  const CommentState._();
+  
   const factory CommentState({
     required ThreadViewPost thread,
-    @Default(false) bool isLiked,
     @Default(false) bool isVideoInitialized,
     @Default(false) bool isFirstImagePrecached,
     VideoPlayerController? videoController,
-    @Default(0) int originalLikeCount,
   }) = _CommentState;
+  
+  // Derive isLiked from the viewer state
+  bool get isLiked => thread.post.viewer?.like != null;
+  
+  // Get the actual like count, potentially adjusted for optimistic UI updates
+  int get likeCount => thread.post.likeCount ?? 0;
 }

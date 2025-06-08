@@ -6,6 +6,24 @@ part of 'splash_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
+String _$appReadyHash() => r'5f1917b1191f13f8443fc583a66e3d21936ee05c';
+
+/// Provider that monitors if the app is ready (active feed has finished loading)
+///
+/// Copied from [appReady].
+@ProviderFor(appReady)
+final appReadyProvider = AutoDisposeProvider<bool>.internal(
+  appReady,
+  name: r'appReadyProvider',
+  debugGetCreateSourceHash:
+      const bool.fromEnvironment('dart.vm.product') ? null : _$appReadyHash,
+  dependencies: null,
+  allTransitiveDependencies: null,
+);
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef AppReadyRef = AutoDisposeProviderRef<bool>;
 String _$splashNotifierHash() => r'444c2a810a5272fa5790ba9ddf230c1b3b5d07c5';
 
 /// Provider for the simple splash screen state

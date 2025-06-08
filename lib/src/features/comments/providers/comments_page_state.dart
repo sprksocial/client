@@ -6,10 +6,6 @@ part 'comments_page_state.freezed.dart';
 @freezed
 class CommentsPageState with _$CommentsPageState {
   const factory CommentsPageState({
-    String? replyingToUsername,
-    String? replyingToId,
-    String? replyingToUri,
-    String? replyingToCid,
     required ThreadViewPost thread,
   }) = _CommentsPageState;
 }

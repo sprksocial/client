@@ -138,41 +138,6 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
                 return const SizedBox();
               },
             ),
-            
-            // Debug overlay to show feed states (remove in production)
-            if (true) // Set to true to enable debug overlay
-              Positioned(
-                top: 50,
-                right: 10,
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('Feed States:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                      Text('Active: ${activeFeed.name}', style: const TextStyle(color: Colors.yellow, fontSize: 11)),
-                      const SizedBox(height: 4),
-                      ...feedStates.entries.map((entry) {
-                        final feed = entry.key;
-                        final state = entry.value;
-                        final isActive = feed == activeFeed;
-                        return Text(
-                          '${feed.name}: ${state.length} posts ${isActive ? "(ACTIVE)" : ""} ${state.loadingFirstLoad ? "(LOADING)" : ""} ${state.isCaching ? "(CACHING)" : ""}',
-                          style: TextStyle(
-                            color: isActive ? Colors.green : Colors.white,
-                            fontSize: 12,
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                ),
-              ),
           ],
         ),
       ),

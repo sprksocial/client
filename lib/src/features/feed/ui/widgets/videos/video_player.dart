@@ -30,6 +30,10 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
   bool shouldCacheAgain = false;
   bool _cacheRequested = false; // Track if cache request has been made
   bool _isSeeking = false;
+  
+  // State tracking to prevent unnecessary play/pause cycles
+  int? _lastNavigationIndex;
+  int? _lastFeedIndex;
 
   // Expose the video controller publicly
   VideoPlayerController? get controller => isInitialized ? videoController : null;
@@ -66,6 +70,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
     if (!mounted) return;
     if (file == null) {
       // start caching it again, but for the time being, use a network player
+      throw Exception('Video not cached');
       videoController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
       shouldCacheAgain = true;
     } else {
@@ -128,12 +133,36 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Watch navigation state to handle tab changes
+    // Watch navigation state - handle changes only when they actually occur
     final navigationState = ref.watch(navigationProvider);
     final isOnFeedsTab = navigationState.currentIndex == 0;
 
+    // Watch feed state for auto-play logic - handle changes only when they actually occur
+    final feedState = widget.feed != null ? ref.watch(feedNotifierProvider(widget.feed!)) : null;
+
+    // Handle navigation changes only when they actually change
+    if (_lastNavigationIndex != navigationState.currentIndex) {
+      _lastNavigationIndex = navigationState.currentIndex;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _handleNavigationPause(isOnFeedsTab);
+        }
+      });
+    }
+
+    // Handle feed index changes only when they actually change
+    if (feedState != null && _lastFeedIndex != feedState.index) {
+      _lastFeedIndex = feedState.index;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && !_userInteracted) {
+          final shouldPlay = feedState.index == widget.index && isOnFeedsTab;
+          _handleAutoPlayPause(shouldPlay);
+        }
+      });
+    }
+
     if (shouldCacheAgain && !_cacheRequested && widget.feed != null && widget.index != null) {
-      _cacheRequested = true; // Set flag immediately to prevent multiple requests
+      _cacheRequested = true; // Set flag immediate to prevent multiple requests
       // Delay the provider modification until after the build is complete
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final notifier = ref.read(feedNotifierProvider(widget.feed!).notifier);
@@ -143,19 +172,6 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
         }
       });
     }
-
-    // Handle navigation-based pausing and auto-play/pause based on visibility
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      // First handle navigation-based pausing
-      _handleNavigationPause(isOnFeedsTab);
-      
-      // Then handle auto-play/pause based on visibility (only if on feeds tab and user hasn't manually interacted)
-      if (isOnFeedsTab && widget.feed != null && widget.index != null) {
-        if (mounted) {
-          _handleAutoPlayPause(ref.watch(feedNotifierProvider(widget.feed!)).index == widget.index);
-        }
-      }
-    });
 
     return Stack(
       children: [
@@ -172,7 +188,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
             children: [
               SizedBox.expand(
                 child: FittedBox(
-                  fit: BoxFit.cover,
+                  fit: BoxFit.contain,
                   child: SizedBox(
                     width: videoController.value.size.width,
                     height: videoController.value.size.height,

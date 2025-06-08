@@ -18,7 +18,7 @@ class UserAvatar extends StatelessWidget {
     this.username = '',
     this.size = 40,
     this.borderColor,
-    this.borderWidth = 1,
+    this.borderWidth = 0,
     this.backgroundColor,
     this.fallbackTextColor,
   });
@@ -40,7 +40,7 @@ class UserAvatar extends StatelessWidget {
         decoration: BoxDecoration(
           color: effectiveBackgroundColor,
           shape: BoxShape.circle,
-          border: Border.all(color: effectiveBorderColor, width: borderWidth),
+          border: borderWidth > 0 ? Border.all(color: effectiveBorderColor, width: borderWidth) : null,
         ),
         child: Center(
           child: username.isNotEmpty
@@ -59,7 +59,7 @@ class UserAvatar extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: effectiveBorderColor, width: borderWidth),
+        border: borderWidth > 0 ? Border.all(color: effectiveBorderColor, width: borderWidth) : null,
       ),
       clipBehavior: Clip.antiAlias,
       child: CachedNetworkImage(
