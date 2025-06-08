@@ -125,6 +125,10 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                   isLiked: postData.viewer?.like != null,
                   profileImageUrl: postData.author.avatar.toString(),
                   isImage: postData.embed is EmbedViewImage,
+                  onProfilePressed: () {
+                    // Pause video before navigating to profile
+                    _videoPlayerKey.currentState?.pauseVideo();
+                  },
                 ),
               ),
 
@@ -138,6 +142,8 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                   hashtags: postData.record.hashtags,
                   isSprk: postData.uri.toString().contains('so.sprk'),
                   onUsernameTap: () {
+                    // Pause video before navigating to profile
+                    _videoPlayerKey.currentState?.pauseVideo();
                     context.router.push(ProfileRoute(did: postData.author.did));
                   },
                 ),

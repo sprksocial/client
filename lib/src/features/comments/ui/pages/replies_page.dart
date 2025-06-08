@@ -61,7 +61,6 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(commentsPageProvider(postUri: AtUri.parse(widget.postUri)));
     final backgroundColor = Theme.of(context).colorScheme.surface;
-    final borderColor = Theme.of(context).colorScheme.outline;
     final textColor = Theme.of(context).colorScheme.onSurface;
     final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
 

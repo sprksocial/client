@@ -8,7 +8,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_state.dart';
 import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/post/feed_post_widget.dart';
 import 'package:video_player/video_player.dart';
 
 part 'comment_provider.g.dart';

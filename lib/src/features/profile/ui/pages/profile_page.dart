@@ -12,6 +12,7 @@ import 'package:sparksocial/src/features/profile/providers/profile_provider.dart
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_header.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/early_supporter_sheet.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_menu_sheet.dart';
+import 'package:sparksocial/src/features/profile/ui/widgets/profile_tabs.dart';
 import 'package:get_it/get_it.dart';
 
 @RoutePage()
@@ -93,154 +94,168 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         }
         final bool isCurrentUser = notifier.isCurrentUser();
 
+        return AutoTabsRouter(
+          routes: [
+            ProfileVideosRoute(did: widget.did),
+            ProfilePhotosRoute(did: widget.did),
+          ],
+          builder: (context, child) {
+            final tabsRouter = AutoTabsRouter.of(context);
+            
+            return Scaffold(
+              backgroundColor: theme.scaffoldBackgroundColor,
+              appBar: AppBar(
+                centerTitle: true,
+                title: Text(
+                  profile.displayName ?? profile.handle, // handle is not nullable in core Profile model
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.textTheme.titleLarge?.color),
+                ),
+                backgroundColor: theme.brightness == Brightness.dark
+                    ? colorScheme.surfaceContainerHighest
+                    : colorScheme.surface, // Example colors
+                elevation: 0,
+                actions: [
+                  if (isCurrentUser)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: IconButton(
+                        padding: EdgeInsets.zero,
+                        onPressed: () => _showProfileMenu(context, ref),
+                        icon: Icon(FluentIcons.more_horizontal_24_regular, color: theme.iconTheme.color),
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.only(right: 8.0),
+                      child: MenuActionButton(
+                        // Assuming this widget is fine
+                        onPressed: () => showDialog(
+                          context: context,
+                          useRootNavigator: false,
+                          builder: (dContext) => ReportDialog(
+                            // postUri & postCid for profiles are a bit different.
+                            // For profiles, the subject is the DID itself.
+                            postUri: 'at://${profile.did}/app.bsky.actor.profile/self', // Or just profile.did
+                            postCid:
+                                profile.did, // Using DID as a placeholder, actual String not usually needed for profile report subject
+                            onSubmit: (subject, reasonType, reason, service) async {
+                              try {
+                                // The ReportDialog gives reasonType as atp.ModerationReasonType
+                                // String reasonTypeString = (reasonType as dynamic).value; // Adapt if ReportDialog gives different type
 
-
-        return Scaffold(
-          backgroundColor: theme.scaffoldBackgroundColor,
-          appBar: AppBar(
-            centerTitle: true,
-            title: Text(
-              profile.displayName ?? profile.handle, // handle is not nullable in core Profile model
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.textTheme.titleLarge?.color),
-            ),
-            backgroundColor: theme.brightness == Brightness.dark
-                ? colorScheme.surfaceContainerHighest
-                : colorScheme.surface, // Example colors
-            elevation: 0,
-            actions: [
-              if (isCurrentUser)
-                Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: IconButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () => _showProfileMenu(context, ref),
-                    icon: Icon(FluentIcons.more_horizontal_24_regular, color: theme.iconTheme.color),
-                  ),
-                )
-              else
-                Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: MenuActionButton(
-                    // Assuming this widget is fine
-                    onPressed: () => showDialog(
-                      context: context,
-                      useRootNavigator: false,
-                      builder: (dContext) => ReportDialog(
-                        // postUri & postCid for profiles are a bit different.
-                        // For profiles, the subject is the DID itself.
-                        postUri: 'at://${profile.did}/app.bsky.actor.profile/self', // Or just profile.did
-                        postCid:
-                            profile.did, // Using DID as a placeholder, actual String not usually needed for profile report subject
-                        onSubmit: (subject, reasonType, reason, service) async {
-                          try {
-                            // The ReportDialog gives reasonType as atp.ModerationReasonType
-                            // String reasonTypeString = (reasonType as dynamic).value; // Adapt if ReportDialog gives different type
-
-                            final success = await notifier.createReport(
-                              did: profile.did,
-                              reasonType: reasonType, // Pass the enum directly
-                              reason: reason,
-                            );
-                            if (success) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(
-                                  context,
-                                ).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+                                final success = await notifier.createReport(
+                                  did: profile.did,
+                                  reasonType: reasonType, // Pass the enum directly
+                                  reason: reason,
+                                );
+                                if (success) {
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(
+                                      context,
+                                    ).showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+                                  }
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+                                }
                               }
-                            }
-                          } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
-                            }
-                          }
-                        },
+                            },
+                          ),
+                        ),
+                        backgroundColor: colorScheme.onSurface.withAlpha(30), // Example adaptive color
+                        isProfile: true,
                       ),
                     ),
-                    backgroundColor: colorScheme.onSurface.withAlpha(30), // Example adaptive color
-                    isProfile: true,
-                  ),
-                ),
-            ],
-          ),
-          body: SafeArea(
-            child: RefreshIndicator(
-              onRefresh: () => notifier.refreshProfile(),
-              child: CustomScrollView(
-                key: PageStorageKey<String>('profile_${widget.did}'), // Use the passed did
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: ProfileHeader(
-                      profile: profile,
-                      isCurrentUser: isCurrentUser,
-                      isEarlySupporter: state.isEarlySupporter,
-                      onEarlySupporterTap: () => _showEarlySupporterInfo(context),
-                      onEditTap: () {
-                        final authRepository = ref.read(authRepositoryProvider);
-                        if (authRepository.isAuthenticated) {
-                          context.router.push(EditProfileRoute(profile: profile)).then((updated) {
-                            if (updated == true) {
-                              notifier.refreshProfile();
+                ],
+              ),
+              body: SafeArea(
+                child: RefreshIndicator(
+                  onRefresh: () => notifier.refreshProfile(),
+                  child: CustomScrollView(
+                    key: PageStorageKey<String>('profile_${widget.did}'), // Use the passed did
+                    slivers: [
+                      SliverToBoxAdapter(
+                        child: ProfileHeader(
+                          profile: profile,
+                          isCurrentUser: isCurrentUser,
+                          isEarlySupporter: state.isEarlySupporter,
+                          onEarlySupporterTap: () => _showEarlySupporterInfo(context),
+                          onEditTap: () {
+                            final authRepository = ref.read(authRepositoryProvider);
+                            if (authRepository.isAuthenticated) {
+                              context.router.push(EditProfileRoute(profile: profile)).then((updated) {
+                                if (updated == true) {
+                                  notifier.refreshProfile();
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(
+                                      context,
+                                    ).showSnackBar(const SnackBar(content: Text('Profile updated successfully')));
+                                  }
+                                }
+                              });
+                            } else {
+                              notifier.triggerAuthPrompt();
+                            }
+                          },
+                          onShareTap: () => _logger.i('Share profile tapped for ${profile.did}'),
+                          onFollowTap: () async {
+                            final initialFollowingStateForSnackbar = profile.viewer?.following; // Capture before action
+                            try {
+                              await notifier.toggleFollow();
+                              // Read the latest state AFTER the toggleFollow has completed and updated the state.
+                              final latestProfileState = ref.read(profileNotifierProvider(did: widget.did)).asData?.value;
+
+                              // Only show snackbar if an actual follow/unfollow action occurred
+                              // and auth prompt was not the primary outcome.
+                              if (latestProfileState != null &&
+                                  !latestProfileState.showAuthPrompt &&
+                                  latestProfileState.profile?.viewer?.following != initialFollowingStateForSnackbar) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        latestProfileState.profile?.viewer?.following != null
+                                            ? 'Followed successfully'
+                                            : 'Unfollowed successfully',
+                                      ),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
+                                }
+                              }
+                            } catch (e) {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(
                                   context,
-                                ).showSnackBar(const SnackBar(content: Text('Profile updated successfully')));
+                                ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red));
                               }
                             }
-                          });
-                        } else {
-                          notifier.triggerAuthPrompt();
-                        }
-                      },
-                      onShareTap: () => _logger.i('Share profile tapped for ${profile.did}'),
-                      onFollowTap: () async {
-                        final initialFollowingStateForSnackbar = profile.viewer?.following; // Capture before action
-                        try {
-                          await notifier.toggleFollow();
-                          // Read the latest state AFTER the toggleFollow has completed and updated the state.
-                          final latestProfileState = ref.read(profileNotifierProvider(did: widget.  did)).asData?.value;
-
-                          // Only show snackbar if an actual follow/unfollow action occurred
-                          // and auth prompt was not the primary outcome.
-                          if (latestProfileState != null &&
-                              !latestProfileState.showAuthPrompt &&
-                              latestProfileState.profile?.viewer?.following != initialFollowingStateForSnackbar) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    latestProfileState.profile?.viewer?.following != null
-                                        ? 'Followed successfully'
-                                        : 'Unfollowed successfully',
-                                  ),
-                                  backgroundColor: Colors.green,
-                                ),
-                              );
-                            }
-                          }
-                        } catch (e) {
-                          if (context.mounted) {
-                            ScaffoldMessenger.of(
-                              context,
-                            ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red));
-                          }
-                        }
-                      },
-                      onSettingsTap: () => context.router.push(EditProfileRoute(profile: profile)).then((_) {
-                        notifier.refreshProfile();
-                      }),
-                    ),
+                          },
+                          onSettingsTap: () => context.router.push(EditProfileRoute(profile: profile)).then((_) {
+                            notifier.refreshProfile();
+                          }),
+                        ),
+                      ),
+                      SliverPersistentHeader(
+                        pinned: true,
+                        delegate: StickyTabBarDelegate(
+                          child: ProfileTabs(
+                            selectedIndex: tabsRouter.activeIndex,
+                            onTabSelected: (index) => tabsRouter.setActiveIndex(index),
+                            isAuthenticated: isCurrentUser,
+                          ),
+                        ),
+                      ),
+                      SliverFillRemaining(
+                        child: child, // This will be the auto-routed tab content
+                      ),
+                    ],
                   ),
-                  SliverPersistentHeader(
-                    pinned: true,
-                    delegate: StickyTabBarDelegate(
-                      child: Placeholder(), // TODO: Add profile tabs
-                    ),
-                  ),
-                  Placeholder(), // TODO: Add tab content
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         );
       },
       loading: () => Scaffold(
@@ -304,25 +319,4 @@ class ErrorScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-class StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
-  final Widget child;
-
-  StickyTabBarDelegate({required this.child});
-
-  @override
-  Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
-    // Use Theme.of(context) for background color to be adaptive
-    return Container(color: Theme.of(context).scaffoldBackgroundColor, child: child);
-  }
-
-  @override
-  double get maxExtent => 48; // Should be a constant or configurable
-
-  @override
-  double get minExtent => 48; // Should be a constant or configurable
-
-  @override
-  bool shouldRebuild(SliverPersistentHeaderDelegate oldDelegate) => true; // Or compare child
 }

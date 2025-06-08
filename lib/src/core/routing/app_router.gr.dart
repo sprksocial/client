@@ -450,6 +450,108 @@ class ProfileRouteArgs {
 }
 
 /// generated route for
+/// [ProfilePhotosPage]
+class ProfilePhotosRoute extends PageRouteInfo<ProfilePhotosRouteArgs> {
+  ProfilePhotosRoute({
+    required String did,
+    Key? key,
+    List<PageRouteInfo>? children,
+  }) : super(
+         ProfilePhotosRoute.name,
+         args: ProfilePhotosRouteArgs(did: did, key: key),
+         rawPathParams: {'did': did},
+         initialChildren: children,
+       );
+
+  static const String name = 'ProfilePhotosRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final pathParams = data.inheritedPathParams;
+      final args = data.argsAs<ProfilePhotosRouteArgs>(
+        orElse: () => ProfilePhotosRouteArgs(did: pathParams.getString('did')),
+      );
+      return ProfilePhotosPage(did: args.did, key: args.key);
+    },
+  );
+}
+
+class ProfilePhotosRouteArgs {
+  const ProfilePhotosRouteArgs({required this.did, this.key});
+
+  final String did;
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'ProfilePhotosRouteArgs{did: $did, key: $key}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ProfilePhotosRouteArgs) return false;
+    return did == other.did && key == other.key;
+  }
+
+  @override
+  int get hashCode => did.hashCode ^ key.hashCode;
+}
+
+/// generated route for
+/// [ProfileVideosPage]
+class ProfileVideosRoute extends PageRouteInfo<ProfileVideosRouteArgs> {
+  ProfileVideosRoute({
+    required String did,
+    Key? key,
+    List<PageRouteInfo>? children,
+  }) : super(
+         ProfileVideosRoute.name,
+         args: ProfileVideosRouteArgs(did: did, key: key),
+         rawPathParams: {'did': did},
+         initialChildren: children,
+       );
+
+  static const String name = 'ProfileVideosRoute';
+
+  static PageInfo page = PageInfo(
+    name,
+    builder: (data) {
+      final pathParams = data.inheritedPathParams;
+      final args = data.argsAs<ProfileVideosRouteArgs>(
+        orElse: () => ProfileVideosRouteArgs(did: pathParams.getString('did')),
+      );
+      return ProfileVideosPage(did: args.did, key: args.key);
+    },
+  );
+}
+
+class ProfileVideosRouteArgs {
+  const ProfileVideosRouteArgs({required this.did, this.key});
+
+  final String did;
+
+  final Key? key;
+
+  @override
+  String toString() {
+    return 'ProfileVideosRouteArgs{did: $did, key: $key}';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is! ProfileVideosRouteArgs) return false;
+    return did == other.did && key == other.key;
+  }
+
+  @override
+  int get hashCode => did.hashCode ^ key.hashCode;
+}
+
+/// generated route for
 /// [RegisterPage]
 class RegisterRoute extends PageRouteInfo<void> {
   const RegisterRoute({List<PageRouteInfo>? children})

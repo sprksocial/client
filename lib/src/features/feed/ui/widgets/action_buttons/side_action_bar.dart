@@ -27,6 +27,8 @@ class SideActionBar extends ConsumerStatefulWidget {
   final PostView post;
   // Add flag to identify image content
   final bool isImage;
+  // Add callback for profile navigation to allow pausing video
+  final VoidCallback? onProfilePressed;
 
   const SideActionBar({
     super.key,
@@ -37,6 +39,7 @@ class SideActionBar extends ConsumerStatefulWidget {
     this.profileImageUrl,
     required this.post,
     this.isImage = false,
+    this.onProfilePressed,
   });
 
   @override
@@ -45,14 +48,12 @@ class SideActionBar extends ConsumerStatefulWidget {
 
 class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
   bool _isLiked = false;
-  late String _commentCount;
   PostView? _currentPost; // Track the current post state locally
 
   @override
   void initState() {
     super.initState();
     _isLiked = widget.isLiked;
-    _commentCount = widget.commentCount;
     _currentPost = widget.post; // Initialize with the original post
   }
 
@@ -62,11 +63,6 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
     if (oldWidget.isLiked != widget.isLiked) {
       setState(() {
         _isLiked = widget.isLiked;
-      });
-    }
-    if (oldWidget.commentCount != widget.commentCount) {
-      setState(() {
-        _commentCount = widget.commentCount;
       });
     }
     if (oldWidget.post != widget.post) {
@@ -232,6 +228,11 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
   }
 
   void _handleProfilePressed() {
+    // Call custom callback if provided (for video pausing)
+    if (widget.onProfilePressed != null) {
+      widget.onProfilePressed!();
+    }
+    
     final currentPost = _currentPost ?? widget.post;
     context.router.push(ProfileRoute(did: currentPost.author.did));
   }
@@ -255,7 +256,10 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
         ),
         const SizedBox(height: 20),
 
-        CommentActionButton(count: (_currentPost?.replyCount ?? int.tryParse(widget.commentCount) ?? 0).toString(), onPressed: _handleCommentPressed),
+        CommentActionButton(
+          count: (_currentPost?.replyCount ?? int.tryParse(widget.commentCount) ?? 0).toString(),
+          onPressed: _handleCommentPressed,
+        ),
         const SizedBox(height: 20),
 
         // Only show share button for videos, not for images

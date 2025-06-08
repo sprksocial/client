@@ -100,12 +100,12 @@ class FeedRepositoryImpl implements FeedRepository {
 
   @override
   Future<({List<FeedViewPost> posts, String? cursor})> getAuthorFeed(
-    String actor, {
+    AtUri actorUri, {
     int limit = 20,
     String? cursor,
     bool videosOnly = false,
   }) async {
-    _logger.d('Getting author feed for actor: $actor, limit: $limit, cursor: $cursor');
+    _logger.d('Getting author feed for actor: $actorUri, limit: $limit, cursor: $cursor');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
@@ -118,7 +118,7 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final parameters = <String, dynamic>{'actor': actor, 'limit': limit};
+      final parameters = <String, dynamic>{'actor': actorUri.hostname, 'limit': limit};
 
       if (videosOnly) {
         parameters['filter'] = 'posts_with_video';
@@ -136,7 +136,7 @@ class FeedRepositoryImpl implements FeedRepository {
           headers: {'atproto-proxy': _client.sprkDid},
           to:
               (jsonMap) => (
-                posts: (jsonMap['posts'] as List<dynamic>).map((post) => FeedViewPost.fromJson(post)).toList(),
+                posts: (jsonMap['feed'] as List<dynamic>).map((post) => FeedViewPost.fromJson(post)).toList(),
                 cursor: jsonMap['cursor'] as String?,
               ),
           adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
@@ -146,7 +146,7 @@ class FeedRepositoryImpl implements FeedRepository {
       } catch (e) {
         _logger.e('Error getting author feed from spark. Trying bluesky...', error: e);
         final resultBsky = await bsky.Bluesky.fromSession(_client.authRepository.session!).feed.getAuthorFeed(
-          actor: actor,
+          actor: actorUri.toString(),
           limit: limit,
           cursor: cursor,
           filter: videosOnly ? bsky.FeedFilter.postsWithVideo : bsky.FeedFilter.postsWithMedia,

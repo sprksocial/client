@@ -31,14 +31,14 @@ class AppRouter extends RootStackRouter {
           path: 'profile',
           children: [
             AutoRoute(page: EditProfileRoute.page, path: 'edit'),
-            // AutoRoute(
-            //   page: ProfilePhotosRoute.page,
-            //   path: 'photos',
-            // ),
-            // AutoRoute(
-            //   page: ProfileVideosRoute.page,
-            //   path: 'videos',
-            // ),
+            AutoRoute(
+              page: ProfilePhotosRoute.page,
+              path: 'photos',
+            ),
+            AutoRoute(
+              page: ProfileVideosRoute.page,
+              path: 'videos',
+            ),
           ],
         ),
       ],
@@ -67,14 +67,8 @@ class AppRouter extends RootStackRouter {
       page: ProfileRoute.page,
       path: '/profile/:did',
       children: [
-        // AutoRoute(
-        //   page: ProfilePhotosRoute.page,
-        //   path: 'photos',
-        // ),
-        // AutoRoute(
-        //   page: ProfileVideosRoute.page,
-        //   path: 'videos',
-        // ),
+        AutoRoute(page: ProfileVideosRoute.page, path: 'videos', initial: true),
+        AutoRoute(page: ProfilePhotosRoute.page, path: 'photos'),
       ],
     ),
     AutoRoute(page: EmptyRoute.page, path: '/empty'),

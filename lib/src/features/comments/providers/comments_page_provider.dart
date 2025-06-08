@@ -6,7 +6,6 @@ import 'package:sparksocial/src/core/network/atproto.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/features/comments/providers/comments_page_state.dart';
 import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/post/feed_post_widget.dart';
 
 part 'comments_page_provider.g.dart';
 

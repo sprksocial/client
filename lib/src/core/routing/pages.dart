@@ -7,6 +7,8 @@ export 'package:sparksocial/src/features/auth/ui/pages/import_follows_page.dart'
 export 'package:sparksocial/src/features/auth/ui/pages/onboarding_page.dart';
 export 'package:sparksocial/src/features/profile/ui/pages/profile_page.dart';
 export 'package:sparksocial/src/features/profile/ui/pages/edit_profile_page.dart';
+export 'package:sparksocial/src/features/profile/ui/pages/profile_videos_page.dart';
+export 'package:sparksocial/src/features/profile/ui/pages/profile_photos_page.dart';
 export 'package:sparksocial/src/features/feed/ui/pages/feed_page.dart';
 export 'package:sparksocial/src/features/feed/ui/pages/feeds_page.dart';
 export 'package:sparksocial/src/features/home/ui/pages/main_page.dart';
@@ -19,5 +21,5 @@ export 'package:sparksocial/src/features/home/ui/pages/placeholder_page.dart';
 export 'package:sparksocial/src/features/settings/ui/pages/feed_list_page.dart';
 export 'package:sparksocial/src/features/comments/ui/pages/comments_page.dart';
 export 'package:sparksocial/src/features/feed/ui/pages/standalone_post_page.dart';
-export 'package:sparksocial/src/features/profile/ui/pages/user_profile_page.dart';
 export 'package:sparksocial/src/features/comments/ui/pages/replies_page.dart';
+export 'package:sparksocial/src/features/profile/ui/pages/user_profile_page.dart';

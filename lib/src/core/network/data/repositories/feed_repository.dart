@@ -18,11 +18,11 @@ abstract class FeedRepository {
 
   /// Get an author's feed
   ///
-  /// [actor] The DID of the author
+  /// [actorUri] The URI of the author
   /// [limit] The number of items to return (default 20)
   /// [cursor] Pagination cursor for the next set of results
   Future<({List<FeedViewPost> posts, String? cursor})> getAuthorFeed(
-    String actor, {
+    AtUri actorUri, {
     int limit = 20,
     String? cursor,
     bool videosOnly = false,

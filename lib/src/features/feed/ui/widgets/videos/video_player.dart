@@ -38,6 +38,16 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
   // Expose the video controller publicly
   VideoPlayerController? get controller => isInitialized ? videoController : null;
 
+  // Add public method to pause video
+  void pauseVideo() {
+    if (isInitialized && videoController.value.isPlaying) {
+      videoController.pause();
+      setState(() {
+        _userInteracted = true; // Mark as user interaction to prevent auto-resume
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -70,7 +80,6 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
     if (!mounted) return;
     if (file == null) {
       // start caching it again, but for the time being, use a network player
-      throw Exception('Video not cached');
       videoController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
       shouldCacheAgain = true;
     } else {

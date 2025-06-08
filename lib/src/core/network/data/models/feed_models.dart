@@ -294,6 +294,17 @@ class PostView with _$PostView {
         return [];
     }
   }
+
+  String get thumbnailUrl {
+    switch (embed) {
+      case EmbedViewVideo(:final thumbnail):
+        return thumbnail.toString();
+      case EmbedViewImage(:final images):
+        return images.first.thumb.toString();
+      case _:
+        return '';
+    }
+  }
 }
 
 @Freezed(unionKey: r'$type')
