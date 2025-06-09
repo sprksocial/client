@@ -52,6 +52,7 @@ class ProfileViewBasic with _$ProfileViewBasic {
     @AtUriConverter() AtUri? avatar,
     // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
     ActorViewer? viewer,
+    List<StrongRef>? stories,
   }) = _ProfileViewBasic;
 
   factory ProfileViewBasic.fromJson(Map<String, dynamic> json) => _$ProfileViewBasicFromJson(json);
@@ -71,6 +72,7 @@ class ProfileView with _$ProfileView {
     // indexedAt and createdAt
     ActorViewer? viewer,
     List<Label>? labels,
+    // no stories here for some reason
   }) = _ProfileView;
 
   factory ProfileView.fromJson(Map<String, dynamic> json) => _$ProfileViewFromJson(json);
@@ -96,6 +98,7 @@ class ProfileViewDetailed with _$ProfileViewDetailed {
     ActorViewer? viewer,
     List<Label>? labels,
     StrongRef? pinnedPost, // this is a list if the backend implements https://github.com/sprksocial/spark-back-end/issues/13
+    List<StrongRef>? stories,
   }) = _ProfileViewDetailed;
 
   factory ProfileViewDetailed.fromJson(Map<String, dynamic> json) => _$ProfileViewDetailedFromJson(json);

@@ -464,3 +464,43 @@ class ThreadContext with _$ThreadContext {
 
   factory ThreadContext.fromJson(Map<String, dynamic> json) => _$ThreadContextFromJson(json);
 }
+
+@freezed
+class StoryView with _$StoryView {
+  const StoryView._();
+  @JsonSerializable(explicitToJson: true)
+  const factory StoryView({
+    required String cid,
+    @AtUriConverter() required AtUri uri,
+    required ProfileViewBasic author,
+    required StoryRecord record,
+    required DateTime indexedAt,
+    EmbedView? embed,
+    // viewer eventually i think
+  }) = _StoryView;
+
+  factory StoryView.fromJson(Map<String, dynamic> json) => _$StoryViewFromJson(json);
+}
+
+@freezed
+class StoryRecord with _$StoryRecord {
+  const StoryRecord._();
+  @JsonSerializable(explicitToJson: true)
+  const factory StoryRecord({
+    required DateTime createdAt,
+    required Embed media,
+    List<SelfLabel>? selfLabels,
+    List<String>? tags,
+  }) = _StoryRecord;
+
+  factory StoryRecord.fromJson(Map<String, dynamic> json) => _$StoryRecordFromJson(json);
+}
+
+@freezed
+class StoriesByAuthor with _$StoriesByAuthor {
+  const StoriesByAuthor._();
+  @JsonSerializable(explicitToJson: true)
+  const factory StoriesByAuthor({required ProfileViewBasic author, required List<StoryView> stories}) = _StoriesByAuthor;
+
+  factory StoriesByAuthor.fromJson(Map<String, dynamic> json) => _$StoriesByAuthorFromJson(json);
+}

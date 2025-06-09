@@ -644,3 +644,62 @@ Map<String, dynamic> _$$ThreadContextImplToJson(_$ThreadContextImpl instance) =>
         const AtUriConverter().toJson,
       ),
     };
+
+_$StoryViewImpl _$$StoryViewImplFromJson(Map<String, dynamic> json) =>
+    _$StoryViewImpl(
+      cid: json['cid'] as String,
+      uri: const AtUriConverter().fromJson(json['uri'] as String),
+      author: ProfileViewBasic.fromJson(json['author'] as Map<String, dynamic>),
+      record: StoryRecord.fromJson(json['record'] as Map<String, dynamic>),
+      indexedAt: DateTime.parse(json['indexedAt'] as String),
+      embed:
+          json['embed'] == null
+              ? null
+              : EmbedView.fromJson(json['embed'] as Map<String, dynamic>),
+    );
+
+Map<String, dynamic> _$$StoryViewImplToJson(_$StoryViewImpl instance) =>
+    <String, dynamic>{
+      'cid': instance.cid,
+      'uri': const AtUriConverter().toJson(instance.uri),
+      'author': instance.author.toJson(),
+      'record': instance.record.toJson(),
+      'indexedAt': instance.indexedAt.toIso8601String(),
+      'embed': instance.embed?.toJson(),
+    };
+
+_$StoryRecordImpl _$$StoryRecordImplFromJson(Map<String, dynamic> json) =>
+    _$StoryRecordImpl(
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      media: Embed.fromJson(json['media'] as Map<String, dynamic>),
+      selfLabels:
+          (json['selfLabels'] as List<dynamic>?)
+              ?.map((e) => SelfLabel.fromJson(e as Map<String, dynamic>))
+              .toList(),
+      tags: (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList(),
+    );
+
+Map<String, dynamic> _$$StoryRecordImplToJson(_$StoryRecordImpl instance) =>
+    <String, dynamic>{
+      'createdAt': instance.createdAt.toIso8601String(),
+      'media': instance.media.toJson(),
+      'selfLabels': instance.selfLabels?.map((e) => e.toJson()).toList(),
+      'tags': instance.tags,
+    };
+
+_$StoriesByAuthorImpl _$$StoriesByAuthorImplFromJson(
+  Map<String, dynamic> json,
+) => _$StoriesByAuthorImpl(
+  author: ProfileViewBasic.fromJson(json['author'] as Map<String, dynamic>),
+  stories:
+      (json['stories'] as List<dynamic>)
+          .map((e) => StoryView.fromJson(e as Map<String, dynamic>))
+          .toList(),
+);
+
+Map<String, dynamic> _$$StoriesByAuthorImplToJson(
+  _$StoriesByAuthorImpl instance,
+) => <String, dynamic>{
+  'author': instance.author.toJson(),
+  'stories': instance.stories.map((e) => e.toJson()).toList(),
+};

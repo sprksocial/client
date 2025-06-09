@@ -8717,3 +8717,842 @@ abstract class _ThreadContext extends ThreadContext {
   _$$ThreadContextImplCopyWith<_$ThreadContextImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
+
+StoryView _$StoryViewFromJson(Map<String, dynamic> json) {
+  return _StoryView.fromJson(json);
+}
+
+/// @nodoc
+mixin _$StoryView {
+  String get cid => throw _privateConstructorUsedError;
+  @AtUriConverter()
+  AtUri get uri => throw _privateConstructorUsedError;
+  ProfileViewBasic get author => throw _privateConstructorUsedError;
+  StoryRecord get record => throw _privateConstructorUsedError;
+  DateTime get indexedAt => throw _privateConstructorUsedError;
+  EmbedView? get embed => throw _privateConstructorUsedError;
+
+  /// Serializes this StoryView to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of StoryView
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $StoryViewCopyWith<StoryView> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $StoryViewCopyWith<$Res> {
+  factory $StoryViewCopyWith(StoryView value, $Res Function(StoryView) then) =
+      _$StoryViewCopyWithImpl<$Res, StoryView>;
+  @useResult
+  $Res call({
+    String cid,
+    @AtUriConverter() AtUri uri,
+    ProfileViewBasic author,
+    StoryRecord record,
+    DateTime indexedAt,
+    EmbedView? embed,
+  });
+
+  $ProfileViewBasicCopyWith<$Res> get author;
+  $StoryRecordCopyWith<$Res> get record;
+  $EmbedViewCopyWith<$Res>? get embed;
+}
+
+/// @nodoc
+class _$StoryViewCopyWithImpl<$Res, $Val extends StoryView>
+    implements $StoryViewCopyWith<$Res> {
+  _$StoryViewCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of StoryView
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? cid = null,
+    Object? uri = null,
+    Object? author = null,
+    Object? record = null,
+    Object? indexedAt = null,
+    Object? embed = freezed,
+  }) {
+    return _then(
+      _value.copyWith(
+            cid:
+                null == cid
+                    ? _value.cid
+                    : cid // ignore: cast_nullable_to_non_nullable
+                        as String,
+            uri:
+                null == uri
+                    ? _value.uri
+                    : uri // ignore: cast_nullable_to_non_nullable
+                        as AtUri,
+            author:
+                null == author
+                    ? _value.author
+                    : author // ignore: cast_nullable_to_non_nullable
+                        as ProfileViewBasic,
+            record:
+                null == record
+                    ? _value.record
+                    : record // ignore: cast_nullable_to_non_nullable
+                        as StoryRecord,
+            indexedAt:
+                null == indexedAt
+                    ? _value.indexedAt
+                    : indexedAt // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+            embed:
+                freezed == embed
+                    ? _value.embed
+                    : embed // ignore: cast_nullable_to_non_nullable
+                        as EmbedView?,
+          )
+          as $Val,
+    );
+  }
+
+  /// Create a copy of StoryView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProfileViewBasicCopyWith<$Res> get author {
+    return $ProfileViewBasicCopyWith<$Res>(_value.author, (value) {
+      return _then(_value.copyWith(author: value) as $Val);
+    });
+  }
+
+  /// Create a copy of StoryView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $StoryRecordCopyWith<$Res> get record {
+    return $StoryRecordCopyWith<$Res>(_value.record, (value) {
+      return _then(_value.copyWith(record: value) as $Val);
+    });
+  }
+
+  /// Create a copy of StoryView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $EmbedViewCopyWith<$Res>? get embed {
+    if (_value.embed == null) {
+      return null;
+    }
+
+    return $EmbedViewCopyWith<$Res>(_value.embed!, (value) {
+      return _then(_value.copyWith(embed: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$StoryViewImplCopyWith<$Res>
+    implements $StoryViewCopyWith<$Res> {
+  factory _$$StoryViewImplCopyWith(
+    _$StoryViewImpl value,
+    $Res Function(_$StoryViewImpl) then,
+  ) = __$$StoryViewImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    String cid,
+    @AtUriConverter() AtUri uri,
+    ProfileViewBasic author,
+    StoryRecord record,
+    DateTime indexedAt,
+    EmbedView? embed,
+  });
+
+  @override
+  $ProfileViewBasicCopyWith<$Res> get author;
+  @override
+  $StoryRecordCopyWith<$Res> get record;
+  @override
+  $EmbedViewCopyWith<$Res>? get embed;
+}
+
+/// @nodoc
+class __$$StoryViewImplCopyWithImpl<$Res>
+    extends _$StoryViewCopyWithImpl<$Res, _$StoryViewImpl>
+    implements _$$StoryViewImplCopyWith<$Res> {
+  __$$StoryViewImplCopyWithImpl(
+    _$StoryViewImpl _value,
+    $Res Function(_$StoryViewImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of StoryView
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? cid = null,
+    Object? uri = null,
+    Object? author = null,
+    Object? record = null,
+    Object? indexedAt = null,
+    Object? embed = freezed,
+  }) {
+    return _then(
+      _$StoryViewImpl(
+        cid:
+            null == cid
+                ? _value.cid
+                : cid // ignore: cast_nullable_to_non_nullable
+                    as String,
+        uri:
+            null == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                    as AtUri,
+        author:
+            null == author
+                ? _value.author
+                : author // ignore: cast_nullable_to_non_nullable
+                    as ProfileViewBasic,
+        record:
+            null == record
+                ? _value.record
+                : record // ignore: cast_nullable_to_non_nullable
+                    as StoryRecord,
+        indexedAt:
+            null == indexedAt
+                ? _value.indexedAt
+                : indexedAt // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+        embed:
+            freezed == embed
+                ? _value.embed
+                : embed // ignore: cast_nullable_to_non_nullable
+                    as EmbedView?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+@JsonSerializable(explicitToJson: true)
+class _$StoryViewImpl extends _StoryView with DiagnosticableTreeMixin {
+  const _$StoryViewImpl({
+    required this.cid,
+    @AtUriConverter() required this.uri,
+    required this.author,
+    required this.record,
+    required this.indexedAt,
+    this.embed,
+  }) : super._();
+
+  factory _$StoryViewImpl.fromJson(Map<String, dynamic> json) =>
+      _$$StoryViewImplFromJson(json);
+
+  @override
+  final String cid;
+  @override
+  @AtUriConverter()
+  final AtUri uri;
+  @override
+  final ProfileViewBasic author;
+  @override
+  final StoryRecord record;
+  @override
+  final DateTime indexedAt;
+  @override
+  final EmbedView? embed;
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'StoryView(cid: $cid, uri: $uri, author: $author, record: $record, indexedAt: $indexedAt, embed: $embed)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'StoryView'))
+      ..add(DiagnosticsProperty('cid', cid))
+      ..add(DiagnosticsProperty('uri', uri))
+      ..add(DiagnosticsProperty('author', author))
+      ..add(DiagnosticsProperty('record', record))
+      ..add(DiagnosticsProperty('indexedAt', indexedAt))
+      ..add(DiagnosticsProperty('embed', embed));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$StoryViewImpl &&
+            (identical(other.cid, cid) || other.cid == cid) &&
+            (identical(other.uri, uri) || other.uri == uri) &&
+            (identical(other.author, author) || other.author == author) &&
+            (identical(other.record, record) || other.record == record) &&
+            (identical(other.indexedAt, indexedAt) ||
+                other.indexedAt == indexedAt) &&
+            (identical(other.embed, embed) || other.embed == embed));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode =>
+      Object.hash(runtimeType, cid, uri, author, record, indexedAt, embed);
+
+  /// Create a copy of StoryView
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$StoryViewImplCopyWith<_$StoryViewImpl> get copyWith =>
+      __$$StoryViewImplCopyWithImpl<_$StoryViewImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$StoryViewImplToJson(this);
+  }
+}
+
+abstract class _StoryView extends StoryView {
+  const factory _StoryView({
+    required final String cid,
+    @AtUriConverter() required final AtUri uri,
+    required final ProfileViewBasic author,
+    required final StoryRecord record,
+    required final DateTime indexedAt,
+    final EmbedView? embed,
+  }) = _$StoryViewImpl;
+  const _StoryView._() : super._();
+
+  factory _StoryView.fromJson(Map<String, dynamic> json) =
+      _$StoryViewImpl.fromJson;
+
+  @override
+  String get cid;
+  @override
+  @AtUriConverter()
+  AtUri get uri;
+  @override
+  ProfileViewBasic get author;
+  @override
+  StoryRecord get record;
+  @override
+  DateTime get indexedAt;
+  @override
+  EmbedView? get embed;
+
+  /// Create a copy of StoryView
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$StoryViewImplCopyWith<_$StoryViewImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+StoryRecord _$StoryRecordFromJson(Map<String, dynamic> json) {
+  return _StoryRecord.fromJson(json);
+}
+
+/// @nodoc
+mixin _$StoryRecord {
+  DateTime get createdAt => throw _privateConstructorUsedError;
+  Embed get media => throw _privateConstructorUsedError;
+  List<SelfLabel>? get selfLabels => throw _privateConstructorUsedError;
+  List<String>? get tags => throw _privateConstructorUsedError;
+
+  /// Serializes this StoryRecord to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of StoryRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $StoryRecordCopyWith<StoryRecord> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $StoryRecordCopyWith<$Res> {
+  factory $StoryRecordCopyWith(
+    StoryRecord value,
+    $Res Function(StoryRecord) then,
+  ) = _$StoryRecordCopyWithImpl<$Res, StoryRecord>;
+  @useResult
+  $Res call({
+    DateTime createdAt,
+    Embed media,
+    List<SelfLabel>? selfLabels,
+    List<String>? tags,
+  });
+
+  $EmbedCopyWith<$Res> get media;
+}
+
+/// @nodoc
+class _$StoryRecordCopyWithImpl<$Res, $Val extends StoryRecord>
+    implements $StoryRecordCopyWith<$Res> {
+  _$StoryRecordCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of StoryRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? createdAt = null,
+    Object? media = null,
+    Object? selfLabels = freezed,
+    Object? tags = freezed,
+  }) {
+    return _then(
+      _value.copyWith(
+            createdAt:
+                null == createdAt
+                    ? _value.createdAt
+                    : createdAt // ignore: cast_nullable_to_non_nullable
+                        as DateTime,
+            media:
+                null == media
+                    ? _value.media
+                    : media // ignore: cast_nullable_to_non_nullable
+                        as Embed,
+            selfLabels:
+                freezed == selfLabels
+                    ? _value.selfLabels
+                    : selfLabels // ignore: cast_nullable_to_non_nullable
+                        as List<SelfLabel>?,
+            tags:
+                freezed == tags
+                    ? _value.tags
+                    : tags // ignore: cast_nullable_to_non_nullable
+                        as List<String>?,
+          )
+          as $Val,
+    );
+  }
+
+  /// Create a copy of StoryRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $EmbedCopyWith<$Res> get media {
+    return $EmbedCopyWith<$Res>(_value.media, (value) {
+      return _then(_value.copyWith(media: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$StoryRecordImplCopyWith<$Res>
+    implements $StoryRecordCopyWith<$Res> {
+  factory _$$StoryRecordImplCopyWith(
+    _$StoryRecordImpl value,
+    $Res Function(_$StoryRecordImpl) then,
+  ) = __$$StoryRecordImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    DateTime createdAt,
+    Embed media,
+    List<SelfLabel>? selfLabels,
+    List<String>? tags,
+  });
+
+  @override
+  $EmbedCopyWith<$Res> get media;
+}
+
+/// @nodoc
+class __$$StoryRecordImplCopyWithImpl<$Res>
+    extends _$StoryRecordCopyWithImpl<$Res, _$StoryRecordImpl>
+    implements _$$StoryRecordImplCopyWith<$Res> {
+  __$$StoryRecordImplCopyWithImpl(
+    _$StoryRecordImpl _value,
+    $Res Function(_$StoryRecordImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of StoryRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? createdAt = null,
+    Object? media = null,
+    Object? selfLabels = freezed,
+    Object? tags = freezed,
+  }) {
+    return _then(
+      _$StoryRecordImpl(
+        createdAt:
+            null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                    as DateTime,
+        media:
+            null == media
+                ? _value.media
+                : media // ignore: cast_nullable_to_non_nullable
+                    as Embed,
+        selfLabels:
+            freezed == selfLabels
+                ? _value._selfLabels
+                : selfLabels // ignore: cast_nullable_to_non_nullable
+                    as List<SelfLabel>?,
+        tags:
+            freezed == tags
+                ? _value._tags
+                : tags // ignore: cast_nullable_to_non_nullable
+                    as List<String>?,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+@JsonSerializable(explicitToJson: true)
+class _$StoryRecordImpl extends _StoryRecord with DiagnosticableTreeMixin {
+  const _$StoryRecordImpl({
+    required this.createdAt,
+    required this.media,
+    final List<SelfLabel>? selfLabels,
+    final List<String>? tags,
+  }) : _selfLabels = selfLabels,
+       _tags = tags,
+       super._();
+
+  factory _$StoryRecordImpl.fromJson(Map<String, dynamic> json) =>
+      _$$StoryRecordImplFromJson(json);
+
+  @override
+  final DateTime createdAt;
+  @override
+  final Embed media;
+  final List<SelfLabel>? _selfLabels;
+  @override
+  List<SelfLabel>? get selfLabels {
+    final value = _selfLabels;
+    if (value == null) return null;
+    if (_selfLabels is EqualUnmodifiableListView) return _selfLabels;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  final List<String>? _tags;
+  @override
+  List<String>? get tags {
+    final value = _tags;
+    if (value == null) return null;
+    if (_tags is EqualUnmodifiableListView) return _tags;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'StoryRecord(createdAt: $createdAt, media: $media, selfLabels: $selfLabels, tags: $tags)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'StoryRecord'))
+      ..add(DiagnosticsProperty('createdAt', createdAt))
+      ..add(DiagnosticsProperty('media', media))
+      ..add(DiagnosticsProperty('selfLabels', selfLabels))
+      ..add(DiagnosticsProperty('tags', tags));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$StoryRecordImpl &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.media, media) || other.media == media) &&
+            const DeepCollectionEquality().equals(
+              other._selfLabels,
+              _selfLabels,
+            ) &&
+            const DeepCollectionEquality().equals(other._tags, _tags));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    createdAt,
+    media,
+    const DeepCollectionEquality().hash(_selfLabels),
+    const DeepCollectionEquality().hash(_tags),
+  );
+
+  /// Create a copy of StoryRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$StoryRecordImplCopyWith<_$StoryRecordImpl> get copyWith =>
+      __$$StoryRecordImplCopyWithImpl<_$StoryRecordImpl>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$StoryRecordImplToJson(this);
+  }
+}
+
+abstract class _StoryRecord extends StoryRecord {
+  const factory _StoryRecord({
+    required final DateTime createdAt,
+    required final Embed media,
+    final List<SelfLabel>? selfLabels,
+    final List<String>? tags,
+  }) = _$StoryRecordImpl;
+  const _StoryRecord._() : super._();
+
+  factory _StoryRecord.fromJson(Map<String, dynamic> json) =
+      _$StoryRecordImpl.fromJson;
+
+  @override
+  DateTime get createdAt;
+  @override
+  Embed get media;
+  @override
+  List<SelfLabel>? get selfLabels;
+  @override
+  List<String>? get tags;
+
+  /// Create a copy of StoryRecord
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$StoryRecordImplCopyWith<_$StoryRecordImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+StoriesByAuthor _$StoriesByAuthorFromJson(Map<String, dynamic> json) {
+  return _StoriesByAuthor.fromJson(json);
+}
+
+/// @nodoc
+mixin _$StoriesByAuthor {
+  ProfileViewBasic get author => throw _privateConstructorUsedError;
+  List<StoryView> get stories => throw _privateConstructorUsedError;
+
+  /// Serializes this StoriesByAuthor to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of StoriesByAuthor
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $StoriesByAuthorCopyWith<StoriesByAuthor> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $StoriesByAuthorCopyWith<$Res> {
+  factory $StoriesByAuthorCopyWith(
+    StoriesByAuthor value,
+    $Res Function(StoriesByAuthor) then,
+  ) = _$StoriesByAuthorCopyWithImpl<$Res, StoriesByAuthor>;
+  @useResult
+  $Res call({ProfileViewBasic author, List<StoryView> stories});
+
+  $ProfileViewBasicCopyWith<$Res> get author;
+}
+
+/// @nodoc
+class _$StoriesByAuthorCopyWithImpl<$Res, $Val extends StoriesByAuthor>
+    implements $StoriesByAuthorCopyWith<$Res> {
+  _$StoriesByAuthorCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of StoriesByAuthor
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? author = null, Object? stories = null}) {
+    return _then(
+      _value.copyWith(
+            author:
+                null == author
+                    ? _value.author
+                    : author // ignore: cast_nullable_to_non_nullable
+                        as ProfileViewBasic,
+            stories:
+                null == stories
+                    ? _value.stories
+                    : stories // ignore: cast_nullable_to_non_nullable
+                        as List<StoryView>,
+          )
+          as $Val,
+    );
+  }
+
+  /// Create a copy of StoriesByAuthor
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $ProfileViewBasicCopyWith<$Res> get author {
+    return $ProfileViewBasicCopyWith<$Res>(_value.author, (value) {
+      return _then(_value.copyWith(author: value) as $Val);
+    });
+  }
+}
+
+/// @nodoc
+abstract class _$$StoriesByAuthorImplCopyWith<$Res>
+    implements $StoriesByAuthorCopyWith<$Res> {
+  factory _$$StoriesByAuthorImplCopyWith(
+    _$StoriesByAuthorImpl value,
+    $Res Function(_$StoriesByAuthorImpl) then,
+  ) = __$$StoriesByAuthorImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({ProfileViewBasic author, List<StoryView> stories});
+
+  @override
+  $ProfileViewBasicCopyWith<$Res> get author;
+}
+
+/// @nodoc
+class __$$StoriesByAuthorImplCopyWithImpl<$Res>
+    extends _$StoriesByAuthorCopyWithImpl<$Res, _$StoriesByAuthorImpl>
+    implements _$$StoriesByAuthorImplCopyWith<$Res> {
+  __$$StoriesByAuthorImplCopyWithImpl(
+    _$StoriesByAuthorImpl _value,
+    $Res Function(_$StoriesByAuthorImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of StoriesByAuthor
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({Object? author = null, Object? stories = null}) {
+    return _then(
+      _$StoriesByAuthorImpl(
+        author:
+            null == author
+                ? _value.author
+                : author // ignore: cast_nullable_to_non_nullable
+                    as ProfileViewBasic,
+        stories:
+            null == stories
+                ? _value._stories
+                : stories // ignore: cast_nullable_to_non_nullable
+                    as List<StoryView>,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+
+@JsonSerializable(explicitToJson: true)
+class _$StoriesByAuthorImpl extends _StoriesByAuthor
+    with DiagnosticableTreeMixin {
+  const _$StoriesByAuthorImpl({
+    required this.author,
+    required final List<StoryView> stories,
+  }) : _stories = stories,
+       super._();
+
+  factory _$StoriesByAuthorImpl.fromJson(Map<String, dynamic> json) =>
+      _$$StoriesByAuthorImplFromJson(json);
+
+  @override
+  final ProfileViewBasic author;
+  final List<StoryView> _stories;
+  @override
+  List<StoryView> get stories {
+    if (_stories is EqualUnmodifiableListView) return _stories;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_stories);
+  }
+
+  @override
+  String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
+    return 'StoriesByAuthor(author: $author, stories: $stories)';
+  }
+
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties
+      ..add(DiagnosticsProperty('type', 'StoriesByAuthor'))
+      ..add(DiagnosticsProperty('author', author))
+      ..add(DiagnosticsProperty('stories', stories));
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$StoriesByAuthorImpl &&
+            (identical(other.author, author) || other.author == author) &&
+            const DeepCollectionEquality().equals(other._stories, _stories));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    author,
+    const DeepCollectionEquality().hash(_stories),
+  );
+
+  /// Create a copy of StoriesByAuthor
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$StoriesByAuthorImplCopyWith<_$StoriesByAuthorImpl> get copyWith =>
+      __$$StoriesByAuthorImplCopyWithImpl<_$StoriesByAuthorImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$StoriesByAuthorImplToJson(this);
+  }
+}
+
+abstract class _StoriesByAuthor extends StoriesByAuthor {
+  const factory _StoriesByAuthor({
+    required final ProfileViewBasic author,
+    required final List<StoryView> stories,
+  }) = _$StoriesByAuthorImpl;
+  const _StoriesByAuthor._() : super._();
+
+  factory _StoriesByAuthor.fromJson(Map<String, dynamic> json) =
+      _$StoriesByAuthorImpl.fromJson;
+
+  @override
+  ProfileViewBasic get author;
+  @override
+  List<StoryView> get stories;
+
+  /// Create a copy of StoriesByAuthor
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$StoriesByAuthorImplCopyWith<_$StoriesByAuthorImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}

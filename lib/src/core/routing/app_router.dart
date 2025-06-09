@@ -24,7 +24,7 @@ class AppRouter extends RootStackRouter {
       children: [
         AutoRoute(page: FeedsRoute.page, path: 'feeds'),
         AutoRoute(page: SearchRoute.page, path: 'search'),
-        AutoRoute(page: EmptyRoute.page, path: 'create'), // Placeholder for create action
+        AutoRoute(page: EmptyRoute.page, path: 'create'),
         AutoRoute(page: MessagesRoute.page, path: 'messages'),
         AutoRoute(
           page: UserProfileRoute.page, // for the current user
@@ -71,14 +71,13 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: ProfilePhotosRoute.page, path: 'photos'),
       ],
     ),
+
+    // Alternate starting routes
     AutoRoute(page: EmptyRoute.page, path: '/empty'),
     AutoRoute(page: LoginRoute.page, path: '/login'),
     AutoRoute(page: RegisterRoute.page, path: '/register'),
-
-    // Onboarding routes
     AutoRoute(page: OnboardingRoute.page, path: '/onboarding/profile'),
     AutoRoute(page: ImportFollowsRoute.page, path: '/onboarding/import-follows'),
-
     AutoRoute(page: AuthPromptRoute.page, path: '/auth-prompt'),
   ];
 

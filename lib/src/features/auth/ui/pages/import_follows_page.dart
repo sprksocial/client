@@ -248,7 +248,7 @@ class _ImportFollowsPageState extends ConsumerState<ImportFollowsPage> {
                           addAutomaticKeepAlives: false,
                           addRepaintBoundaries: false,
                           itemCount: _filteredFollows.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          separatorBuilder: (_, _) => const SizedBox(height: 8),
                           itemBuilder: (context, index) {
                             final follow = _filteredFollows[index];
                             final isFollowed = _followed.contains(follow.did);

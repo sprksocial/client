@@ -97,4 +97,14 @@ abstract class FeedRepository {
   /// [cursor] Optional pagination cursor.
   Future<({List<Label> labels, String? cursor})> getLabels(List<AtUri> uris, {List<String>? sources, int? limit, String? cursor});
 
+  /// Get stories timeline
+  ///
+  /// [limit] The number of items to return (default 20)
+  /// [cursor] Pagination cursor for the next set of results
+  Future<({String? cursor, List<StoriesByAuthor> storiesByAuthor})> getStoriesTimeline({int limit = 30, String? cursor});
+
+  /// Gets story views for a specified list of stories (by AT-URI). This is sometimes referred to as 'hydrating' a story reference list.
+  ///
+  /// [storyUris] List of story URIs to fetch
+  Future<List<StoryView>> getStoryViews(List<AtUri> storyUris);
 }

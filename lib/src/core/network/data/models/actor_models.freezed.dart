@@ -541,6 +541,7 @@ mixin _$ProfileViewBasic {
   @AtUriConverter()
   AtUri? get avatar => throw _privateConstructorUsedError; // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
   ActorViewer? get viewer => throw _privateConstructorUsedError;
+  List<StrongRef>? get stories => throw _privateConstructorUsedError;
 
   /// Serializes this ProfileViewBasic to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -565,6 +566,7 @@ abstract class $ProfileViewBasicCopyWith<$Res> {
     String? displayName,
     @AtUriConverter() AtUri? avatar,
     ActorViewer? viewer,
+    List<StrongRef>? stories,
   });
 
   $ActorViewerCopyWith<$Res>? get viewer;
@@ -590,6 +592,7 @@ class _$ProfileViewBasicCopyWithImpl<$Res, $Val extends ProfileViewBasic>
     Object? displayName = freezed,
     Object? avatar = freezed,
     Object? viewer = freezed,
+    Object? stories = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -618,6 +621,11 @@ class _$ProfileViewBasicCopyWithImpl<$Res, $Val extends ProfileViewBasic>
                     ? _value.viewer
                     : viewer // ignore: cast_nullable_to_non_nullable
                         as ActorViewer?,
+            stories:
+                freezed == stories
+                    ? _value.stories
+                    : stories // ignore: cast_nullable_to_non_nullable
+                        as List<StrongRef>?,
           )
           as $Val,
     );
@@ -653,6 +661,7 @@ abstract class _$$ProfileViewBasicImplCopyWith<$Res>
     String? displayName,
     @AtUriConverter() AtUri? avatar,
     ActorViewer? viewer,
+    List<StrongRef>? stories,
   });
 
   @override
@@ -678,6 +687,7 @@ class __$$ProfileViewBasicImplCopyWithImpl<$Res>
     Object? displayName = freezed,
     Object? avatar = freezed,
     Object? viewer = freezed,
+    Object? stories = freezed,
   }) {
     return _then(
       _$ProfileViewBasicImpl(
@@ -706,6 +716,11 @@ class __$$ProfileViewBasicImplCopyWithImpl<$Res>
                 ? _value.viewer
                 : viewer // ignore: cast_nullable_to_non_nullable
                     as ActorViewer?,
+        stories:
+            freezed == stories
+                ? _value._stories
+                : stories // ignore: cast_nullable_to_non_nullable
+                    as List<StrongRef>?,
       ),
     );
   }
@@ -721,7 +736,9 @@ class _$ProfileViewBasicImpl extends _ProfileViewBasic {
     this.displayName,
     @AtUriConverter() this.avatar,
     this.viewer,
-  }) : super._();
+    final List<StrongRef>? stories,
+  }) : _stories = stories,
+       super._();
 
   factory _$ProfileViewBasicImpl.fromJson(Map<String, dynamic> json) =>
       _$$ProfileViewBasicImplFromJson(json);
@@ -738,10 +755,19 @@ class _$ProfileViewBasicImpl extends _ProfileViewBasic {
   // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
   @override
   final ActorViewer? viewer;
+  final List<StrongRef>? _stories;
+  @override
+  List<StrongRef>? get stories {
+    final value = _stories;
+    if (value == null) return null;
+    if (_stories is EqualUnmodifiableListView) return _stories;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
 
   @override
   String toString() {
-    return 'ProfileViewBasic(did: $did, handle: $handle, displayName: $displayName, avatar: $avatar, viewer: $viewer)';
+    return 'ProfileViewBasic(did: $did, handle: $handle, displayName: $displayName, avatar: $avatar, viewer: $viewer, stories: $stories)';
   }
 
   @override
@@ -754,13 +780,21 @@ class _$ProfileViewBasicImpl extends _ProfileViewBasic {
             (identical(other.displayName, displayName) ||
                 other.displayName == displayName) &&
             (identical(other.avatar, avatar) || other.avatar == avatar) &&
-            (identical(other.viewer, viewer) || other.viewer == viewer));
+            (identical(other.viewer, viewer) || other.viewer == viewer) &&
+            const DeepCollectionEquality().equals(other._stories, _stories));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode =>
-      Object.hash(runtimeType, did, handle, displayName, avatar, viewer);
+  int get hashCode => Object.hash(
+    runtimeType,
+    did,
+    handle,
+    displayName,
+    avatar,
+    viewer,
+    const DeepCollectionEquality().hash(_stories),
+  );
 
   /// Create a copy of ProfileViewBasic
   /// with the given fields replaced by the non-null parameter values.
@@ -786,6 +820,7 @@ abstract class _ProfileViewBasic extends ProfileViewBasic {
     final String? displayName,
     @AtUriConverter() final AtUri? avatar,
     final ActorViewer? viewer,
+    final List<StrongRef>? stories,
   }) = _$ProfileViewBasicImpl;
   const _ProfileViewBasic._() : super._();
 
@@ -803,6 +838,8 @@ abstract class _ProfileViewBasic extends ProfileViewBasic {
   AtUri? get avatar; // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
   @override
   ActorViewer? get viewer;
+  @override
+  List<StrongRef>? get stories;
 
   /// Create a copy of ProfileViewBasic
   /// with the given fields replaced by the non-null parameter values.
@@ -1178,7 +1215,9 @@ mixin _$ProfileViewDetailed {
   // indexedAt and createdAt
   ActorViewer? get viewer => throw _privateConstructorUsedError;
   List<Label>? get labels => throw _privateConstructorUsedError;
-  StrongRef? get pinnedPost => throw _privateConstructorUsedError;
+  StrongRef? get pinnedPost =>
+      throw _privateConstructorUsedError; // this is a list if the backend implements https://github.com/sprksocial/spark-back-end/issues/13
+  List<StrongRef>? get stories => throw _privateConstructorUsedError;
 
   /// Serializes this ProfileViewDetailed to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -1210,6 +1249,7 @@ abstract class $ProfileViewDetailedCopyWith<$Res> {
     ActorViewer? viewer,
     List<Label>? labels,
     StrongRef? pinnedPost,
+    List<StrongRef>? stories,
   });
 
   $ActorViewerCopyWith<$Res>? get viewer;
@@ -1243,6 +1283,7 @@ class _$ProfileViewDetailedCopyWithImpl<$Res, $Val extends ProfileViewDetailed>
     Object? viewer = freezed,
     Object? labels = freezed,
     Object? pinnedPost = freezed,
+    Object? stories = freezed,
   }) {
     return _then(
       _value.copyWith(
@@ -1306,6 +1347,11 @@ class _$ProfileViewDetailedCopyWithImpl<$Res, $Val extends ProfileViewDetailed>
                     ? _value.pinnedPost
                     : pinnedPost // ignore: cast_nullable_to_non_nullable
                         as StrongRef?,
+            stories:
+                freezed == stories
+                    ? _value.stories
+                    : stories // ignore: cast_nullable_to_non_nullable
+                        as List<StrongRef>?,
           )
           as $Val,
     );
@@ -1362,6 +1408,7 @@ abstract class _$$ProfileViewDetailedImplCopyWith<$Res>
     ActorViewer? viewer,
     List<Label>? labels,
     StrongRef? pinnedPost,
+    List<StrongRef>? stories,
   });
 
   @override
@@ -1396,6 +1443,7 @@ class __$$ProfileViewDetailedImplCopyWithImpl<$Res>
     Object? viewer = freezed,
     Object? labels = freezed,
     Object? pinnedPost = freezed,
+    Object? stories = freezed,
   }) {
     return _then(
       _$ProfileViewDetailedImpl(
@@ -1459,6 +1507,11 @@ class __$$ProfileViewDetailedImplCopyWithImpl<$Res>
                 ? _value.pinnedPost
                 : pinnedPost // ignore: cast_nullable_to_non_nullable
                     as StrongRef?,
+        stories:
+            freezed == stories
+                ? _value._stories
+                : stories // ignore: cast_nullable_to_non_nullable
+                    as List<StrongRef>?,
       ),
     );
   }
@@ -1481,7 +1534,9 @@ class _$ProfileViewDetailedImpl extends _ProfileViewDetailed {
     this.viewer,
     final List<Label>? labels,
     this.pinnedPost,
+    final List<StrongRef>? stories,
   }) : _labels = labels,
+       _stories = stories,
        super._();
 
   factory _$ProfileViewDetailedImpl.fromJson(Map<String, dynamic> json) =>
@@ -1524,10 +1579,21 @@ class _$ProfileViewDetailedImpl extends _ProfileViewDetailed {
 
   @override
   final StrongRef? pinnedPost;
+  // this is a list if the backend implements https://github.com/sprksocial/spark-back-end/issues/13
+  final List<StrongRef>? _stories;
+  // this is a list if the backend implements https://github.com/sprksocial/spark-back-end/issues/13
+  @override
+  List<StrongRef>? get stories {
+    final value = _stories;
+    if (value == null) return null;
+    if (_stories is EqualUnmodifiableListView) return _stories;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(value);
+  }
 
   @override
   String toString() {
-    return 'ProfileViewDetailed(did: $did, handle: $handle, displayName: $displayName, description: $description, avatar: $avatar, banner: $banner, followersCount: $followersCount, followingCount: $followingCount, postsCount: $postsCount, viewer: $viewer, labels: $labels, pinnedPost: $pinnedPost)';
+    return 'ProfileViewDetailed(did: $did, handle: $handle, displayName: $displayName, description: $description, avatar: $avatar, banner: $banner, followersCount: $followersCount, followingCount: $followingCount, postsCount: $postsCount, viewer: $viewer, labels: $labels, pinnedPost: $pinnedPost, stories: $stories)';
   }
 
   @override
@@ -1552,7 +1618,8 @@ class _$ProfileViewDetailedImpl extends _ProfileViewDetailed {
             (identical(other.viewer, viewer) || other.viewer == viewer) &&
             const DeepCollectionEquality().equals(other._labels, _labels) &&
             (identical(other.pinnedPost, pinnedPost) ||
-                other.pinnedPost == pinnedPost));
+                other.pinnedPost == pinnedPost) &&
+            const DeepCollectionEquality().equals(other._stories, _stories));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
@@ -1571,6 +1638,7 @@ class _$ProfileViewDetailedImpl extends _ProfileViewDetailed {
     viewer,
     const DeepCollectionEquality().hash(_labels),
     pinnedPost,
+    const DeepCollectionEquality().hash(_stories),
   );
 
   /// Create a copy of ProfileViewDetailed
@@ -1604,6 +1672,7 @@ abstract class _ProfileViewDetailed extends ProfileViewDetailed {
     final ActorViewer? viewer,
     final List<Label>? labels,
     final StrongRef? pinnedPost,
+    final List<StrongRef>? stories,
   }) = _$ProfileViewDetailedImpl;
   const _ProfileViewDetailed._() : super._();
 
@@ -1637,7 +1706,9 @@ abstract class _ProfileViewDetailed extends ProfileViewDetailed {
   @override
   List<Label>? get labels;
   @override
-  StrongRef? get pinnedPost;
+  StrongRef? get pinnedPost; // this is a list if the backend implements https://github.com/sprksocial/spark-back-end/issues/13
+  @override
+  List<StrongRef>? get stories;
 
   /// Create a copy of ProfileViewDetailed
   /// with the given fields replaced by the non-null parameter values.

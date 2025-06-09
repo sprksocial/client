@@ -89,6 +89,10 @@ _$ProfileViewBasicImpl _$$ProfileViewBasicImplFromJson(
       json['viewer'] == null
           ? null
           : ActorViewer.fromJson(json['viewer'] as Map<String, dynamic>),
+  stories:
+      (json['stories'] as List<dynamic>?)
+          ?.map((e) => StrongRef.fromJson(e as Map<String, dynamic>))
+          .toList(),
 );
 
 Map<String, dynamic> _$$ProfileViewBasicImplToJson(
@@ -102,6 +106,7 @@ Map<String, dynamic> _$$ProfileViewBasicImplToJson(
     const AtUriConverter().toJson,
   ),
   'viewer': instance.viewer?.toJson(),
+  'stories': instance.stories?.map((e) => e.toJson()).toList(),
 };
 
 _$ProfileViewImpl _$$ProfileViewImplFromJson(Map<String, dynamic> json) =>
@@ -168,6 +173,10 @@ _$ProfileViewDetailedImpl _$$ProfileViewDetailedImplFromJson(
       json['pinnedPost'] == null
           ? null
           : StrongRef.fromJson(json['pinnedPost'] as Map<String, dynamic>),
+  stories:
+      (json['stories'] as List<dynamic>?)
+          ?.map((e) => StrongRef.fromJson(e as Map<String, dynamic>))
+          .toList(),
 );
 
 Map<String, dynamic> _$$ProfileViewDetailedImplToJson(
@@ -191,4 +200,5 @@ Map<String, dynamic> _$$ProfileViewDetailedImplToJson(
   'viewer': instance.viewer?.toJson(),
   'labels': instance.labels?.map((e) => e.toJson()).toList(),
   'pinnedPost': instance.pinnedPost?.toJson(),
+  'stories': instance.stories?.map((e) => e.toJson()).toList(),
 };

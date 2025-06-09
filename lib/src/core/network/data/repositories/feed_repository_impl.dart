@@ -513,4 +513,59 @@ class FeedRepositoryImpl implements FeedRepository {
       return (labels: labels, cursor: response.data['cursor'] as String?);
     });
   }
+
+  @override
+  Future<({String? cursor, List<StoriesByAuthor> storiesByAuthor})> getStoriesTimeline({int limit = 30, String? cursor}) {
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final response = await atproto.get(
+        NSID.parse('so.sprk.feed.getStoriesTimeline'),
+        parameters: {'limit': limit, 'cursor': cursor},
+        headers: {'atproto-proxy': _client.sprkDid},
+        to:
+            (jsonMap) => (
+              storiesByAuthor:
+                  (jsonMap['storiesByAuthor'] as List<dynamic>).map((story) => StoriesByAuthor.fromJson(story)).toList(),
+              cursor: jsonMap['cursor'] as String?,
+            ),
+      );
+
+      return (storiesByAuthor: response.data.storiesByAuthor, cursor: response.data.cursor);
+    });
+  }
+
+  @override
+  Future<List<StoryView>> getStoryViews(List<AtUri> storyUris) {
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final response = await atproto.get(
+        NSID.parse('so.sprk.feed.getStories'),
+        parameters: {'storyUris': storyUris},
+        headers: {'atproto-proxy': _client.sprkDid},
+        to: (jsonMap) => (jsonMap['stories'] as List<dynamic>).map((story) => StoryView.fromJson(story)).toList(),
+      );
+
+      return response.data;
+    });
+  }
 }
