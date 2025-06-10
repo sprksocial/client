@@ -80,7 +80,7 @@ class VideoUpload extends _$VideoUpload {
       final responseData = jsonDecode(response.body);
       Blob blob;
       //{'jobStatus': {'blob': blob}} = responseData; this is how it should work in the lexicon
-      blob = responseData['blobRef'];
+      blob = Blob.fromJson(responseData['blobRef']);
 
       state = VideoUploadState.videoProcessed(videoPath: videoPath, blob: blob);
 
