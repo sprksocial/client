@@ -1,10 +1,12 @@
 import 'package:atproto_core/atproto_core.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:sparksocial/src/core/network/data/models/actor_models.dart' as actor_models;
+import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/utils/text_formatter.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
@@ -65,7 +67,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
         return;
       }
       if (mounted) {
-        // context.router.push(ProfileRoute(did: didRes)); TODO
+        context.router.push(ProfileRoute(did: didRes));
       }
     } catch (e, s) {
       _logger.e('Error resolving handle: $e', error: e, stackTrace: s);
@@ -86,7 +88,9 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
     final Widget avatarWidget;
     if (widget.profile.avatar case final AtUri av when av.toString().isNotEmpty) {
-      avatarWidget = ClipOval(child: UserAvatar(imageUrl: av.toString(), username: displayNameForAvatar, size: 90, borderWidth: 0));
+      avatarWidget = ClipOval(
+        child: UserAvatar(imageUrl: av.toString(), username: displayNameForAvatar, size: 90, borderWidth: 0),
+      );
     } else {
       avatarWidget = Icon(
         FluentIcons.person_24_regular,
@@ -204,7 +208,10 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 onMentionTap: _handleUsernameTap,
               ),
             if (uniqueLinks.isNotEmpty)
-              Padding(padding: const EdgeInsets.only(top: 4.0), child: ProfileLinks(links: uniqueLinks)),
+              Padding(
+                padding: const EdgeInsets.only(top: 4.0),
+                child: ProfileLinks(links: uniqueLinks),
+              ),
           ],
           const SizedBox(height: 16),
           Row(
@@ -220,7 +227,10 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                         backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       ),
-                      child: const Text('Edit Profile', style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.white)),
+                      child: const Text(
+                        'Edit Profile',
+                        style: TextStyle(fontWeight: FontWeight.w600, color: AppColors.white),
+                      ),
                     ),
                   ),
                 ),
@@ -233,12 +243,17 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                     child: ElevatedButton(
                       onPressed: widget.onFollowTap,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            widget.profile.viewer?.following != null ? theme.colorScheme.surfaceContainerHighest : AppColors.primary,
-                        foregroundColor: widget.profile.viewer?.following != null ? theme.colorScheme.onSurfaceVariant : AppColors.white,
+                        backgroundColor: widget.profile.viewer?.following != null
+                            ? theme.colorScheme.surfaceContainerHighest
+                            : AppColors.primary,
+                        foregroundColor: widget.profile.viewer?.following != null
+                            ? theme.colorScheme.onSurfaceVariant
+                            : AppColors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
-                          side: widget.profile.viewer?.following != null ? BorderSide(color: theme.colorScheme.outline) : BorderSide.none,
+                          side: widget.profile.viewer?.following != null
+                              ? BorderSide(color: theme.colorScheme.outline)
+                              : BorderSide.none,
                         ),
                       ),
                       child: Text(
