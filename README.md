@@ -55,21 +55,31 @@ We are building a decentralized social network on the AT Protocol, empowering us
 ### Installation
 
 1. Clone this repository
+
 ```bash
 git clone https://github.com/sprksocial/spark-front-end.git
 ```
 
 2. Navigate to the project directory
+
 ```bash
-cd spark-social
+cd spark-front-end
 ```
 
 3. Install dependencies
+
 ```bash
 flutter pub get
 ```
 
-4. Run the app
+4. Generate code
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+5. Run the app
+
 ```bash
 flutter run
 ```
@@ -107,9 +117,9 @@ flutter run
       │   ├── widgets/           # Common widgets
       │   └── utils/             # Shared utilities
       └── features/              # Feature modules
-          └── feature/                   
+          └── feature/
               ├── data/          # Data layer for this feature
-              │   ├── repositories/   
+              │   ├── repositories/
               │   └── models/
               ├── providers/     # Riverpod providers
               └── ui/            # UI components
