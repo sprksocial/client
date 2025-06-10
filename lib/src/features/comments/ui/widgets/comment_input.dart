@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart'; // Import image_picker
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_input_state.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_input_provider.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/images/alt_text_editor_dialog.dart';
+import 'package:sparksocial/src/core/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 
 import 'emoji_picker.dart';

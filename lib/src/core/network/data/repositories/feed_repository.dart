@@ -69,9 +69,22 @@ abstract class FeedRepository {
   /// [text] The text content of the post
   /// [imageFiles] List of image files to attach
   /// [altTexts] Map of file paths to alt texts
-  Future<StrongRef> postImage(String text, List<XFile> imageFiles, Map<String, String> altTexts);
+  Future<StrongRef> postImages(String text, List<XFile> imageFiles, Map<String, String> altTexts);
+
+  /// Upload images to the server
+  ///
+  /// [imageFiles] List of image files to upload
+  /// [altTexts] Map of file paths to alt texts
+  Future<List<Image>> uploadImages(List<XFile> imageFiles, Map<String, String> altTexts);
 
   /// Post a video to the user's feed
+  ///
+  /// [blob] The blob of the video to post
+  /// [text] The text content of the post
+  /// [alt] The alt text of the video
+  /// [tags] The tags of the video
+  /// [langs] The languages of the video
+  /// [selfLabels] The self labels of the video
   Future<StrongRef> postVideo(
     Blob blob, {
     String text = '',
@@ -80,6 +93,13 @@ abstract class FeedRepository {
     List<String>? langs,
     List<SelfLabel>? selfLabels,
   });
+
+  /// Post a story to the user's feed
+  ///
+  /// [embed] The embed of the story to post
+  /// [selfLabels] The self labels of the story
+  /// [tags] The tags of the story
+  Future<StrongRef> postStory(Embed embed, {List<SelfLabel>? selfLabels, List<String>? tags});
 
   /// Get the thread for a post
   ///

@@ -1,5 +1,5 @@
 import 'dart:collection';
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
@@ -355,7 +355,7 @@ class FeedNotifier extends _$FeedNotifier {
     if (_isLoading) return;
     _isLoading = true;
     // loads the next (loadLimit) posts from the database
-    final amountToLoad = min(FeedState.loadLimit, state.freshPostCount);
+    final amountToLoad = math.min(FeedState.loadLimit, state.freshPostCount);
     if (amountToLoad > 0) {
       final posts = await _sqlCache.getPostsForFeed(_feed, limit: amountToLoad);
       // yeah this is O(n²). but i spent too much time trying to avoid repeated posts
@@ -366,7 +366,7 @@ class FeedNotifier extends _$FeedNotifier {
       if (uris.isEmpty) {
         _logger.d('No new posts to load (all ${uris.length} were already loaded)');
         // Still need to decrement freshPostCount since those posts were "consumed"
-        state = state.copyWith(freshPostCount: max(0, state.freshPostCount - amountToLoad));
+        state = state.copyWith(freshPostCount: math.max(0, state.freshPostCount - amountToLoad));
         _isLoading = false;
         return;
       }
@@ -487,6 +487,36 @@ class FeedNotifier extends _$FeedNotifier {
   }
 
   Future<void> removePost(AtUri uri) async {
-    state = state.copyWith(loadedPosts: state.loadedPosts.where((e) => e != uri).toList());
+    final currentIndex = state.index;
+    final postIndex = state.loadedPosts.indexOf(uri);
+    
+    // Remove the post from the loaded posts list
+    final updatedPosts = state.loadedPosts.where((e) => e != uri).toList();
+    
+    // Adjust the index if necessary
+    int newIndex = currentIndex;
+    if (postIndex != -1) {
+      if (postIndex < currentIndex) {
+        // Post was deleted before current position, adjust index down
+        newIndex = currentIndex - 1;
+      } else if (postIndex == currentIndex && updatedPosts.isNotEmpty) {
+        // Current post was deleted, stay at same index (which will show next post)
+        // If we're at the end, move to the previous post
+        if (newIndex >= updatedPosts.length) {
+          newIndex = updatedPosts.length - 1;
+        }
+      }
+      // Ensure index is within bounds
+      newIndex = math.max(0, newIndex);
+      if (updatedPosts.isNotEmpty) {
+        newIndex = math.min(newIndex, updatedPosts.length - 1);
+      }
+    }
+    
+    _logger.d('Removing post ${uri.toString()}, adjusting index from $currentIndex to $newIndex');
+    state = state.copyWith(
+      loadedPosts: updatedPosts,
+      index: newIndex,
+    );
   }
 }

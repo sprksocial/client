@@ -27,7 +27,13 @@ class _MainPageState extends ConsumerState<MainPage> {
   Widget build(BuildContext context) {
     return AutoTabsRouter(
       key: const ValueKey('mainTabsRouter'),
-      routes: [const FeedsRoute(), const SearchRoute(), const EmptyRoute(), const MessagesRoute(), UserProfileRoute()],
+      routes: [
+        const FeedsRoute(), 
+        const SearchRoute(), 
+        const EmptyRoute(),
+        const MessagesRoute(), 
+        UserProfileRoute()
+      ],
       transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
@@ -39,8 +45,8 @@ class _MainPageState extends ConsumerState<MainPage> {
             selectedIndex: tabsRouter.activeIndex,
             onDestinationSelected: (index) {
               if (index == 2) {
-                // Special case for Create button
-                context.router.push(const PlaceholderRoute());
+                // Special case for Create button - navigate to create video page
+                context.router.push(CreateVideoRoute(isStoryMode: false));
               } else {
                 tabsRouter.setActiveIndex(index);
                 ref.read(navigationProvider.notifier).updateIndex(index);

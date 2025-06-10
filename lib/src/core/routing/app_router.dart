@@ -2,6 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/routing/pages.dart';
 import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
+import 'package:video_player/video_player.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:collection/collection.dart';
+
 part 'app_router.gr.dart';
 
 /// Router configuration for the application
@@ -71,6 +75,11 @@ class AppRouter extends RootStackRouter {
         AutoRoute(page: ProfilePhotosRoute.page, path: 'photos'),
       ],
     ),
+    AutoRoute(page: VideoPlaybackRoute.page, path: '/video-playback'),
+    AutoRoute(page: VideoReviewRoute.page, path: '/video-review'),
+    AutoRoute(page: StoryReviewRoute.page, path: '/story-review'),
+    AutoRoute(page: CreateVideoRoute.page, path: '/create-video'),
+    AutoRoute(page: ImageReviewRoute.page, path: '/image-review'),
 
     // Alternate starting routes
     AutoRoute(page: EmptyRoute.page, path: '/empty'),

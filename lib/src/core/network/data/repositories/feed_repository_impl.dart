@@ -134,11 +134,10 @@ class FeedRepositoryImpl implements FeedRepository {
           NSID.parse('so.sprk.feed.getAuthorFeed'),
           parameters: parameters,
           headers: {'atproto-proxy': _client.sprkDid},
-          to:
-              (jsonMap) => (
-                posts: (jsonMap['feed'] as List<dynamic>).map((post) => FeedViewPost.fromJson(post)).toList(),
-                cursor: jsonMap['cursor'] as String?,
-              ),
+          to: (jsonMap) => (
+            posts: (jsonMap['feed'] as List<dynamic>).map((post) => FeedViewPost.fromJson(post)).toList(),
+            cursor: jsonMap['cursor'] as String?,
+          ),
           adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
         );
         _logger.d('Author feed retrieved successfully');
@@ -174,6 +173,7 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       final likeRecord = {
+        // eventually use a like record class here for consistency
         "\$type": "so.sprk.feed.like",
         "subject": {"cid": postCid, "uri": postUri.toString()},
         "createdAt": DateTime.now().toUtc().toIso8601String(),
@@ -244,11 +244,12 @@ class FeedRepositoryImpl implements FeedRepository {
           Map<String, dynamic>? embedJson;
           if (imageFiles case List<XFile> files when files.isNotEmpty) {
             _logger.d('Uploading ${files.length} images for comment');
-            final List<Image> uploadedImageMaps = await _uploadImages(files, altTexts ?? {});
-            embedJson = {"\$type": "so.sprk.embed.images", "images": uploadedImageMaps};
+            final List<Image> uploadedImageMaps = await uploadImages(files, altTexts ?? {});
+            embedJson = EmbedImage(images: uploadedImageMaps).toJson();
           }
 
           final commentRecord = <String, dynamic>{
+            // eventually use a comment record class here for consistency
             "\$type": postType,
             "text": text,
             "reply": {
@@ -273,7 +274,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<StrongRef> postImage(String text, List<XFile> imageFiles, Map<String, String> altTexts) async {
+  Future<StrongRef> postImages(String text, List<XFile> imageFiles, Map<String, String> altTexts) async {
     _logger.d('Creating image post with ${imageFiles.length} images');
 
     switch (imageFiles) {
@@ -288,17 +289,15 @@ class FeedRepositoryImpl implements FeedRepository {
           }
 
           if (_client.authRepository.atproto case final atproto?) {
-            final List<Image> uploadedImageMaps = await _uploadImages(imageFiles, altTexts);
-            final embed = {"\$type": "so.sprk.embed.images", 'images': uploadedImageMaps};
+            final List<Image> uploadedImageMaps = await uploadImages(imageFiles, altTexts);
 
-            final record = {
-              "\$type": "so.sprk.feed.post",
-              'text': text,
-              'embed': embed,
-              'createdAt': DateTime.now().toUtc().toIso8601String(),
-            };
+            final record = PostRecord(
+              text: text,
+              embed: EmbedImage(images: uploadedImageMaps),
+              createdAt: DateTime.now(),
+            );
 
-            final result = await atproto.repo.createRecord(collection: NSID.parse('so.sprk.feed.post'), record: record);
+            final result = await atproto.repo.createRecord(collection: NSID.parse('so.sprk.feed.post'), record: record.toJson());
 
             _logger.i('Image post created successfully: ${result.data.uri}');
 
@@ -312,7 +311,8 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   /// Helper to upload multiple images, stripping EXIF, and return a list of JSON maps for embedding
-  Future<List<Image>> _uploadImages(List<XFile> imageFiles, Map<String, String> altTexts) async {
+  @override
+  Future<List<Image>> uploadImages(List<XFile> imageFiles, Map<String, String> altTexts) async {
     _logger.d('Processing ${imageFiles.length} images for upload');
 
     final List<Image> uploadedImageMaps = [];
@@ -532,12 +532,10 @@ class FeedRepositoryImpl implements FeedRepository {
         NSID.parse('so.sprk.feed.getStoriesTimeline'),
         parameters: {'limit': limit, 'cursor': cursor},
         headers: {'atproto-proxy': _client.sprkDid},
-        to:
-            (jsonMap) => (
-              storiesByAuthor:
-                  (jsonMap['storiesByAuthor'] as List<dynamic>).map((story) => StoriesByAuthor.fromJson(story)).toList(),
-              cursor: jsonMap['cursor'] as String?,
-            ),
+        to: (jsonMap) => (
+          storiesByAuthor: (jsonMap['storiesByAuthor'] as List<dynamic>).map((story) => StoriesByAuthor.fromJson(story)).toList(),
+          cursor: jsonMap['cursor'] as String?,
+        ),
       );
 
       return (storiesByAuthor: response.data.storiesByAuthor, cursor: response.data.cursor);
@@ -566,6 +564,32 @@ class FeedRepositoryImpl implements FeedRepository {
       );
 
       return response.data;
+    });
+  }
+
+  @override
+  Future<StrongRef> postStory(Embed embed, {List<SelfLabel>? selfLabels, List<String>? tags}) {
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final record = StoryRecord(createdAt: DateTime.now(), media: embed, selfLabels: selfLabels, tags: tags);
+
+      final response = await _client.authRepository.atproto!.repo.createRecord(
+        collection: NSID.parse('so.sprk.feed.story'),
+        record: record.toJson(),
+      );
+
+      switch (response.status) {
+        case HttpStatus.ok:
+          _logger.i('Story posted successfully: ${response.data.uri}');
+          return response.data;
+        default:
+          _logger.e('Failed to post story: ${response.status} ${response.data}');
+          throw Exception('Failed to post story: ${response.status} ${response.data}');
+      }
     });
   }
 }

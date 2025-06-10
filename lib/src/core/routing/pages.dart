@@ -24,3 +24,8 @@ export 'package:sparksocial/src/features/feed/ui/pages/standalone_post_page.dart
 export 'package:sparksocial/src/features/comments/ui/pages/replies_page.dart';
 export 'package:sparksocial/src/features/profile/ui/pages/user_profile_page.dart';
 export 'package:sparksocial/src/features/stories/ui/pages/all_stories_page.dart';
+export 'package:sparksocial/src/features/posting/ui/pages/video_playback_page.dart';
+export 'package:sparksocial/src/features/posting/ui/pages/video_review_page.dart';
+export 'package:sparksocial/src/features/posting/ui/pages/story_review_page.dart';
+export 'package:sparksocial/src/features/posting/ui/pages/create_video_page.dart';
+export 'package:sparksocial/src/features/posting/ui/pages/image_review_page.dart';
