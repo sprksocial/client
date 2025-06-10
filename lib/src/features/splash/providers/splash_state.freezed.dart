@@ -54,11 +54,10 @@ class _$SplashStateCopyWithImpl<$Res, $Val extends SplashState>
   $Res call({Object? isImageLoaded = null}) {
     return _then(
       _value.copyWith(
-            isImageLoaded:
-                null == isImageLoaded
-                    ? _value.isImageLoaded
-                    : isImageLoaded // ignore: cast_nullable_to_non_nullable
-                        as bool,
+            isImageLoaded: null == isImageLoaded
+                ? _value.isImageLoaded
+                : isImageLoaded // ignore: cast_nullable_to_non_nullable
+                      as bool,
           )
           as $Val,
     );
@@ -93,11 +92,10 @@ class __$$SplashStateImplCopyWithImpl<$Res>
   $Res call({Object? isImageLoaded = null}) {
     return _then(
       _$SplashStateImpl(
-        isImageLoaded:
-            null == isImageLoaded
-                ? _value.isImageLoaded
-                : isImageLoaded // ignore: cast_nullable_to_non_nullable
-                    as bool,
+        isImageLoaded: null == isImageLoaded
+            ? _value.isImageLoaded
+            : isImageLoaded // ignore: cast_nullable_to_non_nullable
+                  as bool,
       ),
     );
   }

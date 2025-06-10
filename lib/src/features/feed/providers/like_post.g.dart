@@ -71,10 +71,9 @@ class LikePostProvider extends AutoDisposeFutureProvider<StrongRef> {
         (ref) => likePost(ref as LikePostRef, postCid, postUri),
         from: likePostProvider,
         name: r'likePostProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$likePostHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$likePostHash,
         dependencies: LikePostFamily._dependencies,
         allTransitiveDependencies: LikePostFamily._allTransitiveDependencies,
         postCid: postCid,
@@ -203,10 +202,9 @@ class UnlikePostProvider extends AutoDisposeFutureProvider<void> {
         (ref) => unlikePost(ref as UnlikePostRef, likeUri),
         from: unlikePostProvider,
         name: r'unlikePostProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$unlikePostHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$unlikePostHash,
         dependencies: UnlikePostFamily._dependencies,
         allTransitiveDependencies: UnlikePostFamily._allTransitiveDependencies,
         likeUri: likeUri,

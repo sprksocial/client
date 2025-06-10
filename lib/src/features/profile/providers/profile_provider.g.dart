@@ -82,10 +82,9 @@ class ProfileNotifierProvider
         () => ProfileNotifier()..did = did,
         from: profileNotifierProvider,
         name: r'profileNotifierProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$profileNotifierHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$profileNotifierHash,
         dependencies: ProfileNotifierFamily._dependencies,
         allTransitiveDependencies:
             ProfileNotifierFamily._allTransitiveDependencies,

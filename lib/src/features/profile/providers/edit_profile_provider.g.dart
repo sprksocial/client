@@ -93,10 +93,9 @@ class EditProfileProvider
         () => EditProfile()..profile = profile,
         from: editProfileProvider,
         name: r'editProfileProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$editProfileHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$editProfileHash,
         dependencies: EditProfileFamily._dependencies,
         allTransitiveDependencies: EditProfileFamily._allTransitiveDependencies,
         profile: profile,

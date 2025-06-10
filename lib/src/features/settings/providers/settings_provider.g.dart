@@ -17,10 +17,9 @@ final settingsRepositoryProvider =
     AutoDisposeProvider<SettingsRepository>.internal(
       settingsRepository,
       name: r'settingsRepositoryProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$settingsRepositoryHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$settingsRepositoryHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -37,8 +36,9 @@ String _$settingsHash() => r'7744baafebc877c7cfcde81a70ad646e34fc06e6';
 final settingsProvider = NotifierProvider<Settings, SettingsState>.internal(
   Settings.new,
   name: r'settingsProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$settingsHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$settingsHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

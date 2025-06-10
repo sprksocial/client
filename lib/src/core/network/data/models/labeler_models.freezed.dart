@@ -79,36 +79,30 @@ class _$LabelPreferenceCopyWithImpl<$Res, $Val extends LabelPreference>
   }) {
     return _then(
       _value.copyWith(
-            value:
-                null == value
-                    ? _value.value
-                    : value // ignore: cast_nullable_to_non_nullable
-                        as String,
-            blurs:
-                null == blurs
-                    ? _value.blurs
-                    : blurs // ignore: cast_nullable_to_non_nullable
-                        as Blurs,
-            severity:
-                null == severity
-                    ? _value.severity
-                    : severity // ignore: cast_nullable_to_non_nullable
-                        as Severity,
-            defaultSetting:
-                null == defaultSetting
-                    ? _value.defaultSetting
-                    : defaultSetting // ignore: cast_nullable_to_non_nullable
-                        as Setting,
-            setting:
-                null == setting
-                    ? _value.setting
-                    : setting // ignore: cast_nullable_to_non_nullable
-                        as Setting,
-            adultOnly:
-                null == adultOnly
-                    ? _value.adultOnly
-                    : adultOnly // ignore: cast_nullable_to_non_nullable
-                        as bool,
+            value: null == value
+                ? _value.value
+                : value // ignore: cast_nullable_to_non_nullable
+                      as String,
+            blurs: null == blurs
+                ? _value.blurs
+                : blurs // ignore: cast_nullable_to_non_nullable
+                      as Blurs,
+            severity: null == severity
+                ? _value.severity
+                : severity // ignore: cast_nullable_to_non_nullable
+                      as Severity,
+            defaultSetting: null == defaultSetting
+                ? _value.defaultSetting
+                : defaultSetting // ignore: cast_nullable_to_non_nullable
+                      as Setting,
+            setting: null == setting
+                ? _value.setting
+                : setting // ignore: cast_nullable_to_non_nullable
+                      as Setting,
+            adultOnly: null == adultOnly
+                ? _value.adultOnly
+                : adultOnly // ignore: cast_nullable_to_non_nullable
+                      as bool,
           )
           as $Val,
     );
@@ -157,36 +151,30 @@ class __$$LabelPreferenceImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$LabelPreferenceImpl(
-        value:
-            null == value
-                ? _value.value
-                : value // ignore: cast_nullable_to_non_nullable
-                    as String,
-        blurs:
-            null == blurs
-                ? _value.blurs
-                : blurs // ignore: cast_nullable_to_non_nullable
-                    as Blurs,
-        severity:
-            null == severity
-                ? _value.severity
-                : severity // ignore: cast_nullable_to_non_nullable
-                    as Severity,
-        defaultSetting:
-            null == defaultSetting
-                ? _value.defaultSetting
-                : defaultSetting // ignore: cast_nullable_to_non_nullable
-                    as Setting,
-        setting:
-            null == setting
-                ? _value.setting
-                : setting // ignore: cast_nullable_to_non_nullable
-                    as Setting,
-        adultOnly:
-            null == adultOnly
-                ? _value.adultOnly
-                : adultOnly // ignore: cast_nullable_to_non_nullable
-                    as bool,
+        value: null == value
+            ? _value.value
+            : value // ignore: cast_nullable_to_non_nullable
+                  as String,
+        blurs: null == blurs
+            ? _value.blurs
+            : blurs // ignore: cast_nullable_to_non_nullable
+                  as Blurs,
+        severity: null == severity
+            ? _value.severity
+            : severity // ignore: cast_nullable_to_non_nullable
+                  as Severity,
+        defaultSetting: null == defaultSetting
+            ? _value.defaultSetting
+            : defaultSetting // ignore: cast_nullable_to_non_nullable
+                  as Setting,
+        setting: null == setting
+            ? _value.setting
+            : setting // ignore: cast_nullable_to_non_nullable
+                  as Setting,
+        adultOnly: null == adultOnly
+            ? _value.adultOnly
+            : adultOnly // ignore: cast_nullable_to_non_nullable
+                  as bool,
       ),
     );
   }
@@ -380,46 +368,38 @@ class _$LabelerViewCopyWithImpl<$Res, $Val extends LabelerView>
   }) {
     return _then(
       _value.copyWith(
-            uri:
-                null == uri
-                    ? _value.uri
-                    : uri // ignore: cast_nullable_to_non_nullable
-                        as AtUri,
-            cid:
-                null == cid
-                    ? _value.cid
-                    : cid // ignore: cast_nullable_to_non_nullable
-                        as String,
-            creator:
-                null == creator
-                    ? _value.creator
-                    : creator // ignore: cast_nullable_to_non_nullable
-                        as ProfileView,
-            indexedAt:
-                null == indexedAt
-                    ? _value.indexedAt
-                    : indexedAt // ignore: cast_nullable_to_non_nullable
-                        as DateTime,
-            likeCount:
-                freezed == likeCount
-                    ? _value.likeCount
-                    : likeCount // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            lookCount:
-                freezed == lookCount
-                    ? _value.lookCount
-                    : lookCount // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            labelerViewer:
-                freezed == labelerViewer
-                    ? _value.labelerViewer
-                    : labelerViewer // ignore: cast_nullable_to_non_nullable
-                        as LabelerViewerState?,
-            labels:
-                freezed == labels
-                    ? _value.labels
-                    : labels // ignore: cast_nullable_to_non_nullable
-                        as List<Label>?,
+            uri: null == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                      as AtUri,
+            cid: null == cid
+                ? _value.cid
+                : cid // ignore: cast_nullable_to_non_nullable
+                      as String,
+            creator: null == creator
+                ? _value.creator
+                : creator // ignore: cast_nullable_to_non_nullable
+                      as ProfileView,
+            indexedAt: null == indexedAt
+                ? _value.indexedAt
+                : indexedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+            likeCount: freezed == likeCount
+                ? _value.likeCount
+                : likeCount // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            lookCount: freezed == lookCount
+                ? _value.lookCount
+                : lookCount // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            labelerViewer: freezed == labelerViewer
+                ? _value.labelerViewer
+                : labelerViewer // ignore: cast_nullable_to_non_nullable
+                      as LabelerViewerState?,
+            labels: freezed == labels
+                ? _value.labels
+                : labels // ignore: cast_nullable_to_non_nullable
+                      as List<Label>?,
           )
           as $Val,
     );
@@ -501,46 +481,38 @@ class __$$LabelerViewImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$LabelerViewImpl(
-        uri:
-            null == uri
-                ? _value.uri
-                : uri // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
-        cid:
-            null == cid
-                ? _value.cid
-                : cid // ignore: cast_nullable_to_non_nullable
-                    as String,
-        creator:
-            null == creator
-                ? _value.creator
-                : creator // ignore: cast_nullable_to_non_nullable
-                    as ProfileView,
-        indexedAt:
-            null == indexedAt
-                ? _value.indexedAt
-                : indexedAt // ignore: cast_nullable_to_non_nullable
-                    as DateTime,
-        likeCount:
-            freezed == likeCount
-                ? _value.likeCount
-                : likeCount // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        lookCount:
-            freezed == lookCount
-                ? _value.lookCount
-                : lookCount // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        labelerViewer:
-            freezed == labelerViewer
-                ? _value.labelerViewer
-                : labelerViewer // ignore: cast_nullable_to_non_nullable
-                    as LabelerViewerState?,
-        labels:
-            freezed == labels
-                ? _value._labels
-                : labels // ignore: cast_nullable_to_non_nullable
-                    as List<Label>?,
+        uri: null == uri
+            ? _value.uri
+            : uri // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
+        cid: null == cid
+            ? _value.cid
+            : cid // ignore: cast_nullable_to_non_nullable
+                  as String,
+        creator: null == creator
+            ? _value.creator
+            : creator // ignore: cast_nullable_to_non_nullable
+                  as ProfileView,
+        indexedAt: null == indexedAt
+            ? _value.indexedAt
+            : indexedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+        likeCount: freezed == likeCount
+            ? _value.likeCount
+            : likeCount // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        lookCount: freezed == lookCount
+            ? _value.lookCount
+            : lookCount // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        labelerViewer: freezed == labelerViewer
+            ? _value.labelerViewer
+            : labelerViewer // ignore: cast_nullable_to_non_nullable
+                  as LabelerViewerState?,
+        labels: freezed == labels
+            ? _value._labels
+            : labels // ignore: cast_nullable_to_non_nullable
+                  as List<Label>?,
       ),
     );
   }
@@ -762,51 +734,42 @@ class _$LabelerViewDetailedCopyWithImpl<$Res, $Val extends LabelerViewDetailed>
   }) {
     return _then(
       _value.copyWith(
-            uri:
-                null == uri
-                    ? _value.uri
-                    : uri // ignore: cast_nullable_to_non_nullable
-                        as AtUri,
-            cid:
-                null == cid
-                    ? _value.cid
-                    : cid // ignore: cast_nullable_to_non_nullable
-                        as String,
-            creator:
-                null == creator
-                    ? _value.creator
-                    : creator // ignore: cast_nullable_to_non_nullable
-                        as ProfileView,
-            indexedAt:
-                null == indexedAt
-                    ? _value.indexedAt
-                    : indexedAt // ignore: cast_nullable_to_non_nullable
-                        as DateTime,
-            likeCount:
-                freezed == likeCount
-                    ? _value.likeCount
-                    : likeCount // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            lookCount:
-                freezed == lookCount
-                    ? _value.lookCount
-                    : lookCount // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            labelerViewer:
-                freezed == labelerViewer
-                    ? _value.labelerViewer
-                    : labelerViewer // ignore: cast_nullable_to_non_nullable
-                        as LabelerViewerState?,
-            policies:
-                freezed == policies
-                    ? _value.policies
-                    : policies // ignore: cast_nullable_to_non_nullable
-                        as LabelerPolicies?,
-            labels:
-                freezed == labels
-                    ? _value.labels
-                    : labels // ignore: cast_nullable_to_non_nullable
-                        as List<Label>?,
+            uri: null == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                      as AtUri,
+            cid: null == cid
+                ? _value.cid
+                : cid // ignore: cast_nullable_to_non_nullable
+                      as String,
+            creator: null == creator
+                ? _value.creator
+                : creator // ignore: cast_nullable_to_non_nullable
+                      as ProfileView,
+            indexedAt: null == indexedAt
+                ? _value.indexedAt
+                : indexedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+            likeCount: freezed == likeCount
+                ? _value.likeCount
+                : likeCount // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            lookCount: freezed == lookCount
+                ? _value.lookCount
+                : lookCount // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            labelerViewer: freezed == labelerViewer
+                ? _value.labelerViewer
+                : labelerViewer // ignore: cast_nullable_to_non_nullable
+                      as LabelerViewerState?,
+            policies: freezed == policies
+                ? _value.policies
+                : policies // ignore: cast_nullable_to_non_nullable
+                      as LabelerPolicies?,
+            labels: freezed == labels
+                ? _value.labels
+                : labels // ignore: cast_nullable_to_non_nullable
+                      as List<Label>?,
           )
           as $Val,
     );
@@ -906,51 +869,42 @@ class __$$LabelerViewDetailedImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$LabelerViewDetailedImpl(
-        uri:
-            null == uri
-                ? _value.uri
-                : uri // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
-        cid:
-            null == cid
-                ? _value.cid
-                : cid // ignore: cast_nullable_to_non_nullable
-                    as String,
-        creator:
-            null == creator
-                ? _value.creator
-                : creator // ignore: cast_nullable_to_non_nullable
-                    as ProfileView,
-        indexedAt:
-            null == indexedAt
-                ? _value.indexedAt
-                : indexedAt // ignore: cast_nullable_to_non_nullable
-                    as DateTime,
-        likeCount:
-            freezed == likeCount
-                ? _value.likeCount
-                : likeCount // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        lookCount:
-            freezed == lookCount
-                ? _value.lookCount
-                : lookCount // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        labelerViewer:
-            freezed == labelerViewer
-                ? _value.labelerViewer
-                : labelerViewer // ignore: cast_nullable_to_non_nullable
-                    as LabelerViewerState?,
-        policies:
-            freezed == policies
-                ? _value.policies
-                : policies // ignore: cast_nullable_to_non_nullable
-                    as LabelerPolicies?,
-        labels:
-            freezed == labels
-                ? _value._labels
-                : labels // ignore: cast_nullable_to_non_nullable
-                    as List<Label>?,
+        uri: null == uri
+            ? _value.uri
+            : uri // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
+        cid: null == cid
+            ? _value.cid
+            : cid // ignore: cast_nullable_to_non_nullable
+                  as String,
+        creator: null == creator
+            ? _value.creator
+            : creator // ignore: cast_nullable_to_non_nullable
+                  as ProfileView,
+        indexedAt: null == indexedAt
+            ? _value.indexedAt
+            : indexedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+        likeCount: freezed == likeCount
+            ? _value.likeCount
+            : likeCount // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        lookCount: freezed == lookCount
+            ? _value.lookCount
+            : lookCount // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        labelerViewer: freezed == labelerViewer
+            ? _value.labelerViewer
+            : labelerViewer // ignore: cast_nullable_to_non_nullable
+                  as LabelerViewerState?,
+        policies: freezed == policies
+            ? _value.policies
+            : policies // ignore: cast_nullable_to_non_nullable
+                  as LabelerPolicies?,
+        labels: freezed == labels
+            ? _value._labels
+            : labels // ignore: cast_nullable_to_non_nullable
+                  as List<Label>?,
       ),
     );
   }
@@ -1154,16 +1108,14 @@ class _$LabelerViewerStateCopyWithImpl<$Res, $Val extends LabelerViewerState>
   $Res call({Object? like = null, Object? look = null}) {
     return _then(
       _value.copyWith(
-            like:
-                null == like
-                    ? _value.like
-                    : like // ignore: cast_nullable_to_non_nullable
-                        as AtUri,
-            look:
-                null == look
-                    ? _value.look
-                    : look // ignore: cast_nullable_to_non_nullable
-                        as AtUri,
+            like: null == like
+                ? _value.like
+                : like // ignore: cast_nullable_to_non_nullable
+                      as AtUri,
+            look: null == look
+                ? _value.look
+                : look // ignore: cast_nullable_to_non_nullable
+                      as AtUri,
           )
           as $Val,
     );
@@ -1198,16 +1150,14 @@ class __$$LabelerViewerStateImplCopyWithImpl<$Res>
   $Res call({Object? like = null, Object? look = null}) {
     return _then(
       _$LabelerViewerStateImpl(
-        like:
-            null == like
-                ? _value.like
-                : like // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
-        look:
-            null == look
-                ? _value.look
-                : look // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
+        like: null == like
+            ? _value.like
+            : like // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
+        look: null == look
+            ? _value.look
+            : look // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
       ),
     );
   }
@@ -1346,16 +1296,14 @@ class _$LabelerPoliciesCopyWithImpl<$Res, $Val extends LabelerPolicies>
   }) {
     return _then(
       _value.copyWith(
-            labelValues:
-                null == labelValues
-                    ? _value.labelValues
-                    : labelValues // ignore: cast_nullable_to_non_nullable
-                        as List<String>,
-            labelValueDefinitions:
-                freezed == labelValueDefinitions
-                    ? _value.labelValueDefinitions
-                    : labelValueDefinitions // ignore: cast_nullable_to_non_nullable
-                        as List<LabelValueDefinition>?,
+            labelValues: null == labelValues
+                ? _value.labelValues
+                : labelValues // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
+            labelValueDefinitions: freezed == labelValueDefinitions
+                ? _value.labelValueDefinitions
+                : labelValueDefinitions // ignore: cast_nullable_to_non_nullable
+                      as List<LabelValueDefinition>?,
           )
           as $Val,
     );
@@ -1396,16 +1344,14 @@ class __$$LabelerPoliciesImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$LabelerPoliciesImpl(
-        labelValues:
-            null == labelValues
-                ? _value._labelValues
-                : labelValues // ignore: cast_nullable_to_non_nullable
-                    as List<String>,
-        labelValueDefinitions:
-            freezed == labelValueDefinitions
-                ? _value._labelValueDefinitions
-                : labelValueDefinitions // ignore: cast_nullable_to_non_nullable
-                    as List<LabelValueDefinition>?,
+        labelValues: null == labelValues
+            ? _value._labelValues
+            : labelValues // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
+        labelValueDefinitions: freezed == labelValueDefinitions
+            ? _value._labelValueDefinitions
+            : labelValueDefinitions // ignore: cast_nullable_to_non_nullable
+                  as List<LabelValueDefinition>?,
       ),
     );
   }

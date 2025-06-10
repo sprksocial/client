@@ -61,16 +61,14 @@ class _$FollowersResponseCopyWithImpl<$Res, $Val extends FollowersResponse>
   $Res call({Object? followers = null, Object? cursor = freezed}) {
     return _then(
       _value.copyWith(
-            followers:
-                null == followers
-                    ? _value.followers
-                    : followers // ignore: cast_nullable_to_non_nullable
-                        as List<ProfileView>,
-            cursor:
-                freezed == cursor
-                    ? _value.cursor
-                    : cursor // ignore: cast_nullable_to_non_nullable
-                        as String?,
+            followers: null == followers
+                ? _value.followers
+                : followers // ignore: cast_nullable_to_non_nullable
+                      as List<ProfileView>,
+            cursor: freezed == cursor
+                ? _value.cursor
+                : cursor // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -105,16 +103,14 @@ class __$$FollowersResponseImplCopyWithImpl<$Res>
   $Res call({Object? followers = null, Object? cursor = freezed}) {
     return _then(
       _$FollowersResponseImpl(
-        followers:
-            null == followers
-                ? _value._followers
-                : followers // ignore: cast_nullable_to_non_nullable
-                    as List<ProfileView>,
-        cursor:
-            freezed == cursor
-                ? _value.cursor
-                : cursor // ignore: cast_nullable_to_non_nullable
-                    as String?,
+        followers: null == followers
+            ? _value._followers
+            : followers // ignore: cast_nullable_to_non_nullable
+                  as List<ProfileView>,
+        cursor: freezed == cursor
+            ? _value.cursor
+            : cursor // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -252,16 +248,14 @@ class _$FollowsResponseCopyWithImpl<$Res, $Val extends FollowsResponse>
   $Res call({Object? follows = null, Object? cursor = freezed}) {
     return _then(
       _value.copyWith(
-            follows:
-                null == follows
-                    ? _value.follows
-                    : follows // ignore: cast_nullable_to_non_nullable
-                        as List<ProfileView>,
-            cursor:
-                freezed == cursor
-                    ? _value.cursor
-                    : cursor // ignore: cast_nullable_to_non_nullable
-                        as String?,
+            follows: null == follows
+                ? _value.follows
+                : follows // ignore: cast_nullable_to_non_nullable
+                      as List<ProfileView>,
+            cursor: freezed == cursor
+                ? _value.cursor
+                : cursor // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -296,16 +290,14 @@ class __$$FollowsResponseImplCopyWithImpl<$Res>
   $Res call({Object? follows = null, Object? cursor = freezed}) {
     return _then(
       _$FollowsResponseImpl(
-        follows:
-            null == follows
-                ? _value._follows
-                : follows // ignore: cast_nullable_to_non_nullable
-                    as List<ProfileView>,
-        cursor:
-            freezed == cursor
-                ? _value.cursor
-                : cursor // ignore: cast_nullable_to_non_nullable
-                    as String?,
+        follows: null == follows
+            ? _value._follows
+            : follows // ignore: cast_nullable_to_non_nullable
+                  as List<ProfileView>,
+        cursor: freezed == cursor
+            ? _value.cursor
+            : cursor // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -440,16 +432,14 @@ class _$FollowUserResponseCopyWithImpl<$Res, $Val extends FollowUserResponse>
   $Res call({Object? uri = null, Object? cid = null}) {
     return _then(
       _value.copyWith(
-            uri:
-                null == uri
-                    ? _value.uri
-                    : uri // ignore: cast_nullable_to_non_nullable
-                        as String,
-            cid:
-                null == cid
-                    ? _value.cid
-                    : cid // ignore: cast_nullable_to_non_nullable
-                        as String,
+            uri: null == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                      as String,
+            cid: null == cid
+                ? _value.cid
+                : cid // ignore: cast_nullable_to_non_nullable
+                      as String,
           )
           as $Val,
     );
@@ -484,16 +474,14 @@ class __$$FollowUserResponseImplCopyWithImpl<$Res>
   $Res call({Object? uri = null, Object? cid = null}) {
     return _then(
       _$FollowUserResponseImpl(
-        uri:
-            null == uri
-                ? _value.uri
-                : uri // ignore: cast_nullable_to_non_nullable
-                    as String,
-        cid:
-            null == cid
-                ? _value.cid
-                : cid // ignore: cast_nullable_to_non_nullable
-                    as String,
+        uri: null == uri
+            ? _value.uri
+            : uri // ignore: cast_nullable_to_non_nullable
+                  as String,
+        cid: null == cid
+            ? _value.cid
+            : cid // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }

@@ -53,11 +53,10 @@ class _$CommentsPageStateCopyWithImpl<$Res, $Val extends CommentsPageState>
   $Res call({Object? thread = freezed}) {
     return _then(
       _value.copyWith(
-            thread:
-                freezed == thread
-                    ? _value.thread
-                    : thread // ignore: cast_nullable_to_non_nullable
-                        as ThreadViewPost,
+            thread: freezed == thread
+                ? _value.thread
+                : thread // ignore: cast_nullable_to_non_nullable
+                      as ThreadViewPost,
           )
           as $Val,
     );
@@ -92,11 +91,10 @@ class __$$CommentsPageStateImplCopyWithImpl<$Res>
   $Res call({Object? thread = freezed}) {
     return _then(
       _$CommentsPageStateImpl(
-        thread:
-            freezed == thread
-                ? _value.thread
-                : thread // ignore: cast_nullable_to_non_nullable
-                    as ThreadViewPost,
+        thread: freezed == thread
+            ? _value.thread
+            : thread // ignore: cast_nullable_to_non_nullable
+                  as ThreadViewPost,
       ),
     );
   }

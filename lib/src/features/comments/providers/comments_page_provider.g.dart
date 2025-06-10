@@ -82,10 +82,9 @@ class CommentsPageProvider
         () => CommentsPage()..postUri = postUri,
         from: commentsPageProvider,
         name: r'commentsPageProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$commentsPageHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$commentsPageHash,
         dependencies: CommentsPageFamily._dependencies,
         allTransitiveDependencies:
             CommentsPageFamily._allTransitiveDependencies,

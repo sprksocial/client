@@ -11,19 +11,19 @@ String _$onboardingNotifierHash() =>
 
 /// See also [OnboardingNotifier].
 @ProviderFor(OnboardingNotifier)
-final onboardingNotifierProvider = AutoDisposeAsyncNotifierProvider<
-  OnboardingNotifier,
-  OnboardingScreenState
->.internal(
-  OnboardingNotifier.new,
-  name: r'onboardingNotifierProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
+final onboardingNotifierProvider =
+    AutoDisposeAsyncNotifierProvider<
+      OnboardingNotifier,
+      OnboardingScreenState
+    >.internal(
+      OnboardingNotifier.new,
+      name: r'onboardingNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
           ? null
           : _$onboardingNotifierHash,
-  dependencies: null,
-  allTransitiveDependencies: null,
-);
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
 
 typedef _$OnboardingNotifier = AutoDisposeAsyncNotifier<OnboardingScreenState>;
 // ignore_for_file: type=lint

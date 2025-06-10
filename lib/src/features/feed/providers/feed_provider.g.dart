@@ -80,10 +80,9 @@ class FeedNotifierProvider
         () => FeedNotifier()..feed = feed,
         from: feedNotifierProvider,
         name: r'feedNotifierProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$feedNotifierHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$feedNotifierHash,
         dependencies: FeedNotifierFamily._dependencies,
         allTransitiveDependencies:
             FeedNotifierFamily._allTransitiveDependencies,

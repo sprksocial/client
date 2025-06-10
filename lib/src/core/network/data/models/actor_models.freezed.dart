@@ -85,36 +85,30 @@ class _$ActorViewerCopyWithImpl<$Res, $Val extends ActorViewer>
   }) {
     return _then(
       _value.copyWith(
-            muted:
-                freezed == muted
-                    ? _value.muted
-                    : muted // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-            blockedBy:
-                freezed == blockedBy
-                    ? _value.blockedBy
-                    : blockedBy // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-            blocking:
-                freezed == blocking
-                    ? _value.blocking
-                    : blocking // ignore: cast_nullable_to_non_nullable
-                        as AtUri?,
-            following:
-                freezed == following
-                    ? _value.following
-                    : following // ignore: cast_nullable_to_non_nullable
-                        as AtUri?,
-            followedBy:
-                freezed == followedBy
-                    ? _value.followedBy
-                    : followedBy // ignore: cast_nullable_to_non_nullable
-                        as AtUri?,
-            followers:
-                freezed == followers
-                    ? _value.followers
-                    : followers // ignore: cast_nullable_to_non_nullable
-                        as KnownFollowers?,
+            muted: freezed == muted
+                ? _value.muted
+                : muted // ignore: cast_nullable_to_non_nullable
+                      as bool?,
+            blockedBy: freezed == blockedBy
+                ? _value.blockedBy
+                : blockedBy // ignore: cast_nullable_to_non_nullable
+                      as bool?,
+            blocking: freezed == blocking
+                ? _value.blocking
+                : blocking // ignore: cast_nullable_to_non_nullable
+                      as AtUri?,
+            following: freezed == following
+                ? _value.following
+                : following // ignore: cast_nullable_to_non_nullable
+                      as AtUri?,
+            followedBy: freezed == followedBy
+                ? _value.followedBy
+                : followedBy // ignore: cast_nullable_to_non_nullable
+                      as AtUri?,
+            followers: freezed == followers
+                ? _value.followers
+                : followers // ignore: cast_nullable_to_non_nullable
+                      as KnownFollowers?,
           )
           as $Val,
     );
@@ -180,36 +174,30 @@ class __$$ActorViewerImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$ActorViewerImpl(
-        muted:
-            freezed == muted
-                ? _value.muted
-                : muted // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-        blockedBy:
-            freezed == blockedBy
-                ? _value.blockedBy
-                : blockedBy // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-        blocking:
-            freezed == blocking
-                ? _value.blocking
-                : blocking // ignore: cast_nullable_to_non_nullable
-                    as AtUri?,
-        following:
-            freezed == following
-                ? _value.following
-                : following // ignore: cast_nullable_to_non_nullable
-                    as AtUri?,
-        followedBy:
-            freezed == followedBy
-                ? _value.followedBy
-                : followedBy // ignore: cast_nullable_to_non_nullable
-                    as AtUri?,
-        followers:
-            freezed == followers
-                ? _value.followers
-                : followers // ignore: cast_nullable_to_non_nullable
-                    as KnownFollowers?,
+        muted: freezed == muted
+            ? _value.muted
+            : muted // ignore: cast_nullable_to_non_nullable
+                  as bool?,
+        blockedBy: freezed == blockedBy
+            ? _value.blockedBy
+            : blockedBy // ignore: cast_nullable_to_non_nullable
+                  as bool?,
+        blocking: freezed == blocking
+            ? _value.blocking
+            : blocking // ignore: cast_nullable_to_non_nullable
+                  as AtUri?,
+        following: freezed == following
+            ? _value.following
+            : following // ignore: cast_nullable_to_non_nullable
+                  as AtUri?,
+        followedBy: freezed == followedBy
+            ? _value.followedBy
+            : followedBy // ignore: cast_nullable_to_non_nullable
+                  as AtUri?,
+        followers: freezed == followers
+            ? _value.followers
+            : followers // ignore: cast_nullable_to_non_nullable
+                  as KnownFollowers?,
       ),
     );
   }
@@ -382,16 +370,14 @@ class _$KnownFollowersCopyWithImpl<$Res, $Val extends KnownFollowers>
   $Res call({Object? count = null, Object? followersDids = null}) {
     return _then(
       _value.copyWith(
-            count:
-                null == count
-                    ? _value.count
-                    : count // ignore: cast_nullable_to_non_nullable
-                        as int,
-            followersDids:
-                null == followersDids
-                    ? _value.followersDids
-                    : followersDids // ignore: cast_nullable_to_non_nullable
-                        as List<String>,
+            count: null == count
+                ? _value.count
+                : count // ignore: cast_nullable_to_non_nullable
+                      as int,
+            followersDids: null == followersDids
+                ? _value.followersDids
+                : followersDids // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
           )
           as $Val,
     );
@@ -426,16 +412,14 @@ class __$$KnownFollowersImplCopyWithImpl<$Res>
   $Res call({Object? count = null, Object? followersDids = null}) {
     return _then(
       _$KnownFollowersImpl(
-        count:
-            null == count
-                ? _value.count
-                : count // ignore: cast_nullable_to_non_nullable
-                    as int,
-        followersDids:
-            null == followersDids
-                ? _value._followersDids
-                : followersDids // ignore: cast_nullable_to_non_nullable
-                    as List<String>,
+        count: null == count
+            ? _value.count
+            : count // ignore: cast_nullable_to_non_nullable
+                  as int,
+        followersDids: null == followersDids
+            ? _value._followersDids
+            : followersDids // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
       ),
     );
   }
@@ -596,36 +580,30 @@ class _$ProfileViewBasicCopyWithImpl<$Res, $Val extends ProfileViewBasic>
   }) {
     return _then(
       _value.copyWith(
-            did:
-                null == did
-                    ? _value.did
-                    : did // ignore: cast_nullable_to_non_nullable
-                        as String,
-            handle:
-                null == handle
-                    ? _value.handle
-                    : handle // ignore: cast_nullable_to_non_nullable
-                        as String,
-            displayName:
-                freezed == displayName
-                    ? _value.displayName
-                    : displayName // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            avatar:
-                freezed == avatar
-                    ? _value.avatar
-                    : avatar // ignore: cast_nullable_to_non_nullable
-                        as AtUri?,
-            viewer:
-                freezed == viewer
-                    ? _value.viewer
-                    : viewer // ignore: cast_nullable_to_non_nullable
-                        as ActorViewer?,
-            stories:
-                freezed == stories
-                    ? _value.stories
-                    : stories // ignore: cast_nullable_to_non_nullable
-                        as List<StrongRef>?,
+            did: null == did
+                ? _value.did
+                : did // ignore: cast_nullable_to_non_nullable
+                      as String,
+            handle: null == handle
+                ? _value.handle
+                : handle // ignore: cast_nullable_to_non_nullable
+                      as String,
+            displayName: freezed == displayName
+                ? _value.displayName
+                : displayName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            avatar: freezed == avatar
+                ? _value.avatar
+                : avatar // ignore: cast_nullable_to_non_nullable
+                      as AtUri?,
+            viewer: freezed == viewer
+                ? _value.viewer
+                : viewer // ignore: cast_nullable_to_non_nullable
+                      as ActorViewer?,
+            stories: freezed == stories
+                ? _value.stories
+                : stories // ignore: cast_nullable_to_non_nullable
+                      as List<StrongRef>?,
           )
           as $Val,
     );
@@ -691,36 +669,30 @@ class __$$ProfileViewBasicImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$ProfileViewBasicImpl(
-        did:
-            null == did
-                ? _value.did
-                : did // ignore: cast_nullable_to_non_nullable
-                    as String,
-        handle:
-            null == handle
-                ? _value.handle
-                : handle // ignore: cast_nullable_to_non_nullable
-                    as String,
-        displayName:
-            freezed == displayName
-                ? _value.displayName
-                : displayName // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        avatar:
-            freezed == avatar
-                ? _value.avatar
-                : avatar // ignore: cast_nullable_to_non_nullable
-                    as AtUri?,
-        viewer:
-            freezed == viewer
-                ? _value.viewer
-                : viewer // ignore: cast_nullable_to_non_nullable
-                    as ActorViewer?,
-        stories:
-            freezed == stories
-                ? _value._stories
-                : stories // ignore: cast_nullable_to_non_nullable
-                    as List<StrongRef>?,
+        did: null == did
+            ? _value.did
+            : did // ignore: cast_nullable_to_non_nullable
+                  as String,
+        handle: null == handle
+            ? _value.handle
+            : handle // ignore: cast_nullable_to_non_nullable
+                  as String,
+        displayName: freezed == displayName
+            ? _value.displayName
+            : displayName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        avatar: freezed == avatar
+            ? _value.avatar
+            : avatar // ignore: cast_nullable_to_non_nullable
+                  as AtUri?,
+        viewer: freezed == viewer
+            ? _value.viewer
+            : viewer // ignore: cast_nullable_to_non_nullable
+                  as ActorViewer?,
+        stories: freezed == stories
+            ? _value._stories
+            : stories // ignore: cast_nullable_to_non_nullable
+                  as List<StrongRef>?,
       ),
     );
   }
@@ -920,41 +892,34 @@ class _$ProfileViewCopyWithImpl<$Res, $Val extends ProfileView>
   }) {
     return _then(
       _value.copyWith(
-            did:
-                null == did
-                    ? _value.did
-                    : did // ignore: cast_nullable_to_non_nullable
-                        as String,
-            handle:
-                null == handle
-                    ? _value.handle
-                    : handle // ignore: cast_nullable_to_non_nullable
-                        as String,
-            displayName:
-                freezed == displayName
-                    ? _value.displayName
-                    : displayName // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            description:
-                freezed == description
-                    ? _value.description
-                    : description // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            avatar:
-                freezed == avatar
-                    ? _value.avatar
-                    : avatar // ignore: cast_nullable_to_non_nullable
-                        as AtUri?,
-            viewer:
-                freezed == viewer
-                    ? _value.viewer
-                    : viewer // ignore: cast_nullable_to_non_nullable
-                        as ActorViewer?,
-            labels:
-                freezed == labels
-                    ? _value.labels
-                    : labels // ignore: cast_nullable_to_non_nullable
-                        as List<Label>?,
+            did: null == did
+                ? _value.did
+                : did // ignore: cast_nullable_to_non_nullable
+                      as String,
+            handle: null == handle
+                ? _value.handle
+                : handle // ignore: cast_nullable_to_non_nullable
+                      as String,
+            displayName: freezed == displayName
+                ? _value.displayName
+                : displayName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            description: freezed == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            avatar: freezed == avatar
+                ? _value.avatar
+                : avatar // ignore: cast_nullable_to_non_nullable
+                      as AtUri?,
+            viewer: freezed == viewer
+                ? _value.viewer
+                : viewer // ignore: cast_nullable_to_non_nullable
+                      as ActorViewer?,
+            labels: freezed == labels
+                ? _value.labels
+                : labels // ignore: cast_nullable_to_non_nullable
+                      as List<Label>?,
           )
           as $Val,
     );
@@ -1022,41 +987,34 @@ class __$$ProfileViewImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$ProfileViewImpl(
-        did:
-            null == did
-                ? _value.did
-                : did // ignore: cast_nullable_to_non_nullable
-                    as String,
-        handle:
-            null == handle
-                ? _value.handle
-                : handle // ignore: cast_nullable_to_non_nullable
-                    as String,
-        displayName:
-            freezed == displayName
-                ? _value.displayName
-                : displayName // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        description:
-            freezed == description
-                ? _value.description
-                : description // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        avatar:
-            freezed == avatar
-                ? _value.avatar
-                : avatar // ignore: cast_nullable_to_non_nullable
-                    as AtUri?,
-        viewer:
-            freezed == viewer
-                ? _value.viewer
-                : viewer // ignore: cast_nullable_to_non_nullable
-                    as ActorViewer?,
-        labels:
-            freezed == labels
-                ? _value._labels
-                : labels // ignore: cast_nullable_to_non_nullable
-                    as List<Label>?,
+        did: null == did
+            ? _value.did
+            : did // ignore: cast_nullable_to_non_nullable
+                  as String,
+        handle: null == handle
+            ? _value.handle
+            : handle // ignore: cast_nullable_to_non_nullable
+                  as String,
+        displayName: freezed == displayName
+            ? _value.displayName
+            : displayName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        description: freezed == description
+            ? _value.description
+            : description // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        avatar: freezed == avatar
+            ? _value.avatar
+            : avatar // ignore: cast_nullable_to_non_nullable
+                  as AtUri?,
+        viewer: freezed == viewer
+            ? _value.viewer
+            : viewer // ignore: cast_nullable_to_non_nullable
+                  as ActorViewer?,
+        labels: freezed == labels
+            ? _value._labels
+            : labels // ignore: cast_nullable_to_non_nullable
+                  as List<Label>?,
       ),
     );
   }
@@ -1287,71 +1245,58 @@ class _$ProfileViewDetailedCopyWithImpl<$Res, $Val extends ProfileViewDetailed>
   }) {
     return _then(
       _value.copyWith(
-            did:
-                null == did
-                    ? _value.did
-                    : did // ignore: cast_nullable_to_non_nullable
-                        as String,
-            handle:
-                null == handle
-                    ? _value.handle
-                    : handle // ignore: cast_nullable_to_non_nullable
-                        as String,
-            displayName:
-                freezed == displayName
-                    ? _value.displayName
-                    : displayName // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            description:
-                freezed == description
-                    ? _value.description
-                    : description // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            avatar:
-                freezed == avatar
-                    ? _value.avatar
-                    : avatar // ignore: cast_nullable_to_non_nullable
-                        as AtUri?,
-            banner:
-                freezed == banner
-                    ? _value.banner
-                    : banner // ignore: cast_nullable_to_non_nullable
-                        as AtUri?,
-            followersCount:
-                freezed == followersCount
-                    ? _value.followersCount
-                    : followersCount // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            followingCount:
-                freezed == followingCount
-                    ? _value.followingCount
-                    : followingCount // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            postsCount:
-                freezed == postsCount
-                    ? _value.postsCount
-                    : postsCount // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            viewer:
-                freezed == viewer
-                    ? _value.viewer
-                    : viewer // ignore: cast_nullable_to_non_nullable
-                        as ActorViewer?,
-            labels:
-                freezed == labels
-                    ? _value.labels
-                    : labels // ignore: cast_nullable_to_non_nullable
-                        as List<Label>?,
-            pinnedPost:
-                freezed == pinnedPost
-                    ? _value.pinnedPost
-                    : pinnedPost // ignore: cast_nullable_to_non_nullable
-                        as StrongRef?,
-            stories:
-                freezed == stories
-                    ? _value.stories
-                    : stories // ignore: cast_nullable_to_non_nullable
-                        as List<StrongRef>?,
+            did: null == did
+                ? _value.did
+                : did // ignore: cast_nullable_to_non_nullable
+                      as String,
+            handle: null == handle
+                ? _value.handle
+                : handle // ignore: cast_nullable_to_non_nullable
+                      as String,
+            displayName: freezed == displayName
+                ? _value.displayName
+                : displayName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            description: freezed == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            avatar: freezed == avatar
+                ? _value.avatar
+                : avatar // ignore: cast_nullable_to_non_nullable
+                      as AtUri?,
+            banner: freezed == banner
+                ? _value.banner
+                : banner // ignore: cast_nullable_to_non_nullable
+                      as AtUri?,
+            followersCount: freezed == followersCount
+                ? _value.followersCount
+                : followersCount // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            followingCount: freezed == followingCount
+                ? _value.followingCount
+                : followingCount // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            postsCount: freezed == postsCount
+                ? _value.postsCount
+                : postsCount // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            viewer: freezed == viewer
+                ? _value.viewer
+                : viewer // ignore: cast_nullable_to_non_nullable
+                      as ActorViewer?,
+            labels: freezed == labels
+                ? _value.labels
+                : labels // ignore: cast_nullable_to_non_nullable
+                      as List<Label>?,
+            pinnedPost: freezed == pinnedPost
+                ? _value.pinnedPost
+                : pinnedPost // ignore: cast_nullable_to_non_nullable
+                      as StrongRef?,
+            stories: freezed == stories
+                ? _value.stories
+                : stories // ignore: cast_nullable_to_non_nullable
+                      as List<StrongRef>?,
           )
           as $Val,
     );
@@ -1447,71 +1392,58 @@ class __$$ProfileViewDetailedImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$ProfileViewDetailedImpl(
-        did:
-            null == did
-                ? _value.did
-                : did // ignore: cast_nullable_to_non_nullable
-                    as String,
-        handle:
-            null == handle
-                ? _value.handle
-                : handle // ignore: cast_nullable_to_non_nullable
-                    as String,
-        displayName:
-            freezed == displayName
-                ? _value.displayName
-                : displayName // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        description:
-            freezed == description
-                ? _value.description
-                : description // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        avatar:
-            freezed == avatar
-                ? _value.avatar
-                : avatar // ignore: cast_nullable_to_non_nullable
-                    as AtUri?,
-        banner:
-            freezed == banner
-                ? _value.banner
-                : banner // ignore: cast_nullable_to_non_nullable
-                    as AtUri?,
-        followersCount:
-            freezed == followersCount
-                ? _value.followersCount
-                : followersCount // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        followingCount:
-            freezed == followingCount
-                ? _value.followingCount
-                : followingCount // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        postsCount:
-            freezed == postsCount
-                ? _value.postsCount
-                : postsCount // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        viewer:
-            freezed == viewer
-                ? _value.viewer
-                : viewer // ignore: cast_nullable_to_non_nullable
-                    as ActorViewer?,
-        labels:
-            freezed == labels
-                ? _value._labels
-                : labels // ignore: cast_nullable_to_non_nullable
-                    as List<Label>?,
-        pinnedPost:
-            freezed == pinnedPost
-                ? _value.pinnedPost
-                : pinnedPost // ignore: cast_nullable_to_non_nullable
-                    as StrongRef?,
-        stories:
-            freezed == stories
-                ? _value._stories
-                : stories // ignore: cast_nullable_to_non_nullable
-                    as List<StrongRef>?,
+        did: null == did
+            ? _value.did
+            : did // ignore: cast_nullable_to_non_nullable
+                  as String,
+        handle: null == handle
+            ? _value.handle
+            : handle // ignore: cast_nullable_to_non_nullable
+                  as String,
+        displayName: freezed == displayName
+            ? _value.displayName
+            : displayName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        description: freezed == description
+            ? _value.description
+            : description // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        avatar: freezed == avatar
+            ? _value.avatar
+            : avatar // ignore: cast_nullable_to_non_nullable
+                  as AtUri?,
+        banner: freezed == banner
+            ? _value.banner
+            : banner // ignore: cast_nullable_to_non_nullable
+                  as AtUri?,
+        followersCount: freezed == followersCount
+            ? _value.followersCount
+            : followersCount // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        followingCount: freezed == followingCount
+            ? _value.followingCount
+            : followingCount // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        postsCount: freezed == postsCount
+            ? _value.postsCount
+            : postsCount // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        viewer: freezed == viewer
+            ? _value.viewer
+            : viewer // ignore: cast_nullable_to_non_nullable
+                  as ActorViewer?,
+        labels: freezed == labels
+            ? _value._labels
+            : labels // ignore: cast_nullable_to_non_nullable
+                  as List<Label>?,
+        pinnedPost: freezed == pinnedPost
+            ? _value.pinnedPost
+            : pinnedPost // ignore: cast_nullable_to_non_nullable
+                  as StrongRef?,
+        stories: freezed == stories
+            ? _value._stories
+            : stories // ignore: cast_nullable_to_non_nullable
+                  as List<StrongRef>?,
       ),
     );
   }

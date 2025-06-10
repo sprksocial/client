@@ -54,16 +54,14 @@ _$LabelerViewImpl _$$LabelerViewImplFromJson(Map<String, dynamic> json) =>
       indexedAt: DateTime.parse(json['indexedAt'] as String),
       likeCount: (json['likeCount'] as num?)?.toInt(),
       lookCount: (json['lookCount'] as num?)?.toInt(),
-      labelerViewer:
-          json['labelerViewer'] == null
-              ? null
-              : LabelerViewerState.fromJson(
-                json['labelerViewer'] as Map<String, dynamic>,
-              ),
-      labels:
-          (json['labels'] as List<dynamic>?)
-              ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
-              .toList(),
+      labelerViewer: json['labelerViewer'] == null
+          ? null
+          : LabelerViewerState.fromJson(
+              json['labelerViewer'] as Map<String, dynamic>,
+            ),
+      labels: (json['labels'] as List<dynamic>?)
+          ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$$LabelerViewImplToJson(_$LabelerViewImpl instance) =>
@@ -87,20 +85,17 @@ _$LabelerViewDetailedImpl _$$LabelerViewDetailedImplFromJson(
   indexedAt: DateTime.parse(json['indexedAt'] as String),
   likeCount: (json['likeCount'] as num?)?.toInt(),
   lookCount: (json['lookCount'] as num?)?.toInt(),
-  labelerViewer:
-      json['labelerViewer'] == null
-          ? null
-          : LabelerViewerState.fromJson(
-            json['labelerViewer'] as Map<String, dynamic>,
-          ),
-  policies:
-      json['policies'] == null
-          ? null
-          : LabelerPolicies.fromJson(json['policies'] as Map<String, dynamic>),
-  labels:
-      (json['labels'] as List<dynamic>?)
-          ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
-          .toList(),
+  labelerViewer: json['labelerViewer'] == null
+      ? null
+      : LabelerViewerState.fromJson(
+          json['labelerViewer'] as Map<String, dynamic>,
+        ),
+  policies: json['policies'] == null
+      ? null
+      : LabelerPolicies.fromJson(json['policies'] as Map<String, dynamic>),
+  labels: (json['labels'] as List<dynamic>?)
+      ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$$LabelerViewDetailedImplToJson(
@@ -134,18 +129,19 @@ Map<String, dynamic> _$$LabelerViewerStateImplToJson(
 _$LabelerPoliciesImpl _$$LabelerPoliciesImplFromJson(
   Map<String, dynamic> json,
 ) => _$LabelerPoliciesImpl(
-  labelValues:
-      (json['labelValues'] as List<dynamic>).map((e) => e as String).toList(),
-  labelValueDefinitions:
-      (json['labelValueDefinitions'] as List<dynamic>?)
-          ?.map((e) => LabelValueDefinition.fromJson(e as Map<String, dynamic>))
-          .toList(),
+  labelValues: (json['labelValues'] as List<dynamic>)
+      .map((e) => e as String)
+      .toList(),
+  labelValueDefinitions: (json['labelValueDefinitions'] as List<dynamic>?)
+      ?.map((e) => LabelValueDefinition.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$$LabelerPoliciesImplToJson(
   _$LabelerPoliciesImpl instance,
 ) => <String, dynamic>{
   'labelValues': instance.labelValues,
-  'labelValueDefinitions':
-      instance.labelValueDefinitions?.map((e) => e.toJson()).toList(),
+  'labelValueDefinitions': instance.labelValueDefinitions
+      ?.map((e) => e.toJson())
+      .toList(),
 };

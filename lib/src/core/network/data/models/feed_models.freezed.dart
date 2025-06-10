@@ -108,76 +108,62 @@ class _$CustomFeedCopyWithImpl<$Res, $Val extends CustomFeed>
   }) {
     return _then(
       _value.copyWith(
-            creator:
-                freezed == creator
-                    ? _value.creator
-                    : creator // ignore: cast_nullable_to_non_nullable
-                        as ProfileViewBasic?,
-            name:
-                null == name
-                    ? _value.name
-                    : name // ignore: cast_nullable_to_non_nullable
-                        as String,
-            description:
-                null == description
-                    ? _value.description
-                    : description // ignore: cast_nullable_to_non_nullable
-                        as String,
-            descriptionFacets:
-                null == descriptionFacets
-                    ? _value.descriptionFacets
-                    : descriptionFacets // ignore: cast_nullable_to_non_nullable
-                        as List<Facet>,
-            labels:
-                null == labels
-                    ? _value.labels
-                    : labels // ignore: cast_nullable_to_non_nullable
-                        as List<Label>,
-            likeCount:
-                null == likeCount
-                    ? _value.likeCount
-                    : likeCount // ignore: cast_nullable_to_non_nullable
-                        as int,
-            imageUrl:
-                null == imageUrl
-                    ? _value.imageUrl
-                    : imageUrl // ignore: cast_nullable_to_non_nullable
-                        as String,
-            isDraft:
-                null == isDraft
-                    ? _value.isDraft
-                    : isDraft // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            videosOnly:
-                null == videosOnly
-                    ? _value.videosOnly
-                    : videosOnly // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            did:
-                freezed == did
-                    ? _value.did
-                    : did // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            uri:
-                freezed == uri
-                    ? _value.uri
-                    : uri // ignore: cast_nullable_to_non_nullable
-                        as AtUri?,
-            cid:
-                freezed == cid
-                    ? _value.cid
-                    : cid // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            hashtagPreferences:
-                null == hashtagPreferences
-                    ? _value.hashtagPreferences
-                    : hashtagPreferences // ignore: cast_nullable_to_non_nullable
-                        as Map<String, bool>,
-            labelPreferences:
-                null == labelPreferences
-                    ? _value.labelPreferences
-                    : labelPreferences // ignore: cast_nullable_to_non_nullable
-                        as Map<String, Map<String, bool>>,
+            creator: freezed == creator
+                ? _value.creator
+                : creator // ignore: cast_nullable_to_non_nullable
+                      as ProfileViewBasic?,
+            name: null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String,
+            description: null == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                      as String,
+            descriptionFacets: null == descriptionFacets
+                ? _value.descriptionFacets
+                : descriptionFacets // ignore: cast_nullable_to_non_nullable
+                      as List<Facet>,
+            labels: null == labels
+                ? _value.labels
+                : labels // ignore: cast_nullable_to_non_nullable
+                      as List<Label>,
+            likeCount: null == likeCount
+                ? _value.likeCount
+                : likeCount // ignore: cast_nullable_to_non_nullable
+                      as int,
+            imageUrl: null == imageUrl
+                ? _value.imageUrl
+                : imageUrl // ignore: cast_nullable_to_non_nullable
+                      as String,
+            isDraft: null == isDraft
+                ? _value.isDraft
+                : isDraft // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            videosOnly: null == videosOnly
+                ? _value.videosOnly
+                : videosOnly // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            did: freezed == did
+                ? _value.did
+                : did // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            uri: freezed == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                      as AtUri?,
+            cid: freezed == cid
+                ? _value.cid
+                : cid // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            hashtagPreferences: null == hashtagPreferences
+                ? _value.hashtagPreferences
+                : hashtagPreferences // ignore: cast_nullable_to_non_nullable
+                      as Map<String, bool>,
+            labelPreferences: null == labelPreferences
+                ? _value.labelPreferences
+                : labelPreferences // ignore: cast_nullable_to_non_nullable
+                      as Map<String, Map<String, bool>>,
           )
           as $Val,
     );
@@ -259,76 +245,62 @@ class __$$CustomFeedImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$CustomFeedImpl(
-        creator:
-            freezed == creator
-                ? _value.creator
-                : creator // ignore: cast_nullable_to_non_nullable
-                    as ProfileViewBasic?,
-        name:
-            null == name
-                ? _value.name
-                : name // ignore: cast_nullable_to_non_nullable
-                    as String,
-        description:
-            null == description
-                ? _value.description
-                : description // ignore: cast_nullable_to_non_nullable
-                    as String,
-        descriptionFacets:
-            null == descriptionFacets
-                ? _value._descriptionFacets
-                : descriptionFacets // ignore: cast_nullable_to_non_nullable
-                    as List<Facet>,
-        labels:
-            null == labels
-                ? _value._labels
-                : labels // ignore: cast_nullable_to_non_nullable
-                    as List<Label>,
-        likeCount:
-            null == likeCount
-                ? _value.likeCount
-                : likeCount // ignore: cast_nullable_to_non_nullable
-                    as int,
-        imageUrl:
-            null == imageUrl
-                ? _value.imageUrl
-                : imageUrl // ignore: cast_nullable_to_non_nullable
-                    as String,
-        isDraft:
-            null == isDraft
-                ? _value.isDraft
-                : isDraft // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        videosOnly:
-            null == videosOnly
-                ? _value.videosOnly
-                : videosOnly // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        did:
-            freezed == did
-                ? _value.did
-                : did // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        uri:
-            freezed == uri
-                ? _value.uri
-                : uri // ignore: cast_nullable_to_non_nullable
-                    as AtUri?,
-        cid:
-            freezed == cid
-                ? _value.cid
-                : cid // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        hashtagPreferences:
-            null == hashtagPreferences
-                ? _value._hashtagPreferences
-                : hashtagPreferences // ignore: cast_nullable_to_non_nullable
-                    as Map<String, bool>,
-        labelPreferences:
-            null == labelPreferences
-                ? _value._labelPreferences
-                : labelPreferences // ignore: cast_nullable_to_non_nullable
-                    as Map<String, Map<String, bool>>,
+        creator: freezed == creator
+            ? _value.creator
+            : creator // ignore: cast_nullable_to_non_nullable
+                  as ProfileViewBasic?,
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        description: null == description
+            ? _value.description
+            : description // ignore: cast_nullable_to_non_nullable
+                  as String,
+        descriptionFacets: null == descriptionFacets
+            ? _value._descriptionFacets
+            : descriptionFacets // ignore: cast_nullable_to_non_nullable
+                  as List<Facet>,
+        labels: null == labels
+            ? _value._labels
+            : labels // ignore: cast_nullable_to_non_nullable
+                  as List<Label>,
+        likeCount: null == likeCount
+            ? _value.likeCount
+            : likeCount // ignore: cast_nullable_to_non_nullable
+                  as int,
+        imageUrl: null == imageUrl
+            ? _value.imageUrl
+            : imageUrl // ignore: cast_nullable_to_non_nullable
+                  as String,
+        isDraft: null == isDraft
+            ? _value.isDraft
+            : isDraft // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        videosOnly: null == videosOnly
+            ? _value.videosOnly
+            : videosOnly // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        did: freezed == did
+            ? _value.did
+            : did // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        uri: freezed == uri
+            ? _value.uri
+            : uri // ignore: cast_nullable_to_non_nullable
+                  as AtUri?,
+        cid: freezed == cid
+            ? _value.cid
+            : cid // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        hashtagPreferences: null == hashtagPreferences
+            ? _value._hashtagPreferences
+            : hashtagPreferences // ignore: cast_nullable_to_non_nullable
+                  as Map<String, bool>,
+        labelPreferences: null == labelPreferences
+            ? _value._labelPreferences
+            : labelPreferences // ignore: cast_nullable_to_non_nullable
+                  as Map<String, Map<String, bool>>,
       ),
     );
   }
@@ -683,16 +655,14 @@ class __$$FeedCustomImplCopyWithImpl<$Res>
   $Res call({Object? name = null, Object? uri = null}) {
     return _then(
       _$FeedCustomImpl(
-        name:
-            null == name
-                ? _value.name
-                : name // ignore: cast_nullable_to_non_nullable
-                    as String,
-        uri:
-            null == uri
-                ? _value.uri
-                : uri // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        uri: null == uri
+            ? _value.uri
+            : uri // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
       ),
     );
   }
@@ -871,11 +841,10 @@ class __$$FeedHardCodedImplCopyWithImpl<$Res>
   $Res call({Object? hardCodedFeed = null}) {
     return _then(
       _$FeedHardCodedImpl(
-        hardCodedFeed:
-            null == hardCodedFeed
-                ? _value.hardCodedFeed
-                : hardCodedFeed // ignore: cast_nullable_to_non_nullable
-                    as HardCodedFeedEnum,
+        hardCodedFeed: null == hardCodedFeed
+            ? _value.hardCodedFeed
+            : hardCodedFeed // ignore: cast_nullable_to_non_nullable
+                  as HardCodedFeedEnum,
       ),
     );
   }
@@ -1064,11 +1033,10 @@ class _$SkeletonFeedPostCopyWithImpl<$Res, $Val extends SkeletonFeedPost>
   $Res call({Object? uri = null}) {
     return _then(
       _value.copyWith(
-            uri:
-                null == uri
-                    ? _value.uri
-                    : uri // ignore: cast_nullable_to_non_nullable
-                        as AtUri,
+            uri: null == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                      as AtUri,
           )
           as $Val,
     );
@@ -1103,11 +1071,10 @@ class __$$SkeletonFeedPostImplCopyWithImpl<$Res>
   $Res call({Object? uri = null}) {
     return _then(
       _$SkeletonFeedPostImpl(
-        uri:
-            null == uri
-                ? _value.uri
-                : uri // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
+        uri: null == uri
+            ? _value.uri
+            : uri // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
       ),
     );
   }
@@ -1269,16 +1236,14 @@ class _$HardcodedFeedExtraInfoCopyWithImpl<
   $Res call({Object? from = null, Object? message = freezed}) {
     return _then(
       _value.copyWith(
-            from:
-                null == from
-                    ? _value.from
-                    : from // ignore: cast_nullable_to_non_nullable
-                        as ProfileViewBasic,
-            message:
-                freezed == message
-                    ? _value.message
-                    : message // ignore: cast_nullable_to_non_nullable
-                        as String?,
+            from: null == from
+                ? _value.from
+                : from // ignore: cast_nullable_to_non_nullable
+                      as ProfileViewBasic,
+            message: freezed == message
+                ? _value.message
+                : message // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -1330,16 +1295,14 @@ class __$$HardcodedFeedExtraInfoSharedImplCopyWithImpl<$Res>
   $Res call({Object? from = null, Object? message = freezed}) {
     return _then(
       _$HardcodedFeedExtraInfoSharedImpl(
-        from:
-            null == from
-                ? _value.from
-                : from // ignore: cast_nullable_to_non_nullable
-                    as ProfileViewBasic,
-        message:
-            freezed == message
-                ? _value.message
-                : message // ignore: cast_nullable_to_non_nullable
-                    as String?,
+        from: null == from
+            ? _value.from
+            : from // ignore: cast_nullable_to_non_nullable
+                  as ProfileViewBasic,
+        message: freezed == message
+            ? _value.message
+            : message // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -1397,9 +1360,10 @@ class _$HardcodedFeedExtraInfoSharedImpl extends HardcodedFeedExtraInfoShared
   _$$HardcodedFeedExtraInfoSharedImplCopyWith<
     _$HardcodedFeedExtraInfoSharedImpl
   >
-  get copyWith => __$$HardcodedFeedExtraInfoSharedImplCopyWithImpl<
-    _$HardcodedFeedExtraInfoSharedImpl
-  >(this, _$identity);
+  get copyWith =>
+      __$$HardcodedFeedExtraInfoSharedImplCopyWithImpl<
+        _$HardcodedFeedExtraInfoSharedImpl
+      >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -1537,16 +1501,14 @@ class _$FeedViewPostCopyWithImpl<$Res, $Val extends FeedViewPost>
   $Res call({Object? post = null, Object? reply = freezed}) {
     return _then(
       _value.copyWith(
-            post:
-                null == post
-                    ? _value.post
-                    : post // ignore: cast_nullable_to_non_nullable
-                        as PostView,
-            reply:
-                freezed == reply
-                    ? _value.reply
-                    : reply // ignore: cast_nullable_to_non_nullable
-                        as ReplyRef?,
+            post: null == post
+                ? _value.post
+                : post // ignore: cast_nullable_to_non_nullable
+                      as PostView,
+            reply: freezed == reply
+                ? _value.reply
+                : reply // ignore: cast_nullable_to_non_nullable
+                      as ReplyRef?,
           )
           as $Val,
     );
@@ -1610,16 +1572,14 @@ class __$$FeedViewPostPostImplCopyWithImpl<$Res>
   $Res call({Object? post = null, Object? reply = freezed}) {
     return _then(
       _$FeedViewPostPostImpl(
-        post:
-            null == post
-                ? _value.post
-                : post // ignore: cast_nullable_to_non_nullable
-                    as PostView,
-        reply:
-            freezed == reply
-                ? _value.reply
-                : reply // ignore: cast_nullable_to_non_nullable
-                    as ReplyRef?,
+        post: null == post
+            ? _value.post
+            : post // ignore: cast_nullable_to_non_nullable
+                  as PostView,
+        reply: freezed == reply
+            ? _value.reply
+            : reply // ignore: cast_nullable_to_non_nullable
+                  as ReplyRef?,
       ),
     );
   }
@@ -1766,21 +1726,18 @@ class _$ReplyRefCopyWithImpl<$Res, $Val extends ReplyRef>
   }) {
     return _then(
       _value.copyWith(
-            root:
-                null == root
-                    ? _value.root
-                    : root // ignore: cast_nullable_to_non_nullable
-                        as ReplyRefPostReference,
-            parent:
-                null == parent
-                    ? _value.parent
-                    : parent // ignore: cast_nullable_to_non_nullable
-                        as ReplyRefPostReference,
-            grandparentAuthor:
-                freezed == grandparentAuthor
-                    ? _value.grandparentAuthor
-                    : grandparentAuthor // ignore: cast_nullable_to_non_nullable
-                        as ProfileViewBasic?,
+            root: null == root
+                ? _value.root
+                : root // ignore: cast_nullable_to_non_nullable
+                      as ReplyRefPostReference,
+            parent: null == parent
+                ? _value.parent
+                : parent // ignore: cast_nullable_to_non_nullable
+                      as ReplyRefPostReference,
+            grandparentAuthor: freezed == grandparentAuthor
+                ? _value.grandparentAuthor
+                : grandparentAuthor // ignore: cast_nullable_to_non_nullable
+                      as ProfileViewBasic?,
           )
           as $Val,
     );
@@ -1864,21 +1821,18 @@ class __$$ReplyRefImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$ReplyRefImpl(
-        root:
-            null == root
-                ? _value.root
-                : root // ignore: cast_nullable_to_non_nullable
-                    as ReplyRefPostReference,
-        parent:
-            null == parent
-                ? _value.parent
-                : parent // ignore: cast_nullable_to_non_nullable
-                    as ReplyRefPostReference,
-        grandparentAuthor:
-            freezed == grandparentAuthor
-                ? _value.grandparentAuthor
-                : grandparentAuthor // ignore: cast_nullable_to_non_nullable
-                    as ProfileViewBasic?,
+        root: null == root
+            ? _value.root
+            : root // ignore: cast_nullable_to_non_nullable
+                  as ReplyRefPostReference,
+        parent: null == parent
+            ? _value.parent
+            : parent // ignore: cast_nullable_to_non_nullable
+                  as ReplyRefPostReference,
+        grandparentAuthor: freezed == grandparentAuthor
+            ? _value.grandparentAuthor
+            : grandparentAuthor // ignore: cast_nullable_to_non_nullable
+                  as ProfileViewBasic?,
       ),
     );
   }
@@ -2117,11 +2071,10 @@ class __$$ReplyRefPostReferencePostImplCopyWithImpl<$Res>
   $Res call({Object? post = null}) {
     return _then(
       _$ReplyRefPostReferencePostImpl(
-        post:
-            null == post
-                ? _value.post
-                : post // ignore: cast_nullable_to_non_nullable
-                    as PostView,
+        post: null == post
+            ? _value.post
+            : post // ignore: cast_nullable_to_non_nullable
+                  as PostView,
       ),
     );
   }
@@ -2188,9 +2141,10 @@ class _$ReplyRefPostReferencePostImpl extends ReplyRefPostReferencePost
   @override
   @pragma('vm:prefer-inline')
   _$$ReplyRefPostReferencePostImplCopyWith<_$ReplyRefPostReferencePostImpl>
-  get copyWith => __$$ReplyRefPostReferencePostImplCopyWithImpl<
-    _$ReplyRefPostReferencePostImpl
-  >(this, _$identity);
+  get copyWith =>
+      __$$ReplyRefPostReferencePostImplCopyWithImpl<
+        _$ReplyRefPostReferencePostImpl
+      >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -2331,16 +2285,14 @@ class __$$ReplyRefPostReferenceNotFoundPostImplCopyWithImpl<$Res>
   $Res call({Object? uri = null, Object? notFound = null}) {
     return _then(
       _$ReplyRefPostReferenceNotFoundPostImpl(
-        uri:
-            null == uri
-                ? _value.uri
-                : uri // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
-        notFound:
-            null == notFound
-                ? _value.notFound
-                : notFound // ignore: cast_nullable_to_non_nullable
-                    as bool,
+        uri: null == uri
+            ? _value.uri
+            : uri // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
+        notFound: null == notFound
+            ? _value.notFound
+            : notFound // ignore: cast_nullable_to_non_nullable
+                  as bool,
       ),
     );
   }
@@ -2408,9 +2360,10 @@ class _$ReplyRefPostReferenceNotFoundPostImpl
   _$$ReplyRefPostReferenceNotFoundPostImplCopyWith<
     _$ReplyRefPostReferenceNotFoundPostImpl
   >
-  get copyWith => __$$ReplyRefPostReferenceNotFoundPostImplCopyWithImpl<
-    _$ReplyRefPostReferenceNotFoundPostImpl
-  >(this, _$identity);
+  get copyWith =>
+      __$$ReplyRefPostReferenceNotFoundPostImplCopyWithImpl<
+        _$ReplyRefPostReferenceNotFoundPostImpl
+      >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -2564,21 +2517,18 @@ class __$$ReplyRefPostReferenceBlockedPostImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$ReplyRefPostReferenceBlockedPostImpl(
-        uri:
-            null == uri
-                ? _value.uri
-                : uri // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
-        blocked:
-            null == blocked
-                ? _value.blocked
-                : blocked // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        author:
-            null == author
-                ? _value.author
-                : author // ignore: cast_nullable_to_non_nullable
-                    as BlockedAuthor,
+        uri: null == uri
+            ? _value.uri
+            : uri // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
+        blocked: null == blocked
+            ? _value.blocked
+            : blocked // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        author: null == author
+            ? _value.author
+            : author // ignore: cast_nullable_to_non_nullable
+                  as BlockedAuthor,
       ),
     );
   }
@@ -2660,9 +2610,10 @@ class _$ReplyRefPostReferenceBlockedPostImpl
   _$$ReplyRefPostReferenceBlockedPostImplCopyWith<
     _$ReplyRefPostReferenceBlockedPostImpl
   >
-  get copyWith => __$$ReplyRefPostReferenceBlockedPostImplCopyWithImpl<
-    _$ReplyRefPostReferenceBlockedPostImpl
-  >(this, _$identity);
+  get copyWith =>
+      __$$ReplyRefPostReferenceBlockedPostImplCopyWithImpl<
+        _$ReplyRefPostReferenceBlockedPostImpl
+      >(this, _$identity);
 
   @override
   @optionalTypeArgs
@@ -2829,16 +2780,14 @@ class _$BlockedAuthorCopyWithImpl<$Res, $Val extends BlockedAuthor>
   $Res call({Object? did = null, Object? viewer = freezed}) {
     return _then(
       _value.copyWith(
-            did:
-                null == did
-                    ? _value.did
-                    : did // ignore: cast_nullable_to_non_nullable
-                        as String,
-            viewer:
-                freezed == viewer
-                    ? _value.viewer
-                    : viewer // ignore: cast_nullable_to_non_nullable
-                        as Viewer?,
+            did: null == did
+                ? _value.did
+                : did // ignore: cast_nullable_to_non_nullable
+                      as String,
+            viewer: freezed == viewer
+                ? _value.viewer
+                : viewer // ignore: cast_nullable_to_non_nullable
+                      as Viewer?,
           )
           as $Val,
     );
@@ -2890,16 +2839,14 @@ class __$$BlockedAuthorImplCopyWithImpl<$Res>
   $Res call({Object? did = null, Object? viewer = freezed}) {
     return _then(
       _$BlockedAuthorImpl(
-        did:
-            null == did
-                ? _value.did
-                : did // ignore: cast_nullable_to_non_nullable
-                    as String,
-        viewer:
-            freezed == viewer
-                ? _value.viewer
-                : viewer // ignore: cast_nullable_to_non_nullable
-                    as Viewer?,
+        did: null == did
+            ? _value.did
+            : did // ignore: cast_nullable_to_non_nullable
+                  as String,
+        viewer: freezed == viewer
+            ? _value.viewer
+            : viewer // ignore: cast_nullable_to_non_nullable
+                  as Viewer?,
       ),
     );
   }
@@ -3036,21 +2983,18 @@ class _$PostThreadCopyWithImpl<$Res, $Val extends PostThread>
   }) {
     return _then(
       _value.copyWith(
-            post:
-                null == post
-                    ? _value.post
-                    : post // ignore: cast_nullable_to_non_nullable
-                        as PostView,
-            parent:
-                freezed == parent
-                    ? _value.parent
-                    : parent // ignore: cast_nullable_to_non_nullable
-                        as List<PostView>?,
-            replies:
-                freezed == replies
-                    ? _value.replies
-                    : replies // ignore: cast_nullable_to_non_nullable
-                        as List<PostView>?,
+            post: null == post
+                ? _value.post
+                : post // ignore: cast_nullable_to_non_nullable
+                      as PostView,
+            parent: freezed == parent
+                ? _value.parent
+                : parent // ignore: cast_nullable_to_non_nullable
+                      as List<PostView>?,
+            replies: freezed == replies
+                ? _value.replies
+                : replies // ignore: cast_nullable_to_non_nullable
+                      as List<PostView>?,
           )
           as $Val,
     );
@@ -3102,21 +3046,18 @@ class __$$PostThreadImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$PostThreadImpl(
-        post:
-            null == post
-                ? _value.post
-                : post // ignore: cast_nullable_to_non_nullable
-                    as PostView,
-        parent:
-            freezed == parent
-                ? _value._parent
-                : parent // ignore: cast_nullable_to_non_nullable
-                    as List<PostView>?,
-        replies:
-            freezed == replies
-                ? _value._replies
-                : replies // ignore: cast_nullable_to_non_nullable
-                    as List<PostView>?,
+        post: null == post
+            ? _value.post
+            : post // ignore: cast_nullable_to_non_nullable
+                  as PostView,
+        parent: freezed == parent
+            ? _value._parent
+            : parent // ignore: cast_nullable_to_non_nullable
+                  as List<PostView>?,
+        replies: freezed == replies
+            ? _value._replies
+            : replies // ignore: cast_nullable_to_non_nullable
+                  as List<PostView>?,
       ),
     );
   }
@@ -3282,16 +3223,14 @@ class _$RecordReplyRefCopyWithImpl<$Res, $Val extends RecordReplyRef>
   $Res call({Object? root = null, Object? parent = null}) {
     return _then(
       _value.copyWith(
-            root:
-                null == root
-                    ? _value.root
-                    : root // ignore: cast_nullable_to_non_nullable
-                        as StrongRef,
-            parent:
-                null == parent
-                    ? _value.parent
-                    : parent // ignore: cast_nullable_to_non_nullable
-                        as StrongRef,
+            root: null == root
+                ? _value.root
+                : root // ignore: cast_nullable_to_non_nullable
+                      as StrongRef,
+            parent: null == parent
+                ? _value.parent
+                : parent // ignore: cast_nullable_to_non_nullable
+                      as StrongRef,
           )
           as $Val,
     );
@@ -3351,16 +3290,14 @@ class __$$RecordReplyRefImplCopyWithImpl<$Res>
   $Res call({Object? root = null, Object? parent = null}) {
     return _then(
       _$RecordReplyRefImpl(
-        root:
-            null == root
-                ? _value.root
-                : root // ignore: cast_nullable_to_non_nullable
-                    as StrongRef,
-        parent:
-            null == parent
-                ? _value.parent
-                : parent // ignore: cast_nullable_to_non_nullable
-                    as StrongRef,
+        root: null == root
+            ? _value.root
+            : root // ignore: cast_nullable_to_non_nullable
+                  as StrongRef,
+        parent: null == parent
+            ? _value.parent
+            : parent // ignore: cast_nullable_to_non_nullable
+                  as StrongRef,
       ),
     );
   }
@@ -3516,41 +3453,34 @@ class _$ViewerCopyWithImpl<$Res, $Val extends Viewer>
   }) {
     return _then(
       _value.copyWith(
-            repost:
-                freezed == repost
-                    ? _value.repost
-                    : repost // ignore: cast_nullable_to_non_nullable
-                        as AtUri?,
-            like:
-                freezed == like
-                    ? _value.like
-                    : like // ignore: cast_nullable_to_non_nullable
-                        as AtUri?,
-            look:
-                freezed == look
-                    ? _value.look
-                    : look // ignore: cast_nullable_to_non_nullable
-                        as AtUri?,
-            threadMuted:
-                freezed == threadMuted
-                    ? _value.threadMuted
-                    : threadMuted // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-            replyDisabled:
-                freezed == replyDisabled
-                    ? _value.replyDisabled
-                    : replyDisabled // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-            embeddingDisabled:
-                freezed == embeddingDisabled
-                    ? _value.embeddingDisabled
-                    : embeddingDisabled // ignore: cast_nullable_to_non_nullable
-                        as bool?,
-            pinned:
-                freezed == pinned
-                    ? _value.pinned
-                    : pinned // ignore: cast_nullable_to_non_nullable
-                        as bool?,
+            repost: freezed == repost
+                ? _value.repost
+                : repost // ignore: cast_nullable_to_non_nullable
+                      as AtUri?,
+            like: freezed == like
+                ? _value.like
+                : like // ignore: cast_nullable_to_non_nullable
+                      as AtUri?,
+            look: freezed == look
+                ? _value.look
+                : look // ignore: cast_nullable_to_non_nullable
+                      as AtUri?,
+            threadMuted: freezed == threadMuted
+                ? _value.threadMuted
+                : threadMuted // ignore: cast_nullable_to_non_nullable
+                      as bool?,
+            replyDisabled: freezed == replyDisabled
+                ? _value.replyDisabled
+                : replyDisabled // ignore: cast_nullable_to_non_nullable
+                      as bool?,
+            embeddingDisabled: freezed == embeddingDisabled
+                ? _value.embeddingDisabled
+                : embeddingDisabled // ignore: cast_nullable_to_non_nullable
+                      as bool?,
+            pinned: freezed == pinned
+                ? _value.pinned
+                : pinned // ignore: cast_nullable_to_non_nullable
+                      as bool?,
           )
           as $Val,
     );
@@ -3600,41 +3530,34 @@ class __$$ViewerImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$ViewerImpl(
-        repost:
-            freezed == repost
-                ? _value.repost
-                : repost // ignore: cast_nullable_to_non_nullable
-                    as AtUri?,
-        like:
-            freezed == like
-                ? _value.like
-                : like // ignore: cast_nullable_to_non_nullable
-                    as AtUri?,
-        look:
-            freezed == look
-                ? _value.look
-                : look // ignore: cast_nullable_to_non_nullable
-                    as AtUri?,
-        threadMuted:
-            freezed == threadMuted
-                ? _value.threadMuted
-                : threadMuted // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-        replyDisabled:
-            freezed == replyDisabled
-                ? _value.replyDisabled
-                : replyDisabled // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-        embeddingDisabled:
-            freezed == embeddingDisabled
-                ? _value.embeddingDisabled
-                : embeddingDisabled // ignore: cast_nullable_to_non_nullable
-                    as bool?,
-        pinned:
-            freezed == pinned
-                ? _value.pinned
-                : pinned // ignore: cast_nullable_to_non_nullable
-                    as bool?,
+        repost: freezed == repost
+            ? _value.repost
+            : repost // ignore: cast_nullable_to_non_nullable
+                  as AtUri?,
+        like: freezed == like
+            ? _value.like
+            : like // ignore: cast_nullable_to_non_nullable
+                  as AtUri?,
+        look: freezed == look
+            ? _value.look
+            : look // ignore: cast_nullable_to_non_nullable
+                  as AtUri?,
+        threadMuted: freezed == threadMuted
+            ? _value.threadMuted
+            : threadMuted // ignore: cast_nullable_to_non_nullable
+                  as bool?,
+        replyDisabled: freezed == replyDisabled
+            ? _value.replyDisabled
+            : replyDisabled // ignore: cast_nullable_to_non_nullable
+                  as bool?,
+        embeddingDisabled: freezed == embeddingDisabled
+            ? _value.embeddingDisabled
+            : embeddingDisabled // ignore: cast_nullable_to_non_nullable
+                  as bool?,
+        pinned: freezed == pinned
+            ? _value.pinned
+            : pinned // ignore: cast_nullable_to_non_nullable
+                  as bool?,
       ),
     );
   }
@@ -3853,46 +3776,38 @@ class _$PostRecordCopyWithImpl<$Res, $Val extends PostRecord>
   }) {
     return _then(
       _value.copyWith(
-            createdAt:
-                freezed == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as DateTime?,
-            text:
-                freezed == text
-                    ? _value.text
-                    : text // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            facets:
-                freezed == facets
-                    ? _value.facets
-                    : facets // ignore: cast_nullable_to_non_nullable
-                        as List<Facet>?,
-            reply:
-                freezed == reply
-                    ? _value.reply
-                    : reply // ignore: cast_nullable_to_non_nullable
-                        as RecordReplyRef?,
-            langs:
-                freezed == langs
-                    ? _value.langs
-                    : langs // ignore: cast_nullable_to_non_nullable
-                        as List<String>?,
-            tags:
-                freezed == tags
-                    ? _value.tags
-                    : tags // ignore: cast_nullable_to_non_nullable
-                        as List<String>?,
-            selfLabels:
-                freezed == selfLabels
-                    ? _value.selfLabels
-                    : selfLabels // ignore: cast_nullable_to_non_nullable
-                        as List<SelfLabel>?,
-            embed:
-                freezed == embed
-                    ? _value.embed
-                    : embed // ignore: cast_nullable_to_non_nullable
-                        as Embed?,
+            createdAt: freezed == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime?,
+            text: freezed == text
+                ? _value.text
+                : text // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            facets: freezed == facets
+                ? _value.facets
+                : facets // ignore: cast_nullable_to_non_nullable
+                      as List<Facet>?,
+            reply: freezed == reply
+                ? _value.reply
+                : reply // ignore: cast_nullable_to_non_nullable
+                      as RecordReplyRef?,
+            langs: freezed == langs
+                ? _value.langs
+                : langs // ignore: cast_nullable_to_non_nullable
+                      as List<String>?,
+            tags: freezed == tags
+                ? _value.tags
+                : tags // ignore: cast_nullable_to_non_nullable
+                      as List<String>?,
+            selfLabels: freezed == selfLabels
+                ? _value.selfLabels
+                : selfLabels // ignore: cast_nullable_to_non_nullable
+                      as List<SelfLabel>?,
+            embed: freezed == embed
+                ? _value.embed
+                : embed // ignore: cast_nullable_to_non_nullable
+                      as Embed?,
           )
           as $Val,
     );
@@ -3978,46 +3893,38 @@ class __$$PostRecordImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$PostRecordImpl(
-        createdAt:
-            freezed == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as DateTime?,
-        text:
-            freezed == text
-                ? _value.text
-                : text // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        facets:
-            freezed == facets
-                ? _value._facets
-                : facets // ignore: cast_nullable_to_non_nullable
-                    as List<Facet>?,
-        reply:
-            freezed == reply
-                ? _value.reply
-                : reply // ignore: cast_nullable_to_non_nullable
-                    as RecordReplyRef?,
-        langs:
-            freezed == langs
-                ? _value._langs
-                : langs // ignore: cast_nullable_to_non_nullable
-                    as List<String>?,
-        tags:
-            freezed == tags
-                ? _value._tags
-                : tags // ignore: cast_nullable_to_non_nullable
-                    as List<String>?,
-        selfLabels:
-            freezed == selfLabels
-                ? _value._selfLabels
-                : selfLabels // ignore: cast_nullable_to_non_nullable
-                    as List<SelfLabel>?,
-        embed:
-            freezed == embed
-                ? _value.embed
-                : embed // ignore: cast_nullable_to_non_nullable
-                    as Embed?,
+        createdAt: freezed == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime?,
+        text: freezed == text
+            ? _value.text
+            : text // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        facets: freezed == facets
+            ? _value._facets
+            : facets // ignore: cast_nullable_to_non_nullable
+                  as List<Facet>?,
+        reply: freezed == reply
+            ? _value.reply
+            : reply // ignore: cast_nullable_to_non_nullable
+                  as RecordReplyRef?,
+        langs: freezed == langs
+            ? _value._langs
+            : langs // ignore: cast_nullable_to_non_nullable
+                  as List<String>?,
+        tags: freezed == tags
+            ? _value._tags
+            : tags // ignore: cast_nullable_to_non_nullable
+                  as List<String>?,
+        selfLabels: freezed == selfLabels
+            ? _value._selfLabels
+            : selfLabels // ignore: cast_nullable_to_non_nullable
+                  as List<SelfLabel>?,
+        embed: freezed == embed
+            ? _value.embed
+            : embed // ignore: cast_nullable_to_non_nullable
+                  as Embed?,
       ),
     );
   }
@@ -4310,16 +4217,14 @@ class __$$EmbedVideoImplCopyWithImpl<$Res>
   $Res call({Object? video = null, Object? alt = freezed}) {
     return _then(
       _$EmbedVideoImpl(
-        video:
-            null == video
-                ? _value.video
-                : video // ignore: cast_nullable_to_non_nullable
-                    as Blob,
-        alt:
-            freezed == alt
-                ? _value.alt
-                : alt // ignore: cast_nullable_to_non_nullable
-                    as String?,
+        video: null == video
+            ? _value.video
+            : video // ignore: cast_nullable_to_non_nullable
+                  as Blob,
+        alt: freezed == alt
+            ? _value.alt
+            : alt // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -4506,11 +4411,10 @@ class __$$EmbedImageImplCopyWithImpl<$Res>
   $Res call({Object? images = null}) {
     return _then(
       _$EmbedImageImpl(
-        images:
-            null == images
-                ? _value._images
-                : images // ignore: cast_nullable_to_non_nullable
-                    as List<Image>,
+        images: null == images
+            ? _value._images
+            : images // ignore: cast_nullable_to_non_nullable
+                  as List<Image>,
       ),
     );
   }
@@ -4749,71 +4653,58 @@ class _$PostViewCopyWithImpl<$Res, $Val extends PostView>
   }) {
     return _then(
       _value.copyWith(
-            uri:
-                null == uri
-                    ? _value.uri
-                    : uri // ignore: cast_nullable_to_non_nullable
-                        as AtUri,
-            cid:
-                null == cid
-                    ? _value.cid
-                    : cid // ignore: cast_nullable_to_non_nullable
-                        as String,
-            author:
-                null == author
-                    ? _value.author
-                    : author // ignore: cast_nullable_to_non_nullable
-                        as ProfileViewBasic,
-            record:
-                null == record
-                    ? _value.record
-                    : record // ignore: cast_nullable_to_non_nullable
-                        as PostRecord,
-            isRepost:
-                null == isRepost
-                    ? _value.isRepost
-                    : isRepost // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            indexedAt:
-                null == indexedAt
-                    ? _value.indexedAt
-                    : indexedAt // ignore: cast_nullable_to_non_nullable
-                        as DateTime,
-            likeCount:
-                freezed == likeCount
-                    ? _value.likeCount
-                    : likeCount // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            replyCount:
-                freezed == replyCount
-                    ? _value.replyCount
-                    : replyCount // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            repostCount:
-                freezed == repostCount
-                    ? _value.repostCount
-                    : repostCount // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            quoteCount:
-                freezed == quoteCount
-                    ? _value.quoteCount
-                    : quoteCount // ignore: cast_nullable_to_non_nullable
-                        as int?,
-            labels:
-                freezed == labels
-                    ? _value.labels
-                    : labels // ignore: cast_nullable_to_non_nullable
-                        as List<Label>?,
-            viewer:
-                freezed == viewer
-                    ? _value.viewer
-                    : viewer // ignore: cast_nullable_to_non_nullable
-                        as Viewer?,
-            embed:
-                freezed == embed
-                    ? _value.embed
-                    : embed // ignore: cast_nullable_to_non_nullable
-                        as EmbedView?,
+            uri: null == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                      as AtUri,
+            cid: null == cid
+                ? _value.cid
+                : cid // ignore: cast_nullable_to_non_nullable
+                      as String,
+            author: null == author
+                ? _value.author
+                : author // ignore: cast_nullable_to_non_nullable
+                      as ProfileViewBasic,
+            record: null == record
+                ? _value.record
+                : record // ignore: cast_nullable_to_non_nullable
+                      as PostRecord,
+            isRepost: null == isRepost
+                ? _value.isRepost
+                : isRepost // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            indexedAt: null == indexedAt
+                ? _value.indexedAt
+                : indexedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+            likeCount: freezed == likeCount
+                ? _value.likeCount
+                : likeCount // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            replyCount: freezed == replyCount
+                ? _value.replyCount
+                : replyCount // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            repostCount: freezed == repostCount
+                ? _value.repostCount
+                : repostCount // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            quoteCount: freezed == quoteCount
+                ? _value.quoteCount
+                : quoteCount // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            labels: freezed == labels
+                ? _value.labels
+                : labels // ignore: cast_nullable_to_non_nullable
+                      as List<Label>?,
+            viewer: freezed == viewer
+                ? _value.viewer
+                : viewer // ignore: cast_nullable_to_non_nullable
+                      as Viewer?,
+            embed: freezed == embed
+                ? _value.embed
+                : embed // ignore: cast_nullable_to_non_nullable
+                      as EmbedView?,
           )
           as $Val,
     );
@@ -4933,71 +4824,58 @@ class __$$PostViewImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$PostViewImpl(
-        uri:
-            null == uri
-                ? _value.uri
-                : uri // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
-        cid:
-            null == cid
-                ? _value.cid
-                : cid // ignore: cast_nullable_to_non_nullable
-                    as String,
-        author:
-            null == author
-                ? _value.author
-                : author // ignore: cast_nullable_to_non_nullable
-                    as ProfileViewBasic,
-        record:
-            null == record
-                ? _value.record
-                : record // ignore: cast_nullable_to_non_nullable
-                    as PostRecord,
-        isRepost:
-            null == isRepost
-                ? _value.isRepost
-                : isRepost // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        indexedAt:
-            null == indexedAt
-                ? _value.indexedAt
-                : indexedAt // ignore: cast_nullable_to_non_nullable
-                    as DateTime,
-        likeCount:
-            freezed == likeCount
-                ? _value.likeCount
-                : likeCount // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        replyCount:
-            freezed == replyCount
-                ? _value.replyCount
-                : replyCount // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        repostCount:
-            freezed == repostCount
-                ? _value.repostCount
-                : repostCount // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        quoteCount:
-            freezed == quoteCount
-                ? _value.quoteCount
-                : quoteCount // ignore: cast_nullable_to_non_nullable
-                    as int?,
-        labels:
-            freezed == labels
-                ? _value._labels
-                : labels // ignore: cast_nullable_to_non_nullable
-                    as List<Label>?,
-        viewer:
-            freezed == viewer
-                ? _value.viewer
-                : viewer // ignore: cast_nullable_to_non_nullable
-                    as Viewer?,
-        embed:
-            freezed == embed
-                ? _value.embed
-                : embed // ignore: cast_nullable_to_non_nullable
-                    as EmbedView?,
+        uri: null == uri
+            ? _value.uri
+            : uri // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
+        cid: null == cid
+            ? _value.cid
+            : cid // ignore: cast_nullable_to_non_nullable
+                  as String,
+        author: null == author
+            ? _value.author
+            : author // ignore: cast_nullable_to_non_nullable
+                  as ProfileViewBasic,
+        record: null == record
+            ? _value.record
+            : record // ignore: cast_nullable_to_non_nullable
+                  as PostRecord,
+        isRepost: null == isRepost
+            ? _value.isRepost
+            : isRepost // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        indexedAt: null == indexedAt
+            ? _value.indexedAt
+            : indexedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+        likeCount: freezed == likeCount
+            ? _value.likeCount
+            : likeCount // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        replyCount: freezed == replyCount
+            ? _value.replyCount
+            : replyCount // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        repostCount: freezed == repostCount
+            ? _value.repostCount
+            : repostCount // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        quoteCount: freezed == quoteCount
+            ? _value.quoteCount
+            : quoteCount // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        labels: freezed == labels
+            ? _value._labels
+            : labels // ignore: cast_nullable_to_non_nullable
+                  as List<Label>?,
+        viewer: freezed == viewer
+            ? _value.viewer
+            : viewer // ignore: cast_nullable_to_non_nullable
+                  as Viewer?,
+        embed: freezed == embed
+            ? _value.embed
+            : embed // ignore: cast_nullable_to_non_nullable
+                  as EmbedView?,
       ),
     );
   }
@@ -5336,26 +5214,22 @@ class __$$EmbedViewVideoImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$EmbedViewVideoImpl(
-        cid:
-            null == cid
-                ? _value.cid
-                : cid // ignore: cast_nullable_to_non_nullable
-                    as String,
-        playlist:
-            null == playlist
-                ? _value.playlist
-                : playlist // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
-        thumbnail:
-            null == thumbnail
-                ? _value.thumbnail
-                : thumbnail // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
-        alt:
-            freezed == alt
-                ? _value.alt
-                : alt // ignore: cast_nullable_to_non_nullable
-                    as String?,
+        cid: null == cid
+            ? _value.cid
+            : cid // ignore: cast_nullable_to_non_nullable
+                  as String,
+        playlist: null == playlist
+            ? _value.playlist
+            : playlist // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
+        thumbnail: null == thumbnail
+            ? _value.thumbnail
+            : thumbnail // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
+        alt: freezed == alt
+            ? _value.alt
+            : alt // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -5573,11 +5447,10 @@ class __$$EmbedViewImageImplCopyWithImpl<$Res>
   $Res call({Object? images = null}) {
     return _then(
       _$EmbedViewImageImpl(
-        images:
-            null == images
-                ? _value._images
-                : images // ignore: cast_nullable_to_non_nullable
-                    as List<ViewImage>,
+        images: null == images
+            ? _value._images
+            : images // ignore: cast_nullable_to_non_nullable
+                  as List<ViewImage>,
       ),
     );
   }
@@ -5794,16 +5667,14 @@ class _$FeedSkeletonCopyWithImpl<$Res, $Val extends FeedSkeleton>
   $Res call({Object? feed = null, Object? cursor = freezed}) {
     return _then(
       _value.copyWith(
-            feed:
-                null == feed
-                    ? _value.feed
-                    : feed // ignore: cast_nullable_to_non_nullable
-                        as List<SkeletonFeedPost>,
-            cursor:
-                freezed == cursor
-                    ? _value.cursor
-                    : cursor // ignore: cast_nullable_to_non_nullable
-                        as String?,
+            feed: null == feed
+                ? _value.feed
+                : feed // ignore: cast_nullable_to_non_nullable
+                      as List<SkeletonFeedPost>,
+            cursor: freezed == cursor
+                ? _value.cursor
+                : cursor // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -5838,16 +5709,14 @@ class __$$FeedSkeletonImplCopyWithImpl<$Res>
   $Res call({Object? feed = null, Object? cursor = freezed}) {
     return _then(
       _$FeedSkeletonImpl(
-        feed:
-            null == feed
-                ? _value._feed
-                : feed // ignore: cast_nullable_to_non_nullable
-                    as List<SkeletonFeedPost>,
-        cursor:
-            freezed == cursor
-                ? _value.cursor
-                : cursor // ignore: cast_nullable_to_non_nullable
-                    as String?,
+        feed: null == feed
+            ? _value._feed
+            : feed // ignore: cast_nullable_to_non_nullable
+                  as List<SkeletonFeedPost>,
+        cursor: freezed == cursor
+            ? _value.cursor
+            : cursor // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -5996,21 +5865,18 @@ class _$ImageUploadResultCopyWithImpl<$Res, $Val extends ImageUploadResult>
   }) {
     return _then(
       _value.copyWith(
-            fullsize:
-                null == fullsize
-                    ? _value.fullsize
-                    : fullsize // ignore: cast_nullable_to_non_nullable
-                        as String,
-            alt:
-                null == alt
-                    ? _value.alt
-                    : alt // ignore: cast_nullable_to_non_nullable
-                        as String,
-            image:
-                null == image
-                    ? _value.image
-                    : image // ignore: cast_nullable_to_non_nullable
-                        as Map<String, dynamic>,
+            fullsize: null == fullsize
+                ? _value.fullsize
+                : fullsize // ignore: cast_nullable_to_non_nullable
+                      as String,
+            alt: null == alt
+                ? _value.alt
+                : alt // ignore: cast_nullable_to_non_nullable
+                      as String,
+            image: null == image
+                ? _value.image
+                : image // ignore: cast_nullable_to_non_nullable
+                      as Map<String, dynamic>,
           )
           as $Val,
     );
@@ -6049,21 +5915,18 @@ class __$$ImageUploadResultImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$ImageUploadResultImpl(
-        fullsize:
-            null == fullsize
-                ? _value.fullsize
-                : fullsize // ignore: cast_nullable_to_non_nullable
-                    as String,
-        alt:
-            null == alt
-                ? _value.alt
-                : alt // ignore: cast_nullable_to_non_nullable
-                    as String,
-        image:
-            null == image
-                ? _value._image
-                : image // ignore: cast_nullable_to_non_nullable
-                    as Map<String, dynamic>,
+        fullsize: null == fullsize
+            ? _value.fullsize
+            : fullsize // ignore: cast_nullable_to_non_nullable
+                  as String,
+        alt: null == alt
+            ? _value.alt
+            : alt // ignore: cast_nullable_to_non_nullable
+                  as String,
+        image: null == image
+            ? _value._image
+            : image // ignore: cast_nullable_to_non_nullable
+                  as Map<String, dynamic>,
       ),
     );
   }
@@ -6223,16 +6086,14 @@ class _$FacetIndexCopyWithImpl<$Res, $Val extends FacetIndex>
   $Res call({Object? byteStart = null, Object? byteEnd = null}) {
     return _then(
       _value.copyWith(
-            byteStart:
-                null == byteStart
-                    ? _value.byteStart
-                    : byteStart // ignore: cast_nullable_to_non_nullable
-                        as int,
-            byteEnd:
-                null == byteEnd
-                    ? _value.byteEnd
-                    : byteEnd // ignore: cast_nullable_to_non_nullable
-                        as int,
+            byteStart: null == byteStart
+                ? _value.byteStart
+                : byteStart // ignore: cast_nullable_to_non_nullable
+                      as int,
+            byteEnd: null == byteEnd
+                ? _value.byteEnd
+                : byteEnd // ignore: cast_nullable_to_non_nullable
+                      as int,
           )
           as $Val,
     );
@@ -6267,16 +6128,14 @@ class __$$FacetIndexImplCopyWithImpl<$Res>
   $Res call({Object? byteStart = null, Object? byteEnd = null}) {
     return _then(
       _$FacetIndexImpl(
-        byteStart:
-            null == byteStart
-                ? _value.byteStart
-                : byteStart // ignore: cast_nullable_to_non_nullable
-                    as int,
-        byteEnd:
-            null == byteEnd
-                ? _value.byteEnd
-                : byteEnd // ignore: cast_nullable_to_non_nullable
-                    as int,
+        byteStart: null == byteStart
+            ? _value.byteStart
+            : byteStart // ignore: cast_nullable_to_non_nullable
+                  as int,
+        byteEnd: null == byteEnd
+            ? _value.byteEnd
+            : byteEnd // ignore: cast_nullable_to_non_nullable
+                  as int,
       ),
     );
   }
@@ -6480,11 +6339,10 @@ class __$$MentionFeatureImplCopyWithImpl<$Res>
   $Res call({Object? did = null}) {
     return _then(
       _$MentionFeatureImpl(
-        did:
-            null == did
-                ? _value.did
-                : did // ignore: cast_nullable_to_non_nullable
-                    as String,
+        did: null == did
+            ? _value.did
+            : did // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -6660,11 +6518,10 @@ class __$$LinkFeatureImplCopyWithImpl<$Res>
   $Res call({Object? uri = null}) {
     return _then(
       _$LinkFeatureImpl(
-        uri:
-            null == uri
-                ? _value.uri
-                : uri // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
+        uri: null == uri
+            ? _value.uri
+            : uri // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
       ),
     );
   }
@@ -6841,11 +6698,10 @@ class __$$TagFeatureImplCopyWithImpl<$Res>
   $Res call({Object? tag = null}) {
     return _then(
       _$TagFeatureImpl(
-        tag:
-            null == tag
-                ? _value.tag
-                : tag // ignore: cast_nullable_to_non_nullable
-                    as String,
+        tag: null == tag
+            ? _value.tag
+            : tag // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }
@@ -7039,16 +6895,14 @@ class _$FacetCopyWithImpl<$Res, $Val extends Facet>
   $Res call({Object? index = null, Object? features = null}) {
     return _then(
       _value.copyWith(
-            index:
-                null == index
-                    ? _value.index
-                    : index // ignore: cast_nullable_to_non_nullable
-                        as FacetIndex,
-            features:
-                null == features
-                    ? _value.features
-                    : features // ignore: cast_nullable_to_non_nullable
-                        as List<FacetFeature>,
+            index: null == index
+                ? _value.index
+                : index // ignore: cast_nullable_to_non_nullable
+                      as FacetIndex,
+            features: null == features
+                ? _value.features
+                : features // ignore: cast_nullable_to_non_nullable
+                      as List<FacetFeature>,
           )
           as $Val,
     );
@@ -7095,16 +6949,14 @@ class __$$FacetImplCopyWithImpl<$Res>
   $Res call({Object? index = null, Object? features = null}) {
     return _then(
       _$FacetImpl(
-        index:
-            null == index
-                ? _value.index
-                : index // ignore: cast_nullable_to_non_nullable
-                    as FacetIndex,
-        features:
-            null == features
-                ? _value._features
-                : features // ignore: cast_nullable_to_non_nullable
-                    as List<FacetFeature>,
+        index: null == index
+            ? _value.index
+            : index // ignore: cast_nullable_to_non_nullable
+                  as FacetIndex,
+        features: null == features
+            ? _value._features
+            : features // ignore: cast_nullable_to_non_nullable
+                  as List<FacetFeature>,
       ),
     );
   }
@@ -7253,16 +7105,14 @@ class _$ImageCopyWithImpl<$Res, $Val extends Image>
   $Res call({Object? image = null, Object? alt = freezed}) {
     return _then(
       _value.copyWith(
-            image:
-                null == image
-                    ? _value.image
-                    : image // ignore: cast_nullable_to_non_nullable
-                        as Blob,
-            alt:
-                freezed == alt
-                    ? _value.alt
-                    : alt // ignore: cast_nullable_to_non_nullable
-                        as String?,
+            image: null == image
+                ? _value.image
+                : image // ignore: cast_nullable_to_non_nullable
+                      as Blob,
+            alt: freezed == alt
+                ? _value.alt
+                : alt // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -7309,16 +7159,14 @@ class __$$ImageImplCopyWithImpl<$Res>
   $Res call({Object? image = null, Object? alt = freezed}) {
     return _then(
       _$ImageImpl(
-        image:
-            null == image
-                ? _value.image
-                : image // ignore: cast_nullable_to_non_nullable
-                    as Blob,
-        alt:
-            freezed == alt
-                ? _value.alt
-                : alt // ignore: cast_nullable_to_non_nullable
-                    as String?,
+        image: null == image
+            ? _value.image
+            : image // ignore: cast_nullable_to_non_nullable
+                  as Blob,
+        alt: freezed == alt
+            ? _value.alt
+            : alt // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -7454,21 +7302,18 @@ class _$ViewImageCopyWithImpl<$Res, $Val extends ViewImage>
   }) {
     return _then(
       _value.copyWith(
-            thumb:
-                null == thumb
-                    ? _value.thumb
-                    : thumb // ignore: cast_nullable_to_non_nullable
-                        as AtUri,
-            fullsize:
-                null == fullsize
-                    ? _value.fullsize
-                    : fullsize // ignore: cast_nullable_to_non_nullable
-                        as AtUri,
-            alt:
-                freezed == alt
-                    ? _value.alt
-                    : alt // ignore: cast_nullable_to_non_nullable
-                        as String?,
+            thumb: null == thumb
+                ? _value.thumb
+                : thumb // ignore: cast_nullable_to_non_nullable
+                      as AtUri,
+            fullsize: null == fullsize
+                ? _value.fullsize
+                : fullsize // ignore: cast_nullable_to_non_nullable
+                      as AtUri,
+            alt: freezed == alt
+                ? _value.alt
+                : alt // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -7511,21 +7356,18 @@ class __$$ViewImageImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$ViewImageImpl(
-        thumb:
-            null == thumb
-                ? _value.thumb
-                : thumb // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
-        fullsize:
-            null == fullsize
-                ? _value.fullsize
-                : fullsize // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
-        alt:
-            freezed == alt
-                ? _value.alt
-                : alt // ignore: cast_nullable_to_non_nullable
-                    as String?,
+        thumb: null == thumb
+            ? _value.thumb
+            : thumb // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
+        fullsize: null == fullsize
+            ? _value.fullsize
+            : fullsize // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
+        alt: freezed == alt
+            ? _value.alt
+            : alt // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }
@@ -7783,26 +7625,22 @@ class __$$ThreadViewPostImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$ThreadViewPostImpl(
-        post:
-            null == post
-                ? _value.post
-                : post // ignore: cast_nullable_to_non_nullable
-                    as PostView,
-        parent:
-            freezed == parent
-                ? _value.parent
-                : parent // ignore: cast_nullable_to_non_nullable
-                    as Thread?,
-        replies:
-            freezed == replies
-                ? _value._replies
-                : replies // ignore: cast_nullable_to_non_nullable
-                    as List<Thread>?,
-        context:
-            freezed == context
-                ? _value.context
-                : context // ignore: cast_nullable_to_non_nullable
-                    as ThreadContext?,
+        post: null == post
+            ? _value.post
+            : post // ignore: cast_nullable_to_non_nullable
+                  as PostView,
+        parent: freezed == parent
+            ? _value.parent
+            : parent // ignore: cast_nullable_to_non_nullable
+                  as Thread?,
+        replies: freezed == replies
+            ? _value._replies
+            : replies // ignore: cast_nullable_to_non_nullable
+                  as List<Thread>?,
+        context: freezed == context
+            ? _value.context
+            : context // ignore: cast_nullable_to_non_nullable
+                  as ThreadContext?,
       ),
     );
   }
@@ -8089,16 +7927,14 @@ class __$$NotFoundPostImplCopyWithImpl<$Res>
   $Res call({Object? uri = null, Object? notFound = null}) {
     return _then(
       _$NotFoundPostImpl(
-        uri:
-            null == uri
-                ? _value.uri
-                : uri // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
-        notFound:
-            null == notFound
-                ? _value.notFound
-                : notFound // ignore: cast_nullable_to_non_nullable
-                    as bool,
+        uri: null == uri
+            ? _value.uri
+            : uri // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
+        notFound: null == notFound
+            ? _value.notFound
+            : notFound // ignore: cast_nullable_to_non_nullable
+                  as bool,
       ),
     );
   }
@@ -8324,21 +8160,18 @@ class __$$BlockedPostImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$BlockedPostImpl(
-        uri:
-            null == uri
-                ? _value.uri
-                : uri // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
-        blocked:
-            null == blocked
-                ? _value.blocked
-                : blocked // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        author:
-            null == author
-                ? _value.author
-                : author // ignore: cast_nullable_to_non_nullable
-                    as BlockedAuthor,
+        uri: null == uri
+            ? _value.uri
+            : uri // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
+        blocked: null == blocked
+            ? _value.blocked
+            : blocked // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        author: null == author
+            ? _value.author
+            : author // ignore: cast_nullable_to_non_nullable
+                  as BlockedAuthor,
       ),
     );
   }
@@ -8594,11 +8427,10 @@ class _$ThreadContextCopyWithImpl<$Res, $Val extends ThreadContext>
   $Res call({Object? rootAuthorLike = freezed}) {
     return _then(
       _value.copyWith(
-            rootAuthorLike:
-                freezed == rootAuthorLike
-                    ? _value.rootAuthorLike
-                    : rootAuthorLike // ignore: cast_nullable_to_non_nullable
-                        as AtUri?,
+            rootAuthorLike: freezed == rootAuthorLike
+                ? _value.rootAuthorLike
+                : rootAuthorLike // ignore: cast_nullable_to_non_nullable
+                      as AtUri?,
           )
           as $Val,
     );
@@ -8633,11 +8465,10 @@ class __$$ThreadContextImplCopyWithImpl<$Res>
   $Res call({Object? rootAuthorLike = freezed}) {
     return _then(
       _$ThreadContextImpl(
-        rootAuthorLike:
-            freezed == rootAuthorLike
-                ? _value.rootAuthorLike
-                : rootAuthorLike // ignore: cast_nullable_to_non_nullable
-                    as AtUri?,
+        rootAuthorLike: freezed == rootAuthorLike
+            ? _value.rootAuthorLike
+            : rootAuthorLike // ignore: cast_nullable_to_non_nullable
+                  as AtUri?,
       ),
     );
   }
@@ -8785,36 +8616,30 @@ class _$StoryViewCopyWithImpl<$Res, $Val extends StoryView>
   }) {
     return _then(
       _value.copyWith(
-            cid:
-                null == cid
-                    ? _value.cid
-                    : cid // ignore: cast_nullable_to_non_nullable
-                        as String,
-            uri:
-                null == uri
-                    ? _value.uri
-                    : uri // ignore: cast_nullable_to_non_nullable
-                        as AtUri,
-            author:
-                null == author
-                    ? _value.author
-                    : author // ignore: cast_nullable_to_non_nullable
-                        as ProfileViewBasic,
-            record:
-                null == record
-                    ? _value.record
-                    : record // ignore: cast_nullable_to_non_nullable
-                        as StoryRecord,
-            indexedAt:
-                null == indexedAt
-                    ? _value.indexedAt
-                    : indexedAt // ignore: cast_nullable_to_non_nullable
-                        as DateTime,
-            embed:
-                freezed == embed
-                    ? _value.embed
-                    : embed // ignore: cast_nullable_to_non_nullable
-                        as EmbedView?,
+            cid: null == cid
+                ? _value.cid
+                : cid // ignore: cast_nullable_to_non_nullable
+                      as String,
+            uri: null == uri
+                ? _value.uri
+                : uri // ignore: cast_nullable_to_non_nullable
+                      as AtUri,
+            author: null == author
+                ? _value.author
+                : author // ignore: cast_nullable_to_non_nullable
+                      as ProfileViewBasic,
+            record: null == record
+                ? _value.record
+                : record // ignore: cast_nullable_to_non_nullable
+                      as StoryRecord,
+            indexedAt: null == indexedAt
+                ? _value.indexedAt
+                : indexedAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+            embed: freezed == embed
+                ? _value.embed
+                : embed // ignore: cast_nullable_to_non_nullable
+                      as EmbedView?,
           )
           as $Val,
     );
@@ -8904,36 +8729,30 @@ class __$$StoryViewImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$StoryViewImpl(
-        cid:
-            null == cid
-                ? _value.cid
-                : cid // ignore: cast_nullable_to_non_nullable
-                    as String,
-        uri:
-            null == uri
-                ? _value.uri
-                : uri // ignore: cast_nullable_to_non_nullable
-                    as AtUri,
-        author:
-            null == author
-                ? _value.author
-                : author // ignore: cast_nullable_to_non_nullable
-                    as ProfileViewBasic,
-        record:
-            null == record
-                ? _value.record
-                : record // ignore: cast_nullable_to_non_nullable
-                    as StoryRecord,
-        indexedAt:
-            null == indexedAt
-                ? _value.indexedAt
-                : indexedAt // ignore: cast_nullable_to_non_nullable
-                    as DateTime,
-        embed:
-            freezed == embed
-                ? _value.embed
-                : embed // ignore: cast_nullable_to_non_nullable
-                    as EmbedView?,
+        cid: null == cid
+            ? _value.cid
+            : cid // ignore: cast_nullable_to_non_nullable
+                  as String,
+        uri: null == uri
+            ? _value.uri
+            : uri // ignore: cast_nullable_to_non_nullable
+                  as AtUri,
+        author: null == author
+            ? _value.author
+            : author // ignore: cast_nullable_to_non_nullable
+                  as ProfileViewBasic,
+        record: null == record
+            ? _value.record
+            : record // ignore: cast_nullable_to_non_nullable
+                  as StoryRecord,
+        indexedAt: null == indexedAt
+            ? _value.indexedAt
+            : indexedAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+        embed: freezed == embed
+            ? _value.embed
+            : embed // ignore: cast_nullable_to_non_nullable
+                  as EmbedView?,
       ),
     );
   }
@@ -9116,26 +8935,22 @@ class _$StoryRecordCopyWithImpl<$Res, $Val extends StoryRecord>
   }) {
     return _then(
       _value.copyWith(
-            createdAt:
-                null == createdAt
-                    ? _value.createdAt
-                    : createdAt // ignore: cast_nullable_to_non_nullable
-                        as DateTime,
-            media:
-                null == media
-                    ? _value.media
-                    : media // ignore: cast_nullable_to_non_nullable
-                        as Embed,
-            selfLabels:
-                freezed == selfLabels
-                    ? _value.selfLabels
-                    : selfLabels // ignore: cast_nullable_to_non_nullable
-                        as List<SelfLabel>?,
-            tags:
-                freezed == tags
-                    ? _value.tags
-                    : tags // ignore: cast_nullable_to_non_nullable
-                        as List<String>?,
+            createdAt: null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as DateTime,
+            media: null == media
+                ? _value.media
+                : media // ignore: cast_nullable_to_non_nullable
+                      as Embed,
+            selfLabels: freezed == selfLabels
+                ? _value.selfLabels
+                : selfLabels // ignore: cast_nullable_to_non_nullable
+                      as List<SelfLabel>?,
+            tags: freezed == tags
+                ? _value.tags
+                : tags // ignore: cast_nullable_to_non_nullable
+                      as List<String>?,
           )
           as $Val,
     );
@@ -9193,26 +9008,22 @@ class __$$StoryRecordImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$StoryRecordImpl(
-        createdAt:
-            null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                    as DateTime,
-        media:
-            null == media
-                ? _value.media
-                : media // ignore: cast_nullable_to_non_nullable
-                    as Embed,
-        selfLabels:
-            freezed == selfLabels
-                ? _value._selfLabels
-                : selfLabels // ignore: cast_nullable_to_non_nullable
-                    as List<SelfLabel>?,
-        tags:
-            freezed == tags
-                ? _value._tags
-                : tags // ignore: cast_nullable_to_non_nullable
-                    as List<String>?,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as DateTime,
+        media: null == media
+            ? _value.media
+            : media // ignore: cast_nullable_to_non_nullable
+                  as Embed,
+        selfLabels: freezed == selfLabels
+            ? _value._selfLabels
+            : selfLabels // ignore: cast_nullable_to_non_nullable
+                  as List<SelfLabel>?,
+        tags: freezed == tags
+            ? _value._tags
+            : tags // ignore: cast_nullable_to_non_nullable
+                  as List<String>?,
       ),
     );
   }
@@ -9390,16 +9201,14 @@ class _$StoriesByAuthorCopyWithImpl<$Res, $Val extends StoriesByAuthor>
   $Res call({Object? author = null, Object? stories = null}) {
     return _then(
       _value.copyWith(
-            author:
-                null == author
-                    ? _value.author
-                    : author // ignore: cast_nullable_to_non_nullable
-                        as ProfileViewBasic,
-            stories:
-                null == stories
-                    ? _value.stories
-                    : stories // ignore: cast_nullable_to_non_nullable
-                        as List<StoryView>,
+            author: null == author
+                ? _value.author
+                : author // ignore: cast_nullable_to_non_nullable
+                      as ProfileViewBasic,
+            stories: null == stories
+                ? _value.stories
+                : stories // ignore: cast_nullable_to_non_nullable
+                      as List<StoryView>,
           )
           as $Val,
     );
@@ -9447,16 +9256,14 @@ class __$$StoriesByAuthorImplCopyWithImpl<$Res>
   $Res call({Object? author = null, Object? stories = null}) {
     return _then(
       _$StoriesByAuthorImpl(
-        author:
-            null == author
-                ? _value.author
-                : author // ignore: cast_nullable_to_non_nullable
-                    as ProfileViewBasic,
-        stories:
-            null == stories
-                ? _value._stories
-                : stories // ignore: cast_nullable_to_non_nullable
-                    as List<StoryView>,
+        author: null == author
+            ? _value.author
+            : author // ignore: cast_nullable_to_non_nullable
+                  as ProfileViewBasic,
+        stories: null == stories
+            ? _value._stories
+            : stories // ignore: cast_nullable_to_non_nullable
+                  as List<StoryView>,
       ),
     );
   }

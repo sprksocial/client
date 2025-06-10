@@ -74,32 +74,28 @@ class _$ProfileFeedStateCopyWithImpl<$Res, $Val extends ProfileFeedState>
   }) {
     return _then(
       _value.copyWith(
-            loadedPosts:
-                null == loadedPosts
-                    ? _value.loadedPosts
-                    : loadedPosts // ignore: cast_nullable_to_non_nullable
-                        as List<AtUri>,
-            isEndOfNetwork:
-                null == isEndOfNetwork
-                    ? _value.isEndOfNetwork
-                    : isEndOfNetwork // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            cursor:
-                freezed == cursor
-                    ? _value.cursor
-                    : cursor // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            extraInfo:
-                null == extraInfo
-                    ? _value.extraInfo
-                    : extraInfo // ignore: cast_nullable_to_non_nullable
-                        as LinkedHashMap<
-                          AtUri,
-                          ({
-                            HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
-                            List<Label> postLabels,
-                          })
-                        >,
+            loadedPosts: null == loadedPosts
+                ? _value.loadedPosts
+                : loadedPosts // ignore: cast_nullable_to_non_nullable
+                      as List<AtUri>,
+            isEndOfNetwork: null == isEndOfNetwork
+                ? _value.isEndOfNetwork
+                : isEndOfNetwork // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            cursor: freezed == cursor
+                ? _value.cursor
+                : cursor // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            extraInfo: null == extraInfo
+                ? _value.extraInfo
+                : extraInfo // ignore: cast_nullable_to_non_nullable
+                      as LinkedHashMap<
+                        AtUri,
+                        ({
+                          HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
+                          List<Label> postLabels,
+                        })
+                      >,
           )
           as $Val,
     );
@@ -148,32 +144,28 @@ class __$$ProfileFeedStateImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$ProfileFeedStateImpl(
-        loadedPosts:
-            null == loadedPosts
-                ? _value._loadedPosts
-                : loadedPosts // ignore: cast_nullable_to_non_nullable
-                    as List<AtUri>,
-        isEndOfNetwork:
-            null == isEndOfNetwork
-                ? _value.isEndOfNetwork
-                : isEndOfNetwork // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        cursor:
-            freezed == cursor
-                ? _value.cursor
-                : cursor // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        extraInfo:
-            null == extraInfo
-                ? _value.extraInfo
-                : extraInfo // ignore: cast_nullable_to_non_nullable
-                    as LinkedHashMap<
-                      AtUri,
-                      ({
-                        HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
-                        List<Label> postLabels,
-                      })
-                    >,
+        loadedPosts: null == loadedPosts
+            ? _value._loadedPosts
+            : loadedPosts // ignore: cast_nullable_to_non_nullable
+                  as List<AtUri>,
+        isEndOfNetwork: null == isEndOfNetwork
+            ? _value.isEndOfNetwork
+            : isEndOfNetwork // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        cursor: freezed == cursor
+            ? _value.cursor
+            : cursor // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        extraInfo: null == extraInfo
+            ? _value.extraInfo
+            : extraInfo // ignore: cast_nullable_to_non_nullable
+                  as LinkedHashMap<
+                    AtUri,
+                    ({
+                      HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
+                      List<Label> postLabels,
+                    })
+                  >,
       ),
     );
   }

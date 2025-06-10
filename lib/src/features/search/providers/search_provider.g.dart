@@ -16,8 +16,9 @@ final searchProvider =
     AutoDisposeNotifierProvider<Search, SearchState>.internal(
       Search.new,
       name: r'searchProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product') ? null : _$searchHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$searchHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

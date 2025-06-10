@@ -68,26 +68,22 @@ class _$SettingsStateCopyWithImpl<$Res, $Val extends SettingsState>
   }) {
     return _then(
       _value.copyWith(
-            feedBlurEnabled:
-                null == feedBlurEnabled
-                    ? _value.feedBlurEnabled
-                    : feedBlurEnabled // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            hideAdultContent:
-                null == hideAdultContent
-                    ? _value.hideAdultContent
-                    : hideAdultContent // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            feeds:
-                null == feeds
-                    ? _value.feeds
-                    : feeds // ignore: cast_nullable_to_non_nullable
-                        as List<Feed>,
-            activeFeed:
-                null == activeFeed
-                    ? _value.activeFeed
-                    : activeFeed // ignore: cast_nullable_to_non_nullable
-                        as Feed,
+            feedBlurEnabled: null == feedBlurEnabled
+                ? _value.feedBlurEnabled
+                : feedBlurEnabled // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            hideAdultContent: null == hideAdultContent
+                ? _value.hideAdultContent
+                : hideAdultContent // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            feeds: null == feeds
+                ? _value.feeds
+                : feeds // ignore: cast_nullable_to_non_nullable
+                      as List<Feed>,
+            activeFeed: null == activeFeed
+                ? _value.activeFeed
+                : activeFeed // ignore: cast_nullable_to_non_nullable
+                      as Feed,
           )
           as $Val,
     );
@@ -145,26 +141,22 @@ class __$$SettingsStateImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$SettingsStateImpl(
-        feedBlurEnabled:
-            null == feedBlurEnabled
-                ? _value.feedBlurEnabled
-                : feedBlurEnabled // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        hideAdultContent:
-            null == hideAdultContent
-                ? _value.hideAdultContent
-                : hideAdultContent // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        feeds:
-            null == feeds
-                ? _value._feeds
-                : feeds // ignore: cast_nullable_to_non_nullable
-                    as List<Feed>,
-        activeFeed:
-            null == activeFeed
-                ? _value.activeFeed
-                : activeFeed // ignore: cast_nullable_to_non_nullable
-                    as Feed,
+        feedBlurEnabled: null == feedBlurEnabled
+            ? _value.feedBlurEnabled
+            : feedBlurEnabled // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        hideAdultContent: null == hideAdultContent
+            ? _value.hideAdultContent
+            : hideAdultContent // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        feeds: null == feeds
+            ? _value._feeds
+            : feeds // ignore: cast_nullable_to_non_nullable
+                  as List<Feed>,
+        activeFeed: null == activeFeed
+            ? _value.activeFeed
+            : activeFeed // ignore: cast_nullable_to_non_nullable
+                  as Feed,
       ),
     );
   }

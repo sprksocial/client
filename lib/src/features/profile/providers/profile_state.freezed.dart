@@ -68,26 +68,22 @@ class _$ProfileStateCopyWithImpl<$Res, $Val extends ProfileState>
   }) {
     return _then(
       _value.copyWith(
-            profile:
-                freezed == profile
-                    ? _value.profile
-                    : profile // ignore: cast_nullable_to_non_nullable
-                        as ProfileViewDetailed?,
-            isEarlySupporter:
-                null == isEarlySupporter
-                    ? _value.isEarlySupporter
-                    : isEarlySupporter // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            showAuthPrompt:
-                null == showAuthPrompt
-                    ? _value.showAuthPrompt
-                    : showAuthPrompt // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            currentViewDid:
-                freezed == currentViewDid
-                    ? _value.currentViewDid
-                    : currentViewDid // ignore: cast_nullable_to_non_nullable
-                        as String?,
+            profile: freezed == profile
+                ? _value.profile
+                : profile // ignore: cast_nullable_to_non_nullable
+                      as ProfileViewDetailed?,
+            isEarlySupporter: null == isEarlySupporter
+                ? _value.isEarlySupporter
+                : isEarlySupporter // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            showAuthPrompt: null == showAuthPrompt
+                ? _value.showAuthPrompt
+                : showAuthPrompt // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            currentViewDid: freezed == currentViewDid
+                ? _value.currentViewDid
+                : currentViewDid // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -149,26 +145,22 @@ class __$$ProfileStateImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$ProfileStateImpl(
-        profile:
-            freezed == profile
-                ? _value.profile
-                : profile // ignore: cast_nullable_to_non_nullable
-                    as ProfileViewDetailed?,
-        isEarlySupporter:
-            null == isEarlySupporter
-                ? _value.isEarlySupporter
-                : isEarlySupporter // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        showAuthPrompt:
-            null == showAuthPrompt
-                ? _value.showAuthPrompt
-                : showAuthPrompt // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        currentViewDid:
-            freezed == currentViewDid
-                ? _value.currentViewDid
-                : currentViewDid // ignore: cast_nullable_to_non_nullable
-                    as String?,
+        profile: freezed == profile
+            ? _value.profile
+            : profile // ignore: cast_nullable_to_non_nullable
+                  as ProfileViewDetailed?,
+        isEarlySupporter: null == isEarlySupporter
+            ? _value.isEarlySupporter
+            : isEarlySupporter // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        showAuthPrompt: null == showAuthPrompt
+            ? _value.showAuthPrompt
+            : showAuthPrompt // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        currentViewDid: freezed == currentViewDid
+            ? _value.currentViewDid
+            : currentViewDid // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }

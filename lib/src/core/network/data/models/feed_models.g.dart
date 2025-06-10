@@ -8,12 +8,9 @@ part of 'feed_models.dart';
 
 _$CustomFeedImpl _$$CustomFeedImplFromJson(Map<String, dynamic> json) =>
     _$CustomFeedImpl(
-      creator:
-          json['creator'] == null
-              ? null
-              : ProfileViewBasic.fromJson(
-                json['creator'] as Map<String, dynamic>,
-              ),
+      creator: json['creator'] == null
+          ? null
+          : ProfileViewBasic.fromJson(json['creator'] as Map<String, dynamic>),
       name: json['name'] as String? ?? 'Custom Feed',
       description: json['description'] as String? ?? 'Your custom feed',
       descriptionFacets:
@@ -53,8 +50,9 @@ Map<String, dynamic> _$$CustomFeedImplToJson(_$CustomFeedImpl instance) =>
       'creator': instance.creator?.toJson(),
       'name': instance.name,
       'description': instance.description,
-      'descriptionFacets':
-          instance.descriptionFacets.map((e) => e.toJson()).toList(),
+      'descriptionFacets': instance.descriptionFacets
+          .map((e) => e.toJson())
+          .toList(),
       'labels': instance.labels.map((e) => e.toJson()).toList(),
       'likeCount': instance.likeCount,
       'imageUrl': instance.imageUrl,
@@ -145,10 +143,9 @@ _$FeedViewPostPostImpl _$$FeedViewPostPostImplFromJson(
   Map<String, dynamic> json,
 ) => _$FeedViewPostPostImpl(
   post: PostView.fromJson(json['post'] as Map<String, dynamic>),
-  reply:
-      json['reply'] == null
-          ? null
-          : ReplyRef.fromJson(json['reply'] as Map<String, dynamic>),
+  reply: json['reply'] == null
+      ? null
+      : ReplyRef.fromJson(json['reply'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$$FeedViewPostPostImplToJson(
@@ -166,12 +163,11 @@ _$ReplyRefImpl _$$ReplyRefImplFromJson(Map<String, dynamic> json) =>
       parent: ReplyRefPostReference.fromJson(
         json['parent'] as Map<String, dynamic>,
       ),
-      grandparentAuthor:
-          json['grandparentAuthor'] == null
-              ? null
-              : ProfileViewBasic.fromJson(
-                json['grandparentAuthor'] as Map<String, dynamic>,
-              ),
+      grandparentAuthor: json['grandparentAuthor'] == null
+          ? null
+          : ProfileViewBasic.fromJson(
+              json['grandparentAuthor'] as Map<String, dynamic>,
+            ),
     );
 
 Map<String, dynamic> _$$ReplyRefImplToJson(_$ReplyRefImpl instance) =>
@@ -232,10 +228,9 @@ Map<String, dynamic> _$$ReplyRefPostReferenceBlockedPostImplToJson(
 _$BlockedAuthorImpl _$$BlockedAuthorImplFromJson(Map<String, dynamic> json) =>
     _$BlockedAuthorImpl(
       did: json['did'] as String,
-      viewer:
-          json['viewer'] == null
-              ? null
-              : Viewer.fromJson(json['viewer'] as Map<String, dynamic>),
+      viewer: json['viewer'] == null
+          ? null
+          : Viewer.fromJson(json['viewer'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$BlockedAuthorImplToJson(_$BlockedAuthorImpl instance) =>
@@ -244,14 +239,12 @@ Map<String, dynamic> _$$BlockedAuthorImplToJson(_$BlockedAuthorImpl instance) =>
 _$PostThreadImpl _$$PostThreadImplFromJson(Map<String, dynamic> json) =>
     _$PostThreadImpl(
       post: PostView.fromJson(json['post'] as Map<String, dynamic>),
-      parent:
-          (json['parent'] as List<dynamic>?)
-              ?.map((e) => PostView.fromJson(e as Map<String, dynamic>))
-              .toList(),
-      replies:
-          (json['replies'] as List<dynamic>?)
-              ?.map((e) => PostView.fromJson(e as Map<String, dynamic>))
-              .toList(),
+      parent: (json['parent'] as List<dynamic>?)
+          ?.map((e) => PostView.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      replies: (json['replies'] as List<dynamic>?)
+          ?.map((e) => PostView.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$$PostThreadImplToJson(_$PostThreadImpl instance) =>
@@ -315,31 +308,28 @@ Map<String, dynamic> _$$ViewerImplToJson(_$ViewerImpl instance) =>
 
 _$PostRecordImpl _$$PostRecordImplFromJson(Map<String, dynamic> json) =>
     _$PostRecordImpl(
-      createdAt:
-          json['createdAt'] == null
-              ? null
-              : DateTime.parse(json['createdAt'] as String),
+      createdAt: json['createdAt'] == null
+          ? null
+          : DateTime.parse(json['createdAt'] as String),
       text: json['text'] as String? ?? '',
       facets:
           (json['facets'] as List<dynamic>?)
               ?.map((e) => Facet.fromJson(e as Map<String, dynamic>))
               .toList() ??
           [],
-      reply:
-          json['reply'] == null
-              ? null
-              : RecordReplyRef.fromJson(json['reply'] as Map<String, dynamic>),
-      langs:
-          (json['langs'] as List<dynamic>?)?.map((e) => e as String).toList(),
+      reply: json['reply'] == null
+          ? null
+          : RecordReplyRef.fromJson(json['reply'] as Map<String, dynamic>),
+      langs: (json['langs'] as List<dynamic>?)
+          ?.map((e) => e as String)
+          .toList(),
       tags: (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList(),
-      selfLabels:
-          (json['selfLabels'] as List<dynamic>?)
-              ?.map((e) => SelfLabel.fromJson(e as Map<String, dynamic>))
-              .toList(),
-      embed:
-          json['embed'] == null
-              ? null
-              : Embed.fromJson(json['embed'] as Map<String, dynamic>),
+      selfLabels: (json['selfLabels'] as List<dynamic>?)
+          ?.map((e) => SelfLabel.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      embed: json['embed'] == null
+          ? null
+          : Embed.fromJson(json['embed'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$PostRecordImplToJson(_$PostRecordImpl instance) =>
@@ -370,10 +360,9 @@ Map<String, dynamic> _$$EmbedVideoImplToJson(_$EmbedVideoImpl instance) =>
 
 _$EmbedImageImpl _$$EmbedImageImplFromJson(Map<String, dynamic> json) =>
     _$EmbedImageImpl(
-      images:
-          (json['images'] as List<dynamic>)
-              .map((e) => Image.fromJson(e as Map<String, dynamic>))
-              .toList(),
+      images: (json['images'] as List<dynamic>)
+          .map((e) => Image.fromJson(e as Map<String, dynamic>))
+          .toList(),
       $type: json[r'$type'] as String?,
     );
 
@@ -395,18 +384,15 @@ _$PostViewImpl _$$PostViewImplFromJson(Map<String, dynamic> json) =>
       replyCount: (json['replyCount'] as num?)?.toInt(),
       repostCount: (json['repostCount'] as num?)?.toInt(),
       quoteCount: (json['quoteCount'] as num?)?.toInt(),
-      labels:
-          (json['labels'] as List<dynamic>?)
-              ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
-              .toList(),
-      viewer:
-          json['viewer'] == null
-              ? null
-              : Viewer.fromJson(json['viewer'] as Map<String, dynamic>),
-      embed:
-          json['embed'] == null
-              ? null
-              : EmbedView.fromJson(json['embed'] as Map<String, dynamic>),
+      labels: (json['labels'] as List<dynamic>?)
+          ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      viewer: json['viewer'] == null
+          ? null
+          : Viewer.fromJson(json['viewer'] as Map<String, dynamic>),
+      embed: json['embed'] == null
+          ? null
+          : EmbedView.fromJson(json['embed'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$PostViewImplToJson(_$PostViewImpl instance) =>
@@ -447,10 +433,9 @@ Map<String, dynamic> _$$EmbedViewVideoImplToJson(
 
 _$EmbedViewImageImpl _$$EmbedViewImageImplFromJson(Map<String, dynamic> json) =>
     _$EmbedViewImageImpl(
-      images:
-          (json['images'] as List<dynamic>)
-              .map((e) => ViewImage.fromJson(e as Map<String, dynamic>))
-              .toList(),
+      images: (json['images'] as List<dynamic>)
+          .map((e) => ViewImage.fromJson(e as Map<String, dynamic>))
+          .toList(),
       $type: json[r'$type'] as String?,
     );
 
@@ -463,10 +448,9 @@ Map<String, dynamic> _$$EmbedViewImageImplToJson(
 
 _$FeedSkeletonImpl _$$FeedSkeletonImplFromJson(Map<String, dynamic> json) =>
     _$FeedSkeletonImpl(
-      feed:
-          (json['feed'] as List<dynamic>)
-              .map((e) => SkeletonFeedPost.fromJson(e as Map<String, dynamic>))
-              .toList(),
+      feed: (json['feed'] as List<dynamic>)
+          .map((e) => SkeletonFeedPost.fromJson(e as Map<String, dynamic>))
+          .toList(),
       cursor: json['cursor'] as String?,
     );
 
@@ -537,10 +521,9 @@ Map<String, dynamic> _$$TagFeatureImplToJson(_$TagFeatureImpl instance) =>
 
 _$FacetImpl _$$FacetImplFromJson(Map<String, dynamic> json) => _$FacetImpl(
   index: FacetIndex.fromJson(json['index'] as Map<String, dynamic>),
-  features:
-      (json['features'] as List<dynamic>)
-          .map((e) => FacetFeature.fromJson(e as Map<String, dynamic>))
-          .toList(),
+  features: (json['features'] as List<dynamic>)
+      .map((e) => FacetFeature.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$$FacetImplToJson(_$FacetImpl instance) =>
@@ -574,18 +557,15 @@ Map<String, dynamic> _$$ViewImageImplToJson(_$ViewImageImpl instance) =>
 _$ThreadViewPostImpl _$$ThreadViewPostImplFromJson(Map<String, dynamic> json) =>
     _$ThreadViewPostImpl(
       post: PostView.fromJson(json['post'] as Map<String, dynamic>),
-      parent:
-          json['parent'] == null
-              ? null
-              : Thread.fromJson(json['parent'] as Map<String, dynamic>),
-      replies:
-          (json['replies'] as List<dynamic>?)
-              ?.map((e) => Thread.fromJson(e as Map<String, dynamic>))
-              .toList(),
-      context:
-          json['context'] == null
-              ? null
-              : ThreadContext.fromJson(json['context'] as Map<String, dynamic>),
+      parent: json['parent'] == null
+          ? null
+          : Thread.fromJson(json['parent'] as Map<String, dynamic>),
+      replies: (json['replies'] as List<dynamic>?)
+          ?.map((e) => Thread.fromJson(e as Map<String, dynamic>))
+          .toList(),
+      context: json['context'] == null
+          ? null
+          : ThreadContext.fromJson(json['context'] as Map<String, dynamic>),
       $type: json[r'$type'] as String?,
     );
 
@@ -652,10 +632,9 @@ _$StoryViewImpl _$$StoryViewImplFromJson(Map<String, dynamic> json) =>
       author: ProfileViewBasic.fromJson(json['author'] as Map<String, dynamic>),
       record: StoryRecord.fromJson(json['record'] as Map<String, dynamic>),
       indexedAt: DateTime.parse(json['indexedAt'] as String),
-      embed:
-          json['embed'] == null
-              ? null
-              : EmbedView.fromJson(json['embed'] as Map<String, dynamic>),
+      embed: json['embed'] == null
+          ? null
+          : EmbedView.fromJson(json['embed'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$StoryViewImplToJson(_$StoryViewImpl instance) =>
@@ -672,10 +651,9 @@ _$StoryRecordImpl _$$StoryRecordImplFromJson(Map<String, dynamic> json) =>
     _$StoryRecordImpl(
       createdAt: DateTime.parse(json['createdAt'] as String),
       media: Embed.fromJson(json['media'] as Map<String, dynamic>),
-      selfLabels:
-          (json['selfLabels'] as List<dynamic>?)
-              ?.map((e) => SelfLabel.fromJson(e as Map<String, dynamic>))
-              .toList(),
+      selfLabels: (json['selfLabels'] as List<dynamic>?)
+          ?.map((e) => SelfLabel.fromJson(e as Map<String, dynamic>))
+          .toList(),
       tags: (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList(),
     );
 
@@ -691,10 +669,9 @@ _$StoriesByAuthorImpl _$$StoriesByAuthorImplFromJson(
   Map<String, dynamic> json,
 ) => _$StoriesByAuthorImpl(
   author: ProfileViewBasic.fromJson(json['author'] as Map<String, dynamic>),
-  stories:
-      (json['stories'] as List<dynamic>)
-          .map((e) => StoryView.fromJson(e as Map<String, dynamic>))
-          .toList(),
+  stories: (json['stories'] as List<dynamic>)
+      .map((e) => StoryView.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$$StoriesByAuthorImplToJson(

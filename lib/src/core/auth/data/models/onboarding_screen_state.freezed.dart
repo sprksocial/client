@@ -86,51 +86,42 @@ class _$OnboardingScreenStateCopyWithImpl<
   }) {
     return _then(
       _value.copyWith(
-            isLoading:
-                null == isLoading
-                    ? _value.isLoading
-                    : isLoading // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            bskyProfileRecord:
-                freezed == bskyProfileRecord
-                    ? _value.bskyProfileRecord
-                    : bskyProfileRecord // ignore: cast_nullable_to_non_nullable
-                        as ProfileRecord?,
-            initialAvatarCid:
-                freezed == initialAvatarCid
-                    ? _value.initialAvatarCid
-                    : initialAvatarCid // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            initialAvatarUrl:
-                freezed == initialAvatarUrl
-                    ? _value.initialAvatarUrl
-                    : initialAvatarUrl // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            localAvatarBytes:
-                freezed == localAvatarBytes
-                    ? _value.localAvatarBytes
-                    : localAvatarBytes // ignore: cast_nullable_to_non_nullable
-                        as Uint8List?,
-            displayName:
-                null == displayName
-                    ? _value.displayName
-                    : displayName // ignore: cast_nullable_to_non_nullable
-                        as String,
-            description:
-                null == description
-                    ? _value.description
-                    : description // ignore: cast_nullable_to_non_nullable
-                        as String,
-            errorMessage:
-                freezed == errorMessage
-                    ? _value.errorMessage
-                    : errorMessage // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            userDid:
-                freezed == userDid
-                    ? _value.userDid
-                    : userDid // ignore: cast_nullable_to_non_nullable
-                        as String?,
+            isLoading: null == isLoading
+                ? _value.isLoading
+                : isLoading // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            bskyProfileRecord: freezed == bskyProfileRecord
+                ? _value.bskyProfileRecord
+                : bskyProfileRecord // ignore: cast_nullable_to_non_nullable
+                      as ProfileRecord?,
+            initialAvatarCid: freezed == initialAvatarCid
+                ? _value.initialAvatarCid
+                : initialAvatarCid // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            initialAvatarUrl: freezed == initialAvatarUrl
+                ? _value.initialAvatarUrl
+                : initialAvatarUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            localAvatarBytes: freezed == localAvatarBytes
+                ? _value.localAvatarBytes
+                : localAvatarBytes // ignore: cast_nullable_to_non_nullable
+                      as Uint8List?,
+            displayName: null == displayName
+                ? _value.displayName
+                : displayName // ignore: cast_nullable_to_non_nullable
+                      as String,
+            description: null == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                      as String,
+            errorMessage: freezed == errorMessage
+                ? _value.errorMessage
+                : errorMessage // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            userDid: freezed == userDid
+                ? _value.userDid
+                : userDid // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -203,51 +194,42 @@ class __$$OnboardingScreenStateImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$OnboardingScreenStateImpl(
-        isLoading:
-            null == isLoading
-                ? _value.isLoading
-                : isLoading // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        bskyProfileRecord:
-            freezed == bskyProfileRecord
-                ? _value.bskyProfileRecord
-                : bskyProfileRecord // ignore: cast_nullable_to_non_nullable
-                    as ProfileRecord?,
-        initialAvatarCid:
-            freezed == initialAvatarCid
-                ? _value.initialAvatarCid
-                : initialAvatarCid // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        initialAvatarUrl:
-            freezed == initialAvatarUrl
-                ? _value.initialAvatarUrl
-                : initialAvatarUrl // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        localAvatarBytes:
-            freezed == localAvatarBytes
-                ? _value.localAvatarBytes
-                : localAvatarBytes // ignore: cast_nullable_to_non_nullable
-                    as Uint8List?,
-        displayName:
-            null == displayName
-                ? _value.displayName
-                : displayName // ignore: cast_nullable_to_non_nullable
-                    as String,
-        description:
-            null == description
-                ? _value.description
-                : description // ignore: cast_nullable_to_non_nullable
-                    as String,
-        errorMessage:
-            freezed == errorMessage
-                ? _value.errorMessage
-                : errorMessage // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        userDid:
-            freezed == userDid
-                ? _value.userDid
-                : userDid // ignore: cast_nullable_to_non_nullable
-                    as String?,
+        isLoading: null == isLoading
+            ? _value.isLoading
+            : isLoading // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        bskyProfileRecord: freezed == bskyProfileRecord
+            ? _value.bskyProfileRecord
+            : bskyProfileRecord // ignore: cast_nullable_to_non_nullable
+                  as ProfileRecord?,
+        initialAvatarCid: freezed == initialAvatarCid
+            ? _value.initialAvatarCid
+            : initialAvatarCid // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        initialAvatarUrl: freezed == initialAvatarUrl
+            ? _value.initialAvatarUrl
+            : initialAvatarUrl // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        localAvatarBytes: freezed == localAvatarBytes
+            ? _value.localAvatarBytes
+            : localAvatarBytes // ignore: cast_nullable_to_non_nullable
+                  as Uint8List?,
+        displayName: null == displayName
+            ? _value.displayName
+            : displayName // ignore: cast_nullable_to_non_nullable
+                  as String,
+        description: null == description
+            ? _value.description
+            : description // ignore: cast_nullable_to_non_nullable
+                  as String,
+        errorMessage: freezed == errorMessage
+            ? _value.errorMessage
+            : errorMessage // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        userDid: freezed == userDid
+            ? _value.userDid
+            : userDid // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }

@@ -69,31 +69,26 @@ class _$AuthStateCopyWithImpl<$Res, $Val extends AuthState>
   }) {
     return _then(
       _value.copyWith(
-            isAuthenticated:
-                null == isAuthenticated
-                    ? _value.isAuthenticated
-                    : isAuthenticated // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            session:
-                freezed == session
-                    ? _value.session
-                    : session // ignore: cast_nullable_to_non_nullable
-                        as Session?,
-            atproto:
-                freezed == atproto
-                    ? _value.atproto
-                    : atproto // ignore: cast_nullable_to_non_nullable
-                        as ATProto?,
-            isLoading:
-                null == isLoading
-                    ? _value.isLoading
-                    : isLoading // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            error:
-                freezed == error
-                    ? _value.error
-                    : error // ignore: cast_nullable_to_non_nullable
-                        as String?,
+            isAuthenticated: null == isAuthenticated
+                ? _value.isAuthenticated
+                : isAuthenticated // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            session: freezed == session
+                ? _value.session
+                : session // ignore: cast_nullable_to_non_nullable
+                      as Session?,
+            atproto: freezed == atproto
+                ? _value.atproto
+                : atproto // ignore: cast_nullable_to_non_nullable
+                      as ATProto?,
+            isLoading: null == isLoading
+                ? _value.isLoading
+                : isLoading // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            error: freezed == error
+                ? _value.error
+                : error // ignore: cast_nullable_to_non_nullable
+                      as String?,
           )
           as $Val,
     );
@@ -157,31 +152,26 @@ class __$$AuthStateImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$AuthStateImpl(
-        isAuthenticated:
-            null == isAuthenticated
-                ? _value.isAuthenticated
-                : isAuthenticated // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        session:
-            freezed == session
-                ? _value.session
-                : session // ignore: cast_nullable_to_non_nullable
-                    as Session?,
-        atproto:
-            freezed == atproto
-                ? _value.atproto
-                : atproto // ignore: cast_nullable_to_non_nullable
-                    as ATProto?,
-        isLoading:
-            null == isLoading
-                ? _value.isLoading
-                : isLoading // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        error:
-            freezed == error
-                ? _value.error
-                : error // ignore: cast_nullable_to_non_nullable
-                    as String?,
+        isAuthenticated: null == isAuthenticated
+            ? _value.isAuthenticated
+            : isAuthenticated // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        session: freezed == session
+            ? _value.session
+            : session // ignore: cast_nullable_to_non_nullable
+                  as Session?,
+        atproto: freezed == atproto
+            ? _value.atproto
+            : atproto // ignore: cast_nullable_to_non_nullable
+                  as ATProto?,
+        isLoading: null == isLoading
+            ? _value.isLoading
+            : isLoading // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        error: freezed == error
+            ? _value.error
+            : error // ignore: cast_nullable_to_non_nullable
+                  as String?,
       ),
     );
   }

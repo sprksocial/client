@@ -73,10 +73,9 @@ class DeletePostProvider extends AutoDisposeFutureProvider<void> {
         (ref) => deletePost(ref as DeletePostRef, postUri),
         from: deletePostProvider,
         name: r'deletePostProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$deletePostHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$deletePostHash,
         dependencies: DeletePostFamily._dependencies,
         allTransitiveDependencies: DeletePostFamily._allTransitiveDependencies,
         postUri: postUri,

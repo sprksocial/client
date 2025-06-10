@@ -22,12 +22,9 @@ _$ActorViewerImpl _$$ActorViewerImplFromJson(Map<String, dynamic> json) =>
         json['followedBy'],
         const AtUriConverter().fromJson,
       ),
-      followers:
-          json['followers'] == null
-              ? null
-              : KnownFollowers.fromJson(
-                json['followers'] as Map<String, dynamic>,
-              ),
+      followers: json['followers'] == null
+          ? null
+          : KnownFollowers.fromJson(json['followers'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$$ActorViewerImplToJson(_$ActorViewerImpl instance) =>
@@ -62,10 +59,9 @@ Json? _$JsonConverterToJson<Json, Value>(
 _$KnownFollowersImpl _$$KnownFollowersImplFromJson(Map<String, dynamic> json) =>
     _$KnownFollowersImpl(
       count: (json['count'] as num).toInt(),
-      followersDids:
-          (json['followersDids'] as List<dynamic>)
-              .map((e) => e as String)
-              .toList(),
+      followersDids: (json['followersDids'] as List<dynamic>)
+          .map((e) => e as String)
+          .toList(),
     );
 
 Map<String, dynamic> _$$KnownFollowersImplToJson(
@@ -85,14 +81,12 @@ _$ProfileViewBasicImpl _$$ProfileViewBasicImplFromJson(
     json['avatar'],
     const AtUriConverter().fromJson,
   ),
-  viewer:
-      json['viewer'] == null
-          ? null
-          : ActorViewer.fromJson(json['viewer'] as Map<String, dynamic>),
-  stories:
-      (json['stories'] as List<dynamic>?)
-          ?.map((e) => StrongRef.fromJson(e as Map<String, dynamic>))
-          .toList(),
+  viewer: json['viewer'] == null
+      ? null
+      : ActorViewer.fromJson(json['viewer'] as Map<String, dynamic>),
+  stories: (json['stories'] as List<dynamic>?)
+      ?.map((e) => StrongRef.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$$ProfileViewBasicImplToJson(
@@ -119,14 +113,12 @@ _$ProfileViewImpl _$$ProfileViewImplFromJson(Map<String, dynamic> json) =>
         json['avatar'],
         const AtUriConverter().fromJson,
       ),
-      viewer:
-          json['viewer'] == null
-              ? null
-              : ActorViewer.fromJson(json['viewer'] as Map<String, dynamic>),
-      labels:
-          (json['labels'] as List<dynamic>?)
-              ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
-              .toList(),
+      viewer: json['viewer'] == null
+          ? null
+          : ActorViewer.fromJson(json['viewer'] as Map<String, dynamic>),
+      labels: (json['labels'] as List<dynamic>?)
+          ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
 
 Map<String, dynamic> _$$ProfileViewImplToJson(_$ProfileViewImpl instance) =>
@@ -161,22 +153,18 @@ _$ProfileViewDetailedImpl _$$ProfileViewDetailedImplFromJson(
   followersCount: (json['followersCount'] as num?)?.toInt(),
   followingCount: (json['followingCount'] as num?)?.toInt(),
   postsCount: (json['postsCount'] as num?)?.toInt(),
-  viewer:
-      json['viewer'] == null
-          ? null
-          : ActorViewer.fromJson(json['viewer'] as Map<String, dynamic>),
-  labels:
-      (json['labels'] as List<dynamic>?)
-          ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
-          .toList(),
-  pinnedPost:
-      json['pinnedPost'] == null
-          ? null
-          : StrongRef.fromJson(json['pinnedPost'] as Map<String, dynamic>),
-  stories:
-      (json['stories'] as List<dynamic>?)
-          ?.map((e) => StrongRef.fromJson(e as Map<String, dynamic>))
-          .toList(),
+  viewer: json['viewer'] == null
+      ? null
+      : ActorViewer.fromJson(json['viewer'] as Map<String, dynamic>),
+  labels: (json['labels'] as List<dynamic>?)
+      ?.map((e) => Label.fromJson(e as Map<String, dynamic>))
+      .toList(),
+  pinnedPost: json['pinnedPost'] == null
+      ? null
+      : StrongRef.fromJson(json['pinnedPost'] as Map<String, dynamic>),
+  stories: (json['stories'] as List<dynamic>?)
+      ?.map((e) => StrongRef.fromJson(e as Map<String, dynamic>))
+      .toList(),
 );
 
 Map<String, dynamic> _$$ProfileViewDetailedImplToJson(

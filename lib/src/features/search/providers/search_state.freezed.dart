@@ -80,26 +80,22 @@ class _$SearchStateCopyWithImpl<$Res, $Val extends SearchState>
   }) {
     return _then(
       _value.copyWith(
-            isLoading:
-                null == isLoading
-                    ? _value.isLoading
-                    : isLoading // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            searchResults:
-                null == searchResults
-                    ? _value.searchResults
-                    : searchResults // ignore: cast_nullable_to_non_nullable
-                        as List<ProfileView>,
-            error:
-                freezed == error
-                    ? _value.error
-                    : error // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            query:
-                null == query
-                    ? _value.query
-                    : query // ignore: cast_nullable_to_non_nullable
-                        as String,
+            isLoading: null == isLoading
+                ? _value.isLoading
+                : isLoading // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            searchResults: null == searchResults
+                ? _value.searchResults
+                : searchResults // ignore: cast_nullable_to_non_nullable
+                      as List<ProfileView>,
+            error: freezed == error
+                ? _value.error
+                : error // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            query: null == query
+                ? _value.query
+                : query // ignore: cast_nullable_to_non_nullable
+                      as String,
           )
           as $Val,
     );
@@ -144,26 +140,22 @@ class __$$SearchStateImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$SearchStateImpl(
-        isLoading:
-            null == isLoading
-                ? _value.isLoading
-                : isLoading // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        searchResults:
-            null == searchResults
-                ? _value._searchResults
-                : searchResults // ignore: cast_nullable_to_non_nullable
-                    as List<ProfileView>,
-        error:
-            freezed == error
-                ? _value.error
-                : error // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        query:
-            null == query
-                ? _value.query
-                : query // ignore: cast_nullable_to_non_nullable
-                    as String,
+        isLoading: null == isLoading
+            ? _value.isLoading
+            : isLoading // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        searchResults: null == searchResults
+            ? _value._searchResults
+            : searchResults // ignore: cast_nullable_to_non_nullable
+                  as List<ProfileView>,
+        error: freezed == error
+            ? _value.error
+            : error // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        query: null == query
+            ? _value.query
+            : query // ignore: cast_nullable_to_non_nullable
+                  as String,
       ),
     );
   }

@@ -73,36 +73,30 @@ class _$CommentInputStateCopyWithImpl<$Res, $Val extends CommentInputState>
   }) {
     return _then(
       _value.copyWith(
-            canSubmit:
-                null == canSubmit
-                    ? _value.canSubmit
-                    : canSubmit // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            isPosting:
-                null == isPosting
-                    ? _value.isPosting
-                    : isPosting // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            selectedImages:
-                null == selectedImages
-                    ? _value.selectedImages
-                    : selectedImages // ignore: cast_nullable_to_non_nullable
-                        as List<XFile>,
-            altTexts:
-                null == altTexts
-                    ? _value.altTexts
-                    : altTexts // ignore: cast_nullable_to_non_nullable
-                        as Map<String, String>,
-            textController:
-                null == textController
-                    ? _value.textController
-                    : textController // ignore: cast_nullable_to_non_nullable
-                        as TextEditingController,
-            imagePicker:
-                null == imagePicker
-                    ? _value.imagePicker
-                    : imagePicker // ignore: cast_nullable_to_non_nullable
-                        as ImagePicker,
+            canSubmit: null == canSubmit
+                ? _value.canSubmit
+                : canSubmit // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            isPosting: null == isPosting
+                ? _value.isPosting
+                : isPosting // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            selectedImages: null == selectedImages
+                ? _value.selectedImages
+                : selectedImages // ignore: cast_nullable_to_non_nullable
+                      as List<XFile>,
+            altTexts: null == altTexts
+                ? _value.altTexts
+                : altTexts // ignore: cast_nullable_to_non_nullable
+                      as Map<String, String>,
+            textController: null == textController
+                ? _value.textController
+                : textController // ignore: cast_nullable_to_non_nullable
+                      as TextEditingController,
+            imagePicker: null == imagePicker
+                ? _value.imagePicker
+                : imagePicker // ignore: cast_nullable_to_non_nullable
+                      as ImagePicker,
           )
           as $Val,
     );
@@ -151,36 +145,30 @@ class __$$CommentInputStateImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$CommentInputStateImpl(
-        canSubmit:
-            null == canSubmit
-                ? _value.canSubmit
-                : canSubmit // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        isPosting:
-            null == isPosting
-                ? _value.isPosting
-                : isPosting // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        selectedImages:
-            null == selectedImages
-                ? _value._selectedImages
-                : selectedImages // ignore: cast_nullable_to_non_nullable
-                    as List<XFile>,
-        altTexts:
-            null == altTexts
-                ? _value._altTexts
-                : altTexts // ignore: cast_nullable_to_non_nullable
-                    as Map<String, String>,
-        textController:
-            null == textController
-                ? _value.textController
-                : textController // ignore: cast_nullable_to_non_nullable
-                    as TextEditingController,
-        imagePicker:
-            null == imagePicker
-                ? _value.imagePicker
-                : imagePicker // ignore: cast_nullable_to_non_nullable
-                    as ImagePicker,
+        canSubmit: null == canSubmit
+            ? _value.canSubmit
+            : canSubmit // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        isPosting: null == isPosting
+            ? _value.isPosting
+            : isPosting // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        selectedImages: null == selectedImages
+            ? _value._selectedImages
+            : selectedImages // ignore: cast_nullable_to_non_nullable
+                  as List<XFile>,
+        altTexts: null == altTexts
+            ? _value._altTexts
+            : altTexts // ignore: cast_nullable_to_non_nullable
+                  as Map<String, String>,
+        textController: null == textController
+            ? _value.textController
+            : textController // ignore: cast_nullable_to_non_nullable
+                  as TextEditingController,
+        imagePicker: null == imagePicker
+            ? _value.imagePicker
+            : imagePicker // ignore: cast_nullable_to_non_nullable
+                  as ImagePicker,
       ),
     );
   }

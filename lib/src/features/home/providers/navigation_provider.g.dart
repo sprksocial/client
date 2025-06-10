@@ -14,10 +14,9 @@ final navigationProvider =
     AutoDisposeNotifierProvider<Navigation, NavigationState>.internal(
       Navigation.new,
       name: r'navigationProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$navigationHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$navigationHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

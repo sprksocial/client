@@ -87,16 +87,14 @@ class CommentInputProvider
     TextEditingController textController,
     ImagePicker imagePicker,
   ) : this._internal(
-        () =>
-            CommentInput()
-              ..textController = textController
-              ..imagePicker = imagePicker,
+        () => CommentInput()
+          ..textController = textController
+          ..imagePicker = imagePicker,
         from: commentInputProvider,
         name: r'commentInputProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$commentInputHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$commentInputHash,
         dependencies: CommentInputFamily._dependencies,
         allTransitiveDependencies:
             CommentInputFamily._allTransitiveDependencies,
@@ -128,10 +126,9 @@ class CommentInputProvider
     return ProviderOverride(
       origin: this,
       override: CommentInputProvider._internal(
-        () =>
-            create()
-              ..textController = textController
-              ..imagePicker = imagePicker,
+        () => create()
+          ..textController = textController
+          ..imagePicker = imagePicker,
         from: from,
         name: null,
         dependencies: null,

@@ -67,26 +67,22 @@ class _$CommentStateCopyWithImpl<$Res, $Val extends CommentState>
   }) {
     return _then(
       _value.copyWith(
-            thread:
-                freezed == thread
-                    ? _value.thread
-                    : thread // ignore: cast_nullable_to_non_nullable
-                        as ThreadViewPost,
-            isVideoInitialized:
-                null == isVideoInitialized
-                    ? _value.isVideoInitialized
-                    : isVideoInitialized // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            isFirstImagePrecached:
-                null == isFirstImagePrecached
-                    ? _value.isFirstImagePrecached
-                    : isFirstImagePrecached // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            videoController:
-                freezed == videoController
-                    ? _value.videoController
-                    : videoController // ignore: cast_nullable_to_non_nullable
-                        as VideoPlayerController?,
+            thread: freezed == thread
+                ? _value.thread
+                : thread // ignore: cast_nullable_to_non_nullable
+                      as ThreadViewPost,
+            isVideoInitialized: null == isVideoInitialized
+                ? _value.isVideoInitialized
+                : isVideoInitialized // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            isFirstImagePrecached: null == isFirstImagePrecached
+                ? _value.isFirstImagePrecached
+                : isFirstImagePrecached // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            videoController: freezed == videoController
+                ? _value.videoController
+                : videoController // ignore: cast_nullable_to_non_nullable
+                      as VideoPlayerController?,
           )
           as $Val,
     );
@@ -131,26 +127,22 @@ class __$$CommentStateImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$CommentStateImpl(
-        thread:
-            freezed == thread
-                ? _value.thread
-                : thread // ignore: cast_nullable_to_non_nullable
-                    as ThreadViewPost,
-        isVideoInitialized:
-            null == isVideoInitialized
-                ? _value.isVideoInitialized
-                : isVideoInitialized // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        isFirstImagePrecached:
-            null == isFirstImagePrecached
-                ? _value.isFirstImagePrecached
-                : isFirstImagePrecached // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        videoController:
-            freezed == videoController
-                ? _value.videoController
-                : videoController // ignore: cast_nullable_to_non_nullable
-                    as VideoPlayerController?,
+        thread: freezed == thread
+            ? _value.thread
+            : thread // ignore: cast_nullable_to_non_nullable
+                  as ThreadViewPost,
+        isVideoInitialized: null == isVideoInitialized
+            ? _value.isVideoInitialized
+            : isVideoInitialized // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        isFirstImagePrecached: null == isFirstImagePrecached
+            ? _value.isFirstImagePrecached
+            : isFirstImagePrecached // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        videoController: freezed == videoController
+            ? _value.videoController
+            : videoController // ignore: cast_nullable_to_non_nullable
+                  as VideoPlayerController?,
       ),
     );
   }

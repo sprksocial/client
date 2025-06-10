@@ -15,8 +15,9 @@ String _$themeModeHash() => r'd9ba82ecc3c405aabfb78864588aff91f808297f';
 final themeModeProvider = Provider<ThemeMode>.internal(
   themeMode,
   name: r'themeModeProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$themeModeHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$themeModeHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -33,8 +34,9 @@ String _$themeHash() => r'900b9715629a92481935e4cac549f95c895d70d9';
 final themeProvider = NotifierProvider<Theme, ThemeState>.internal(
   Theme.new,
   name: r'themeProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$themeHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$themeHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );

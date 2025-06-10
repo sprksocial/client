@@ -53,11 +53,10 @@ class _$NavigationStateCopyWithImpl<$Res, $Val extends NavigationState>
   $Res call({Object? currentIndex = null}) {
     return _then(
       _value.copyWith(
-            currentIndex:
-                null == currentIndex
-                    ? _value.currentIndex
-                    : currentIndex // ignore: cast_nullable_to_non_nullable
-                        as int,
+            currentIndex: null == currentIndex
+                ? _value.currentIndex
+                : currentIndex // ignore: cast_nullable_to_non_nullable
+                      as int,
           )
           as $Val,
     );
@@ -92,11 +91,10 @@ class __$$NavigationStateImplCopyWithImpl<$Res>
   $Res call({Object? currentIndex = null}) {
     return _then(
       _$NavigationStateImpl(
-        currentIndex:
-            null == currentIndex
-                ? _value.currentIndex
-                : currentIndex // ignore: cast_nullable_to_non_nullable
-                    as int,
+        currentIndex: null == currentIndex
+            ? _value.currentIndex
+            : currentIndex // ignore: cast_nullable_to_non_nullable
+                  as int,
       ),
     );
   }

@@ -15,8 +15,9 @@ String _$appReadyHash() => r'5f1917b1191f13f8443fc583a66e3d21936ee05c';
 final appReadyProvider = AutoDisposeProvider<bool>.internal(
   appReady,
   name: r'appReadyProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$appReadyHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$appReadyHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -34,10 +35,9 @@ final splashNotifierProvider =
     AutoDisposeNotifierProvider<SplashNotifier, bool>.internal(
       SplashNotifier.new,
       name: r'splashNotifierProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$splashNotifierHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$splashNotifierHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

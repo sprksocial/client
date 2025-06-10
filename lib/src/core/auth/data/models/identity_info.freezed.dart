@@ -71,21 +71,18 @@ class _$IdentityInfoCopyWithImpl<$Res, $Val extends IdentityInfo>
   }) {
     return _then(
       _value.copyWith(
-            did:
-                null == did
-                    ? _value.did
-                    : did // ignore: cast_nullable_to_non_nullable
-                        as String,
-            handle:
-                null == handle
-                    ? _value.handle
-                    : handle // ignore: cast_nullable_to_non_nullable
-                        as String,
-            didDocument:
-                freezed == didDocument
-                    ? _value.didDocument
-                    : didDocument // ignore: cast_nullable_to_non_nullable
-                        as Map<String, dynamic>?,
+            did: null == did
+                ? _value.did
+                : did // ignore: cast_nullable_to_non_nullable
+                      as String,
+            handle: null == handle
+                ? _value.handle
+                : handle // ignore: cast_nullable_to_non_nullable
+                      as String,
+            didDocument: freezed == didDocument
+                ? _value.didDocument
+                : didDocument // ignore: cast_nullable_to_non_nullable
+                      as Map<String, dynamic>?,
           )
           as $Val,
     );
@@ -124,21 +121,18 @@ class __$$IdentityInfoImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$IdentityInfoImpl(
-        did:
-            null == did
-                ? _value.did
-                : did // ignore: cast_nullable_to_non_nullable
-                    as String,
-        handle:
-            null == handle
-                ? _value.handle
-                : handle // ignore: cast_nullable_to_non_nullable
-                    as String,
-        didDocument:
-            freezed == didDocument
-                ? _value._didDocument
-                : didDocument // ignore: cast_nullable_to_non_nullable
-                    as Map<String, dynamic>?,
+        did: null == did
+            ? _value.did
+            : did // ignore: cast_nullable_to_non_nullable
+                  as String,
+        handle: null == handle
+            ? _value.handle
+            : handle // ignore: cast_nullable_to_non_nullable
+                  as String,
+        didDocument: freezed == didDocument
+            ? _value._didDocument
+            : didDocument // ignore: cast_nullable_to_non_nullable
+                  as Map<String, dynamic>?,
       ),
     );
   }
@@ -456,7 +450,7 @@ class __$$SuccessImplCopyWithImpl<$Res>
         null == identityInfo
             ? _value.identityInfo
             : identityInfo // ignore: cast_nullable_to_non_nullable
-                as IdentityInfo,
+                  as IdentityInfo,
       ),
     );
   }
@@ -615,7 +609,7 @@ class __$$ErrorImplCopyWithImpl<$Res>
         null == message
             ? _value.message
             : message // ignore: cast_nullable_to_non_nullable
-                as String,
+                  as String,
       ),
     );
   }

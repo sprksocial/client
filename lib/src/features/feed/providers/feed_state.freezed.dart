@@ -84,52 +84,44 @@ class _$FeedStateCopyWithImpl<$Res, $Val extends FeedState>
   }) {
     return _then(
       _value.copyWith(
-            active:
-                null == active
-                    ? _value.active
-                    : active // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            loadedPosts:
-                null == loadedPosts
-                    ? _value.loadedPosts
-                    : loadedPosts // ignore: cast_nullable_to_non_nullable
-                        as List<AtUri>,
-            index:
-                null == index
-                    ? _value.index
-                    : index // ignore: cast_nullable_to_non_nullable
-                        as int,
-            freshPostCount:
-                null == freshPostCount
-                    ? _value.freshPostCount
-                    : freshPostCount // ignore: cast_nullable_to_non_nullable
-                        as int,
-            isEndOfNetworkFeed:
-                null == isEndOfNetworkFeed
-                    ? _value.isEndOfNetworkFeed
-                    : isEndOfNetworkFeed // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            cursor:
-                freezed == cursor
-                    ? _value.cursor
-                    : cursor // ignore: cast_nullable_to_non_nullable
-                        as String?,
-            loadingFirstLoad:
-                null == loadingFirstLoad
-                    ? _value.loadingFirstLoad
-                    : loadingFirstLoad // ignore: cast_nullable_to_non_nullable
-                        as bool,
-            extraInfo:
-                null == extraInfo
-                    ? _value.extraInfo
-                    : extraInfo // ignore: cast_nullable_to_non_nullable
-                        as LinkedHashMap<
-                          AtUri,
-                          ({
-                            HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
-                            List<Label> postLabels,
-                          })
-                        >,
+            active: null == active
+                ? _value.active
+                : active // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            loadedPosts: null == loadedPosts
+                ? _value.loadedPosts
+                : loadedPosts // ignore: cast_nullable_to_non_nullable
+                      as List<AtUri>,
+            index: null == index
+                ? _value.index
+                : index // ignore: cast_nullable_to_non_nullable
+                      as int,
+            freshPostCount: null == freshPostCount
+                ? _value.freshPostCount
+                : freshPostCount // ignore: cast_nullable_to_non_nullable
+                      as int,
+            isEndOfNetworkFeed: null == isEndOfNetworkFeed
+                ? _value.isEndOfNetworkFeed
+                : isEndOfNetworkFeed // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            cursor: freezed == cursor
+                ? _value.cursor
+                : cursor // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            loadingFirstLoad: null == loadingFirstLoad
+                ? _value.loadingFirstLoad
+                : loadingFirstLoad // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            extraInfo: null == extraInfo
+                ? _value.extraInfo
+                : extraInfo // ignore: cast_nullable_to_non_nullable
+                      as LinkedHashMap<
+                        AtUri,
+                        ({
+                          HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
+                          List<Label> postLabels,
+                        })
+                      >,
           )
           as $Val,
     );
@@ -186,52 +178,44 @@ class __$$FeedStateImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$FeedStateImpl(
-        active:
-            null == active
-                ? _value.active
-                : active // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        loadedPosts:
-            null == loadedPosts
-                ? _value._loadedPosts
-                : loadedPosts // ignore: cast_nullable_to_non_nullable
-                    as List<AtUri>,
-        index:
-            null == index
-                ? _value.index
-                : index // ignore: cast_nullable_to_non_nullable
-                    as int,
-        freshPostCount:
-            null == freshPostCount
-                ? _value.freshPostCount
-                : freshPostCount // ignore: cast_nullable_to_non_nullable
-                    as int,
-        isEndOfNetworkFeed:
-            null == isEndOfNetworkFeed
-                ? _value.isEndOfNetworkFeed
-                : isEndOfNetworkFeed // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        cursor:
-            freezed == cursor
-                ? _value.cursor
-                : cursor // ignore: cast_nullable_to_non_nullable
-                    as String?,
-        loadingFirstLoad:
-            null == loadingFirstLoad
-                ? _value.loadingFirstLoad
-                : loadingFirstLoad // ignore: cast_nullable_to_non_nullable
-                    as bool,
-        extraInfo:
-            null == extraInfo
-                ? _value.extraInfo
-                : extraInfo // ignore: cast_nullable_to_non_nullable
-                    as LinkedHashMap<
-                      AtUri,
-                      ({
-                        HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
-                        List<Label> postLabels,
-                      })
-                    >,
+        active: null == active
+            ? _value.active
+            : active // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        loadedPosts: null == loadedPosts
+            ? _value._loadedPosts
+            : loadedPosts // ignore: cast_nullable_to_non_nullable
+                  as List<AtUri>,
+        index: null == index
+            ? _value.index
+            : index // ignore: cast_nullable_to_non_nullable
+                  as int,
+        freshPostCount: null == freshPostCount
+            ? _value.freshPostCount
+            : freshPostCount // ignore: cast_nullable_to_non_nullable
+                  as int,
+        isEndOfNetworkFeed: null == isEndOfNetworkFeed
+            ? _value.isEndOfNetworkFeed
+            : isEndOfNetworkFeed // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        cursor: freezed == cursor
+            ? _value.cursor
+            : cursor // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        loadingFirstLoad: null == loadingFirstLoad
+            ? _value.loadingFirstLoad
+            : loadingFirstLoad // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        extraInfo: null == extraInfo
+            ? _value.extraInfo
+            : extraInfo // ignore: cast_nullable_to_non_nullable
+                  as LinkedHashMap<
+                    AtUri,
+                    ({
+                      HardcodedFeedExtraInfo? hardcodedFeedExtraInfo,
+                      List<Label> postLabels,
+                    })
+                  >,
       ),
     );
   }

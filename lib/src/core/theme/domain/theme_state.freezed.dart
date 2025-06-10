@@ -53,11 +53,10 @@ class _$ThemeStateCopyWithImpl<$Res, $Val extends ThemeState>
   $Res call({Object? themeMode = null}) {
     return _then(
       _value.copyWith(
-            themeMode:
-                null == themeMode
-                    ? _value.themeMode
-                    : themeMode // ignore: cast_nullable_to_non_nullable
-                        as ThemeMode,
+            themeMode: null == themeMode
+                ? _value.themeMode
+                : themeMode // ignore: cast_nullable_to_non_nullable
+                      as ThemeMode,
           )
           as $Val,
     );
@@ -92,11 +91,10 @@ class __$$ThemeStateImplCopyWithImpl<$Res>
   $Res call({Object? themeMode = null}) {
     return _then(
       _$ThemeStateImpl(
-        themeMode:
-            null == themeMode
-                ? _value.themeMode
-                : themeMode // ignore: cast_nullable_to_non_nullable
-                    as ThemeMode,
+        themeMode: null == themeMode
+            ? _value.themeMode
+            : themeMode // ignore: cast_nullable_to_non_nullable
+                  as ThemeMode,
       ),
     );
   }

@@ -80,16 +80,14 @@ class ProfileFeedProvider
   /// See also [ProfileFeed].
   ProfileFeedProvider(AtUri profileUri, bool videosOnly)
     : this._internal(
-        () =>
-            ProfileFeed()
-              ..profileUri = profileUri
-              ..videosOnly = videosOnly,
+        () => ProfileFeed()
+          ..profileUri = profileUri
+          ..videosOnly = videosOnly,
         from: profileFeedProvider,
         name: r'profileFeedProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$profileFeedHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$profileFeedHash,
         dependencies: ProfileFeedFamily._dependencies,
         allTransitiveDependencies: ProfileFeedFamily._allTransitiveDependencies,
         profileUri: profileUri,
@@ -120,10 +118,9 @@ class ProfileFeedProvider
     return ProviderOverride(
       origin: this,
       override: ProfileFeedProvider._internal(
-        () =>
-            create()
-              ..profileUri = profileUri
-              ..videosOnly = videosOnly,
+        () => create()
+          ..profileUri = profileUri
+          ..videosOnly = videosOnly,
         from: from,
         name: null,
         dependencies: null,

@@ -74,36 +74,30 @@ class _$EditProfileStateCopyWithImpl<$Res, $Val extends EditProfileState>
   }) {
     return _then(
       _value.copyWith(
-            profile:
-                null == profile
-                    ? _value.profile
-                    : profile // ignore: cast_nullable_to_non_nullable
-                        as ProfileViewDetailed,
-            displayName:
-                null == displayName
-                    ? _value.displayName
-                    : displayName // ignore: cast_nullable_to_non_nullable
-                        as String,
-            description:
-                null == description
-                    ? _value.description
-                    : description // ignore: cast_nullable_to_non_nullable
-                        as String,
-            initialAvatar:
-                freezed == initialAvatar
-                    ? _value.initialAvatar
-                    : initialAvatar // ignore: cast_nullable_to_non_nullable
-                        as dynamic,
-            localAvatar:
-                freezed == localAvatar
-                    ? _value.localAvatar
-                    : localAvatar // ignore: cast_nullable_to_non_nullable
-                        as dynamic,
-            isSaving:
-                null == isSaving
-                    ? _value.isSaving
-                    : isSaving // ignore: cast_nullable_to_non_nullable
-                        as bool,
+            profile: null == profile
+                ? _value.profile
+                : profile // ignore: cast_nullable_to_non_nullable
+                      as ProfileViewDetailed,
+            displayName: null == displayName
+                ? _value.displayName
+                : displayName // ignore: cast_nullable_to_non_nullable
+                      as String,
+            description: null == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                      as String,
+            initialAvatar: freezed == initialAvatar
+                ? _value.initialAvatar
+                : initialAvatar // ignore: cast_nullable_to_non_nullable
+                      as dynamic,
+            localAvatar: freezed == localAvatar
+                ? _value.localAvatar
+                : localAvatar // ignore: cast_nullable_to_non_nullable
+                      as dynamic,
+            isSaving: null == isSaving
+                ? _value.isSaving
+                : isSaving // ignore: cast_nullable_to_non_nullable
+                      as bool,
           )
           as $Val,
     );
@@ -165,36 +159,30 @@ class __$$EditProfileStateImplCopyWithImpl<$Res>
   }) {
     return _then(
       _$EditProfileStateImpl(
-        profile:
-            null == profile
-                ? _value.profile
-                : profile // ignore: cast_nullable_to_non_nullable
-                    as ProfileViewDetailed,
-        displayName:
-            null == displayName
-                ? _value.displayName
-                : displayName // ignore: cast_nullable_to_non_nullable
-                    as String,
-        description:
-            null == description
-                ? _value.description
-                : description // ignore: cast_nullable_to_non_nullable
-                    as String,
-        initialAvatar:
-            freezed == initialAvatar
-                ? _value.initialAvatar
-                : initialAvatar // ignore: cast_nullable_to_non_nullable
-                    as dynamic,
-        localAvatar:
-            freezed == localAvatar
-                ? _value.localAvatar
-                : localAvatar // ignore: cast_nullable_to_non_nullable
-                    as dynamic,
-        isSaving:
-            null == isSaving
-                ? _value.isSaving
-                : isSaving // ignore: cast_nullable_to_non_nullable
-                    as bool,
+        profile: null == profile
+            ? _value.profile
+            : profile // ignore: cast_nullable_to_non_nullable
+                  as ProfileViewDetailed,
+        displayName: null == displayName
+            ? _value.displayName
+            : displayName // ignore: cast_nullable_to_non_nullable
+                  as String,
+        description: null == description
+            ? _value.description
+            : description // ignore: cast_nullable_to_non_nullable
+                  as String,
+        initialAvatar: freezed == initialAvatar
+            ? _value.initialAvatar
+            : initialAvatar // ignore: cast_nullable_to_non_nullable
+                  as dynamic,
+        localAvatar: freezed == localAvatar
+            ? _value.localAvatar
+            : localAvatar // ignore: cast_nullable_to_non_nullable
+                  as dynamic,
+        isSaving: null == isSaving
+            ? _value.isSaving
+            : isSaving // ignore: cast_nullable_to_non_nullable
+                  as bool,
       ),
     );
   }

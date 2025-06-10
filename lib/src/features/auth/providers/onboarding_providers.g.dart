@@ -17,10 +17,9 @@ final onboardingRepositoryProvider =
     AutoDisposeProvider<OnboardingRepository>.internal(
       onboardingRepository,
       name: r'onboardingRepositoryProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$onboardingRepositoryHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$onboardingRepositoryHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );
@@ -37,10 +36,9 @@ String _$hasSparkProfileHash() => r'502a1454b05a8aa08bfb953c21a16d4e38a40a65';
 final hasSparkProfileProvider = AutoDisposeFutureProvider<bool>.internal(
   hasSparkProfile,
   name: r'hasSparkProfileProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$hasSparkProfileHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$hasSparkProfileHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -57,8 +55,9 @@ String _$bskyProfileHash() => r'db1cc5d5ccd8db4720d39fb10bcf025458d0feee';
 final bskyProfileProvider = AutoDisposeFutureProvider<ProfileRecord?>.internal(
   bskyProfile,
   name: r'bskyProfileProvider',
-  debugGetCreateSourceHash:
-      const bool.fromEnvironment('dart.vm.product') ? null : _$bskyProfileHash,
+  debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+      ? null
+      : _$bskyProfileHash,
   dependencies: null,
   allTransitiveDependencies: null,
 );
@@ -145,10 +144,9 @@ class BskyFollowsProvider extends AutoDisposeFutureProvider<FollowsResponse> {
         (ref) => bskyFollows(ref as BskyFollowsRef, cursor: cursor),
         from: bskyFollowsProvider,
         name: r'bskyFollowsProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$bskyFollowsHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$bskyFollowsHash,
         dependencies: BskyFollowsFamily._dependencies,
         allTransitiveDependencies: BskyFollowsFamily._allTransitiveDependencies,
         cursor: cursor,
@@ -229,10 +227,9 @@ final onboardingStateProvider =
     AutoDisposeAsyncNotifierProvider<OnboardingState, void>.internal(
       OnboardingState.new,
       name: r'onboardingStateProvider',
-      debugGetCreateSourceHash:
-          const bool.fromEnvironment('dart.vm.product')
-              ? null
-              : _$onboardingStateHash,
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$onboardingStateHash,
       dependencies: null,
       allTransitiveDependencies: null,
     );

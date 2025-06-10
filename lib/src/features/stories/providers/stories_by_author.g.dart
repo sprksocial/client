@@ -85,10 +85,9 @@ class StoriesByAuthorProvider
         ),
         from: storiesByAuthorProvider,
         name: r'storiesByAuthorProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$storiesByAuthorHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$storiesByAuthorHash,
         dependencies: StoriesByAuthorFamily._dependencies,
         allTransitiveDependencies:
             StoriesByAuthorFamily._allTransitiveDependencies,

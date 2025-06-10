@@ -81,10 +81,9 @@ class CommentNotifierProvider
         () => CommentNotifier()..thread = thread,
         from: commentNotifierProvider,
         name: r'commentNotifierProvider',
-        debugGetCreateSourceHash:
-            const bool.fromEnvironment('dart.vm.product')
-                ? null
-                : _$commentNotifierHash,
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$commentNotifierHash,
         dependencies: CommentNotifierFamily._dependencies,
         allTransitiveDependencies:
             CommentNotifierFamily._allTransitiveDependencies,

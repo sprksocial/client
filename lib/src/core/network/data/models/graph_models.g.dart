@@ -9,10 +9,9 @@ part of 'graph_models.dart';
 _$FollowersResponseImpl _$$FollowersResponseImplFromJson(
   Map<String, dynamic> json,
 ) => _$FollowersResponseImpl(
-  followers:
-      (json['followers'] as List<dynamic>)
-          .map((e) => ProfileView.fromJson(e as Map<String, dynamic>))
-          .toList(),
+  followers: (json['followers'] as List<dynamic>)
+      .map((e) => ProfileView.fromJson(e as Map<String, dynamic>))
+      .toList(),
   cursor: json['cursor'] as String?,
 );
 
@@ -26,10 +25,9 @@ Map<String, dynamic> _$$FollowersResponseImplToJson(
 _$FollowsResponseImpl _$$FollowsResponseImplFromJson(
   Map<String, dynamic> json,
 ) => _$FollowsResponseImpl(
-  follows:
-      (json['follows'] as List<dynamic>)
-          .map((e) => ProfileView.fromJson(e as Map<String, dynamic>))
-          .toList(),
+  follows: (json['follows'] as List<dynamic>)
+      .map((e) => ProfileView.fromJson(e as Map<String, dynamic>))
+      .toList(),
   cursor: json['cursor'] as String?,
 );
 
