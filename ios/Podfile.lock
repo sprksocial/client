@@ -2,17 +2,72 @@ PODS:
   - camera_avfoundation (0.0.1):
     - Flutter
   - Flutter (1.0.0)
-  - fvp (0.30.0):
+  - flutter_native_splash (2.4.3):
+    - Flutter
+  - flutter_secure_storage (6.0.0):
+    - Flutter
+  - fvp (0.32.1):
     - Flutter
     - FlutterMacOS
-    - mdk (~> 0.31.0)
+    - mdk (~> 0.33.0)
   - image_picker_ios (0.0.1):
     - Flutter
-  - imgly_sdk (3.2.0):
+  - imgly_editor (1.51.0):
     - Flutter
-    - imglyKit (~> 11.4)
-  - imglyKit (11.10.2)
-  - mdk (0.31.0)
+    - IMGLYUI (= 1.51.0)
+  - IMGLYApparelEditor (1.51.0):
+    - IMGLYEditor (= 1.51.0)
+  - IMGLYCamera (1.51.0):
+    - IMGLYCoreUI (= 1.51.0)
+  - IMGLYCore (1.51.0):
+    - IMGLYEngine (= 1.51.0)
+  - IMGLYCoreUI (1.51.0):
+    - IMGLYCore (= 1.51.0)
+    - Kingfisher (~> 7.10.0)
+    - SwiftUIIntrospect (~> 1.1.2)
+  - IMGLYDesignEditor (1.51.0):
+    - IMGLYEditor (= 1.51.0)
+  - IMGLYEditor (1.51.0):
+    - IMGLYCamera (= 1.51.0)
+  - IMGLYEngine (1.51.0)
+  - IMGLYPhotoEditor (1.51.0):
+    - IMGLYEditor (= 1.51.0)
+  - IMGLYPostcardEditor (1.51.0):
+    - IMGLYEditor (= 1.51.0)
+  - IMGLYUI (1.51.0):
+    - IMGLYUI/All (= 1.51.0)
+  - IMGLYUI/All (1.51.0):
+    - IMGLYUI/ApparelEditor
+    - IMGLYUI/Camera
+    - IMGLYUI/Core
+    - IMGLYUI/CoreUI
+    - IMGLYUI/DesignEditor
+    - IMGLYUI/Editor
+    - IMGLYUI/PhotoEditor
+    - IMGLYUI/PostcardEditor
+    - IMGLYUI/VideoEditor
+  - IMGLYUI/ApparelEditor (1.51.0):
+    - IMGLYApparelEditor (= 1.51.0)
+  - IMGLYUI/Camera (1.51.0):
+    - IMGLYCamera (= 1.51.0)
+  - IMGLYUI/Core (1.51.0):
+    - IMGLYCore (= 1.51.0)
+  - IMGLYUI/CoreUI (1.51.0):
+    - IMGLYCoreUI (= 1.51.0)
+  - IMGLYUI/DesignEditor (1.51.0):
+    - IMGLYDesignEditor (= 1.51.0)
+  - IMGLYUI/Editor (1.51.0):
+    - IMGLYEditor (= 1.51.0)
+  - IMGLYUI/PhotoEditor (1.51.0):
+    - IMGLYPhotoEditor (= 1.51.0)
+  - IMGLYUI/PostcardEditor (1.51.0):
+    - IMGLYPostcardEditor (= 1.51.0)
+  - IMGLYUI/VideoEditor (1.51.0):
+    - IMGLYVideoEditor (= 1.51.0)
+  - IMGLYVideoEditor (1.51.0):
+    - IMGLYEditor (= 1.51.0)
+  - Kingfisher (7.10.2)
+  - mdk (0.33.0)
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -22,11 +77,9 @@ PODS:
   - sqflite_darwin (0.0.4):
     - Flutter
     - FlutterMacOS
+  - SwiftUIIntrospect (1.1.4)
   - url_launcher_ios (0.0.1):
     - Flutter
-  - video_editor_sdk (3.2.0):
-    - Flutter
-    - imgly_sdk (= 3.2.0)
   - video_player_avfoundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -34,32 +87,49 @@ PODS:
 DEPENDENCIES:
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - Flutter (from `Flutter`)
+  - flutter_native_splash (from `.symlinks/plugins/flutter_native_splash/ios`)
+  - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - fvp (from `.symlinks/plugins/fvp/darwin`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
-  - imgly_sdk (from `.symlinks/plugins/imgly_sdk/ios`)
+  - imgly_editor (from `.symlinks/plugins/imgly_editor/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
-  - video_editor_sdk (from `.symlinks/plugins/video_editor_sdk/ios`)
   - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)
 
 SPEC REPOS:
   trunk:
-    - imglyKit
+    - IMGLYApparelEditor
+    - IMGLYCamera
+    - IMGLYCore
+    - IMGLYCoreUI
+    - IMGLYDesignEditor
+    - IMGLYEditor
+    - IMGLYEngine
+    - IMGLYPhotoEditor
+    - IMGLYPostcardEditor
+    - IMGLYUI
+    - IMGLYVideoEditor
+    - Kingfisher
     - mdk
+    - SwiftUIIntrospect
 
 EXTERNAL SOURCES:
   camera_avfoundation:
     :path: ".symlinks/plugins/camera_avfoundation/ios"
   Flutter:
     :path: Flutter
+  flutter_native_splash:
+    :path: ".symlinks/plugins/flutter_native_splash/ios"
+  flutter_secure_storage:
+    :path: ".symlinks/plugins/flutter_secure_storage/ios"
   fvp:
     :path: ".symlinks/plugins/fvp/darwin"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
-  imgly_sdk:
-    :path: ".symlinks/plugins/imgly_sdk/ios"
+  imgly_editor:
+    :path: ".symlinks/plugins/imgly_editor/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   shared_preferences_foundation:
@@ -68,26 +138,37 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/sqflite_darwin/darwin"
   url_launcher_ios:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
-  video_editor_sdk:
-    :path: ".symlinks/plugins/video_editor_sdk/ios"
   video_player_avfoundation:
     :path: ".symlinks/plugins/video_player_avfoundation/darwin"
 
 SPEC CHECKSUMS:
-  camera_avfoundation: 04b44aeb14070126c6529e5ab82cc7c9fca107cf
+  camera_avfoundation: be3be85408cd4126f250386828e9b1dfa40ab436
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
-  fvp: 09ac649a31ccdeace1d75d56eee6d114d9d5f332
+  flutter_native_splash: c32d145d68aeda5502d5f543ee38c192065986cf
+  flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
+  fvp: 3f9a3f729e969cb76d1692c615c9e33508563121
   image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
-  imgly_sdk: eedb78bcf5e4937f2a043e2210dcbbae7a0ec858
-  imglyKit: 0e5afb6a03202228b17aa4e9a387d9c7f371a94c
-  mdk: 90571adbea8ee78c2d36c1954741acfef9fdacb6
+  imgly_editor: ade0ea8dc0a0a9e49dba2a06b930d077fe2551c7
+  IMGLYApparelEditor: 3c84c8dc311dd171bbf6b0e9833e41894bd1e4fa
+  IMGLYCamera: 56ef783a5ec707524df3ef546e3134d8156b0590
+  IMGLYCore: 0d3e036955b0b12ff527ba91f8412cb8593bf1b1
+  IMGLYCoreUI: 8ce1e93a688406ad7b25458945eddc931b71f896
+  IMGLYDesignEditor: 393e896615855f1af132dc1c852c881fb19fe4f8
+  IMGLYEditor: 1cd61b01aad698dcc35b396e589a07144bbca52d
+  IMGLYEngine: 2fbbe389ab07b3bb62f4540c4254ecdd97029f92
+  IMGLYPhotoEditor: b5f658f1d7b00bc65b5e05c908944a0d29cf4ebf
+  IMGLYPostcardEditor: 85f47cd434a7119801cd7af3769c3c00fee1b568
+  IMGLYUI: cd49670eb7bbc971f9a9cee6a09ec9b19f1c67c4
+  IMGLYVideoEditor: 67b250a6d331ee235b15ff7c45f0e69dd65e28f7
+  Kingfisher: 99edc495d3b7607e6425f0d6f6847b2abd6d716d
+  mdk: 7cccbeebec9a85f4e240ac14d9f603273636bb3b
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
   shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
+  SwiftUIIntrospect: 434b406dc6f5e30744bb6e180f90343f6a8eba8c
   url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
-  video_editor_sdk: 19a9191daf907739131ec359a140212bad5f3d6a
   video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
 
-PODFILE CHECKSUM: 77ed8898f0fe5b9ed102cbef0cb781ff2b0f769c
+PODFILE CHECKSUM: e716c32704b29904c5fe233535ab45faecf8c549
 
 COCOAPODS: 1.16.2
