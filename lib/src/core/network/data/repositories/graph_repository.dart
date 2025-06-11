@@ -22,4 +22,11 @@ abstract class GraphRepository {
   ///
   /// [followUri] The URI of the follow record to delete
   Future<void> unfollowUser(AtUri followUri);
+
+  /// Toggle follow status for a user
+  ///
+  /// [did] The DID of the user to toggle follow for
+  /// [currentFollowUri] The current follow URI if following, null if not following
+  /// Returns the follow URI if now following, null if unfollowed
+  Future<String?> toggleFollow(String did, AtUri? currentFollowUri);
 }

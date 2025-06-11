@@ -3,7 +3,6 @@ library;
 export 'package:sparksocial/src/features/auth/ui/pages/auth_prompt_page.dart';
 export 'package:sparksocial/src/features/auth/ui/pages/login_page.dart';
 export 'package:sparksocial/src/features/auth/ui/pages/register_page.dart';
-export 'package:sparksocial/src/features/auth/ui/pages/import_follows_page.dart';
 export 'package:sparksocial/src/features/auth/ui/pages/onboarding_page.dart';
 export 'package:sparksocial/src/features/profile/ui/pages/profile_page.dart';
 export 'package:sparksocial/src/features/profile/ui/pages/edit_profile_page.dart';

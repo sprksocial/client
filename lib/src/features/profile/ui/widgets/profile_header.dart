@@ -109,7 +109,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
     final String postsCount = TextFormatter.formatCount(widget.profile.postsCount);
     final String followersCount = TextFormatter.formatCount(widget.profile.followersCount);
-    final String followingCount = TextFormatter.formatCount(widget.profile.followingCount);
+    final String followsCount = TextFormatter.formatCount(widget.profile.followsCount);
 
     final List<String> links = TextFormatter.extractUrls(description);
     final List<String> uniqueLinks = links.toSet().toList();
@@ -158,7 +158,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                   children: [
                     ProfileStatItem(count: postsCount, label: 'Posts'),
                     ProfileStatItem(count: followersCount, label: 'Followers'),
-                    ProfileStatItem(count: followingCount, label: 'Following'),
+                    ProfileStatItem(count: followsCount, label: 'Following'),
                   ],
                 ),
               ),

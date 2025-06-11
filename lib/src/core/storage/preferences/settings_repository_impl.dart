@@ -7,16 +7,20 @@ import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
+import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
   late final SQLCacheInterface _sqlCache;
   late final StorageManager _storageManager;
   late final SparkLogger _logger;
+  late final SprkRepository _sprkRepository;
 
   SettingsRepositoryImpl() {
     _sqlCache = GetIt.instance<SQLCacheInterface>();
     _storageManager = GetIt.instance<StorageManager>();
     _logger = GetIt.instance<LogService>().getLogger('SettingsRepository');
+    _sprkRepository = GetIt.instance<SprkRepository>();
     _setupDefaultLabelPreferences();
   }
 
@@ -342,6 +346,59 @@ class SettingsRepositoryImpl implements SettingsRepository {
         '${StorageKeys.labelPreferenceKey}_$value',
         newLabelPreference,
       );
+    }
+  }
+
+  @override
+  Future<void> syncFollowModeFromServer() async {
+    try {
+      _logger.d('Syncing follow mode from server...');
+
+      if (!_sprkRepository.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated, skipping server sync');
+        return;
+      }
+
+      final preferences = await _sprkRepository.actor.getPreferences();
+      final serverFollowMode = FollowMode.values.firstWhere(
+        (mode) => mode.name == preferences.followMode,
+        orElse: () => FollowMode.sprk,
+      );
+
+      // Get current local value to check if it changed
+      final currentFollowMode = await getFollowMode();
+
+      if (currentFollowMode != serverFollowMode) {
+        _logger.d('Follow mode changed from server: $currentFollowMode -> $serverFollowMode');
+        await setFollowMode(serverFollowMode);
+      } else {
+        _logger.d('Follow mode is in sync with server: $serverFollowMode');
+      }
+    } catch (e) {
+      _logger.w('Failed to sync follow mode from server', error: e);
+    }
+  }
+
+  @override
+  Future<void> setFollowModeWithSync(FollowMode followMode) async {
+    try {
+      _logger.d('Setting follow mode with sync: $followMode');
+
+      // Set locally first
+      await setFollowMode(followMode);
+
+      // Sync with backend if authenticated
+      if (_sprkRepository.authRepository.isAuthenticated) {
+        final preferences = UserPreferences(followMode: followMode.name);
+        await _sprkRepository.actor.putPreferences(preferences);
+        _logger.d('Follow mode synced with server successfully');
+      } else {
+        _logger.w('Not authenticated, follow mode saved locally only');
+      }
+    } catch (e) {
+      _logger.e('Failed to sync follow mode with server', error: e);
+      // Keep the local change even if sync fails
+      rethrow;
     }
   }
 }

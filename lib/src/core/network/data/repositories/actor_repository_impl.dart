@@ -118,4 +118,67 @@ class ActorRepositoryImpl implements ActorRepository {
       return false;
     }
   }
+
+  @override
+  Future<UserPreferences> getPreferences() async {
+    _logger.d('Getting user preferences');
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final result = await atproto.get(
+        NSID.parse('so.sprk.actor.getPreferences'),
+        headers: {'atproto-proxy': _client.sprkDid},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+      );
+
+      if (result.status != HttpStatus.ok) {
+        _logger.e('Failed to retrieve preferences');
+        throw Exception('Failed to retrieve preferences');
+      }
+
+      _logger.d('Preferences retrieved successfully');
+      return UserPreferences.fromJson(result.data as Map<String, dynamic>);
+    });
+  }
+
+  @override
+  Future<void> putPreferences(UserPreferences preferences) async {
+    _logger.d('Updating user preferences: ${preferences.followMode}');
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final result = await atproto.post(
+        NSID.parse('so.sprk.actor.putPreferences'),
+        body: preferences.toJson(),
+        headers: {'atproto-proxy': _client.sprkDid},
+        to: (jsonMap) => jsonMap,
+      );
+
+      if (result.status != HttpStatus.ok) {
+        _logger.e('Failed to update preferences');
+        throw Exception('Failed to update preferences');
+      }
+
+      _logger.d('Preferences updated successfully');
+    });
+  }
 }

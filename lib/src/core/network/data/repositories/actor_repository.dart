@@ -23,4 +23,12 @@ abstract class ActorRepository {
   ///
   /// [did] The DID of the user to check
   Future<bool> isEarlySupporter(String did);
+
+  /// Get user preferences from the backend
+  Future<UserPreferences> getPreferences();
+
+  /// Update user preferences on the backend
+  ///
+  /// [preferences] The preferences to update
+  Future<void> putPreferences(UserPreferences preferences);
 }

@@ -56,7 +56,9 @@ class Settings extends _$Settings {
       final feeds = await _repository.getFeeds();
       final activeFeed = await _repository.getActiveFeed();
 
-      _logger.d('Settings loaded - activeFeed: ${activeFeed.name}, feeds: ${feeds.map((f) => f.name).join(', ')}, followMode: $followMode');
+      _logger.d(
+        'Settings loaded - activeFeed: ${activeFeed.name}, feeds: ${feeds.map((f) => f.name).join(', ')}, followMode: $followMode',
+      );
 
       state = SettingsState(
         activeFeed: activeFeed,
@@ -87,8 +89,27 @@ class Settings extends _$Settings {
 
   /// Sets follow mode setting
   Future<void> setFollowMode(FollowMode followMode) async {
-    await _repository.setFollowMode(followMode);
+    await _repository.setFollowModeWithSync(followMode);
     state = state.copyWith(followMode: followMode);
+  }
+
+  /// Syncs all preferences from server
+  ///
+  /// This method should be called:
+  /// - When the user logs in (to get server preferences)
+  /// - When entering the app (to sync any changes from other devices)
+  /// - Manually from the settings UI if user wants to refresh preferences
+  Future<void> syncPreferencesFromServer() async {
+    try {
+      _logger.d('Syncing preferences from server...');
+      await _repository.syncFollowModeFromServer();
+
+      // Reload settings to get updated values
+      await loadSettings();
+      _logger.d('Preferences synced successfully');
+    } catch (e) {
+      _logger.e('Error syncing preferences from server: $e');
+    }
   }
 
   /// Adds a feed to feeds list

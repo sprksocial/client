@@ -4,15 +4,18 @@ import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/data/repositories/graph_repository.dart';
 import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/network/data/models/graph_models.dart';
+import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
 
 /// Implementation of Graph-related API endpoints
 class GraphRepositoryImpl implements GraphRepository {
   final SprkRepository _client;
+  final SettingsRepository _settingsRepository;
   final _logger = GetIt.instance<LogService>().getLogger('GraphRepository');
 
-  GraphRepositoryImpl(this._client) {
+  GraphRepositoryImpl(this._client) : _settingsRepository = GetIt.instance<SettingsRepository>() {
     _logger.v('GraphRepository initialized');
   }
 
@@ -85,33 +88,34 @@ class GraphRepositoryImpl implements GraphRepository {
         throw Exception('AtProto not initialized');
       }
 
-      // Check if already following
+      final sessionDid = _client.authRepository.session?.did;
+      if (sessionDid == null) {
+        _logger.e('Session DID not available for authenticated user');
+        throw Exception('Session DID not available');
+      }
+
+      final followMode = await _settingsRepository.getFollowMode();
+      _logger.d('Using follow mode: $followMode');
+
+      final collection = followMode == FollowMode.sprk ? NSID.parse('so.sprk.graph.follow') : NSID.parse('app.bsky.graph.follow');
+      final recordType = followMode == FollowMode.sprk ? 'so.sprk.graph.follow' : 'app.bsky.graph.follow';
+
       try {
         _logger.d('Checking if already following user: $did');
-        // Query existing follow records
-        final existingFollows = await atproto.repo.listRecords(
-          repo: _client.authRepository.session!.did,
-          collection: NSID.parse('so.sprk.graph.follow'),
-        );
+        final existingFollows = await atproto.repo.listRecords(repo: sessionDid, collection: collection);
 
-        // Check if we're already following this specific user
-        for (final record in existingFollows.data.records) {
-          if (record.value['subject'] == did) {
-            _logger.w('Already following this user: $did');
-            throw Exception('Already following this user');
-          }
+        final isAlreadyFollowing = existingFollows.data.records.any((record) => record.value['subject'] == did);
+
+        if (isAlreadyFollowing) {
+          _logger.w('Already following this user: $did');
+          throw Exception('Already following this user');
         }
 
-        // If not already following, create new follow record
-        final followRecord = {
-          "\$type": "so.sprk.graph.follow",
-          "subject": did,
-          "createdAt": DateTime.now().toUtc().toIso8601String(),
-        };
+        final followRecord = {"\$type": recordType, "subject": did, "createdAt": DateTime.now().toUtc().toIso8601String()};
 
-        final result = await atproto.repo.createRecord(collection: NSID.parse('so.sprk.graph.follow'), record: followRecord);
+        final result = await atproto.repo.createRecord(collection: collection, record: followRecord);
 
-        _logger.i('User followed successfully: ${result.data.uri}');
+        _logger.i('User followed successfully with $recordType: ${result.data.uri}');
 
         return FollowUserResponse(uri: result.data.uri.toString(), cid: result.data.cid);
       } catch (e) {
@@ -138,6 +142,24 @@ class GraphRepositoryImpl implements GraphRepository {
 
       await atproto.repo.deleteRecord(uri: followUri);
       _logger.i('User unfollowed successfully');
+    });
+  }
+
+  @override
+  Future<String?> toggleFollow(String did, AtUri? currentFollowUri) async {
+    _logger.d('Toggling follow for DID: $did, current URI: $currentFollowUri');
+    return _client.executeWithRetry(() async {
+      if (currentFollowUri != null) {
+        // User is following, so unfollow
+        await unfollowUser(currentFollowUri);
+        _logger.i('User unfollowed via toggle');
+        return null;
+      } else {
+        // User is not following, so follow
+        final response = await followUser(did);
+        _logger.i('User followed via toggle: ${response.uri}');
+        return response.uri;
+      }
     });
   }
 }

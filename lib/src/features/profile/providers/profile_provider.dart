@@ -123,23 +123,13 @@ class ProfileNotifier extends _$ProfileNotifier {
     logger.d('Toggling follow for profile: ${profile.did}, current follow URI: ${profile.viewer?.following ?? 'none'}');
     final originalStateValue = currentData;
 
-    final bool newIsFollowing = profile.viewer?.following == null;
-
     try {
-      String? newFollowUriResult;
-      if (newIsFollowing) {
-        final response = await sprkRepository.graph.followUser(profile.did);
-        newFollowUriResult = response.uri;
+      final newFollowUriResult = await sprkRepository.graph.toggleFollow(profile.did, profile.viewer?.following);
+
+      if (newFollowUriResult != null) {
         logger.i('Successfully followed ${profile.did}. New follow URI: $newFollowUriResult');
       } else {
-        if (profile.viewer?.following != null) {
-          await sprkRepository.graph.unfollowUser(profile.viewer!.following!);
-          newFollowUriResult = null;
-          logger.i('Successfully unfollowed ${profile.did}.');
-        } else {
-          logger.w('Attempted to unfollow ${profile.did} but followUri is null.');
-          throw Exception('Cannot unfollow, follow URI is missing.');
-        }
+        logger.i('Successfully unfollowed ${profile.did}.');
       }
 
       final refreshedProfile = await actorRepository.getProfile(profile.did);

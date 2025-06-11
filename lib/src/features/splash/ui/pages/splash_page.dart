@@ -82,10 +82,13 @@ class _SplashPageState extends ConsumerState<SplashPage> {
         return;
       }
 
-      // Step 2: User is authenticated and has profile - initialize feed loading
+      // Step 2: Sync user preferences from server
+      await _syncUserPreferences();
+
+      // Step 3: User is authenticated and has profile - initialize feed loading
       await _initializeFeedLoading();
-      
-      // Step 3: Wait for app to be ready and then navigate
+
+      // Step 4: Wait for app to be ready and then navigate
       _waitForAppReadyAndNavigate();
 
     } catch (e) {
@@ -99,24 +102,24 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   Future<void> _initializeFeedLoading() async {
     try {
       _logger.d('Initializing feed loading...');
-      
+
       // Wait for settings to be loaded
       final settingsNotifier = ref.read(settingsProvider.notifier);
       await settingsNotifier.loadSettings();
-      
+
       if (!mounted) return;
-      
+
       // Get the active feed and start loading it
       final activeFeed = ref.read(settingsProvider).activeFeed;
       _logger.d('Active feed: ${activeFeed.name}');
-      
+
       // Get the feed notifier and start loading
       final feedNotifier = ref.read(feedNotifierProvider(activeFeed).notifier);
-      
+
       // Start the first load (don't await - let it load in background)
       feedNotifier.loadAndUpdateFirstLoad();
       _hasStartedFeedLoading = true;
-      
+
       _logger.d('Feed loading started');
     } catch (e) {
       _logger.e('Error initializing feed loading', error: e);
@@ -125,16 +128,28 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     }
   }
 
+  Future<void> _syncUserPreferences() async {
+    try {
+      _logger.d('Syncing user preferences from server...');
+      final settingsNotifier = ref.read(settingsProvider.notifier);
+      await settingsNotifier.syncPreferencesFromServer();
+      _logger.d('User preferences synced successfully');
+    } catch (e) {
+      _logger.w('Failed to sync user preferences', error: e);
+      // Continue anyway - don't block app startup
+    }
+  }
+
   void _waitForAppReadyAndNavigate() {
     if (!_hasStartedFeedLoading) return;
-    
+
     // Use a timer to periodically check if app is ready
     Timer.periodic(const Duration(milliseconds: 100), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
       }
-      
+
       try {
         final isAppReady = ref.read(appReadyProvider);
         if (isAppReady) {
@@ -147,7 +162,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
         _logger.w('Error checking app readiness: $e');
       }
     });
-    
+
     // Fallback timeout - don't wait forever
     Timer(const Duration(seconds: 15), () {
       if (mounted && !_isNavigating) {

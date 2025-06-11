@@ -90,7 +90,7 @@ class ProfileViewDetailed with _$ProfileViewDetailed {
     @AtUriConverter() AtUri? avatar,
     @AtUriConverter() AtUri? banner,
     int? followersCount,
-    int? followingCount,
+    int? followsCount,
     int? postsCount,
     // joinedViaStarterPack ?????
     // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
@@ -102,4 +102,13 @@ class ProfileViewDetailed with _$ProfileViewDetailed {
   }) = _ProfileViewDetailed;
 
   factory ProfileViewDetailed.fromJson(Map<String, dynamic> json) => _$ProfileViewDetailedFromJson(json);
+}
+
+@freezed
+class UserPreferences with _$UserPreferences {
+  const factory UserPreferences({
+    required String followMode,
+  }) = _UserPreferences;
+
+  factory UserPreferences.fromJson(Map<String, dynamic> json) => _$UserPreferencesFromJson(json);
 }

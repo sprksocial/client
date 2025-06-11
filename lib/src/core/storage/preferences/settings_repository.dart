@@ -12,6 +12,12 @@ abstract class SettingsRepository {
   Future<FollowMode> getFollowMode();
   Future<void> setFollowMode(FollowMode followMode);
 
+  /// Sync follow mode with backend and update local storage
+  Future<void> syncFollowModeFromServer();
+
+  /// Set follow mode locally and sync with backend
+  Future<void> setFollowModeWithSync(FollowMode followMode);
+
   Future<List<Feed>> getFeeds();
   Future<void> setFeeds(List<Feed> feeds);
   Future<void> addFeed(Feed feed);
