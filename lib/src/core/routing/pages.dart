@@ -29,3 +29,4 @@ export 'package:sparksocial/src/features/posting/ui/pages/video_review_page.dart
 export 'package:sparksocial/src/features/posting/ui/pages/story_review_page.dart';
 export 'package:sparksocial/src/features/posting/ui/pages/create_video_page.dart';
 export 'package:sparksocial/src/features/posting/ui/pages/image_review_page.dart';
+export 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';

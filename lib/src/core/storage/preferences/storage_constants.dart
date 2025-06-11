@@ -7,6 +7,7 @@ class StorageKeys {
   /// Settings
   static const String feedBlurKey = 'feed_blur_enabled';
   static const String hideAdultContentKey = 'hide_adult_content';
+  static const String followModeKey = 'follow_mode';
 
   static const String feedsKey = 'feeds';
   static const String activeFeedKey = 'active_feed';

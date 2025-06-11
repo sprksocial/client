@@ -6,6 +6,7 @@ import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
   late final SQLCacheInterface _sqlCache;
@@ -180,6 +181,17 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
+  Future<FollowMode> getFollowMode() async {
+    final followModeString = await _storageManager.preferences.getString(StorageKeys.followModeKey);
+    return FollowMode.values.firstWhere((mode) => mode.name == followModeString, orElse: () => FollowMode.sprk);
+  }
+
+  @override
+  Future<void> setFollowMode(FollowMode followMode) async {
+    await _storageManager.preferences.setString(StorageKeys.followModeKey, followMode.name);
+  }
+
+  @override
   Future<void> setFeeds(List<Feed> feeds) async {
     _logger.d('Saving feeds: ${feeds.map((f) => f.name).join(', ')}');
     // Manually serialize feeds to JSON
@@ -202,7 +214,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       await setFeeds(defaultFeeds);
       return defaultFeeds;
     }
-    
+
     try {
       // Convert the JSON objects back to Feed objects
       final feeds = feedsJson.map((json) => Feed.fromJson(json as Map<String, dynamic>)).toList();
@@ -229,7 +241,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       _logger.d('No active feed found in storage, using default (Latest)');
       return Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk);
     }
-    
+
     try {
       final activeFeed = Feed.fromJson(activeFeedJson);
       _logger.d('Loaded active feed from storage: ${activeFeed.name}');

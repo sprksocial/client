@@ -34,7 +34,6 @@ class AppRouter extends RootStackRouter {
           page: UserProfileRoute.page, // for the current user
           path: 'profile',
           children: [
-            AutoRoute(page: EditProfileRoute.page, path: 'edit'),
             AutoRoute(
               page: ProfilePhotosRoute.page,
               path: 'photos',
@@ -47,6 +46,10 @@ class AppRouter extends RootStackRouter {
         ),
       ],
     ),
+
+    AutoRoute(page: EditProfileRoute.page, path: '/profile-editor'),
+
+    AutoRoute(page: ProfileSettingsRoute.page, path: '/profile-settings'),
 
     // Modal bottom sheet routes
     CustomRoute(

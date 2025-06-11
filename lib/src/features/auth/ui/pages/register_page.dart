@@ -170,41 +170,37 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       ),
 
                       const SizedBox(height: 24),
-
                       Text(
                         'Username',
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.white),
                       ),
                       const SizedBox(height: 8),
-                      Container(
-                        decoration: BoxDecoration(color: AppColors.white.withAlpha(255), borderRadius: BorderRadius.circular(16)),
-                        child: Row(
-                          children: [
-                            const Padding(
-                              padding: EdgeInsets.only(left: 16),
-                              child: Icon(FluentIcons.mention_24_regular, color: AppColors.primary),
-                            ),
-                            Expanded(
-                              child: TextField(
-                                controller: _handleController,
-                                decoration: InputDecoration(
-                                  hintText: 'username',
-                                  hintStyle: TextStyle(color: AppColors.hintText),
-                                  border: InputBorder.none,
-                                  filled: true,
-                                  fillColor: Colors.transparent,
-                                  contentPadding: const EdgeInsets.all(16),
+                      TextField(
+                        controller: _handleController,
+                        decoration: InputDecoration(
+                          hintText: 'username',
+                          hintStyle: TextStyle(color: AppColors.hintText),
+                          filled: true,
+                          fillColor: AppColors.white.withAlpha(255),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                          prefixIcon: const Icon(FluentIcons.mention_24_regular, color: AppColors.primary),
+                          suffixIcon: Padding(
+                            padding: const EdgeInsets.only(right: 16),
+                            child: Center(
+                              widthFactor: 1.0,
+                              child: Text(
+                                '.sprk.so',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: colorScheme.primary,
                                 ),
-                                style: const TextStyle(color: Colors.black),
-                                onChanged: (_) => setState(() {}),
                               ),
                             ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 16),
-                              child: Text('.sprk.so', style: TextStyle(fontSize: 16, color: colorScheme.onSurface)),
-                            ),
-                          ],
+                          ),
+                          contentPadding: const EdgeInsets.all(16),
                         ),
+                        style: const TextStyle(color: Colors.black),
+                        onChanged: (_) => setState(() {}),
                       ),
 
                       const SizedBox(height: 24),
@@ -291,7 +287,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         children: [
                           Text('Already have an account?', style: TextStyle(color: AppColors.white)),
                           TextButton(
-                            onPressed: () => context.router.replace(const LoginRoute()),
+                            onPressed: () => context.router.push(const LoginRoute()),
                             child: const Text(
                               'Sign in',
                               style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),

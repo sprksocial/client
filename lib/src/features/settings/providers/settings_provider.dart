@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
 import 'settings_state.dart';
 import '../../../core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
@@ -25,16 +26,17 @@ class Settings extends _$Settings {
   SettingsState build() {
     _repository = ref.watch(settingsRepositoryProvider);
     _logger = GetIt.instance<LogService>().getLogger('Settings');
-    
+
     // Load settings asynchronously but return a temporary state immediately
     // This prevents blocking the UI while loading
     Future.microtask(() => loadSettings());
-    
+
     // Return temporary default state that will be replaced by loadSettings()
     return SettingsState(
       activeFeed: Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
       feedBlurEnabled: false,
       hideAdultContent: true,
+      followMode: FollowMode.sprk,
       feeds: [
         Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
         Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
@@ -47,21 +49,23 @@ class Settings extends _$Settings {
   Future<void> loadSettings() async {
     try {
       _logger.d('Loading settings from storage...');
-      
+
       final feedBlurEnabled = await _repository.getFeedBlurEnabled();
       final hideAdultContent = await _repository.getHideAdultContent();
+      final followMode = await _repository.getFollowMode();
       final feeds = await _repository.getFeeds();
       final activeFeed = await _repository.getActiveFeed();
 
-      _logger.d('Settings loaded - activeFeed: ${activeFeed.name}, feeds: ${feeds.map((f) => f.name).join(', ')}');
+      _logger.d('Settings loaded - activeFeed: ${activeFeed.name}, feeds: ${feeds.map((f) => f.name).join(', ')}, followMode: $followMode');
 
       state = SettingsState(
         activeFeed: activeFeed,
         feedBlurEnabled: feedBlurEnabled,
         hideAdultContent: hideAdultContent,
+        followMode: followMode,
         feeds: feeds,
       );
-      
+
       _logger.d('Settings state updated successfully');
     } catch (e) {
       // If loading fails, keep the default state
@@ -79,6 +83,12 @@ class Settings extends _$Settings {
   Future<void> setHideAdultContent(bool value) async {
     await _repository.setHideAdultContent(value);
     state = state.copyWith(hideAdultContent: value);
+  }
+
+  /// Sets follow mode setting
+  Future<void> setFollowMode(FollowMode followMode) async {
+    await _repository.setFollowMode(followMode);
+    state = state.copyWith(followMode: followMode);
   }
 
   /// Adds a feed to feeds list

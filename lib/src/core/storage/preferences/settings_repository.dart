@@ -1,13 +1,17 @@
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/data/models/labeler_models.dart';
+import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
 
 abstract class SettingsRepository {
   Future<bool> getFeedBlurEnabled();
   Future<void> setFeedBlurEnabled(bool value);
-  
+
   Future<bool> getHideAdultContent();
   Future<void> setHideAdultContent(bool value);
-  
+
+  Future<FollowMode> getFollowMode();
+  Future<void> setFollowMode(FollowMode followMode);
+
   Future<List<Feed>> getFeeds();
   Future<void> setFeeds(List<Feed> feeds);
   Future<void> addFeed(Feed feed);

@@ -27,7 +27,6 @@ class ProfileHeader extends StatefulWidget {
   final VoidCallback onEditTap;
   final VoidCallback onShareTap;
   final VoidCallback onFollowTap;
-  final VoidCallback onSettingsTap;
 
   const ProfileHeader({
     super.key,
@@ -38,7 +37,6 @@ class ProfileHeader extends StatefulWidget {
     required this.onEditTap,
     required this.onShareTap,
     required this.onFollowTap,
-    required this.onSettingsTap,
   });
 
   @override
@@ -265,23 +263,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 ),
                 const SizedBox(width: 8),
               ],
-              if (widget.isCurrentUser)
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    onTap: widget.onSettingsTap,
-                    borderRadius: BorderRadius.circular(20),
-                    child: Container(
-                      height: 36,
-                      width: 36,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: theme.colorScheme.outline.withAlpha(128)),
-                      ),
-                      child: Icon(FluentIcons.settings_24_regular, size: 20, color: theme.colorScheme.onSurfaceVariant),
-                    ),
-                  ),
-                ),
             ],
           ),
         ],

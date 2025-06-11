@@ -4,6 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/auth/data/models/onboarding_screen_state.dart'; // Import for OnboardingScreenState
 import 'package:sparksocial/src/features/auth/providers/onboarding_notifier.dart';
+import 'package:sparksocial/src/features/auth/providers/onboarding_providers.dart';
+import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
 import 'package:sparksocial/src/core/widgets/custom_text_field.dart'; // Corrected path
 
 @RoutePage()
@@ -18,6 +21,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
   final _formKey = GlobalKey<FormState>();
   late TextEditingController _displayNameController;
   late TextEditingController _descriptionController;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -53,32 +57,49 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     super.dispose();
   }
 
-  Future<void> _handleNextStep() async {
+  Future<void> _handleCompleteOnboarding() async {
     if (!_formKey.currentState!.validate()) return;
 
-    final provider = ref.read(onboardingNotifierProvider.notifier);
-    final navData = provider.getOnboardingDataForNextStep();
+    setState(() {
+      _isLoading = true;
+    });
 
-    if (navData == null) {
-      // This might happen if the state is error/loading, though form validation should prevent it.
-      // Handle error appropriately, e.g. show a snackbar.
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Could not retrieve profile data. Please try again.')));
-      return;
+    try {
+      // Set follow mode to bsky
+      await ref.read(settingsProvider.notifier).setFollowMode(FollowMode.bsky);
+
+      // Create the profile
+      final onboardingState = ref.read(onboardingStateProvider.notifier);
+
+      // Determine avatar to use
+      dynamic avatarToUse;
+      final currentState = ref.read(onboardingNotifierProvider).value;
+      if (currentState?.localAvatarBytes != null) {
+        avatarToUse = currentState!.localAvatarBytes;
+      } else if (currentState?.bskyProfileRecord?.avatar != null) {
+        avatarToUse = currentState!.bskyProfileRecord!.avatar;
+      }
+
+      await onboardingState.createCustomProfile(
+        displayName: _displayNameController.text.trim(),
+        description: _descriptionController.text.trim(),
+        avatar: avatarToUse,
+      );
+
+      if (!mounted) return;
+
+      // Navigate to main screen
+      context.router.replaceAll([const MainRoute()]);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error completing profile: ${e.toString()}')));
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
-
-    dynamic avatarForNav;
-    if (navData.avatarBytes != null) {
-      avatarForNav = navData.avatarBytes;
-    } else {
-      final currentOnboardingStateValue = ref.read(onboardingNotifierProvider).value;
-      avatarForNav = currentOnboardingStateValue?.bskyProfileRecord?.avatar;
-    }
-
-    context.router.push(
-      ImportFollowsRoute(displayName: navData.displayName, description: navData.description, avatar: avatarForNav),
-    );
   }
 
   @override
@@ -106,6 +127,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       appBar: AppBar(
         backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
+        centerTitle: true,
         title: const Text('Complete your profile'),
         leading: const AutoLeadingButton(), // Adds back button if applicable
       ),
@@ -202,7 +224,11 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                             controller: _displayNameController,
                             hintText: 'Display Name',
                             fillColor: theme.inputDecorationTheme.fillColor ?? theme.colorScheme.surface,
-                            onUndo: state.bskyProfileRecord?.displayName != null ? () => notifier.resetDisplayName() : null,
+                            onUndo:
+                                (state.bskyProfileRecord?.displayName != null &&
+                                    _displayNameController.text != (state.bskyProfileRecord?.displayName ?? ''))
+                                ? () => notifier.resetDisplayName()
+                                : null,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) return 'Display Name is required';
                               if (value.trim().length > 64) return 'Display Name cannot exceed 64 characters';
@@ -215,7 +241,11 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                             hintText: 'Bio',
                             fillColor: theme.inputDecorationTheme.fillColor ?? theme.colorScheme.surface,
                             maxLines: 3,
-                            onUndo: state.bskyProfileRecord?.description != null ? () => notifier.resetDescription() : null,
+                            onUndo:
+                                (state.bskyProfileRecord?.description != null &&
+                                    _descriptionController.text != (state.bskyProfileRecord?.description ?? ''))
+                                ? () => notifier.resetDescription()
+                                : null,
                             validator: (value) {
                               if (value != null && value.trim().length > 256) return 'Bio cannot exceed 256 characters';
                               return null; // Bio is optional
@@ -225,17 +255,19 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: ElevatedButton(
-                              onPressed: _handleNextStep,
+                              onPressed: _isLoading ? null : _handleCompleteOnboarding,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: colorScheme.primary, // AppColors.pink
+                                backgroundColor: colorScheme.primary,
                                 foregroundColor: colorScheme.onPrimary,
                                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                               ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [Text('Next'), SizedBox(width: 8), Icon(Icons.arrow_forward)],
-                              ),
+                              child: _isLoading
+                                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                  : const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [Text('Complete'), SizedBox(width: 8), Icon(Icons.check)],
+                                    ),
                             ),
                           ),
                         ],

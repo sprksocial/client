@@ -7,11 +7,9 @@ import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/core/widgets/menu_action_button.dart';
 import 'package:sparksocial/src/core/widgets/report_dialog.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_header.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/early_supporter_sheet.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_menu_sheet.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_tabs.dart';
 import 'package:get_it/get_it.dart';
 
@@ -41,27 +39,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       backgroundColor: Colors.transparent,
       builder: (context) => SafeArea(
         child: Padding(padding: const EdgeInsets.only(top: 20), child: EarlySupporterSheet()),
-      ),
-    );
-  }
-
-  void _showProfileMenu(BuildContext context, WidgetRef ref) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (bContext) => SafeArea(
-        // Use bContext to avoid context conflict
-        child: Padding(
-          padding: const EdgeInsets.only(top: 20),
-          child: ProfileMenuSheet(
-            onLogout: () {
-              context.router.maybePop(bContext); // Close sheet first
-              ref.read(profileNotifierProvider(did: widget.did).notifier).logout();
-              AutoRouter.of(context).replaceAll([const SplashRoute()]); // Navigate to splash or home after logout
-            },
-          ),
-        ),
       ),
     );
   }
@@ -101,7 +78,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           ],
           builder: (context, child) {
             final tabsRouter = AutoTabsRouter.of(context);
-            
+
             return Scaffold(
               backgroundColor: theme.scaffoldBackgroundColor,
               appBar: AppBar(
@@ -120,8 +97,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       padding: const EdgeInsets.only(right: 8.0),
                       child: IconButton(
                         padding: EdgeInsets.zero,
-                        onPressed: () => _showProfileMenu(context, ref),
-                        icon: Icon(FluentIcons.more_horizontal_24_regular, color: theme.iconTheme.color),
+                        onPressed: () {
+                          context.router.push(ProfileSettingsRoute());
+                        },
+                        icon: Icon(FluentIcons.options_24_regular, color: Theme.of(context).colorScheme.onSurface),
                       ),
                     )
                   else
@@ -136,8 +115,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             // postUri & postCid for profiles are a bit different.
                             // For profiles, the subject is the DID itself.
                             postUri: 'at://${profile.did}/app.bsky.actor.profile/self', // Or just profile.did
-                            postCid:
-                                profile.did, // Using DID as a placeholder, actual String not usually needed for profile report subject
+                            postCid: profile
+                                .did, // Using DID as a placeholder, actual String not usually needed for profile report subject
                             onSubmit: (subject, reasonType, reason, service) async {
                               try {
                                 // The ReportDialog gives reasonType as atp.ModerationReasonType
@@ -157,7 +136,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                                 }
                               } catch (e) {
                                 if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+                                  ScaffoldMessenger.of(
+                                    context,
+                                  ).showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
                                 }
                               }
                             },
@@ -182,21 +163,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           isEarlySupporter: state.isEarlySupporter,
                           onEarlySupporterTap: () => _showEarlySupporterInfo(context),
                           onEditTap: () {
-                            final authRepository = ref.read(authRepositoryProvider);
-                            if (authRepository.isAuthenticated) {
-                              context.router.push(EditProfileRoute(profile: profile)).then((updated) {
-                                if (updated == true) {
-                                  notifier.refreshProfile();
-                                  if (context.mounted) {
-                                    ScaffoldMessenger.of(
-                                      context,
-                                    ).showSnackBar(const SnackBar(content: Text('Profile updated successfully')));
-                                  }
+                            context.router.push(EditProfileRoute(profile: profile)).then((updated) {
+                              if (updated == true) {
+                                notifier.refreshProfile();
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(
+                                    context,
+                                  ).showSnackBar(const SnackBar(content: Text('Profile updated successfully')));
                                 }
-                              });
-                            } else {
-                              notifier.triggerAuthPrompt();
-                            }
+                              }
+                            });
                           },
                           onShareTap: () => _logger.i('Share profile tapped for ${profile.did}'),
                           onFollowTap: () async {
@@ -232,9 +208,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               }
                             }
                           },
-                          onSettingsTap: () => context.router.push(EditProfileRoute(profile: profile)).then((_) {
-                            notifier.refreshProfile();
-                          }),
                         ),
                       ),
                       SliverPersistentHeader(

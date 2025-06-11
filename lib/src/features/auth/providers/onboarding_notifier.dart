@@ -42,13 +42,18 @@ class OnboardingNotifier extends _$OnboardingNotifier {
 
       final profileDataMap = await _onboardingRepository.getBskyProfile();
 
+      final avatarCid = profileDataMap?.avatar?.ref.link;
+      final avatarUrl = avatarCid != null && avatarCid.isNotEmpty
+          ? 'https://cdn.bsky.app/img/avatar/plain/$userDid/$avatarCid@jpeg'
+          : null;
+
       return OnboardingScreenState(
         isLoading: false,
         bskyProfileRecord: profileDataMap,
         displayName: profileDataMap?.displayName ?? '',
         description: profileDataMap?.description ?? '',
-        initialAvatarCid: profileDataMap?.avatar?.ref.link,
-        initialAvatarUrl: profileDataMap?.avatar?.ref.link,
+        initialAvatarCid: avatarCid,
+        initialAvatarUrl: avatarUrl,
         localAvatarBytes: null,
         userDid: userDid,
       );
@@ -135,8 +140,9 @@ class OnboardingNotifier extends _$OnboardingNotifier {
         currentVal.initialAvatarCid!.isNotEmpty &&
         currentVal.userDid != null &&
         currentVal.userDid!.isNotEmpty) {
-      return 'https://media.sprk.so/img/tiny/${currentVal.userDid}/${currentVal.initialAvatarCid}';
+      return 'https://cdn.bsky.app/img/avatar/plain/${currentVal.userDid}/${currentVal.initialAvatarCid}@jpeg';
     }
+
     return null;
   }
 
