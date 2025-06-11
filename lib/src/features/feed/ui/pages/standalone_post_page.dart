@@ -95,103 +95,105 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
           onPressed: () => context.router.pop(),
         ),
       ),
-      body: _postFuture == null
-          ? const Center(child: CircularProgressIndicator())
-          : FutureBuilder(
-              future: _postFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
-                  final postData = snapshot.data! as PostView;
+      body: SafeArea(
+        child: _postFuture == null
+            ? const Center(child: CircularProgressIndicator())
+            : FutureBuilder(
+                future: _postFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+                    final postData = snapshot.data! as PostView;
 
-                  return Stack(
-                    children: [
-                      // Main content
-                      switch (postData.embed) {
-                        EmbedViewVideo() => PostVideoPlayer(
-                          key: _videoPlayerKey,
-                          videoUrl: postData.videoUrl,
-                          // For standalone, we don't need feed and index
+                    return Stack(
+                      children: [
+                        // Main content
+                        switch (postData.embed) {
+                          EmbedViewVideo() => PostVideoPlayer(
+                            key: _videoPlayerKey,
+                            videoUrl: postData.videoUrl,
+                            // For standalone, we don't need feed and index
+                          ),
+                          EmbedViewImage() => ImageCarousel(imageUrls: postData.imageUrls),
+                          _ => const SizedBox.shrink(),
+                        },
+
+                        // Side action bar
+                        Positioned(
+                          bottom: 4,
+                          right: 4,
+                          child: SideActionBar(
+                            post: postData,
+                            likeCount: '${postData.likeCount ?? 0}',
+                            commentCount: '${postData.replyCount ?? 0}',
+                            shareCount: '${postData.repostCount ?? 0}',
+                            isLiked: postData.viewer?.like != null,
+                            profileImageUrl: postData.author.avatar.toString(),
+                            isImage: postData.embed is EmbedViewImage,
+                            onProfilePressed: () {
+                              // Pause video before navigating to profile
+                              _videoPlayerKey.currentState?.pauseVideo();
+                            },
+                          ),
                         ),
-                        EmbedViewImage() => ImageCarousel(imageUrls: postData.imageUrls),
-                        _ => const SizedBox.shrink(),
-                      },
 
-                      // Side action bar
-                      Positioned(
-                        bottom: 4,
-                        right: 4,
-                        child: SideActionBar(
-                          post: postData,
-                          likeCount: '${postData.likeCount ?? 0}',
-                          commentCount: '${postData.replyCount ?? 0}',
-                          shareCount: '${postData.repostCount ?? 0}',
-                          isLiked: postData.viewer?.like != null,
-                          profileImageUrl: postData.author.avatar.toString(),
-                          isImage: postData.embed is EmbedViewImage,
-                          onProfilePressed: () {
-                            // Pause video before navigating to profile
-                            _videoPlayerKey.currentState?.pauseVideo();
-                          },
-                        ),
-                      ),
-
-                      // Gradient overlay at the bottom to improve text readability
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 20,
-                        child: IgnorePointer(
-                          child: Container(
-                            height: 120, // covers the area behind the InfoBar
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.bottomCenter,
-                                end: Alignment.topCenter,
-                                colors: [Colors.black87.withAlpha(100), Colors.transparent],
+                        // Gradient overlay at the bottom to improve text readability
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 20,
+                          child: IgnorePointer(
+                            child: Container(
+                              height: 120, // covers the area behind the InfoBar
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: [Colors.black87.withAlpha(100), Colors.transparent],
+                                ),
                               ),
                             ),
                           ),
                         ),
-                      ),
 
-                      Positioned(
-                        bottom: 32,
-                        left: 4,
-                        right: 80,
-                        child: InfoBar(
-                          username: postData.author.handle,
-                          description: postData.record.text ?? '',
-                          hashtags: postData.record.hashtags,
-                          isSprk: postData.uri.toString().contains('so.sprk'),
-                          onUsernameTap: () {
-                            // Pause video before navigating to profile
-                            _videoPlayerKey.currentState?.pauseVideo();
-                            context.router.push(ProfileRoute(did: postData.author.did));
-                          },
-                        ),
-                      ),
-                    ],
-                  );
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Icon(Icons.error, color: Colors.white, size: 48),
-                        const SizedBox(height: 16),
-                        Text(
-                          'Error loading post: ${snapshot.error}',
-                          style: const TextStyle(color: Colors.white),
-                          textAlign: TextAlign.center,
+                        Positioned(
+                          bottom: 32,
+                          left: 4,
+                          right: 80,
+                          child: InfoBar(
+                            username: postData.author.handle,
+                            description: postData.record.text ?? '',
+                            hashtags: postData.record.hashtags,
+                            isSprk: postData.uri.toString().contains('so.sprk'),
+                            onUsernameTap: () {
+                              // Pause video before navigating to profile
+                              _videoPlayerKey.currentState?.pauseVideo();
+                              context.router.push(ProfileRoute(did: postData.author.did));
+                            },
+                          ),
                         ),
                       ],
-                    ),
-                  );
-                }
-                return const Center(child: CircularProgressIndicator());
-              },
-            ),
+                    );
+                  }
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.error, color: Colors.white, size: 48),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Error loading post: ${snapshot.error}',
+                            style: const TextStyle(color: Colors.white),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+                  return const Center(child: CircularProgressIndicator());
+                },
+              ),
+      ),
     );
   }
 }
