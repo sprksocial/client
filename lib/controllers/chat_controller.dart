@@ -2,12 +2,14 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../models/chat.dart';
 import '../services/chat_service.dart';
+import '../services/auth_service.dart';
 
 class ChatController extends ChangeNotifier {
   final ChatService _chatService = ChatService();
+  final AuthService _authService;
   
   List<Conversation> _conversations = [];
-  Map<String, List<ChatMessage>> _messagesByConversation = {};
+  final Map<String, List<ChatMessage>> _messagesByConversation = {};
   bool _isLoading = false;
   String? _error;
 
@@ -18,7 +20,8 @@ class ChatController extends ChangeNotifier {
   StreamSubscription<List<Conversation>>? _conversationsSubscription;
   StreamSubscription<List<ChatMessage>>? _messagesSubscription;
 
-  ChatController() {
+  ChatController(this._authService) {
+    _chatService.setAuthService(_authService);
     _initialize();
   }
 

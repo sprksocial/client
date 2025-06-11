@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:provider/provider.dart';
 import '../models/chat.dart';
+import '../services/auth_service.dart';
 import '../services/chat_service.dart';
 import '../utils/app_colors.dart';
 import '../utils/app_theme.dart';
@@ -21,12 +23,51 @@ class _ChatScreenState extends State<ChatScreen> {
   final ScrollController _scrollController = ScrollController();
   List<ChatMessage> _messages = [];
   bool _isLoading = true;
+  String? _currentUserDid;
 
   @override
   void initState() {
     super.initState();
+    _initializeUser();
     _loadMessages();
     _markAsRead();
+  }
+
+  void _initializeUser() {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    _currentUserDid = authService.session?.did;
+    if (_currentUserDid != null) {
+      _chatService.setAuthService(authService);
+    }
+  }
+
+  String _getConversationTitle() {
+    if (widget.conversation.title != null && widget.conversation.title!.isNotEmpty) {
+      return widget.conversation.title!;
+    }
+    
+    if (widget.conversation.type == ConversationType.direct && widget.conversation.participants.length == 2) {
+      final otherParticipant = widget.conversation.participants.firstWhere(
+        (p) => p.id != _currentUserDid,
+        orElse: () => widget.conversation.participants.first,
+      );
+      return otherParticipant.displayName ?? otherParticipant.username;
+    }
+    
+    if (widget.conversation.participants.length > 1) {
+      final names = widget.conversation.participants
+          .where((p) => p.id != _currentUserDid)
+          .take(3)
+          .map((p) => p.displayName ?? p.username)
+          .join(', ');
+      final otherParticipantsCount = widget.conversation.participants.where((p) => p.id != _currentUserDid).length;
+      if (otherParticipantsCount > 3) {
+        return '$names and ${otherParticipantsCount - 3} more';
+      }
+      return names;
+    }
+    
+    return 'Conversation';
   }
 
   Future<void> _loadMessages() async {
@@ -90,7 +131,7 @@ class _ChatScreenState extends State<ChatScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    widget.conversation.displayTitle,
+                    _getConversationTitle(),
                     style: TextStyle(
                       color: AppTheme.getTextColor(context),
                       fontWeight: FontWeight.bold,
@@ -143,7 +184,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Widget _buildConversationAvatar() {
     if (widget.conversation.type == ConversationType.direct) {
       final otherParticipant = widget.conversation.participants.firstWhere(
-        (p) => p.id != 'current_user_id',
+        (p) => p.id != _currentUserDid,
         orElse: () => widget.conversation.participants.first,
       );
 
@@ -174,7 +215,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (widget.conversation.type != ConversationType.direct) return '';
     
     final otherParticipant = widget.conversation.participants.firstWhere(
-      (p) => p.id != 'current_user_id',
+      (p) => p.id != _currentUserDid,
       orElse: () => widget.conversation.participants.first,
     );
 
@@ -203,14 +244,14 @@ class _ChatScreenState extends State<ChatScreen> {
             Icon(
               FluentIcons.chat_24_regular,
               size: 64,
-              color: Colors.grey,
+              color: AppTheme.getSecondaryTextColor(context),
             ),
             const SizedBox(height: 16),
             Text(
               'No messages yet',
               style: TextStyle(
                 fontSize: 18,
-                color: Colors.grey,
+                color: AppTheme.getSecondaryTextColor(context),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -219,7 +260,7 @@ class _ChatScreenState extends State<ChatScreen> {
               'Send a message to start the conversation',
               style: TextStyle(
                 fontSize: 14,
-                color: Colors.grey,
+                color: AppTheme.getSecondaryTextColor(context),
               ),
             ),
           ],
@@ -233,7 +274,7 @@ class _ChatScreenState extends State<ChatScreen> {
       itemCount: _messages.length,
       itemBuilder: (context, index) {
         final message = _messages[index];
-        final isCurrentUser = message.senderId == 'current_user_id';
+        final isCurrentUser = message.senderId == _currentUserDid;
         final showAvatar = !isCurrentUser && (index == _messages.length - 1 || 
             _messages[index + 1].senderId != message.senderId);
 

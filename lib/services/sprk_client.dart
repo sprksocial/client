@@ -52,6 +52,9 @@ class SprkClient {
 
   /// Repository namespace for Spark API
   RepoAPI get repo => RepoAPI(this);
+
+  /// Chat namespace for Spark API
+  ChatAPI get chat => ChatAPI(this);
 }
 
 /// Feed-related API endpoints
@@ -376,6 +379,112 @@ class RepoAPI {
       }
 
       return await atproto.repo.listRecords(repo: repo, collection: collection, cursor: cursor, limit: limit, reverse: reverse);
+    });
+  }
+}
+
+/// Chat-related API endpoints
+class ChatAPI {
+  final SprkClient _client;
+
+  ChatAPI(this._client);
+
+  /// Send a message to a conversation
+  Future<dynamic> sendMessage({
+    required String conversationId,
+    required String content,
+    String messageType = 'text',
+  }) async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      final messageRecord = {
+        '\$type': 'so.sprk.chat.message',
+        'conversationId': conversationId,
+        'content': content,
+        'type': messageType,
+        'createdAt': DateTime.now().toUtc().toIso8601String(),
+      };
+
+      return await atproto.repo.createRecord(
+        collection: NSID.parse('so.sprk.chat.message'),
+        record: messageRecord,
+      );
+    });
+  }
+
+  /// Get messages for a conversation
+  Future<dynamic> getMessages(String conversationId) async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      return await atproto.get(
+        NSID.parse('so.sprk.chat.getMessages'),
+        parameters: {'conversationId': conversationId},
+        headers: {'atproto-proxy': _client._sprkDid},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+      );
+    });
+  }
+
+  /// Get conversations for the current user
+  Future<dynamic> getConversations() async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      return await atproto.get(
+        NSID.parse('so.sprk.chat.getConversations'),
+        headers: {'atproto-proxy': _client._sprkDid},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+      );
+    });
+  }
+
+  /// Mark a conversation as read
+  Future<dynamic> markAsRead(String conversationId) async {
+    return _client._executeWithRetry(() async {
+      if (!_client._authService.isAuthenticated) {
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client._authService.atproto;
+      if (atproto == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      final readRecord = {
+        '\$type': 'so.sprk.chat.read',
+        'conversationId': conversationId,
+        'readAt': DateTime.now().toUtc().toIso8601String(),
+      };
+
+      return await atproto.repo.createRecord(
+        collection: NSID.parse('so.sprk.chat.read'),
+        record: readRecord,
+      );
     });
   }
 }

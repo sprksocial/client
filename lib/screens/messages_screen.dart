@@ -9,6 +9,7 @@ import '../widgets/activities/activity_icon.dart';
 import '../widgets/activities/activity_list.dart';
 import '../widgets/messages/conversation_list.dart';
 import 'chat_screen.dart';
+import 'new_chat_search_screen.dart';
 
 class MessagesScreen extends StatefulWidget {
   const MessagesScreen({super.key});
@@ -125,7 +126,14 @@ class _MessagesScreenState extends State<MessagesScreen> {
         title: Text('Inbox', style: TextStyle(color: AppTheme.getTextColor(context), fontWeight: FontWeight.bold)),
         leading: IconButton(
           padding: EdgeInsets.zero,
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const NewChatSearchScreen(),
+              ),
+            );
+          },
           icon: Icon(FluentIcons.add_24_regular, color: AppTheme.getTextColor(context), size: 24),
         ),
         actions: [
