@@ -213,7 +213,7 @@ class _UserResultsState extends ConsumerState<UserResults> {
                 context.router.push(ProfileRoute(did: actor.did));
               }
             },
-            showFollowButton: ref.read(searchProvider.notifier).isCurrentUser(actor.did),
+            showFollowButton: !ref.read(searchProvider.notifier).isCurrentUser(actor.did),
             isFollowing: isFollowing,
             onFollowTap: () => ref.read(searchProvider.notifier).followUser(actor.did),
             onUnfollowTap: () =>

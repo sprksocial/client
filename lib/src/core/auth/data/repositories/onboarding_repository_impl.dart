@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart' as bs;
@@ -58,11 +60,37 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
 
   @override
   Future<void> createSparkProfile({required String displayName, required String description, dynamic avatar}) async {
+    dynamic avatarField;
+
+    // If the avatar is raw bytes, upload it as a blob first to avoid sending
+    // a huge base64 payload directly in the record, which can trigger a 413
+    // "request entity too large" error from the PDS.
+    if (avatar != null) {
+      if (avatar is Uint8List) {
+        try {
+          final blob = await _repoRepository.uploadBlob(avatar);
+          avatarField = blob.toJson(); // include JSON representation of blob
+        } catch (e, s) {
+          _logger.e('Failed to upload avatar blob', error: e, stackTrace: s);
+          rethrow;
+        }
+      } else {
+        // Avatar is already a blob (e.g., imported from Bluesky). Try to serialise if possible.
+        try {
+          // Many blob classes expose toJson(). If not, fall back to raw value.
+          final toJson = (avatar as dynamic).toJson;
+          avatarField = toJson is Function ? toJson() : avatar;
+        } catch (_) {
+          avatarField = avatar;
+        }
+      }
+    }
+
     final record = <String, dynamic>{
       '\$type': 'so.sprk.actor.profile',
       'displayName': displayName,
       'description': description,
-      if (avatar != null) 'avatar': avatar,
+      if (avatarField != null) 'avatar': avatarField,
     };
 
     await _repoRepository.createRecord(

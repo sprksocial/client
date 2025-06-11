@@ -36,10 +36,8 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
 
       // Close loading dialog
       if (mounted) {
-        context.router.maybePop();
-
         // Navigate to login screen
-        context.router.replaceAll([const LoginRoute()]);
+        context.router.replaceAll([const RegisterRoute()]);
       }
     } catch (e) {
       // Close loading dialog if it's open

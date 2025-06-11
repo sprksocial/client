@@ -70,9 +70,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         if (!mounted) return;
 
         if (hasSparkProfile) {
-          context.router.replace(const FeedsRoute());
+          context.router.replaceAll([const FeedsRoute()]);
         } else {
-          context.router.replace(const OnboardingRoute());
+          context.router.replaceAll([const OnboardingRoute()]);
         }
       } else if (result.isCodeRequired) {
         setState(() {
@@ -238,7 +238,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         Padding(
                           padding: const EdgeInsets.only(bottom: 16),
                           child: Text(
-                            error,
+                            switch (error) {
+                              String e when e.contains('must be a valid handle') => 'Invalid handle',
+                              String e when e.contains('identifier or password') => 'Invalid handle or password',
+                              _ => error,
+                            },
                             style: const TextStyle(color: AppColors.error, fontSize: 14),
                             textAlign: TextAlign.center,
                           ),

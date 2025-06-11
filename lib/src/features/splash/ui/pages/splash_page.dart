@@ -61,6 +61,15 @@ class _SplashPageState extends ConsumerState<SplashPage> {
       while (ref.read(authProvider).isLoading) {
         await Future.delayed(const Duration(milliseconds: 10));
       }
+      // Check if Spark profile exists
+      final hasSpark = await onboardingRepository.hasSparkProfile();
+
+      if (!mounted) return;
+
+      if (!hasSpark) {
+        _navigateToRegister();
+        return;
+      }
 
       final bool isSessionValid = await authRepository.validateSession();
 
@@ -72,16 +81,6 @@ class _SplashPageState extends ConsumerState<SplashPage> {
         return;
       }
 
-      // Check if Spark profile exists
-      final hasSpark = await onboardingRepository.hasSparkProfile();
-
-      if (!mounted) return;
-
-      if (!hasSpark) {
-        _navigateToRegister();
-        return;
-      }
-
       // Step 2: Sync user preferences from server
       await _syncUserPreferences();
 
@@ -90,11 +89,10 @@ class _SplashPageState extends ConsumerState<SplashPage> {
 
       // Step 4: Wait for app to be ready and then navigate
       _waitForAppReadyAndNavigate();
-
     } catch (e) {
       _logger.e('Error during app initialization', error: e);
       if (mounted) {
-        _navigateToLogin();
+        _navigateToRegister();
       }
     }
   }
@@ -198,11 +196,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
     // Show a minimal loading screen while keeping native splash active
     return const Scaffold(
       backgroundColor: AppColors.black,
-      body: Center(
-        child: CircularProgressIndicator(
-          color: AppColors.white,
-        ),
-      ),
+      body: Center(child: CircularProgressIndicator(color: AppColors.white)),
     );
   }
 }
