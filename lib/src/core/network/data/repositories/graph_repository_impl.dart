@@ -12,10 +12,10 @@ import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page
 /// Implementation of Graph-related API endpoints
 class GraphRepositoryImpl implements GraphRepository {
   final SprkRepository _client;
-  final SettingsRepository _settingsRepository;
+  late final SettingsRepository _settingsRepository;
   final _logger = GetIt.instance<LogService>().getLogger('GraphRepository');
 
-  GraphRepositoryImpl(this._client) : _settingsRepository = GetIt.instance<SettingsRepository>() {
+  GraphRepositoryImpl(this._client) {
     _logger.v('GraphRepository initialized');
   }
 
@@ -93,6 +93,7 @@ class GraphRepositoryImpl implements GraphRepository {
         _logger.e('Session DID not available for authenticated user');
         throw Exception('Session DID not available');
       }
+      _settingsRepository = GetIt.instance<SettingsRepository>();
 
       final followMode = await _settingsRepository.getFollowMode();
       _logger.d('Using follow mode: $followMode');

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
+import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
@@ -61,17 +62,17 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
     // Check if we need to reload post due to state changes
     final feedState = ref.watch(feedNotifierProvider(widget.feed));
     final navigationState = ref.watch(navigationProvider);
-    
+
     // Check if user is not on feeds tab (index 0)
     final isOnFeedsTab = navigationState.currentIndex == 0;
-    
+
     if (widget.index < feedState.loadedPosts.length) {
       final postUri = feedState.loadedPosts[widget.index];
       final currentUri = postUri.toString();
 
       // Watch for post updates to trigger reload
       final updateCount = ref.watch(postUpdateProvider(currentUri));
-      
+
       if (_lastPostUri != currentUri || _lastUpdateCount != updateCount) {
         _lastUpdateCount = updateCount;
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -87,10 +88,10 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
     if (_postFuture == null) {
       return const Center(child: CircularProgressIndicator());
     }
-    
+
     // If user is not on feeds tab, show empty container to dispose video
     if (!isOnFeedsTab) {
-      return const SizedBox.shrink();
+      return const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
     }
 
     return FutureBuilder(
@@ -98,63 +99,71 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
           final postData = snapshot.data! as PostView;
+          final sideActionBar = SideActionBar(
+            post: postData,
+            likeCount: '${postData.likeCount ?? 0}',
+            commentCount: '${postData.replyCount ?? 0}',
+            shareCount: '${postData.repostCount ?? 0}',
+            isLiked: postData.viewer?.like != null,
+            profileImageUrl: postData.author.avatar.toString(),
+            isImage: postData.embed is EmbedViewImage,
+            onProfilePressed: () {
+              // Pause video before navigating to profile
+              _videoPlayerKey.currentState?.pauseVideo();
+            },
+          );
 
-          return Stack(
-            children: [
-              // Main content
-              switch (postData.embed) {
-                EmbedViewVideo() => PostVideoPlayer(
-                  key: _videoPlayerKey,
-                  videoUrl: postData.videoUrl,
-                  feed: widget.feed,
-                  index: widget.index,
-                ),
-                EmbedViewImage() => ImageCarousel(imageUrls: postData.imageUrls),
-                _ => const SizedBox.shrink(),
-              },
+          return GestureDetector(
+            onDoubleTap: () {},
+            child: Stack(
+              children: [
+                // Main content
+                switch (postData.embed) {
+                  EmbedViewVideo() => PostVideoPlayer(
+                    key: _videoPlayerKey,
+                    videoUrl: postData.videoUrl,
+                    feed: widget.feed,
+                    index: widget.index,
+                  ),
+                  EmbedViewImage() => ImageCarousel(imageUrls: postData.imageUrls),
+                  _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
+                },
 
-              // Side action bar
-              Positioned(
-                bottom: 4,
-                right: 4,
-                child: SideActionBar(
-                  post: postData,
-                  likeCount: '${postData.likeCount ?? 0}',
-                  commentCount: '${postData.replyCount ?? 0}',
-                  shareCount: '${postData.repostCount ?? 0}',
-                  isLiked: postData.viewer?.like != null,
-                  profileImageUrl: postData.author.avatar.toString(),
-                  isImage: postData.embed is EmbedViewImage,
-                  onProfilePressed: () {
-                    // Pause video before navigating to profile
-                    _videoPlayerKey.currentState?.pauseVideo();
-                  },
-                ),
-              ),
+                // Side action bar
+                Positioned(bottom: 4, right: 4, child: sideActionBar),
 
-              Positioned(
-                bottom: 8,
-                left: 4,
-                right: 80,
-                child: InfoBar(
-                  username: postData.author.handle,
-                  description: postData.record.text ?? '',
-                  hashtags: postData.record.hashtags,
-                  isSprk: postData.uri.toString().contains('so.sprk'),
-                  onUsernameTap: () {
-                    // Pause video before navigating to profile
-                    _videoPlayerKey.currentState?.pauseVideo();
-                    context.router.push(ProfileRoute(did: postData.author.did));
-                  },
+                Positioned(
+                  bottom: 8,
+                  left: 4,
+                  right: 80,
+                  child: InfoBar(
+                    username: postData.author.handle,
+                    description: postData.record.text ?? '',
+                    hashtags: postData.record.hashtags,
+                    isSprk: postData.uri.toString().contains('so.sprk'),
+                    onUsernameTap: () {
+                      // Pause video before navigating to profile
+                      _videoPlayerKey.currentState?.pauseVideo();
+                      context.router.push(ProfileRoute(did: postData.author.did));
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           );
         }
         if (snapshot.hasError) {
-          return Center(child: Text('Error loading post: ${snapshot.error}', style: const TextStyle(color: Colors.white)));
+          return DecoratedBox(
+            decoration: BoxDecoration(color: AppColors.black),
+            child: Center(
+              child: Text('Error loading post: ${snapshot.error}', style: const TextStyle(color: Colors.white)),
+            ),
+          );
         }
-        return const Center(child: CircularProgressIndicator());
+        return DecoratedBox(
+          decoration: BoxDecoration(color: AppColors.black),
+          child: const Center(child: CircularProgressIndicator(color: AppColors.white)),
+        );
       },
     );
   }

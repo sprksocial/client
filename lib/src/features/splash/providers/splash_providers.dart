@@ -30,9 +30,8 @@ bool appReady(Ref ref) {
   final feedState = ref.watch(feedNotifierProvider(activeFeed));
 
   // App is ready when:
-  // 1. Feed is not in first load state
-  // 2. Feed has at least some content loaded OR has reached end of network feed
-  final isReady = !feedState.loadingFirstLoad && (feedState.length > 0 || feedState.isEndOfNetworkFeed);
+  // 1. Feed has at least some content loaded OR has reached end of network feed
+  final isReady = feedState.length > 0 || feedState.isEndOfNetworkFeed;
 
   return isReady;
 }

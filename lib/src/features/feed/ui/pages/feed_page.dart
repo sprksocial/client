@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/feed_post_widget.dart';
@@ -47,11 +48,7 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
 
     // Initialize feed when it becomes active for the first time
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_hasInitialized &&
-          !state.loadingFirstLoad &&
-          state.length == 0 &&
-          !state.isEndOfNetworkFeed &&
-          !_isRefreshing) {
+      if (!_hasInitialized && !state.loadingFirstLoad && state.length == 0 && !state.isEndOfNetworkFeed && !_isRefreshing) {
         _hasInitialized = true;
         notifier.loadAndUpdateFirstLoad();
       }
@@ -64,86 +61,104 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
       }
     });
 
-    return RefreshIndicator(
-      onRefresh: () async {
-        if (_isRefreshing) return;
+    onRefresh() async {
+      if (_isRefreshing) return;
 
-        setState(() {
-          _isRefreshing = true;
-        });
+      setState(() {
+        _isRefreshing = true;
+      });
 
-        try {
-          // Only reset initialization flag, don't invalidate the entire provider
-          _hasInitialized = false;
-          await notifier.loadAndUpdateFirstLoad();
-        } finally {
-          if (mounted) {
-            setState(() {
-              _isRefreshing = false;
-            });
-          }
+      try {
+        // Only reset initialization flag, don't invalidate the entire provider
+        _hasInitialized = false;
+        await notifier.loadAndUpdateFirstLoad();
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isRefreshing = false;
+          });
         }
-      },
-      child:
-          state.loadingFirstLoad
-              ? const Center(child: CircularProgressIndicator())
-              : CacheablePageView.builder(
-                cachePageExtent: 1,
-                controller: pageController,
-                key: PageStorageKey(widget.feed.identifier),
-                itemCount: state.length + (state.isEndOfNetworkFeed ? 1 : 0),
-                scrollDirection: Axis.vertical,
-                pageSnapping: true,
-                restorationId: widget.feed.identifier,
-                physics: shouldBeActive ? const PageScrollPhysics() : const NeverScrollableScrollPhysics(),
-                onPageChanged: (index) {
-                  // Only handle page changes when active
+      }
+    }
+
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: state.loadingFirstLoad
+          ? const Center(child: CircularProgressIndicator())
+          : state.error
+          ? Column(
+              children: [
+                const Text('Error loading feed'),
+                TextButton(onPressed: onRefresh, child: const Text('Try again')),
+              ],
+            )
+          : CacheablePageView.builder(
+              cachePageExtent: 1,
+              controller: pageController,
+              key: PageStorageKey(widget.feed.identifier),
+              itemCount: state.length + (state.isEndOfNetworkFeed ? 1 : 0),
+              scrollDirection: Axis.vertical,
+              pageSnapping: true,
+              restorationId: widget.feed.identifier,
+              physics: shouldBeActive ? const PageScrollPhysics() : const NeverScrollableScrollPhysics(),
+              onPageChanged: (index) {
+                // Only handle page changes when active
+                if (shouldBeActive) {
+                  if (index > state.index) {
+                    notifier.scrollDown();
+                  }
+                  notifier.setIndex(index);
+                }
+              },
+              itemBuilder: (context, index) {
+                // Handle end of feed
+                if (index == state.length) {
+                  return shouldBeActive
+                      ? const NoMorePosts()
+                      : const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
+                }
+                // Handle last item with loading indicator
+                else if (index == state.length - 1 && !state.isEndOfNetworkFeed) {
                   if (shouldBeActive) {
-                    if (index > state.index) {
-                      notifier.scrollDown();
-                    }
-                    notifier.setIndex(index);
-                  }
-                },
-                itemBuilder: (context, index) {
-                  // Handle end of feed
-                  if (index == state.length) {
-                    return shouldBeActive ? const NoMorePosts() : const SizedBox();
-                  }
-                  // Handle last item with loading indicator
-                  else if (index == state.length - 1 && !state.isEndOfNetworkFeed) {
-                    if (shouldBeActive) {
-                      return Stack(
-                        children: [
-                          FeedPostWidget(index: index, feed: widget.feed),
-                          const Positioned(
-                            bottom: 10,
-                            left: 10,
-                            child: SizedBox(width: 15, height: 15, child: CircularProgressIndicator(strokeWidth: 2)),
+                    return Stack(
+                      children: [
+                        FeedPostWidget(index: index, feed: widget.feed),
+                        const Positioned(
+                          bottom: 10,
+                          left: 10,
+                          child: SizedBox(
+                            width: 15,
+                            height: 15,
+                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
                           ),
-                        ],
-                      );
-                    } else {
-                      return const SizedBox();
-                    }
-                  }
-                  // Handle first load state
-                  else if (state.length == 0 && state.loadingFirstLoad) {
-                    return shouldBeActive ? const Center(child: CircularProgressIndicator()) : const SizedBox();
-                  }
-                  // Handle empty state
-                  else if (state.length == 0 && !state.loadingFirstLoad) {
-                    return shouldBeActive ? const NoMorePosts() : const SizedBox();
+                        ),
+                      ],
+                    );
                   } else {
-                    if (shouldBeActive) {
-                      return FeedPostWidget(index: index, feed: widget.feed);
-                    } else {
-                      // Return SizedBox to maintain scroll position but hide content
-                      return const SizedBox();
-                    }
+                    return const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
                   }
-                },
-              ),
+                }
+                // Handle first load state
+                else if (state.length == 0 && state.loadingFirstLoad) {
+                  return shouldBeActive
+                      ? const Center(child: CircularProgressIndicator())
+                      : const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
+                }
+                // Handle empty state
+                else if (state.length == 0 && !state.loadingFirstLoad) {
+                  return shouldBeActive
+                      ? const NoMorePosts()
+                      : const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
+                } else {
+                  if (shouldBeActive) {
+                    return FeedPostWidget(index: index, feed: widget.feed);
+                  } else {
+                    // Return SizedBox to maintain scroll position but hide content
+                    return const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
+                  }
+                }
+              },
+            ),
     );
   }
 }

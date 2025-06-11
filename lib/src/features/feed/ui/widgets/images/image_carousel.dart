@@ -1,9 +1,9 @@
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class ImageCarousel extends ConsumerStatefulWidget {
   const ImageCarousel({super.key, required this.imageUrls, this.alts});
@@ -34,20 +34,18 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
           itemBuilder: (context, index, realIndex) {
             return Stack(
               children: [
-                CachedNetworkImage(
-                imageUrl: widget.imageUrls[realIndex],
-                fit: BoxFit.contain,
-                height: MediaQuery.of(context).size.height,
-                placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-                errorWidget: (context, url, error) => const Center(child: Icon(FluentIcons.error_circle_24_regular)),
-              ),
-              if (widget.alts != null && widget.alts![realIndex] != '')
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  child: Text(widget.alts![realIndex]),
+                DecoratedBox(
+                  decoration: BoxDecoration(color: AppColors.black),
+                  child: CachedNetworkImage(
+                    imageUrl: widget.imageUrls[realIndex],
+                    fit: BoxFit.contain,
+                    height: MediaQuery.of(context).size.height,
+                    placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+                    errorWidget: (context, url, error) => const Center(child: Icon(FluentIcons.error_circle_24_regular)),
+                  ),
                 ),
+                if (widget.alts != null && widget.alts![realIndex] != '')
+                  Positioned(bottom: 0, left: 0, right: 0, child: Text(widget.alts![realIndex])),
               ],
             );
           },

@@ -136,12 +136,12 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                   },
                   borderRadius: BorderRadius.circular(25),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected ? AppColors.pink.withAlpha(51) : Colors.transparent,
                       border: isSelected 
                         ? Border.all(color: AppColors.pink, width: 1.5) 
-                        : Border.all(color: AppColors.lightLavender.withAlpha(51), width: 1),
+                        : Border.all(color: AppColors.lightLavender.withAlpha(128), width: 1),
                       borderRadius: BorderRadius.circular(25),
                     ),
                     child: Row(
@@ -150,7 +150,14 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                         Text(
                           feed.name,
                           style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
+                            shadows: [
+                              Shadow(
+                                color: AppColors.pink,
+                                offset: const Offset(0, 0),
+                                blurRadius: 10,
+                              ),
+                            ],
+                            color: AppColors.white,
                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w800,
                             fontSize: 18,
                           ),

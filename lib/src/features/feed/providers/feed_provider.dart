@@ -87,6 +87,7 @@ class FeedNotifier extends _$FeedNotifier {
       cursor: null,
       extraInfo: LinkedHashMap(),
       loadingFirstLoad: false,
+      error: false,
     );
 
     _preservedState = freshState;
@@ -112,7 +113,7 @@ class FeedNotifier extends _$FeedNotifier {
     _isLoadingInProgress = true;
     try {
       _logger.d('First load started');
-      state = state.copyWith(loadingFirstLoad: true);
+      state = state.copyWith(loadingFirstLoad: true, error: false);
 
       // gets ONLY the first f cached posts from the database (not all)
       final uriStrings = await _sqlCache.getUrisForFeed(_feed, limit: FeedState.firstLoadLimit);
@@ -234,7 +235,7 @@ class FeedNotifier extends _$FeedNotifier {
       _logger.d('First load finished with ${uris.length} posts');
     } catch (e, stackTrace) {
       _logger.e('Error in loadAndUpdateFirstLoad: $e', stackTrace: stackTrace);
-      state = state.copyWith(loadingFirstLoad: false);
+      state = state.copyWith(loadingFirstLoad: false, error: true);
     } finally {
       _isLoadingInProgress = false;
     }
@@ -260,6 +261,8 @@ class FeedNotifier extends _$FeedNotifier {
     _logger.d('Store called with ${uris.length} URIs. Current freshPostCount: ${state.freshPostCount}');
     _isCaching = true; // Set caching flag immediately
     int updatedPostCount = 0;
+    state = state.copyWith(error: false);
+    try {
 
     // checks if the posts have already been cached
     final existingUris = await _sqlCache.getExistingPostUris(uris);
@@ -348,6 +351,12 @@ class FeedNotifier extends _$FeedNotifier {
           },
         ),
       );
+      }
+    } catch (e, stackTrace) {
+      state = state.copyWith(error: true);
+      _logger.e('Error in store: $e', stackTrace: stackTrace);
+    } finally {
+      _isCaching = false;
     }
   }
 
