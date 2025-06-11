@@ -30,7 +30,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
   bool shouldCacheAgain = false;
   bool _cacheRequested = false; // Track if cache request has been made
   bool _isSeeking = false;
-  
+
   // State tracking to prevent unnecessary play/pause cycles
   int? _lastNavigationIndex;
   int? _lastFeedIndex;
@@ -104,10 +104,10 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
       videoController.pause();
     }
   }
-  
+
   void _handleNavigationPause(bool isOnFeedsTab) {
     if (!isInitialized) return;
-    
+
     // Always pause when not on feeds tab, regardless of user interaction
     if (!isOnFeedsTab && videoController.value.isPlaying) {
       videoController.pause();
@@ -164,10 +164,12 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
       _lastFeedIndex = feedState.index;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && !_userInteracted) {
-          final shouldPlay = feedState.index == widget.index && isOnFeedsTab;
+          bool shouldPlay = feedState.index == widget.index && isOnFeedsTab;
           _handleAutoPlayPause(shouldPlay);
         }
       });
+    } else if (widget.feed == null && widget.index == null) {
+      _handleAutoPlayPause(true);
     }
 
     if (shouldCacheAgain && !_cacheRequested && widget.feed != null && widget.index != null) {

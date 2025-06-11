@@ -40,7 +40,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
 
   Future<PostView> _loadPostWithFallback() async {
     final sqlCache = GetIt.instance<SQLCacheInterface>();
-    
+
     try {
       // Try to get from cache first
       return await sqlCache.getPost(widget.postUri);
@@ -48,7 +48,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
       // If cache fails, fetch from network
       final feedRepository = GetIt.instance<SprkRepository>().feed;
       final uri = AtUri.parse(widget.postUri);
-      
+
       List<PostView> networkPost;
       try {
         // Try Spark network first
@@ -57,14 +57,14 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
         // Fallback to Bluesky network
         networkPost = await feedRepository.getPosts([uri], bluesky: true);
       }
-      
+
       if (networkPost.isEmpty) {
         throw Exception('Post not found');
       }
-      
+
       // Cache the post for future use
       await sqlCache.cachePost(networkPost.first);
-      
+
       return networkPost.first;
     }
   }
@@ -73,7 +73,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
   Widget build(BuildContext context) {
     // Watch for post updates to trigger reload
     final updateCount = ref.watch(postUpdateProvider(widget.postUri));
-    
+
     if (_lastUpdateCount != updateCount) {
       _lastUpdateCount = updateCount;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -111,8 +111,6 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                           key: _videoPlayerKey,
                           videoUrl: postData.videoUrl,
                           // For standalone, we don't need feed and index
-                          feed: Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following), // dummy value
-                          index: 0, // dummy value
                         ),
                         EmbedViewImage() => ImageCarousel(imageUrls: postData.imageUrls),
                         _ => const SizedBox.shrink(),
@@ -137,8 +135,27 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                         ),
                       ),
 
+                      // Gradient overlay at the bottom to improve text readability
                       Positioned(
-                        bottom: 8,
+                        left: 0,
+                        right: 0,
+                        bottom: 20,
+                        child: IgnorePointer(
+                          child: Container(
+                            height: 120, // covers the area behind the InfoBar
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [Colors.black87.withAlpha(100), Colors.transparent],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      Positioned(
+                        bottom: 32,
                         left: 4,
                         right: 80,
                         child: InfoBar(

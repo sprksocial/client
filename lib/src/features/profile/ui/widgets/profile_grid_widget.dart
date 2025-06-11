@@ -93,7 +93,7 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
               crossAxisCount: 4,
               crossAxisSpacing: 1,
               mainAxisSpacing: 1,
-              childAspectRatio: 1,
+              childAspectRatio: 0.6,
             ),
             itemCount: state.loadedPosts.length + (state.isEndOfNetwork ? 0 : 1),
             itemBuilder: (context, index) {
