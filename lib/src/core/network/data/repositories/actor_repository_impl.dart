@@ -55,8 +55,8 @@ class ActorRepositoryImpl implements ActorRepository {
   }
 
   @override
-  Future<List<ProfileView>> searchActors(String query) async {
-    _logger.d('Searching actors with query: $query');
+  Future<SearchActorsResponse> searchActors(String query, {String? cursor}) async {
+    _logger.d('Searching actors with query: $query, cursor: $cursor');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
@@ -69,15 +69,28 @@ class ActorRepositoryImpl implements ActorRepository {
         throw Exception('AtProto not initialized');
       }
 
+      final parameters = <String, String>{'q': query};
+      if (cursor != null && cursor.isNotEmpty) {
+        parameters['cursor'] = cursor;
+      }
+
       final result = await atproto.get(
         NSID.parse('so.sprk.actor.searchActors'),
-        parameters: {'q': query},
+        parameters: parameters,
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) => jsonMap,
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
+
       _logger.d('Actor search completed successfully');
-      return (result.data as List).map((e) => ProfileView.fromJson(e as Map<String, dynamic>)).toList();
+
+      final data = result.data as Map<String, dynamic>;
+      final actorsJson = (data['actors'] as List? ?? []).cast<dynamic>();
+      final cursorNext = data['cursor'] as String?;
+
+      final actors = actorsJson.map((e) => ProfileView.fromJson(e as Map<String, dynamic>)).toList();
+
+      return SearchActorsResponse(actors: actors, cursor: cursorNext);
     });
   }
 

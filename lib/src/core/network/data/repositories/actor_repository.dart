@@ -10,7 +10,7 @@ abstract class ActorRepository {
   /// Search actors by query string.
   ///
   /// [query] The search query.
-  Future<List<ProfileView>> searchActors(String query);
+  Future<SearchActorsResponse> searchActors(String query, {String? cursor});
 
   /// Update the user's profile
   ///

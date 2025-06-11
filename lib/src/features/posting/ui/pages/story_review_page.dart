@@ -5,7 +5,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:sparksocial/src/core/network/atproto.dart';
+import 'package:sparksocial/src/core/network/atproto.dart' hide Image;
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/posting/providers/post_story.dart';
@@ -144,7 +144,7 @@ class _StoryReviewPageState extends ConsumerState<StoryReviewPage> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(FluentIcons.arrow_left_24_regular, color: Theme.of(context).colorScheme.onSurface),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.router.maybePop(),
         ),
         title: Text('Review Story', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
       ),
@@ -162,14 +162,84 @@ class _StoryReviewPageState extends ConsumerState<StoryReviewPage> {
                       LayoutBuilder(
                         builder: (context, constraints) {
                           final maxWidth = constraints.maxWidth;
-                          final maxHeight = 320.0;
+                          const maxHeight = 320.0;
 
-                          // Video preview
-                          if (_controller == null || !_controller!.value.isInitialized) {
+                          // IMAGE PREVIEW (when no video provided)
+                          if (_controller == null) {
+                            if (widget.imageFile.path.isNotEmpty) {
+                              return SizedBox(
+                                height: maxHeight,
+                                width: maxWidth,
+                                child: Stack(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.file(
+                                        File(widget.imageFile.path),
+                                        fit: BoxFit.cover,
+                                        width: maxWidth,
+                                        height: maxHeight,
+                                      ),
+                                    ),
+                                    Positioned(
+                                      bottom: 12,
+                                      right: 12,
+                                      child: Material(
+                                        color: Colors.black.withAlpha(100),
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: InkWell(
+                                          onTap: () async {
+                                            final result = await showDialog<String>(
+                                              context: context,
+                                              builder: (context) =>
+                                                  AltTextEditorDialog(imageFile: widget.imageFile, initialAltText: _altText),
+                                            );
+
+                                            if (result != null) {
+                                              setState(() => _altText = result.trim());
+                                            }
+                                          },
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                            child: Row(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 16),
+                                                const SizedBox(width: 4),
+                                                const Text(
+                                                  'ALT',
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            }
+
+                            // Fallback loader if neither video nor image is ready
                             return SizedBox(
                               height: maxHeight,
                               width: double.infinity,
-                              child: _controller?.value.hasError == true
+                              child: const Center(child: CircularProgressIndicator()),
+                            );
+                          }
+
+                          // VIDEO PREVIEW (controller exists)
+                          if (!_controller!.value.isInitialized) {
+                            return SizedBox(
+                              height: maxHeight,
+                              width: double.infinity,
+                              child: _controller!.value.hasError
                                   ? Container(
                                       color: Colors.grey.shade900,
                                       alignment: Alignment.center,

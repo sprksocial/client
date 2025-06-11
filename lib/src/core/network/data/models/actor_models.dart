@@ -78,6 +78,32 @@ class ProfileView with _$ProfileView {
   factory ProfileView.fromJson(Map<String, dynamic> json) => _$ProfileViewFromJson(json);
 }
 
+/// Response wrapper for paginated actor search.
+class SearchActorsResponse {
+  SearchActorsResponse({required this.actors, this.cursor});
+
+  /// List of returned actor profiles.
+  final List<ProfileView> actors;
+
+  /// Cursor indicating the next page of results, or null when no more pages.
+  final String? cursor;
+
+  /// Create a [SearchActorsResponse] from JSON.
+  factory SearchActorsResponse.fromJson(Map<String, dynamic> json) {
+    final actorsJson = json['actors'] as List<dynamic>? ?? <dynamic>[];
+    return SearchActorsResponse(
+      actors: actorsJson.map((e) => ProfileView.fromJson(e as Map<String, dynamic>)).toList(),
+      cursor: json['cursor'] as String?,
+    );
+  }
+
+  /// Convert the object back to JSON.
+  Map<String, dynamic> toJson() => {
+        'actors': actors.map((e) => e.toJson()).toList(),
+        if (cursor != null) 'cursor': cursor,
+      };
+}
+
 @freezed
 class ProfileViewDetailed with _$ProfileViewDetailed {
   const ProfileViewDetailed._();

@@ -36,7 +36,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
 
       // Close loading dialog
       if (mounted) {
-        Navigator.of(context).pop();
+        context.router.maybePop();
 
         // Navigate to login screen
         context.router.replaceAll([const LoginRoute()]);
@@ -44,7 +44,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
     } catch (e) {
       // Close loading dialog if it's open
       if (mounted) {
-        Navigator.of(context).pop();
+        context.router.maybePop();
 
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(

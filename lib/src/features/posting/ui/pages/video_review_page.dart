@@ -122,7 +122,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(FluentIcons.arrow_left_24_regular, color: Theme.of(context).colorScheme.onSurface),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.router.maybePop(),
         ),
         title: Text('Review Video', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
       ),

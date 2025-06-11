@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/routing/pages.dart';
-import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/atproto.dart';
 import 'package:video_player/video_player.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:collection/collection.dart';
@@ -34,14 +34,8 @@ class AppRouter extends RootStackRouter {
           page: UserProfileRoute.page, // for the current user
           path: 'profile',
           children: [
-            AutoRoute(
-              page: ProfilePhotosRoute.page,
-              path: 'photos',
-            ),
-            AutoRoute(
-              page: ProfileVideosRoute.page,
-              path: 'videos',
-            ),
+            AutoRoute(page: ProfilePhotosRoute.page, path: 'photos'),
+            AutoRoute(page: ProfileVideosRoute.page, path: 'videos'),
           ],
         ),
       ],
@@ -83,6 +77,19 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: StoryReviewRoute.page, path: '/story-review'),
     AutoRoute(page: CreateVideoRoute.page, path: '/create-video'),
     AutoRoute(page: ImageReviewRoute.page, path: '/image-review'),
+
+    // Stories pages
+    AutoRoute(
+      page: AllStoriesRoute.page,
+      path: '/stories',
+      children: [
+        AutoRoute(
+          page: AuthorStoriesRoute.page,
+          path: 'author',
+          children: [AutoRoute(page: StoryRoute.page, path: 'story')],
+        ),
+      ],
+    ),
 
     // Alternate starting routes
     AutoRoute(page: EmptyRoute.page, path: '/empty'),

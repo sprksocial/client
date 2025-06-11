@@ -32,10 +32,11 @@ class Search extends _$Search {
 
   /// Update the search query and trigger search with debounce
   void updateQuery(String query) {
-    state = state.copyWith(query: query);
+    // Update query and reset pagination state
+    state = state.copyWith(query: query, searchResults: [], nextCursor: null, error: null);
 
     if (query.isEmpty) {
-      state = state.copyWith(searchResults: [], error: null, isLoading: false);
+      state = state.copyWith(searchResults: [], error: null, isLoading: false, isLoadingMore: false, nextCursor: null);
       return;
     }
 
@@ -56,12 +57,42 @@ class Search extends _$Search {
       final actorRepo = _actorRepository;
       final response = await actorRepo.searchActors(query);
 
-      state = state.copyWith(searchResults: response, isLoading: false);
+      state = state.copyWith(
+        searchResults: response.actors,
+        nextCursor: response.cursor,
+        isLoading: false,
+        isLoadingMore: false,
+      );
 
-      _logger.d('Search completed with ${response.length} results');
+      _logger.d('Search completed with ${response.actors.length} results, nextCursor: ${response.cursor}');
     } catch (e) {
       _logger.e('Failed to search users', error: e);
       state = state.copyWith(error: 'Failed to search users', isLoading: false);
+    }
+  }
+
+  /// Load more users using the next cursor if available
+  Future<void> loadMoreUsers() async {
+    final nextCursor = state.nextCursor;
+    if (nextCursor == null || nextCursor.isEmpty || state.isLoadingMore) {
+      return;
+    }
+
+    state = state.copyWith(isLoadingMore: true);
+
+    try {
+      final response = await _actorRepository.searchActors(state.query, cursor: nextCursor);
+
+      state = state.copyWith(
+        searchResults: [...state.searchResults, ...response.actors],
+        nextCursor: response.cursor,
+        isLoadingMore: false,
+      );
+
+      _logger.d('Loaded more users: +${response.actors.length}, nextCursor: ${response.cursor}');
+    } catch (e) {
+      _logger.e('Failed to load more users', error: e);
+      state = state.copyWith(isLoadingMore: false);
     }
   }
 

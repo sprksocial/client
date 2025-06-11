@@ -52,8 +52,6 @@ class InfoBar extends StatelessWidget {
         if (hasDescription && hasHashtags) const SizedBox(height: 6),
 
         if (hasHashtags) SizedBox(height: 25, child: HashtagList(hashtags: hashtags, onHashtagTap: onHashtagTap)),
-
-        const SizedBox(height: 25),
       ],
     );
   }

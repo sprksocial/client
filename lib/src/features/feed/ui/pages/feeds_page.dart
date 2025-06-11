@@ -106,42 +106,40 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
       return const Center(child: CircularProgressIndicator());
     }
     
-    return SafeArea(
-      child: Scaffold(
-        extendBodyBehindAppBar: true,
-        appBar: FeedsBar(pageController: _pageController!),
-        backgroundColor: AppColors.black,
-        body: Stack(
-          children: [
-            PageView.builder(
-              controller: _pageController,
-              itemCount: feeds.length,
-              pageSnapping: true,
-              onPageChanged: (index) {
-                // Prevent recursive updates
-                if (_isPageControllerUpdating) return;
-                
-                // Update the active feed when page changes via swipe
-                if (index >= 0 && index < feeds.length) {
-                  final selectedFeed = feeds[index];
-                  if (selectedFeed != activeFeed) {
-                    ref.read(settingsProvider.notifier).setActiveFeed(selectedFeed);
-                  }
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: FeedsBar(pageController: _pageController!),
+      backgroundColor: AppColors.black,
+      body: Stack(
+        children: [
+          PageView.builder(
+            controller: _pageController,
+            itemCount: feeds.length,
+            pageSnapping: true,
+            onPageChanged: (index) {
+              // Prevent recursive updates
+              if (_isPageControllerUpdating) return;
+              
+              // Update the active feed when page changes via swipe
+              if (index >= 0 && index < feeds.length) {
+                final selectedFeed = feeds[index];
+                if (selectedFeed != activeFeed) {
+                  ref.read(settingsProvider.notifier).setActiveFeed(selectedFeed);
                 }
-              },
-              itemBuilder: (context, index) {
-                if (index >= 0 && index < feeds.length) {
-                  // Use feed identifier as key to preserve state across reordering
-                  return KeyedSubtree(
-                    key: ValueKey(feeds[index].identifier),
-                    child: FeedPage(feed: feeds[index]),
-                  );
-                }
-                return const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
-              },
-            ),
-          ],
-        ),
+              }
+            },
+            itemBuilder: (context, index) {
+              if (index >= 0 && index < feeds.length) {
+                // Use feed identifier as key to preserve state across reordering
+                return KeyedSubtree(
+                  key: ValueKey(feeds[index].identifier),
+                  child: FeedPage(feed: feeds[index]),
+                );
+              }
+              return const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
+            },
+          ),
+        ],
       ),
     );
   }

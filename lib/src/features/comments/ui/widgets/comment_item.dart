@@ -56,7 +56,7 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                 right: 10,
                 child: IconButton(
                   icon: const Icon(FluentIcons.dismiss_24_filled, color: Colors.white, size: 30),
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => context.router.maybePop(),
                   style: IconButton.styleFrom(backgroundColor: Colors.black.withValues(alpha: 77)),
                 ),
               ),

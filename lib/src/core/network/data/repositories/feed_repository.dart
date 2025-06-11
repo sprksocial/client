@@ -1,6 +1,7 @@
 import 'package:atproto_core/atproto_core.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:atproto/atproto.dart';
+import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
 
 /// Interface for Feed-related API endpoints
@@ -121,7 +122,10 @@ abstract class FeedRepository {
   ///
   /// [limit] The number of items to return (default 20)
   /// [cursor] Pagination cursor for the next set of results
-  Future<({String? cursor, List<StoriesByAuthor> storiesByAuthor})> getStoriesTimeline({int limit = 30, String? cursor});
+  Future<({String? cursor, Map<ProfileViewBasic, List<StoryView>> storiesByAuthor})> getStoriesTimeline({
+    int limit = 30,
+    String? cursor,
+  });
 
   /// Gets story views for a specified list of stories (by AT-URI). This is sometimes referred to as 'hydrating' a story reference list.
   ///

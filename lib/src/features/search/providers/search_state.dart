@@ -15,6 +15,12 @@ class SearchState with _$SearchState {
     /// Search results - list of actors
     @Default([]) List<ProfileView> searchResults,
 
+    /// Cursor for the next page of results (if any)
+    String? nextCursor,
+
+    /// Whether more results are currently loading
+    @Default(false) bool isLoadingMore,
+
     /// Error message if search failed
     String? error,
 

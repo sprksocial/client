@@ -495,12 +495,3 @@ class StoryRecord with _$StoryRecord {
 
   factory StoryRecord.fromJson(Map<String, dynamic> json) => _$StoryRecordFromJson(json);
 }
-
-@freezed
-class StoriesByAuthor with _$StoriesByAuthor {
-  const StoriesByAuthor._();
-  @JsonSerializable(explicitToJson: true)
-  const factory StoriesByAuthor({required ProfileViewBasic author, required List<StoryView> stories}) = _StoriesByAuthor;
-
-  factory StoriesByAuthor.fromJson(Map<String, dynamic> json) => _$StoriesByAuthorFromJson(json);
-}

@@ -118,7 +118,7 @@ class _VideoPlaybackPageState extends State<VideoPlaybackPage> {
                         left: 16,
                         child: IconButton(
                           icon: const Icon(FluentIcons.arrow_left_24_filled, color: Colors.white, size: 28),
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: () => context.router.maybePop(),
                         ),
                       ),
 

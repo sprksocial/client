@@ -145,7 +145,6 @@ class FeedNotifier extends _$FeedNotifier {
           if (cachedPost != null && cachedPost.viewer != null) {
             // Preserve viewer information from cache if it exists
             finalPost = freshPost.copyWith(viewer: cachedPost.viewer);
-            _logger.d('Preserved viewer info for post ${freshPost.uri}: like=${cachedPost.viewer?.like != null}');
           } else {
             finalPost = freshPost;
           }
@@ -285,7 +284,6 @@ class FeedNotifier extends _$FeedNotifier {
         if (cachedPost != null && cachedPost.viewer != null) {
           // Preserve viewer information from cache if it exists
           finalPost = freshPost.copyWith(viewer: cachedPost.viewer);
-          _logger.d('Preserved viewer info for existing post ${freshPost.uri}: like=${cachedPost.viewer?.like != null}');
         } else {
           finalPost = freshPost;
         }

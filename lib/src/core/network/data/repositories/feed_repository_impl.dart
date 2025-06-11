@@ -7,6 +7,7 @@ import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:get_it/get_it.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/network/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/feed_algorithms/hardcoded_feed_algorithm.dart';
 import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
@@ -515,7 +516,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<({String? cursor, List<StoriesByAuthor> storiesByAuthor})> getStoriesTimeline({int limit = 30, String? cursor}) {
+  Future<({String? cursor, Map<ProfileViewBasic, List<StoryView>> storiesByAuthor})> getStoriesTimeline({int limit = 30, String? cursor}) {
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
@@ -532,13 +533,27 @@ class FeedRepositoryImpl implements FeedRepository {
         NSID.parse('so.sprk.feed.getStoriesTimeline'),
         parameters: {'limit': limit, 'cursor': cursor},
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => (
-          storiesByAuthor: (jsonMap['storiesByAuthor'] as List<dynamic>).map((story) => StoriesByAuthor.fromJson(story)).toList(),
-          cursor: jsonMap['cursor'] as String?,
-        ),
+        to: (jsonMap) {
+          final storiesByAuthorMap = <ProfileViewBasic, List<StoryView>>{};
+          
+          final storiesByAuthorArray = jsonMap['storiesByAuthor'] as List<dynamic>;
+          for (final item in storiesByAuthorArray) {
+            final itemMap = item as Map<String, dynamic>;
+            final author = ProfileViewBasic.fromJson(itemMap['author'] as Map<String, dynamic>);
+            final stories = (itemMap['stories'] as List<dynamic>)
+                .map((story) => StoryView.fromJson(story as Map<String, dynamic>))
+                .toList();
+            storiesByAuthorMap[author] = stories;
+          }
+          
+          return (
+            storiesByAuthor: storiesByAuthorMap,
+            cursor: jsonMap['cursor'] as String?,
+          );
+        },
       );
 
-      return (storiesByAuthor: response.data.storiesByAuthor, cursor: response.data.cursor);
+      return response.data;
     });
   }
 

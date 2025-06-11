@@ -216,7 +216,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
           ),
         ),
         Positioned(
-          bottom: 0,
+          bottom: 2,
           left: 0,
           right: 0,
           child: SmoothVideoProgress(
@@ -235,7 +235,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
                   SliderTheme(
                     data: SliderTheme.of(context).copyWith(
                       trackHeight: 3,
-                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
                       activeTrackColor: AppColors.primary,
                       inactiveTrackColor: AppColors.white.withAlpha(64),
                       thumbColor: AppColors.white,

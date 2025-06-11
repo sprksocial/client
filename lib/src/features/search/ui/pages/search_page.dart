@@ -7,6 +7,8 @@ import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/search/providers/search_state.dart';
 import 'package:sparksocial/src/features/search/providers/search_provider.dart';
 import 'package:sparksocial/src/features/search/ui/widgets/suggested_account_card.dart';
+import 'package:sparksocial/src/features/stories/ui/widgets/stories_list.dart';
+import 'package:sparksocial/src/features/stories/providers/stories_by_author.dart';
 
 /// Search page to find users
 @RoutePage()
@@ -72,20 +74,59 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   ),
                 ),
               ),
-              Theme(
-                data: Theme.of(context).copyWith(tabBarTheme: const TabBarThemeData(dividerColor: Colors.transparent)),
-                child: TabBar(
-                  tabs: const [Tab(text: 'Users')],
-                  indicatorColor: colorScheme.primary,
-                  labelColor: theme.textTheme.bodyLarge?.color,
-                  unselectedLabelColor: theme.textTheme.bodyMedium?.color,
+              // ==== Stories or Search Results ====
+              if (searchState.query.isEmpty) ...[
+                Expanded(
+                  child: RefreshIndicator(
+                    onRefresh: () async {
+                      // Refresh the stories timeline
+                      ref.invalidate(storiesByAuthorProvider(limit: 30, cursor: null));
+                    },
+                    child: CustomScrollView(
+                      slivers: [
+                        SliverToBoxAdapter(child: StoriesList()),
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(FluentIcons.search_24_regular, size: 48, color: theme.textTheme.bodyMedium?.color),
+                                const SizedBox(height: 16),
+                                Text(
+                                  'Search for users',
+                                  style: TextStyle(fontSize: 16, color: theme.textTheme.bodyMedium?.color),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Tap the search bar above to find people',
+                                  style: TextStyle(fontSize: 14, color: theme.textTheme.bodyMedium?.color?.withAlpha(180)),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-              ),
-              Expanded(
-                child: TabBarView(
-                  children: [UserResults(ref: ref, state: searchState)],
+              ] else ...[
+                Theme(
+                  data: Theme.of(context).copyWith(tabBarTheme: const TabBarThemeData(dividerColor: Colors.transparent)),
+                  child: TabBar(
+                    tabs: const [Tab(text: 'Users')],
+                    indicatorColor: colorScheme.primary,
+                    labelColor: theme.textTheme.bodyLarge?.color,
+                    unselectedLabelColor: theme.textTheme.bodyMedium?.color,
+                  ),
                 ),
-              ),
+                Expanded(
+                  child: TabBarView(
+                    children: [const UserResults()],
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -94,15 +135,41 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   }
 }
 
-class UserResults extends StatelessWidget {
-  const UserResults({super.key, required this.ref, required this.state});
+class UserResults extends ConsumerStatefulWidget {
+  const UserResults({super.key});
 
-  final WidgetRef ref;
-  final SearchState state;
+  @override
+  ConsumerState<UserResults> createState() => _UserResultsState();
+}
+
+class _UserResultsState extends ConsumerState<UserResults> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+      // Trigger pagination when close to the bottom
+      ref.read(searchProvider.notifier).loadMoreUsers();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (state.isLoading) {
+    final state = ref.watch(searchProvider);
+
+    if (state.isLoading && state.searchResults.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
     if (state.error != null) {
@@ -114,10 +181,21 @@ class UserResults extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final itemCount = state.isLoadingMore ? state.searchResults.length + 1 : state.searchResults.length;
+
     return ListView.builder(
-      itemCount: state.searchResults.length,
+      controller: _scrollController,
+      itemCount: itemCount,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemBuilder: (context, index) {
+        if (index >= state.searchResults.length) {
+          // Loading indicator at bottom
+          return const Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
         final actor = state.searchResults[index];
 
         // Check if the user is being followed

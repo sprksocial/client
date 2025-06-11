@@ -211,7 +211,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
               top: 20,
               left: 20,
               child: GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
+                onTap: () => context.router.maybePop(),
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(color: Colors.black.withAlpha(100), shape: BoxShape.circle),
