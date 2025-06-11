@@ -516,7 +516,10 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<({String? cursor, Map<ProfileViewBasic, List<StoryView>> storiesByAuthor})> getStoriesTimeline({int limit = 30, String? cursor}) {
+  Future<({String? cursor, Map<ProfileViewBasic, List<StoryView>> storiesByAuthor})> getStoriesTimeline({
+    int limit = 30,
+    String? cursor,
+  }) {
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
@@ -535,7 +538,7 @@ class FeedRepositoryImpl implements FeedRepository {
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) {
           final storiesByAuthorMap = <ProfileViewBasic, List<StoryView>>{};
-          
+
           final storiesByAuthorArray = jsonMap['storiesByAuthor'] as List<dynamic>;
           for (final item in storiesByAuthorArray) {
             final itemMap = item as Map<String, dynamic>;
@@ -545,11 +548,8 @@ class FeedRepositoryImpl implements FeedRepository {
                 .toList();
             storiesByAuthorMap[author] = stories;
           }
-          
-          return (
-            storiesByAuthor: storiesByAuthorMap,
-            cursor: jsonMap['cursor'] as String?,
-          );
+
+          return (storiesByAuthor: storiesByAuthorMap, cursor: jsonMap['cursor'] as String?);
         },
       );
 

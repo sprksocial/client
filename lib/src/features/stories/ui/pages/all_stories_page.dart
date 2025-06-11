@@ -51,6 +51,18 @@ class _AllStoriesPageState extends State<AllStoriesPage> {
             return AuthorStoriesPage(
               author: entry.key,
               stories: entry.value,
+              onPreviousAuthor: index > 0
+                  ? () => _pageController.previousPage(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOut,
+                      )
+                  : null,
+              onNextAuthor: index < _authorsList.length - 1
+                  ? () => _pageController.nextPage(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeInOut,
+                      )
+                  : null,
             );
           },
         ),

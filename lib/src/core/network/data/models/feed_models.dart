@@ -475,7 +475,7 @@ class StoryView with _$StoryView {
     required ProfileViewBasic author,
     required StoryRecord record,
     required DateTime indexedAt,
-    EmbedView? embed,
+    EmbedView? media,
     // viewer eventually i think
   }) = _StoryView;
 

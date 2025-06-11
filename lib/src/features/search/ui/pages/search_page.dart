@@ -4,7 +4,6 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/search/providers/search_state.dart';
 import 'package:sparksocial/src/features/search/providers/search_provider.dart';
 import 'package:sparksocial/src/features/search/ui/widgets/suggested_account_card.dart';
 import 'package:sparksocial/src/features/stories/ui/widgets/stories_list.dart';
@@ -121,11 +120,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     unselectedLabelColor: theme.textTheme.bodyMedium?.color,
                   ),
                 ),
-                Expanded(
-                  child: TabBarView(
-                    children: [const UserResults()],
-                  ),
-                ),
+                Expanded(child: TabBarView(children: [const UserResults()])),
               ],
             ],
           ),

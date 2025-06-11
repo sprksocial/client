@@ -53,21 +53,21 @@ class _StoryPageState extends ConsumerState<StoryPage> with TickerProviderStateM
   }
 
   bool _isVideoStory(StoryView story) {
-    return switch (story.embed) {
+    return switch (story.media) {
       EmbedViewVideo() => true,
       _ => false,
     };
   }
 
   String _getVideoUrl(StoryView story) {
-    return switch (story.embed) {
+    return switch (story.media) {
       EmbedViewVideo(:final playlist) => playlist.toString(),
       _ => '',
     };
   }
 
   String _getImageUrl(StoryView story) {
-    return switch (story.embed) {
+    return switch (story.media) {
       EmbedViewVideo(:final thumbnail) => thumbnail.toString(),
       EmbedViewImage(:final images) when images.isNotEmpty => images.first.fullsize.toString(),
       _ => widget.story.author.avatar.toString(),

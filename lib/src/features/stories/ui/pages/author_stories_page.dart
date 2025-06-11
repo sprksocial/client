@@ -11,11 +11,26 @@ import 'package:sparksocial/src/features/stories/ui/pages/story_page.dart';
 
 @RoutePage()
 class AuthorStoriesPage extends ConsumerStatefulWidget {
-  const AuthorStoriesPage({super.key, required this.author, required this.stories, this.initialStoryIndex = 0});
+  const AuthorStoriesPage({
+    super.key,
+    required this.author,
+    required this.stories,
+    this.initialStoryIndex = 0,
+    this.onPreviousAuthor,
+    this.onNextAuthor,
+  });
 
   final ProfileViewBasic author;
   final List<StoryView> stories;
   final int initialStoryIndex;
+
+  /// Called when the user attempts to go to a previous story but is already at
+  /// the first story of the current author.
+  final VoidCallback? onPreviousAuthor;
+
+  /// Called when the user attempts to go to a next story but is already at the
+  /// last story of the current author.
+  final VoidCallback? onNextAuthor;
 
   @override
   ConsumerState<AuthorStoriesPage> createState() => _AuthorStoriesPageState();
@@ -72,27 +87,40 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
   }
 
   void _nextStory() {
-    if (_currentStoryIndex < widget.stories.length - 1) {
-      setState(() {
-        _currentStoryIndex++;
-      });
+    final isLastStory = _currentStoryIndex >= widget.stories.length - 1;
+
+    if (!isLastStory) {
+      setState(() => _currentStoryIndex++);
       _pageController.nextPage(duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
       _startCurrentStory();
-    } else {
-      if (context.mounted) {
-        context.router.maybePop();
-      }
+      return;
+    }
+
+    // We're at the last story – delegate to next author if available, otherwise
+    // pop like the previous behaviour.
+    if (widget.onNextAuthor != null) {
+      widget.onNextAuthor!.call();
+    } else if (context.mounted) {
+      context.router.maybePop();
     }
   }
 
   void _previousStory() {
-    if (_currentStoryIndex > 0) {
+    final isFirstStory = _currentStoryIndex == 0;
+
+    if (!isFirstStory) {
       _progressControllers[_currentStoryIndex].reset();
-      setState(() {
-        _currentStoryIndex--;
-      });
+      setState(() => _currentStoryIndex--);
       _pageController.previousPage(duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
       _startCurrentStory();
+      return;
+    }
+
+    // We're at the first story – delegate to previous author if available.
+    if (widget.onPreviousAuthor != null) {
+      widget.onPreviousAuthor!.call();
+    } else if (context.mounted) {
+      context.router.maybePop();
     }
   }
 
@@ -150,7 +178,7 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
 
   String _timeAgo(StoryView story) {
     final now = DateTime.now();
-    final diff = now.difference(story.record.createdAt);
+    final diff = now.difference(story.indexedAt);
     if (diff.inDays > 0) return '${diff.inDays}d';
     if (diff.inHours > 0) return '${diff.inHours}h';
     if (diff.inMinutes > 0) return '${diff.inMinutes}m';
