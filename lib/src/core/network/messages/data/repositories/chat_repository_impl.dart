@@ -86,12 +86,42 @@ class ChatRepositoryImpl implements ChatRepository {
       final apiService = ChatApiService();
       final result = await apiService.getChats();
 
-      if (result['data'] != null && result['data']['chats'] != null) {
-        final chatsData = result['data']['chats'] as List;
-        _conversations = chatsData.map((chatData) => _mapApiChatToConversation(chatData)).toList();
+      // ------------------------------------------------------
+      // Normalise the API response so we always end up with a
+      // `List<Map<String, dynamic>>` that represents the chats.
+      // ------------------------------------------------------
+
+      dynamic chatsRaw;
+
+      if (result is List) {
+        // The entire response is already the list of chats.
+        chatsRaw = result;
       } else {
-        _conversations = [];
+        // Preferred nesting is result['data']['chats'].
+        final dynamic dataSegment = result.containsKey('data') ? result['data'] : result;
+
+        if (dataSegment is List) {
+          chatsRaw = dataSegment;
+        } else if (dataSegment is Map) {
+          // If there is an explicit `chats` key use that, otherwise take all values.
+          chatsRaw = dataSegment.containsKey('chats') ? dataSegment['chats'] : dataSegment.values.toList();
+        }
       }
+
+
+      List<dynamic> chatsData;
+      if (chatsRaw is List) {
+        chatsData = chatsRaw;
+      } else if (chatsRaw is Map) {
+        chatsData = chatsRaw.values.toList();
+      } else {
+        chatsData = [];
+      }
+
+      _conversations = chatsData
+          .whereType<Map<String, dynamic>>()
+          .map(_mapApiChatToConversation)
+          .toList();
     } catch (e) {
       _logger.e('Failed to load initial conversations', error: e);
       _conversations = [];
@@ -104,16 +134,30 @@ class ChatRepositoryImpl implements ChatRepository {
     return Conversation(
       id: chatData['chatId'] ?? chatData['id'] ?? 'unknown',
       type: chatData['type'] == 'private' ? ConversationType.direct : ConversationType.group,
-      participants: (chatData['participants'] as List? ?? [])
-          .map(
-            (p) => ChatParticipant(
-              id: p['id'] ?? p['userId'] ?? 'unknown',
-              username: p['username'] ?? p['handle'] ?? 'unknown',
-              displayName: p['displayName'] ?? p['name'],
-              avatarUrl: p['avatarUrl'] ?? p['avatar'],
-              isOnline: p['isOnline'] ?? false,
-            ),
-          )
+      participants: ((chatData['participants'] ?? []) as List)
+          .map((dynamic p) {
+            // If the participant is already a map with properties use them, otherwise
+            // treat the value as a user id and build a minimal placeholder record.
+            if (p is Map<String, dynamic>) {
+              return ChatParticipant(
+                id: p['id'] ?? p['userId'] ?? 'unknown',
+                username: p['username'] ?? p['handle'] ?? p['id'] ?? 'unknown',
+                displayName: p['displayName'] ?? p['name'],
+                avatarUrl: p['avatarUrl'] ?? p['avatar'],
+                isOnline: p['isOnline'] ?? false,
+              );
+            } else {
+              // Fallback – the API only returned a raw identifier (string / int)
+              final String participantId = p != null ? p.toString() : 'unknown';
+              return ChatParticipant(
+                id: participantId,
+                username: participantId,
+                displayName: null,
+                avatarUrl: null,
+                isOnline: false,
+              );
+            }
+          })
           .toList(),
       title: chatData['title'],
       lastActivity: chatData['lastActivity'] != null
