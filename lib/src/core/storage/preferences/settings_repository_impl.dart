@@ -401,4 +401,14 @@ class SettingsRepositoryImpl implements SettingsRepository {
       rethrow;
     }
   }
+
+  @override
+  Future<bool> getPostToBskyEnabled() async {
+    return await _storageManager.preferences.getBool(StorageKeys.postToBskyKey) ?? false;
+  }
+
+  @override
+  Future<void> setPostToBskyEnabled(bool value) async {
+    await _storageManager.preferences.setBool(StorageKeys.postToBskyKey, value);
+  }
 }

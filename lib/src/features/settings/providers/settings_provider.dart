@@ -42,6 +42,7 @@ class Settings extends _$Settings {
         Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
         Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
       ],
+      postToBskyEnabled: false,
     );
   }
 
@@ -55,6 +56,7 @@ class Settings extends _$Settings {
       final followMode = await _repository.getFollowMode();
       final feeds = await _repository.getFeeds();
       final activeFeed = await _repository.getActiveFeed();
+      final postToBskyEnabled = await _repository.getPostToBskyEnabled();
 
       _logger.d(
         'Settings loaded - activeFeed: ${activeFeed.name}, feeds: ${feeds.map((f) => f.name).join(', ')}, followMode: $followMode',
@@ -66,6 +68,7 @@ class Settings extends _$Settings {
         hideAdultContent: hideAdultContent,
         followMode: followMode,
         feeds: feeds,
+        postToBskyEnabled: postToBskyEnabled,
       );
 
       _logger.d('Settings state updated successfully');
@@ -91,6 +94,12 @@ class Settings extends _$Settings {
   Future<void> setFollowMode(FollowMode followMode) async {
     await _repository.setFollowModeWithSync(followMode);
     state = state.copyWith(followMode: followMode);
+  }
+
+  /// Sets Post to Bluesky setting
+  Future<void> setPostToBsky(bool value) async {
+    await _repository.setPostToBskyEnabled(value);
+    state = state.copyWith(postToBskyEnabled: value);
   }
 
   /// Syncs all preferences from server

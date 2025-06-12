@@ -18,5 +18,6 @@ class SettingsState with _$SettingsState {
     ])
     List<Feed> feeds,
     required Feed activeFeed,
+    @Default(false) bool postToBskyEnabled,
   }) = _SettingsState;
 }

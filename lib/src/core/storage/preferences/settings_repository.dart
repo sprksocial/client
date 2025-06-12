@@ -31,4 +31,7 @@ abstract class SettingsRepository {
 
   Future<LabelPreference> getLabelPreference(String value);
   Future<void> setLabelPreference(String value, Blurs blurs, Severity severity, bool adultOnly, Setting setting);
+
+  Future<bool> getPostToBskyEnabled();
+  Future<void> setPostToBskyEnabled(bool value);
 }

@@ -23,6 +23,9 @@ class StorageKeys {
   static const String didDocCache = 'did_doc_cache';
   static const String identityCacheTtl = 'identity_cache_ttl';
 
+  /// Post to Bluesky
+  static const String postToBskyKey = 'post_to_bsky_enabled';
+
   // Private constructor to prevent instantiation
   StorageKeys._();
 }

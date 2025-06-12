@@ -275,8 +275,13 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<StrongRef> postImages(String text, List<XFile> imageFiles, Map<String, String> altTexts) async {
-    _logger.d('Creating image post with ${imageFiles.length} images');
+  Future<StrongRef> postImages(
+    String text,
+    List<XFile> imageFiles,
+    Map<String, String> altTexts, {
+    bool crosspostToBsky = false,
+  }) async {
+    _logger.d('Creating image post with ${imageFiles.length} images, crosspost: $crosspostToBsky');
 
     switch (imageFiles) {
       case List<XFile> files when files.isEmpty:
@@ -292,6 +297,7 @@ class FeedRepositoryImpl implements FeedRepository {
           if (_client.authRepository.atproto case final atproto?) {
             final List<Image> uploadedImageMaps = await uploadImages(imageFiles, altTexts);
 
+            // Create Spark post first
             final record = PostRecord(
               text: text,
               embed: EmbedImage(images: uploadedImageMaps),
@@ -301,6 +307,16 @@ class FeedRepositoryImpl implements FeedRepository {
             final result = await atproto.repo.createRecord(collection: NSID.parse('so.sprk.feed.post'), record: record.toJson());
 
             _logger.i('Image post created successfully: ${result.data.uri}');
+
+            // Crosspost to Bluesky if enabled
+            if (crosspostToBsky) {
+              try {
+                await _crosspostToBlueSky(text, uploadedImageMaps, result.data, altTexts);
+              } catch (e) {
+                _logger.w('Failed to crosspost to Bluesky: $e');
+                // Don't fail the entire operation if Bluesky crossposting fails
+              }
+            }
 
             return result.data;
           } else {
@@ -361,6 +377,95 @@ class FeedRepositoryImpl implements FeedRepository {
 
     _logger.d('Successfully processed and uploaded ${uploadedImageMaps.length} images');
     return uploadedImageMaps;
+  }
+
+  /// Crosspost images to Bluesky using same blobs but Bluesky models
+  Future<void> _crosspostToBlueSky(
+    String text,
+    List<Image> sparkImages,
+    StrongRef sparkPostData,
+    Map<String, String> altTexts,
+  ) async {
+    _logger.d('Crossposting to Bluesky with ${sparkImages.length} images');
+
+    // Convert Spark images to Bluesky images and handle 4-image limit
+    final List<bsky.Image> bskyImages = [];
+    final maxBskyImages = 4;
+    final imagesToUse = sparkImages.take(maxBskyImages).toList();
+
+    for (final sparkImage in imagesToUse) {
+      bskyImages.add(
+        bsky.Image(
+          alt: sparkImage.alt ?? '',
+          image: sparkImage.image, // Use the same blob
+        ),
+      );
+    }
+
+    // Determine final text for Bluesky post
+    String finalText = text;
+    List<bsky.Facet> facets = [];
+
+    // If more than 4 images, add link to Spark post
+    if (sparkImages.length > maxBskyImages) {
+      final sparkRkey = sparkPostData.uri.rkey;
+      final uriDid = sparkPostData.uri.hostname;
+      final sparkLink = 'https://watch.sprk.so/?uri=$uriDid/$sparkRkey';
+
+      if (text.isEmpty) {
+        finalText = sparkLink;
+        // Create facet for the entire text (which is just the link)
+        facets.add(
+          bsky.Facet(
+            index: bsky.ByteSlice(byteStart: 0, byteEnd: sparkLink.length),
+            features: [bsky.FacetFeature.link(data: bsky.FacetLink(uri: sparkLink))],
+          ),
+        );
+      } else {
+        final linkWithNewlines = '\n\n$sparkLink';
+        final availableTextLength = 300 - linkWithNewlines.length;
+
+        if (text.length <= availableTextLength) {
+          finalText = '$text$linkWithNewlines';
+          // Create facet for the link part
+          final linkStart = text.length + 2; // +2 for the \n\n
+          facets.add(
+            bsky.Facet(
+              index: bsky.ByteSlice(byteStart: linkStart, byteEnd: linkStart + sparkLink.length),
+              features: [bsky.FacetFeature.link(data: bsky.FacetLink(uri: sparkLink))],
+            ),
+          );
+        } else {
+          final ellipsis = '...';
+          final croppedTextLength = availableTextLength - ellipsis.length;
+          final croppedText = text.substring(0, croppedTextLength);
+          finalText = '$croppedText$ellipsis$linkWithNewlines';
+          // Create facet for the link part
+          final linkStart = croppedText.length + ellipsis.length + 2; // +2 for the \n\n
+          facets.add(
+            bsky.Facet(
+              index: bsky.ByteSlice(byteStart: linkStart, byteEnd: linkStart + sparkLink.length),
+              features: [bsky.FacetFeature.link(data: bsky.FacetLink(uri: sparkLink))],
+            ),
+          );
+        }
+      }
+    }
+
+    final bskyPost = bsky.PostRecord(
+      text: finalText,
+      createdAt: DateTime.now().toUtc(),
+      embed: bsky.Embed.images(data: bsky.EmbedImages(images: bskyImages)),
+      facets: facets,
+    );
+
+    final bskyAtProto = _client.authRepository.atproto!;
+    final bskyResult = await bskyAtProto.repo.createRecord(
+      collection: NSID.parse('app.bsky.feed.post'),
+      record: bskyPost.toJson(),
+    );
+
+    _logger.i('Successfully crossposted to Bluesky: ${bskyResult.data.uri}');
   }
 
   @override

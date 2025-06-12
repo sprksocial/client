@@ -12,6 +12,7 @@ import 'package:sparksocial/src/features/posting/providers/video_upload_provider
 import 'package:sparksocial/src/features/posting/providers/video_upload_state.dart';
 import 'package:sparksocial/src/features/posting/ui/widgets/video_thumbnail.dart';
 import 'package:video_player/video_player.dart';
+import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
 class VideoReviewPage extends ConsumerStatefulWidget {
@@ -66,6 +67,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
 
     try {
       final description = _descriptionController.text;
+      final crosspostEnabled = ref.read(settingsProvider).postToBskyEnabled;
 
       // Register a new upload task
       final uploadNotifier = ref.read(uploadProvider.notifier);
@@ -83,6 +85,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         videoPath: widget.videoPath,
         description: description,
         altText: _videoAltText,
+        //crosspostToBsky: crosspostEnabled,
       );
 
       // Mark task as completed
@@ -233,6 +236,33 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                                   ),
                                 ),
                               ],
+                            ),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      // Bluesky Cross-posting Switch
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final settings = ref.watch(settingsProvider);
+                          // For videos, Bluesky post will be a link only.
+                          return Container(
+                            decoration: BoxDecoration(
+                              color: Theme.of(context).colorScheme.surface,
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: ListTile(
+                              title: Text('Post to Bluesky', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+                              subtitle: Text(
+                                'Bluesky will receive a text post linking to Spark (videos not yet supported).',
+                                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(150), fontSize: 12),
+                              ),
+                              trailing: Switch(
+                                value: settings.postToBskyEnabled,
+                                onChanged: (v) => ref.read(settingsProvider.notifier).setPostToBsky(v),
+                                activeColor: Theme.of(context).colorScheme.primary,
+                              ),
+                              onTap: () => ref.read(settingsProvider.notifier).setPostToBsky(!settings.postToBskyEnabled),
                             ),
                           );
                         },

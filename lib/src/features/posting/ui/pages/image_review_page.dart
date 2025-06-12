@@ -11,6 +11,7 @@ import 'package:sparksocial/src/core/network/atproto/atproto.dart' hide Image;
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/posting/providers/upload_provider.dart';
+import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 
 void showFullscreenImage(BuildContext context, XFile imageFile) {
   showDialog(
@@ -109,13 +110,14 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
     });
     try {
       final uploadService = ref.read(uploadProvider.notifier);
+      final crosspostEnabled = ref.read(settingsProvider).postToBskyEnabled;
       final description = _descriptionController.text;
       final taskId = uploadService.registerTask('image');
       uploadService.startTask(taskId);
       if (mounted) {
         context.router.pushAndPopUntil(const MainRoute(), predicate: (route) => false);
       }
-      final result = await _feedRepository.postImages(description, _imageFiles, _altTexts);
+      final result = await _feedRepository.postImages(description, _imageFiles, _altTexts, crosspostToBsky: crosspostEnabled);
       uploadService.completeTask(taskId);
       return result;
     } catch (e) {
@@ -303,6 +305,63 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 20),
+                      // Bluesky Cross-posting Switch
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final settings = ref.watch(settingsProvider);
+                          final showWarning = settings.postToBskyEnabled && _imageFiles.length > 4;
+                          return Column(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: ListTile(
+                                  title: Text(
+                                    'Post to Bluesky',
+                                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                                  ),
+                                  trailing: Switch(
+                                    value: settings.postToBskyEnabled,
+                                    onChanged: (bool value) {
+                                      ref.read(settingsProvider.notifier).setPostToBsky(value);
+                                    },
+                                    activeColor: Theme.of(context).colorScheme.primary,
+                                  ),
+                                  onTap: () {
+                                    ref.read(settingsProvider.notifier).setPostToBsky(!settings.postToBskyEnabled);
+                                  },
+                                ),
+                              ),
+                              if (showWarning) ...[
+                                const SizedBox(height: 12),
+                                Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withAlpha(25),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                                      const SizedBox(width: 8),
+                                      Expanded(
+                                        child: Text(
+                                          'Bluesky supports a maximum of 4 images. Your Bluesky post will link to the full Spark post instead.',
+                                          style: TextStyle(color: Colors.orange, fontSize: 13, fontWeight: FontWeight.w500),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),
@@ -313,12 +372,14 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
-                  onPressed: _isPosting ? null : () async {
-                    final postRef = await _uploadImagesAndPost();
-                    if (context.mounted && postRef != null) {
-                      context.router.push(StandalonePostRoute(postUri: postRef.uri.toString()));
-                    }
-                  },
+                  onPressed: _isPosting
+                      ? null
+                      : () async {
+                          final postRef = await _uploadImagesAndPost();
+                          if (context.mounted && postRef != null) {
+                            context.router.push(StandalonePostRoute(postUri: postRef.uri.toString()));
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Theme.of(context).colorScheme.primary,
                     padding: const EdgeInsets.symmetric(vertical: 16),
