@@ -15,7 +15,6 @@ class MessagesPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
-    final isDarkMode = theme.brightness == Brightness.dark;
     final logger = GetIt.instance<LogService>().getLogger('MessagesPage');
 
     logger.d('Building MessagesPage');
@@ -48,7 +47,7 @@ class MessagesPage extends ConsumerWidget {
                 Container(
                   height: 0.5,
                   width: double.infinity,
-                  color: isDarkMode ? AppColors.divider.withAlpha(51) : AppColors.divider.withAlpha(128),
+                  color: theme.colorScheme.outline,
                 ),
               ],
             ),
