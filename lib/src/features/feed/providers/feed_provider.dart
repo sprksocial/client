@@ -16,6 +16,7 @@ import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:sparksocial/src/core/storage/cache/cache_manager_interface.dart';
 
 part 'feed_provider.g.dart';
 
@@ -32,6 +33,7 @@ class FeedNotifier extends _$FeedNotifier {
   late final SparkLogger _logger;
   late final DownloadManagerInterface _downloadManager;
   late final SettingsRepository _settingsRepository;
+  late final CacheManagerInterface _cacheManager;
 
   // Add a flag to track if this notifier has been built before
   bool _hasBeenBuilt = false;
@@ -47,6 +49,7 @@ class FeedNotifier extends _$FeedNotifier {
       _settingsRepository = GetIt.instance<SettingsRepository>();
       _sqlCache = GetIt.instance<SQLCacheInterface>();
       _downloadManager = GetIt.instance<DownloadManagerInterface>();
+      _cacheManager = GetIt.instance<CacheManagerInterface>();
       _logger = GetIt.instance<LogService>().getLogger('FeedNotifier ${feed.identifier}');
     } else {
       _logger.d('Build called again for ${feed.identifier}, hasBeenBuilt: $_hasBeenBuilt');
@@ -397,6 +400,22 @@ class FeedNotifier extends _$FeedNotifier {
             );
           }
           labels.addAll(recordLabels); // self labels
+        }
+
+        // Ensure media files are cached; if missing, enqueue a download task.
+        if (post.embed is EmbedViewVideo) {
+          final cachedFile = await _cacheManager.getCachedFile(post.videoUrl);
+          if (cachedFile == null) {
+            _downloadManager.submitTask(
+              DownloadTask(
+                uri: post.uri,
+                post: post,
+                feed: _feed,
+                onComplete: (task) => _logger.d('Re-cached media for \\${task.uri}'),
+                onError: (task, e, s) => _logger.e('Failed to re-cache media for \\${task.uri}: \\$e'),
+              ),
+            );
+          }
         }
       }
 
