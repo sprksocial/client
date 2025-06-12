@@ -71,6 +71,7 @@ class EditProfile extends _$EditProfile {
       state = state.copyWith(isSaving: true);
 
       dynamic avatarToSend;
+
       if (state.localAvatar is Uint8List) {
         // Upload new avatar blob
         final client = _authRepository.atproto!;

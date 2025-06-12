@@ -107,9 +107,14 @@ class ActorRepositoryImpl implements ActorRepository {
       if (avatar != null) 'avatar': avatar,
     };
 
-    await _client.repo.editRecord(
+    final atproto = _client.authRepository.atproto;
+    if (atproto == null) {
+      throw Exception('AtProto not initialized');
+    }
+
+    await atproto.repo.putRecord(
       uri: AtUri.parse('at://${_client.authRepository.session!.did}/so.sprk.actor.profile/self'),
-      record: atproto.Record.fromJson(record),
+      record: record,
     );
   }
 
