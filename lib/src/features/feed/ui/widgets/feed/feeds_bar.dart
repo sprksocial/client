@@ -151,7 +151,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                       child: Material(
                         elevation: elevation,
                         borderRadius: BorderRadius.circular(25),
-                        shadowColor: AppColors.white.withAlpha(30),
+                        shadowColor: Colors.white.withAlpha(30),
                         color: Colors.transparent,
                         child: child,
                       ),
@@ -186,9 +186,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                         child: Text(
                           feed.name,
                           style: TextStyle(
-                            color: isSelected
-                                ? Theme.of(context).colorScheme.surface
-                                : Theme.of(context).colorScheme.surface.withAlpha(140),
+                            color: isSelected ? Colors.white : Colors.white.withAlpha(140),
                             fontWeight: FontWeight.w700,
                             fontSize: 18,
                           ),
@@ -207,7 +205,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
               width: _calculateIndicatorWidth(settings),
               height: 2,
               child: Container(
-                decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(1)),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(1)),
               ),
             ),
           ],
