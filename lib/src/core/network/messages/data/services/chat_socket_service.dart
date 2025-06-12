@@ -1,5 +1,5 @@
 import 'package:get_it/get_it.dart';
-import 'package:socket_io_client/socket_io_client.dart' as IO;
+import 'package:socket_io_client/socket_io_client.dart' as io;
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/config/app_config.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
@@ -20,14 +20,14 @@ class ChatSocketService {
   final _sl = GetIt.instance;
   final _logger = GetIt.instance<LogService>().getLogger('ChatSocketService');
 
-  IO.Socket? _socket;
+  io.Socket? _socket;
 
   /// Returns an active Socket.io connection or creates one if it does not exist.
   ///
   /// The JWT access token from the current [AuthRepository] session is included
   /// in the `Authorization` header so that the backend can authenticate the
   /// connection and automatically derive the user DID.
-  Future<IO.Socket> get socket async {
+  Future<io.Socket> get socket async {
     if (_socket != null && _socket!.connected) {
       return _socket!;
     }
@@ -43,9 +43,9 @@ class ChatSocketService {
 
     _logger.i('Connecting to chat socket at $url');
 
-    _socket = IO.io(
+    _socket = io.io(
       url,
-      IO.OptionBuilder()
+      io.OptionBuilder()
           .setTransports(['websocket']) // Required for Flutter native
           .enableForceNew()
           .enableReconnection()

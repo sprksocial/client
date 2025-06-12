@@ -9,7 +9,6 @@ import 'package:sparksocial/src/features/search/ui/widgets/suggested_account_car
 import 'package:sparksocial/src/core/network/messages/data/models/message.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-// TODO: Replace with the actual chat provider when implemented
 import 'package:sparksocial/src/features/messages/providers/chat_provider.dart';
 
 @RoutePage()

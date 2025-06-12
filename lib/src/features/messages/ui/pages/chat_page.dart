@@ -31,7 +31,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   }
 
   void _initializeUser() {
-    _currentUserDid = ref.read(authProvider).session?.did;
+    _currentUserDid = ref.read(sessionProvider)?.did;
   }
 
   String _getConversationTitle() {

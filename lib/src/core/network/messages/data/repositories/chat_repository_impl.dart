@@ -1,375 +1,355 @@
 import 'dart:async';
-import 'dart:convert';
-
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/network/messages/data/models/message.dart';
-import 'package:sparksocial/src/core/network/messages/data/repositories/chat_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/network/messages/data/services/chat_socket_service.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:sparksocial/src/core/network/messages/data/models/message.dart';
+import 'package:sparksocial/src/core/network/messages/data/services/chat_socket_service.dart';
+import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'chat_repository.dart';
 
-/// Implementation of the chat repository for AT Protocol
 class ChatRepositoryImpl implements ChatRepository {
-  final _logger = GetIt.instance<LogService>().getLogger('ChatRepository');
+  final _sl = GetIt.instance;
+  final _logger = GetIt.instance<LogService>().getLogger('ChatRepositoryImpl');
 
-  ChatRepositoryImpl() {
-    _logger.i('Initializing ChatRepository');
-  }
+  final StreamController<List<Conversation>> _conversationsController =
+    StreamController<List<Conversation>>.broadcast();
+  final StreamController<List<ChatMessage>> _messagesController =
+    StreamController<List<ChatMessage>>.broadcast();
+
+  List<Conversation> _conversations = [];
+  final Map<String, List<ChatMessage>> _messagesByConversation = {};
 
   @override
-  Stream<List<ChatMessage>> streamMessages({
-    required String conversationId,
-    int? limit,
-    String? cursor,
-  }) {
-    _logger.d('Opening stream for conversation: $conversationId');
+  Stream<List<Conversation>> get conversationsStream => _conversationsController.stream;
 
-    final controller = StreamController<List<ChatMessage>>();
+  @override
+  Stream<List<ChatMessage>> get messagesStream => _messagesController.stream;
 
-    // We wrap everything in a separate async callback to avoid blocking
-    () async {
-      try {
-        final socket = await ChatSocketService().socket;
+  @override
+  Future<void> initialize() async {
+    _logger.i('Initializing chat repository');
 
-        final auth = GetIt.instance<AuthRepository>();
-        final userId = auth.session?.did;
+    try {
+      // Initialize socket connection
+      final socketService = ChatSocketService();
+      final socket = await socketService.socket;
 
-        // Join the conversation room so that the backend starts sending events.
-        socket.emit('join-chat', {
-          'chatId': conversationId,
-          if (userId != null) 'userId': userId,
-        });
+      // Set up socket event listeners
+      _setupSocketListeners(socket);
 
-        // Helper to parse incoming data and push to controller.
-        void handleEvent(dynamic data) {
-          try {
-            if (data == null) return;
+      // Load initial conversations
+      await _loadInitialConversations();
 
-            // The server may send a single message or a list of messages.
-            if (data is List) {
-              final messages = data
-                  .whereType<Map<String, dynamic>>()
-                  .map((e) => ChatMessage.fromJson(Map<String, dynamic>.from(e)))
-                  .toList();
-              if (messages.isNotEmpty) controller.add(messages);
-            } else if (data is Map<String, dynamic>) {
-              final message = ChatMessage.fromJson(Map<String, dynamic>.from(data));
-              controller.add([message]);
-            }
-          } catch (e) {
-            _logger.e('Failed to parse message for conversation $conversationId', error: e);
-          }
-        }
+      _conversationsController.add(_conversations);
+      _logger.i('Chat repository initialized successfully');
+    } catch (e) {
+      _logger.e('Failed to initialize chat repository', error: e);
+      rethrow;
+    }
+  }
 
-        // Listen for both historical and real-time messages.
-        socket.on('initial-messages', handleEvent);
-        socket.on('new-message', handleEvent);
+  void _setupSocketListeners(socket) {
+    // Listen for new conversations
+    socket.on('conversation_update', (data) {
+      _logger.d('Received conversation update: $data');
+      _handleConversationUpdate(data);
+    });
 
-        // Clean up when the stream is canceled.
-        controller.onCancel = () {
-          _logger.d('Closing stream for conversation: $conversationId');
-          socket.emit('leave-chat', {'chatId': conversationId});
-          socket.off('initial-messages', handleEvent);
-          socket.off('new-message', handleEvent);
-        };
-      } catch (e) {
-        _logger.e('Error setting up chat stream for conversation $conversationId', error: e);
-        controller.addError(e);
-        await controller.close();
+    // Listen for new messages
+    socket.on('new_message', (data) {
+      _logger.d('Received new message: $data');
+      _handleNewMessage(data);
+    });
+
+    // Listen for message status updates
+    socket.on('message_status_update', (data) {
+      _logger.d('Received message status update: $data');
+      _handleMessageStatusUpdate(data);
+    });
+
+    // Listen for read receipts
+    socket.on('message_read', (data) {
+      _logger.d('Received message read event: $data');
+      _handleMessageRead(data);
+    });
+  }
+
+  Future<void> _loadInitialConversations() async {
+    // For now, we'll start with empty conversations
+    // In a real implementation, you would load from local storage or API
+    _conversations = [];
+  }
+
+  void _handleConversationUpdate(Map<String, dynamic> data) {
+    try {
+      final conversation = Conversation.fromJson(data);
+      final index = _conversations.indexWhere((c) => c.id == conversation.id);
+
+      if (index != -1) {
+        _conversations[index] = conversation;
+      } else {
+        _conversations.insert(0, conversation);
       }
-    }();
 
-    return controller.stream;
+      _conversationsController.add(_conversations);
+    } catch (e) {
+      _logger.e('Failed to handle conversation update', error: e);
+    }
   }
 
-  @override
-  Future<ChatMessage> sendMessage({
-    required String conversationId,
-    required String content,
-    MessageType type = MessageType.text,
-    String? replyToMessageId,
-    List<String>? attachments,
-  }) async {
-    _logger.d('Sending message to conversation: $conversationId');
-
-    final auth = GetIt.instance<AuthRepository>();
-    if (!auth.isAuthenticated || auth.session == null) {
-      _logger.e('Not authenticated. Cannot send message.');
-      throw Exception('Not authenticated. Cannot send message.');
-    }
-
-    final userId = auth.session!.did;
-
-    // Create the message with sending status
-    final message = ChatMessage(
-      id: 'msg_${DateTime.now().millisecondsSinceEpoch}',
-      conversationId: conversationId,
-      senderId: userId,
-      content: content,
-      type: type,
-      status: MessageStatus.sending,
-      timestamp: DateTime.now(),
-      replyToMessageId: replyToMessageId,
-      attachments: attachments,
-    );
-
+  void _handleNewMessage(Map<String, dynamic> data) {
     try {
-      final socket = await ChatSocketService().socket;
+      final message = ChatMessage.fromJson(data);
+      final conversationId = message.conversationId;
 
-      // Send message via socket
-      final completer = Completer<ChatMessage>();
+      _messagesByConversation[conversationId] ??= [];
+      _messagesByConversation[conversationId]!.add(message);
 
-      // Listen for the response
-      socket.once('message-sent', (data) {
-        try {
-          if (data is Map<String, dynamic>) {
-            final sentMessage = ChatMessage.fromJson(Map<String, dynamic>.from(data));
-            completer.complete(sentMessage);
-          } else {
-            completer.completeError('Invalid response format');
-          }
-        } catch (e) {
-          completer.completeError(e);
-        }
-      });
+      // Update conversation with latest message
+      final conversationIndex = _conversations.indexWhere((c) => c.id == conversationId);
+      if (conversationIndex != -1) {
+        final currentUserDid = _sl<AuthRepository>().session?.did;
+        final isFromCurrentUser = message.senderId == currentUserDid;
 
-      // Listen for errors
-      socket.once('message-error', (data) {
-        final errorMessage = data is Map<String, dynamic> ? data['error'] : 'Failed to send message';
-        completer.completeError(Exception(errorMessage));
-      });
+        _conversations[conversationIndex] = _conversations[conversationIndex].copyWith(
+          lastMessage: message,
+          lastActivity: message.timestamp,
+          unreadCount: isFromCurrentUser ?
+            _conversations[conversationIndex].unreadCount :
+            _conversations[conversationIndex].unreadCount + 1,
+        );
 
-      // Emit the message
-      socket.emit('send-message', {
-        'chatId': conversationId,
-        'content': content,
-        'type': type.name,
-        'messageId': message.id,
-        if (replyToMessageId != null) 'replyToMessageId': replyToMessageId,
-        if (attachments != null) 'attachments': attachments,
-      });
+        _conversationsController.add(_conversations);
+      }
 
-      // Wait for response or timeout
-      final sentMessage = await completer.future.timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          _logger.e('Message send timeout for conversation: $conversationId');
-          throw Exception('Message send timeout');
-        },
+      _messagesController.add(_messagesByConversation[conversationId]!);
+    } catch (e) {
+      _logger.e('Failed to handle new message', error: e);
+    }
+  }
+
+  void _handleMessageStatusUpdate(Map<String, dynamic> data) {
+    try {
+      final messageId = data['messageId'] as String;
+      final status = MessageStatus.values.firstWhere(
+        (s) => s.name == data['status'],
+        orElse: () => MessageStatus.sent,
       );
+      final conversationId = data['conversationId'] as String;
 
-      _logger.i('Message sent successfully: ${sentMessage.id}');
-      return sentMessage;
+      final messages = _messagesByConversation[conversationId];
+      if (messages != null) {
+        final messageIndex = messages.indexWhere((m) => m.id == messageId);
+        if (messageIndex != -1) {
+          messages[messageIndex] = messages[messageIndex].copyWith(status: status);
+          _messagesController.add(messages);
+        }
+      }
     } catch (e) {
-      _logger.e('Failed to send message to conversation: $conversationId', error: e);
+      _logger.e('Failed to handle message status update', error: e);
+    }
+  }
 
-      // Return the message with failed status
-      final failedMessage = message.copyWith(status: MessageStatus.failed);
-      return failedMessage;
+  void _handleMessageRead(Map<String, dynamic> data) {
+    try {
+      final conversationId = data['conversationId'] as String;
+
+      // Update conversation unread count
+      final conversationIndex = _conversations.indexWhere((c) => c.id == conversationId);
+      if (conversationIndex != -1) {
+        _conversations[conversationIndex] = _conversations[conversationIndex].copyWith(
+          unreadCount: 0,
+        );
+        _conversationsController.add(_conversations);
+      }
+    } catch (e) {
+      _logger.e('Failed to handle message read event', error: e);
     }
   }
 
   @override
-  Future<void> markAsRead(String conversationId) async {
-    _logger.d('Marking conversation as read: $conversationId');
+  Future<List<Conversation>> getConversations() async {
+    return List.unmodifiable(_conversations);
+  }
 
-    final auth = GetIt.instance<AuthRepository>();
-    if (!auth.isAuthenticated || auth.session == null) {
-      _logger.w('Not authenticated. Cannot mark as read.');
-      return;
+  @override
+  Future<List<ChatMessage>> getMessages(String conversationId) async {
+    if (_messagesByConversation.containsKey(conversationId)) {
+      return _messagesByConversation[conversationId]!;
     }
 
     try {
-      final socket = await ChatSocketService().socket;
+      // Request messages from socket
+      final socketService = ChatSocketService();
+      final socket = await socketService.socket;
 
-      socket.emit('mark-as-read', {
-        'chatId': conversationId,
-      });
+      // Emit request for messages
+      socket.emit('get_messages', {'conversationId': conversationId});
 
-      _logger.i('Conversation marked as read: $conversationId');
-    } catch (e) {
-      _logger.e('Failed to mark conversation as read: $conversationId', error: e);
-      // Don't throw here, as marking as read is not critical
-    }
-  }
-
-  @override
-  Future<List<Conversation>> getConversations({
-    int? limit,
-    String? cursor,
-  }) async {
-    _logger.d('Fetching conversations');
-
-    final auth = GetIt.instance<AuthRepository>();
-    if (!auth.isAuthenticated || auth.session == null) {
-      _logger.w('Not authenticated. Cannot fetch conversations.');
+      // For now, return empty list and wait for socket response
+      _messagesByConversation[conversationId] = [];
       return [];
-    }
-
-    try {
-      final socket = await ChatSocketService().socket;
-      final completer = Completer<List<Conversation>>();
-
-      // Listen for the response
-      socket.once('conversations-list', (data) {
-        try {
-          if (data is List) {
-            final conversations = data
-                .whereType<Map<String, dynamic>>()
-                .map((e) => Conversation.fromJson(Map<String, dynamic>.from(e)))
-                .toList();
-            completer.complete(conversations);
-          } else {
-            completer.complete([]);
-          }
-        } catch (e) {
-          _logger.e('Failed to parse conversations', error: e);
-          completer.complete([]);
-        }
-      });
-
-      // Listen for errors
-      socket.once('conversations-error', (data) {
-        final errorMessage = data is Map<String, dynamic> ? data['error'] : 'Failed to fetch conversations';
-        completer.completeError(Exception(errorMessage));
-      });
-
-      // Request conversations
-      socket.emit('get-conversations', {
-        if (limit != null) 'limit': limit,
-        if (cursor != null) 'cursor': cursor,
-      });
-
-      // Wait for response or timeout
-      final conversations = await completer.future.timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          _logger.e('Get conversations timeout');
-          return <Conversation>[];
-        },
-      );
-
-      _logger.i('Fetched ${conversations.length} conversations');
-      return conversations;
     } catch (e) {
-      _logger.e('Failed to fetch conversations', error: e);
+      _logger.e('Failed to get messages for conversation $conversationId', error: e);
       return [];
     }
   }
 
   @override
   Future<Conversation?> getConversation(String conversationId) async {
-    _logger.d('Fetching conversation: $conversationId');
-
-    final auth = GetIt.instance<AuthRepository>();
-    if (!auth.isAuthenticated || auth.session == null) {
-      _logger.w('Not authenticated. Cannot fetch conversation.');
-      return null;
-    }
-
     try {
-      final socket = await ChatSocketService().socket;
-      final completer = Completer<Conversation?>();
-
-      // Listen for the response
-      socket.once('conversation-details', (data) {
-        try {
-          if (data is Map<String, dynamic>) {
-            final conversation = Conversation.fromJson(Map<String, dynamic>.from(data));
-            completer.complete(conversation);
-          } else {
-            completer.complete(null);
-          }
-        } catch (e) {
-          _logger.e('Failed to parse conversation', error: e);
-          completer.complete(null);
-        }
-      });
-
-      // Listen for errors
-      socket.once('conversation-error', (data) {
-        final errorMessage = data is Map<String, dynamic> ? data['error'] : 'Failed to fetch conversation';
-        completer.completeError(Exception(errorMessage));
-      });
-
-      // Request conversation
-      socket.emit('get-conversation', {
-        'chatId': conversationId,
-      });
-
-      // Wait for response or timeout
-      final conversation = await completer.future.timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          _logger.e('Get conversation timeout: $conversationId');
-          return null;
-        },
-      );
-
-      if (conversation != null) {
-        _logger.i('Fetched conversation: ${conversation.id}');
-      } else {
-        _logger.w('Conversation not found: $conversationId');
-      }
-
-      return conversation;
+      return _conversations.firstWhere((c) => c.id == conversationId);
     } catch (e) {
-      _logger.e('Failed to fetch conversation: $conversationId', error: e);
       return null;
     }
   }
 
   @override
-  Future<Conversation> createConversation(Conversation conversation) async {
-    _logger.d('Creating conversation: ${conversation.id}');
-
-    final auth = GetIt.instance<AuthRepository>();
-    if (!auth.isAuthenticated || auth.session == null) {
-      _logger.e('Not authenticated. Cannot create conversation.');
-      throw Exception('Not authenticated. Cannot create conversation.');
+  Future<void> sendMessage({
+    required String conversationId,
+    required String content,
+    MessageType type = MessageType.text,
+  }) async {
+    final authRepository = _sl<AuthRepository>();
+    if (!authRepository.isAuthenticated || authRepository.session == null) {
+      throw Exception('Not authenticated. Cannot send message.');
     }
+
+    final userDid = authRepository.session!.did;
+
+    // Create optimistic message
+    final message = ChatMessage(
+      id: 'temp_${DateTime.now().millisecondsSinceEpoch}',
+      conversationId: conversationId,
+      senderId: userDid,
+      content: content,
+      type: type,
+      status: MessageStatus.sending,
+      timestamp: DateTime.now(),
+    );
+
+    // Add to local messages immediately
+    _messagesByConversation[conversationId] ??= [];
+    _messagesByConversation[conversationId]!.add(message);
+
+    // Update conversation
+    final conversationIndex = _conversations.indexWhere((c) => c.id == conversationId);
+    if (conversationIndex != -1) {
+      _conversations[conversationIndex] = _conversations[conversationIndex].copyWith(
+        lastMessage: message,
+        lastActivity: DateTime.now(),
+      );
+      _conversationsController.add(_conversations);
+    }
+
+    _messagesController.add(_messagesByConversation[conversationId]!);
 
     try {
-      final socket = await ChatSocketService().socket;
-      final completer = Completer<Conversation>();
+      // Send via socket
+      final socketService = ChatSocketService();
+      final socket = await socketService.socket;
 
-      // Listen for the response
-      socket.once('conversation-created', (data) {
-        try {
-          if (data is Map<String, dynamic>) {
-            final createdConversation = Conversation.fromJson(Map<String, dynamic>.from(data));
-            completer.complete(createdConversation);
-          } else {
-            completer.completeError('Invalid response format');
-          }
-        } catch (e) {
-          completer.completeError(e);
-        }
+      socket.emit('send_message', {
+        'conversationId': conversationId,
+        'content': content,
+        'type': type.name,
+        'tempId': message.id,
       });
 
-      // Listen for errors
-      socket.once('conversation-creation-error', (data) {
-        final errorMessage = data is Map<String, dynamic> ? data['error'] : 'Failed to create conversation';
-        completer.completeError(Exception(errorMessage));
-      });
-
-      // Emit the conversation creation request
-      socket.emit('create-conversation', conversation.toJson());
-
-      // Wait for response or timeout
-      final createdConversation = await completer.future.timeout(
-        const Duration(seconds: 30),
-        onTimeout: () {
-          _logger.e('Create conversation timeout: ${conversation.id}');
-          throw Exception('Create conversation timeout');
-        },
-      );
-
-      _logger.i('Conversation created successfully: ${createdConversation.id}');
-      return createdConversation;
+      _logger.i('Message sent successfully');
     } catch (e) {
-      _logger.e('Failed to create conversation: ${conversation.id}', error: e);
+      // Update message status to failed
+      final messageIndex = _messagesByConversation[conversationId]!.length - 1;
+      _messagesByConversation[conversationId]![messageIndex] =
+        message.copyWith(status: MessageStatus.failed);
+
+      _messagesController.add(_messagesByConversation[conversationId]!);
+
+      _logger.e('Failed to send message', error: e);
       rethrow;
     }
+  }
+
+  @override
+  Future<void> markAsRead(String conversationId) async {
+    try {
+      // Send via socket
+      final socketService = ChatSocketService();
+      final socket = await socketService.socket;
+
+      socket.emit('mark_as_read', {'conversationId': conversationId});
+
+      // Update local state immediately
+      final conversationIndex = _conversations.indexWhere((c) => c.id == conversationId);
+      if (conversationIndex != -1) {
+        _conversations[conversationIndex] = _conversations[conversationIndex].copyWith(
+          unreadCount: 0,
+        );
+        _conversationsController.add(_conversations);
+      }
+
+      _logger.i('Marked conversation $conversationId as read');
+    } catch (e) {
+      _logger.e('Failed to mark conversation as read', error: e);
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Conversation> createOrGetConversation(Conversation newConversation) async {
+    final currentUserDid = _sl<AuthRepository>().session?.did ?? 'current_user_id';
+    final otherParticipant = newConversation.participants.firstWhere(
+      (p) => p.id != currentUserDid,
+      orElse: () => newConversation.participants.first,
+    );
+
+    // Check for existing conversation
+    final existingConversation = _conversations.cast<Conversation?>().firstWhere(
+      (c) => c != null &&
+             c.type == ConversationType.direct &&
+             c.participants.any((p) => p.id == otherParticipant.id),
+      orElse: () => null,
+    );
+
+    if (existingConversation != null) {
+      return existingConversation;
+    }
+
+    // Create new conversation
+    final dmConversation = newConversation.copyWith(
+      lastActivity: DateTime.now(),
+      unreadCount: 0,
+    );
+
+    try {
+      // Create via socket
+      final socketService = ChatSocketService();
+      final socket = await socketService.socket;
+
+      socket.emit('create_conversation', {
+        'type': dmConversation.type.name,
+        'participants': dmConversation.participants.map((p) => p.toJson()).toList(),
+        'tempId': dmConversation.id,
+      });
+
+      // Add to local state immediately
+      _conversations.insert(0, dmConversation);
+      _messagesByConversation[dmConversation.id] = [];
+
+      _conversationsController.add(_conversations);
+
+      _logger.i('Created new DM conversation with ${otherParticipant.displayName ?? otherParticipant.username}');
+
+      return dmConversation;
+    } catch (e) {
+      _logger.e('Failed to create conversation', error: e);
+      rethrow;
+    }
+  }
+
+  @override
+  void dispose() {
+    _logger.i('Disposing chat repository');
+    _conversationsController.close();
+    _messagesController.close();
   }
 }
