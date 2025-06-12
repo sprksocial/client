@@ -133,18 +133,15 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                 Positioned(
                   left: 0,
                   right: 0,
-                  bottom: 20,
+                  bottom: 0,
                   child: IgnorePointer(
                     child: Container(
-                      height: 120, // covers the area behind the InfoBar
+                      height: 120,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.bottomCenter,
                           end: Alignment.topCenter,
-                          colors: [
-                            Colors.black87.withAlpha(100),
-                            Colors.transparent,
-                          ],
+                          colors: [Colors.black87.withAlpha(100), Colors.transparent],
                         ),
                       ),
                     ),
@@ -164,7 +161,6 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                     hashtags: postData.record.hashtags,
                     isSprk: postData.uri.toString().contains('so.sprk'),
                     onUsernameTap: () {
-                      // Pause video before navigating to profile
                       _videoPlayerKey.currentState?.pauseVideo();
                       context.router.push(ProfileRoute(did: postData.author.did));
                     },

@@ -22,7 +22,7 @@ class PostVideoPlayer extends ConsumerStatefulWidget {
   ConsumerState<PostVideoPlayer> createState() => PostVideoPlayerState();
 }
 
-class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
+class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerProviderStateMixin {
   bool isPlaying = false;
   late VideoPlayerController videoController;
   bool isInitialized = false;
@@ -30,6 +30,9 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
   bool shouldCacheAgain = false;
   bool _cacheRequested = false; // Track if cache request has been made
   bool _isSeeking = false;
+
+  late AnimationController _bounceController;
+  late Animation<double> _bounceAnimation;
 
   // State tracking to prevent unnecessary play/pause cycles
   int? _lastNavigationIndex;
@@ -51,11 +54,17 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
   @override
   void initState() {
     super.initState();
+    _bounceController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+    _bounceAnimation = Tween<double>(
+      begin: 1.0,
+      end: 1.3,
+    ).animate(CurvedAnimation(parent: _bounceController, curve: Curves.elasticOut));
     initVideoPlayer();
   }
 
   @override
   void dispose() {
+    _bounceController.dispose();
     if (isInitialized) {
       videoController.removeListener(_videoListener);
       videoController.dispose();
@@ -70,6 +79,11 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
         setState(() {
           isPlaying = nowPlaying;
         });
+
+        if (!nowPlaying) {
+          _bounceController.reset();
+          _bounceController.forward();
+        }
       }
     }
   }
@@ -208,10 +222,18 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> {
                 ),
               ),
               Center(
-                child: Icon(
-                  isPlaying ? Icons.pause : Icons.play_arrow,
-                  size: 50,
-                  color: isPlaying ? Colors.transparent : AppColors.white,
+                child: AnimatedBuilder(
+                  animation: _bounceAnimation,
+                  builder: (context, child) {
+                    return Transform.scale(
+                      scale: isPlaying ? 1.0 : _bounceAnimation.value,
+                      child: Icon(
+                        isPlaying ? Icons.pause : Icons.play_arrow,
+                        size: 50,
+                        color: isPlaying ? Colors.transparent : AppColors.white,
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
