@@ -25,8 +25,8 @@ class ChatSocketService {
   /// Returns an active Socket.io connection or creates one if it does not exist.
   ///
   /// The JWT access token from the current [AuthRepository] session is included
-  /// in the `Authorization` header so that the backend can authenticate the
-  /// connection and automatically derive the user DID.
+  /// in the auth parameter so that the backend can authenticate the connection
+  /// and automatically derive the user DID.
   Future<io.Socket> get socket async {
     if (_socket != null && _socket!.connected) {
       return _socket!;
@@ -49,14 +49,31 @@ class ChatSocketService {
           .setTransports(['websocket']) // Required for Flutter native
           .enableForceNew()
           .enableReconnection()
-          .setExtraHeaders({'Authorization': 'Bearer $jwt'})
+          .setAuth({'token': jwt}) // ATP JWT authentication
           .build(),
     );
 
-    _socket!.onConnect((_) => _logger.i('Chat socket connected'));
+    _socket!.onConnect((_) {
+      _logger.i('Chat socket connected');
+      _logger.d('User DID: ${_socket!.id}');
+
+      // Emit user-online event as shown in the example
+      _socket!.emit('user-online', {
+        'userId': _socket!.id // This is automatically set from JWT
+      });
+    });
+
     _socket!.onDisconnect((_) => _logger.w('Chat socket disconnected'));
     _socket!.onConnectError((err) => _logger.e('Chat socket connection error', error: err));
 
     return _socket!;
+  }
+
+  /// Dispose the socket connection
+  void dispose() {
+    if (_socket != null) {
+      _socket!.dispose();
+      _socket = null;
+    }
   }
 }

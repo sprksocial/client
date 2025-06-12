@@ -496,10 +496,10 @@ class FeedNotifier extends _$FeedNotifier {
   Future<void> removePost(AtUri uri) async {
     final currentIndex = state.index;
     final postIndex = state.loadedPosts.indexOf(uri);
-    
+
     // Remove the post from the loaded posts list
     final updatedPosts = state.loadedPosts.where((e) => e != uri).toList();
-    
+
     // Adjust the index if necessary
     int newIndex = currentIndex;
     if (postIndex != -1) {
@@ -519,7 +519,7 @@ class FeedNotifier extends _$FeedNotifier {
         newIndex = math.min(newIndex, updatedPosts.length - 1);
       }
     }
-    
+
     _logger.d('Removing post ${uri.toString()}, adjusting index from $currentIndex to $newIndex');
     state = state.copyWith(
       loadedPosts: updatedPosts,
