@@ -93,7 +93,11 @@ class GraphRepositoryImpl implements GraphRepository {
         _logger.e('Session DID not available for authenticated user');
         throw Exception('Session DID not available');
       }
-      _settingsRepository = GetIt.instance<SettingsRepository>();
+      try {
+        _settingsRepository; // goofy late check
+      } catch (e) {
+        _settingsRepository = GetIt.instance<SettingsRepository>();
+      }
 
       final followMode = await _settingsRepository.getFollowMode();
       _logger.d('Using follow mode: $followMode');

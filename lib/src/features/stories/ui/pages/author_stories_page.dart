@@ -43,6 +43,7 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
   double _dragOffset = 0.0;
   double _dragScale = 1.0;
   bool _isDragging = false;
+  bool _isCurrentStoryLoading = true;
 
   @override
   void initState() {
@@ -72,7 +73,9 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
   void _startCurrentStory() {
     if (_currentStoryIndex >= widget.stories.length) return;
 
-    _progressControllers[_currentStoryIndex].forward().whenComplete(_nextStory);
+    if (!_isCurrentStoryLoading) {
+      _progressControllers[_currentStoryIndex].forward().whenComplete(_nextStory);
+    }
   }
 
   void _pause() {
@@ -81,8 +84,27 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
 
   void _resume() {
     final controller = _progressControllers[_currentStoryIndex];
-    if (controller.status != AnimationStatus.completed) {
+    if (controller.status != AnimationStatus.completed && !_isCurrentStoryLoading) {
       controller.forward();
+    }
+  }
+
+  void _onStoryLoadingStateChanged(bool isLoading) {
+    if (_isCurrentStoryLoading != isLoading) {
+      setState(() {
+        _isCurrentStoryLoading = isLoading;
+      });
+      
+      if (isLoading) {
+        _pause();
+      } else {
+        final controller = _progressControllers[_currentStoryIndex];
+        if (controller.status == AnimationStatus.dismissed) {
+          controller.forward().whenComplete(_nextStory);
+        } else if (controller.status == AnimationStatus.forward) {
+          controller.forward();
+        }
+      }
     }
   }
 
@@ -90,14 +112,14 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
     final isLastStory = _currentStoryIndex >= widget.stories.length - 1;
 
     if (!isLastStory) {
-      setState(() => _currentStoryIndex++);
+      setState(() {
+        _currentStoryIndex++;
+        _isCurrentStoryLoading = true;
+      });
       _pageController.nextPage(duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
-      _startCurrentStory();
       return;
     }
 
-    // We're at the last story – delegate to next author if available, otherwise
-    // pop like the previous behaviour.
     if (widget.onNextAuthor != null) {
       widget.onNextAuthor!.call();
     } else if (context.mounted) {
@@ -110,13 +132,14 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
 
     if (!isFirstStory) {
       _progressControllers[_currentStoryIndex].reset();
-      setState(() => _currentStoryIndex--);
+      setState(() {
+        _currentStoryIndex--;
+        _isCurrentStoryLoading = true;
+      });
       _pageController.previousPage(duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
-      _startCurrentStory();
       return;
     }
 
-    // We're at the first story – delegate to previous author if available.
     if (widget.onPreviousAuthor != null) {
       widget.onPreviousAuthor!.call();
     } else if (context.mounted) {
@@ -215,13 +238,16 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
                         _progressControllers[_currentStoryIndex].reset();
                         setState(() {
                           _currentStoryIndex = index;
+                          _isCurrentStoryLoading = true;
                         });
-                        _startCurrentStory();
                       }
                     },
                     itemBuilder: (context, index) {
                       final story = widget.stories[index];
-                      return StoryPage(story: story);
+                      return StoryPage(
+                        story: story,
+                        onLoadingStateChanged: index == _currentStoryIndex ? _onStoryLoadingStateChanged : null,
+                      );
                     },
                   ),
                   Positioned(
@@ -304,7 +330,6 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
                       ],
                     ),
                   ),
-                  // Tap regions to navigate between stories
                   Positioned(
                     top: 80,
                     bottom: 0,

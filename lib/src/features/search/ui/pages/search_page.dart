@@ -60,6 +60,17 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     hintText: 'Search users',
                     prefixIcon: Icon(FluentIcons.search_24_regular, color: theme.textTheme.bodyMedium?.color),
                     filled: true,
+                    suffixIcon: _searchController.text.isNotEmpty
+                        ? IconButton(
+                            iconSize: 20,
+                            splashRadius: 20,
+                            onPressed: () {
+                              _searchController.clear();
+                              ref.read(searchProvider.notifier).updateQuery('');
+                            },
+                            icon: const Icon(FluentIcons.dismiss_24_regular),
+                          )
+                        : null,
                     fillColor: colorScheme.surfaceContainerLow.withAlpha(50),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
@@ -69,7 +80,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(color: colorScheme.outline),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                   ),
                 ),
               ),
