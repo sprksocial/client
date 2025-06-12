@@ -85,7 +85,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         videoPath: widget.videoPath,
         description: description,
         altText: _videoAltText,
-        //crosspostToBsky: crosspostEnabled,
+        crosspostToBsky: crosspostEnabled,
       );
 
       // Mark task as completed
@@ -241,33 +241,6 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                         },
                       ),
                       const SizedBox(height: 20),
-                      // Bluesky Cross-posting Switch
-                      Consumer(
-                        builder: (context, ref, _) {
-                          final settings = ref.watch(settingsProvider);
-                          // For videos, Bluesky post will be a link only.
-                          return Container(
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.surface,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: ListTile(
-                              title: Text('Post to Bluesky', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
-                              subtitle: Text(
-                                'Bluesky will receive a text post linking to Spark (videos not yet supported).',
-                                style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(150), fontSize: 12),
-                              ),
-                              trailing: Switch(
-                                value: settings.postToBskyEnabled,
-                                onChanged: (v) => ref.read(settingsProvider.notifier).setPostToBsky(v),
-                                activeColor: Theme.of(context).colorScheme.primary,
-                              ),
-                              onTap: () => ref.read(settingsProvider.notifier).setPostToBsky(!settings.postToBskyEnabled),
-                            ),
-                          );
-                        },
-                      ),
-                      const SizedBox(height: 20),
                       // Description field
                       Container(
                         padding: const EdgeInsets.all(12),
@@ -289,6 +262,39 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                             counterText: '',
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 20),
+                      // Bluesky Cross-posting Switch
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final settings = ref.watch(settingsProvider);
+                          return Column(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: ListTile(
+                                  title: Text(
+                                    'Post to Bluesky',
+                                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                                  ),
+                                  trailing: Switch(
+                                    value: settings.postToBskyEnabled,
+                                    onChanged: (bool value) {
+                                      ref.read(settingsProvider.notifier).setPostToBsky(value);
+                                    },
+                                    activeColor: Theme.of(context).colorScheme.primary,
+                                  ),
+                                  onTap: () {
+                                    ref.read(settingsProvider.notifier).setPostToBsky(!settings.postToBskyEnabled);
+                                  },
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     ],
                   ),
