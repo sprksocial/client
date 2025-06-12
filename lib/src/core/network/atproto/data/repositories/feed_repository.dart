@@ -70,7 +70,8 @@ abstract class FeedRepository {
   /// [text] The text content of the post
   /// [imageFiles] List of image files to attach
   /// [altTexts] Map of file paths to alt texts
-  Future<StrongRef> postImages(String text, List<XFile> imageFiles, Map<String, String> altTexts);
+  /// [crosspostToBsky] Whether to also post to Bluesky
+  Future<StrongRef> postImages(String text, List<XFile> imageFiles, Map<String, String> altTexts, {bool crosspostToBsky = false});
 
   /// Upload images to the server
   ///
