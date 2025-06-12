@@ -1,5 +1,5 @@
 import 'package:atproto/core.dart';
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/feed_algorithms/feed_following.dart';
 import 'package:sparksocial/src/core/feed_algorithms/feed_for_you.dart';
 import 'package:sparksocial/src/core/feed_algorithms/feed_mutuals.dart';

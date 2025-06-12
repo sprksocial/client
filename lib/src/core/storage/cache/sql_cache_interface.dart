@@ -1,7 +1,7 @@
 import 'dart:async';
 
 // We need models for method signatures
-import 'package:sparksocial/src/core/network/data/models/models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:atproto_core/atproto_core.dart'; // For AtUri
 
 abstract class SQLCacheInterface {

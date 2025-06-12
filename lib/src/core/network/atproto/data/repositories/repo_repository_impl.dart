@@ -5,9 +5,9 @@ import 'package:atproto/core.dart';
 import 'package:atproto/atproto.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
-import 'package:sparksocial/src/core/network/data/repositories/repo_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/network/data/repositories/sprk_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
 
 /// Repository-related API endpoints implementation
 class RepoRepositoryImpl implements RepoRepository {

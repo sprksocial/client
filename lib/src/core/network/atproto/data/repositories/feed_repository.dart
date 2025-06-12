@@ -1,8 +1,8 @@
 import 'package:atproto_core/atproto_core.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:atproto/atproto.dart';
-import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 
 /// Interface for Feed-related API endpoints
 abstract class FeedRepository {

@@ -4,10 +4,10 @@ import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
-import 'package:sparksocial/src/core/network/data/repositories/actor_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:atproto/atproto.dart' as atproto;
 
 /// Actor-related API endpoints implementation

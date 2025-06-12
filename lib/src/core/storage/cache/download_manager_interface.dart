@@ -1,5 +1,5 @@
 import 'package:atproto/core.dart';
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart'; // For PostView, Feed
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart'; // For PostView, Feed
 
 const int activeFeedPriority = 1;
 const int inactiveFeedPriority = 10;

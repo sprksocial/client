@@ -1,5 +1,5 @@
 import 'package:atproto_core/atproto_core.dart';
-import 'package:sparksocial/src/core/network/data/models/graph_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
 
 /// Interface for Graph-related API endpoints
 abstract class GraphRepository {

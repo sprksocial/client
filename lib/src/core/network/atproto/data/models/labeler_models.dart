@@ -1,7 +1,7 @@
 import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 
 part 'labeler_models.freezed.dart';
 part 'labeler_models.g.dart';

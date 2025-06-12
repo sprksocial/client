@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart' hide Image;
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart' hide Image;
 
 @RoutePage()
 class StoryPage extends ConsumerStatefulWidget {

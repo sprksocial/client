@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/network/data/repositories/graph_repository.dart';
-import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/network/data/models/graph_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
 import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
 
 /// Implementation of Graph-related API endpoints

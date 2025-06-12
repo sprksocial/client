@@ -6,7 +6,7 @@ import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
 import 'settings_state.dart';
 import '../../../core/storage/preferences/settings_repository.dart';
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 
 part 'settings_provider.g.dart';
 

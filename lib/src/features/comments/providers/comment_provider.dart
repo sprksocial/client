@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto.dart';
+import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_state.dart';
 import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
 import 'package:video_player/video_player.dart';

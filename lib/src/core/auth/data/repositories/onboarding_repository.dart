@@ -1,5 +1,5 @@
 import 'package:bluesky/bluesky.dart';
-import 'package:sparksocial/src/core/network/data/models/graph_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
 
 abstract class OnboardingRepository {
   /// Checks if the current user has a Spark profile

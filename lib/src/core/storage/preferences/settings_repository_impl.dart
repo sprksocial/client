@@ -1,14 +1,14 @@
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/network/data/models/labeler_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
-import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
   late final SQLCacheInterface _sqlCache;

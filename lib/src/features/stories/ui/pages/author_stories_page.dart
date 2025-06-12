@@ -1,8 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'dart:async';

@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
 
 part 'settings_state.freezed.dart';

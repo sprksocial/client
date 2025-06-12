@@ -3,7 +3,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/comments/providers/comments_page_provider.dart';
 import 'package:sparksocial/src/features/comments/ui/widgets/comment_input.dart';

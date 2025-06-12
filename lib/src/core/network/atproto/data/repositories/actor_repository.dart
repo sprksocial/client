@@ -1,4 +1,4 @@
-import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 
 /// Interface for Actor-related API endpoints
 abstract class ActorRepository {

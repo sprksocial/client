@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pool/pool.dart';
-import 'package:sparksocial/src/core/network/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';

@@ -4,10 +4,10 @@ import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart' as bs;
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/network/data/models/graph_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
 
-import 'package:sparksocial/src/core/network/data/repositories/repo_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'onboarding_repository.dart';

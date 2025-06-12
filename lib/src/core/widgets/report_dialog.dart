@@ -4,7 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 
 class ReportDialog extends ConsumerStatefulWidget {

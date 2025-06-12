@@ -1,7 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/routing/pages.dart';
-import 'package:sparksocial/src/core/network/atproto.dart';
+import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:video_player/video_player.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:collection/collection.dart';

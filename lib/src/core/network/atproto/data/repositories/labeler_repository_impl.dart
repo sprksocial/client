@@ -1,9 +1,9 @@
 import 'dart:convert';
 
 import 'package:atproto_core/atproto_core.dart';
-import 'package:sparksocial/src/core/network/data/models/labeler_models.dart';
-import 'package:sparksocial/src/core/network/data/repositories/labeler_repository.dart';
-import 'package:sparksocial/src/core/network/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/labeler_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:get_it/get_it.dart';
 

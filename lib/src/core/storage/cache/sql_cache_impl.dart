@@ -9,7 +9,7 @@ import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sqflite/sqflite.dart';
 
-import 'package:sparksocial/src/core/network/data/models/models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:atproto_core/atproto_core.dart';
 
 // --- Post Table ---

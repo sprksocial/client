@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:atproto/core.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/network/data/repositories/actor_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/profile/providers/edit_profile_state.dart';
 import 'package:get_it/get_it.dart';

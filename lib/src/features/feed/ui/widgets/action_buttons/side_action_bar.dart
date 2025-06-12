@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/network/atproto.dart';
+import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 

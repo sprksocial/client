@@ -6,7 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto.dart';
+import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
 import '../../../core/auth/data/repositories/auth_repository.dart';
