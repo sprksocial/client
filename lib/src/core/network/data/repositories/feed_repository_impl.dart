@@ -573,7 +573,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
       final response = await atproto.get(
         NSID.parse('so.sprk.feed.getStories'),
-        parameters: {'storyUris': storyUris},
+        parameters: {'uris': storyUris},
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) => (jsonMap['stories'] as List<dynamic>).map((story) => StoryView.fromJson(story)).toList(),
       );
