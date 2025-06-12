@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,7 +6,9 @@ import 'package:sparksocial/src/core/network/messages/data/models/message.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
+import 'package:sparksocial/src/features/messages/providers/chat_providers.dart';
 
+@RoutePage()
 class ChatPage extends ConsumerStatefulWidget {
   final Conversation conversation;
 
@@ -16,18 +19,14 @@ class ChatPage extends ConsumerStatefulWidget {
 }
 
 class _ChatPageState extends ConsumerState<ChatPage> {
-  final ChatService _chatService = ChatService();
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  List<ChatMessage> _messages = [];
-  bool _isLoading = true;
   String? _currentUserDid;
 
   @override
   void initState() {
     super.initState();
     _initializeUser();
-    _loadMessages();
     _markAsRead();
   }
 
@@ -64,27 +63,12 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     return 'Conversation';
   }
 
-  Future<void> _loadMessages() async {
-    try {
-      final messages = await _chatService.getMessages(widget.conversation.id);
-      if (mounted) {
-        setState(() {
-          _messages = messages;
-          _isLoading = false;
-        });
-        _scrollToBottom();
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
   Future<void> _markAsRead() async {
-    await _chatService.markAsRead(widget.conversation.id);
+    try {
+      await ref.read(chatActionsProvider.notifier).markConversationAsRead(widget.conversation.id);
+    } catch (e) {
+      // Error is handled by the provider
+    }
   }
 
   Future<void> _sendMessage() async {
@@ -92,8 +76,20 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     if (content.isEmpty) return;
 
     _messageController.clear();
-    await _chatService.sendMessage(widget.conversation.id, content);
-    _loadMessages();
+
+    try {
+      await ref.read(chatActionsProvider.notifier).sendMessage(
+        conversationId: widget.conversation.id,
+        content: content,
+      );
+    } catch (e) {
+      // Error is handled by the provider
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to send message: ${e.toString()}')),
+        );
+      }
+    }
   }
 
   void _scrollToBottom() {
@@ -110,6 +106,9 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    final messagesAsync = ref.watch(conversationMessagesProvider(widget.conversation.id));
+    final chatActionsState = ref.watch(chatActionsProvider);
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -145,16 +144,46 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         children: [
           Container(height: 0.5, width: double.infinity, color: Theme.of(context).colorScheme.outline),
           Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : MessagesList(
-                    messages: _messages,
-                    scrollController: _scrollController,
-                    currentUserDid: _currentUserDid,
-                    conversation: widget.conversation,
-                  ),
+            child: messagesAsync.when(
+              data: (messages) {
+                // Auto-scroll to bottom when new messages arrive
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  _scrollToBottom();
+                });
+
+                return MessagesList(
+                  messages: messages,
+                  scrollController: _scrollController,
+                  currentUserDid: _currentUserDid,
+                  conversation: widget.conversation,
+                );
+              },
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stackTrace) => Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(FluentIcons.error_circle_24_regular, size: 48, color: Theme.of(context).colorScheme.error),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Failed to load messages',
+                      style: TextStyle(color: Theme.of(context).colorScheme.error),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton(
+                      onPressed: () => ref.refresh(conversationMessagesProvider(widget.conversation.id)),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
-          MessageInput(controller: _messageController, onSend: _sendMessage),
+          MessageInput(
+            controller: _messageController,
+            onSend: _sendMessage,
+            isLoading: chatActionsState.isSendingMessage,
+          ),
         ],
       ),
     );
@@ -375,10 +404,16 @@ class MessagesList extends StatelessWidget {
 }
 
 class MessageInput extends StatelessWidget {
-  const MessageInput({super.key, required this.controller, required this.onSend});
+  const MessageInput({
+    super.key,
+    required this.controller,
+    required this.onSend,
+    this.isLoading = false,
+  });
 
   final TextEditingController controller;
   final VoidCallback onSend;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -411,8 +446,17 @@ class MessageInput extends StatelessWidget {
             Container(
               decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
               child: IconButton(
-                onPressed: onSend,
-                icon: const Icon(FluentIcons.send_24_filled, color: Colors.white),
+                onPressed: isLoading ? null : onSend,
+                icon: isLoading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Icon(FluentIcons.send_24_filled, color: Colors.white),
               ),
             ),
           ],

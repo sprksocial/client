@@ -5,6 +5,7 @@ import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:video_player/video_player.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:collection/collection.dart';
+import 'package:sparksocial/src/core/network/messages/data/models/message.dart';
 
 part 'app_router.gr.dart';
 
@@ -44,6 +45,10 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: EditProfileRoute.page, path: '/profile-editor'),
 
     AutoRoute(page: ProfileSettingsRoute.page, path: '/profile-settings'),
+
+    // Messages/DMs routes
+    AutoRoute(page: ChatRoute.page, path: '/chat/:conversationId'),
+    AutoRoute(page: NewChatSearchRoute.page, path: '/messages/new'),
 
     // Modal bottom sheet routes
     CustomRoute(

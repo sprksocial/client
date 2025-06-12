@@ -188,7 +188,7 @@ class _UserResultsState extends ConsumerState<_UserResults> {
       final conversation = await ref.read(chatProvider.notifier).createOrGetConversation(dmConversation);
 
       if (mounted) {
-        context.router.push(ChatScreen(conversation: conversation)); // TODO: Replace with actual route when available
+        context.router.push(ChatRoute(conversation: conversation));
       }
     } catch (e) {
       if (!mounted) return;
