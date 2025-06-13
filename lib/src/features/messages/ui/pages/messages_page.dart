@@ -44,7 +44,7 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
         leading: IconButton(
           padding: EdgeInsets.zero,
           onPressed: () {
-            context.router.push(const NewChatSearchRoute());
+            //context.router.push(const NewChatSearchRoute()); TODO
           },
           icon: Icon(FluentIcons.add_24_regular, color: theme.colorScheme.onSurface, size: 24),
         ),

@@ -19,7 +19,7 @@ class ConversationList extends StatelessWidget {
             Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey),
             SizedBox(height: 16),
             Text(
-              'No conversations yet',
+              'DMs feature is coming soon',
               style: TextStyle(fontSize: 18, color: Colors.grey, fontWeight: FontWeight.w500),
             ),
             SizedBox(height: 8),
