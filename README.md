@@ -55,21 +55,31 @@ We are building a decentralized social network on the AT Protocol, empowering us
 ### Installation
 
 1. Clone this repository
+
 ```bash
 git clone https://github.com/sprksocial/spark-front-end.git
 ```
 
 2. Navigate to the project directory
+
 ```bash
-cd spark-social
+cd spark-front-end
 ```
 
 3. Install dependencies
+
 ```bash
 flutter pub get
 ```
 
-4. Run the app
+4. Generate code
+
+```bash
+dart run build_runner build --delete-conflicting-outputs
+```
+
+5. Run the app
+
 ```bash
 flutter run
 ```
@@ -79,7 +89,11 @@ flutter run
 - Flutter
 - AT Protocol for decentralized social networking
 - Cupertino (iOS-style) widgets
-- Provider for state management
+- Riverpod for state management
+- AutoRoute for routing
+- GetIt for dependency injection
+- Freezed for data models
+- Logger for logging
 - Ionicons for beautiful icons
 - Video player for media playback
 - Camera for video recording
@@ -87,11 +101,31 @@ flutter run
 
 ## Project Structure
 
-- `lib/screens` - Contains the main screens of the application
-- `lib/widgets` - Reusable UI components
-- `lib/models` - Data models
-- `lib/services` - Business logic and services
-- `lib/utils` - Utility functions and constants
+```
+  lib/
+  ├── main.dart                  # App entry point
+  └── src/
+      ├── sprk_app.dart          # Main MaterialApp
+      ├── core/                  # Shared code across features
+      │   ├── config/            # Application-wide configurations
+      │   ├── di/                # Dependency injection setup
+      │   ├── network/           # ATProto client, API base
+      │   ├── routing/           # AutoRoute setup
+      │   ├── storage/           # Local storage utilities
+      │   ├── theme/             # Theme definitions
+      │   ├── l10n/              # Localization
+      │   ├── widgets/           # Common widgets
+      │   └── utils/             # Shared utilities
+      └── features/              # Feature modules
+          └── feature/
+              ├── data/          # Data layer for this feature
+              │   ├── repositories/
+              │   └── models/
+              ├── providers/     # Riverpod providers
+              └── ui/            # UI components
+                  ├── pages/
+                  └── widgets/
+```
 
 ## Future Enhancements
 

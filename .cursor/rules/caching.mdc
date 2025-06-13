@@ -1,0 +1,172 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Storage and Cache System
+
+This directory contains utilities for handling local storage and caching operations in the Spark Social application.
+
+## Storage Components
+
+- **LocalStorageInterface**: Abstract interface defining storage operations.
+- **SharedPrefsStorage**: Implementation using SharedPreferences for non-sensitive data.
+- **SecureStorage**: Implementation using FlutterSecureStorage for sensitive data.
+- **StorageManager**: Provides centralized access to all storage implementations.
+- **StorageConstants**: Constants for storage keys used throughout the app.
+- **SettingsRepository**: Manages application settings with interface and implementation.
+
+## Cache Components
+
+- **SQLCacheInterface**: Abstract interface for SQL-based cache operations.
+- **SQLCacheImpl**: SQLite implementation for persistent caching.
+- **CacheManagerInterface**: Abstract interface for cache management operations.
+- **CacheManagerImpl**: Implementation of cache manager with SQL backend.
+- **DownloadManagerInterface**: Abstract interface for download operations.
+- **DownloadManagerImpl**: Handles file downloads and caching.
+
+## Usage Examples
+
+### Basic Storage Operations
+
+```dart
+// Access the storage manager from GetIt
+final storageManager = GetIt.instance<StorageManager>();
+
+// Store a value in preferences (non-sensitive data)
+await storageManager.preferences.setString(StorageConstants.username, 'johndoe');
+
+// Retrieve a value from preferences
+final username = await storageManager.preferences.getString(StorageConstants.username);
+
+// Store sensitive data in secure storage
+await storageManager.secure.setString(StorageConstants.authToken, 'secret-token');
+
+// Retrieve sensitive data
+final token = await storageManager.secure.getString(StorageConstants.authToken);
+```
+
+### Storing Complex Objects
+
+```dart
+// Define a User class with freezed
+@freezed
+class User with _$User {
+  const factory User({
+    required String id,
+    required String name,
+    required String email,
+  }) = _User;
+
+  factory User.fromJson(Map<String, dynamic> json) => _$UserFromJson(json);
+}
+
+// Store a user object
+final user = User(id: '123', name: 'John Doe', email: 'john@example.com');
+await storageManager.preferences.setObject<User>(
+  StorageConstants.user, 
+  user, 
+  (json) => User.fromJson(json)
+);
+
+// Retrieve a user object
+final retrievedUser = await storageManager.preferences.getObject<User>(
+  StorageConstants.user, 
+  (json) => User.fromJson(json)
+);
+```
+
+### SQL Cache Operations
+
+```dart
+// Access the SQL cache from GetIt
+final sqlCache = GetIt.instance<SQLCacheInterface>();
+
+// Store data in cache
+await sqlCache.put('cache_key', {'data': 'value'});
+
+// Retrieve data from cache
+final cachedData = await sqlCache.get('cache_key');
+
+// Check if data exists in cache
+final exists = await sqlCache.exists('cache_key');
+
+// Remove data from cache
+await sqlCache.remove('cache_key');
+
+// Clear all cache
+await sqlCache.clear();
+```
+
+### Cache Manager Operations
+
+```dart
+// Access the cache manager from GetIt
+final cacheManager = GetIt.instance<CacheManagerInterface>();
+
+// Get a file (from cache if available, or download it)
+final file = await cacheManager.getFile('https://example.com/image.jpg');
+
+// Store a file in cache
+final bytes = await someImage.readAsBytes();
+await cacheManager.putFile('https://example.com/image.jpg', bytes);
+
+// Get cache size
+final cacheSize = await cacheManager.getCacheSize();
+print('Cache size: ${cacheSize / 1024 / 1024} MB');
+
+// Clear cache
+await cacheManager.clearCache();
+```
+
+### Download Manager Operations
+
+```dart
+// Access the download manager from GetIt
+final downloadManager = GetIt.instance<DownloadManagerInterface>();
+
+// Download a file
+final downloadedFile = await downloadManager.downloadFile('https://example.com/file.pdf');
+
+// Check download status
+final isDownloading = await downloadManager.isDownloading('https://example.com/file.pdf');
+
+// Cancel download
+await downloadManager.cancelDownload('https://example.com/file.pdf');
+```
+
+### Settings Repository
+
+```dart
+// Access settings repository from GetIt
+final settingsRepository = GetIt.instance<SettingsRepository>();
+
+// Get app settings
+final settings = await settingsRepository.getSettings();
+
+// Update a setting
+await settingsRepository.updateSetting('theme_mode', 'dark');
+
+// Reset settings to defaults
+await settingsRepository.resetSettings();
+```
+
+## Available Services in GetIt
+
+All storage and cache services are registered in the service locator and can be accessed via GetIt:
+
+- `StorageManager` - Main storage management
+- `SQLCacheInterface` - SQL-based cache operations
+- `CacheManagerInterface` - File cache management
+- `DownloadManagerInterface` - File download operations
+- `SettingsRepository` - Application settings
+
+## Best Practices
+
+1. Always use interfaces when injecting dependencies
+2. Initialize storage manager and SQL cache during app startup
+3. Use appropriate storage type (secure vs. preferences) based on data sensitivity
+4. Cache frequently accessed data using the SQL cache
+5. Use the download manager for large files to avoid memory issues
+6. Monitor cache size and implement cleanup strategies
+7. Handle cache failures gracefully with fallback mechanisms

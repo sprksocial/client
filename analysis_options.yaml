@@ -2,3 +2,6 @@ include: package:flutter_lints/flutter.yaml
 
 formatter:
   page_width: 130
+analyzer:
+  errors:
+    invalid_annotation_target: ignore

@@ -1,0 +1,32 @@
+import 'package:flutter/material.dart';
+
+// Placeholder for ProfileStatItem widget
+class ProfileStatItem extends StatelessWidget {
+  final String count;
+  final String label;
+  const ProfileStatItem({super.key, required this.count, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          count,
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+            color: theme.textTheme.titleLarge?.color ?? theme.colorScheme.onSurface,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(color: theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurfaceVariant, fontSize: 14),
+        ),
+      ],
+    );
+  }
+}
