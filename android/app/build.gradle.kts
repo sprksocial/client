@@ -84,3 +84,7 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.activity:activity-compose:1.8.2")
 }
+
+configurations.all {
+    exclude(group = "ru.solrudev.ackpine")
+}
