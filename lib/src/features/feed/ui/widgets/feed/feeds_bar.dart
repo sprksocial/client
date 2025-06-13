@@ -212,12 +212,12 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
         ),
       ),
       actions: [
-        IconButton(
-          icon: const Icon(FluentIcons.options_24_regular),
-          color: AppColors.lightLavender,
-          iconSize: 30,
-          onPressed: () => context.router.navigate(FeedSettingsRoute()),
-        ),
+        // IconButton(
+        //   icon: const Icon(FluentIcons.options_24_regular),
+        //   color: AppColors.white,
+        //   iconSize: 30,
+        //   onPressed: () => context.router.navigate(FeedSettingsRoute()),
+        // ),
       ],
     );
   }
