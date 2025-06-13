@@ -5,7 +5,6 @@ import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:video_player/video_player.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:collection/collection.dart';
-import 'package:sparksocial/src/core/network/messages/data/models/message.dart';
 
 part 'app_router.gr.dart';
 

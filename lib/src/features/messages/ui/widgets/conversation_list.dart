@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/network/messages/data/models/message.dart';
+import 'package:sparksocial/src/core/network/chat/data/models/models.dart';
 import 'conversation_list_item.dart';
 
 class ConversationList extends StatelessWidget {
-  final List<Conversation> conversations;
-  final Function(Conversation)? onConversationTap;
-  final Function(Conversation)? onConversationLongPress;
+  final List<ChatConversation> conversations;
+  final Function(ChatConversation)? onConversationTap;
+  final Function(ChatConversation)? onConversationLongPress;
 
   const ConversationList({super.key, required this.conversations, this.onConversationTap, this.onConversationLongPress});
 
@@ -29,18 +29,11 @@ class ConversationList extends StatelessWidget {
       );
     }
 
-    final pinnedConversations = conversations.where((c) => c.isPinned).toList();
-
     return ListView.builder(
-      itemCount: conversations.length + (pinnedConversations.isNotEmpty ? 1 : 0),
+      itemCount: conversations.length,
       padding: EdgeInsets.zero,
       itemBuilder: (context, index) {
-        if (pinnedConversations.isNotEmpty && index == 0) {
-          return _SectionHeader(title: 'Pinned');
-        }
-
-        final adjustedIndex = pinnedConversations.isNotEmpty ? index - 1 : index;
-        final conversation = conversations[adjustedIndex];
+        final conversation = conversations[index];
 
         return ConversationListItem(
           conversation: conversation,
@@ -48,23 +41,6 @@ class ConversationList extends StatelessWidget {
           onLongPress: () => onConversationLongPress?.call(conversation),
         );
       },
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({required this.title});
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Text(
-        title,
-        style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.grey),
-      ),
     );
   }
 }

@@ -16,10 +16,8 @@ import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repositor
 import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
-import 'package:sparksocial/src/core/network/messages/data/services/chat_socket_service.dart';
-import 'package:sparksocial/src/core/network/messages/data/services/chat_api_service.dart';
-import 'package:sparksocial/src/core/network/messages/data/repositories/chat_repository.dart';
-import 'package:sparksocial/src/core/network/messages/data/repositories/chat_repository_impl.dart';
+import 'package:sparksocial/src/core/network/chat/data/repositories/chat_repository.dart';
+import 'package:sparksocial/src/core/network/chat/data/repositories/chat_repository_impl.dart';
 
 // This is the ONLY PLACE IN THE ENTIRE APP where implementations are imported
 // All the other files should import interfaces only (polymorphism) to keep everything decoupled
@@ -56,8 +54,6 @@ Future<void> initServiceLocator() async {
   sl.registerSingleton<AuthRepository>(AuthRepositoryImpl());
 
   // Register Chat dependencies
-  sl.registerLazySingleton<ChatSocketService>(() => ChatSocketService());
-  sl.registerLazySingleton<ChatApiService>(() => ChatApiService());
   sl.registerSingleton<ChatRepository>(ChatRepositoryImpl());
 
   // Register SprkRepository with its interface

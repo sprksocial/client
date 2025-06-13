@@ -2,17 +2,26 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/network/messages/data/models/message.dart';
+import 'package:sparksocial/src/core/network/chat/data/models/models.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/messages/providers/chat_providers.dart';
+import 'package:sparksocial/src/features/messages/providers/chat_providers_new.dart';
 
 @RoutePage()
 class ChatPage extends ConsumerStatefulWidget {
-  final Conversation conversation;
+  final String otherUserDid;
+  final String? otherUserHandle;
+  final String? otherUserDisplayName;
+  final String? otherUserAvatar;
 
-  const ChatPage({super.key, required this.conversation});
+  const ChatPage({
+    super.key,
+    required this.otherUserDid,
+    this.otherUserHandle,
+    this.otherUserDisplayName,
+    this.otherUserAvatar,
+  });
 
   @override
   ConsumerState<ChatPage> createState() => _ChatPageState();
@@ -21,13 +30,15 @@ class ChatPage extends ConsumerStatefulWidget {
 class _ChatPageState extends ConsumerState<ChatPage> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  List<ChatMessage> _messages = [];
   String? _currentUserDid;
 
   @override
   void initState() {
     super.initState();
     _initializeUser();
-    _markAsRead();
+    _loadMessages();
+    _connectWebSocket();
   }
 
   void _initializeUser() {
@@ -35,40 +46,41 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   }
 
   String _getConversationTitle() {
-    if (widget.conversation.title != null && widget.conversation.title!.isNotEmpty) {
-      return widget.conversation.title!;
-    }
-
-    if (widget.conversation.type == ConversationType.direct && widget.conversation.participants.length == 2) {
-      final otherParticipant = widget.conversation.participants.firstWhere(
-        (p) => p.id != _currentUserDid,
-        orElse: () => widget.conversation.participants.first,
-      );
-      return otherParticipant.displayName ?? otherParticipant.username;
-    }
-
-    if (widget.conversation.participants.length > 1) {
-      final names = widget.conversation.participants
-          .where((p) => p.id != _currentUserDid)
-          .take(3)
-          .map((p) => p.displayName ?? p.username)
-          .join(', ');
-      final otherParticipantsCount = widget.conversation.participants.where((p) => p.id != _currentUserDid).length;
-      if (otherParticipantsCount > 3) {
-        return '$names and ${otherParticipantsCount - 3} more';
-      }
-      return names;
-    }
-
-    return 'Conversation';
+    return widget.otherUserDisplayName ?? widget.otherUserHandle ?? 'Chat';
   }
 
-  Future<void> _markAsRead() async {
+  Future<void> _loadMessages() async {
     try {
-      await ref.read(chatActionsProvider.notifier).markConversationAsRead(widget.conversation.id);
+      final chatService = ref.read(chatServiceProvider.notifier);
+      final response = await chatService.getMessages(widget.otherUserDid);
+      setState(() {
+        _messages = response.messages;
+      });
+      _scrollToBottom();
     } catch (e) {
-      // Error is handled by the provider
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load messages: ${e.toString()}')),
+        );
+      }
     }
+  }
+
+  void _connectWebSocket() {
+    final wsProvider = ref.read(chatWebSocketProvider.notifier);
+    wsProvider.connect();
+
+    // Listen for new messages
+    ref.listen<ChatWebSocketState>(chatWebSocketProvider, (previous, next) {
+      if (next.recentMessages.isNotEmpty &&
+          (next.recentMessages.last.senderDid == widget.otherUserDid ||
+           next.recentMessages.last.receiverDid == widget.otherUserDid)) {
+        setState(() {
+          _messages = [..._messages, next.recentMessages.last];
+        });
+        _scrollToBottom();
+      }
+    });
   }
 
   Future<void> _sendMessage() async {
@@ -78,12 +90,23 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     _messageController.clear();
 
     try {
-      await ref.read(chatActionsProvider.notifier).sendMessage(
-        conversationId: widget.conversation.id,
-        content: content,
+      final chatService = ref.read(chatServiceProvider.notifier);
+      final response = await chatService.sendMessage(content, widget.otherUserDid);
+
+      // Add the sent message to local list
+      final sentMessage = ChatMessage(
+        id: response.messageId,
+        message: content,
+        senderDid: _currentUserDid!,
+        receiverDid: widget.otherUserDid,
+        timestamp: response.timestamp,
       );
+
+      setState(() {
+        _messages = [..._messages, sentMessage];
+      });
+      _scrollToBottom();
     } catch (e) {
-      // Error is handled by the provider
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to send message: ${e.toString()}')),
@@ -106,15 +129,19 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    final messagesAsync = ref.watch(conversationMessagesProvider(widget.conversation.id));
-    final chatActionsState = ref.watch(chatActionsProvider);
+    final chatServiceState = ref.watch(chatServiceProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
         title: Row(
           children: [
-            ConversationAvatar(conversation: widget.conversation, currentUserDid: _currentUserDid),
+            UserAvatar(
+              imageUrl: widget.otherUserAvatar,
+              username: widget.otherUserHandle ?? 'User',
+              size: 36,
+              backgroundColor: getAvatarColor((widget.otherUserHandle ?? 'User').hashCode),
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -124,8 +151,10 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                     _getConversationTitle(),
                     style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 16),
                   ),
-                  if (widget.conversation.type == ConversationType.direct)
-                    Text(_getOnlineStatus(), style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 12)),
+                  Text(
+                    '@${widget.otherUserHandle ?? 'user'}',
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 12),
+                  ),
                 ],
               ),
             ),
@@ -144,77 +173,49 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         children: [
           Container(height: 0.5, width: double.infinity, color: Theme.of(context).colorScheme.outline),
           Expanded(
-            child: messagesAsync.when(
-              data: (messages) {
-                // Auto-scroll to bottom when new messages arrive
-                WidgetsBinding.instance.addPostFrameCallback((_) {
-                  _scrollToBottom();
-                });
-
-                return MessagesList(
-                  messages: messages,
-                  scrollController: _scrollController,
-                  currentUserDid: _currentUserDid,
-                  conversation: widget.conversation,
-                );
-              },
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stackTrace) => Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(FluentIcons.error_circle_24_regular, size: 48, color: Theme.of(context).colorScheme.error),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Failed to load messages',
-                      style: TextStyle(color: Theme.of(context).colorScheme.error),
-                    ),
-                    const SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () => ref.refresh(conversationMessagesProvider(widget.conversation.id)),
-                      child: const Text('Retry'),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            child: chatServiceState.isLoading && _messages.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : chatServiceState.error != null && _messages.isEmpty
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(FluentIcons.error_circle_24_regular, size: 48, color: Theme.of(context).colorScheme.error),
+                            const SizedBox(height: 16),
+                            Text(
+                              'Failed to load messages',
+                              style: TextStyle(color: Theme.of(context).colorScheme.error),
+                            ),
+                            const SizedBox(height: 8),
+                            ElevatedButton(
+                              onPressed: _loadMessages,
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : MessagesList(
+                        messages: _messages,
+                        scrollController: _scrollController,
+                        currentUserDid: _currentUserDid,
+                        otherUserHandle: widget.otherUserHandle,
+                        otherUserAvatar: widget.otherUserAvatar,
+                      ),
           ),
           MessageInput(
             controller: _messageController,
             onSend: _sendMessage,
-            isLoading: chatActionsState.isSendingMessage,
+            isLoading: chatServiceState.isSending,
           ),
         ],
       ),
     );
   }
 
-  String _getOnlineStatus() {
-    if (widget.conversation.type != ConversationType.direct) return '';
-
-    final otherParticipant = widget.conversation.participants.firstWhere(
-      (p) => p.id != _currentUserDid,
-      orElse: () => widget.conversation.participants.first,
-    );
-
-    if (otherParticipant.isOnline) {
-      return 'Online';
-    } else if (otherParticipant.lastSeen != null) {
-      final difference = DateTime.now().difference(otherParticipant.lastSeen!);
-      if (difference.inMinutes < 60) {
-        return 'Last seen ${difference.inMinutes}m ago';
-      } else if (difference.inHours < 24) {
-        return 'Last seen ${difference.inHours}h ago';
-      } else {
-        return 'Last seen ${difference.inDays}d ago';
-      }
-    }
-
-    return 'Offline';
-  }
-
   @override
   void dispose() {
+    final wsProvider = ref.read(chatWebSocketProvider.notifier);
+    wsProvider.disconnect();
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -237,55 +238,29 @@ Color getAvatarColor(int seed) {
 
 // -------------------------  EXTRACTED WIDGETS  -------------------------
 
-class ConversationAvatar extends StatelessWidget {
-  const ConversationAvatar({super.key, required this.conversation, required this.currentUserDid});
+class SenderAvatar extends StatelessWidget {
+  const SenderAvatar({super.key, required this.isCurrentUser, required this.otherUserAvatar, required this.otherUserHandle});
 
-  final Conversation conversation;
-  final String? currentUserDid;
+  final bool isCurrentUser;
+  final String? otherUserAvatar;
+  final String? otherUserHandle;
 
   @override
   Widget build(BuildContext context) {
-    if (conversation.type == ConversationType.direct) {
-      final otherParticipant = conversation.participants.firstWhere(
-        (p) => p.id != currentUserDid,
-        orElse: () => conversation.participants.first,
-      );
-
+    if (isCurrentUser) {
       return UserAvatar(
-        imageUrl: otherParticipant.avatarUrl,
-        username: otherParticipant.username,
-        size: 36,
-        backgroundColor: getAvatarColor(otherParticipant.username.hashCode),
+        imageUrl: null, // Current user avatar - can be added later
+        username: 'You',
+        size: 32,
+        backgroundColor: AppColors.primary,
       );
     }
 
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(shape: BoxShape.circle, color: getAvatarColor(conversation.id.hashCode)),
-      child: const Icon(FluentIcons.people_16_filled, color: Colors.white, size: 18),
-    );
-  }
-}
-
-class SenderAvatar extends StatelessWidget {
-  const SenderAvatar({super.key, required this.conversation, required this.senderId});
-
-  final Conversation conversation;
-  final String senderId;
-
-  @override
-  Widget build(BuildContext context) {
-    final participant = conversation.participants.firstWhere(
-      (p) => p.id == senderId,
-      orElse: () => conversation.participants.first,
-    );
-
     return UserAvatar(
-      imageUrl: participant.avatarUrl,
-      username: participant.username,
+      imageUrl: otherUserAvatar,
+      username: otherUserHandle ?? 'User',
       size: 32,
-      backgroundColor: getAvatarColor(participant.username.hashCode),
+      backgroundColor: getAvatarColor((otherUserHandle ?? 'User').hashCode),
     );
   }
 }
@@ -296,13 +271,15 @@ class MessageBubble extends StatelessWidget {
     required this.message,
     required this.isCurrentUser,
     required this.showAvatar,
-    required this.conversation,
+    required this.otherUserAvatar,
+    required this.otherUserHandle,
   });
 
   final ChatMessage message;
   final bool isCurrentUser;
   final bool showAvatar;
-  final Conversation conversation;
+  final String? otherUserAvatar;
+  final String? otherUserHandle;
 
   @override
   Widget build(BuildContext context) {
@@ -316,7 +293,11 @@ class MessageBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isCurrentUser && showAvatar) ...[
-            SenderAvatar(conversation: conversation, senderId: message.senderId),
+            SenderAvatar(
+              isCurrentUser: false,
+              otherUserAvatar: otherUserAvatar,
+              otherUserHandle: otherUserHandle,
+            ),
             const SizedBox(width: 8),
           ] else if (!isCurrentUser) ...[
             const SizedBox(width: 40),
@@ -333,7 +314,7 @@ class MessageBubble extends StatelessWidget {
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                message.content,
+                message.message,
                 style: TextStyle(
                   color: isCurrentUser
                       ? Colors.white
@@ -357,13 +338,15 @@ class MessagesList extends StatelessWidget {
     required this.messages,
     required this.scrollController,
     required this.currentUserDid,
-    required this.conversation,
+    required this.otherUserHandle,
+    required this.otherUserAvatar,
   });
 
   final List<ChatMessage> messages;
   final ScrollController scrollController;
   final String? currentUserDid;
-  final Conversation conversation;
+  final String? otherUserHandle;
+  final String? otherUserAvatar;
 
   @override
   Widget build(BuildContext context) {
@@ -394,10 +377,16 @@ class MessagesList extends StatelessWidget {
       itemCount: messages.length,
       itemBuilder: (context, index) {
         final message = messages[index];
-        final isCurrentUser = message.senderId == currentUserDid;
-        final showAvatar = !isCurrentUser && (index == messages.length - 1 || messages[index + 1].senderId != message.senderId);
+        final isCurrentUser = message.senderDid == currentUserDid;
+        final showAvatar = !isCurrentUser && (index == messages.length - 1 || messages[index + 1].senderDid != message.senderDid);
 
-        return MessageBubble(message: message, isCurrentUser: isCurrentUser, showAvatar: showAvatar, conversation: conversation);
+        return MessageBubble(
+          message: message,
+          isCurrentUser: isCurrentUser,
+          showAvatar: showAvatar,
+          otherUserAvatar: otherUserAvatar,
+          otherUserHandle: otherUserHandle,
+        );
       },
     );
   }

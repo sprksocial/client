@@ -108,16 +108,28 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                       children: [
                         // Main content
                         switch (postData.embed) {
-                          EmbedViewVideo() || EmbedViewBskyVideo() => PostVideoPlayer(
+                          EmbedViewVideo() => PostVideoPlayer(
                             key: _videoPlayerKey,
                             videoUrl: postData.videoUrl,
                             // For standalone, we don't need feed and index
+                            isSparkPost: true,
+                          ),
+                          EmbedViewBskyVideo() => PostVideoPlayer(
+                            key: _videoPlayerKey,
+                            videoUrl: postData.videoUrl,
+                            isSparkPost: false,
                           ),
                           EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
                           EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
-                            EmbedViewVideo() || EmbedViewBskyVideo() => PostVideoPlayer(
+                            EmbedViewVideo() => PostVideoPlayer(
                               key: _videoPlayerKey,
                               videoUrl: postData.videoUrl,
+                              isSparkPost: true,
+                            ),
+                            EmbedViewBskyVideo() => PostVideoPlayer(
+                              key: _videoPlayerKey,
+                              videoUrl: postData.videoUrl,
+                              isSparkPost: false,
                             ),
                             EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
                             _ => const SizedBox.shrink(),
