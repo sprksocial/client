@@ -265,93 +265,94 @@ class FeedNotifier extends _$FeedNotifier {
     int updatedPostCount = 0;
     state = state.copyWith(error: false);
     try {
+      // checks if the posts have already been cached
+      final existingUris = await _sqlCache.getExistingPostUris(uris);
+      // cache hit
+      if (existingUris.isNotEmpty) {
+        _logger.d('Found ${existingUris.length} existing posts in cache');
 
-    // checks if the posts have already been cached
-    final existingUris = await _sqlCache.getExistingPostUris(uris);
-    // cache hit
-    if (existingUris.isNotEmpty) {
-      _logger.d('Found ${existingUris.length} existing posts in cache');
+        // Get existing cached posts to preserve viewer information (like status)
+        final cachedPosts = await _sqlCache.getPostsByUris(existingUris);
+        final cachedPostsMap = {for (var post in cachedPosts) post.uri: post};
 
-      // Get existing cached posts to preserve viewer information (like status)
-      final cachedPosts = await _sqlCache.getPostsByUris(existingUris);
-      final cachedPostsMap = {for (var post in cachedPosts) post.uri: post};
+        final posts = await _feedRepository.getPosts(existingUris);
 
-      final posts = await _feedRepository.getPosts(existingUris);
+        // Preserve viewer information from cached posts when updating with fresh data
+        final List<PostView> mergedPosts = [];
+        for (var freshPost in posts) {
+          final cachedPost = cachedPostsMap[freshPost.uri];
+          PostView finalPost;
 
-      // Preserve viewer information from cached posts when updating with fresh data
-      final List<PostView> mergedPosts = [];
-      for (var freshPost in posts) {
-        final cachedPost = cachedPostsMap[freshPost.uri];
-        PostView finalPost;
+          if (cachedPost != null && cachedPost.viewer != null) {
+            // Preserve viewer information from cache if it exists
+            finalPost = freshPost.copyWith(viewer: cachedPost.viewer);
+          } else {
+            finalPost = freshPost;
+          }
 
-        if (cachedPost != null && cachedPost.viewer != null) {
-          // Preserve viewer information from cache if it exists
-          finalPost = freshPost.copyWith(viewer: cachedPost.viewer);
-        } else {
-          finalPost = freshPost;
+          mergedPosts.add(finalPost);
         }
 
-        mergedPosts.add(finalPost);
+        await _sqlCache.cachePosts(mergedPosts);
+        await _sqlCache.appendPostsToFeed(_feed, existingUris.map((e) => e.toString()).toList());
+
+        // Only increment freshPostCount for posts that aren't already in loadedPosts
+        final newExistingUris = existingUris.where((uri) => !state.loadedPosts.contains(uri)).toList();
+        updatedPostCount = newExistingUris.length;
+
+        if (updatedPostCount > 0) {
+          _logger.d(
+            'Updated $updatedPostCount posts in database (${existingUris.length - updatedPostCount} were already loaded)',
+          );
+          state = state.copyWith(freshPostCount: state.freshPostCount + updatedPostCount);
+        } else {
+          _logger.d('All ${existingUris.length} existing posts were already loaded, not incrementing freshPostCount');
+        }
       }
 
-      await _sqlCache.cachePosts(mergedPosts);
-      await _sqlCache.appendPostsToFeed(_feed, existingUris.map((e) => e.toString()).toList());
-
-      // Only increment freshPostCount for posts that aren't already in loadedPosts
-      final newExistingUris = existingUris.where((uri) => !state.loadedPosts.contains(uri)).toList();
-      updatedPostCount = newExistingUris.length;
-
-      if (updatedPostCount > 0) {
-        _logger.d('Updated $updatedPostCount posts in database (${existingUris.length - updatedPostCount} were already loaded)');
-        state = state.copyWith(freshPostCount: state.freshPostCount + updatedPostCount);
-      } else {
-        _logger.d('All ${existingUris.length} existing posts were already loaded, not incrementing freshPostCount');
+      // gets the posts that are not cached
+      final nonExistingUris = uris.where((uri) => !existingUris.contains(uri)).toList();
+      if (nonExistingUris.isEmpty) {
+        _logger.d('No new posts to download, setting isCaching to false');
+        _isCaching = false;
+        return;
       }
-    }
-
-    // gets the posts that are not cached
-    final nonExistingUris = uris.where((uri) => !existingUris.contains(uri)).toList();
-    if (nonExistingUris.isEmpty) {
-      _logger.d('No new posts to download, setting isCaching to false');
-      _isCaching = false;
-      return;
-    }
-    _logger.d('Downloading ${nonExistingUris.length} new posts');
-    final nonExistingPosts = await _feedRepository.getPosts(nonExistingUris);
-    int newPostsCached = 0;
-    int errorCount = 0;
-    for (PostView post in nonExistingPosts) {
-      // concurrent execution
-      _downloadManager.submitTask(
-        DownloadTask(
-          uri: post.uri,
-          post: post,
-          feed: _feed,
-          onComplete: (task) {
-            // Only increment if the post is not already in loadedPosts
-            if (!state.loadedPosts.contains(task.uri)) {
-              increaseFreshPostCount();
-              _logger.d('Downloaded new post ${task.uri}, freshPostCount now: ${state.freshPostCount + 1}');
-            } else {
-              _logger.d('Downloaded post ${task.uri} but it was already loaded, not incrementing freshPostCount');
-            }
-            newPostsCached++;
-            // == to only trigger this once
-            // this exists to prevent the feed from being fetched too much
-            // it is divided in half to prevent the feed from getting stuck loading big files
-            // (the other half will keep being downloaded, but you can start downloading another batch to be more efficient)
-            // should use pool to have a limit on the number of concurrent downloads
-            if (newPostsCached == (nonExistingPosts.length - errorCount) >> 1) {
-              _isCaching = false;
-              _logger.d('Set isCaching to false after downloading $newPostsCached posts');
-            }
-          },
-          onError: (task, e, s) {
-            errorCount++;
-            _logger.e('Error downloading post ${task.uri}: $e');
-          },
-        ),
-      );
+      _logger.d('Downloading ${nonExistingUris.length} new posts');
+      final nonExistingPosts = await _feedRepository.getPosts(nonExistingUris);
+      int newPostsCached = 0;
+      int errorCount = 0;
+      for (PostView post in nonExistingPosts) {
+        // concurrent execution
+        _downloadManager.submitTask(
+          DownloadTask(
+            uri: post.uri,
+            post: post,
+            feed: _feed,
+            onComplete: (task) {
+              // Only increment if the post is not already in loadedPosts
+              if (!state.loadedPosts.contains(task.uri)) {
+                increaseFreshPostCount();
+                _logger.d('Downloaded new post ${task.uri}, freshPostCount now: ${state.freshPostCount + 1}');
+              } else {
+                _logger.d('Downloaded post ${task.uri} but it was already loaded, not incrementing freshPostCount');
+              }
+              newPostsCached++;
+              // == to only trigger this once
+              // this exists to prevent the feed from being fetched too much
+              // it is divided in half to prevent the feed from getting stuck loading big files
+              // (the other half will keep being downloaded, but you can start downloading another batch to be more efficient)
+              // should use pool to have a limit on the number of concurrent downloads
+              if (newPostsCached == (nonExistingPosts.length - errorCount) >> 1) {
+                _isCaching = false;
+                _logger.d('Set isCaching to false after downloading $newPostsCached posts');
+              }
+            },
+            onError: (task, e, s) {
+              errorCount++;
+              _logger.e('Error downloading post ${task.uri}: $e');
+            },
+          ),
+        );
       }
     } catch (e, stackTrace) {
       state = state.copyWith(error: true);
@@ -540,9 +541,6 @@ class FeedNotifier extends _$FeedNotifier {
     }
 
     _logger.d('Removing post ${uri.toString()}, adjusting index from $currentIndex to $newIndex');
-    state = state.copyWith(
-      loadedPosts: updatedPosts,
-      index: newIndex,
-    );
+    state = state.copyWith(loadedPosts: updatedPosts, index: newIndex);
   }
 }
