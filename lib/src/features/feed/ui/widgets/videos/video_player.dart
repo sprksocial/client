@@ -12,11 +12,12 @@ import 'package:video_player/video_player.dart';
 import 'dart:async';
 
 class PostVideoPlayer extends ConsumerStatefulWidget {
-  const PostVideoPlayer({super.key, required this.videoUrl, this.feed, this.index});
+  const PostVideoPlayer({super.key, required this.videoUrl, this.feed, this.index, required this.isSparkPost});
 
   final String videoUrl;
   final Feed? feed;
   final int? index;
+  final bool isSparkPost;
 
   @override
   ConsumerState<PostVideoPlayer> createState() => PostVideoPlayerState();
@@ -51,11 +52,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
     }
   }
 
-  bool _isSparkPost() {
-    // Check if the post is from Spark by looking at the feed
-    // Spark posts will have 'so.sprk' in their URI
-    return widget.feed?.identifier.contains('so.sprk') ?? false;
-  }
+
 
   @override
   void initState() {
@@ -99,7 +96,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       final cacheManager = GetIt.I<CacheManagerInterface>();
 
       // Check if this is a Bluesky post (non-Spark) - always use network streaming
-      if (!_isSparkPost()) {
+      if (!widget.isSparkPost) {
         // For Bluesky posts, always use network streaming (HLS support)
         videoController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
       } else {
@@ -226,7 +223,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       _handleAutoPlayPause(true);
     }
 
-    if (shouldCacheAgain && !_cacheRequested && widget.feed != null && widget.index != null && _isSparkPost()) {
+    if (shouldCacheAgain && !_cacheRequested && widget.feed != null && widget.index != null && widget.isSparkPost) {
       _cacheRequested = true; // Set flag immediate to prevent multiple requests
       // Delay the provider modification until after the build is complete
       WidgetsBinding.instance.addPostFrameCallback((_) {

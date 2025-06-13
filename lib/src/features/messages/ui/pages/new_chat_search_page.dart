@@ -1,4 +1,3 @@
-import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -6,10 +5,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/search/providers/search_provider.dart';
 import 'package:sparksocial/src/features/search/ui/widgets/suggested_account_card.dart';
-import 'package:sparksocial/src/core/network/messages/data/models/message.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:sparksocial/src/features/messages/providers/chat_provider.dart';
 
 @RoutePage()
 class NewChatSearchPage extends ConsumerStatefulWidget {
@@ -157,37 +153,15 @@ class _UserResultsState extends ConsumerState<_UserResults> {
 
   Future<void> _startChat(ProfileView actor) async {
     try {
-      // Current user details from session
-      final session = ref.read(sessionProvider);
-      final currentUserDid = session?.did ?? 'current_user_did';
-      final currentUserHandle = session?.handle ?? 'current_user';
-
-      // Other user details
-      final userDid = actor.did;
-
-      final currentUser = ChatParticipant(id: currentUserDid, username: currentUserHandle, displayName: 'You', isOnline: true);
-
-      final otherUser = ChatParticipant(
-        id: userDid,
-        username: actor.handle,
-        displayName: actor.displayName ?? actor.handle,
-        avatarUrl: actor.avatar?.toString() ?? '',
-        isOnline: false,
-      );
-
-      final dmConversation = Conversation(
-        id: 'dm_${currentUserDid}_${userDid}_${DateTime.now().millisecondsSinceEpoch}',
-        type: ConversationType.direct,
-        participants: [currentUser, otherUser],
-        lastActivity: DateTime.now(),
-        unreadCount: 0,
-      );
-
-      // Create or fetch the conversation (provider to be implemented)
-      final conversation = await ref.read(chatProvider.notifier).createOrGetConversation(dmConversation);
-
       if (mounted) {
-        context.router.push(ChatRoute(conversation: conversation));
+        context.router.push(
+          ChatRoute(
+            otherUserDid: actor.did,
+            otherUserHandle: actor.handle,
+            otherUserDisplayName: actor.displayName,
+            otherUserAvatar: actor.avatar?.toString(),
+          ),
+        );
       }
     } catch (e) {
       if (!mounted) return;
