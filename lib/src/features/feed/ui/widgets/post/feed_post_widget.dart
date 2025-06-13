@@ -1,0 +1,198 @@
+import 'package:auto_route/auto_route.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
+import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
+import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
+import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
+
+class FeedPostWidget extends ConsumerStatefulWidget {
+  const FeedPostWidget({super.key, required this.index, required this.feed});
+
+  final int index;
+  final Feed feed;
+
+  @override
+  ConsumerState<FeedPostWidget> createState() => _FeedPostWidgetState();
+}
+
+class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
+  Future<dynamic>? _postFuture;
+  String? _lastPostUri;
+  int? _lastUpdateCount;
+  final GlobalKey<PostVideoPlayerState> _videoPlayerKey = GlobalKey<PostVideoPlayerState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPost();
+  }
+
+  void _loadPost() {
+    final feedState = ref.read(feedNotifierProvider(widget.feed));
+    if (widget.index < feedState.loadedPosts.length) {
+      final postUri = feedState.loadedPosts[widget.index];
+      final currentUri = postUri.toString();
+
+      // Create new future if URI changed or if we need to force refresh
+      _lastPostUri = currentUri;
+      _postFuture = GetIt.instance<SQLCacheInterface>().getPost(currentUri);
+    }
+  }
+
+  @override
+  void didUpdateWidget(FeedPostWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Reload if index or feed changed
+    if (oldWidget.index != widget.index || oldWidget.feed != widget.feed) {
+      _loadPost();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Check if we need to reload post due to state changes
+    final feedState = ref.watch(feedNotifierProvider(widget.feed));
+    final navigationState = ref.watch(navigationProvider);
+
+    // Check if user is not on feeds tab (index 0)
+    final isOnFeedsTab = navigationState.currentIndex == 0;
+
+    if (widget.index < feedState.loadedPosts.length) {
+      final postUri = feedState.loadedPosts[widget.index];
+      final currentUri = postUri.toString();
+
+      // Watch for post updates to trigger reload
+      final updateCount = ref.watch(postUpdateProvider(currentUri));
+
+      if (_lastPostUri != currentUri || _lastUpdateCount != updateCount) {
+        _lastUpdateCount = updateCount;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _loadPost();
+            });
+          }
+        });
+      }
+    }
+
+    if (_postFuture == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // If user is not on feeds tab, show empty container to dispose video
+    if (!isOnFeedsTab) {
+      return const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
+    }
+
+    return FutureBuilder(
+      future: _postFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+          final postData = snapshot.data! as PostView;
+          final sideActionBar = SideActionBar(
+            post: postData,
+            likeCount: '${postData.likeCount ?? 0}',
+            commentCount: '${postData.replyCount ?? 0}',
+            shareCount: '${postData.repostCount ?? 0}',
+            isLiked: postData.viewer?.like != null,
+            profileImageUrl: postData.author.avatar.toString(),
+            isImage: postData.embed is EmbedViewImage || postData.embed is EmbedViewBskyImages,
+            onProfilePressed: () {
+              // Pause video before navigating to profile
+              _videoPlayerKey.currentState?.pauseVideo();
+            },
+          );
+
+          return GestureDetector(
+            onDoubleTap: () {},
+            child: Stack(
+              children: [
+                // Main content
+                switch (postData.embed) {
+                  EmbedViewVideo() || EmbedViewBskyVideo() => PostVideoPlayer(
+                    key: _videoPlayerKey,
+                    videoUrl: postData.videoUrl,
+                    feed: widget.feed,
+                    index: widget.index,
+                  ),
+                  EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                  EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
+                    EmbedViewVideo() || EmbedViewBskyVideo() => PostVideoPlayer(
+                      key: _videoPlayerKey,
+                      videoUrl: postData.videoUrl,
+                      feed: widget.feed,
+                      index: widget.index,
+                    ),
+                    EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                    _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
+                  },
+                  _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
+                },
+
+                // Gradient overlay at the bottom to improve text readability
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: IgnorePointer(
+                    child: Container(
+                      height: 120,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [Colors.black87.withAlpha(100), Colors.transparent],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                // Side action bar
+                Positioned(bottom: 4, right: 4, child: sideActionBar),
+
+                Positioned(
+                  bottom: 32,
+                  left: 4,
+                  right: 80,
+                  child: InfoBar(
+                    username: postData.author.handle,
+                    description: postData.record.text ?? '',
+                    hashtags: postData.record.hashtags,
+                    isSprk: postData.uri.toString().contains('so.sprk'),
+                    onUsernameTap: () {
+                      _videoPlayerKey.currentState?.pauseVideo();
+                      context.router.push(ProfileRoute(did: postData.author.did));
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        if (snapshot.hasError) {
+          return DecoratedBox(
+            decoration: BoxDecoration(color: AppColors.black),
+            child: Center(
+              child: Text('Error loading post: ${snapshot.error}', style: const TextStyle(color: Colors.white)),
+            ),
+          );
+        }
+        return DecoratedBox(
+          decoration: BoxDecoration(color: AppColors.black),
+          child: const Center(child: CircularProgressIndicator(color: AppColors.white)),
+        );
+      },
+    );
+  }
+}

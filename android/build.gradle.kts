@@ -2,7 +2,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven("https://artifactory.img.ly/artifactory/imgly")
+        maven { url = uri("https://artifactory.img.ly/artifactory/maven") }
     }
 }
 
