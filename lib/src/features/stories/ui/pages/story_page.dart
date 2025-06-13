@@ -8,7 +8,7 @@ import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dar
 @RoutePage()
 class StoryPage extends ConsumerStatefulWidget {
   const StoryPage({
-    super.key, 
+    super.key,
     required this.story,
     this.onLoadingStateChanged,
   });
@@ -39,10 +39,10 @@ class _StoryPageState extends ConsumerState<StoryPage> with TickerProviderStateM
   }
 
   void _updateLoadingState() {
-    final bool isLoading = _isVideoStory(widget.story) 
-        ? !_isVideoInitialized 
+    final bool isLoading = _isVideoStory(widget.story)
+        ? !_isVideoInitialized
         : !_isImageLoaded;
-    
+
     if (_isLoading != isLoading) {
       _isLoading = isLoading;
       widget.onLoadingStateChanged?.call(isLoading);
@@ -81,7 +81,11 @@ class _StoryPageState extends ConsumerState<StoryPage> with TickerProviderStateM
 
   bool _isVideoStory(StoryView story) {
     return switch (story.media) {
-      EmbedViewVideo() => true,
+      EmbedViewVideo() || EmbedViewBskyVideo() => true,
+      EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
+        EmbedViewVideo() || EmbedViewBskyVideo() => true,
+        _ => false,
+      },
       _ => false,
     };
   }
@@ -89,6 +93,12 @@ class _StoryPageState extends ConsumerState<StoryPage> with TickerProviderStateM
   String _getVideoUrl(StoryView story) {
     return switch (story.media) {
       EmbedViewVideo(:final playlist) => playlist.toString(),
+      EmbedViewBskyVideo(:final playlist) => playlist.toString(),
+      EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
+        EmbedViewVideo(:final playlist) => playlist.toString(),
+        EmbedViewBskyVideo(:final playlist) => playlist.toString(),
+        _ => '',
+      },
       _ => '',
     };
   }
@@ -96,7 +106,16 @@ class _StoryPageState extends ConsumerState<StoryPage> with TickerProviderStateM
   String _getImageUrl(StoryView story) {
     return switch (story.media) {
       EmbedViewVideo(:final thumbnail) => thumbnail.toString(),
+      EmbedViewBskyVideo(:final thumbnail) => thumbnail.toString(),
       EmbedViewImage(:final images) when images.isNotEmpty => images.first.fullsize.toString(),
+      EmbedViewBskyImages(:final images) when images.isNotEmpty => images.first.fullsize.toString(),
+      EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
+        EmbedViewVideo(:final thumbnail) => thumbnail.toString(),
+        EmbedViewBskyVideo(:final thumbnail) => thumbnail.toString(),
+        EmbedViewImage(:final images) when images.isNotEmpty => images.first.fullsize.toString(),
+        EmbedViewBskyImages(:final images) when images.isNotEmpty => images.first.fullsize.toString(),
+        _ => widget.story.author.avatar.toString(),
+      },
       _ => widget.story.author.avatar.toString(),
     };
   }

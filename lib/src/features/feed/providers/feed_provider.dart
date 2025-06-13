@@ -107,6 +107,33 @@ class FeedNotifier extends _$FeedNotifier {
     }
   }
 
+    bool _shouldUseBlueskyAPI() {
+    // Determine if this feed should use Bluesky API for post hydration
+    switch (_feed) {
+      case FeedHardCoded(:final hardCodedFeed):
+        switch (hardCodedFeed) {
+          case HardCodedFeedEnum.forYou:
+            // For You feed uses Bluesky generator (TheVids)
+            return true;
+          case HardCodedFeedEnum.following:
+            // Following feed uses Bluesky timeline
+            return true;
+          case HardCodedFeedEnum.latestSprk:
+            // Latest Sprk feed uses Spark API
+            return false;
+          case HardCodedFeedEnum.mutuals:
+          case HardCodedFeedEnum.shared:
+            // These are not implemented yet (return empty feed)
+            // When implemented, determine based on their actual implementation
+            return false;
+        }
+      case FeedCustom():
+        // Custom feeds are currently Spark-based
+        return false;
+    }
+    return false;
+  }
+
   Future<void> loadAndUpdateFirstLoad() async {
     if (_isLoadingInProgress || _isLoading) {
       _logger.w('Load already in progress, skipping duplicate call');
@@ -137,7 +164,7 @@ class FeedNotifier extends _$FeedNotifier {
         final (cursor: _, labels: labels) = await _feedRepository.getLabels(uris, sources: followedLabelers);
 
         // updates the posts in the database with new information if they have been edited
-        final updatedPostViews = await _feedRepository.getPosts(uris);
+        final updatedPostViews = await _feedRepository.getPosts(uris, bluesky: _shouldUseBlueskyAPI());
 
         // Preserve viewer information from cached posts when updating with fresh data
         final List<PostView> mergedPosts = [];
@@ -275,7 +302,7 @@ class FeedNotifier extends _$FeedNotifier {
         final cachedPosts = await _sqlCache.getPostsByUris(existingUris);
         final cachedPostsMap = {for (var post in cachedPosts) post.uri: post};
 
-        final posts = await _feedRepository.getPosts(existingUris);
+        final posts = await _feedRepository.getPosts(existingUris, bluesky: _shouldUseBlueskyAPI());
 
         // Preserve viewer information from cached posts when updating with fresh data
         final List<PostView> mergedPosts = [];
@@ -318,7 +345,7 @@ class FeedNotifier extends _$FeedNotifier {
         return;
       }
       _logger.d('Downloading ${nonExistingUris.length} new posts');
-      final nonExistingPosts = await _feedRepository.getPosts(nonExistingUris);
+      final nonExistingPosts = await _feedRepository.getPosts(nonExistingUris, bluesky: _shouldUseBlueskyAPI());
       int newPostsCached = 0;
       int errorCount = 0;
       for (PostView post in nonExistingPosts) {
@@ -387,7 +414,14 @@ class FeedNotifier extends _$FeedNotifier {
 
       // gets the subscribed labels for the posts
       final followedLabelers = await _settingsRepository.getFollowedLabelers();
-      final (cursor: _, labels: List<Label> labels) = await _feedRepository.getLabels(uris, sources: followedLabelers);
+      List<Label> labels = [];
+      try {
+        final (cursor: _, labels: fetchedLabels) = await _feedRepository.getLabels(uris, sources: followedLabelers);
+        labels = fetchedLabels;
+      } catch (e) {
+        _logger.e('Error getting labels: $e');
+        labels = [];
+      }
 
       // Get the post data for the new URIs
       final newPosts = posts.where((post) => uris.contains(post.uri)).toList();

@@ -51,6 +51,12 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
     }
   }
 
+  bool _isSparkPost() {
+    // Check if the post is from Spark by looking at the feed
+    // Spark posts will have 'so.sprk' in their URI
+    return widget.feed?.identifier.contains('so.sprk') ?? false;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -89,24 +95,57 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
   }
 
   Future<void> initVideoPlayer() async {
-    final cacheManager = GetIt.I<CacheManagerInterface>();
-    final file = await cacheManager.getCachedFile(widget.videoUrl);
-    if (!mounted) return;
-    if (file == null) {
-      // start caching it again, but for the time being, use a network player
-      videoController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
-      shouldCacheAgain = true;
-    } else {
-      videoController = VideoPlayerController.file(file, videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true));
+    try {
+      final cacheManager = GetIt.I<CacheManagerInterface>();
+
+      // Check if this is a Bluesky post (non-Spark) - always use network streaming
+      if (!_isSparkPost()) {
+        // For Bluesky posts, always use network streaming (HLS support)
+        videoController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+      } else {
+        // For Spark posts, use caching as before
+        final file = await cacheManager.getCachedFile(widget.videoUrl);
+        if (!mounted) return;
+
+        if (file == null) {
+          // For AT Protocol blob URLs, force caching first for Spark videos
+          if (widget.videoUrl.startsWith('at://')) {
+            try {
+              final cachedFile = await cacheManager.getFile(widget.videoUrl);
+              videoController = VideoPlayerController.file(cachedFile, videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true));
+            } catch (e) {
+              // If AT Protocol blob download fails, we can't fall back to network URL
+              // because AT URIs are not HTTP URLs
+              if (!mounted) return;
+              setState(() {
+                isInitialized = false; // Mark as failed to initialize
+              });
+              return;
+            }
+          } else {
+            // For HTTP URLs, use network player and cache in background
+            videoController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+            shouldCacheAgain = true;
+          }
+        } else {
+          videoController = VideoPlayerController.file(file, videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true));
+        }
+      }
+
+      await videoController.initialize();
+      videoController.setLooping(true);
+      videoController.addListener(_videoListener);
+      if (!mounted) return;
+      setState(() {
+        isInitialized = true;
+        isPlaying = videoController.value.isPlaying;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        isInitialized = false; // Mark as failed to initialize
+      });
     }
-    await videoController.initialize();
-    videoController.setLooping(true);
-    videoController.addListener(_videoListener);
-    if (!mounted) return;
-    setState(() {
-      isInitialized = true;
-      isPlaying = videoController.value.isPlaying;
-    });
   }
 
   void _handleAutoPlayPause(bool shouldPlay) {
@@ -150,9 +189,10 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
     videoController.play();
   }
 
-  @override
+      @override
   Widget build(BuildContext context) {
     if (!isInitialized) {
+      // Show loading indicator - error handling is done in initVideoPlayer
       return const Center(child: CircularProgressIndicator());
     }
 
@@ -186,7 +226,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       _handleAutoPlayPause(true);
     }
 
-    if (shouldCacheAgain && !_cacheRequested && widget.feed != null && widget.index != null) {
+    if (shouldCacheAgain && !_cacheRequested && widget.feed != null && widget.index != null && _isSparkPost()) {
       _cacheRequested = true; // Set flag immediate to prevent multiple requests
       // Delay the provider modification until after the build is complete
       WidgetsBinding.instance.addPostFrameCallback((_) {

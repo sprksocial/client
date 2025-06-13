@@ -67,7 +67,22 @@ class FeedRepositoryImpl implements FeedRepository {
     if (bluesky) {
       final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
       final posts = await bluesky.feed.getPosts(uris: uris.map((uri) => AtUri.parse(uri.toString())).toList());
-      return posts.data.posts.map((post) => PostView.fromJson(post.toJson())).toList();
+      final filteredPosts = <PostView>[];
+      for (final post in posts.data.posts) {
+        try {
+          final postView = PostView.fromJson(post.toJson());
+          // Only add posts that have supported media (video or images)
+          if (postView.hasSupportedMedia) {
+            filteredPosts.add(postView);
+          } else {
+            _logger.d('Filtered out bluesky post with unsupported embed type: ${postView.uri}');
+          }
+        } catch (e) {
+          _logger.w('Failed to parse bluesky post, skipping: $e');
+          // Skip posts that fail to parse instead of crashing
+        }
+      }
+      return filteredPosts;
     }
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -89,7 +104,18 @@ class FeedRepositoryImpl implements FeedRepository {
           final posts = jsonMap['posts'] as List<dynamic>;
           final postViews = <PostView>[];
           for (final post in posts) {
-            postViews.add(PostView.fromJson(post));
+            try {
+              final postView = PostView.fromJson(post);
+              // Only add posts that have supported media (video or images)
+              if (postView.hasSupportedMedia) {
+                postViews.add(postView);
+              } else {
+                _logger.d('Filtered out post with unsupported embed type: ${postView.uri}');
+              }
+            } catch (e) {
+              _logger.w('Failed to parse post, skipping: $e');
+              // Skip posts that fail to parse instead of crashing
+            }
           }
           return postViews;
         },
@@ -137,10 +163,28 @@ class FeedRepositoryImpl implements FeedRepository {
           NSID.parse('so.sprk.feed.getAuthorFeed'),
           parameters: parameters,
           headers: {'atproto-proxy': _client.sprkDid},
-          to: (jsonMap) => (
-            posts: (jsonMap['feed'] as List<dynamic>).map((post) => FeedViewPost.fromJson(post)).toList(),
-            cursor: jsonMap['cursor'] as String?,
-          ),
+          to: (jsonMap) {
+            final feedPosts = <FeedViewPost>[];
+            final rawFeed = jsonMap['feed'] as List<dynamic>;
+            for (final postData in rawFeed) {
+              try {
+                final feedViewPost = FeedViewPost.fromJson(postData);
+                // Only add posts that have supported media (video or images)
+                if (feedViewPost.post.hasSupportedMedia) {
+                  feedPosts.add(feedViewPost);
+                } else {
+                  _logger.d('Filtered out author feed post with unsupported embed type: ${feedViewPost.post.uri}');
+                }
+              } catch (e) {
+                _logger.w('Failed to parse author feed post, skipping: $e');
+                // Skip posts that fail to parse instead of crashing
+              }
+            }
+            return (
+              posts: feedPosts,
+              cursor: jsonMap['cursor'] as String?,
+            );
+          },
           adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
         );
         _logger.d('Author feed retrieved successfully');
@@ -154,8 +198,22 @@ class FeedRepositoryImpl implements FeedRepository {
           filter: videosOnly ? bsky.FeedFilter.postsWithVideo : bsky.FeedFilter.postsWithMedia,
         );
         _logger.d('Author feed retrieved successfully');
-        final result = resultBsky.data.feed.map((post) => FeedViewPost.fromJson(post.toJson())).toList();
-        return (posts: result, cursor: resultBsky.data.cursor);
+        final filteredPosts = <FeedViewPost>[];
+        for (final postData in resultBsky.data.feed) {
+          try {
+            final feedViewPost = FeedViewPost.fromJson(postData.toJson());
+            // Only add posts that have supported media (video or images)
+            if (feedViewPost.post.hasSupportedMedia) {
+              filteredPosts.add(feedViewPost);
+            } else {
+              _logger.d('Filtered out bluesky author feed post with unsupported embed type: ${feedViewPost.post.uri}');
+            }
+          } catch (e) {
+            _logger.w('Failed to parse bluesky author feed post, skipping: $e');
+            // Skip posts that fail to parse instead of crashing
+          }
+        }
+        return (posts: filteredPosts, cursor: resultBsky.data.cursor);
       }
     });
   }

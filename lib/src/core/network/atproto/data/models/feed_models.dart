@@ -179,7 +179,6 @@ class PostThread with _$PostThread {
   factory PostThread.fromJson(Map<String, dynamic> json) => _$PostThreadFromJson(json);
 }
 
-
 @freezed
 class Viewer with _$Viewer {
   const Viewer._();
@@ -196,8 +195,6 @@ class Viewer with _$Viewer {
 
   factory Viewer.fromJson(Map<String, dynamic> json) => _$ViewerFromJson(json);
 }
-
-
 
 @freezed
 class PostView with _$PostView {
@@ -224,10 +221,83 @@ class PostView with _$PostView {
 
   bool get isSprk => RegExp(r'^at://[^/]+/so\.sprk\.feed\.post/[^/]+$').hasMatch(uri.toString());
 
+    /// Resolves AT Protocol blob URLs to HTTP URLs for display
+  String _resolveAtUriToHttpUrl(AtUri atUri, {bool isFullsize = false}) {
+    final uriString = atUri.toString();
+
+    // If it's already an HTTP URL, return as is
+    if (uriString.startsWith('http://') || uriString.startsWith('https://')) {
+      return uriString;
+    }
+
+    // If it's an AT Protocol blob URL, convert to Bluesky CDN URL
+    if (uriString.startsWith('at://')) {
+      // Parse AT URI format: at://did/collection/rkey
+      final match = RegExp(r'^at://([^/]+)/([^/]+)/(.+)$').firstMatch(uriString);
+      if (match != null) {
+        final did = match.group(1)!;
+        final collection = match.group(2)!;
+        final rkey = match.group(3)!;
+
+        // For blob collections, use Bluesky's CDN
+        if (collection == 'blob') {
+          if (isFullsize) {
+            return 'https://cdn.bsky.app/img/feed_fullsize/plain/$did/$rkey@jpeg';
+          } else {
+            return 'https://cdn.bsky.app/img/feed_thumbnail/plain/$did/$rkey@jpeg';
+          }
+        }
+      }
+    }
+
+    // Fallback to original string
+    return uriString;
+  }
+
+  /// Returns true if this post has a video or image embed (content we want to show)
+  bool get hasSupportedMedia {
+    if (embed == null) return false;
+
+    switch (embed) {
+      case EmbedViewVideo():
+      case EmbedViewBskyVideo():
+      case EmbedViewImage():
+      case EmbedViewBskyImages():
+        return true;
+      case EmbedViewBskyRecordWithMedia(:final media):
+        // Check nested media in record with media
+        switch (media) {
+          case EmbedViewVideo():
+          case EmbedViewBskyVideo():
+          case EmbedViewImage():
+          case EmbedViewBskyImages():
+            return true;
+          case _:
+            return false;
+        }
+      case _:
+        return false;
+    }
+  }
+
   String get videoUrl {
     switch (embed) {
       case EmbedViewVideo(:final playlist):
         return playlist.toString();
+      case EmbedViewBskyVideo(:final playlist):
+        // For Bluesky videos, return the AT URI as-is for blob API handling
+        return playlist.toString();
+      case EmbedViewBskyRecordWithMedia(:final media):
+        // Handle nested media in record with media
+        switch (media) {
+          case EmbedViewVideo(:final playlist):
+            return playlist.toString();
+          case EmbedViewBskyVideo(:final playlist):
+            // For Bluesky videos, return the AT URI as-is for blob API handling
+            return playlist.toString();
+          case _:
+            return '';
+        }
       case _:
         return '';
     }
@@ -237,6 +307,18 @@ class PostView with _$PostView {
     switch (embed) {
       case EmbedViewImage(:final images):
         return images.map((img) => img.fullsize.toString()).toList();
+      case EmbedViewBskyImages(:final images):
+        return images.map((img) => _resolveAtUriToHttpUrl(img.fullsize, isFullsize: true)).toList();
+      case EmbedViewBskyRecordWithMedia(:final media):
+        // Handle nested media in record with media
+        switch (media) {
+          case EmbedViewImage(:final images):
+            return images.map((img) => img.fullsize.toString()).toList();
+          case EmbedViewBskyImages(:final images):
+            return images.map((img) => _resolveAtUriToHttpUrl(img.fullsize, isFullsize: true)).toList();
+          case _:
+            return [];
+        }
       case _:
         return [];
     }
@@ -246,8 +328,26 @@ class PostView with _$PostView {
     switch (embed) {
       case EmbedViewVideo(:final thumbnail):
         return thumbnail.toString();
+      case EmbedViewBskyVideo(:final thumbnail):
+        return _resolveAtUriToHttpUrl(thumbnail);
       case EmbedViewImage(:final images):
         return images.first.thumb.toString();
+      case EmbedViewBskyImages(:final images):
+        return _resolveAtUriToHttpUrl(images.first.thumb);
+      case EmbedViewBskyRecordWithMedia(:final media):
+        // Handle nested media in record with media
+        switch (media) {
+          case EmbedViewVideo(:final thumbnail):
+            return thumbnail.toString();
+          case EmbedViewBskyVideo(:final thumbnail):
+            return _resolveAtUriToHttpUrl(thumbnail);
+          case EmbedViewImage(:final images):
+            return images.first.thumb.toString();
+          case EmbedViewBskyImages(:final images):
+            return _resolveAtUriToHttpUrl(images.first.thumb);
+          case _:
+            return '';
+        }
       case _:
         return '';
     }
@@ -258,6 +358,7 @@ class PostView with _$PostView {
 sealed class EmbedView with _$EmbedView {
   const EmbedView._();
 
+  // Spark embed types
   @FreezedUnionValue('so.sprk.embed.video#view')
   @JsonSerializable(explicitToJson: true)
   const factory EmbedView.video({
@@ -271,7 +372,52 @@ sealed class EmbedView with _$EmbedView {
   @JsonSerializable(explicitToJson: true)
   const factory EmbedView.image({required List<ViewImage> images}) = EmbedViewImage;
 
+  // Bluesky embed types
+  @FreezedUnionValue('app.bsky.embed.video#view')
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedView.bskyVideo({
+    required String cid,
+    @AtUriConverter() required AtUri playlist,
+    @AtUriConverter() required AtUri thumbnail,
+    String? alt,
+  }) = EmbedViewBskyVideo;
+
+  @FreezedUnionValue('app.bsky.embed.images#view')
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedView.bskyImages({required List<ViewImage> images}) = EmbedViewBskyImages;
+
+  @FreezedUnionValue('app.bsky.embed.record#view')
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedView.bskyRecord({required StrongRef record, required String cid}) = EmbedViewBskyRecord;
+
+  @FreezedUnionValue('app.bsky.embed.recordWithMedia#view')
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedView.bskyRecordWithMedia({required StrongRef record, required EmbedView media, required String cid}) =
+      EmbedViewBskyRecordWithMedia;
+
+  @FreezedUnionValue('app.bsky.embed.external#view')
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedView.bskyExternal({
+    required EmbedViewExternal external,
+    required String cid,
+  }) = EmbedViewBskyExternal;
+
   factory EmbedView.fromJson(Map<String, dynamic> json) => _$EmbedViewFromJson(json);
+}
+
+@freezed
+class EmbedViewExternal with _$EmbedViewExternal {
+  const EmbedViewExternal._();
+
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedViewExternal({
+    required String uri,
+    required String title,
+    required String description,
+    @AtUriConverter() AtUri? thumb,
+  }) = _EmbedViewExternal;
+
+  factory EmbedViewExternal.fromJson(Map<String, dynamic> json) => _$EmbedViewExternalFromJson(json);
 }
 
 @freezed
@@ -316,6 +462,7 @@ class FacetIndex with _$FacetIndex {
 class FacetFeature with _$FacetFeature {
   const FacetFeature._();
 
+  // Spark facet feature types
   /// Mention feature for referencing a user
   @FreezedUnionValue('#mention')
   @JsonSerializable(explicitToJson: true)
@@ -330,6 +477,22 @@ class FacetFeature with _$FacetFeature {
   @FreezedUnionValue('#tag')
   @JsonSerializable(explicitToJson: true)
   const factory FacetFeature.tag({required String tag}) = TagFeature;
+
+  // Bluesky facet feature types
+  /// Bluesky mention feature for referencing a user
+  @FreezedUnionValue('app.bsky.richtext.facet#mention')
+  @JsonSerializable(explicitToJson: true)
+  const factory FacetFeature.bskyMention({required String did}) = BskyMentionFeature;
+
+  /// Bluesky link feature for URLs
+  @FreezedUnionValue('app.bsky.richtext.facet#link')
+  @JsonSerializable(explicitToJson: true)
+  const factory FacetFeature.bskyLink({@AtUriConverter() required AtUri uri}) = BskyLinkFeature;
+
+  /// Bluesky tag feature for hashtags
+  @FreezedUnionValue('app.bsky.richtext.facet#tag')
+  @JsonSerializable(explicitToJson: true)
+  const factory FacetFeature.bskyTag({required String tag}) = BskyTagFeature;
 
   /// Create a FacetFeature from JSON
   factory FacetFeature.fromJson(Map<String, dynamic> json) => _$FacetFeatureFromJson(json);
@@ -352,8 +515,6 @@ class Facet with _$Facet {
   /// Create a Facet from JSON
   factory Facet.fromJson(Map<String, dynamic> json) => _$FacetFromJson(json);
 }
-
-
 
 @freezed
 class ViewImage with _$ViewImage {

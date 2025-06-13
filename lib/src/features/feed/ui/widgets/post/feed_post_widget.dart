@@ -106,7 +106,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
             shareCount: '${postData.repostCount ?? 0}',
             isLiked: postData.viewer?.like != null,
             profileImageUrl: postData.author.avatar.toString(),
-            isImage: postData.embed is EmbedViewImage,
+            isImage: postData.embed is EmbedViewImage || postData.embed is EmbedViewBskyImages,
             onProfilePressed: () {
               // Pause video before navigating to profile
               _videoPlayerKey.currentState?.pauseVideo();
@@ -119,13 +119,23 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
               children: [
                 // Main content
                 switch (postData.embed) {
-                  EmbedViewVideo() => PostVideoPlayer(
+                  EmbedViewVideo() || EmbedViewBskyVideo() => PostVideoPlayer(
                     key: _videoPlayerKey,
                     videoUrl: postData.videoUrl,
                     feed: widget.feed,
                     index: widget.index,
                   ),
-                  EmbedViewImage() => ImageCarousel(imageUrls: postData.imageUrls),
+                  EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                  EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
+                    EmbedViewVideo() || EmbedViewBskyVideo() => PostVideoPlayer(
+                      key: _videoPlayerKey,
+                      videoUrl: postData.videoUrl,
+                      feed: widget.feed,
+                      index: widget.index,
+                    ),
+                    EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                    _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
+                  },
                   _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                 },
 

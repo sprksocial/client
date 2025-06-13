@@ -78,6 +78,8 @@ class RecordReplyRef with _$RecordReplyRef {
 @Freezed(unionKey: r'$type')
 sealed class Embed with _$Embed {
   const Embed._();
+
+  // Spark embed types
   @FreezedUnionValue('so.sprk.embed.video')
   @JsonSerializable(explicitToJson: true)
   const factory Embed.video({
@@ -93,7 +95,51 @@ sealed class Embed with _$Embed {
   @JsonSerializable(explicitToJson: true)
   const factory Embed.image({required List<Image> images}) = EmbedImage;
 
+  // Bluesky embed types
+  @FreezedUnionValue('app.bsky.embed.video')
+  @JsonSerializable(explicitToJson: true)
+  const factory Embed.bskyVideo({
+    required Blob video,
+    String? alt,
+  }) = EmbedBskyVideo;
+
+  @FreezedUnionValue('app.bsky.embed.images')
+  @JsonSerializable(explicitToJson: true)
+  const factory Embed.bskyImages({required List<Image> images}) = EmbedBskyImages;
+
+  @FreezedUnionValue('app.bsky.embed.record')
+  @JsonSerializable(explicitToJson: true)
+  const factory Embed.bskyRecord({required StrongRef record}) = EmbedBskyRecord;
+
+  @FreezedUnionValue('app.bsky.embed.recordWithMedia')
+  @JsonSerializable(explicitToJson: true)
+  const factory Embed.bskyRecordWithMedia({
+    required StrongRef record,
+    required Embed media,
+  }) = EmbedBskyRecordWithMedia;
+
+  @FreezedUnionValue('app.bsky.embed.external')
+  @JsonSerializable(explicitToJson: true)
+  const factory Embed.bskyExternal({
+    required EmbedExternal external,
+  }) = EmbedBskyExternal;
+
   factory Embed.fromJson(Map<String, dynamic> json) => _$EmbedFromJson(json);
+}
+
+@freezed
+class EmbedExternal with _$EmbedExternal {
+  const EmbedExternal._();
+
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedExternal({
+    required String uri,
+    required String title,
+    required String description,
+    Blob? thumb,
+  }) = _EmbedExternal;
+
+  factory EmbedExternal.fromJson(Map<String, dynamic> json) => _$EmbedExternalFromJson(json);
 }
 
 @freezed

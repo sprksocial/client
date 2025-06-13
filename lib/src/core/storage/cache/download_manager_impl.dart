@@ -125,6 +125,10 @@ class DownloadManagerImpl implements DownloadManagerInterface {
     return tasks.any((task) => task.status == DownloadTaskStatus.pending && task.feed == _activeFeed);
   }
 
+  bool _isSparkPost(PostView post) {
+    return post.uri.toString().contains('so.sprk');
+  }
+
   Future<void> _executeTask(DownloadTask task) async {
     _logger.d('Executing task: ${task.uri} for feed ${task.feed.identifier} with priority ${task.priority}');
     if (_activeFeed != task.feed && task.priority > activeFeedPriority && _areTherePendingActiveFeedTasks()) {
@@ -137,37 +141,74 @@ class DownloadManagerImpl implements DownloadManagerInterface {
 
       task.status = DownloadTaskStatus.active;
 
-      // Actual caching work - start downloading the embed
-      switch (task.post.embed) {
-        case EmbedViewVideo():
-          var cachedFile = await _cacheManager.getCachedFile(task.post.videoUrl);
-          if (cachedFile != null) {
-            _logger.d('Video file already cached: ${task.post.videoUrl}');
-            break;
-          }
-          // Download the video and ensure it's cached
-          await _cacheManager.getFile(task.post.videoUrl);
-          // Verify the file is actually cached before proceeding
-          cachedFile = await _cacheManager.getCachedFile(task.post.videoUrl);
-          if (cachedFile == null) {
-            throw Exception('Video file was not properly cached after download: ${task.post.videoUrl}');
-          }
-          _logger.d('Video file successfully cached: ${task.post.videoUrl}');
-          break;
-        case EmbedViewImage():
-          for (String url in task.post.imageUrls) {
-            // Download the image and verify it's cached
-            final fileInfo = await CachedNetworkImageProvider.defaultCacheManager.downloadFile(url, key: url);
-            if (fileInfo.statusCode != 200) {
-              _logger.w('Image file was not properly cached after download: $url');
+      // Skip media caching for Bluesky posts (they use HLS streaming)
+      if (_isSparkPost(task.post)) {
+        _logger.d('Caching media for Spark post: ${task.uri}');
+        // Actual caching work - start downloading the embed
+        switch (task.post.embed) {
+          case EmbedViewVideo():
+            var cachedFile = await _cacheManager.getCachedFile(task.post.videoUrl);
+            if (cachedFile != null) {
+              _logger.d('Video file already cached: ${task.post.videoUrl}');
+              break;
             }
-          }
-          break;
-        case _:
-          break;
+            // Download the video and ensure it's cached
+            await _cacheManager.getFile(task.post.videoUrl);
+            // Verify the file is actually cached before proceeding
+            cachedFile = await _cacheManager.getCachedFile(task.post.videoUrl);
+            if (cachedFile == null) {
+              throw Exception('Video file was not properly cached after download: ${task.post.videoUrl}');
+            }
+            _logger.d('Video file successfully cached: ${task.post.videoUrl}');
+            break;
+          case EmbedViewImage():
+            for (String url in task.post.imageUrls) {
+              // Download the image and verify it's cached
+              final fileInfo = await CachedNetworkImageProvider.defaultCacheManager.downloadFile(url, key: url);
+              if (fileInfo.statusCode != 200) {
+                _logger.w('Image file was not properly cached after download: $url');
+              }
+            }
+            break;
+          case EmbedViewBskyRecordWithMedia(:final media):
+            // Handle nested media in record with media embeds
+            switch (media) {
+              case EmbedViewVideo() || EmbedViewBskyVideo():
+                var cachedFile = await _cacheManager.getCachedFile(task.post.videoUrl);
+                if (cachedFile != null) {
+                  _logger.d('Video file already cached: ${task.post.videoUrl}');
+                  break;
+                }
+                // Download the video and ensure it's cached
+                await _cacheManager.getFile(task.post.videoUrl);
+                // Verify the file is actually cached before proceeding
+                cachedFile = await _cacheManager.getCachedFile(task.post.videoUrl);
+                if (cachedFile == null) {
+                  throw Exception('Video file was not properly cached after download: ${task.post.videoUrl}');
+                }
+                _logger.d('Video file successfully cached: ${task.post.videoUrl}');
+                break;
+              case EmbedViewImage() || EmbedViewBskyImages():
+                for (String url in task.post.imageUrls) {
+                  // Download the image and verify it's cached
+                  final fileInfo = await CachedNetworkImageProvider.defaultCacheManager.downloadFile(url, key: url);
+                  if (fileInfo.statusCode != 200) {
+                    _logger.w('Image file was not properly cached after download: $url');
+                  }
+                }
+                break;
+              case _:
+                throw Exception('Unsupported media type: ${media.runtimeType}');
+            }
+            break;
+          case _:
+            throw Exception('Unsupported media type: ${task.post.embed.runtimeType}');
+        }
+      } else {
+        _logger.d('Skipping media caching for Bluesky post: ${task.uri} (HLS streaming not supported)');
       }
-      
-      // Only store the post in the database AFTER the media files are successfully cached
+
+      // Always store the post data in the database (regardless of whether media was cached)
       await _sqlCache.cachePost(task.post);
       await _sqlCache.cacheFeed(task.feed);
       await _sqlCache.appendPostsToFeed(task.feed, [task.post.uri.toString()]);
