@@ -54,6 +54,7 @@ dependencies:
   smooth_video_progress: ^0.0.4
   imgly_editor: ^1.51.0
   socket_io_client: ^3.1.2
+  web_socket_channel: ^3.0.3
 
 dev_dependencies:
   flutter_test:

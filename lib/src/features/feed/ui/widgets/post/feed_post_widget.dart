@@ -119,19 +119,35 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
               children: [
                 // Main content
                 switch (postData.embed) {
-                  EmbedViewVideo() || EmbedViewBskyVideo() => PostVideoPlayer(
+                  EmbedViewVideo() => PostVideoPlayer(
                     key: _videoPlayerKey,
                     videoUrl: postData.videoUrl,
                     feed: widget.feed,
                     index: widget.index,
+                    isSparkPost: true,
+                  ),
+                  EmbedViewBskyVideo() => PostVideoPlayer(
+                    key: _videoPlayerKey,
+                    videoUrl: postData.videoUrl,
+                    feed: widget.feed,
+                    index: widget.index,
+                    isSparkPost: false,
                   ),
                   EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
                   EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
-                    EmbedViewVideo() || EmbedViewBskyVideo() => PostVideoPlayer(
+                    EmbedViewVideo() => PostVideoPlayer(
                       key: _videoPlayerKey,
                       videoUrl: postData.videoUrl,
                       feed: widget.feed,
                       index: widget.index,
+                      isSparkPost: true,
+                    ),
+                    EmbedViewBskyVideo() => PostVideoPlayer(
+                      key: _videoPlayerKey,
+                      videoUrl: postData.videoUrl,
+                      feed: widget.feed,
+                      index: widget.index,
+                      isSparkPost: false,
                     ),
                     EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
                     _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
