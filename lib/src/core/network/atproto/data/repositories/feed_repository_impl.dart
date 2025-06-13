@@ -8,11 +8,13 @@ import 'package:get_it/get_it.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/feed_algorithms/hardcoded_feed_algorithm.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:bluesky/src/services/entities/converter/embed_converter.dart';
 
 /// Implementation of Feed-related API endpoints
 class FeedRepositoryImpl implements FeedRepository {
@@ -235,12 +237,6 @@ class FeedRepositoryImpl implements FeedRepository {
           final effectiveRootCid = rootCid ?? parentCid;
           final effectiveRootUri = rootUri ?? parentUri;
 
-          // Determine if target is a Spark post or Bluesky post
-          final postType = switch (parentUri.toString()) {
-            String uri when uri.contains('sprk') => "so.sprk.feed.post",
-            _ => "app.bsky.feed.post",
-          };
-
           // Upload images if provided
           Map<String, dynamic>? embedJson;
           if (imageFiles case List<XFile> files when files.isNotEmpty) {
@@ -249,23 +245,41 @@ class FeedRepositoryImpl implements FeedRepository {
             embedJson = EmbedImage(images: uploadedImageMaps).toJson();
           }
 
-          final commentRecord = <String, dynamic>{
-            // eventually use a comment record class here for consistency
-            "\$type": postType,
-            "text": text,
-            "reply": {
-              "root": {"cid": effectiveRootCid, "uri": effectiveRootUri.toString()},
-              "parent": {"cid": parentCid, "uri": parentUri.toString()},
-            },
-            "createdAt": DateTime.now().toUtc().toIso8601String(),
-          };
+          // Create the correct record JSON depending on the target platform.
+          final bool isSpark = parentUri.toString().contains('sprk');
 
-          // Add embed JSON if images were uploaded
-          if (embedJson != null) {
-            commentRecord['embed'] = embedJson;
+          final Map<String, dynamic> recordJson;
+          final NSID collection;
+
+          if (isSpark) {
+            // Spark comment
+            final PostRecord sparkRecord = PostRecord(
+              text: text,
+              reply: RecordReplyRef(
+                root: StrongRef(uri: effectiveRootUri, cid: effectiveRootCid),
+                parent: StrongRef(uri: parentUri, cid: parentCid),
+              ),
+              createdAt: DateTime.now(),
+              embed: embedJson != null ? Embed.fromJson(embedJson) : null,
+            );
+            recordJson = sparkRecord.toJson();
+            collection = NSID.parse('so.sprk.feed.post');
+          } else {
+            // Bluesky comment
+            final bsky.PostRecord bskyRecord = bsky.PostRecord(
+              text: text,
+              createdAt: DateTime.now(),
+              reply: bsky.ReplyRef(
+                root: StrongRef(uri: effectiveRootUri, cid: effectiveRootCid),
+                parent: StrongRef(uri: parentUri, cid: parentCid),
+              ),
+              embed: embedJson != null ? embedConverter.fromJson(embedJson) : null,
+            );
+            recordJson = bskyRecord.toJson();
+            collection = NSID.parse('app.bsky.feed.post');
           }
 
-          final result = await atproto.repo.createRecord(collection: NSID.parse(postType), record: commentRecord);
+          final result = await atproto.repo.createRecord(collection: collection, record: recordJson);
 
           _logger.i('Comment posted successfully: ${result.data.uri}');
 

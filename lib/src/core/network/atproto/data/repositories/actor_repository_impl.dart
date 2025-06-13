@@ -8,7 +8,6 @@ import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_rep
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:atproto/atproto.dart' as atproto;
 
 /// Actor-related API endpoints implementation
 class ActorRepositoryImpl implements ActorRepository {
@@ -100,12 +99,7 @@ class ActorRepositoryImpl implements ActorRepository {
       throw Exception('Not authenticated');
     }
 
-    final record = <String, dynamic>{
-      '\$type': 'so.sprk.actor.profile',
-      'displayName': displayName,
-      'description': description,
-      if (avatar != null) 'avatar': avatar,
-    };
+    final record = ProfileRecord(displayName: displayName, description: description, avatar: avatar);
 
     final atproto = _client.authRepository.atproto;
     if (atproto == null) {
@@ -114,7 +108,7 @@ class ActorRepositoryImpl implements ActorRepository {
 
     await atproto.repo.putRecord(
       uri: AtUri.parse('at://${_client.authRepository.session!.did}/so.sprk.actor.profile/self'),
-      record: record,
+      record: record.toJson(),
     );
   }
 

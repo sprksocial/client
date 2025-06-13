@@ -2,6 +2,7 @@ import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 
 import 'actor_models.dart';
 
@@ -178,15 +179,6 @@ class PostThread with _$PostThread {
   factory PostThread.fromJson(Map<String, dynamic> json) => _$PostThreadFromJson(json);
 }
 
-/// Skeleton of a ReplyRef. Needs to be hydrated.
-@freezed
-class RecordReplyRef with _$RecordReplyRef {
-  const RecordReplyRef._();
-  @JsonSerializable(explicitToJson: true)
-  const factory RecordReplyRef({required StrongRef root, required StrongRef parent}) = _RecordReplyRef;
-
-  factory RecordReplyRef.fromJson(Map<String, dynamic> json) => _$RecordReplyRefFromJson(json);
-}
 
 @freezed
 class Viewer with _$Viewer {
@@ -205,52 +197,7 @@ class Viewer with _$Viewer {
   factory Viewer.fromJson(Map<String, dynamic> json) => _$ViewerFromJson(json);
 }
 
-@freezed
-class PostRecord with _$PostRecord {
-  const PostRecord._();
-  @JsonSerializable(explicitToJson: true)
-  const factory PostRecord({
-    DateTime? createdAt,
-    @JsonKey(defaultValue: '') String? text,
-    @JsonKey(defaultValue: []) List<Facet>? facets,
-    RecordReplyRef? reply,
-    List<String>? langs,
-    List<String>? tags,
-    List<SelfLabel>? selfLabels,
-    Embed? embed, // blob
-    // threadgate
-  }) = _PostRecord;
 
-  List<String> get hashtags => tags ?? _extractHashtags(text ?? '');
-
-  List<String> _extractHashtags(String text) {
-    final regex = RegExp(r'#(\w+)');
-    return regex.allMatches(text).map((match) => match.group(1)!).toList();
-  }
-
-  factory PostRecord.fromJson(Map<String, dynamic> json) => _$PostRecordFromJson(json);
-}
-
-@Freezed(unionKey: r'$type')
-sealed class Embed with _$Embed {
-  const Embed._();
-  @FreezedUnionValue('so.sprk.embed.video')
-  @JsonSerializable(explicitToJson: true)
-  const factory Embed.video({
-    required Blob video,
-
-    // remaining fields that are in the json
-    // List<Caption> captions,
-    // AspectRatio aspectRatio, {width: int, height: int}
-    String? alt,
-  }) = EmbedVideo;
-
-  @FreezedUnionValue('so.sprk.embed.images')
-  @JsonSerializable(explicitToJson: true)
-  const factory Embed.image({required List<Image> images}) = EmbedImage;
-
-  factory Embed.fromJson(Map<String, dynamic> json) => _$EmbedFromJson(json);
-}
 
 @freezed
 class PostView with _$PostView {
@@ -406,19 +353,7 @@ class Facet with _$Facet {
   factory Facet.fromJson(Map<String, dynamic> json) => _$FacetFromJson(json);
 }
 
-@freezed
-class Image with _$Image {
-  const Image._();
 
-  @JsonSerializable(explicitToJson: true)
-  const factory Image({
-    required Blob image,
-    String? alt,
-    // aspectRatio: {width: int, height: int}
-  }) = _Image;
-
-  factory Image.fromJson(Map<String, dynamic> json) => _$ImageFromJson(json);
-}
 
 @freezed
 class ViewImage with _$ViewImage {
@@ -480,18 +415,4 @@ class StoryView with _$StoryView {
   }) = _StoryView;
 
   factory StoryView.fromJson(Map<String, dynamic> json) => _$StoryViewFromJson(json);
-}
-
-@freezed
-class StoryRecord with _$StoryRecord {
-  const StoryRecord._();
-  @JsonSerializable(explicitToJson: true)
-  const factory StoryRecord({
-    required DateTime createdAt,
-    required Embed media,
-    List<SelfLabel>? selfLabels,
-    List<String>? tags,
-  }) = _StoryRecord;
-
-  factory StoryRecord.fromJson(Map<String, dynamic> json) => _$StoryRecordFromJson(json);
 }

@@ -98,10 +98,7 @@ class SearchActorsResponse {
   }
 
   /// Convert the object back to JSON.
-  Map<String, dynamic> toJson() => {
-        'actors': actors.map((e) => e.toJson()).toList(),
-        if (cursor != null) 'cursor': cursor,
-      };
+  Map<String, dynamic> toJson() => {'actors': actors.map((e) => e.toJson()).toList(), if (cursor != null) 'cursor': cursor};
 }
 
 @freezed
@@ -132,9 +129,7 @@ class ProfileViewDetailed with _$ProfileViewDetailed {
 
 @freezed
 class UserPreferences with _$UserPreferences {
-  const factory UserPreferences({
-    required String followMode,
-  }) = _UserPreferences;
+  const factory UserPreferences({required String followMode}) = _UserPreferences;
 
   factory UserPreferences.fromJson(Map<String, dynamic> json) => _$UserPreferencesFromJson(json);
 }
