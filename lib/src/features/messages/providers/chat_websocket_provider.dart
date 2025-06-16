@@ -118,6 +118,7 @@ class ChatWebSocket extends _$ChatWebSocket {
   }
 
   /// Handle WebSocket errors
+  // ignore: strict_top_level_inference
   void _onError(error) {
     state = state.copyWith(
       isConnected: false,
