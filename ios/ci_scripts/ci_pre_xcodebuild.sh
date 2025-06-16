@@ -6,5 +6,8 @@ set -e
 # Ensure Flutter is in PATH (should have been set up by ci_post_clone.sh)
 export PATH="$PATH:$HOME/flutter/bin"
 
+# Change to the project root directory (where pubspec.yaml is located)
+cd $CI_PRIMARY_REPOSITORY_PATH
+
 # Run build_runner
 dart run build_runner build --delete-conflicting-outputs
