@@ -112,25 +112,38 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error:
-          (error, stack) => Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(FluentIcons.error_circle_24_regular, size: 48),
-                const SizedBox(height: 16),
-                Text('Error loading posts: $error'),
-                const SizedBox(height: 16),
-                ElevatedButton(onPressed: _onRefresh, child: const Text('Retry')),
-              ],
-            ),
-          ),
+      error: (error, stack) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(FluentIcons.error_circle_24_regular, size: 48),
+            const SizedBox(height: 16),
+            Text('Error loading posts: $error'),
+            const SizedBox(height: 16),
+            ElevatedButton(onPressed: _onRefresh, child: const Text('Retry')),
+          ],
+        ),
+      ),
     );
   }
 
   void _onPostTap(AtUri postUri) {
-    // Navigate to standalone post page
-    context.router.push(StandalonePostRoute(postUri: postUri.toString()));
+    // Find the index of the tapped post in the loaded posts
+    final feedState = ref.read(profileFeedProvider(widget.profileUri, widget.videosOnly));
+    feedState.whenData((state) {
+      final postIndex = state.loadedPosts.indexOf(postUri);
+      if (postIndex != -1) {
+        // Navigate to standalone profile feed page starting at the tapped post
+        context.router.push(StandaloneProfileFeedRoute(
+          profileUri: widget.profileUri.toString(),
+          videosOnly: widget.videosOnly,
+          initialPostIndex: postIndex,
+        ));
+      } else {
+        // Fallback to standalone post page if post not found in feed
+        context.router.push(StandalonePostRoute(postUri: postUri.toString()));
+      }
+    });
   }
 }
 
@@ -194,24 +207,33 @@ class ProfileGridTile extends StatelessWidget {
           onTap: onTap,
           child: Container(
             color: AppColors.black,
-            child:
-                thumbnailUrl.isNotEmpty
-                    ? Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        CachedNetworkImage(
-                          imageUrl: thumbnailUrl,
-                          fit: BoxFit.cover,
-                          placeholder:
-                              (context, url) => const SizedBox.shrink(),
-                          errorWidget:
-                              (context, url, error) => Container(
-                                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                child: const Center(child: Icon(FluentIcons.error_circle_24_regular, size: 20)),
-                              ),
+            child: thumbnailUrl.isNotEmpty
+                ? Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CachedNetworkImage(
+                        imageUrl: thumbnailUrl,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => const SizedBox.shrink(),
+                        errorWidget: (context, url, error) => Container(
+                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                          child: const Center(child: Icon(FluentIcons.error_circle_24_regular, size: 20)),
                         ),
-                        // Video indicator overlay for videos
-                        if (post.embed is EmbedViewVideo)
+                      ),
+                      // Video indicator overlay for videos
+                      if (post.embed is EmbedViewVideo)
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(color: Colors.black.withAlpha(150), borderRadius: BorderRadius.circular(4)),
+                            child: const Icon(FluentIcons.play_24_filled, color: Colors.white, size: 12),
+                          ),
+                        ),
+                      // Multiple image indicator for image carousels
+                      if (post.embed is EmbedViewImage)
+                        if ((post.embed as EmbedViewImage).images.length > 1)
                           Positioned(
                             top: 4,
                             right: 4,
@@ -221,36 +243,21 @@ class ProfileGridTile extends StatelessWidget {
                                 color: Colors.black.withAlpha(150),
                                 borderRadius: BorderRadius.circular(4),
                               ),
-                              child: const Icon(FluentIcons.play_24_filled, color: Colors.white, size: 12),
+                              child: const Icon(FluentIcons.copy_24_regular, color: Colors.white, size: 12),
                             ),
                           ),
-                        // Multiple image indicator for image carousels
-                        if (post.embed is EmbedViewImage)
-                          if ((post.embed as EmbedViewImage).images.length > 1)
-                            Positioned(
-                              top: 4,
-                              right: 4,
-                              child: Container(
-                                padding: const EdgeInsets.all(4),
-                                decoration: BoxDecoration(
-                                  color: Colors.black.withAlpha(150),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: const Icon(FluentIcons.copy_24_regular, color: Colors.white, size: 12),
-                              ),
-                            ),
-                      ],
-                    )
-                    : Container(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                      child: Center(
-                        child: Icon(
-                          post.embed is EmbedViewVideo ? FluentIcons.video_24_regular : FluentIcons.image_24_regular,
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          size: 24,
-                        ),
+                    ],
+                  )
+                : Container(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    child: Center(
+                      child: Icon(
+                        post.embed is EmbedViewVideo ? FluentIcons.video_24_regular : FluentIcons.image_24_regular,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        size: 24,
                       ),
                     ),
+                  ),
           ),
         );
       },

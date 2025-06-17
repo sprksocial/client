@@ -38,9 +38,9 @@ class ProfileFeed extends _$ProfileFeed {
         result.posts.removeWhere((post) => post.post.videoUrl.isNotEmpty);
       }
       final posts = result.posts.map((feedViewPost) => feedViewPost.post.uri).toList();
-      
+
       _logger.d('Loaded initial ${result.posts.length} posts for profile ${profileUri.toString()}, videosOnly: $videosOnly');
-      
+
       return ProfileFeedState(
         loadedPosts: posts,
         isEndOfNetwork: result.posts.length < ProfileFeedState.fetchLimit,
@@ -57,7 +57,7 @@ class ProfileFeed extends _$ProfileFeed {
   /// Load more posts for the profile
   Future<void> loadMore() async {
     if (_isLoading || state.value?.isEndOfNetwork == true) return;
-    
+
     _isLoading = true;
     final currentState = state.value;
     if (currentState == null) return;
@@ -72,17 +72,19 @@ class ProfileFeed extends _$ProfileFeed {
 
       final newPosts = result.posts.map((feedViewPost) => feedViewPost.post.uri).toList();
       final allPosts = [...currentState.loadedPosts, ...newPosts];
-      
-      state = AsyncValue.data(currentState.copyWith(
-        loadedPosts: allPosts,
-        cursor: result.cursor,
-        isEndOfNetwork: result.posts.length < ProfileFeedState.fetchLimit,
-      ));
+
+      state = AsyncValue.data(
+        currentState.copyWith(
+          loadedPosts: allPosts,
+          cursor: result.cursor,
+          isEndOfNetwork: result.posts.length < ProfileFeedState.fetchLimit,
+        ),
+      );
 
       // Cache the posts
       final postViews = result.posts.map((post) => post.post).toList();
       await _sqlCache.cachePosts(postViews);
-      
+
       _logger.d('Loaded ${result.posts.length} posts for profile ${profileUri.toString()}, videosOnly: $videosOnly');
     } catch (e) {
       _logger.e('Error loading more posts: $e');
@@ -95,12 +97,7 @@ class ProfileFeed extends _$ProfileFeed {
   /// Refresh the profile feed
   Future<void> refresh() async {
     state = const AsyncValue.loading();
-    final freshState = ProfileFeedState(
-      loadedPosts: [],
-      isEndOfNetwork: false,
-      cursor: null,
-      extraInfo: LinkedHashMap(),
-    );
+    final freshState = ProfileFeedState(loadedPosts: [], isEndOfNetwork: false, cursor: null, extraInfo: LinkedHashMap());
     state = AsyncValue.data(freshState);
     await loadMore();
   }
