@@ -6,7 +6,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_state.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';

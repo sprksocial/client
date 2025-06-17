@@ -107,7 +107,7 @@ class FeedNotifier extends _$FeedNotifier {
     }
   }
 
-    bool _shouldUseBlueskyAPI() {
+  bool _shouldUseBlueskyAPI() {
     // Determine if this feed should use Bluesky API for post hydration
     switch (_feed) {
       case FeedHardCoded(:final hardCodedFeed):
