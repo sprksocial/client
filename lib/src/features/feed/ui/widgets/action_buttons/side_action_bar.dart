@@ -198,19 +198,18 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
     final shouldDelete =
         await showDialog<bool>(
           context: context,
-          builder:
-              (context) => AlertDialog(
-                title: const Text('Delete Post'),
-                content: const Text('Are you sure you want to delete this post? This action cannot be undone.'),
-                actions: [
-                  TextButton(onPressed: () => context.router.maybePop(false), child: const Text('Cancel')),
-                  TextButton(
-                    style: TextButton.styleFrom(foregroundColor: Colors.red),
-                    onPressed: () => context.router.maybePop(true),
-                    child: const Text('Delete'),
-                  ),
-                ],
+          builder: (context) => AlertDialog(
+            title: const Text('Delete Post'),
+            content: const Text('Are you sure you want to delete this post? This action cannot be undone.'),
+            actions: [
+              TextButton(onPressed: () => context.router.maybePop(false), child: const Text('Cancel')),
+              TextButton(
+                style: TextButton.styleFrom(foregroundColor: Colors.red),
+                onPressed: () => context.router.maybePop(true),
+                child: const Text('Delete'),
               ),
+            ],
+          ),
         ) ??
         false;
 
@@ -220,6 +219,9 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
       final currentPost = _currentPost ?? widget.post;
       ref.read(deletePostProvider(AtUri.parse(currentPost.uri.toString())));
       messenger.showSnackBar(const SnackBar(content: Text('Post deleted successfully!')));
+      if (context.mounted) {
+        context.router.popUntilRoot();
+      }
     } catch (e) {
       if (mounted) {
         messenger.showSnackBar(SnackBar(content: Text('Error deleting post: $e')));
@@ -232,7 +234,7 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
     if (widget.onProfilePressed != null) {
       widget.onProfilePressed!();
     }
-    
+
     final currentPost = _currentPost ?? widget.post;
     context.router.push(ProfileRoute(did: currentPost.author.did));
   }
@@ -372,7 +374,10 @@ class _SharePanelState extends State<SharePanel> {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text('Share Video', style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold)),
+                child: Text(
+                  'Share Video',
+                  style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
               ),
               Divider(color: dividerColor, height: 30),
               Expanded(
@@ -380,7 +385,10 @@ class _SharePanelState extends State<SharePanel> {
                   controller: scrollController,
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                   children: [
-                    Text('Video link', style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w500)),
+                    Text(
+                      'Video link',
+                      style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w500),
+                    ),
                     const SizedBox(height: 8),
                     CopyField(
                       text: widget.shareUrl,
@@ -393,7 +401,10 @@ class _SharePanelState extends State<SharePanel> {
                     ),
                     if (widget.showEmbed) ...[
                       const SizedBox(height: 24),
-                      Text('Video embed', style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w500)),
+                      Text(
+                        'Video embed',
+                        style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w500),
+                      ),
                       const SizedBox(height: 8),
                       CopyField(
                         text: widget.embedCode,
@@ -471,10 +482,9 @@ class CopyField extends StatelessWidget {
                   transitionBuilder: (Widget child, Animation<double> animation) {
                     return ScaleTransition(scale: animation, child: child);
                   },
-                  child:
-                      isCopied
-                          ? Icon(Icons.check_circle, key: const ValueKey('copied'), color: Colors.green, size: 20)
-                          : Icon(Icons.content_copy_rounded, key: const ValueKey('copy'), color: accentColor, size: 20),
+                  child: isCopied
+                      ? Icon(Icons.check_circle, key: const ValueKey('copied'), color: Colors.green, size: 20)
+                      : Icon(Icons.content_copy_rounded, key: const ValueKey('copy'), color: accentColor, size: 20),
                 ),
               ),
             ),

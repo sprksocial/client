@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
@@ -38,6 +39,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
     Future.delayed(const Duration(milliseconds: 100), () {
       if (mounted) {
         ref.read(cameraProvider.notifier);
@@ -49,6 +51,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _stopRecordingTimer();
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 
@@ -122,7 +125,6 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
   Future<void> _takePhoto() async {
     final XFile? photo = await ref.read(cameraProvider.notifier).takePhoto();
     if (photo != null) {
-      debugPrint('Photo taken: ${photo.path}');
       if (widget.isStoryMode) {
         if (mounted) {
           context.router.push(StoryReviewRoute(videoPath: '', imageFile: photo));
@@ -194,68 +196,62 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
     var cameraState = ref.watch(cameraProvider);
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            if (_cameraPermissionDenied)
-              Positioned.fill(child: CameraPermissionRequest(onRequestPermission: () => cameraState = ref.watch(cameraProvider)))
-            else
-              Positioned.fill(
-                child: CameraView(
-                  cameraController: cameraState.value?.controller,
-                  isInitialized: cameraState.value?.isInitialized ?? false,
-                ),
-              ),
 
-            Positioned(
-              top: 20,
-              left: 20,
-              child: GestureDetector(
-                onTap: () => context.router.maybePop(),
-                child: Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: Colors.black.withAlpha(100), shape: BoxShape.circle),
-                  child: const Icon(FluentIcons.dismiss_24_regular, color: Colors.white, size: 24),
-                ),
+      body: Stack(
+        children: [
+          if (_cameraPermissionDenied)
+            Positioned.fill(child: CameraPermissionRequest(onRequestPermission: () => cameraState = ref.watch(cameraProvider)))
+          else
+            CameraView(cameraController: cameraState.value?.controller, isInitialized: cameraState.value?.isInitialized ?? false),
+
+          Positioned(
+            top: 20,
+            left: 20,
+            child: GestureDetector(
+              onTap: () => context.router.maybePop(),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.black.withAlpha(100), shape: BoxShape.circle),
+                child: const Icon(FluentIcons.dismiss_24_regular, color: Colors.white, size: 24),
               ),
             ),
+          ),
 
-            Positioned(
-              top: 20,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: ModeSelector(
-                  isVideoMode: _isVideoMode,
-                  onModeSelected: (isVideoMode) => setState(() => _isVideoMode = isVideoMode),
-                ),
+          Positioned(
+            top: 20,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: ModeSelector(
+                isVideoMode: _isVideoMode,
+                onModeSelected: (isVideoMode) => setState(() => _isVideoMode = isVideoMode),
               ),
             ),
+          ),
 
-            Positioned(
-              bottom: 30,
-              left: 0,
-              right: 0,
-              child: Column(
-                children: [
-                  if (_isVideoMode) ...[
-                    RecordingBar(isRecording: _isRecording, progress: _recordingProgress, timeText: _recordingTimeText),
-                    const SizedBox(height: 20),
-                  ],
-
-                  CameraControls(
-                    isVideoMode: _isVideoMode,
-                    isRecording: _isRecording,
-                    onCapturePressed: _onCapturePressed,
-                    onFlipCameraPressed: () => ref.read(cameraProvider.notifier).flipCamera(),
-                    onGalleryPressed: _onVideoGalleryPressed,
-                    onImageGalleryPressed: _onImageGalleryPressed,
-                  ),
+          Positioned(
+            bottom: 30,
+            left: 0,
+            right: 0,
+            child: Column(
+              children: [
+                if (_isVideoMode) ...[
+                  RecordingBar(isRecording: _isRecording, progress: _recordingProgress, timeText: _recordingTimeText),
+                  const SizedBox(height: 20),
                 ],
-              ),
+
+                CameraControls(
+                  isVideoMode: _isVideoMode,
+                  isRecording: _isRecording,
+                  onCapturePressed: _onCapturePressed,
+                  onFlipCameraPressed: () => ref.read(cameraProvider.notifier).flipCamera(),
+                  onGalleryPressed: _onVideoGalleryPressed,
+                  onImageGalleryPressed: _onImageGalleryPressed,
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
