@@ -23,12 +23,7 @@ class ModeSelector extends StatelessWidget {
 }
 
 class ModeButton extends StatelessWidget {
-  const ModeButton({
-    super.key,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
+  const ModeButton({super.key, required this.label, required this.isSelected, required this.onTap});
 
   final String label;
   final bool isSelected;
@@ -41,7 +36,10 @@ class ModeButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(color: isSelected ? Colors.pink : Colors.transparent, borderRadius: BorderRadius.circular(20)),
-        child: Text(label, style: TextStyle(color: Colors.white, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal)),
+        child: Text(
+          label,
+          style: TextStyle(color: Colors.white, fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
+        ),
       ),
     );
   }

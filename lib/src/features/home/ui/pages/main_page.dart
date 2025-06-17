@@ -28,13 +28,13 @@ class _MainPageState extends ConsumerState<MainPage> {
     return AutoTabsRouter(
       key: const ValueKey('mainTabsRouter'),
       routes: [
-        const FeedsRoute(), 
-        const SearchRoute(), 
+        const FeedsRoute(),
+        const SearchRoute(),
         const EmptyRoute(),
-        const MessagesRoute(), 
+        const MessagesRoute(),
         UserProfileRoute()
       ],
-      transitionBuilder: (context, child, animation) => FadeTransition(opacity: animation, child: child),
+      transitionBuilder: (context, child, animation) => child,
       builder: (context, child) {
         final tabsRouter = AutoTabsRouter.of(context);
 

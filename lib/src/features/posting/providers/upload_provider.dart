@@ -15,7 +15,7 @@ class Upload extends _$Upload {
     ref.onDispose(() {
       _completedTasksTimer?.cancel();
     });
-    
+
     return const UploadState();
   }
 
@@ -23,25 +23,19 @@ class Upload extends _$Upload {
   String registerTask(String type) {
     final String id = DateTime.now().millisecondsSinceEpoch.toString();
     final UploadTask newTask = UploadTask(id: id, type: type);
-    
-    state = state.copyWith(
-      tasks: {...state.tasks, id: newTask},
-    );
-    
+
+    state = state.copyWith(tasks: {...state.tasks, id: newTask});
+
     return id;
   }
 
   // Start an upload task
   void startTask(String id) {
     if (state.tasks.containsKey(id)) {
-      final UploadTask updatedTask = state.tasks[id]!.copyWith(
-        status: UploadStatus.uploading,
-      );
-      
-      state = state.copyWith(
-        tasks: {...state.tasks, id: updatedTask},
-      );
-      
+      final UploadTask updatedTask = state.tasks[id]!.copyWith(status: UploadStatus.uploading);
+
+      state = state.copyWith(tasks: {...state.tasks, id: updatedTask});
+
       _updateActiveStatus();
     }
   }
@@ -49,14 +43,10 @@ class Upload extends _$Upload {
   // Complete an upload task
   void completeTask(String id) {
     if (state.tasks.containsKey(id)) {
-      final UploadTask updatedTask = state.tasks[id]!.copyWith(
-        status: UploadStatus.completed,
-      );
-      
-      state = state.copyWith(
-        tasks: {...state.tasks, id: updatedTask},
-      );
-      
+      final UploadTask updatedTask = state.tasks[id]!.copyWith(status: UploadStatus.completed);
+
+      state = state.copyWith(tasks: {...state.tasks, id: updatedTask});
+
       _updateActiveStatus();
       _updateCompletedStatus();
       _setupCompletedTasksCleanup();
@@ -66,15 +56,10 @@ class Upload extends _$Upload {
   // Mark a task as failed
   void failTask(String id, String errorMessage) {
     if (state.tasks.containsKey(id)) {
-      final UploadTask updatedTask = state.tasks[id]!.copyWith(
-        status: UploadStatus.error,
-        errorMessage: errorMessage,
-      );
-      
-      state = state.copyWith(
-        tasks: {...state.tasks, id: updatedTask},
-      );
-      
+      final UploadTask updatedTask = state.tasks[id]!.copyWith(status: UploadStatus.error, errorMessage: errorMessage);
+
+      state = state.copyWith(tasks: {...state.tasks, id: updatedTask});
+
       _updateActiveStatus();
     }
   }
@@ -84,24 +69,20 @@ class Upload extends _$Upload {
     final Map<String, UploadTask> filteredTasks = Map.fromEntries(
       state.tasks.entries.where((entry) => entry.value.status != UploadStatus.completed),
     );
-    
+
     state = state.copyWith(tasks: filteredTasks);
     _updateCompletedStatus();
   }
 
   void _updateActiveStatus() {
-    final bool isAnyTaskActive = state.tasks.values.any(
-      (task) => task.status == UploadStatus.uploading,
-    );
-    
+    final bool isAnyTaskActive = state.tasks.values.any((task) => task.status == UploadStatus.uploading);
+
     state = state.copyWith(isAnyTaskActive: isAnyTaskActive);
   }
 
   void _updateCompletedStatus() {
-    final bool isAnyTaskCompleted = state.tasks.values.any(
-      (task) => task.status == UploadStatus.completed,
-    );
-    
+    final bool isAnyTaskCompleted = state.tasks.values.any((task) => task.status == UploadStatus.completed);
+
     state = state.copyWith(isAnyTaskCompleted: isAnyTaskCompleted);
   }
 
@@ -114,4 +95,4 @@ class Upload extends _$Upload {
       clearCompletedTasks();
     });
   }
-} 
+}
