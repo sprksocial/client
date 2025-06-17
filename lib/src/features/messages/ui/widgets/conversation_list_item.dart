@@ -54,7 +54,7 @@ class ConversationListItem extends StatelessWidget {
                           style: TextStyle(
                             fontWeight: FontWeight.normal,
                             fontSize: 14,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+                            color: Theme.of(context).colorScheme.onSurface.withAlpha(178),
                             overflow: TextOverflow.ellipsis,
                           ),
                           maxLines: 1,
@@ -71,7 +71,7 @@ class ConversationListItem extends StatelessWidget {
                 if (conversation.lastActivity != null)
                   Text(
                     _formatTime(conversation.lastActivity!),
-                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7)),
+                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withAlpha(178)),
                   ),
                 const SizedBox(height: 4),
                 if (conversation.unreadCount > 0)

@@ -4,8 +4,6 @@ import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 
-import 'actor_models.dart';
-
 part 'feed_models.freezed.dart';
 part 'feed_models.g.dart';
 

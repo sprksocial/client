@@ -21,4 +21,4 @@ class UploadState with _$UploadState {
     @Default(false) bool isAnyTaskActive,
     @Default(false) bool isAnyTaskCompleted,
   }) = _UploadState;
-} 
+}

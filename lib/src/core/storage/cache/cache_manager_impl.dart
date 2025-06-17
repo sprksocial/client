@@ -7,7 +7,6 @@ import 'package:sparksocial/src/core/storage/cache/cache_manager_interface.dart'
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:atproto/atproto.dart' as atproto;
 
 /// Manages temporary cache files for the application
 class CacheManagerImpl implements CacheManagerInterface {

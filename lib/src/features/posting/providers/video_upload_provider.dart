@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:atproto/core.dart';
-import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart' as path;

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:atproto/atproto.dart' as atp;
+import 'package:atproto_core/atproto_core.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
@@ -132,10 +133,35 @@ class ProfileNotifier extends _$ProfileNotifier {
         logger.i('Successfully unfollowed ${profile.did}.');
       }
 
-      final refreshedProfile = await actorRepository.getProfile(profile.did);
-      final isEarlySupporter = await actorRepository.isEarlySupporter(profile.did);
+      // Update state optimistically first
+      final optimisticViewer = profile.viewer?.copyWith(
+        following: newFollowUriResult != null ? AtUri.parse(newFollowUriResult) : null,
+      ) ?? ActorViewer(following: newFollowUriResult != null ? AtUri.parse(newFollowUriResult) : null);
 
-      state = AsyncData(originalStateValue.copyWith(profile: refreshedProfile, isEarlySupporter: isEarlySupporter));
+      final optimisticProfile = profile.copyWith(viewer: optimisticViewer);
+      state = AsyncData(originalStateValue.copyWith(profile: optimisticProfile));
+
+      // Then refresh the profile data in the background to ensure consistency
+      // Use a small delay to allow backend to propagate changes
+      Future.delayed(const Duration(milliseconds: 500), () async {
+        try {
+          final refreshedProfile = await actorRepository.getProfile(profile.did);
+          final isEarlySupporter = await actorRepository.isEarlySupporter(profile.did);
+
+          // Only update if the state hasn't changed (user hasn't navigated away)
+          final currentState = state.asData?.value;
+          if (currentState?.profile?.did == profile.did) {
+            state = AsyncData(currentState!.copyWith(
+              profile: refreshedProfile,
+              isEarlySupporter: isEarlySupporter,
+            ));
+          }
+        } catch (e) {
+          logger.w('Background profile refresh failed: $e');
+          // Keep the optimistic state if refresh fails
+        }
+      });
+
       return newFollowUriResult;
     } catch (e, s) {
       logger.e('Error toggling follow for ${profile.did}', error: e, stackTrace: s);

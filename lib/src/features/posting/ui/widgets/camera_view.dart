@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 
@@ -31,11 +33,19 @@ class _CameraViewState extends State<CameraView> {
     }
 
     try {
-      final aspectRatio = widget.cameraController!.value.aspectRatio;
+      var tmp = MediaQuery.of(context).size;
+      final screenH = math.max(tmp.height, tmp.width);
+      final screenW = math.min(tmp.height, tmp.width);
+      tmp = widget.cameraController!.value.previewSize!;
+      final previewH = math.max(tmp.height, tmp.width);
+      final previewW = math.min(tmp.height, tmp.width);
+      final screenRatio = screenH / screenW;
+      final previewRatio = previewH / previewW;
 
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: AspectRatio(aspectRatio: aspectRatio, child: CameraPreview(widget.cameraController!)),
+      return OverflowBox(
+        maxHeight: screenRatio > previewRatio ? screenH : screenW / previewW * previewH,
+        maxWidth: screenRatio > previewRatio ? screenH / previewH * previewW : screenW,
+        child: CameraPreview(widget.cameraController!),
       );
     } catch (e) {
       return Container(

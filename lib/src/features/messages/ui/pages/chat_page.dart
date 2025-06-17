@@ -153,7 +153,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                   ),
                   Text(
                     '@${widget.otherUserHandle ?? 'user'}',
-                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7), fontSize: 12),
+                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(178), fontSize: 12),
                   ),
                 ],
               ),

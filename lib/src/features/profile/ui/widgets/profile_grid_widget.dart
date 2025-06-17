@@ -180,10 +180,7 @@ class ProfileGridTile extends StatelessWidget {
       future: _loadPostWithFallback(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Container(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
-          );
+          return const SizedBox.shrink();
         }
 
         if (snapshot.hasError || !snapshot.hasData) {
@@ -206,12 +203,7 @@ class ProfileGridTile extends StatelessWidget {
                           imageUrl: thumbnailUrl,
                           fit: BoxFit.cover,
                           placeholder:
-                              (context, url) => Container(
-                                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                                child: const Center(
-                                  child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2)),
-                                ),
-                              ),
+                              (context, url) => const SizedBox.shrink(),
                           errorWidget:
                               (context, url, error) => Container(
                                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
