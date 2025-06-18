@@ -8,7 +8,6 @@ import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/menu_action_button.dart';
 import 'package:sparksocial/src/core/widgets/report_dialog.dart';
 import 'package:sparksocial/src/features/feed/providers/delete_post.dart';
