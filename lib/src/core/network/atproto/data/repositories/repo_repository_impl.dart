@@ -94,6 +94,26 @@ class RepoRepositoryImpl implements RepoRepository {
 
       await atproto.repo.deleteRecord(uri: uri);
       _logger.d('Record deleted successfully');
+
+      // Delete cross-posted Bluesky counterpart if it exists
+      try {
+        final String did = uri.hostname;
+        final String rkey = uri.rkey;
+        final AtUri blueskyUri = AtUri.parse('at://$did/app.bsky.feed.post/$rkey');
+
+        _logger.d('Attempting to delete Bluesky counterpart post: $blueskyUri');
+
+        try {
+          await atproto.repo.deleteRecord(uri: blueskyUri);
+          _logger.d('Bluesky counterpart post deleted successfully');
+        } catch (e) {
+          // Ignore errors like 404 – it simply means the counterpart does not exist.
+          _logger.w('Bluesky counterpart post not found or deletion failed', error: e);
+        }
+      } catch (e) {
+        // Best-effort only – do not fail original deletion.
+        _logger.w('Failed during Bluesky cross-post deletion cleanup', error: e);
+      }
     });
   }
 
