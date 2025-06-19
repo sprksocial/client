@@ -11,4 +11,4 @@ class ProfileState with _$ProfileState {
     @Default(false) bool showAuthPrompt,
     String? currentViewDid, // To store the DID being viewed or null for current user's own profile
   }) = _ProfileState;
-} 
+}

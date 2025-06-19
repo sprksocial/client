@@ -83,14 +83,16 @@ class ProfileNotifier extends _$ProfileNotifier {
     }
     final didToRefresh = currentDid ?? authRepository.session!.did;
 
-    state = const AsyncLoading();
-
     try {
-      await loadProfileData(didToRefresh, ProfileState(currentViewDid: didToRefresh));
+      // Load fresh data directly without changing to loading state
+      await loadProfileData(didToRefresh, currentProfileState ?? ProfileState(currentViewDid: didToRefresh));
       logger.i('Profile for $didToRefresh refreshed successfully.');
     } catch (e, s) {
       logger.e('Error refreshing profile for $didToRefresh', error: e, stackTrace: s);
-      state = AsyncError(e, s);
+      // If we have current data, keep it; otherwise show error
+      if (currentProfileState == null) {
+        state = AsyncError(e, s);
+      }
     }
   }
 
@@ -134,9 +136,9 @@ class ProfileNotifier extends _$ProfileNotifier {
       }
 
       // Update state optimistically first
-      final optimisticViewer = profile.viewer?.copyWith(
-        following: newFollowUriResult != null ? AtUri.parse(newFollowUriResult) : null,
-      ) ?? ActorViewer(following: newFollowUriResult != null ? AtUri.parse(newFollowUriResult) : null);
+      final optimisticViewer =
+          profile.viewer?.copyWith(following: newFollowUriResult != null ? AtUri.parse(newFollowUriResult) : null) ??
+          ActorViewer(following: newFollowUriResult != null ? AtUri.parse(newFollowUriResult) : null);
 
       final optimisticProfile = profile.copyWith(viewer: optimisticViewer);
       state = AsyncData(originalStateValue.copyWith(profile: optimisticProfile));
@@ -151,10 +153,7 @@ class ProfileNotifier extends _$ProfileNotifier {
           // Only update if the state hasn't changed (user hasn't navigated away)
           final currentState = state.asData?.value;
           if (currentState?.profile?.did == profile.did) {
-            state = AsyncData(currentState!.copyWith(
-              profile: refreshedProfile,
-              isEarlySupporter: isEarlySupporter,
-            ));
+            state = AsyncData(currentState!.copyWith(profile: refreshedProfile, isEarlySupporter: isEarlySupporter));
           }
         } catch (e) {
           logger.w('Background profile refresh failed: $e');
@@ -199,8 +198,7 @@ class ProfileNotifier extends _$ProfileNotifier {
     final currentProfileState = state.asData?.value;
     final currentDid = currentProfileState?.currentViewDid;
 
-    state = const AsyncLoading();
-    await loadProfileData(currentDid, ProfileState(currentViewDid: currentDid));
+    await loadProfileData(currentDid, currentProfileState ?? ProfileState(currentViewDid: currentDid));
   }
 
   void triggerAuthPrompt() {
