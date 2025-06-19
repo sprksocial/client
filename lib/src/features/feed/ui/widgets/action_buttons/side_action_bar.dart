@@ -8,7 +8,6 @@ import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/menu_action_button.dart';
 import 'package:sparksocial/src/core/widgets/report_dialog.dart';
 import 'package:sparksocial/src/features/feed/providers/delete_post.dart';
@@ -305,7 +304,6 @@ class _SharePanelState extends State<SharePanel> {
   void _copyToClipboard(String text, BuildContext context, bool isLink) {
     Clipboard.setData(ClipboardData(text: text));
 
-    // Update state to show copied indicator
     setState(() {
       if (isLink) {
         _copiedLink = true;
@@ -314,24 +312,23 @@ class _SharePanelState extends State<SharePanel> {
       }
     });
 
-    // Show a more noticeable snackbar
+    final theme = Theme.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
           children: [
-            const Icon(Icons.check_circle, color: AppColors.textOnDark),
+            Icon(Icons.check_circle, color: theme.colorScheme.onPrimary),
             const SizedBox(width: 12),
             Text(isLink ? 'Video link copied!' : 'Embed code copied!'),
           ],
         ),
-        backgroundColor: Colors.green.shade700,
+        backgroundColor: theme.colorScheme.primary,
         behavior: SnackBarBehavior.floating,
         width: MediaQuery.of(context).size.width * 0.9,
         duration: const Duration(seconds: 2),
       ),
     );
 
-    // Reset the copied state after 2 seconds
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         setState(() {
@@ -347,16 +344,16 @@ class _SharePanelState extends State<SharePanel> {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = AppColors.background;
-    final textColor = AppColors.textPrimary;
-    final fieldBgColor = const Color(0xFFF5F5F5);
-    final dividerColor = Colors.black12;
+    final theme = Theme.of(context);
+    final textColor = theme.colorScheme.onSurface;
+    final fieldBgColor = theme.colorScheme.surfaceContainerHighest;
+    final dividerColor = theme.colorScheme.outline.withValues(alpha: 0.2);
 
     return Container(
       decoration: BoxDecoration(
-        color: backgroundColor,
+        color: theme.colorScheme.surface,
         borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-        boxShadow: [BoxShadow(color: Colors.black.withAlpha(51), blurRadius: 10, spreadRadius: 0)],
+        boxShadow: [BoxShadow(color: theme.colorScheme.shadow.withValues(alpha: 0.2), blurRadius: 10, spreadRadius: 0)],
       ),
       child: DraggableScrollableSheet(
         initialChildSize: 0.4,
