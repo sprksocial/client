@@ -52,111 +52,112 @@ class ProfileFeedPostWidget extends ConsumerWidget {
 
     return networkPost.first;
   }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return FutureBuilder<PostView?>(
-      future: _loadPostWithFallback(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Container(
-            color: AppColors.black,
-            child: const Center(child: CircularProgressIndicator(color: AppColors.white)),
-          );
-        }
+    return SafeArea(
+      child: FutureBuilder<PostView?>(
+        future: _loadPostWithFallback(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Container(
+              color: AppColors.black,
+              child: const Center(child: CircularProgressIndicator(color: AppColors.white)),
+            );
+          }
 
-        if (snapshot.hasError || !snapshot.hasData) {
-          return Container(
-            color: AppColors.black,
-            child: const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, color: AppColors.white, size: 48),
-                  SizedBox(height: 16),
-                  Text('Failed to load post', style: TextStyle(color: AppColors.white)),
-                ],
+          if (snapshot.hasError || !snapshot.hasData) {
+            return Container(
+              color: AppColors.black,
+              child: const Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, color: AppColors.white, size: 48),
+                    SizedBox(height: 16),
+                    Text('Failed to load post', style: TextStyle(color: AppColors.white)),
+                  ],
+                ),
               ),
-            ),
-          );
-        }
+            );
+          }
 
-        final post = snapshot.data!;
+          final post = snapshot.data!;
 
-        // Create a simple post display similar to FeedPostWidget but without feed dependencies
-        return GestureDetector(
-          onDoubleTap: () {},
-          child: Stack(
-            children: [
-              // Main content
-              switch (post.embed) {
-                EmbedViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: true),
-                EmbedViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: false),
-                EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
-                EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
+          // Create a simple post display similar to FeedPostWidget but without feed dependencies
+          return GestureDetector(
+            onDoubleTap: () {},
+            child: Stack(
+              children: [
+                // Main content
+                switch (post.embed) {
                   EmbedViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: true),
                   EmbedViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: false),
                   EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
+                  EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
+                    EmbedViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: true),
+                    EmbedViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: false),
+                    EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
+                    _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
+                  },
                   _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                 },
-                _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
-              },
 
-              // Gradient overlay at the bottom to improve text readability
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: IgnorePointer(
-                  child: Container(
-                    height: 120,
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
-                        colors: [Colors.black87.withAlpha(100), Colors.transparent],
+                // Gradient overlay at the bottom to improve text readability
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: IgnorePointer(
+                    child: Container(
+                      height: 120,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [Colors.black87.withAlpha(100), Colors.transparent],
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
 
-              // Side action bar
-              Positioned(
-                bottom: 4,
-                right: 4,
-                child: SideActionBar(
-                  post: post,
-                  likeCount: '${post.likeCount ?? 0}',
-                  commentCount: '${post.replyCount ?? 0}',
-                  shareCount: '${post.repostCount ?? 0}',
-                  isLiked: post.viewer?.like != null,
-                  profileImageUrl: post.author.avatar.toString(),
-                  isImage: post.embed is EmbedViewImage || post.embed is EmbedViewBskyImages,
-                  onProfilePressed: () {
-                    // No special handling needed for profile navigation in standalone feed
-                  },
+                // Side action bar
+                Positioned(
+                  bottom: 4,
+                  right: 4,
+                  child: SideActionBar(
+                    post: post,
+                    likeCount: '${post.likeCount ?? 0}',
+                    commentCount: '${post.replyCount ?? 0}',
+                    shareCount: '${post.repostCount ?? 0}',
+                    isLiked: post.viewer?.like != null,
+                    profileImageUrl: post.author.avatar.toString(),
+                    isImage: post.embed is EmbedViewImage || post.embed is EmbedViewBskyImages,
+                    onProfilePressed: () {
+                      // No special handling needed for profile navigation in standalone feed
+                    },
+                  ),
                 ),
-              ),
 
-              Positioned(
-                bottom: 32,
-                left: 4,
-                right: 80,
-                child: InfoBar(
-                  username: post.author.handle,
-                  description: post.record.text ?? '',
-                  hashtags: post.record.hashtags,
-                  isSprk: post.uri.toString().contains('so.sprk'),
-                  onUsernameTap: () {
-                    context.router.push(ProfileRoute(did: post.author.did));
-                  },
+                Positioned(
+                  bottom: 32,
+                  left: 4,
+                  right: 80,
+                  child: InfoBar(
+                    username: post.author.handle,
+                    description: post.record.text ?? '',
+                    hashtags: post.record.hashtags,
+                    isSprk: post.uri.toString().contains('so.sprk'),
+                    onUsernameTap: () {
+                      context.router.push(ProfileRoute(did: post.author.did));
+                    },
+                  ),
                 ),
-              ),
-            ],
-          ),
-        );
-      },
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 }
