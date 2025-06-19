@@ -179,10 +179,7 @@ class FeedRepositoryImpl implements FeedRepository {
                 // Skip posts that fail to parse instead of crashing
               }
             }
-            return (
-              posts: feedPosts,
-              cursor: jsonMap['cursor'] as String?,
-            );
+            return (posts: feedPosts, cursor: jsonMap['cursor'] as String?);
           },
           adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
         );
@@ -534,6 +531,7 @@ class FeedRepositoryImpl implements FeedRepository {
     final bskyResult = await bskyAtProto.repo.createRecord(
       collection: NSID.parse('app.bsky.feed.post'),
       record: bskyPost.toJson(),
+      rkey: sparkPostData.uri.rkey,
     );
 
     _logger.i('Successfully crossposted to Bluesky: ${bskyResult.data.uri}');

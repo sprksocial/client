@@ -134,7 +134,7 @@ class VideoUpload extends _$VideoUpload {
       // Crosspost to Bluesky if enabled
       if (crosspostToBsky) {
         try {
-          await _crosspostVideoToBlueSky(postText, blob, altText);
+          await _crosspostVideoToBlueSky(postText, blob, altText, recordRes.data.uri.rkey);
         } catch (e) {
           _logger.w('Failed to crosspost video to Bluesky: $e');
           // Don't fail the entire operation if Bluesky crossposting fails
@@ -173,7 +173,7 @@ class VideoUpload extends _$VideoUpload {
   }
 
   /// Crosspost video to Bluesky using same blob but Bluesky models
-  Future<void> _crosspostVideoToBlueSky(String text, Blob blob, String altText) async {
+  Future<void> _crosspostVideoToBlueSky(String text, Blob blob, String altText, String rkey) async {
     _logger.d('Crossposting video to Bluesky');
 
     final session = _authRepository.session;
@@ -190,7 +190,11 @@ class VideoUpload extends _$VideoUpload {
     };
 
     final bskyAtProto = _authRepository.atproto!;
-    final bskyResult = await bskyAtProto.repo.createRecord(collection: NSID.parse('app.bsky.feed.post'), record: bskyPostRecord);
+    final bskyResult = await bskyAtProto.repo.createRecord(
+      collection: NSID.parse('app.bsky.feed.post'),
+      record: bskyPostRecord,
+      rkey: rkey,
+    );
 
     _logger.i('Successfully crossposted video to Bluesky: ${bskyResult.data.uri}');
   }
