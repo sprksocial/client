@@ -6,6 +6,7 @@ import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dar
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/videos/slider.dart';
 import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/time_display.dart';
 import 'package:video_player/video_player.dart';
@@ -51,8 +52,6 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       });
     }
   }
-
-
 
   @override
   void initState() {
@@ -109,7 +108,10 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
           if (widget.videoUrl.startsWith('at://')) {
             try {
               final cachedFile = await cacheManager.getFile(widget.videoUrl);
-              videoController = VideoPlayerController.file(cachedFile, videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true));
+              videoController = VideoPlayerController.file(
+                cachedFile,
+                videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+              );
             } catch (e) {
               // If AT Protocol blob download fails, we can't fall back to network URL
               // because AT URIs are not HTTP URLs
@@ -186,7 +188,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
     videoController.play();
   }
 
-      @override
+  @override
   Widget build(BuildContext context) {
     if (!isInitialized) {
       // Show loading indicator - error handling is done in initVideoPlayer
@@ -276,6 +278,24 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
             ],
           ),
         ),
+        // Gradient overlay at the bottom to improve text readability
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 0,
+          child: IgnorePointer(
+            child: Container(
+              height: 120,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
+                  colors: [Colors.black87.withAlpha(100), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+        ),
         Positioned(
           bottom: 2,
           left: 0,
@@ -293,23 +313,25 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
                         duration: videoController.value.duration,
                       ),
                     ),
-                  SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      trackHeight: 3,
-                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 5),
-                      activeTrackColor: AppColors.primary,
-                      inactiveTrackColor: AppColors.white.withAlpha(64),
-                      thumbColor: AppColors.white,
-                      overlayShape: SliderComponentShape.noThumb,
-                      trackShape: const RoundedRectSliderTrackShape(),
-                    ),
-                    child: Slider(
-                      value: position.inMilliseconds.toDouble(),
-                      min: 0,
-                      max: duration.inMilliseconds.toDouble(),
-                      onChanged: _onSeekChanged,
-                      onChangeStart: _onSeekStart,
-                      onChangeEnd: _onSeekEnd,
+                  SizedBox(
+                    height: 150,
+                    child: SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 3,
+                        activeTrackColor: AppColors.primary,
+                        inactiveTrackColor: AppColors.white.withAlpha(64),
+                        thumbShape: SliderComponentShape.noThumb,
+                        overlayShape: SliderComponentShape.noThumb,
+                        trackShape: const BottomAlignedSliderTrackShape(),
+                      ),
+                      child: Slider(
+                        value: position.inMilliseconds.toDouble(),
+                        min: 0,
+                        max: duration.inMilliseconds.toDouble(),
+                        onChanged: _onSeekChanged,
+                        onChangeStart: _onSeekStart,
+                        onChangeEnd: _onSeekEnd,
+                      ),
                     ),
                   ),
                 ],
