@@ -82,7 +82,6 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
             ReorderableListView.builder(
               scrollDirection: Axis.horizontal,
               itemCount: settings.feeds.length,
-              buildDefaultDragHandles: false, // We'll add custom drag handles
               onReorderStart: (index) {
                 setState(() {
                   _isReordering = true;
@@ -163,29 +162,26 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                 return Container(
                   key: ValueKey(feed.identifier),
                   margin: const EdgeInsets.only(right: 8.0),
-                  child: ReorderableDragStartListener(
-                    index: index,
-                    child: InkWell(
-                      onTap: _isReordering
-                          ? null
-                          : () {
-                              // Prevent tap during reordering
-                              ref.read(settingsProvider.notifier).setActiveFeed(feed);
-                              final feedIndex = settings.feeds.indexOf(feed);
-                              if (feedIndex != -1 && widget.pageController.hasClients) {
-                                widget.pageController.jumpToPage(feedIndex);
-                              }
-                            },
-                      borderRadius: BorderRadius.circular(25),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        child: Text(
-                          feed.name,
-                          style: TextStyle(
-                            color: isSelected ? Colors.white : Colors.white.withAlpha(140),
-                            fontWeight: FontWeight.w700,
-                            fontSize: 18,
-                          ),
+                  child: InkWell(
+                    onTap: _isReordering
+                        ? null
+                        : () {
+                            // Prevent tap during reordering
+                            ref.read(settingsProvider.notifier).setActiveFeed(feed);
+                            final feedIndex = settings.feeds.indexOf(feed);
+                            if (feedIndex != -1 && widget.pageController.hasClients) {
+                              widget.pageController.jumpToPage(feedIndex);
+                            }
+                          },
+                    borderRadius: BorderRadius.circular(25),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      child: Text(
+                        feed.name,
+                        style: TextStyle(
+                          color: isSelected ? Colors.white : Colors.white.withAlpha(140),
+                          fontWeight: FontWeight.w700,
+                          fontSize: 18,
                         ),
                       ),
                     ),

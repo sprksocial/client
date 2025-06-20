@@ -102,25 +102,6 @@ class ProfileFeedPostWidget extends ConsumerWidget {
                   _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                 },
 
-                // Gradient overlay at the bottom to improve text readability
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: IgnorePointer(
-                    child: Container(
-                      height: 120,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [Colors.black87.withAlpha(100), Colors.transparent],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
                 // Side action bar
                 Positioned(
                   bottom: 4,
