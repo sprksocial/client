@@ -27,26 +27,6 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
     _logger = GetIt.I<LogService>().getLogger('FeedsBar');
   }
 
-  double _calculateIndicatorPosition(dynamic settings) {
-    final selectedIndex = settings.feeds.indexOf(settings.activeFeed);
-    if (selectedIndex == -1) return 0;
-
-    double position = 0;
-    for (int i = 0; i < selectedIndex; i++) {
-      position += _getTabWidth(settings.feeds[i].name) + 8;
-    }
-
-    final currentTabWidth = _getTabWidth(settings.activeFeed.name);
-    position += currentTabWidth * 0.25;
-
-    return position;
-  }
-
-  double _calculateIndicatorWidth(dynamic settings) {
-    if (settings.activeFeed == null) return 0;
-    return _getTabWidth(settings.activeFeed.name) * 0.5;
-  }
-
   double _getTabWidth(String text) {
     final textPainter = TextPainter(
       text: TextSpan(
@@ -63,9 +43,17 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
 
+    // Calculate total width of all tabs to center them
+    double totalWidth = 0;
+    for (final feed in settings.feeds) {
+      totalWidth += _getTabWidth(feed.name) + 8.0; // 8.0 is margin
+    }
+    if (settings.feeds.isNotEmpty) totalWidth -= 8.0; // remove last margin
+
     return AppBar(
       backgroundColor: Colors.transparent,
       elevation: 0,
+      centerTitle: true,
       flexibleSpace: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -75,11 +63,15 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
           ),
         ),
       ),
-      title: SizedBox(
-        height: 40,
-        child: Stack(
-          children: [
-            ReorderableListView.builder(
+      title: LayoutBuilder(
+        builder: (context, constraints) {
+          final availableWidth = constraints.maxWidth;
+          final horizontalPadding = (availableWidth - totalWidth) / 2.0;
+
+          return SizedBox(
+            height: 44,
+            child: ReorderableListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: horizontalPadding > 0 ? horizontalPadding : 0),
               scrollDirection: Axis.horizontal,
               itemCount: settings.feeds.length,
               onReorderStart: (index) {
@@ -93,45 +85,24 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                 });
               },
               onReorder: (oldIndex, newIndex) async {
-                // Prevent multiple simultaneous reorders
                 if (_isReordering) return;
-
-                setState(() {
-                  _isReordering = true;
-                });
-
+                setState(() => _isReordering = true);
                 try {
-                  // Adjust newIndex for Flutter's reordering behavior
-                  if (newIndex > oldIndex) {
-                    newIndex -= 1;
-                  }
-
-                  // Remember which feed was active before reordering
+                  if (newIndex > oldIndex) newIndex -= 1;
                   final activeFeedBeforeReorder = settings.activeFeed;
-
-                  // Perform the reorder operation
                   await ref.read(settingsProvider.notifier).reorderFeed(oldIndex, newIndex);
-
-                  // Wait for the settings to update
                   await Future.delayed(const Duration(milliseconds: 50));
-
-                  // Get updated settings and find new position of active feed
                   final updatedSettings = ref.read(settingsProvider);
                   final newActiveFeedIndex = updatedSettings.feeds.indexOf(activeFeedBeforeReorder);
-
-                  // Only update page controller if we found the active feed and it moved
                   if (newActiveFeedIndex != -1 && widget.pageController.hasClients) {
-                    final currentPage = widget.pageController.page?.round() ?? 0;
-                    if (currentPage != newActiveFeedIndex) {
+                    if ((widget.pageController.page?.round() ?? 0) != newActiveFeedIndex) {
                       widget.pageController.jumpToPage(newActiveFeedIndex);
                     }
                   }
                 } catch (e) {
                   _logger.e('Error reordering feeds: $e');
                 } finally {
-                  setState(() {
-                    _isReordering = false;
-                  });
+                  setState(() => _isReordering = false);
                 }
               },
               proxyDecorator: (child, index, animation) {
@@ -158,50 +129,47 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
               itemBuilder: (context, index) {
                 final feed = settings.feeds[index];
                 final isSelected = settings.activeFeed == feed;
-
-                return Container(
+                return InkWell(
                   key: ValueKey(feed.identifier),
-                  margin: const EdgeInsets.only(right: 8.0),
-                  child: InkWell(
-                    onTap: _isReordering
-                        ? null
-                        : () {
-                            // Prevent tap during reordering
-                            ref.read(settingsProvider.notifier).setActiveFeed(feed);
-                            final feedIndex = settings.feeds.indexOf(feed);
-                            if (feedIndex != -1 && widget.pageController.hasClients) {
-                              widget.pageController.jumpToPage(feedIndex);
-                            }
-                          },
-                    borderRadius: BorderRadius.circular(25),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      child: Text(
-                        feed.name,
-                        style: TextStyle(
-                          color: isSelected ? Colors.white : Colors.white.withAlpha(140),
-                          fontWeight: FontWeight.w700,
-                          fontSize: 18,
+                  onTap: _isReordering
+                      ? null
+                      : () {
+                          ref.read(settingsProvider.notifier).setActiveFeed(feed);
+                          final feedIndex = settings.feeds.indexOf(feed);
+                          if (feedIndex != -1 && widget.pageController.hasClients) {
+                            widget.pageController.jumpToPage(feedIndex);
+                          }
+                        },
+                  borderRadius: BorderRadius.circular(25),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          feed.name,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Colors.white.withAlpha(140),
+                            fontWeight: FontWeight.w700,
+                            fontSize: 18,
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 4),
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOutCubic,
+                          height: 2,
+                          width: isSelected ? _getTabWidth(feed.name) * 0.5 : 0,
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(1)),
+                        ),
+                      ],
                     ),
                   ),
                 );
               },
             ),
-            AnimatedPositioned(
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.easeInOutCubic,
-              bottom: 0,
-              left: _calculateIndicatorPosition(settings),
-              width: _calculateIndicatorWidth(settings),
-              height: 2,
-              child: Container(
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(1)),
-              ),
-            ),
-          ],
-        ),
+          );
+        },
       ),
       actions: [
         // IconButton(
