@@ -13,8 +13,9 @@ import 'package:sparksocial/src/features/comments/ui/widgets/comment_item.dart';
 class CommentsPage extends ConsumerStatefulWidget {
   final String postUri;
   final bool isSprk;
+  final PostView? post;
 
-  const CommentsPage({super.key, required this.postUri, required this.isSprk});
+  const CommentsPage({super.key, required this.postUri, required this.isSprk, this.post});
 
   @override
   ConsumerState<CommentsPage> createState() => _CommentsPageState();
@@ -80,6 +81,7 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
   late final AtUri _postAtUri;
   late final String _postUri;
   late final bool _isSprk;
+  PostView? _post;
   bool _initialized = false;
 
   @override
@@ -98,6 +100,7 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
       final parentArgs = parentRoute.argsAs<CommentsRouteArgs>();
       _postUri = parentArgs.postUri;
       _isSprk = parentArgs.isSprk;
+      _post = parentArgs.post;
       _postAtUri = AtUri.parse(_postUri);
       _initialized = true;
     }
@@ -136,15 +139,22 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(commentsPageProvider(postUri: _postAtUri));
+    final asyncState = ref.watch(commentsPageProvider(postUri: _postAtUri));
+    final displayPost = _post ?? asyncState.value?.thread.post;
     final borderColor = Theme.of(context).colorScheme.outline;
     final textColor = Theme.of(context).colorScheme.onSurface;
+
+    if (displayPost == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
 
     return Column(
       children: [
         Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(border: Border(bottom: BorderSide(color: borderColor, width: 0.2))),
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: borderColor, width: 0.2)),
+          ),
           child: Column(
             children: [
               Container(
@@ -159,7 +169,7 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '${state.value?.thread.post.replyCount ?? 'Loading'} comments',
+                      '${displayPost.replyCount ?? 0} comments',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
                     ),
                     IconButton(
@@ -175,8 +185,11 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
           ),
         ),
         Expanded(
-          child: state.when(
+          child: asyncState.when(
             data: (data) {
+              if (data.thread.replies == null || data.thread.replies!.isEmpty) {
+                return const Center(child: Text('No comments yet.'));
+              }
               return ListView.builder(
                 controller: _scrollController,
                 padding: const EdgeInsets.only(bottom: 16),
@@ -195,17 +208,12 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
             },
           ),
         ),
-        state.when(
-          data:
-              (data) => _KeyboardAwareCommentInput(
-                videoId: _postUri,
-                postCid: data.thread.post.cid,
-                postUri: _postUri,
-                isSprk: _isSprk,
-                focusNode: _focusNode,
-              ),
-          error: (error, stackTrace) => const SizedBox.shrink(),
-          loading: () => const SizedBox.shrink(),
+        _KeyboardAwareCommentInput(
+          videoId: _postUri,
+          postCid: displayPost.cid,
+          postUri: _postUri,
+          isSprk: _isSprk,
+          focusNode: _focusNode,
         ),
       ],
     );
