@@ -132,8 +132,24 @@ class FeedRepositoryImpl implements FeedRepository {
     int limit = 20,
     String? cursor,
     bool videosOnly = false,
+    bool bluesky = false,
   }) async {
-    _logger.d('Getting author feed for actor: $actorUri, limit: $limit, cursor: $cursor');
+    _logger.d('Getting author feed for actor: $actorUri, limit: $limit, cursor: $cursor, bluesky: $bluesky');
+
+    if (bluesky) {
+      return _getAuthorFeedFromBluesky(actorUri, limit: limit, cursor: cursor, videosOnly: videosOnly);
+    }
+
+    return _getAuthorFeedFromSpark(actorUri, limit: limit, cursor: cursor, videosOnly: videosOnly);
+  }
+
+  /// Get author feed from Spark API with fallback to Bluesky
+  Future<({List<FeedViewPost> posts, String? cursor})> _getAuthorFeedFromSpark(
+    AtUri actorUri, {
+    required int limit,
+    required String? cursor,
+    required bool videosOnly,
+  }) async {
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
@@ -157,6 +173,7 @@ class FeedRepositoryImpl implements FeedRepository {
       if (cursor != null) {
         parameters['cursor'] = cursor;
       }
+
       try {
         final result = await atproto.get(
           NSID.parse('so.sprk.feed.getAuthorFeed'),
@@ -168,7 +185,6 @@ class FeedRepositoryImpl implements FeedRepository {
             for (final postData in rawFeed) {
               try {
                 final feedViewPost = FeedViewPost.fromJson(postData);
-                // Only add posts that have supported media (video or images)
                 if (feedViewPost.post.hasSupportedMedia) {
                   feedPosts.add(feedViewPost);
                 } else {
@@ -176,29 +192,46 @@ class FeedRepositoryImpl implements FeedRepository {
                 }
               } catch (e) {
                 _logger.w('Failed to parse author feed post, skipping: $e');
-                // Skip posts that fail to parse instead of crashing
               }
             }
             return (posts: feedPosts, cursor: jsonMap['cursor'] as String?);
           },
           adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
         );
-        _logger.d('Author feed retrieved successfully');
+        _logger.d('Author feed retrieved successfully from Spark');
         return result.data;
       } catch (e) {
-        _logger.e('Error getting author feed from spark. Trying bluesky...', error: e);
+        _logger.e('Error getting author feed from Spark. Trying Bluesky...', error: e);
+        return _getAuthorFeedFromBluesky(actorUri, limit: limit, cursor: cursor, videosOnly: videosOnly);
+      }
+    });
+  }
+
+  /// Get author feed directly from Bluesky API
+  Future<({List<FeedViewPost> posts, String? cursor})> _getAuthorFeedFromBluesky(
+    AtUri actorUri, {
+    required int limit,
+    required String? cursor,
+    required bool videosOnly,
+  }) async {
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      try {
         final resultBsky = await bsky.Bluesky.fromSession(_client.authRepository.session!).feed.getAuthorFeed(
-          actor: actorUri.toString(),
+          actor: actorUri.hostname,
           limit: limit,
           cursor: cursor,
           filter: videosOnly ? bsky.FeedFilter.postsWithVideo : bsky.FeedFilter.postsWithMedia,
         );
-        _logger.d('Author feed retrieved successfully');
+
         final filteredPosts = <FeedViewPost>[];
         for (final postData in resultBsky.data.feed) {
           try {
             final feedViewPost = FeedViewPost.fromJson(postData.toJson());
-            // Only add posts that have supported media (video or images)
             if (feedViewPost.post.hasSupportedMedia) {
               filteredPosts.add(feedViewPost);
             } else {
@@ -206,10 +239,14 @@ class FeedRepositoryImpl implements FeedRepository {
             }
           } catch (e) {
             _logger.w('Failed to parse bluesky author feed post, skipping: $e');
-            // Skip posts that fail to parse instead of crashing
           }
         }
+
+        _logger.d('Author feed retrieved successfully from Bluesky');
         return (posts: filteredPosts, cursor: resultBsky.data.cursor);
+      } catch (e) {
+        _logger.e('Error getting author feed from Bluesky', error: e);
+        rethrow;
       }
     });
   }

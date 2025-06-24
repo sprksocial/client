@@ -4,6 +4,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -134,11 +135,13 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
       final postIndex = state.loadedPosts.indexOf(postUri);
       if (postIndex != -1) {
         // Navigate to standalone profile feed page starting at the tapped post
-        context.router.push(StandaloneProfileFeedRoute(
-          profileUri: widget.profileUri.toString(),
-          videosOnly: widget.videosOnly,
-          initialPostIndex: postIndex,
-        ));
+        context.router.push(
+          StandaloneProfileFeedRoute(
+            profileUri: widget.profileUri.toString(),
+            videosOnly: widget.videosOnly,
+            initialPostIndex: postIndex,
+          ),
+        );
       } else {
         // Fallback to standalone post page if post not found in feed
         context.router.push(StandalonePostRoute(postUri: postUri.toString()));
@@ -220,32 +223,27 @@ class ProfileGridTile extends StatelessWidget {
                           child: const Center(child: Icon(FluentIcons.error_circle_24_regular, size: 20)),
                         ),
                       ),
-                      // Video indicator overlay for videos
-                      if (post.embed is EmbedViewVideo)
+                      // Source indicator overlay for videos and images
+                      if (post.embed is EmbedViewBskyImages || post.embed is EmbedViewBskyVideo)
                         Positioned(
                           top: 4,
                           right: 4,
                           child: Container(
                             padding: const EdgeInsets.all(4),
                             decoration: BoxDecoration(color: Colors.black.withAlpha(150), borderRadius: BorderRadius.circular(4)),
-                            child: const Icon(FluentIcons.play_24_filled, color: Colors.white, size: 12),
+                            child: SvgPicture.asset('assets/images/bsky.svg', width: 12, height: 12),
                           ),
                         ),
-                      // Multiple image indicator for image carousels
-                      if (post.embed is EmbedViewImage)
-                        if ((post.embed as EmbedViewImage).images.length > 1)
-                          Positioned(
-                            top: 4,
-                            right: 4,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withAlpha(150),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Icon(FluentIcons.copy_24_regular, color: Colors.white, size: 12),
-                            ),
+                      if (post.embed is EmbedViewVideo || post.embed is EmbedViewImage)
+                        Positioned(
+                          top: 4,
+                          right: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(color: Colors.black.withAlpha(150), borderRadius: BorderRadius.circular(4)),
+                            child: SvgPicture.asset('assets/images/sprk.svg', width: 12, height: 12),
                           ),
+                        ),
                     ],
                   )
                 : Container(
