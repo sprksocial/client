@@ -241,27 +241,58 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                         },
                       ),
                       const SizedBox(height: 20),
-                      // Description field
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: TextField(
-                          controller: _descriptionController,
-                          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                          maxLines: 5,
-                          maxLength: 300,
-                          decoration: InputDecoration(
-                            hintText: 'Add a description... (optional)',
-                            hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(100)),
-                            border: InputBorder.none,
-                            contentPadding: EdgeInsets.zero,
-                            isDense: true,
-                            counterText: '',
-                          ),
-                        ),
+                      // Description input with character count
+                      Builder(
+                        builder: (context) {
+                          final theme = Theme.of(context);
+                          final textLength = _descriptionController.text.runes.length;
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Material(
+                                elevation: 0,
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                                child: TextField(
+                                  controller: _descriptionController,
+                                  maxLength: 300,
+                                  maxLines: 4,
+                                  style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurface),
+                                  decoration: InputDecoration(
+                                    hintText: 'Add a description... (optional)',
+                                    hintStyle: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: theme.colorScheme.outline, width: 1),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: theme.colorScheme.outline, width: 1),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                                    ),
+                                    filled: true,
+                                    fillColor: theme.colorScheme.surfaceContainerHighest,
+                                    contentPadding: const EdgeInsets.all(16),
+                                    counterText: '',
+                                  ),
+                                  onChanged: (_) => setState(() {}),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  '$textLength/300',
+                                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                       const SizedBox(height: 20),
                       // Bluesky Cross-posting Switch
