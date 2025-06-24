@@ -8,6 +8,7 @@ import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_input_state.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_input_provider.dart';
 import 'package:sparksocial/src/core/widgets/alt_text_editor_dialog.dart';
+import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 
 import 'emoji_picker.dart';
@@ -68,14 +69,24 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
 
           // Updated input row with centered alignment
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 8),
             decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(32)),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _UserAvatar(textColor: Theme.of(context).colorScheme.onSurface, did: session?.did ?? ''),
-                const SizedBox(width: 5),
+                UserAvatar(
+                  imageUrl: ref
+                      .read(profileNotifierProvider(did: session?.did ?? ''))
+                      .when(
+                        data: (profileData) => profileData.profile?.avatar?.toString(),
+                        error: (error, stackTrace) => null,
+                        loading: () => null,
+                      ),
+                  username: session?.did ?? '',
+                  size: 28,
+                  borderWidth: 0,
+                ),
+                const SizedBox(width: 8),
                 _AttachmentButton(
                   state: state,
                   notifier: notifier,
@@ -100,63 +111,13 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
 
           // Selected Images Preview (only show if images are selected)
           if (state.selectedImages.isNotEmpty)
-            Padding(padding: const EdgeInsets.only(top: 8.0), child: _SelectedImagesPreview(state: state, notifier: notifier)),
+            Padding(
+              padding: const EdgeInsets.only(top: 8.0),
+              child: _SelectedImagesPreview(state: state, notifier: notifier),
+            ),
         ],
       ),
     );
-  }
-}
-
-class _UserAvatar extends ConsumerWidget {
-  const _UserAvatar({required this.textColor, required this.did});
-
-  final Color textColor;
-  final String did;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final profileState = ref.watch(profileNotifierProvider(did: did));
-    profileState.when(
-      loading:
-          () => Container(
-            width: 28,
-            height: 28,
-            decoration: const BoxDecoration(color: Color(0xFF330072), shape: BoxShape.circle),
-            child: const Center(
-              child: Text('Y', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 14)),
-            ),
-          ),
-      error:
-          (error, stackTrace) => Container(
-            width: 28,
-            height: 28,
-            decoration: const BoxDecoration(color: Color(0xFF330072), shape: BoxShape.circle),
-            child: const Center(
-              child: Text('Y', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 14)),
-            ),
-          ),
-      data: (profile) {
-        if (profile.profile?.avatar == null) {
-          return Container(
-            width: 28,
-            height: 28,
-            decoration: const BoxDecoration(color: Color(0xFF330072), shape: BoxShape.circle),
-            child: const Center(
-              child: Text('Y', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500, fontSize: 14)),
-            ),
-          );
-        }
-        return Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            image: DecorationImage(image: NetworkImage(profile.profile!.avatar.toString())),
-          ),
-        );
-      },
-    );
-    return const SizedBox(); // in theory this should never be reached, but it's here to satisfy the compiler
   }
 }
 
@@ -193,41 +154,40 @@ class _TextField extends StatelessWidget {
         border: InputBorder.none,
         enabledBorder: InputBorder.none,
         focusedBorder: InputBorder.none,
-        suffixIcon:
-            state.isPosting
-                ? Container(
-                  margin: const EdgeInsets.all(8),
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
-                  ),
-                )
-                : IconButton(
-                  icon: Icon(
-                    FluentIcons.send_24_filled,
-                    size: 20,
-                    color: state.canSubmit ? Theme.of(context).colorScheme.primary : placeholderColor,
-                  ),
-                  onPressed: () {
-                    if (state.canSubmit) {
-                      // Use reply info if available, otherwise use main post info
-                      final parentCid = widget.postCid;
-                      final parentUri = widget.postUri;
-                      final rootCid = widget.rootCid;
-                      final rootUri = widget.rootUri;
-
-                      notifier.submitComment(
-                        parentCid: parentCid,
-                        parentUri: parentUri,
-                        isSprk: widget.isSprk,
-                        rootCid: rootCid,
-                        rootUri: rootUri,
-                      );
-                    }
-                  },
+        suffixIcon: state.isPosting
+            ? Container(
+                margin: const EdgeInsets.all(8),
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
                 ),
+              )
+            : IconButton(
+                icon: Icon(
+                  FluentIcons.send_24_filled,
+                  size: 20,
+                  color: state.canSubmit ? Theme.of(context).colorScheme.primary : placeholderColor,
+                ),
+                onPressed: () {
+                  if (state.canSubmit) {
+                    // Use reply info if available, otherwise use main post info
+                    final parentCid = widget.postCid;
+                    final parentUri = widget.postUri;
+                    final rootCid = widget.rootCid;
+                    final rootUri = widget.rootUri;
+
+                    notifier.submitComment(
+                      parentCid: parentCid,
+                      parentUri: parentUri,
+                      isSprk: widget.isSprk,
+                      rootCid: rootCid,
+                      rootUri: rootUri,
+                    );
+                  }
+                },
+              ),
       ),
       style: TextStyle(color: textColor, fontSize: 14),
       maxLines: 5,
@@ -326,7 +286,10 @@ class _SelectedImagesPreview extends StatelessWidget {
                           children: [
                             Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 14),
                             const SizedBox(width: 2),
-                            const Text('ALT', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)),
+                            const Text(
+                              'ALT',
+                              style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
                       ),
