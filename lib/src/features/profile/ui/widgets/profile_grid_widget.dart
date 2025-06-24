@@ -41,10 +41,6 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
     }
   }
 
-  Future<void> _onRefresh() async {
-    await ref.read(profileFeedProvider(widget.profileUri, widget.videosOnly).notifier).refresh();
-  }
-
   @override
   Widget build(BuildContext context) {
     final feedState = ref.watch(profileFeedProvider(widget.profileUri, widget.videosOnly));
@@ -71,37 +67,34 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
           );
         }
 
-        return RefreshIndicator(
-          onRefresh: _onRefresh,
-          child: GridView.builder(
-            controller: _scrollController,
-            padding: const EdgeInsets.all(1),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 1,
-              mainAxisSpacing: 1,
-              childAspectRatio: 0.6,
-            ),
-            itemCount: state.loadedPosts.length + (state.isEndOfNetwork ? 0 : 1),
-            itemBuilder: (context, index) {
-              if (index >= state.loadedPosts.length) {
-                return Container(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
-                );
-              }
-
-              final postUri = state.loadedPosts[index];
-              final postView = state.postViews[postUri];
-              final postSource = state.postSources[postUri];
-
-              if (postView == null) {
-                return const SizedBox.shrink();
-              }
-
-              return ProfileGridTile(postView: postView, postSource: postSource, onTap: () => _onPostTap(postUri));
-            },
+        return GridView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.all(1),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            crossAxisSpacing: 1,
+            mainAxisSpacing: 1,
+            childAspectRatio: 0.6,
           ),
+          itemCount: state.loadedPosts.length + (state.isEndOfNetwork ? 0 : 1),
+          itemBuilder: (context, index) {
+            if (index >= state.loadedPosts.length) {
+              return Container(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+              );
+            }
+
+            final postUri = state.loadedPosts[index];
+            final postView = state.postViews[postUri];
+            final postSource = state.postSources[postUri];
+
+            if (postView == null) {
+              return const SizedBox.shrink();
+            }
+
+            return ProfileGridTile(postView: postView, postSource: postSource, onTap: () => _onPostTap(postUri));
+          },
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -113,7 +106,10 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
             const SizedBox(height: 16),
             Text('Error loading posts: $error'),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _onRefresh, child: const Text('Retry')),
+            ElevatedButton(
+              onPressed: () => ref.read(profileFeedProvider(widget.profileUri, widget.videosOnly).notifier).refresh(),
+              child: const Text('Retry'),
+            ),
           ],
         ),
       ),

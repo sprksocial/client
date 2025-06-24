@@ -186,7 +186,6 @@ class ProfileFeed extends _$ProfileFeed {
   }
 
   Future<void> refresh() async {
-    state = const AsyncValue.loading();
     try {
       final result = await _loadUnifiedFeed(
         profileUri: profileUri,
