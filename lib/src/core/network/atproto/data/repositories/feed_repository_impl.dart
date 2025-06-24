@@ -24,6 +24,31 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.v('FeedRepository initialized');
   }
 
+  List<T> _parseAndFilterPosts<T>({
+    required List<dynamic> rawPosts,
+    required T Function(Map<String, dynamic>) fromJson,
+    required PostView Function(T) getPostView,
+    required String source,
+  }) {
+    final posts = <T>[];
+    for (final rawPost in rawPosts) {
+      try {
+        final postData = rawPost is Map<String, dynamic> ? rawPost : rawPost.toJson();
+        final parsedPost = fromJson(postData);
+        final postView = getPostView(parsedPost);
+
+        if (postView.hasSupportedMedia) {
+          posts.add(parsedPost);
+        } else {
+          _logger.d('Filtered out $source post with unsupported embed type: ${postView.uri}');
+        }
+      } catch (e) {
+        _logger.w('Failed to parse $source post, skipping: $e');
+      }
+    }
+    return posts;
+  }
+
   @override
   Future<FeedSkeleton> getFeedSkeleton(Feed feed, {int? limit, String? cursor}) async {
     _logger.d('Getting feed skeleton for feed: $feed, limit: $limit, cursor: $cursor');
@@ -64,24 +89,14 @@ class FeedRepositoryImpl implements FeedRepository {
   Future<List<PostView>> getPosts(List<AtUri> uris, {bool bluesky = false}) async {
     _logger.d('Getting posts for URIs: ${uris.length} URIs');
     if (bluesky) {
-      final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
-      final posts = await bluesky.feed.getPosts(uris: uris.map((uri) => AtUri.parse(uri.toString())).toList());
-      final filteredPosts = <PostView>[];
-      for (final post in posts.data.posts) {
-        try {
-          final postView = PostView.fromJson(post.toJson());
-          // Only add posts that have supported media (video or images)
-          if (postView.hasSupportedMedia) {
-            filteredPosts.add(postView);
-          } else {
-            _logger.d('Filtered out bluesky post with unsupported embed type: ${postView.uri}');
-          }
-        } catch (e) {
-          _logger.w('Failed to parse bluesky post, skipping: $e');
-          // Skip posts that fail to parse instead of crashing
-        }
-      }
-      return filteredPosts;
+      final blueskyClient = bsky.Bluesky.fromSession(_client.authRepository.session!);
+      final posts = await blueskyClient.feed.getPosts(uris: uris.map((uri) => AtUri.parse(uri.toString())).toList());
+      return _parseAndFilterPosts<PostView>(
+        rawPosts: posts.data.posts,
+        fromJson: PostView.fromJson,
+        getPostView: (post) => post,
+        source: 'bsky',
+      );
     }
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -101,22 +116,12 @@ class FeedRepositoryImpl implements FeedRepository {
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) {
           final posts = jsonMap['posts'] as List<dynamic>;
-          final postViews = <PostView>[];
-          for (final post in posts) {
-            try {
-              final postView = PostView.fromJson(post);
-              // Only add posts that have supported media (video or images)
-              if (postView.hasSupportedMedia) {
-                postViews.add(postView);
-              } else {
-                _logger.d('Filtered out post with unsupported embed type: ${postView.uri}');
-              }
-            } catch (e) {
-              _logger.w('Failed to parse post, skipping: $e');
-              // Skip posts that fail to parse instead of crashing
-            }
-          }
-          return postViews;
+          return _parseAndFilterPosts<PostView>(
+            rawPosts: posts,
+            fromJson: PostView.fromJson,
+            getPostView: (post) => post,
+            source: 'sprk',
+          );
         },
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
@@ -180,28 +185,21 @@ class FeedRepositoryImpl implements FeedRepository {
           parameters: parameters,
           headers: {'atproto-proxy': _client.sprkDid},
           to: (jsonMap) {
-            final feedPosts = <FeedViewPost>[];
             final rawFeed = jsonMap['feed'] as List<dynamic>;
-            for (final postData in rawFeed) {
-              try {
-                final feedViewPost = FeedViewPost.fromJson(postData);
-                if (feedViewPost.post.hasSupportedMedia) {
-                  feedPosts.add(feedViewPost);
-                } else {
-                  _logger.d('Filtered out author feed post with unsupported embed type: ${feedViewPost.post.uri}');
-                }
-              } catch (e) {
-                _logger.w('Failed to parse author feed post, skipping: $e');
-              }
-            }
+            final feedPosts = _parseAndFilterPosts<FeedViewPost>(
+              rawPosts: rawFeed,
+              fromJson: FeedViewPost.fromJson,
+              getPostView: (feedViewPost) => feedViewPost.post,
+              source: 'sprk author feed',
+            );
             return (posts: feedPosts, cursor: jsonMap['cursor'] as String?);
           },
           adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
         );
-        _logger.d('Author feed retrieved successfully from Spark');
+        _logger.d('Author feed retrieved successfully from Sprk');
         return result.data;
       } catch (e) {
-        _logger.e('Error getting author feed from Spark. Trying Bluesky...', error: e);
+        _logger.e('Error getting author feed from Sprk. Trying Bsky...', error: e);
         return _getAuthorFeedFromBluesky(actorUri, limit: limit, cursor: cursor, videosOnly: videosOnly);
       }
     });
@@ -228,24 +226,17 @@ class FeedRepositoryImpl implements FeedRepository {
           filter: videosOnly ? bsky.FeedFilter.postsWithVideo : bsky.FeedFilter.postsWithMedia,
         );
 
-        final filteredPosts = <FeedViewPost>[];
-        for (final postData in resultBsky.data.feed) {
-          try {
-            final feedViewPost = FeedViewPost.fromJson(postData.toJson());
-            if (feedViewPost.post.hasSupportedMedia) {
-              filteredPosts.add(feedViewPost);
-            } else {
-              _logger.d('Filtered out bluesky author feed post with unsupported embed type: ${feedViewPost.post.uri}');
-            }
-          } catch (e) {
-            _logger.w('Failed to parse bluesky author feed post, skipping: $e');
-          }
-        }
+        final filteredPosts = _parseAndFilterPosts<FeedViewPost>(
+          rawPosts: resultBsky.data.feed,
+          fromJson: FeedViewPost.fromJson,
+          getPostView: (feedViewPost) => feedViewPost.post,
+          source: 'bsky author feed',
+        );
 
-        _logger.d('Author feed retrieved successfully from Bluesky');
+        _logger.d('Author feed retrieved successfully from Bsky');
         return (posts: filteredPosts, cursor: resultBsky.data.cursor);
       } catch (e) {
-        _logger.e('Error getting author feed from Bluesky', error: e);
+        _logger.e('Error getting author feed from Bsky', error: e);
         rethrow;
       }
     });
@@ -337,14 +328,14 @@ class FeedRepositoryImpl implements FeedRepository {
           }
 
           // Create the correct record JSON depending on the target platform.
-          final bool isSpark = parentUri.toString().contains('sprk');
+          final bool isSprk = parentUri.toString().contains('sprk');
 
           final Map<String, dynamic> recordJson;
           final NSID collection;
 
-          if (isSpark) {
-            // Spark comment
-            final PostRecord sparkRecord = PostRecord(
+          if (isSprk) {
+            // Sprk comment
+            final PostRecord sprkRecord = PostRecord(
               text: text,
               reply: RecordReplyRef(
                 root: StrongRef(uri: effectiveRootUri, cid: effectiveRootCid),
@@ -353,7 +344,7 @@ class FeedRepositoryImpl implements FeedRepository {
               createdAt: DateTime.now(),
               embed: embedJson != null ? Embed.fromJson(embedJson) : null,
             );
-            recordJson = sparkRecord.toJson();
+            recordJson = sprkRecord.toJson();
             collection = NSID.parse('so.sprk.feed.post');
           } else {
             // Bluesky comment
@@ -402,7 +393,7 @@ class FeedRepositoryImpl implements FeedRepository {
           if (_client.authRepository.atproto case final atproto?) {
             final List<Image> uploadedImageMaps = await uploadImages(imageFiles, altTexts);
 
-            // Create Spark post first
+            // Create Sprk post first
             final record = PostRecord(
               text: text,
               embed: EmbedImage(images: uploadedImageMaps),
