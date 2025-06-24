@@ -105,12 +105,7 @@ class FeedRepositoryImpl implements FeedRepository {
           for (final post in posts) {
             try {
               final postView = PostView.fromJson(post);
-              // Only add posts that have supported media (video or images)
-              if (postView.hasSupportedMedia) {
-                postViews.add(postView);
-              } else {
-                _logger.d('Filtered out post with unsupported embed type: ${postView.uri}');
-              }
+              postViews.add(postView);
             } catch (e) {
               _logger.w('Failed to parse post, skipping: $e');
               // Skip posts that fail to parse instead of crashing
