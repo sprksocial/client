@@ -240,7 +240,7 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
 
   void _handleCommentPressed() {
     final currentPost = _currentPost ?? widget.post;
-    context.router.push(CommentsRoute(postUri: currentPost.uri.toString(), isSprk: currentPost.isSprk));
+    context.router.push(CommentsRoute(postUri: currentPost.uri.toString(), isSprk: currentPost.isSprk, post: currentPost));
   }
 
   @override
