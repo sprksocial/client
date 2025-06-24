@@ -12,12 +12,12 @@ part 'comments_page_provider.g.dart';
 @riverpod
 class CommentsPage extends _$CommentsPage {
   late final FeedRepository feedRepository;
-  
+
   @override
   Future<CommentsPageState> build({required AtUri postUri}) async {
     // Keep the provider alive to prevent unnecessary rebuilds
     ref.keepAlive();
-    
+
     feedRepository = GetIt.instance<SprkRepository>().feed;
     // try to get from cache, if not found, fetch from network
     final sqlCache = GetIt.instance<SQLCacheInterface>();
@@ -26,9 +26,7 @@ class CommentsPage extends _$CommentsPage {
       final thread = await feedRepository.getThread(postUri, bluesky: !cachedPost.isSprk, depth: 1);
       switch (thread) {
         case ThreadViewPost():
-          return CommentsPageState(
-            thread: thread,
-          );
+          return CommentsPageState(thread: thread);
         case NotFoundPost():
           throw Exception('Post not found');
         case BlockedPost():
@@ -46,9 +44,7 @@ class CommentsPage extends _$CommentsPage {
       final thread = await feedRepository.getThread(postUri, bluesky: !networkPost.first.isSprk, depth: 1);
       switch (thread) {
         case ThreadViewPost():
-          return CommentsPageState(
-            thread: thread,
-          );
+          return CommentsPageState(thread: thread);
         case NotFoundPost():
           throw Exception('Post not found');
         case BlockedPost():
@@ -69,19 +65,14 @@ class CommentsPage extends _$CommentsPage {
   }) async {
     final feedRepository = GetIt.instance<SprkRepository>().feed;
     final sqlCache = GetIt.instance<SQLCacheInterface>();
-    
-    // Check if we currently have state data, but don't fail if we don't
-    // as the state might become loading during execution
+
+    // We need the current state to determine if the post is a sprk or bsky post.
+    // If the state is not loaded, we cannot proceed.
     final currentState = state.value;
-    bool wasSprkPost = true; // Default assumption
-    
-    if (currentState != null) {
-      wasSprkPost = currentState.thread.post.isSprk;
-    } else {
-      // If state is not available, try to determine from URI
-      wasSprkPost = parentUri.contains('so.sprk');
+    if (currentState == null) {
+      return;
     }
-    
+
     await feedRepository.postComment(
       text,
       parentCid,
@@ -91,20 +82,19 @@ class CommentsPage extends _$CommentsPage {
       imageFiles: imageFiles,
       altTexts: altTexts,
     );
-    
-    // Refresh the thread to get the latest comments
-    final thread = await feedRepository.getThread(AtUri.parse(parentUri), bluesky: !wasSprkPost, depth: 1);
+
+    // Short delay to account for server-side replication lag.
+    await Future.delayed(const Duration(milliseconds: 700));
+
+    // Refresh the thread using the provider's own postUri to ensure we're
+    // refreshing the correct data.
+    final thread = await feedRepository.getThread(postUri, bluesky: !currentState.thread.post.isSprk, depth: 1);
     switch (thread) {
       case ThreadViewPost():
         // Simply use the refreshed thread data from the server
         // This ensures we have the most up-to-date comments and counts
-        // Clear reply state when updating with new thread data
-        state = AsyncValue.data(
-          CommentsPageState(
-            thread: thread,
-          ),
-        );
-        
+        state = AsyncValue.data(CommentsPageState(thread: thread));
+
         // Update the cached post with the new reply count so it shows up in feeds
         try {
           await sqlCache.updatePost(thread.post);
@@ -122,25 +112,27 @@ class CommentsPage extends _$CommentsPage {
 
   Future<void> deleteComment(String commentUri) async {
     final sqlCache = GetIt.instance<SQLCacheInterface>();
-    
+
     // Capture current state before making async calls
     final currentState = state.value;
     if (currentState == null) {
       throw Exception('Cannot delete comment: comments not loaded');
     }
-    
+
     // Delete the comment first
     await feedRepository.deletePost(AtUri.parse(commentUri));
-    
+
     // Refresh the thread to get the latest comments and counts
-    final thread = await feedRepository.getThread(currentState.thread.post.uri, bluesky: !currentState.thread.post.isSprk, depth: 1);
+    final thread = await feedRepository.getThread(
+      currentState.thread.post.uri,
+      bluesky: !currentState.thread.post.isSprk,
+      depth: 1,
+    );
     switch (thread) {
       case ThreadViewPost():
         // Use the refreshed thread data from the server
-        state = AsyncValue.data(
-          currentState.copyWith(thread: thread),
-        );
-        
+        state = AsyncValue.data(currentState.copyWith(thread: thread));
+
         // Update the cached post with the new reply count so it shows up in feeds
         try {
           await sqlCache.updatePost(thread.post);
