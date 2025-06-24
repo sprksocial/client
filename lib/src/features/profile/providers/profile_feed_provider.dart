@@ -1,6 +1,5 @@
 import 'dart:collection';
 
-import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -114,6 +113,7 @@ class ProfileFeed extends _$ProfileFeed {
       isEndOfNetwork: isEndOfNetwork,
       cursor: sparkResult.cursor,
       blueskyCursor: bskyResult.cursor,
+      // ignore: prefer_collection_literals
       extraInfo: currentState?.extraInfo ?? LinkedHashMap(),
       postSources: postSources,
       postTypes: postTypes,
