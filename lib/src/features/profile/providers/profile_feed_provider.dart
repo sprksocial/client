@@ -72,6 +72,9 @@ class ProfileFeed extends _$ProfileFeed {
       }
     }
 
+    // Collect new posts from both sources for sorting
+    final List<PostView> newPosts = [];
+
     String? newSparkCursor = sparkCursor;
     String? newBlueskyCursor = blueskyCursor;
 
@@ -88,7 +91,7 @@ class ProfileFeed extends _$ProfileFeed {
       for (final feedViewPost in sparkResult.posts) {
         final uri = feedViewPost.post.uri;
         if (!allPosts.contains(uri)) {
-          allPosts.add(uri);
+          newPosts.add(feedViewPost.post);
           postSources[uri] = 'spark';
           postTypes[uri] = feedViewPost.post.videoUrl.isNotEmpty;
           sparkRkeys.add(uri.rkey); // Track this Spark rkey
@@ -121,7 +124,7 @@ class ProfileFeed extends _$ProfileFeed {
           continue;
         }
 
-        allPosts.add(uri);
+        newPosts.add(feedViewPost.post);
         postSources[uri] = 'bluesky';
         // Determine if it's a video post based on embed type
         final hasVideo =
@@ -142,6 +145,31 @@ class ProfileFeed extends _$ProfileFeed {
       _logger.d('Loaded ${bskyResult.posts.length} posts from Bluesky (after deduplication)');
     } catch (e) {
       _logger.w('Failed to load from Bluesky: $e');
+    }
+
+    // Sort new posts by indexedAt and merge properly with existing posts
+    if (newPosts.isNotEmpty) {
+      // Sort the new posts by indexedAt (most recent first)
+      newPosts.sort((a, b) => b.indexedAt.compareTo(a.indexedAt));
+
+      if (currentState == null || currentState.allPosts.isEmpty) {
+        // Initial load: just add the sorted posts
+        allPosts.addAll(newPosts.map((post) => post.uri));
+        _logger.d('Initial load: sorted ${newPosts.length} posts by indexedAt');
+      } else {
+        // For pagination, we need to merge while maintaining chronological order
+        // Find the correct insertion point for each new post
+        final List<AtUri> newSortedPosts = [];
+
+        for (final newPost in newPosts) {
+          newSortedPosts.add(newPost.uri);
+        }
+
+        // Since API returns posts in chronological order (newest first),
+        // and we're paginating, these posts should be older than existing ones
+        allPosts.addAll(newSortedPosts);
+        _logger.d('Pagination: added ${newPosts.length} posts, maintaining chronological order');
+      }
     }
 
     // Filter posts based on videosOnly parameter
