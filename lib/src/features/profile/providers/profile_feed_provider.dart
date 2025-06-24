@@ -62,10 +62,20 @@ class ProfileFeed extends _$ProfileFeed {
       currentState?.extraInfo ?? {},
     );
 
+    // Track rkeys from Spark posts to deduplicate against Bluesky
+    final Set<String> sparkRkeys = <String>{};
+
+    // Add existing Spark rkeys to our tracking set
+    for (final uri in allPosts) {
+      if (postSources[uri] == 'spark') {
+        sparkRkeys.add(uri.rkey);
+      }
+    }
+
     String? newSparkCursor = sparkCursor;
     String? newBlueskyCursor = blueskyCursor;
 
-    // Fetch from Spark
+    // Fetch from Spark first to establish the canonical posts
     try {
       final sparkResult = await _feedRepository.getAuthorFeed(
         profileUri,
@@ -81,6 +91,7 @@ class ProfileFeed extends _$ProfileFeed {
           allPosts.add(uri);
           postSources[uri] = 'spark';
           postTypes[uri] = feedViewPost.post.videoUrl.isNotEmpty;
+          sparkRkeys.add(uri.rkey); // Track this Spark rkey
         }
       }
 
@@ -90,7 +101,7 @@ class ProfileFeed extends _$ProfileFeed {
       _logger.w('Failed to load from Spark: $e');
     }
 
-    // Fetch from Bluesky (fallback or additional)
+    // Fetch from Bluesky and deduplicate against Spark rkeys
     try {
       final bskyResult = await _feedRepository.getAuthorFeed(
         profileUri,
@@ -102,27 +113,33 @@ class ProfileFeed extends _$ProfileFeed {
 
       for (final feedViewPost in bskyResult.posts) {
         final uri = feedViewPost.post.uri;
-        if (!allPosts.contains(uri)) {
-          allPosts.add(uri);
-          postSources[uri] = 'bluesky';
-          // Determine if it's a video post based on embed type
-          final hasVideo =
-              feedViewPost.post.embed?.when(
-                video: (cid, playlist, thumbnail, alt) => true,
-                image: (images) => false,
-                bskyVideo: (cid, playlist, thumbnail, alt) => true,
-                bskyImages: (images) => false,
-                bskyRecord: (record, cid) => false,
-                bskyRecordWithMedia: (record, media, cid) => _isEmbedVideo(media),
-                bskyExternal: (external, cid) => false,
-              ) ??
-              false;
-          postTypes[uri] = hasVideo;
+        final rkey = uri.rkey;
+
+        // Skip if we already have this post from Spark (same rkey) or exact URI
+        if (sparkRkeys.contains(rkey) || allPosts.contains(uri)) {
+          _logger.d('Skipping Bluesky post with rkey $rkey - already exists from Spark');
+          continue;
         }
+
+        allPosts.add(uri);
+        postSources[uri] = 'bluesky';
+        // Determine if it's a video post based on embed type
+        final hasVideo =
+            feedViewPost.post.embed?.when(
+              video: (cid, playlist, thumbnail, alt) => true,
+              image: (images) => false,
+              bskyVideo: (cid, playlist, thumbnail, alt) => true,
+              bskyImages: (images) => false,
+              bskyRecord: (record, cid) => false,
+              bskyRecordWithMedia: (record, media, cid) => _isEmbedVideo(media),
+              bskyExternal: (external, cid) => false,
+            ) ??
+            false;
+        postTypes[uri] = hasVideo;
       }
 
       newBlueskyCursor = bskyResult.cursor;
-      _logger.d('Loaded ${bskyResult.posts.length} posts from Bluesky');
+      _logger.d('Loaded ${bskyResult.posts.length} posts from Bluesky (after deduplication)');
     } catch (e) {
       _logger.w('Failed to load from Bluesky: $e');
     }
