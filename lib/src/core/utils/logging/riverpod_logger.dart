@@ -301,7 +301,7 @@ class SparkRiverpodLogger extends ProviderObserver {
   }
 
   /// Truncates long strings to avoid excessive logging
-  String _truncateIfNeeded(String text, {int maxLength = 300}) {
+  String _truncateIfNeeded(String text, {int maxLength = 700}) {
     if (text.length <= maxLength) {
       return text;
     }
