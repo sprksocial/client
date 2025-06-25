@@ -38,13 +38,8 @@ class FeedRepositoryImpl implements FeedRepository {
           continue;
         }
         final parsedPost = fromJson(postData);
-        final postView = getPostView(parsedPost);
 
-        if (postView.hasSupportedMedia) {
-          posts.add(parsedPost);
-        } else {
-          _logger.d('Filtered out $source post with unsupported embed type: ${postView.uri}');
-        }
+        posts.add(parsedPost);
       } catch (e) {
         _logger.w('Failed to parse $source post, skipping: $e');
       }
@@ -94,13 +89,17 @@ class FeedRepositoryImpl implements FeedRepository {
     if (bluesky) {
       _logger.d('Getting posts on bluesky API for: ${uris.length} URIs');
       final blueskyClient = bsky.Bluesky.fromSession(_client.authRepository.session!);
-      final posts = await blueskyClient.feed.getPosts(uris: uris.map((uri) => AtUri.parse(uri.toString())).toList());
-      return _parseAndFilterPosts<PostView>(
+      final posts = await blueskyClient.feed.getPosts(uris: uris);
+      final filteredPosts = _parseAndFilterPosts<PostView>(
         rawPosts: posts.data.posts,
         fromJson: PostView.fromJson,
         getPostView: (post) => post,
         source: 'bsky',
       );
+      if (filteredPosts.isEmpty) {
+        throw Exception('No posts found');
+      }
+      return filteredPosts;
     }
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -663,28 +662,23 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      try {
-        // Get the post thread
-        if (bluesky) {
-          final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
-          final response = await bluesky.feed.getPostThread(uri: uri, depth: depth, parentHeight: parentHeight);
-          return Thread.fromBsky(thread: response.data.thread, uri: uri);
-        }
-        final source = 'so.sprk.feed.getPostThread';
-        final response = await atproto.get(
-          NSID.parse(source),
-          parameters: {'uri': uri.toString(), 'depth': depth, 'parentHeight': parentHeight},
-          headers: {'atproto-proxy': _client.sprkDid},
-          to: (jsonMap) {
-            return Thread.fromJson(jsonMap['thread'] as Map<String, dynamic>);
-          },
-        );
-
-        return response.data;
-      } catch (e) {
-        _logger.e('Failed to load comments', error: e);
-        throw Exception('Failed to load comments: ${e.toString()}');
+      // Get the post thread
+      if (bluesky) {
+        final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
+        final response = await bluesky.feed.getPostThread(uri: uri, depth: depth, parentHeight: parentHeight);
+        return Thread.fromBsky(thread: response.data.thread, uri: uri);
       }
+      final source = 'so.sprk.feed.getPostThread';
+      final response = await atproto.get(
+        NSID.parse(source),
+        parameters: {'uri': uri.toString(), 'depth': depth, 'parentHeight': parentHeight},
+        headers: {'atproto-proxy': _client.sprkDid},
+        to: (jsonMap) {
+          return Thread.fromJson(jsonMap['thread'] as Map<String, dynamic>);
+        },
+      );
+
+      return response.data;
     });
   }
 

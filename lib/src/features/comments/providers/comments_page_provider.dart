@@ -38,6 +38,9 @@ class CommentsPage extends _$CommentsPage {
       List<PostView> networkPost;
       try {
         networkPost = await feedRepository.getPosts([postUri], bluesky: false);
+        if (networkPost.isEmpty) {
+          throw Exception('No posts found');
+        }
       } catch (e) {
         networkPost = await feedRepository.getPosts([postUri], bluesky: true);
       }

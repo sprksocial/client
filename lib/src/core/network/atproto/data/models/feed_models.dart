@@ -257,32 +257,6 @@ class PostView with _$PostView {
     return uriString;
   }
 
-  /// Returns true if this post has a video or image embed (content we want to show)
-  bool get hasSupportedMedia {
-    if (embed == null) return false;
-
-    switch (embed) {
-      case EmbedViewVideo():
-      case EmbedViewBskyVideo():
-      case EmbedViewImage():
-      case EmbedViewBskyImages():
-        return true;
-      case EmbedViewBskyRecordWithMedia(:final media):
-        // Check nested media in record with media
-        switch (media) {
-          case EmbedViewVideo():
-          case EmbedViewBskyVideo():
-          case EmbedViewImage():
-          case EmbedViewBskyImages():
-            return true;
-          case _:
-            return false;
-        }
-      case _:
-        return false;
-    }
-  }
-
   String get videoUrl {
     switch (embed) {
       case EmbedViewVideo(:final playlist):
@@ -588,6 +562,7 @@ class Thread with _$Thread {
         throw Exception('Unsupported thread type: ${thread.runtimeType}');
     }
   }
+
 }
 
 @freezed
