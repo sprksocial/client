@@ -665,7 +665,12 @@ class FeedRepositoryImpl implements FeedRepository {
 
       try {
         // Get the post thread
-        final source = bluesky ? 'app.bsky.feed.getPostThread' : 'so.sprk.feed.getPostThread';
+        if (bluesky) {
+          final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
+          final response = await bluesky.feed.getPostThread(uri: uri, depth: depth, parentHeight: parentHeight);
+          return Thread.fromBsky(thread: response.data.thread, uri: uri);
+        }
+        final source = 'so.sprk.feed.getPostThread';
         final response = await atproto.get(
           NSID.parse(source),
           parameters: {'uri': uri.toString(), 'depth': depth, 'parentHeight': parentHeight},
@@ -677,7 +682,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
         return response.data;
       } catch (e) {
-        _logger.e('Failed to load Bluesky comments', error: e);
+        _logger.e('Failed to load comments', error: e);
         throw Exception('Failed to load comments: ${e.toString()}');
       }
     });

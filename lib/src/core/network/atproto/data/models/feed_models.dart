@@ -1,5 +1,6 @@
 import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
+import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
@@ -550,21 +551,43 @@ class ViewImage with _$ViewImage {
 class Thread with _$Thread {
   const Thread._();
 
+  // NORMAL POST
   @FreezedUnionValue('so.sprk.feed.defs#threadViewPost')
   @JsonSerializable(explicitToJson: true)
   const factory Thread.threadViewPost({required PostView post, Thread? parent, List<Thread>? replies, ThreadContext? context}) =
       ThreadViewPost;
 
+  // NOT FOUND POST
   @FreezedUnionValue('so.sprk.feed.defs#notFoundPost')
   @JsonSerializable(explicitToJson: true)
   const factory Thread.notFoundPost({@AtUriConverter() required AtUri uri, required bool notFound}) = NotFoundPost;
 
+  // BLOCKED POST
   @FreezedUnionValue('so.sprk.feed.defs#blockedPost')
   @JsonSerializable(explicitToJson: true)
   const factory Thread.blockedPost({@AtUriConverter() required AtUri uri, required bool blocked, required BlockedAuthor author}) =
       BlockedPost;
 
   factory Thread.fromJson(Map<String, dynamic> json) => _$ThreadFromJson(json);
+
+  factory Thread.fromBsky({required bsky.PostThreadView thread, required AtUri uri}) {
+    switch (thread) {
+      case bsky.UPostThreadViewRecord(:final data):
+        final thread = Thread.threadViewPost(
+          post: PostView.fromJson(data.post.toJson()),
+          parent: data.parent != null ? Thread.fromBsky(thread: data.parent!, uri: uri) : null,
+          replies: data.replies?.map((reply) => Thread.fromBsky(thread: reply, uri: uri)).toList(),
+          context: null,
+        );
+        return thread;
+      case bsky.UPostThreadViewNotFound():
+        return Thread.notFoundPost(uri: uri, notFound: true);
+      case bsky.UPostThreadViewBlocked(:final data):
+        return Thread.blockedPost(uri: uri, blocked: true, author: BlockedAuthor.fromJson(data.author.toJson()));
+      default:
+        throw Exception('Unsupported thread type: ${thread.runtimeType}');
+    }
+  }
 }
 
 @freezed
