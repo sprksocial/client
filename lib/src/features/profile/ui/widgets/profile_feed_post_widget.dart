@@ -35,8 +35,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
 
     try {
       // Try to get from cache first
-      final cachedPost = await sqlCache.getPost(widget.postUri.toString());
-      return cachedPost;
+      return await sqlCache.getPost(widget.postUri.toString());
     } catch (e) {
       // Cache lookup failed, continue to network fetch
     }
@@ -44,14 +43,9 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
     // If cache is null or fails, fetch from network
     final feedRepository = GetIt.instance<SprkRepository>().feed;
 
-    List<PostView> networkPost;
-    try {
-      // Try Spark network first
-      networkPost = await feedRepository.getPosts([widget.postUri], bluesky: false);
-    } catch (e) {
-      // Fallback to Bluesky network
-      networkPost = await feedRepository.getPosts([widget.postUri], bluesky: true);
-    }
+    final uri = AtUri.parse(widget.postUri.toString());
+    final isBlueskyPost = uri.collection.toString().startsWith('app.bsky.feed.post');
+    final networkPost = await feedRepository.getPosts([uri], bluesky: isBlueskyPost);
 
     if (networkPost.isEmpty) {
       return null;

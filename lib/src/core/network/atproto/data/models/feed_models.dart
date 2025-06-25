@@ -143,6 +143,10 @@ sealed class ReplyRefPostReference with _$ReplyRefPostReference {
   @JsonSerializable(explicitToJson: true)
   const factory ReplyRefPostReference.post({required PostView post}) = ReplyRefPostReferencePost;
 
+  @FreezedUnionValue('app.bsky.feed.defs#postView')
+  @JsonSerializable(explicitToJson: true)
+  const factory ReplyRefPostReference.bskyPost({required PostView post}) = ReplyRefPostReferenceBskyPost;
+
   @FreezedUnionValue('so.sprk.feed.defs#notFoundPost')
   @JsonSerializable(explicitToJson: true)
   const factory ReplyRefPostReference.notFoundPost({@AtUriConverter() required AtUri uri, required bool notFound}) =
@@ -219,7 +223,7 @@ class PostView with _$PostView {
 
   bool get isSprk => RegExp(r'^at://[^/]+/so\.sprk\.feed\.post/[^/]+$').hasMatch(uri.toString());
 
-    /// Resolves AT Protocol blob URLs to HTTP URLs for display
+  /// Resolves AT Protocol blob URLs to HTTP URLs for display
   String _resolveAtUriToHttpUrl(AtUri atUri, {bool isFullsize = false}) {
     final uriString = atUri.toString();
 
@@ -386,19 +390,32 @@ sealed class EmbedView with _$EmbedView {
 
   @FreezedUnionValue('app.bsky.embed.record#view')
   @JsonSerializable(explicitToJson: true)
-  const factory EmbedView.bskyRecord({required StrongRef record, required String cid}) = EmbedViewBskyRecord;
+  const factory EmbedView.bskyRecord({required EmbedViewBskyRecordViewRecord record}) = EmbedViewBskyRecord;
+
+  @FreezedUnionValue('app.bsky.embed.record#viewRecord')
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedView.bskyRecordViewRecord({
+    @AtUriConverter() required AtUri uri,
+    required String cid,
+    required ProfileViewBasic author,
+    required dynamic value,
+    required DateTime indexedAt,
+    @Default([]) List<Label> labels,
+    int? replyCount,
+    int? repostCount,
+    int? likeCount,
+    int? quoteCount,
+    @Default([]) List<EmbedView> embeds,
+  }) = EmbedViewBskyRecordViewRecord;
 
   @FreezedUnionValue('app.bsky.embed.recordWithMedia#view')
   @JsonSerializable(explicitToJson: true)
-  const factory EmbedView.bskyRecordWithMedia({required StrongRef record, required EmbedView media, required String cid}) =
+  const factory EmbedView.bskyRecordWithMedia({required EmbedViewBskyRecord record, required EmbedView media}) =
       EmbedViewBskyRecordWithMedia;
 
   @FreezedUnionValue('app.bsky.embed.external#view')
   @JsonSerializable(explicitToJson: true)
-  const factory EmbedView.bskyExternal({
-    required EmbedViewExternal external,
-    required String cid,
-  }) = EmbedViewBskyExternal;
+  const factory EmbedView.bskyExternal({required EmbedViewExternal external, required String cid}) = EmbedViewBskyExternal;
 
   factory EmbedView.fromJson(Map<String, dynamic> json) => _$EmbedViewFromJson(json);
 }

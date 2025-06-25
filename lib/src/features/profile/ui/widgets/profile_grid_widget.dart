@@ -4,11 +4,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 
@@ -29,16 +27,6 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-
-    // Initial data loading is now handled automatically by the provider
-  }
-
-  @override
-  void didUpdateWidget(ProfileGridWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    // When videosOnly parameter or profileUri changes, a new provider instance
-    // will be created and will automatically load its data
   }
 
   @override
@@ -49,13 +37,8 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-      // Load more when user is near the bottom
       ref.read(profileFeedProvider(widget.profileUri, widget.videosOnly).notifier).loadMore();
     }
-  }
-
-  Future<void> _onRefresh() async {
-    await ref.read(profileFeedProvider(widget.profileUri, widget.videosOnly).notifier).refresh();
   }
 
   @override
@@ -84,31 +67,34 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
           );
         }
 
-        return RefreshIndicator(
-          onRefresh: _onRefresh,
-          child: GridView.builder(
-            controller: _scrollController,
-            padding: const EdgeInsets.all(1),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 4,
-              crossAxisSpacing: 1,
-              mainAxisSpacing: 1,
-              childAspectRatio: 0.6,
-            ),
-            itemCount: state.loadedPosts.length + (state.isEndOfNetwork ? 0 : 1),
-            itemBuilder: (context, index) {
-              if (index >= state.loadedPosts.length) {
-                // Loading indicator
-                return Container(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
-                );
-              }
-
-              final postUri = state.loadedPosts[index];
-              return ProfileGridTile(postUri: postUri, videosOnly: widget.videosOnly, onTap: () => _onPostTap(postUri));
-            },
+        return GridView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.all(1),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 4,
+            crossAxisSpacing: 1,
+            mainAxisSpacing: 1,
+            childAspectRatio: 0.6,
           ),
+          itemCount: state.loadedPosts.length + (state.isEndOfNetwork ? 0 : 1),
+          itemBuilder: (context, index) {
+            if (index >= state.loadedPosts.length) {
+              return Container(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
+              );
+            }
+
+            final postUri = state.loadedPosts[index];
+            final postView = state.postViews[postUri];
+            final postSource = state.postSources[postUri];
+
+            if (postView == null) {
+              return const SizedBox.shrink();
+            }
+
+            return ProfileGridTile(postView: postView, postSource: postSource, onTap: () => _onPostTap(postUri));
+          },
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),
@@ -120,7 +106,10 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
             const SizedBox(height: 16),
             Text('Error loading posts: $error'),
             const SizedBox(height: 16),
-            ElevatedButton(onPressed: _onRefresh, child: const Text('Retry')),
+            ElevatedButton(
+              onPressed: () => ref.read(profileFeedProvider(widget.profileUri, widget.videosOnly).notifier).refresh(),
+              child: const Text('Retry'),
+            ),
           ],
         ),
       ),
@@ -128,19 +117,18 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
   }
 
   void _onPostTap(AtUri postUri) {
-    // Find the index of the tapped post in the loaded posts
     final feedState = ref.read(profileFeedProvider(widget.profileUri, widget.videosOnly));
     feedState.whenData((state) {
       final postIndex = state.loadedPosts.indexOf(postUri);
       if (postIndex != -1) {
-        // Navigate to standalone profile feed page starting at the tapped post
-        context.router.push(StandaloneProfileFeedRoute(
-          profileUri: widget.profileUri.toString(),
-          videosOnly: widget.videosOnly,
-          initialPostIndex: postIndex,
-        ));
+        context.router.push(
+          StandaloneProfileFeedRoute(
+            profileUri: widget.profileUri.toString(),
+            videosOnly: widget.videosOnly,
+            initialPostIndex: postIndex,
+          ),
+        );
       } else {
-        // Fallback to standalone post page if post not found in feed
         context.router.push(StandalonePostRoute(postUri: postUri.toString()));
       }
     });
@@ -148,119 +136,54 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
 }
 
 class ProfileGridTile extends StatelessWidget {
-  final AtUri postUri;
-  final bool videosOnly;
+  final PostView postView;
+  final String? postSource;
   final VoidCallback onTap;
 
-  const ProfileGridTile({super.key, required this.postUri, required this.videosOnly, required this.onTap});
-
-  Future<PostView?> _loadPostWithFallback() async {
-    final sqlCache = GetIt.instance<SQLCacheInterface>();
-
-    try {
-      // Try to get from cache first
-      final cachedPost = await sqlCache.getPost(postUri.toString());
-      return cachedPost;
-    } catch (e) {
-      // Cache lookup failed, continue to network fetch
-    }
-
-    // If cache is null or fails, fetch from network
-    final feedRepository = GetIt.instance<SprkRepository>().feed;
-
-    List<PostView> networkPost;
-    try {
-      // Try Spark network first
-      networkPost = await feedRepository.getPosts([postUri], bluesky: false);
-    } catch (e) {
-      // Fallback to Bluesky network
-      networkPost = await feedRepository.getPosts([postUri], bluesky: true);
-    }
-
-    if (networkPost.isEmpty) {
-      return null;
-    }
-
-    // Cache the post for future use
-    await sqlCache.cachePost(networkPost.first);
-
-    return networkPost.first;
-  }
+  const ProfileGridTile({super.key, required this.postView, this.postSource, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<PostView?>(
-      future: _loadPostWithFallback(),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SizedBox.shrink();
-        }
+    final thumbnailUrl = postView.thumbnailUrl;
 
-        if (snapshot.hasError || !snapshot.hasData) {
-          return const SizedBox.shrink();
-        }
-
-        final post = snapshot.data!;
-        final thumbnailUrl = post.thumbnailUrl;
-
-        return GestureDetector(
-          onTap: onTap,
-          child: Container(
-            color: AppColors.black,
-            child: thumbnailUrl.isNotEmpty
-                ? Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      CachedNetworkImage(
-                        imageUrl: thumbnailUrl,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => const SizedBox.shrink(),
-                        errorWidget: (context, url, error) => Container(
-                          color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                          child: const Center(child: Icon(FluentIcons.error_circle_24_regular, size: 20)),
-                        ),
-                      ),
-                      // Video indicator overlay for videos
-                      if (post.embed is EmbedViewVideo)
-                        Positioned(
-                          top: 4,
-                          right: 4,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: BoxDecoration(color: Colors.black.withAlpha(150), borderRadius: BorderRadius.circular(4)),
-                            child: const Icon(FluentIcons.play_24_filled, color: Colors.white, size: 12),
-                          ),
-                        ),
-                      // Multiple image indicator for image carousels
-                      if (post.embed is EmbedViewImage)
-                        if ((post.embed as EmbedViewImage).images.length > 1)
-                          Positioned(
-                            top: 4,
-                            right: 4,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withAlpha(150),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Icon(FluentIcons.copy_24_regular, color: Colors.white, size: 12),
-                            ),
-                          ),
-                    ],
-                  )
-                : Container(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                    child: Center(
-                      child: Icon(
-                        post.embed is EmbedViewVideo ? FluentIcons.video_24_regular : FluentIcons.image_24_regular,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        size: 24,
-                      ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        color: AppColors.black,
+        child: thumbnailUrl.isNotEmpty
+            ? Stack(
+                fit: StackFit.expand,
+                children: [
+                  CachedNetworkImage(
+                    imageUrl: thumbnailUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => const SizedBox.shrink(),
+                    errorWidget: (context, url, error) => Container(
+                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                      child: const Center(child: Icon(FluentIcons.error_circle_24_regular, size: 20)),
                     ),
                   ),
-          ),
-        );
-      },
+                  if (postSource != null)
+                    Positioned(
+                      top: 4,
+                      right: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(4),
+                        decoration: BoxDecoration(color: Colors.black.withAlpha(150), borderRadius: BorderRadius.circular(4)),
+                        child: SvgPicture.asset(
+                          postSource == 'bsky' ? 'assets/images/bsky.svg' : 'assets/images/sprk.svg',
+                          width: 12,
+                          height: 12,
+                        ),
+                      ),
+                    ),
+                ],
+              )
+            : Container(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                child: const Center(child: Icon(FluentIcons.image_off_24_regular)),
+              ),
+      ),
     );
   }
 }

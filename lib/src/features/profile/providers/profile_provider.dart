@@ -9,6 +9,7 @@ import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_state.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 
 part 'profile_provider.g.dart';
 
@@ -84,9 +85,18 @@ class ProfileNotifier extends _$ProfileNotifier {
     final didToRefresh = currentDid ?? authRepository.session!.did;
 
     try {
-      // Load fresh data directly without changing to loading state
-      await loadProfileData(didToRefresh, currentProfileState ?? ProfileState(currentViewDid: didToRefresh));
-      logger.i('Profile for $didToRefresh refreshed successfully.');
+      final profileUri = AtUri.parse('at://$didToRefresh');
+      final profileRefreshFuture = loadProfileData(
+        didToRefresh,
+        currentProfileState ?? ProfileState(currentViewDid: didToRefresh),
+      );
+
+      final videosRefreshFuture = ref.read(profileFeedProvider(profileUri, true).notifier).refresh();
+      final photosRefreshFuture = ref.read(profileFeedProvider(profileUri, false).notifier).refresh();
+
+      await Future.wait([profileRefreshFuture, videosRefreshFuture, photosRefreshFuture]);
+
+      logger.i('Profile and feeds for $didToRefresh refreshed successfully.');
     } catch (e, s) {
       logger.e('Error refreshing profile for $didToRefresh', error: e, stackTrace: s);
       // If we have current data, keep it; otherwise show error
