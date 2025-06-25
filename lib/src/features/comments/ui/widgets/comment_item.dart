@@ -35,6 +35,10 @@ class _CommentItemState extends ConsumerState<CommentItem> {
     super.initState();
   }
 
+  void _navigateToProfile() {
+    context.router.push(ProfileRoute(did: commentState.thread.post.author.did));
+  }
+
   void _showImageCarousel() {
     if (commentState.thread.post.embed == null) return;
 
@@ -72,27 +76,26 @@ class _CommentItemState extends ConsumerState<CommentItem> {
     final sprkRepository = GetIt.instance<SprkRepository>();
     showDialog(
       context: context,
-      builder:
-          (context) => ReportDialog(
-            postUri: commentState.thread.post.uri.toString(),
-            postCid: commentState.thread.post.cid,
-            onSubmit: (subject, reasonType, reason, service) async {
-              try {
-                final result = await sprkRepository.repo.createReport(
-                  subject: subject,
-                  reasonType: reasonType,
-                  reason: reason,
-                  service: service,
-                );
+      builder: (context) => ReportDialog(
+        postUri: commentState.thread.post.uri.toString(),
+        postCid: commentState.thread.post.cid,
+        onSubmit: (subject, reasonType, reason, service) async {
+          try {
+            final result = await sprkRepository.repo.createReport(
+              subject: subject,
+              reasonType: reasonType,
+              reason: reason,
+              service: service,
+            );
 
-                if (result) {
-                  scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
-                }
-              } catch (e) {
-                scaffoldMessenger.showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
-              }
-            },
-          ),
+            if (result) {
+              scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+            }
+          } catch (e) {
+            scaffoldMessenger.showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+          }
+        },
+      ),
     );
   }
 
@@ -102,32 +105,31 @@ class _CommentItemState extends ConsumerState<CommentItem> {
     // Confirm deletion
     showDialog(
       context: context,
-      builder:
-          (context) => AlertDialog(
-            title: const Text('Delete Comment'),
-            content: const Text('Are you sure you want to delete this comment? This action cannot be undone.'),
-            actions: [
-              TextButton(onPressed: () => context.router.maybePop(), child: const Text('Cancel')),
-              TextButton(
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                onPressed: () async {
-                  try {
-                    await ref
-                        .read(commentsPageProvider(postUri: widget.mainPostUri).notifier)
-                        .deleteComment(commentState.thread.post.uri.toString());
-                    if (context.mounted) {
-                      await context.router.maybePop(); // to close the menu below
-                    }
-                  } catch (e) {
-                    if (mounted) {
-                      scaffoldMessenger.showSnackBar(SnackBar(content: Text('Failed to delete comment: $e')));
-                    }
-                  }
-                },
-                child: const Text('Delete'),
-              ),
-            ],
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Comment'),
+        content: const Text('Are you sure you want to delete this comment? This action cannot be undone.'),
+        actions: [
+          TextButton(onPressed: () => context.router.maybePop(), child: const Text('Cancel')),
+          TextButton(
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            onPressed: () async {
+              try {
+                await ref
+                    .read(commentsPageProvider(postUri: widget.mainPostUri).notifier)
+                    .deleteComment(commentState.thread.post.uri.toString());
+                if (context.mounted) {
+                  await context.router.maybePop(); // to close the menu below
+                }
+              } catch (e) {
+                if (mounted) {
+                  scaffoldMessenger.showSnackBar(SnackBar(content: Text('Failed to delete comment: $e')));
+                }
+              }
+            },
+            child: const Text('Delete'),
           ),
+        ],
+      ),
     );
   }
 
@@ -149,7 +151,10 @@ class _CommentItemState extends ConsumerState<CommentItem> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _Avatar(widget: widget),
+              GestureDetector(
+                onTap: _navigateToProfile,
+                child: _Avatar(widget: widget),
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -159,21 +164,25 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Expanded(
-                          child: Row(
-                            children: [
-                              Text(
-                                commentState.thread.post.author.handle,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Theme.of(context).textTheme.bodyLarge?.color,
+                          child: GestureDetector(
+                            onTap: _navigateToProfile,
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                Text(
+                                  commentState.thread.post.author.handle,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                                  ),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                _formatDate(commentState.thread.post.indexedAt.toLocal().toString()),
-                                style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color),
-                              ),
-                            ],
+                                const SizedBox(width: 8),
+                                Text(
+                                  _formatDate(commentState.thread.post.indexedAt.toLocal().toString()),
+                                  style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         MenuActionButton(
@@ -214,24 +223,22 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                                 CachedNetworkImage(
                                   imageUrl: commentState.thread.post.imageUrls.first,
                                   fit: BoxFit.cover,
-                                  placeholder:
-                                      (context, url) => Container(
-                                        color: Colors.grey[850]?.withValues(alpha: 128),
-                                        child: const Center(
-                                          child: SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
-                                          ),
-                                        ),
+                                  placeholder: (context, url) => Container(
+                                    color: Colors.grey[850]?.withValues(alpha: 128),
+                                    child: const Center(
+                                      child: SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
                                       ),
-                                  errorWidget:
-                                      (context, url, error) => Container(
-                                        color: AppColors.darkPurple.withValues(alpha: 26),
-                                        child: const Center(
-                                          child: Icon(FluentIcons.image_off_24_regular, size: 24, color: Colors.white70),
-                                        ),
-                                      ),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) => Container(
+                                    color: AppColors.darkPurple.withValues(alpha: 26),
+                                    child: const Center(
+                                      child: Icon(FluentIcons.image_off_24_regular, size: 24, color: Colors.white70),
+                                    ),
+                                  ),
                                 ),
 
                                 if (imageCount > 1)
@@ -312,7 +319,9 @@ class _RepliesSection extends StatelessWidget {
       child: Container(
         margin: const EdgeInsets.only(left: 64),
         padding: const EdgeInsets.only(top: 4, bottom: 8),
-        decoration: BoxDecoration(border: Border(left: BorderSide(color: Theme.of(context).colorScheme.surface, width: 1))),
+        decoration: BoxDecoration(
+          border: Border(left: BorderSide(color: Theme.of(context).colorScheme.surface, width: 1)),
+        ),
         child: Text('Show ${commentState.thread.post.replyCount} replies'),
       ),
     );

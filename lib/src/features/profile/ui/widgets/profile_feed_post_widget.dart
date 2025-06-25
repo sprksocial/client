@@ -8,24 +8,34 @@ import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repo
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
+import 'package:sparksocial/src/core/widgets/heart_animation.dart';
 
-class ProfileFeedPostWidget extends ConsumerWidget {
+class ProfileFeedPostWidget extends ConsumerStatefulWidget {
   final AtUri postUri;
   final AtUri profileUri;
   final bool videosOnly;
 
   const ProfileFeedPostWidget({super.key, required this.postUri, required this.profileUri, required this.videosOnly});
 
+  @override
+  ConsumerState<ProfileFeedPostWidget> createState() => _ProfileFeedPostWidgetState();
+}
+
+class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
+  bool _isAnimatingHeart = false;
+  final GlobalKey<SideActionBarState> _sideActionBarKey = GlobalKey<SideActionBarState>();
+
   Future<PostView?> _loadPostWithFallback() async {
     final sqlCache = GetIt.instance<SQLCacheInterface>();
 
     try {
       // Try to get from cache first
-      return await sqlCache.getPost(postUri.toString());
+      return await sqlCache.getPost(widget.postUri.toString());
     } catch (e) {
       // Cache lookup failed, continue to network fetch
     }
@@ -33,7 +43,7 @@ class ProfileFeedPostWidget extends ConsumerWidget {
     // If cache is null or fails, fetch from network
     final feedRepository = GetIt.instance<SprkRepository>().feed;
 
-    final uri = AtUri.parse(postUri.toString());
+    final uri = AtUri.parse(widget.postUri.toString());
     final isBlueskyPost = uri.collection.toString().startsWith('app.bsky.feed.post');
     final networkPost = await feedRepository.getPosts([uri], bluesky: isBlueskyPost);
 
@@ -47,8 +57,39 @@ class ProfileFeedPostWidget extends ConsumerWidget {
     return networkPost.first;
   }
 
+  Future<void> _handleDoubleTapLike(PostView postData) async {
+    final isCurrentlyLiked = postData.viewer?.like != null;
+
+    if (isCurrentlyLiked) {
+      return;
+    }
+
+    // Start heart animation
+    setState(() {
+      _isAnimatingHeart = true;
+    });
+
+    try {
+      // Like the post using the same logic as SideActionBar
+      final newLike = await ref.read(likePostProvider(postData.cid, postData.uri).future);
+
+      // Update the post's viewer field with the new like reference
+      final updatedPost = postData.copyWith(
+        viewer: postData.viewer?.copyWith(like: newLike.uri) ?? Viewer(like: newLike.uri, repost: postData.viewer?.repost),
+      );
+
+      // Update cache with the modified post
+      await GetIt.instance<SQLCacheInterface>().updatePost(updatedPost);
+
+      // Update SideActionBar state directly
+      _sideActionBarKey.currentState?.updateLikeState(updatedPost);
+    } catch (e) {
+      // Handle error silently for better UX
+    }
+  }
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return SafeArea(
       child: FutureBuilder<PostView?>(
         future: _loadPostWithFallback(),
@@ -79,57 +120,66 @@ class ProfileFeedPostWidget extends ConsumerWidget {
           final post = snapshot.data!;
 
           // Create a simple post display similar to FeedPostWidget but without feed dependencies
-          return GestureDetector(
-            onDoubleTap: () {},
-            child: Stack(
-              children: [
-                // Main content
-                switch (post.embed) {
-                  EmbedViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: true),
-                  EmbedViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: false),
-                  EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
-                  EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
+          return HeartAnimation(
+            isAnimating: _isAnimatingHeart,
+            onEnd: () {
+              setState(() {
+                _isAnimatingHeart = false;
+              });
+            },
+            child: GestureDetector(
+              onDoubleTap: () => _handleDoubleTapLike(post),
+              child: Stack(
+                children: [
+                  // Main content
+                  switch (post.embed) {
                     EmbedViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: true),
                     EmbedViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: false),
                     EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
+                    EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
+                      EmbedViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: true),
+                      EmbedViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: false),
+                      EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
+                      _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
+                    },
                     _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                   },
-                  _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
-                },
 
-                // Side action bar
-                Positioned(
-                  bottom: 4,
-                  right: 4,
-                  child: SideActionBar(
-                    post: post,
-                    likeCount: '${post.likeCount ?? 0}',
-                    commentCount: '${post.replyCount ?? 0}',
-                    shareCount: '${post.repostCount ?? 0}',
-                    isLiked: post.viewer?.like != null,
-                    profileImageUrl: post.author.avatar.toString(),
-                    isImage: post.embed is EmbedViewImage || post.embed is EmbedViewBskyImages,
-                    onProfilePressed: () {
-                      // No special handling needed for profile navigation in standalone feed
-                    },
+                  // Side action bar
+                  Positioned(
+                    bottom: 4,
+                    right: 4,
+                    child: SideActionBar(
+                      key: _sideActionBarKey,
+                      post: post,
+                      likeCount: '${post.likeCount ?? 0}',
+                      commentCount: '${post.replyCount ?? 0}',
+                      shareCount: '${post.repostCount ?? 0}',
+                      isLiked: post.viewer?.like != null,
+                      profileImageUrl: post.author.avatar.toString(),
+                      isImage: post.embed is EmbedViewImage || post.embed is EmbedViewBskyImages,
+                      onProfilePressed: () {
+                        // No special handling needed for profile navigation in standalone feed
+                      },
+                    ),
                   ),
-                ),
 
-                Positioned(
-                  bottom: 32,
-                  left: 4,
-                  right: 80,
-                  child: InfoBar(
-                    username: post.author.handle,
-                    description: post.record.text ?? '',
-                    hashtags: post.record.hashtags,
-                    isSprk: post.uri.toString().contains('so.sprk'),
-                    onUsernameTap: () {
-                      context.router.push(ProfileRoute(did: post.author.did));
-                    },
+                  Positioned(
+                    bottom: 32,
+                    left: 4,
+                    right: 80,
+                    child: InfoBar(
+                      username: post.author.handle,
+                      description: post.record.text ?? '',
+                      hashtags: post.record.hashtags,
+                      isSprk: post.uri.toString().contains('so.sprk'),
+                      onUsernameTap: () {
+                        context.router.push(ProfileRoute(did: post.author.did));
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },

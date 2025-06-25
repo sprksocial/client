@@ -42,10 +42,10 @@ class SideActionBar extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<SideActionBar> createState() => _VideoSideActionBarState();
+  ConsumerState<SideActionBar> createState() => SideActionBarState();
 }
 
-class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
+class SideActionBarState extends ConsumerState<SideActionBar> {
   bool _isLiked = false;
   PostView? _currentPost; // Track the current post state locally
 
@@ -67,6 +67,16 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
     if (oldWidget.post != widget.post) {
       setState(() {
         _currentPost = widget.post;
+      });
+    }
+  }
+
+  /// Public method to update like state from external double-tap
+  void updateLikeState(PostView updatedPost) {
+    if (mounted) {
+      setState(() {
+        _isLiked = updatedPost.viewer?.like != null;
+        _currentPost = updatedPost;
       });
     }
   }
@@ -240,7 +250,7 @@ class _VideoSideActionBarState extends ConsumerState<SideActionBar> {
 
   void _handleCommentPressed() {
     final currentPost = _currentPost ?? widget.post;
-    context.router.push(CommentsRoute(postUri: currentPost.uri.toString(), isSprk: currentPost.isSprk));
+    context.router.push(CommentsRoute(postUri: currentPost.uri.toString(), isSprk: currentPost.isSprk, post: currentPost));
   }
 
   @override
