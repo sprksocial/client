@@ -21,11 +21,14 @@ abstract class FeedRepository {
   /// [actorUri] The URI of the author
   /// [limit] The number of items to return (default 20)
   /// [cursor] Pagination cursor for the next set of results
+  /// [videosOnly] Whether to only fetch posts with videos
+  /// [bluesky] Whether to fetch from Bluesky API instead of Spark
   Future<({List<FeedViewPost> posts, String? cursor})> getAuthorFeed(
     AtUri actorUri, {
     int limit = 20,
     String? cursor,
     bool videosOnly = false,
+    bool bluesky = false,
   });
 
   /// Like a post
