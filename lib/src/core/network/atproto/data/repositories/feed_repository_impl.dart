@@ -38,8 +38,13 @@ class FeedRepositoryImpl implements FeedRepository {
           continue;
         }
         final parsedPost = fromJson(postData);
+        final postView = getPostView(parsedPost);
 
-        posts.add(parsedPost);
+        if (postView.hasSupportedMedia) {
+          posts.add(parsedPost);
+        } else {
+          _logger.d('Filtered out $source post with unsupported embed type: ${postView.uri}');
+        }
       } catch (e) {
         _logger.w('Failed to parse $source post, skipping: $e');
       }
@@ -84,21 +89,18 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<List<PostView>> getPosts(List<AtUri> uris, {bool bluesky = false}) async {
+  Future<List<PostView>> getPosts(List<AtUri> uris, {bool bluesky = false, bool filter = true}) async {
     _logger.d('Getting posts for URIs: ${uris.length} URIs');
     if (bluesky) {
       _logger.d('Getting posts on bluesky API for: ${uris.length} URIs');
       final blueskyClient = bsky.Bluesky.fromSession(_client.authRepository.session!);
       final posts = await blueskyClient.feed.getPosts(uris: uris);
-      final filteredPosts = _parseAndFilterPosts<PostView>(
+      final filteredPosts = filter ? _parseAndFilterPosts<PostView>(
         rawPosts: posts.data.posts,
         fromJson: PostView.fromJson,
         getPostView: (post) => post,
         source: 'bsky',
-      );
-      if (filteredPosts.isEmpty) {
-        throw Exception('No posts found');
-      }
+      ) : posts.data.posts.map((post) => PostView.fromJson(post.toJson())).toList();
       return filteredPosts;
     }
     return _client.executeWithRetry(() async {

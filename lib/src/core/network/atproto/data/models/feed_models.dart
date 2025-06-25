@@ -224,6 +224,32 @@ class PostView with _$PostView {
 
   bool get isSprk => RegExp(r'^at://[^/]+/so\.sprk\.feed\.post/[^/]+$').hasMatch(uri.toString());
 
+  /// Returns true if this post has a video or image embed (content we want to show)
+  bool get hasSupportedMedia {
+    if (embed == null) return false;
+
+    switch (embed) {
+      case EmbedViewVideo():
+      case EmbedViewBskyVideo():
+      case EmbedViewImage():
+      case EmbedViewBskyImages():
+        return true;
+      case EmbedViewBskyRecordWithMedia(:final media):
+        // Check nested media in record with media
+        switch (media) {
+          case EmbedViewVideo():
+          case EmbedViewBskyVideo():
+          case EmbedViewImage():
+          case EmbedViewBskyImages():
+            return true;
+          case _:
+            return false;
+        }
+      case _:
+        return false;
+    }
+  }
+
   /// Resolves AT Protocol blob URLs to HTTP URLs for display
   String _resolveAtUriToHttpUrl(AtUri atUri, {bool isFullsize = false}) {
     final uriString = atUri.toString();
@@ -402,8 +428,8 @@ class EmbedViewExternal with _$EmbedViewExternal {
   @JsonSerializable(explicitToJson: true)
   const factory EmbedViewExternal({
     required String uri,
-    required String title,
-    required String description,
+    @Default('') String title,
+    @Default('') String description,
     @AtUriConverter() AtUri? thumb,
   }) = _EmbedViewExternal;
 
@@ -547,13 +573,177 @@ class Thread with _$Thread {
   factory Thread.fromBsky({required bsky.PostThreadView thread, required AtUri uri}) {
     switch (thread) {
       case bsky.UPostThreadViewRecord(:final data):
-        final thread = Thread.threadViewPost(
-          post: PostView.fromJson(data.post.toJson()),
-          parent: data.parent != null ? Thread.fromBsky(thread: data.parent!, uri: uri) : null,
-          replies: data.replies?.map((reply) => Thread.fromBsky(thread: reply, uri: uri)).toList(),
-          context: null,
-        );
-        return thread;
+        try {
+          bsky.EmbedView? embed = data.post.embed;
+          if (data.post.embed is bsky.UEmbedViewExternal) {
+            embed = null;
+          }
+          final postJson = data.post.copyWith(embed: embed);
+
+          // Create PostView with safer parsing
+          final postViewJson = postJson.toJson();
+
+          // Ensure required fields are not null
+          if (postViewJson['cid'] == null) {
+            throw Exception('Post cid is null');
+          }
+          if (postViewJson['uri'] == null) {
+            throw Exception('Post uri is null');
+          }
+          if (postViewJson['author'] == null) {
+            throw Exception('Post author is null');
+          }
+          if (postViewJson['record'] == null) {
+            throw Exception('Post record is null');
+          }
+          if (postViewJson['indexedAt'] == null) {
+            throw Exception('Post indexedAt is null');
+          }
+
+          // Ensure author required fields are not null
+          final authorJson = postViewJson['author'] as Map<String, dynamic>;
+          if (authorJson['did'] == null) {
+            throw Exception('Author did is null');
+          }
+          if (authorJson['handle'] == null) {
+            throw Exception('Author handle is null');
+          }
+
+          // Check embed data if present - this is where the error is occurring
+          if (postViewJson['embed'] != null) {
+            final embedJson = postViewJson['embed'] as Map<String, dynamic>;
+
+            // Check for external embed without required cid
+            if (embedJson[r'$type'] == 'app.bsky.embed.external#view') {
+              if (embedJson['cid'] == null) {
+                postViewJson.remove('embed');
+              }
+            }
+
+            // If it's a record embed, check the record data
+            if (embedJson[r'$type'] == 'app.bsky.embed.record#view' && embedJson['record'] != null) {
+              final recordJson = embedJson['record'] as Map<String, dynamic>;
+
+              // Check required fields for EmbedViewBskyRecordViewRecord
+              if (recordJson[r'$type'] == 'app.bsky.embed.record#viewRecord') {
+                if (recordJson['cid'] == null) {
+                  postViewJson.remove('embed');
+                }
+                if (recordJson['uri'] == null) {
+                  postViewJson.remove('embed');
+                }
+                if (recordJson['author'] == null) {
+                  postViewJson.remove('embed');
+                }
+                if (recordJson['value'] == null) {
+                  postViewJson.remove('embed');
+                }
+                if (recordJson['indexedAt'] == null) {
+                  postViewJson.remove('embed');
+                }
+
+                // Check nested embeds array in the record value
+                if (recordJson['embeds'] != null && recordJson['embeds'] is List) {
+                  final embedsList = recordJson['embeds'] as List;
+                  bool shouldRemoveEmbed = false;
+
+                  for (var nestedEmbed in embedsList) {
+                    if (nestedEmbed is Map<String, dynamic>) {
+                      // Check external embeds in the nested embeds
+                      if (nestedEmbed[r'$type'] == 'app.bsky.embed.external#view' && nestedEmbed['cid'] == null) {
+                        shouldRemoveEmbed = true;
+                        break;
+                      }
+                    }
+                  }
+
+                  if (shouldRemoveEmbed) {
+                    postViewJson.remove('embed');
+                  }
+                }
+              }
+            }
+
+            // Enhanced check for recordWithMedia embeds
+            if (embedJson[r'$type'] == 'app.bsky.embed.recordWithMedia#view') {
+              // Check the record part
+              if (embedJson['record'] != null) {
+                final recordEmbedJson = embedJson['record'] as Map<String, dynamic>;
+                if (recordEmbedJson['record'] != null) {
+                  final recordJson = recordEmbedJson['record'] as Map<String, dynamic>;
+                  
+                  // Check if it's a viewRecord and has required fields
+                  if (recordJson[r'$type'] == 'app.bsky.embed.record#viewRecord') {
+                    if (recordJson['uri'] == null || recordJson['cid'] == null || 
+                        recordJson['author'] == null || recordJson['value'] == null || 
+                        recordJson['indexedAt'] == null) {
+                      postViewJson.remove('embed');
+                    }
+                  }
+                }
+              }
+            }
+
+            // Additional safety check - if we have any embed that might contain a record view, validate it
+            void validateRecordViewInEmbed(Map<String, dynamic> embedData, String path) {
+              if (embedData[r'$type'] == 'app.bsky.embed.record#viewRecord') {
+                if (embedData['uri'] == null || embedData['cid'] == null || 
+                    embedData['author'] == null || embedData['value'] == null || 
+                    embedData['indexedAt'] == null) {
+                  postViewJson.remove('embed');
+                  return;
+                }
+              }
+              
+              // Recursively check nested structures
+              embedData.forEach((key, value) {
+                if (value is Map<String, dynamic>) {
+                  validateRecordViewInEmbed(value, '$path.$key');
+                } else if (value is List) {
+                  for (int i = 0; i < value.length; i++) {
+                    if (value[i] is Map<String, dynamic>) {
+                      validateRecordViewInEmbed(value[i], '$path.$key[$i]');
+                    }
+                  }
+                }
+              });
+            }
+
+            // Run the validation on the entire embed structure
+            if (postViewJson['embed'] != null) {
+              validateRecordViewInEmbed(postViewJson['embed'] as Map<String, dynamic>, 'embed');
+            }
+          }
+
+          final thread = Thread.threadViewPost(
+            post: PostView.fromJson(postViewJson),
+            parent: data.parent != null ? Thread.fromBsky(thread: data.parent!, uri: uri) : null,
+            replies: data.replies
+                ?.map((reply) {
+                  switch (reply) {
+                    case bsky.UPostThreadViewRecord(:final data):
+                      return Thread.fromBsky(thread: reply, uri: data.post.uri);
+                    case bsky.UPostThreadViewNotFound(:final data):
+                      return Thread.notFoundPost(uri: data.uri, notFound: true);
+                    case bsky.UPostThreadViewBlocked(:final data):
+                      return Thread.blockedPost(
+                        uri: data.uri,
+                        blocked: true,
+                        author: BlockedAuthor.fromJson(data.author.toJson()),
+                      );
+                    case bsky.UPostThreadViewUnknown():
+                      // Skip unknown reply types by returning null
+                      return null;
+                  }
+                })
+                .whereType<Thread>()
+                .toList(),
+            context: null,
+          );
+          return thread;
+        } catch (e) {
+          rethrow;
+        }
       case bsky.UPostThreadViewNotFound():
         return Thread.notFoundPost(uri: uri, notFound: true);
       case bsky.UPostThreadViewBlocked(:final data):
@@ -562,7 +752,6 @@ class Thread with _$Thread {
         throw Exception('Unsupported thread type: ${thread.runtimeType}');
     }
   }
-
 }
 
 @freezed

@@ -15,9 +15,6 @@ class CommentsPage extends _$CommentsPage {
 
   @override
   Future<CommentsPageState> build({required AtUri postUri}) async {
-    // Keep the provider alive to prevent unnecessary rebuilds
-    ref.keepAlive();
-
     feedRepository = GetIt.instance<SprkRepository>().feed;
     // try to get from cache, if not found, fetch from network
     final sqlCache = GetIt.instance<SQLCacheInterface>();
@@ -42,7 +39,10 @@ class CommentsPage extends _$CommentsPage {
           throw Exception('No posts found');
         }
       } catch (e) {
-        networkPost = await feedRepository.getPosts([postUri], bluesky: true);
+        networkPost = await feedRepository.getPosts([postUri], bluesky: true, filter: false);
+        if (networkPost.isEmpty) {
+          throw Exception('No posts found at $postUri');
+        }
       }
       final thread = await feedRepository.getThread(postUri, bluesky: !networkPost.first.isSprk, depth: 1);
       switch (thread) {
