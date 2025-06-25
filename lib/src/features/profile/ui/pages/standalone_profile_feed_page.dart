@@ -47,21 +47,12 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
 
     return Scaffold(
       backgroundColor: AppColors.black,
-      appBar: AppBar(
-        backgroundColor: AppColors.black,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppColors.white),
-          onPressed: () => context.router.back(),
-        ),
-      ),
+      appBar: AppBar(backgroundColor: AppColors.black, leading: AutoLeadingButton()),
       body: feedState.when(
         data: (state) {
           if (state.loadedPosts.isEmpty) {
             return const Center(
-              child: Text(
-                'No posts available',
-                style: TextStyle(color: AppColors.white),
-              ),
+              child: Text('No posts available', style: TextStyle(color: AppColors.white)),
             );
           }
 
@@ -90,32 +81,20 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
             },
             itemBuilder: (context, index) {
               if (index >= state.loadedPosts.length) {
-                return const Center(
-                  child: CircularProgressIndicator(color: AppColors.white),
-                );
+                return const Center(child: CircularProgressIndicator(color: AppColors.white));
               }
 
               final postUri = state.loadedPosts[index];
-              return ProfileFeedPostWidget(
-                postUri: postUri,
-                profileUri: profileAtUri,
-                videosOnly: widget.videosOnly,
-              );
+              return ProfileFeedPostWidget(postUri: postUri, profileUri: profileAtUri, videosOnly: widget.videosOnly);
             },
           );
         },
-        loading: () => const Center(
-          child: CircularProgressIndicator(color: AppColors.white),
-        ),
+        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.white)),
         error: (error, stack) => Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(
-                Icons.error_outline,
-                color: AppColors.white,
-                size: 48,
-              ),
+              const Icon(Icons.error_outline, color: AppColors.white, size: 48),
               const SizedBox(height: 16),
               Text(
                 'Error loading feed: $error',
