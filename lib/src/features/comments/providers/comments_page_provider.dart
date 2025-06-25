@@ -16,11 +16,10 @@ class CommentsPage extends _$CommentsPage {
   @override
   Future<CommentsPageState> build({required AtUri postUri}) async {
     feedRepository = GetIt.instance<SprkRepository>().feed;
-    // try to get from cache, if not found, fetch from network
-    final sqlCache = GetIt.instance<SQLCacheInterface>();
+    final isBlueskyPost = postUri.collection.toString().startsWith('app.bsky.feed.post');
+
     try {
-      final cachedPost = await sqlCache.getPost(postUri.toString());
-      final thread = await feedRepository.getThread(postUri, bluesky: !cachedPost.isSprk, depth: 1);
+      final thread = await feedRepository.getThread(postUri, bluesky: isBlueskyPost, depth: 1);
       switch (thread) {
         case ThreadViewPost():
           return CommentsPageState(thread: thread);
@@ -31,20 +30,12 @@ class CommentsPage extends _$CommentsPage {
       }
       throw Exception('Post not found');
     } catch (e) {
-      // If cache fails, fetch from network
-      List<PostView> networkPost;
-      try {
-        networkPost = await feedRepository.getPosts([postUri], bluesky: false);
-        if (networkPost.isEmpty) {
-          throw Exception('No posts found');
-        }
-      } catch (e) {
-        networkPost = await feedRepository.getPosts([postUri], bluesky: true, filter: false);
-        if (networkPost.isEmpty) {
-          throw Exception('No posts found at $postUri');
-        }
+      final networkPost = await feedRepository.getPosts([postUri], bluesky: isBlueskyPost, filter: false);
+      if (networkPost.isEmpty) {
+        throw Exception('No posts found at $postUri');
       }
-      final thread = await feedRepository.getThread(postUri, bluesky: !networkPost.first.isSprk, depth: 1);
+
+      final thread = await feedRepository.getThread(postUri, bluesky: isBlueskyPost, depth: 1);
       switch (thread) {
         case ThreadViewPost():
           return CommentsPageState(thread: thread);
