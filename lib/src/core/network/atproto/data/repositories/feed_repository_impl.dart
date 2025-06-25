@@ -34,6 +34,9 @@ class FeedRepositoryImpl implements FeedRepository {
     for (final rawPost in rawPosts) {
       try {
         final postData = rawPost is Map<String, dynamic> ? rawPost : rawPost.toJson();
+        if (postData['reply'] != null) {
+          continue;
+        }
         final parsedPost = fromJson(postData);
         final postView = getPostView(parsedPost);
 
@@ -89,6 +92,7 @@ class FeedRepositoryImpl implements FeedRepository {
   Future<List<PostView>> getPosts(List<AtUri> uris, {bool bluesky = false}) async {
     _logger.d('Getting posts for URIs: ${uris.length} URIs');
     if (bluesky) {
+      _logger.d('Getting posts on bluesky API for: ${uris.length} URIs');
       final blueskyClient = bsky.Bluesky.fromSession(_client.authRepository.session!);
       final posts = await blueskyClient.feed.getPosts(uris: uris.map((uri) => AtUri.parse(uri.toString())).toList());
       return _parseAndFilterPosts<PostView>(
@@ -227,7 +231,7 @@ class FeedRepositoryImpl implements FeedRepository {
         );
 
         final filteredPosts = _parseAndFilterPosts<FeedViewPost>(
-          rawPosts: resultBsky.data.feed,
+          rawPosts: resultBsky.data.feed.map((post) => post.toJson()).toList(),
           fromJson: FeedViewPost.fromJson,
           getPostView: (feedViewPost) => feedViewPost.post,
           source: 'bsky author feed',

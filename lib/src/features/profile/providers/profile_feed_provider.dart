@@ -141,10 +141,12 @@ class ProfileFeed extends _$ProfileFeed {
     return embed.when(
       video: (cid, playlist, thumbnail, alt) => true,
       bskyVideo: (cid, playlist, thumbnail, alt) => true,
-      bskyRecordWithMedia: (record, media, cid) => _isEmbedVideo(media),
+      bskyRecordWithMedia: (record, media) => _isEmbedVideo(media),
       image: (images) => false,
       bskyImages: (images) => false,
-      bskyRecord: (record, cid) => false,
+      bskyRecord: (record) => false,
+      bskyRecordViewRecord:
+          (uri, cid, author, value, indexedAt, labels, replyCount, repostCount, likeCount, quoteCount, embeds) => false,
       bskyExternal: (external, cid) => false,
     );
   }
