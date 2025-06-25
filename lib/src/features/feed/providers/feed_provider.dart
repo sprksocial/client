@@ -264,7 +264,8 @@ class FeedNotifier extends _$FeedNotifier {
       _logger.d('First load finished with ${uris.length} posts');
     } catch (e, stackTrace) {
       _logger.e('Error in loadAndUpdateFirstLoad: $e', stackTrace: stackTrace);
-      state = state.copyWith(loadingFirstLoad: false, error: true);
+      state = state.copyWith(loadingFirstLoad: false, error: true, isEndOfNetworkFeed: true);
+      _isWaitingForFreshPostsAtEnd = true;
     } finally {
       _isLoadingInProgress = false;
     }

@@ -46,6 +46,20 @@ class Record with _$Record {
     DateTime? createdAt,
   }) = ProfileRecord;
 
+  @JsonSerializable(explicitToJson: true)
+  @FreezedUnionValue('app.bsky.feed.post')
+  const factory Record.bskyPost({
+    DateTime? createdAt,
+    @JsonKey(defaultValue: '') String? text,
+    @JsonKey(defaultValue: []) List<Facet>? facets,
+    RecordReplyRef? reply,
+    List<String>? langs,
+    List<String>? tags,
+    List<SelfLabel>? selfLabels,
+    Embed? embed, // blob
+    // threadgate
+  }) = BskyPostRecord;
+
   List<String> get hashtags {
     switch (this) {
       case PostRecord(:final tags, :final text):
@@ -134,8 +148,8 @@ class EmbedExternal with _$EmbedExternal {
   @JsonSerializable(explicitToJson: true)
   const factory EmbedExternal({
     required String uri,
-    required String title,
-    required String description,
+    @Default('') String title,
+    @Default('') String description,
     Blob? thumb,
   }) = _EmbedExternal;
 
