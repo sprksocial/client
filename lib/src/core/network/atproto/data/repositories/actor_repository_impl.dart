@@ -182,7 +182,7 @@ class ActorRepositoryImpl implements ActorRepository {
         NSID.parse('so.sprk.actor.putPreferences'),
         body: preferences.toJson(),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
+        // to: (jsonMap) => jsonMap,
       );
 
       if (result.status != HttpStatus.ok) {
