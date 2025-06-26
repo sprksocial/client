@@ -69,7 +69,10 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
       title: LayoutBuilder(
         builder: (context, constraints) {
           final availableWidth = constraints.maxWidth;
-          final horizontalPadding = (availableWidth - totalWidth) / 2.0;
+          // Account for the leading widget (back button) - approximately 56px
+          final leadingWidth = 56.0;
+          final centeringWidth = availableWidth - leadingWidth;
+          final horizontalPadding = leadingWidth + (centeringWidth - totalWidth) / 2.0;
 
           return SizedBox(
             height: 44,
