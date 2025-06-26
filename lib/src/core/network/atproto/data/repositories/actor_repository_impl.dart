@@ -32,24 +32,23 @@ class ActorRepositoryImpl implements ActorRepository {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       }
-
-      final result = await atproto.get(
-        NSID.parse('so.sprk.actor.getProfile'),
-        parameters: {'actor': did},
-        headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
-      );
-      if (result.status != HttpStatus.ok) {
-        _logger.e('Failed to retrieve profile for DID: $did');
+      try {
+        final result = await atproto.get(
+          NSID.parse('so.sprk.actor.getProfile'),
+          parameters: {'actor': did},
+          headers: {'atproto-proxy': _client.sprkDid},
+          to: (jsonMap) => jsonMap,
+          adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+        );
+        return ProfileViewDetailed.fromJson(result.data as Map<String, dynamic>);
+      } catch (e) {
+        _logger.e('Failed to retrieve profile for DID: $did', error: e);
         _logger.i('Trying to get profile from bluesky');
         final bluesky = Bluesky.fromSession(_client.authRepository.session!);
         final profile = await bluesky.actor.getProfile(actor: did);
         _logger.d('Profile retrieved successfully from bluesky');
         return ProfileViewDetailed.fromJson(profile.toJson());
       }
-      _logger.d('Profile retrieved successfully');
-      return ProfileViewDetailed.fromJson(result.data as Map<String, dynamic>);
     });
   }
 
