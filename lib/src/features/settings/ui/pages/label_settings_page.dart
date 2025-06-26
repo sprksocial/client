@@ -417,7 +417,7 @@ class _LabelSettingsPageState extends ConsumerState<LabelSettingsPage> {
                             await _setupDefaultPreferences();
                             await _loadLabelSettings();
                           } catch (e) {
-                            if (mounted) {
+                            if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to setup defaults: $e')));
                             }
                           }

@@ -15,6 +15,8 @@ import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dar
 import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/widgets/heart_animation.dart';
+import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
+import 'package:sparksocial/src/core/utils/label_utils.dart';
 
 class FeedPostWidget extends ConsumerStatefulWidget {
   const FeedPostWidget({super.key, required this.index, required this.feed});
@@ -33,6 +35,8 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
   final GlobalKey<PostVideoPlayerState> _videoPlayerKey = GlobalKey<PostVideoPlayerState>();
   final GlobalKey<SideActionBarState> _sideActionBarKey = GlobalKey<SideActionBarState>();
   bool _isAnimatingHeart = false;
+  bool _showWarningOverlay = false;
+  List<String> _warningLabels = [];
 
   @override
   void initState() {
@@ -92,6 +96,35 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
     }
   }
 
+  Future<void> _checkContentWarning(String postUri) async {
+    final feedState = ref.read(feedNotifierProvider(widget.feed));
+    if (widget.index < feedState.loadedPosts.length) {
+      final uri = feedState.loadedPosts[widget.index];
+      final extraInfo = feedState.extraInfo[uri];
+      
+      if (extraInfo != null && extraInfo.postLabels.isNotEmpty) {
+        final shouldShowWarning = await LabelUtils.shouldShowWarning(extraInfo.postLabels);
+        if (shouldShowWarning) {
+          final warningLabels = await LabelUtils.getWarningLabels(extraInfo.postLabels);
+          setState(() {
+            _showWarningOverlay = true;
+            _warningLabels = warningLabels;
+          });
+        } else {
+          setState(() {
+            _showWarningOverlay = false;
+            _warningLabels = [];
+          });
+        }
+      } else {
+        setState(() {
+          _showWarningOverlay = false;
+          _warningLabels = [];
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     // Check if we need to reload post due to state changes
@@ -115,6 +148,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
             setState(() {
               _loadPost();
             });
+            _checkContentWarning(currentUri);
           }
         });
       }
@@ -149,7 +183,14 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
             },
           );
 
-          return HeartAnimation(
+          // Check for content warning on post load
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              _checkContentWarning(postData.uri.toString());
+            }
+          });
+
+          final mainContent = HeartAnimation(
             isAnimating: _isAnimatingHeart,
             onEnd: () {
               setState(() {
@@ -220,6 +261,21 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
               ),
             ),
           );
+
+          // Return main content with warning overlay if needed
+          if (_showWarningOverlay && _warningLabels.isNotEmpty) {
+            return ContentWarningOverlay(
+              onViewContent: () {
+                setState(() {
+                  _showWarningOverlay = false;
+                });
+              },
+              warningLabels: _warningLabels,
+              child: mainContent,
+            );
+          }
+
+          return mainContent;
         }
         if (snapshot.hasError) {
           return DecoratedBox(

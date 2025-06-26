@@ -12,6 +12,8 @@ import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.d
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:atproto_core/atproto_core.dart';
+import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
+import 'package:sparksocial/src/core/utils/label_utils.dart';
 
 @RoutePage()
 class StandalonePostPage extends ConsumerStatefulWidget {
@@ -27,6 +29,8 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
   Future<dynamic>? _postFuture;
   int? _lastUpdateCount;
   final GlobalKey<PostVideoPlayerState> _videoPlayerKey = GlobalKey<PostVideoPlayerState>();
+  bool _showWarningOverlay = false;
+  List<String> _warningLabels = [];
 
   @override
   void initState() {
@@ -59,6 +63,31 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
       await sqlCache.cachePost(networkPost.first);
 
       return networkPost.first;
+    }
+  }
+
+  Future<void> _checkContentWarning(PostView postData) async {
+    final labels = postData.labels ?? [];
+    
+    if (labels.isNotEmpty) {
+      final shouldShowWarning = await LabelUtils.shouldShowWarning(labels);
+      if (shouldShowWarning) {
+        final warningLabels = await LabelUtils.getWarningLabels(labels);
+        setState(() {
+          _showWarningOverlay = true;
+          _warningLabels = warningLabels;
+        });
+      } else {
+        setState(() {
+          _showWarningOverlay = false;
+          _warningLabels = [];
+        });
+      }
+    } else {
+      setState(() {
+        _showWarningOverlay = false;
+        _warningLabels = [];
+      });
     }
   }
 
@@ -97,7 +126,14 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                   if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
                     final postData = snapshot.data! as PostView;
 
-                    return Stack(
+                    // Check for content warning on post load
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        _checkContentWarning(postData);
+                      }
+                    });
+
+                    final mainContent = Stack(
                       children: [
                         // Main content
                         switch (postData.embed) {
@@ -186,6 +222,21 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                         ),
                       ],
                     );
+
+                    // Return main content with warning overlay if needed
+                    if (_showWarningOverlay && _warningLabels.isNotEmpty) {
+                      return ContentWarningOverlay(
+                        onViewContent: () {
+                          setState(() {
+                            _showWarningOverlay = false;
+                          });
+                        },
+                        warningLabels: _warningLabels,
+                        child: mainContent,
+                      );
+                    }
+
+                    return mainContent;
                   }
                   if (snapshot.hasError) {
                     return Center(
