@@ -1,3 +1,4 @@
+import 'package:atproto/core.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 
 /// Interface for Actor-related API endpoints
@@ -17,7 +18,7 @@ abstract class ActorRepository {
   /// [displayName] The new display name
   /// [description] The new description
   /// [avatar] The new avatar (optional)
-  Future<void> updateProfile({required String displayName, required String description, dynamic avatar});
+  Future<void> updateProfile({required String displayName, required String description, Blob? avatar});
 
   /// Check if a user is an early supporter
   ///

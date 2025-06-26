@@ -1,13 +1,13 @@
 import 'dart:convert';
 
 import 'package:atproto/core.dart';
-import 'package:bluesky/bluesky.dart';
+import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 
 /// Actor-related API endpoints implementation
 class ActorRepositoryImpl implements ActorRepository {
@@ -44,7 +44,7 @@ class ActorRepositoryImpl implements ActorRepository {
       } catch (e) {
         _logger.e('Failed to retrieve profile for DID: $did', error: e);
         _logger.i('Trying to get profile from bluesky');
-        final bluesky = Bluesky.fromSession(_client.authRepository.session!);
+        final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
         final profile = await bluesky.actor.getProfile(actor: did);
         _logger.d('Profile retrieved successfully from bluesky');
         return ProfileViewDetailed.fromJson(profile.toJson());
@@ -93,7 +93,7 @@ class ActorRepositoryImpl implements ActorRepository {
   }
 
   @override
-  Future<void> updateProfile({required String displayName, required String description, dynamic avatar}) async {
+  Future<void> updateProfile({required String displayName, required String description, Blob? avatar}) async {
     if (!_client.authRepository.isAuthenticated) {
       throw Exception('Not authenticated');
     }

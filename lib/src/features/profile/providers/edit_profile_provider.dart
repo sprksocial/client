@@ -70,28 +70,43 @@ class EditProfile extends _$EditProfile {
 
       state = state.copyWith(isSaving: true);
 
-      dynamic avatarToSend;
+      final atprotoClient = _authRepository.atproto;
+      if (atprotoClient == null) {
+        throw Exception('AtProto client not initialized');
+      }
+
+      Blob? avatarToSend;
 
       if (state.localAvatar is Uint8List) {
-        // Upload new avatar blob
-        final client = _authRepository.atproto!;
-        final respBlob = await client.repo.uploadBlob(state.localAvatar as Uint8List);
+        // A new avatar image was picked, upload it as a blob.
+        final respBlob = await atprotoClient.repo.uploadBlob(state.localAvatar as Uint8List);
         if (respBlob.status.code != 200) {
           throw Exception('Failed to upload avatar blob');
         }
-        avatarToSend = respBlob.data.blob.toJson();
-      } else if (state.localAvatar is String && state.localAvatar != state.initialAvatar) {
-        // A string URL was passed that's different from initial - fetch existing record
+        avatarToSend = respBlob.data.blob;
+      } else if (state.localAvatar == null) {
+        // If localAvatar is null, it means the avatar was cleared or never set.
+        // Send null to remove any existing avatar from the profile.
+        avatarToSend = null;
+      } else {
+        // If localAvatar is a String (and not null), it implies the avatar was not changed
+        // and we need to maintain the existing one by fetching its Blob from the record.
+        logger.d('Maintaining existing avatar from record ${state.profile.did}');
         final uri = AtUri.parse('at://${state.profile.did}/so.sprk.actor.profile/self');
-        final recRes = await _authRepository.atproto!.repo.getRecord(uri: uri);
+        final recRes = await atprotoClient.repo.getRecord(uri: uri);
         final recordData = recRes.data.value;
-        avatarToSend = recordData['avatar'];
-      } else if (state.initialAvatar != null) {
-        // No change but avatar exists - maintain it
-        final uri = AtUri.parse('at://${state.profile.did}/so.sprk.actor.profile/self');
-        final recRes = await _authRepository.atproto!.repo.getRecord(uri: uri);
-        final recordData = recRes.data.value;
-        avatarToSend = recordData['avatar'];
+
+        // Ensure the 'avatar' field exists and is a Map before converting to Blob.
+        // If it's null, it means the user had no avatar on the record.
+        if (recordData['avatar'] is Map<String, dynamic>) {
+          avatarToSend = Blob.fromJson(recordData['avatar']);
+          logger.d('Blob avatar: $avatarToSend');
+        } else {
+          // This case handles an inconsistency where localAvatar was a string (URL),
+          // but the actual record on the server has no avatar. Set to null gracefully.
+          logger.w('Local avatar was string, but record has no avatar. Setting avatarToSend to null.');
+          avatarToSend = null;
+        }
       }
 
       await actorRepository.updateProfile(
