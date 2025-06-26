@@ -1,4 +1,5 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:atproto/atproto.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -246,14 +247,36 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                     bottom: 32,
                     left: 4,
                     right: 80,
-                    child: InfoBar(
-                      username: postData.author.handle,
-                      description: postData.record.text ?? '',
-                      hashtags: postData.record.hashtags,
-                      isSprk: postData.uri.toString().contains('so.sprk'),
-                      onUsernameTap: () {
-                        _videoPlayerKey.currentState?.pauseVideo();
-                        context.router.push(ProfileRoute(did: postData.author.did));
+                    child: Builder(
+                      builder: (context) {
+                        final feedState = ref.read(feedNotifierProvider(widget.feed));
+                        List<Label> labels = [];
+                        
+                        if (widget.index < feedState.loadedPosts.length) {
+                          final uri = feedState.loadedPosts[widget.index];
+                          final extraInfo = feedState.extraInfo[uri];
+                          if (extraInfo != null) {
+                            labels = extraInfo.postLabels;
+                          }
+                        }
+                        
+                        return FutureBuilder<List<String>>(
+                          future: LabelUtils.getInformLabels(labels),
+                          builder: (context, snapshot) {
+                            final informLabels = snapshot.data ?? [];
+                            return InfoBar(
+                              username: postData.author.handle,
+                              description: postData.record.text ?? '',
+                              hashtags: postData.record.hashtags,
+                              informLabels: informLabels,
+                              isSprk: postData.uri.toString().contains('so.sprk'),
+                              onUsernameTap: () {
+                                _videoPlayerKey.currentState?.pauseVideo();
+                                context.router.push(ProfileRoute(did: postData.author.did));
+                              },
+                            );
+                          },
+                        );
                       },
                     ),
                   ),

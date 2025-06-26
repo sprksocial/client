@@ -211,15 +211,22 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                           bottom: 32,
                           left: 4,
                           right: 80,
-                          child: InfoBar(
-                            username: postData.author.handle,
-                            description: postData.record.text ?? '',
-                            hashtags: postData.record.hashtags,
-                            isSprk: postData.uri.toString().contains('so.sprk'),
-                            onUsernameTap: () {
-                              // Pause video before navigating to profile
-                              _videoPlayerKey.currentState?.pauseVideo();
-                              context.router.push(ProfileRoute(did: postData.author.did));
+                          child: FutureBuilder<List<String>>(
+                            future: LabelUtils.getInformLabels(postData.labels ?? []),
+                            builder: (context, snapshot) {
+                              final informLabels = snapshot.data ?? [];
+                              return InfoBar(
+                                username: postData.author.handle,
+                                description: postData.record.text ?? '',
+                                hashtags: postData.record.hashtags,
+                                informLabels: informLabels,
+                                isSprk: postData.uri.toString().contains('so.sprk'),
+                                onUsernameTap: () {
+                                  // Pause video before navigating to profile
+                                  _videoPlayerKey.currentState?.pauseVideo();
+                                  context.router.push(ProfileRoute(did: postData.author.did));
+                                },
+                              );
                             },
                           ),
                         ),

@@ -14,6 +14,7 @@ import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.d
 import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
 import 'package:sparksocial/src/core/widgets/heart_animation.dart';
+import 'package:sparksocial/src/core/utils/label_utils.dart';
 
 class ProfileFeedPostWidget extends ConsumerStatefulWidget {
   final AtUri postUri;
@@ -168,13 +169,20 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                     bottom: 32,
                     left: 4,
                     right: 80,
-                    child: InfoBar(
-                      username: post.author.handle,
-                      description: post.record.text ?? '',
-                      hashtags: post.record.hashtags,
-                      isSprk: post.uri.toString().contains('so.sprk'),
-                      onUsernameTap: () {
-                        context.router.push(ProfileRoute(did: post.author.did));
+                    child: FutureBuilder<List<String>>(
+                      future: LabelUtils.getInformLabels(post.labels ?? []),
+                      builder: (context, snapshot) {
+                        final informLabels = snapshot.data ?? [];
+                        return InfoBar(
+                          username: post.author.handle,
+                          description: post.record.text ?? '',
+                          hashtags: post.record.hashtags,
+                          informLabels: informLabels,
+                          isSprk: post.uri.toString().contains('so.sprk'),
+                          onUsernameTap: () {
+                            context.router.push(ProfileRoute(did: post.author.did));
+                          },
+                        );
                       },
                     ),
                   ),

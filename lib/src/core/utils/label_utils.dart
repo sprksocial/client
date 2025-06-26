@@ -32,7 +32,7 @@ class LabelUtils {
     for (final label in labels) {
       try {
         final preference = await settingsRepository.getLabelPreference(label.value);
-        if (preference.blurs == Blurs.content && preference.setting == Setting.warn) {
+        if (preference.blurs == Blurs.content || preference.blurs == Blurs.media && preference.setting == Setting.warn) {
           return true;
         }
       } catch (e) {
@@ -63,5 +63,26 @@ class LabelUtils {
     }
     
     return warningLabels;
+  }
+
+  static Future<List<String>> getInformLabels(List<Label> labels) async {
+    if (labels.isEmpty) return [];
+    
+    final settingsRepository = GetIt.instance<SettingsRepository>();
+    final informLabels = <String>[];
+    
+    for (final label in labels) {
+      try {
+        final preference = await settingsRepository.getLabelPreference(label.value);
+        if (preference.severity == Severity.inform && preference.setting == Setting.warn) {
+          informLabels.add(label.value);
+        }
+      } catch (e) {
+        // If no preference found, continue checking other labels
+        continue;
+      }
+    }
+    
+    return informLabels;
   }
 } 

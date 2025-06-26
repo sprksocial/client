@@ -44,7 +44,6 @@ class _LabelSettingsPageState extends ConsumerState<LabelSettingsPage> {
         try {
           final pref = await _settingsRepository.getLabelPreference(label);
           preferences[label] = pref;
-          _logger.d('Successfully loaded preference for label: $label');
         } catch (e) {
           _logger.w('Could not load preference for label: $label - Error: $e');
           // Create a default preference for missing labels
@@ -184,117 +183,6 @@ class _LabelSettingsPageState extends ConsumerState<LabelSettingsPage> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to update preference: $e')));
       }
     }
-  }
-
-  Widget _buildLabelSettingTile(String label, LabelPreference preference) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: ExpansionTile(
-        title: Text(
-          label,
-          style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
-        ),
-        subtitle: Text(
-          'Setting: ${preference.setting.value}${preference.adultOnly ? ' • Adult Only' : ''}',
-          style: TextStyle(color: colorScheme.onSurface.withAlpha(178), fontSize: 12),
-        ),
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Content Action',
-                  style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: Setting.values.map((setting) {
-                    final isSelected = preference.setting == setting;
-                    return Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: ElevatedButton(
-                          onPressed: () => _updateLabelPreference(label, setting: setting),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isSelected ? colorScheme.primary : colorScheme.surface,
-                            foregroundColor: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
-                            elevation: isSelected ? 2 : 0,
-                            side: BorderSide(color: colorScheme.outline, width: 0.5),
-                          ),
-                          child: Text(setting.value.toUpperCase(), style: const TextStyle(fontSize: 12)),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-                const SizedBox(height: 16),
-
-                // Blur Settings
-                Text(
-                  'Blur Level',
-                  style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: Blurs.values.map((blur) {
-                    final isSelected = preference.blurs == blur;
-                    return Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: ElevatedButton(
-                          onPressed: () => _updateLabelPreference(label, blurs: blur),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isSelected ? colorScheme.secondary : colorScheme.surface,
-                            foregroundColor: isSelected ? colorScheme.onSecondary : colorScheme.onSurface,
-                            elevation: isSelected ? 2 : 0,
-                            side: BorderSide(color: colorScheme.outline, width: 0.5),
-                          ),
-                          child: Text(blur.value.toUpperCase(), style: const TextStyle(fontSize: 10)),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Severity Settings
-                Text(
-                  'Severity Level',
-                  style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: Severity.values.map((sev) {
-                    final isSelected = preference.severity == sev;
-                    return Expanded(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: ElevatedButton(
-                          onPressed: () => _updateLabelPreference(label, severity: sev),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: isSelected ? colorScheme.tertiary : colorScheme.surface,
-                            foregroundColor: isSelected ? colorScheme.onTertiary : colorScheme.onSurface,
-                            elevation: isSelected ? 2 : 0,
-                            side: BorderSide(color: colorScheme.outline, width: 0.5),
-                          ),
-                          child: Text(sev.value.toUpperCase(), style: const TextStyle(fontSize: 10)),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   @override
@@ -442,12 +330,142 @@ class _LabelSettingsPageState extends ConsumerState<LabelSettingsPage> {
                     return true;
                   })
                   .map((entry) {
-                    return _buildLabelSettingTile(entry.key, entry.value);
+                    return LabelSettingTile(
+                      label: entry.key,
+                      preference: entry.value,
+                      onPreferenceUpdate: _updateLabelPreference,
+                    );
                   }),
 
             const SizedBox(height: 32),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class LabelSettingTile extends StatelessWidget {
+  final String label;
+  final LabelPreference preference;
+  final Function(String label, {Setting? setting, Blurs? blurs, Severity? severity}) onPreferenceUpdate;
+
+  const LabelSettingTile({
+    super.key,
+    required this.label,
+    required this.preference,
+    required this.onPreferenceUpdate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: ExpansionTile(
+        title: Text(
+          label,
+          style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
+        ),
+        subtitle: Text(
+          'Setting: ${preference.setting.value}${preference.adultOnly ? ' • Adult Only' : ''}',
+          style: TextStyle(color: colorScheme.onSurface.withAlpha(178), fontSize: 12),
+        ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Content Action',
+                  style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: Setting.values.map((setting) {
+                    final isSelected = preference.setting == setting;
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: ElevatedButton(
+                          onPressed: () => onPreferenceUpdate(label, setting: setting),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isSelected ? colorScheme.primary : colorScheme.surface,
+                            foregroundColor: isSelected ? colorScheme.onPrimary : colorScheme.onSurface,
+                            elevation: isSelected ? 2 : 0,
+                            side: BorderSide(color: colorScheme.outline, width: 0.5),
+                          ),
+                          child: Text(setting.value.toUpperCase(), style: const TextStyle(fontSize: 12)),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Severity Settings
+                Text(
+                  'Severity Level',
+                  style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: Severity.values.map((sev) {
+                    final isSelected = preference.severity == sev;
+                    return Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: ElevatedButton(
+                          onPressed: () => onPreferenceUpdate(label, severity: sev),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isSelected ? colorScheme.tertiary : colorScheme.surface,
+                            foregroundColor: isSelected ? colorScheme.onTertiary : colorScheme.onSurface,
+                            elevation: isSelected ? 2 : 0,
+                            side: BorderSide(color: colorScheme.outline, width: 0.5),
+                          ),
+                          child: Text(sev.value.toUpperCase(), style: const TextStyle(fontSize: 10)),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                // Only show blur settings if setting is 'warn'
+                if (preference.setting == Setting.warn) ...[
+                  const SizedBox(height: 16),
+                  Text(
+                    'Blur Level',
+                    style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: Blurs.values.where((blur) => blur != Blurs.media).map((blur) {
+                      final isSelected = preference.blurs == blur;
+                      return Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          child: ElevatedButton(
+                            onPressed: () => onPreferenceUpdate(label, blurs: blur),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isSelected ? colorScheme.secondary : colorScheme.surface,
+                              foregroundColor: isSelected ? colorScheme.onSecondary : colorScheme.onSurface,
+                              elevation: isSelected ? 2 : 0,
+                              side: BorderSide(color: colorScheme.outline, width: 0.5),
+                            ),
+                            child: Text(blur.value.toUpperCase(), style: const TextStyle(fontSize: 10)),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
