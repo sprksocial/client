@@ -31,6 +31,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
   final GlobalKey<PostVideoPlayerState> _videoPlayerKey = GlobalKey<PostVideoPlayerState>();
   bool _showWarningOverlay = false;
   List<String> _warningLabels = [];
+  bool _shouldBlurContent = false;
 
   @override
   void initState() {
@@ -71,11 +72,13 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
     
     if (labels.isNotEmpty) {
       final shouldShowWarning = await LabelUtils.shouldShowWarning(labels);
+      final shouldBlurContent = await LabelUtils.shouldBlurContent(labels);
       if (shouldShowWarning) {
         final warningLabels = await LabelUtils.getWarningLabels(labels);
         setState(() {
           _showWarningOverlay = true;
           _warningLabels = warningLabels;
+          _shouldBlurContent = shouldBlurContent;
         });
       } else {
         setState(() {
@@ -232,6 +235,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                           });
                         },
                         warningLabels: _warningLabels,
+                        shouldBlur: _shouldBlurContent,
                         child: mainContent,
                       );
                     }

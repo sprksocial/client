@@ -23,6 +23,26 @@ class LabelUtils {
     
     return false;
   }
+
+  static Future<bool> shouldBlurContent(List<Label> labels) async {
+    if (labels.isEmpty) return false;
+    
+    final settingsRepository = GetIt.instance<SettingsRepository>();
+    
+    for (final label in labels) {
+      try {
+        final preference = await settingsRepository.getLabelPreference(label.value);
+        if (preference.blurs == Blurs.content && preference.setting == Setting.warn) {
+          return true;
+        }
+      } catch (e) {
+        // If no preference found, continue checking other labels
+        continue;
+      }
+    }
+
+    return false;
+  }
   
   static Future<List<String>> getWarningLabels(List<Label> labels) async {
     if (labels.isEmpty) return [];
