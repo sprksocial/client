@@ -350,7 +350,7 @@ class FeedNotifier extends _$FeedNotifier {
       }
       _logger.d('Downloading ${nonExistingUris.length} new posts');
       final nonExistingPosts = await _feedRepository.getPosts(nonExistingUris, bluesky: _shouldUseBlueskyAPI());
-      
+
       // gets the subscribed labels for the new posts
       final followedLabelers = await _settingsRepository.getFollowedLabelers();
       List<Label> newPostLabels = [];
@@ -534,7 +534,9 @@ class FeedNotifier extends _$FeedNotifier {
         loadingFirstLoad: false,
       );
 
-      _logger.d('Load complete. Total loaded posts: ${state.loadedPosts.length}, remaining fresh: ${state.freshPostCount} (${uris.length - filteredUris.length} hidden)');
+      _logger.d(
+        'Load complete. Total loaded posts: ${state.loadedPosts.length}, remaining fresh: ${state.freshPostCount} (${uris.length - filteredUris.length} hidden)',
+      );
     } else {
       _logger.d('No fresh posts available to load (freshPostCount: ${state.freshPostCount})');
     }
@@ -615,10 +617,11 @@ class FeedNotifier extends _$FeedNotifier {
 
   /// Checks if a post should be hidden based on its labels and user preferences
   Future<bool> _shouldHidePost(AtUri uri, List<Label> postLabels) async {
+    final hideAdultContent = await _settingsRepository.getHideAdultContent();
     for (final label in postLabels) {
       try {
         final labelPreference = await _settingsRepository.getLabelPreference(label.value);
-        if (labelPreference.setting == Setting.hide) {
+        if (labelPreference.setting == Setting.hide || (labelPreference.adultOnly && hideAdultContent)) {
           _logger.d('Hiding post ${uri.toString()} due to label: ${label.value}');
           return true;
         }
@@ -631,9 +634,12 @@ class FeedNotifier extends _$FeedNotifier {
   }
 
   /// Filters URIs based on label preferences, removing posts that should be hidden
-  Future<List<AtUri>> _filterHiddenPosts(List<AtUri> uris, LinkedHashMap<AtUri, ({List<Label> postLabels, HardcodedFeedExtraInfo? hardcodedFeedExtraInfo})> extraInfo) async {
+  Future<List<AtUri>> _filterHiddenPosts(
+    List<AtUri> uris,
+    LinkedHashMap<AtUri, ({List<Label> postLabels, HardcodedFeedExtraInfo? hardcodedFeedExtraInfo})> extraInfo,
+  ) async {
     final filteredUris = <AtUri>[];
-    
+
     for (final uri in uris) {
       final postExtraInfo = extraInfo[uri];
       if (postExtraInfo != null) {
@@ -646,7 +652,7 @@ class FeedNotifier extends _$FeedNotifier {
         filteredUris.add(uri);
       }
     }
-    
+
     return filteredUris;
   }
 }
