@@ -19,20 +19,16 @@ void main() async {
   // Preserve the native splash screen
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  
+
   await dotenv.load(fileName: ".env");
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
-
-  // Initialize IMGLY Video Editor SDK
-  // Note: You need to add a license file to assets folder and reference it in pubspec.yaml
-  // VESDK.unlockWithLicense("assets/licenses/vesdk_license");
 
   // Force dark status bar and navigation bar
   SystemChrome.setSystemUIOverlayStyle(AppTheme.darkSystemUiStyle);
 
   fvp.registerWith();
 
-  // Initialize dependencies for new architecture
+  // Initialize dependencies
   await configureDependencies();
 
   // Setup logging for production/debug
