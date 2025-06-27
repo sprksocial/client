@@ -707,6 +707,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
       final response = await atproto.get(
         NSID.parse('com.atproto.label.queryLabels'),
+        headers: {'atproto-proxy': 'did:plc:pbgyr67hftvpoqtvaurpsctc#atproto_labeler'},
         parameters: {'uriPatterns': uris, 'sources': sources, 'limit': limit, 'cursor': cursor},
       );
 
