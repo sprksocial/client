@@ -385,14 +385,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.2"
-  cupertino_icons:
-    dependency: "direct main"
-    description:
-      name: cupertino_icons
-      sha256: ba631d1c7f7bef6b729a622b7b752645a2d076dba9976925b8f25725a30e1ee6
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.8"
   custom_lint_core:
     dependency: transitive
     description:
@@ -425,22 +417,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.0"
-  dio:
-    dependency: "direct main"
-    description:
-      name: dio
-      sha256: "253a18bbd4851fecba42f7343a1df3a9a4c1d31a2c1b37e221086b4fa8c8dbc9"
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.8.0+1"
-  dio_web_adapter:
-    dependency: transitive
-    description:
-      name: dio_web_adapter
-      sha256: "7586e476d70caecaf1686d21eee7247ea43ef5c345eab9e0cc3583ff13378d78"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.1"
   fake_async:
     dependency: transitive
     description:
@@ -543,7 +519,7 @@ packages:
     source: hosted
     version: "0.18.6"
   flutter_launcher_icons:
-    dependency: "direct main"
+    dependency: "direct dev"
     description:
       name: flutter_launcher_icons
       sha256: bfa04787c85d80ecb3f8777bde5fc10c3de809240c48fa061a2c2bf15ea5211c
@@ -848,14 +824,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.5"
-  ionicons:
-    dependency: "direct main"
-    description:
-      name: ionicons
-      sha256: "5496bc65a16115ecf05b15b78f494ee4a8869504357668f0a11d689e970523cf"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.2"
   js:
     dependency: transitive
     description:
@@ -865,7 +833,7 @@ packages:
     source: hosted
     version: "0.6.7"
   json_annotation:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: json_annotation
       sha256: "1ce844379ca14835a50d2f019a3099f419082cfdd231cd86a142af94dd5c6bb1"
@@ -920,14 +888,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
-  logger:
-    dependency: "direct main"
-    description:
-      name: logger
-      sha256: be4b23575aac7ebf01f225a241eb7f6b5641eeaf43c6a8613510fc2f8cf187d1
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.5.0"
   logging:
     dependency: transitive
     description:
@@ -936,14 +896,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.0"
-  lucide_icons_flutter:
-    dependency: "direct main"
-    description:
-      name: lucide_icons_flutter
-      sha256: "2cc30b669d2e9329072bdd4e3f50d4a31d4dd6ee9e9748d639dab95cd2edd0ce"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.5"
   matcher:
     dependency: transitive
     description:
@@ -969,7 +921,7 @@ packages:
     source: hosted
     version: "1.16.0"
   mime:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: mime
       sha256: "801fd0b26f14a4a58ccb09d5892c3fbdeff209594300a542492cf13fba9d247a"
@@ -1136,14 +1088,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.1"
-  preload_page_view:
-    dependency: "direct main"
-    description:
-      name: preload_page_view
-      sha256: "488a10c158c5c2e9ba9d77e5dbc09b1e49e37a20df2301e5ba02992eac802b7a"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.0"
   pub_semver:
     dependency: transitive
     description:
@@ -1301,22 +1245,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.0.4"
-  socket_io_client:
-    dependency: "direct main"
-    description:
-      name: socket_io_client
-      sha256: c8471c2c6843cf308a5532ff653f2bcdb7fa9ae79d84d1179920578a06624f0d
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.2"
-  socket_io_common:
-    dependency: transitive
-    description:
-      name: socket_io_common
-      sha256: "162fbaecbf4bf9a9372a62a341b3550b51dcef2f02f3e5830a297fd48203d45b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.1"
   source_gen:
     dependency: transitive
     description:
