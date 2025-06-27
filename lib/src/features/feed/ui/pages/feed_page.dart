@@ -86,11 +86,14 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
       child: state.loadingFirstLoad
           ? const Center(child: CircularProgressIndicator())
           : state.error
-          ? Column(
-              children: [
-                const Text('Error loading feed'),
-                TextButton(onPressed: onRefresh, child: const Text('Try again')),
-              ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Error loading feed'),
+                  TextButton(onPressed: onRefresh, child: const Text('Try again')),
+                ],
+              ),
             )
           : CacheablePageView.builder(
               cachePageExtent: 1,
