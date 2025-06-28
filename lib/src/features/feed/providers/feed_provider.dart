@@ -400,7 +400,7 @@ class FeedNotifier extends _$FeedNotifier {
               // it is divided in half to prevent the feed from getting stuck loading big files
               // (the other half will keep being downloaded, but you can start downloading another batch to be more efficient)
               // should use pool to have a limit on the number of concurrent downloads
-              if (newPostsCached == (nonExistingPosts.length - errorCount) >> 1) {
+              if (newPostsCached == (nonExistingPosts.length - errorCount) >> 1 && !_downloadManager.poolFull) {
                 _isCaching = false;
                 _logger.d('Set isCaching to false after downloading $newPostsCached posts');
               }
