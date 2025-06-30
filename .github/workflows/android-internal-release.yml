@@ -76,9 +76,7 @@ jobs:
 
       - name: Build PlayStore AAB
         run: |
-          flutter build apk --profile
-      #run: |
-        #  flutter build appbundle
+          flutter build appbundle
 
       # - name: Upload AAB to PlayStore
       #   uses: r0adkll/upload-google-play@v1
