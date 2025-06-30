@@ -37,6 +37,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
   final GlobalKey<SideActionBarState> _sideActionBarKey = GlobalKey<SideActionBarState>();
   bool _isAnimatingHeart = false;
   bool _showWarningOverlay = false;
+  bool _userDismissedWarning = false;
   List<String> _warningLabels = [];
 
   @override
@@ -103,7 +104,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
       final uri = feedState.loadedPosts[widget.index];
       final extraInfo = feedState.extraInfo[uri];
       
-      if (extraInfo != null && extraInfo.postLabels.isNotEmpty) {
+      if (extraInfo != null && extraInfo.postLabels.isNotEmpty && !_userDismissedWarning) {
         final shouldShowWarning = await LabelUtils.shouldShowWarning(extraInfo.postLabels);
         if (shouldShowWarning) {
           final warningLabels = await LabelUtils.getWarningLabels(extraInfo.postLabels);
@@ -291,9 +292,11 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
               onViewContent: () {
                 setState(() {
                   _showWarningOverlay = false;
+                  _userDismissedWarning = true; // User has dismissed the warning
                 });
               },
               warningLabels: _warningLabels,
+              shouldBlur: true,
               child: mainContent,
             );
           }
