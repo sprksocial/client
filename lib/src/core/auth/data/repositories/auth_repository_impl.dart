@@ -14,6 +14,7 @@ import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 class AuthRepositoryImpl implements AuthRepository {
   Session? _session;
   ATProto? _atProto;
+  String? _dmAccessToken;
   final _logger = GetIt.instance<LogService>().getLogger('AuthRepository');
 
   final Completer<void> _initCompleter = Completer<void>();
@@ -27,6 +28,9 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   ATProto? get atproto => _atProto;
+
+  @override
+  String? get dmAccessToken => _dmAccessToken;
 
   AuthRepositoryImpl() {
     _logger.i('Initializing AuthRepository');
@@ -130,6 +134,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
       _session = response.data;
 
+      
+
       await _saveSession(_session!);
       _atProto = ATProto.fromSession(_session!);
       _logger.i('Session refreshed successfully');
@@ -141,11 +147,12 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  Future<void> _saveSession(Session sessionData) async {
+  Future<void> _saveSession(Session sessionData, String dmAccessToken) async {
     try {
       _logger.d('Saving session for user: ${sessionData.handle}');
       final sessionJson = sessionData.toJson();
       await StorageManager.instance.secure.setString(StorageKeys.userSession, json.encode(sessionJson));
+      await StorageManager.instance.secure.setString(StorageKeys.dmAccessToken, dmAccessToken);
       _logger.d('Session saved successfully');
     } catch (e) {
       _logger.e('Failed to save session', error: e);

@@ -8,28 +8,25 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 /// to maintain a single source of truth for application settings.
 class AppConfig {
   /// Base URL for the video processing service.
-  static String get videoServiceUrl =>
-      _getStringValue('VIDEO_SERVICE_URL', 'http://localhost:3000');
+  static String get videoServiceUrl => _getStringValue('VIDEO_SERVICE_URL', 'http://localhost:3000');
 
   /// URL for the app view (web view display).
-  static String get appViewUrl =>
-      _getStringValue('SPRK_APPVIEW_URL', 'http://localhost:3000');
+  static String get appViewUrl => _getStringValue('SPRK_APPVIEW_URL', 'http://localhost:3000');
+
+  /// Base URL for the messages service (chat service).
+  static String get messagesServiceUrl => _getStringValue('MESSAGES_SERVICE_URL', 'http://localhost:3000');
 
   /// Whether new user registrations are disabled.
-  static bool get signupsDisabled =>
-      _getBoolValue('SIGNUPS_DISABLED', false);
+  static bool get signupsDisabled => _getBoolValue('SIGNUPS_DISABLED', false);
 
   /// API request timeout in seconds.
-  static int get apiTimeoutSeconds =>
-      _getIntValue('API_TIMEOUT_SECONDS', 30);
+  static int get apiTimeoutSeconds => _getIntValue('API_TIMEOUT_SECONDS', 30);
 
   /// Maximum upload file size in MB.
-  static double get maxUploadSizeMB =>
-      _getDoubleValue('MAX_UPLOAD_SIZE_MB', 100.0);
+  static double get maxUploadSizeMB => _getDoubleValue('MAX_UPLOAD_SIZE_MB', 100.0);
 
   /// The current application environment (development, production, etc.)
-  static String get environment =>
-      _getStringValue('ENVIRONMENT', 'development');
+  static String get environment => _getStringValue('ENVIRONMENT', 'development');
 
   /// Checks if the app is running in development mode.
   static bool get isDevelopment => environment == 'development';
@@ -38,8 +35,7 @@ class AppConfig {
   static bool get isProduction => environment == 'production';
 
   /// Base URL for the chat service (Socket.io server).
-  static String get chatServiceUrl =>
-      _getStringValue('CHAT_SERVICE_URL', 'http://localhost:3000');
+  static String get chatServiceUrl => _getStringValue('CHAT_SERVICE_URL', 'http://localhost:3000');
 
   /// Helper method to retrieve string values from environment with defaults
   static String _getStringValue(String key, String defaultValue) {

@@ -1,6 +1,7 @@
 /// Storage keys used throughout the application
 class StorageKeys {
   static const String userSession = 'user_session';
+  static const String dmAccessToken = 'dm_access_token';
 
   static const String themeKey = 'app_theme_mode';
 

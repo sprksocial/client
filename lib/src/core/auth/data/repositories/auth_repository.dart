@@ -13,6 +13,8 @@ abstract class AuthRepository {
   /// Gets the AT Protocol client
   ATProto? get atproto;
 
+  String? get dmAccessToken;
+
   /// Attempts to log in a user with the provided credentials
   ///
   /// [handle] - The user handle
