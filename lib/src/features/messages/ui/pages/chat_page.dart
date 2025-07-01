@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -7,6 +9,7 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/messages/providers/conversation_provider.dart';
+import 'package:sparksocial/src/features/messages/providers/polling_timer.dart';
 
 @RoutePage()
 class ChatPage extends ConsumerStatefulWidget {
@@ -26,7 +29,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   final ScrollController _scrollController = ScrollController();
   List<Message> _messages = [];
   String? _currentUserDid;
-
   @override
   void initState() {
     super.initState();
@@ -86,6 +88,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(conversationProvider(widget.otherUserDid));
+    ref.listen(pollingTriggerProvider(widget.otherUserDid), (previous, next) {});
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(

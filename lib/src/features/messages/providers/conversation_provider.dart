@@ -29,5 +29,18 @@ class Conversation extends _$Conversation {
     return state.value!.messages.last;
   }
 
+  Future<void> checkForNewMessages() async {
+    if (state.value == null) return;
+    final otherDid = state.value!.other.did;
+    final (cursor: _, messages: newBatch) = await GetIt.I<MessagesRepository>().getConversation(otherDid, cursor: cursor);
+    final newestMessage = newBatch.isNotEmpty ? newBatch.last : null;
+    if (newestMessage != null && (state.value!.messages.isEmpty || newestMessage.timestamp.compareTo(state.value!.messages.last.timestamp) > 0)) {
+      // only new messages from the new batch
+      final newMessages = newBatch.where((msg) => !state.value!.messages.any((m) => m.id == msg.id)).toList();
+      final updatedMessages = [...state.value!.messages, ...newMessages];
+      state = AsyncValue.data(ConversationState(state.value!.other, updatedMessages));
+    } 
+  }
+
   // TODO: loadmore
 }

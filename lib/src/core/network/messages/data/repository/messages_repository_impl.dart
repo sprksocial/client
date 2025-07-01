@@ -76,7 +76,6 @@ class MessagesRepositoryImpl implements MessagesRepository {
         if (cursor != null) 'cursor': cursor,
         if (limit != null) 'limit': limit.toString(),
       };
-      _logger.d('Fetching all conversations with headers: $_headers');
 
       final uri = Uri.parse('${AppConfig.messagesServiceUrl}/messages/conversations').replace(queryParameters: queryParameters);
 
@@ -121,7 +120,7 @@ class MessagesRepositoryImpl implements MessagesRepository {
 
       final uri = Uri.parse('${AppConfig.messagesServiceUrl}/messages/send');
 
-      final response = await http.post(uri, headers: _headers, body: jsonEncode(requestBody));
+      final response = await http.post(uri, headers: _headers, body: jsonEncode(requestBody), encoding: utf8);
       _logger.d('Response status code: ${response.statusCode}');
       _logger.d('Response body: ${response.body}');
 
