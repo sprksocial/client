@@ -15,6 +15,7 @@ abstract class AuthRepository {
 
   String? get dmAccessToken;
 
+  String? get dmRefreshToken;
   /// Attempts to log in a user with the provided credentials
   ///
   /// [handle] - The user handle
