@@ -19,8 +19,8 @@ class Conversation extends _$Conversation {
     return ConversationState(other, messages);
   }
 
-  Future<void> sendMessage(String otherDid, String message, {Embed? embed}) async {
-    await GetIt.I<MessagesRepository>().sendMessage(otherDid, message, embed: embed);
+  Future<Message> sendMessage(String otherDid, String message, {Embed? embed}) async {
+    return await GetIt.I<MessagesRepository>().sendMessage(otherDid, message, embed: embed);
   }
 
   // TODO: loadmore
