@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/network/chat/data/models/models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 import 'conversation_list_item.dart';
 
 class ConversationList extends StatelessWidget {
-  final List<ChatConversation> conversations;
-  final Function(ChatConversation)? onConversationTap;
-  final Function(ChatConversation)? onConversationLongPress;
+  final List<(ProfileViewDetailed, Message)> conversations;
+  final Function((ProfileViewDetailed, Message))? onConversationTap;
+  final Function((ProfileViewDetailed, Message))? onConversationLongPress;
 
   const ConversationList({super.key, required this.conversations, this.onConversationTap, this.onConversationLongPress});
 
@@ -17,11 +18,6 @@ class ConversationList extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.chat_bubble_outline, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              'DMs feature is coming soon',
-              style: TextStyle(fontSize: 18, color: Colors.grey, fontWeight: FontWeight.w500),
-            ),
             SizedBox(height: 8),
             Text('Start a conversation to see it here', style: TextStyle(fontSize: 14, color: Colors.grey)),
           ],
@@ -36,7 +32,8 @@ class ConversationList extends StatelessWidget {
         final conversation = conversations[index];
 
         return ConversationListItem(
-          conversation: conversation,
+          message: conversation.$2,
+          otherUserProfile: conversation.$1,
           onTap: () => onConversationTap?.call(conversation),
           onLongPress: () => onConversationLongPress?.call(conversation),
         );

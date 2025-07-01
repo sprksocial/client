@@ -3,7 +3,7 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:sparksocial/src/features/messages/providers/conversations._state.dart';
 
-part 'conversation_provider.g.dart';
+part 'conversations_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class Conversations extends _$Conversations {

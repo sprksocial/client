@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/network/chat/data/models/models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 
 class ConversationListItem extends StatelessWidget {
-  final ChatConversation conversation;
+  final Message message;
+  final ProfileViewDetailed otherUserProfile;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
-  const ConversationListItem({super.key, required this.conversation, this.onTap, this.onLongPress});
+  const ConversationListItem({
+    super.key,
+    required this.message,
+    required this.otherUserProfile,
+    this.onTap,
+    this.onLongPress,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +31,7 @@ class ConversationListItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            ConversationAvatar(conversation: conversation),
+            ConversationAvatar(otherUserProfile: otherUserProfile),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
@@ -33,12 +41,12 @@ class ConversationListItem extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          conversation.otherUserDisplayName ?? conversation.otherUserHandle ?? 'Unknown User',
-                          style: TextStyle(
-                            fontWeight: conversation.unreadCount > 0 ? FontWeight.bold : FontWeight.w500,
-                            fontSize: 16,
-                            color: Theme.of(context).colorScheme.onSurface,
-                          ),
+                          otherUserProfile.displayName ?? otherUserProfile.handle,
+                          // style: TextStyle(
+                          //   fontWeight: conversation.unreadCount > 0 ? FontWeight.bold : FontWeight.w500,
+                          //   fontSize: 16,
+                          //   color: Theme.of(context).colorScheme.onSurface,
+                          // ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -50,7 +58,7 @@ class ConversationListItem extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          '@${conversation.otherUserHandle ?? 'unknown'}',
+                          '@${otherUserProfile.handle}',
                           style: TextStyle(
                             fontWeight: FontWeight.normal,
                             fontSize: 14,
@@ -65,29 +73,23 @@ class ConversationListItem extends StatelessWidget {
                 ],
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                if (conversation.lastActivity != null)
-                  Text(
-                    _formatTime(conversation.lastActivity!),
-                    style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurface.withAlpha(178)),
-                  ),
-                const SizedBox(height: 4),
-                if (conversation.unreadCount > 0)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Text(
-                      conversation.unreadCount > 99 ? '99+' : conversation.unreadCount.toString(),
-                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-              ],
-            ),
+            // Column(
+            //   crossAxisAlignment: CrossAxisAlignment.end,
+            //   children: [
+            //     if (conversation.unreadCount > 0)
+            //       Container(
+            //         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            //         decoration: BoxDecoration(
+            //           color: Theme.of(context).colorScheme.primary,
+            //           borderRadius: BorderRadius.circular(10),
+            //         ),
+            //         child: Text(
+            //           conversation.unreadCount > 99 ? '99+' : conversation.unreadCount.toString(),
+            //           style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+            //         ),
+            //       ),
+            //   ],
+            // ),
           ],
         ),
       ),
@@ -111,8 +113,8 @@ class ConversationListItem extends StatelessWidget {
 }
 
 class ConversationAvatar extends StatelessWidget {
-  final ChatConversation conversation;
-  const ConversationAvatar({super.key, required this.conversation});
+  final ProfileViewDetailed otherUserProfile;
+  const ConversationAvatar({super.key, required this.otherUserProfile});
 
   Color _getAvatarColor(int seed) {
     final colors = [
@@ -136,10 +138,10 @@ class ConversationAvatar extends StatelessWidget {
       decoration: const BoxDecoration(shape: BoxShape.circle),
       clipBehavior: Clip.antiAlias,
       child: UserAvatar(
-        imageUrl: conversation.otherUserAvatar,
-        username: conversation.otherUserHandle ?? 'User',
+        imageUrl: otherUserProfile.avatar.toString(),
+        username: otherUserProfile.handle,
         size: 48,
-        backgroundColor: _getAvatarColor((conversation.otherUserHandle ?? 'User').hashCode),
+        backgroundColor: _getAvatarColor((otherUserProfile.handle).hashCode),
       ),
     );
   }

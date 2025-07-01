@@ -2,11 +2,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/network/chat/data/models/models.dart';
+import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/messages/providers/chat_providers_new.dart';
+import 'package:sparksocial/src/features/messages/providers/conversation_provider.dart';
 
 @RoutePage()
 class ChatPage extends ConsumerStatefulWidget {
@@ -15,13 +15,7 @@ class ChatPage extends ConsumerStatefulWidget {
   final String? otherUserDisplayName;
   final String? otherUserAvatar;
 
-  const ChatPage({
-    super.key,
-    required this.otherUserDid,
-    this.otherUserHandle,
-    this.otherUserDisplayName,
-    this.otherUserAvatar,
-  });
+  const ChatPage({super.key, required this.otherUserDid, this.otherUserHandle, this.otherUserDisplayName, this.otherUserAvatar});
 
   @override
   ConsumerState<ChatPage> createState() => _ChatPageState();
@@ -30,15 +24,13 @@ class ChatPage extends ConsumerStatefulWidget {
 class _ChatPageState extends ConsumerState<ChatPage> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  List<ChatMessage> _messages = [];
+  List<Message> _messages = [];
   String? _currentUserDid;
 
   @override
   void initState() {
     super.initState();
     _initializeUser();
-    _loadMessages();
-    _connectWebSocket();
   }
 
   void _initializeUser() {
@@ -49,40 +41,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     return widget.otherUserDisplayName ?? widget.otherUserHandle ?? 'Chat';
   }
 
-  Future<void> _loadMessages() async {
-    try {
-      final chatService = ref.read(chatServiceProvider.notifier);
-      final response = await chatService.getMessages(widget.otherUserDid);
-      setState(() {
-        _messages = response.messages;
-      });
-      _scrollToBottom();
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to load messages: ${e.toString()}')),
-        );
-      }
-    }
-  }
-
-  void _connectWebSocket() {
-    final wsProvider = ref.read(chatWebSocketProvider.notifier);
-    wsProvider.connect();
-
-    // Listen for new messages
-    ref.listen<ChatWebSocketState>(chatWebSocketProvider, (previous, next) {
-      if (next.recentMessages.isNotEmpty &&
-          (next.recentMessages.last.senderDid == widget.otherUserDid ||
-           next.recentMessages.last.receiverDid == widget.otherUserDid)) {
-        setState(() {
-          _messages = [..._messages, next.recentMessages.last];
-        });
-        _scrollToBottom();
-      }
-    });
-  }
-
   Future<void> _sendMessage() async {
     final content = _messageController.text.trim();
     if (content.isEmpty) return;
@@ -90,11 +48,11 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     _messageController.clear();
 
     try {
-      final chatService = ref.read(chatServiceProvider.notifier);
+      final chatService = ref.read(conversationProvider(widget.otherUserDid).notifier);
       final response = await chatService.sendMessage(content, widget.otherUserDid);
 
       // Add the sent message to local list
-      final sentMessage = ChatMessage(
+      final sentMessage = Message(
         id: response.messageId,
         message: content,
         senderDid: _currentUserDid!,
@@ -108,9 +66,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       _scrollToBottom();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send message: ${e.toString()}')),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send message: ${e.toString()}')));
       }
     }
   }
@@ -129,8 +85,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    final chatServiceState = ref.watch(chatServiceProvider);
-
+    final state = ref.watch(conversationProvider(widget.otherUserDid));
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -173,40 +128,35 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         children: [
           Container(height: 0.5, width: double.infinity, color: Theme.of(context).colorScheme.outline),
           Expanded(
-            child: chatServiceState.isLoading && _messages.isEmpty
-                ? const Center(child: CircularProgressIndicator())
-                : chatServiceState.error != null && _messages.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(FluentIcons.error_circle_24_regular, size: 48, color: Theme.of(context).colorScheme.error),
-                            const SizedBox(height: 16),
-                            Text(
-                              'Failed to load messages',
-                              style: TextStyle(color: Theme.of(context).colorScheme.error),
-                            ),
-                            const SizedBox(height: 8),
-                            ElevatedButton(
-                              onPressed: _loadMessages,
-                              child: const Text('Retry'),
-                            ),
-                          ],
-                        ),
-                      )
-                    : MessagesList(
-                        messages: _messages,
-                        scrollController: _scrollController,
-                        currentUserDid: _currentUserDid,
-                        otherUserHandle: widget.otherUserHandle,
-                        otherUserAvatar: widget.otherUserAvatar,
+            child: state.when(
+              data: (data) => MessagesList(
+                messages: data.messages,
+                scrollController: _scrollController,
+                currentUserDid: _currentUserDid,
+                otherUserHandle: widget.otherUserHandle,
+                otherUserAvatar: widget.otherUserAvatar,
+              ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(FluentIcons.error_circle_24_regular, size: 48, color: Theme.of(context).colorScheme.error),
+                      const SizedBox(height: 16),
+                      Text('Failed to load messages', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: () => ref.invalidate(conversationProvider(widget.otherUserDid)),
+                        child: const Text('Retry'),
                       ),
+                    ],
+                  ),
+                );
+              },
+            ),
           ),
-          MessageInput(
-            controller: _messageController,
-            onSend: _sendMessage,
-            isLoading: chatServiceState.isSending,
-          ),
+          MessageInput(controller: _messageController, onSend: _sendMessage),
         ],
       ),
     );
@@ -214,8 +164,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   @override
   void dispose() {
-    final wsProvider = ref.read(chatWebSocketProvider.notifier);
-    wsProvider.disconnect();
     _messageController.dispose();
     _scrollController.dispose();
     super.dispose();
@@ -275,7 +223,7 @@ class MessageBubble extends StatelessWidget {
     required this.otherUserHandle,
   });
 
-  final ChatMessage message;
+  final Message message;
   final bool isCurrentUser;
   final bool showAvatar;
   final String? otherUserAvatar;
@@ -293,11 +241,7 @@ class MessageBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isCurrentUser && showAvatar) ...[
-            SenderAvatar(
-              isCurrentUser: false,
-              otherUserAvatar: otherUserAvatar,
-              otherUserHandle: otherUserHandle,
-            ),
+            SenderAvatar(isCurrentUser: false, otherUserAvatar: otherUserAvatar, otherUserHandle: otherUserHandle),
             const SizedBox(width: 8),
           ] else if (!isCurrentUser) ...[
             const SizedBox(width: 40),
@@ -342,7 +286,7 @@ class MessagesList extends StatelessWidget {
     required this.otherUserAvatar,
   });
 
-  final List<ChatMessage> messages;
+  final List<Message> messages;
   final ScrollController scrollController;
   final String? currentUserDid;
   final String? otherUserHandle;
@@ -393,12 +337,7 @@ class MessagesList extends StatelessWidget {
 }
 
 class MessageInput extends StatelessWidget {
-  const MessageInput({
-    super.key,
-    required this.controller,
-    required this.onSend,
-    this.isLoading = false,
-  });
+  const MessageInput({super.key, required this.controller, required this.onSend, this.isLoading = false});
 
   final TextEditingController controller;
   final VoidCallback onSend;
@@ -440,10 +379,7 @@ class MessageInput extends StatelessWidget {
                     ? const SizedBox(
                         width: 16,
                         height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
+                        child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
                       )
                     : const Icon(FluentIcons.send_24_filled, color: Colors.white),
               ),

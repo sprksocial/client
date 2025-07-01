@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
+import 'package:sparksocial/src/core/network/atproto/atproto.dart' hide Embed;
+import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:sparksocial/src/features/messages/providers/conversation_state.dart';
 
@@ -16,6 +17,10 @@ class Conversation extends _$Conversation {
     final (cursor: newCursor, messages: messages) = await GetIt.I<MessagesRepository>().getConversation(otherDid);
     cursor = newCursor;
     return ConversationState(other, messages);
+  }
+
+  Future<void> sendMessage(String otherDid, String message, {Embed? embed}) async {
+    await GetIt.I<MessagesRepository>().sendMessage(otherDid, message, embed: embed);
   }
 
   // TODO: loadmore
