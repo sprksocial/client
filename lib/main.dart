@@ -28,8 +28,7 @@ void main() async {
 
   fvp.registerWith();
 
-  // Initialize dependencies
-  await configureDependencies();
+  await initServiceLocator();
 
   // Setup logging for production/debug
   _setupLogging();
