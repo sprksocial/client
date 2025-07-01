@@ -103,7 +103,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
       _dmAccessToken = await StorageManager.instance.secure.getString(StorageKeys.dmAccessToken);
 
-      _dmRefreshToken = await StorageManager.instance.secure.getString(StorageKeys.dmRefreshToken);
 
       _logger.i('Session loaded successfully for user: ${_session!.handle}');
     } catch (e) {
@@ -180,6 +179,8 @@ class AuthRepositoryImpl implements AuthRepository {
       _logger.d('Saving session for user: ${sessionData.handle}');
       final sessionJson = sessionData.toJson();
       await StorageManager.instance.secure.setString(StorageKeys.userSession, json.encode(sessionJson));
+      await StorageManager.instance.secure.setString(StorageKeys.dmAccessToken, _dmAccessToken ?? '');
+      await StorageManager.instance.secure.setString(StorageKeys.dmRefreshToken, _dmRefreshToken ?? '');
       _logger.d('Session saved successfully');
     } catch (e) {
       _logger.e('Failed to save session', error: e);
