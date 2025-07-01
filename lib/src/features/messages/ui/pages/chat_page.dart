@@ -53,7 +53,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
       // Add the sent message to local list
       final sentMessage = Message(
-        id: response.messageId,
+        id: response.id,
         message: content,
         senderDid: _currentUserDid!,
         receiverDid: widget.otherUserDid,

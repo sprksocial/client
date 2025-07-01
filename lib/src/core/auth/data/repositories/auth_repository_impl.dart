@@ -113,7 +113,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
   Future<bool> _refreshDMToken() async {
     final response = await http.post(
-      Uri.parse('${AppConfig.chatServiceUrl}/auth/refresh'),
+      Uri.parse('${AppConfig.messagesServiceUrl}/auth/refresh'),
       headers: {'Content-Type': 'application/json', 'Cookie': 'refresh_token=$refreshToken'},
     );
 
@@ -234,7 +234,7 @@ class AuthRepositoryImpl implements AuthRepository {
       // try login in the message service first
       try {
         final response = await http.post(
-          Uri.parse('${AppConfig.chatServiceUrl}/auth/login'),
+          Uri.parse('${AppConfig.messagesServiceUrl}/auth/login'),
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'did': did, 'handle': handle, 'password': password}),
         );
@@ -338,7 +338,7 @@ class AuthRepositoryImpl implements AuthRepository {
         _dmAccessToken = null;
         _dmRefreshToken = null;
         await http.post(
-          Uri.parse('${AppConfig.chatServiceUrl}/auth/logout'),
+          Uri.parse('${AppConfig.messagesServiceUrl}/auth/logout'),
           headers: {'Authorization': 'Bearer $_dmAccessToken', 'Cookie': 'refresh_token=$_dmRefreshToken'},
         );
         _logger.i('Logout successful');

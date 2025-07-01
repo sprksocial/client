@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository_impl.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
+import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository_impl.dart';
 import 'package:sparksocial/src/core/storage/cache/cache_manager_impl.dart';
 import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
