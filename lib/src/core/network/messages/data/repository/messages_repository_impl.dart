@@ -91,7 +91,14 @@ class MessagesRepositoryImpl implements MessagesRepository {
             .where((did) => did.startsWith('did:plc:'))
             .toList();
         // final profiles = await actorRepository.getProfiles(profileDids);
-        final profiles = profileDids.map((did) => actorRepository.getProfile(did)).toList();
+        final profiles = <Future<ProfileViewDetailed>>[];
+        for (var did in profileDids) {
+          try {
+            profiles.add(actorRepository.getProfile(did));
+          } catch (e) {
+            //
+          }
+        }
         final profileFutures = await Future.wait(profiles);
         final conversationsList = <(ProfileViewDetailed, Message)>[];
         profileFutures.asMap().forEach((index, profile) {
