@@ -54,7 +54,7 @@ Future<void> initServiceLocator() async {
   sl.registerSingleton<AuthRepository>(AuthRepositoryImpl());
 
   // Register Chat dependencies
-  sl.registerSingleton<MessagesRepository>(MessagesRepositoryImpl());
+  sl.registerSingleton<MessagesRepository>(MessagesRepositoryImpl(sl<AuthRepository>()));
 
   // Register SprkRepository with its interface
   sl.registerSingleton<SprkRepository>(SprkRepositoryImpl(sl<AuthRepository>()));

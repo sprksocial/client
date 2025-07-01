@@ -7,16 +7,15 @@ import 'messages_repository.dart';
 import '../models/message_models.dart';
 
 class MessagesRepositoryImpl implements MessagesRepository {
-  final http.Client httpClient;
   final AuthRepository _authRepository;
 
-  MessagesRepositoryImpl(this.httpClient, this._authRepository);
+  MessagesRepositoryImpl(this._authRepository);
 
   String? get accessToken => _authRepository.dmAccessToken;
 
   Map<String, String> get _headers => {
     'Content-Type': 'application/json',
-    if (accessToken!.isNotEmpty) 'Authorization': 'Bearer $accessToken',
+    if (accessToken?.isNotEmpty == true) 'Authorization': 'Bearer $accessToken',
   };
 
   @override
@@ -30,7 +29,7 @@ class MessagesRepositoryImpl implements MessagesRepository {
 
       final uri = Uri.parse('${AppConfig.messagesServiceUrl}/conversation').replace(queryParameters: queryParameters);
 
-      final response = await httpClient.get(uri, headers: _headers);
+      final response = await http.get(uri, headers: _headers);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -60,7 +59,7 @@ class MessagesRepositoryImpl implements MessagesRepository {
 
       final uri = Uri.parse('${AppConfig.messagesServiceUrl}/conversations').replace(queryParameters: queryParameters);
 
-      final response = await httpClient.get(uri, headers: _headers);
+      final response = await http.get(uri, headers: _headers);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
@@ -90,7 +89,7 @@ class MessagesRepositoryImpl implements MessagesRepository {
 
       final uri = Uri.parse('${AppConfig.messagesServiceUrl}/send');
 
-      final response = await httpClient.post(uri, headers: _headers, body: jsonEncode(requestBody));
+      final response = await http.post(uri, headers: _headers, body: jsonEncode(requestBody));
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
