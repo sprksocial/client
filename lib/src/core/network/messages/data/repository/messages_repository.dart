@@ -1,4 +1,4 @@
-import 'package:atproto_core/atproto_core.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart' hide Embed;
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 
 /// Interface for Messages-related API endpoints
@@ -14,7 +14,7 @@ abstract class MessagesRepository {
   ///
   /// [cursor] Optional cursor for pagination (eventually)
   /// [limit] Optional limit for number of messages to fetch (eventually)
-  Future<({List<Message> messages, String? cursor})> getAllConversations({String? cursor, int? limit});
+  Future<({List<(ProfileViewDetailed, Message)> messages, String? cursor})> getAllConversations({String? cursor, int? limit});
 
   /// Send a message to a user
   /// [did] The DID of the user to send the message to
