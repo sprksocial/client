@@ -38,7 +38,6 @@ class MessagesRepositoryImpl implements MessagesRepository {
   @override
   Future<({List<Message> messages, String? cursor})> getConversation(String did, {String? cursor, int? limit = 30}) async {
     try {
-      await _refreshIfExpired();
       final queryParameters = <String, String>{
         'with': did,
         if (cursor != null) 'cursor': cursor,
@@ -55,6 +54,8 @@ class MessagesRepositoryImpl implements MessagesRepository {
 
         return (messages: messagesList, cursor: data['cursor'] as String?);
       } else if (response.statusCode == 401) {
+        await _refreshIfExpired();
+
         throw Exception('Não autorizado, vê aí se o token tá valido memo');
       } else {
         throw Exception('Erro na requisição: ${response.statusCode} - ${response.body}');
