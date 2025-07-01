@@ -13,8 +13,6 @@ import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 
 part 'profile_feed_provider.g.dart';
 
-typedef _FeedSourceFetcher = Future<({List<FeedViewPost> posts, String? cursor})> Function(String? cursor);
-
 @riverpod
 class ProfileFeed extends _$ProfileFeed {
   late final FeedRepository _feedRepository;
@@ -122,7 +120,7 @@ class ProfileFeed extends _$ProfileFeed {
   }
 
   Future<({List<FeedViewPost> posts, String? cursor})> _fetchFromSource(
-    _FeedSourceFetcher fetcher,
+    Future<({List<FeedViewPost> posts, String? cursor})> Function(String? cursor) fetcher,
     String? cursor,
     String sourceName,
   ) async {
