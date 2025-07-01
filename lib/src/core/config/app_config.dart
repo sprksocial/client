@@ -34,9 +34,6 @@ class AppConfig {
   /// Checks if the app is running in production mode.
   static bool get isProduction => environment == 'production';
 
-  /// Base URL for the chat service (Socket.io server).
-  static String get chatServiceUrl => _getStringValue('CHAT_SERVICE_URL', 'http://localhost:3000');
-
   /// Helper method to retrieve string values from environment with defaults
   static String _getStringValue(String key, String defaultValue) {
     return dotenv.env[key] ?? defaultValue;
