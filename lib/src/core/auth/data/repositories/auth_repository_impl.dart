@@ -77,6 +77,32 @@ class AuthRepositoryImpl implements AuthRepository {
     return DateTime.now().isAfter(token.exp.subtract(const Duration(minutes: 5)));
   }
 
+  /// Logs in the message service
+  Future<void> loginMessageService() async {
+    try {
+      _logger.i('Logging in to message service');
+      final response = await http.post(
+        Uri.parse('${AppConfig.messagesServiceUrl}/auth/login'),
+        headers: {'Content-Type': 'application/json', 'did': _session!.did, 'jwt': _session!.accessTokenJwt.toString()},
+        body: jsonEncode({'accessJwt': _session!.accessTokenJwt, 'refreshJwt': _session!.refreshJwt}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        _dmAccessToken = data['access_token'];
+        _dmRefreshToken = data['refresh_token'];
+        await StorageManager.instance.secure.setString(StorageKeys.dmAccessToken, _dmAccessToken!);
+        await StorageManager.instance.secure.setString(StorageKeys.dmRefreshToken, _dmRefreshToken!);
+        _logger.i('Logged in to message service successfully');
+      } else {
+        throw Exception('Failed to login to message service: ${response.statusCode}');
+      }
+    } catch (e) {
+      _logger.e('Failed to login to message service', error: e);
+      rethrow;
+    }
+  }
+
   Future<void> _loadSavedSession() async {
     try {
       _logger.d('Loading saved session');
@@ -102,7 +128,37 @@ class AuthRepositoryImpl implements AuthRepository {
       _atProto = ATProto.fromSession(_session!);
 
       _dmAccessToken = await StorageManager.instance.secure.getString(StorageKeys.dmAccessToken);
+      _dmRefreshToken = await StorageManager.instance.secure.getString(StorageKeys.dmRefreshToken);
+      if (_dmAccessToken == null) {
+        _logger.w('DM access token not found, refreshing DM token');
+        if (!await _refreshDMToken()) {
+          _logger.e('Failed to refresh DM token, trying to login again');
+          await loginMessageService();
+        }
+      }
 
+      try {
+        final response = await http.get(
+          Uri.parse('${AppConfig.messagesServiceUrl}/auth/session'),
+          headers: {'Authorization': 'Bearer $_dmAccessToken'},
+        );
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          _dmAccessToken = data['access_token'];
+          _dmRefreshToken = data['refresh_token'];
+        } else {
+          if (!await _refreshDMToken()) {
+            _logger.e('Failed to refresh DM token, trying to login again');
+            await loginMessageService();
+          }
+        }
+      } catch (e) {
+        if (!await _refreshDMToken()) {
+          _logger.e('Failed to refresh DM token, trying to login again');
+          await loginMessageService();
+        }
+      }
 
       _logger.i('Session loaded successfully for user: ${_session!.handle}');
     } catch (e) {
@@ -231,28 +287,6 @@ class AuthRepositoryImpl implements AuthRepository {
       String pdsDomain = Uri.parse(pdsUrl).host;
       _logger.d('Using PDS domain: $pdsDomain');
 
-      // try login in the message service first
-      try {
-        final response = await http.post(
-          Uri.parse('${AppConfig.messagesServiceUrl}/auth/login'),
-          headers: {'Content-Type': 'application/json'},
-          body: jsonEncode({'did': did, 'handle': handle, 'password': password}),
-        );
-        if (response.statusCode == 200) {
-          final data = jsonDecode(response.body);
-          _dmAccessToken = data['accessJwt'];
-          _dmRefreshToken = data['refreshJwt'];
-          await StorageManager.instance.secure.setString(StorageKeys.dmAccessToken, _dmAccessToken!);
-          await StorageManager.instance.secure.setString(StorageKeys.dmRefreshToken, _dmRefreshToken!);
-          _logger.d('Logged in to message service successfully');
-        } else {
-          throw Exception('Failed to login in message service: ${response.statusCode}');
-        }
-      } catch (e) {
-        _logger.e('Failed to login in message service', error: e);
-        throw Exception('Failed to login in message service');
-      }
-
       try {
         _logger.d('Creating session');
         final session = await createSession(
@@ -271,6 +305,7 @@ class AuthRepositoryImpl implements AuthRepository {
         _atProto = ATProto.fromSession(_session!);
         await _saveSession(_session!);
         _logger.i('Login successful for user: $handle');
+        await loginMessageService();
 
         return LoginResult.success();
       } catch (e) {
