@@ -1,15 +1,21 @@
 import 'dart:convert';
+import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/core/config/app_config.dart';
+import 'package:sparksocial/src/core/network/atproto/atproto.dart' hide Embed;
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart' hide Embed;
+import 'package:sparksocial/src/core/utils/utils.dart';
 import 'package:sparksocial/src/features/auth/auth.dart';
 import 'messages_repository.dart';
 import '../models/message_models.dart';
 
 class MessagesRepositoryImpl implements MessagesRepository {
   final AuthRepository _authRepository;
+  late final SparkLogger _logger;
 
-  MessagesRepositoryImpl(this._authRepository);
+  MessagesRepositoryImpl(this._authRepository) {
+    _logger = GetIt.I<LogService>().getLogger('MessagesRepository');
+  }
 
   String? get accessToken => _authRepository.dmAccessToken;
 
@@ -18,9 +24,21 @@ class MessagesRepositoryImpl implements MessagesRepository {
     if (accessToken?.isNotEmpty == true) 'Authorization': 'Bearer $accessToken',
   };
 
+  Future<void> _refreshIfExpired() async {
+    if (_authRepository.isAuthenticated && _authRepository.dmAccessToken == null) {
+      _logger.w('DM access token is null, refreshing...');
+      final refreshed = await _authRepository.refreshDMToken();
+      if (!refreshed) {
+        _logger.e('Failed to refresh DM token');
+        await _authRepository.loginMessageService();
+      }
+    }
+  }
+
   @override
   Future<({List<Message> messages, String? cursor})> getConversation(String did, {String? cursor, int? limit = 30}) async {
     try {
+      await _refreshIfExpired();
       final queryParameters = <String, String>{
         'with': did,
         if (cursor != null) 'cursor': cursor,
@@ -52,20 +70,33 @@ class MessagesRepositoryImpl implements MessagesRepository {
     int? limit,
   }) async {
     try {
+      await _refreshIfExpired();
+      final actorRepository = GetIt.I<SprkRepository>().actor;
       final queryParameters = <String, String>{
         if (cursor != null) 'cursor': cursor,
         if (limit != null) 'limit': limit.toString(),
       };
+      _logger.d('Fetching all conversations with headers: $_headers');
 
       final uri = Uri.parse('${AppConfig.messagesServiceUrl}/messages/conversations').replace(queryParameters: queryParameters);
 
       final response = await http.get(uri, headers: _headers);
 
       if (response.statusCode == 200) {
+        final userDid = _authRepository.session?.did;
         final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final conversationsList = (data['conversations'] as List)
-            .map((json) => (ProfileViewDetailed.fromJson(json['profile']), Message.fromJson(json['lastMessage'])))
+        final messages = (data['conversations'] as List).map((json) => Message.fromJson(json)).toList();
+        final profileDids = (data['conversations'] as List)
+            .map((json) => json['sender_did'] != userDid ? json['sender_did'] as String : json['receiver_did'] as String)
+            .where((did) => did.startsWith('did:plc:'))
             .toList();
+        // final profiles = await actorRepository.getProfiles(profileDids);
+        final profiles = profileDids.map((did) => actorRepository.getProfile(did)).toList();
+        final profileFutures = await Future.wait(profiles);
+        final conversationsList = <(ProfileViewDetailed, Message)>[];
+        profileFutures.asMap().forEach((index, profile) {
+          conversationsList.add((profile, messages[index]));
+        });
 
         return (messages: conversationsList, cursor: data['cursor'] as String?);
       } else if (response.statusCode == 401) {
@@ -81,6 +112,7 @@ class MessagesRepositoryImpl implements MessagesRepository {
   @override
   Future<Message> sendMessage(String did, String message, {Embed? embed}) async {
     try {
+      await _refreshIfExpired();
       final requestBody = <String, dynamic>{
         'receiver_did': did,
         'message': message,
@@ -90,10 +122,12 @@ class MessagesRepositoryImpl implements MessagesRepository {
       final uri = Uri.parse('${AppConfig.messagesServiceUrl}/messages/send');
 
       final response = await http.post(uri, headers: _headers, body: jsonEncode(requestBody));
+      _logger.d('Response status code: ${response.statusCode}');
+      _logger.d('Response body: ${response.body}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
-        return Message.fromJson(data);
+        return Message.fromJson(data['message']);
       } else if (response.statusCode == 401) {
         throw Exception('Não autorizado, vê aí se o token tá valido memo');
       } else {

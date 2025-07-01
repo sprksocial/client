@@ -20,7 +20,13 @@ class Conversation extends _$Conversation {
   }
 
   Future<Message> sendMessage(String otherDid, String message, {Embed? embed}) async {
-    return await GetIt.I<MessagesRepository>().sendMessage(otherDid, message, embed: embed);
+    final other = state.value?.other ?? await GetIt.I<SprkRepository>().actor.getProfile(otherDid);
+    final messages = state.value?.messages ?? [];
+    state = const AsyncLoading();
+    state = AsyncValue.data(
+      ConversationState(other, [...messages, await GetIt.I<MessagesRepository>().sendMessage(otherDid, message, embed: embed)]),
+    );
+    return state.value!.messages.last;
   }
 
   // TODO: loadmore

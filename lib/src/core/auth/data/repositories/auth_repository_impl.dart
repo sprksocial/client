@@ -78,6 +78,7 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   /// Logs in the message service
+  @override
   Future<void> loginMessageService() async {
     try {
       _logger.i('Logging in to message service');
@@ -134,7 +135,7 @@ class AuthRepositoryImpl implements AuthRepository {
       try {
         if (_dmAccessToken == null) {
           _logger.w('DM access token not found, refreshing DM token');
-          if (!await _refreshDMToken()) {
+          if (!await refreshDMToken()) {
             throw Exception('Failed to refresh DM token');
           }
         }
@@ -149,12 +150,12 @@ class AuthRepositoryImpl implements AuthRepository {
           _dmAccessToken = data['access_token'];
           _dmRefreshToken = data['refresh_token'];
         } else {
-          if (!await _refreshDMToken()) {
+          if (!await refreshDMToken()) {
             throw Exception('Failed to refresh DM token');
           }
         }
       } catch (e) {
-        if (!await _refreshDMToken()) {
+        if (!await refreshDMToken()) {
           _logger.e('Failed to refresh DM token, trying to login again');
           await loginMessageService();
         }
@@ -167,7 +168,8 @@ class AuthRepositoryImpl implements AuthRepository {
     }
   }
 
-  Future<bool> _refreshDMToken() async {
+  @override
+  Future<bool> refreshDMToken() async {
     _logger.i('Refreshing DM token $_dmRefreshToken');
     final response = await http.post(
       Uri.parse('${AppConfig.messagesServiceUrl}/auth/refresh'),
@@ -219,7 +221,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       _session = response.data;
 
-      await _refreshDMToken();
+      await refreshDMToken();
 
       await _saveSession(_session!);
       _atProto = ATProto.fromSession(_session!);

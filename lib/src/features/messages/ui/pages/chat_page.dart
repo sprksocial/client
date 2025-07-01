@@ -49,7 +49,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
     try {
       final chatService = ref.read(conversationProvider(widget.otherUserDid).notifier);
-      final response = await chatService.sendMessage(content, widget.otherUserDid);
+      final response = await chatService.sendMessage(widget.otherUserDid, content);
 
       // Add the sent message to local list
       final sentMessage = Message(

@@ -8,6 +8,11 @@ abstract class ActorRepository {
   /// [did] The DID of the profile to get
   Future<ProfileViewDetailed> getProfile(String did);
 
+  /// Get multiple profiles by their DIDs
+  /// 
+  /// [dids] A list of DIDs to fetch profiles for
+  Future<List<ProfileViewDetailed>> getProfiles(List<String> dids);
+
   /// Search actors by query string.
   ///
   /// [query] The search query.

@@ -21,11 +21,11 @@ class Message with _$Message {
   const Message._();
   @JsonSerializable(explicitToJson: true)
   const factory Message({
-    required String id,
-    required String senderDid,
-    required String receiverDid,
+    required int id,
+    @JsonKey(name: 'sender_did') required String senderDid,
+    @JsonKey(name: 'receiver_did') required String receiverDid,
     required String message,
-    required DateTime timestamp,
+    @JsonKey(name: 'timestampz') required DateTime timestamp,
     List<Embed>? embed,
   }) = _Message;
 
