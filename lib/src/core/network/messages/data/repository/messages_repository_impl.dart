@@ -27,7 +27,7 @@ class MessagesRepositoryImpl implements MessagesRepository {
         if (limit != null) 'limit': limit.toString(),
       };
 
-      final uri = Uri.parse('${AppConfig.messagesServiceUrl}/conversation').replace(queryParameters: queryParameters);
+      final uri = Uri.parse('${AppConfig.messagesServiceUrl}/messages/conversation').replace(queryParameters: queryParameters);
 
       final response = await http.get(uri, headers: _headers);
 
@@ -57,7 +57,7 @@ class MessagesRepositoryImpl implements MessagesRepository {
         if (limit != null) 'limit': limit.toString(),
       };
 
-      final uri = Uri.parse('${AppConfig.messagesServiceUrl}/conversations').replace(queryParameters: queryParameters);
+      final uri = Uri.parse('${AppConfig.messagesServiceUrl}/messages/conversations').replace(queryParameters: queryParameters);
 
       final response = await http.get(uri, headers: _headers);
 
@@ -87,7 +87,7 @@ class MessagesRepositoryImpl implements MessagesRepository {
         if (embed != null && embed.isNotEmpty) 'embed': [embed.toJson()],
       };
 
-      final uri = Uri.parse('${AppConfig.messagesServiceUrl}/send');
+      final uri = Uri.parse('${AppConfig.messagesServiceUrl}/messages/send');
 
       final response = await http.post(uri, headers: _headers, body: jsonEncode(requestBody));
 

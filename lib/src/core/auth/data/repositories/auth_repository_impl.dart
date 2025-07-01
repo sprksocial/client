@@ -82,15 +82,16 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       _logger.i('Logging in to message service');
       final response = await http.post(
-        Uri.parse('${AppConfig.messagesServiceUrl}/auth/login'),
-        headers: {'Content-Type': 'application/json', 'did': _session!.did, 'jwt': _session!.accessTokenJwt.toString()},
-        body: jsonEncode({'accessJwt': _session!.accessTokenJwt, 'refreshJwt': _session!.refreshJwt}),
+        Uri.parse('${AppConfig.messagesServiceUrl}/auth/login-jwt'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'did': _session!.did, 'jwt': _session!.accessJwt}),
       );
+      _logger.d('Message service login response status: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        _dmAccessToken = data['access_token'];
-        _dmRefreshToken = data['refresh_token'];
+        _dmAccessToken = data['accessJwt'];
+        _dmRefreshToken = data['refreshJwt'];
         await StorageManager.instance.secure.setString(StorageKeys.dmAccessToken, _dmAccessToken!);
         await StorageManager.instance.secure.setString(StorageKeys.dmRefreshToken, _dmRefreshToken!);
         _logger.i('Logged in to message service successfully');
@@ -129,19 +130,19 @@ class AuthRepositoryImpl implements AuthRepository {
 
       _dmAccessToken = await StorageManager.instance.secure.getString(StorageKeys.dmAccessToken);
       _dmRefreshToken = await StorageManager.instance.secure.getString(StorageKeys.dmRefreshToken);
-      if (_dmAccessToken == null) {
-        _logger.w('DM access token not found, refreshing DM token');
-        if (!await _refreshDMToken()) {
-          _logger.e('Failed to refresh DM token, trying to login again');
-          await loginMessageService();
-        }
-      }
 
       try {
+        if (_dmAccessToken == null) {
+          _logger.w('DM access token not found, refreshing DM token');
+          if (!await _refreshDMToken()) {
+            throw Exception('Failed to refresh DM token');
+          }
+        }
         final response = await http.get(
           Uri.parse('${AppConfig.messagesServiceUrl}/auth/session'),
           headers: {'Authorization': 'Bearer $_dmAccessToken'},
         );
+        _logger.d('DM session response status: ${response.statusCode}');
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
@@ -149,8 +150,7 @@ class AuthRepositoryImpl implements AuthRepository {
           _dmRefreshToken = data['refresh_token'];
         } else {
           if (!await _refreshDMToken()) {
-            _logger.e('Failed to refresh DM token, trying to login again');
-            await loginMessageService();
+            throw Exception('Failed to refresh DM token');
           }
         }
       } catch (e) {
@@ -168,9 +168,10 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   Future<bool> _refreshDMToken() async {
+    _logger.i('Refreshing DM token $_dmRefreshToken');
     final response = await http.post(
       Uri.parse('${AppConfig.messagesServiceUrl}/auth/refresh'),
-      headers: {'Content-Type': 'application/json', 'Cookie': 'refresh_token=$refreshToken'},
+      headers: {'Content-Type': 'application/json', 'Cookie': 'refresh_token=$_dmRefreshToken'},
     );
 
     if (response.statusCode == 200) {
@@ -181,6 +182,7 @@ class AuthRepositoryImpl implements AuthRepository {
       await StorageManager.instance.secure.setString(StorageKeys.dmRefreshToken, data['refresh_token']);
       return true;
     }
+    _logger.e('Failed to refresh DM token: ${response.statusCode} - ${response.body}');
     return false;
   }
 
