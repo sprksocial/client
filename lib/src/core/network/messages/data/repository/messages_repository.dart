@@ -22,4 +22,5 @@ abstract class MessagesRepository {
   /// [embed] Optional embed data to include with the message
   ///
   Future<void> sendMessage(String did, String message, {Embed? embed});
+  // tem que retornar um future message
 }
