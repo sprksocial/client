@@ -43,6 +43,7 @@ class MessagesRepositoryImpl implements MessagesRepository {
         if (cursor != null) 'cursor': cursor,
         if (limit != null) 'limit': limit.toString(),
       };
+      await _refreshIfExpired();
 
       final uri = Uri.parse('${AppConfig.messagesServiceUrl}/messages/conversation').replace(queryParameters: queryParameters);
 
@@ -61,7 +62,11 @@ class MessagesRepositoryImpl implements MessagesRepository {
         throw Exception('Erro na requisição: ${response.statusCode} - ${response.body}');
       }
     } catch (e) {
-      throw Exception('Erro ao buscar conversa: $e');
+      if (e.toString().contains('valido')) {
+        await _refreshIfExpired();
+        return getConversation(did, cursor: cursor, limit: limit); // FUCK IT WE BALL
+      }
+      rethrow;
     }
   }
 
