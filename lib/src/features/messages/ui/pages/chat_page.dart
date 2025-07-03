@@ -60,7 +60,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       final response = await chatService.submitMessage(
         otherDid: widget.otherUserDid,
         message: content,
-        embeds: state.selectedImages.isNotEmpty ? state.selectedImages.map((e) => Embed(url: e.path)).toList() : null,
+        embeds: state.selectedImages,
       );
 
       // Add the sent message to local list

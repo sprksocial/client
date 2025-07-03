@@ -1,8 +1,9 @@
-import 'package:atproto_core/atproto_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mime/mime.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sparksocial/src/core/network/atproto/atproto.dart' hide Embed;
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/features/messages/providers/conversation_provider.dart';
@@ -89,11 +90,48 @@ class EmbedInput extends _$EmbedInput {
   Future<Message> submitMessage({
     required String otherDid,
     required String message, // this should be optional
-    List<Embed>? embeds, // this should be a single embed or null
+    List<XFile>? embeds,
+    List<String>? linkEmbeds,
   }) async {
     if (!state.canSubmit || state.isPosting) throw Exception('Cannot submit message: either not ready or already posting');
 
+    final feedRepository = GetIt.instance.get<SprkRepository>().feed;
     state = state.copyWith(isPosting: true);
+    //final uploadedEmbeds = <Embed>[];
+
+    for (var embed in embeds ?? []) {
+      if (embed.path.isEmpty) {
+        _logger.w('Skipping empty embed path');
+        continue;
+      } else {
+        final type = lookupMimeType(embed.path);
+        if (type == null) {
+          _logger.w('Could not determine MIME type for ${embed.path}');
+          continue;
+        } else {
+          switch (type.split('/').first) {
+            case 'image':
+              // Handle image embeds
+              _logger.i('Adding image embed: ${embed.path}');
+              final images = await feedRepository.uploadImages(imageFiles: [embed]);
+              // Convert images to Embed
+              // turns out file embeds are not real and it's just links for now
+              break;
+            case 'video':
+              // Handle video embeds
+              _logger.i('Adding video embed: ${embed.path}');
+              break;
+            // case 'audio':
+            //   // Handle audio embeds
+            //   _logger.i('Adding audio embed: ${embed.path}');
+            //   break;
+            default:
+              _logger.w('Unsupported embed type: $type for ${embed.path}');
+              continue; // Skip unsupported types
+          }
+        }
+      }
+    }
 
     try {
       final response = await ref.read(conversationProvider(did).notifier).sendMessage(otherDid, message, embed: embeds);
