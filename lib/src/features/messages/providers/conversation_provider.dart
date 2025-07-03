@@ -19,14 +19,24 @@ class Conversation extends _$Conversation {
     return ConversationState(other, messages);
   }
 
-  Future<Message> sendMessage(String otherDid, String message, {List<Embed>? embed}) async {
+  Future<Message> sendMessage(String otherDid, String message, {List<Embed>? embed, String? currentUserDid}) async {
     final other = state.value?.other ?? await GetIt.I<SprkRepository>().actor.getProfile(otherDid);
     final messages = state.value?.messages ?? [];
-    state = const AsyncLoading();
-    state = AsyncValue.data(
-      ConversationState(other, [...messages, await GetIt.I<MessagesRepository>().sendMessage(otherDid, message, embed: embed)]),
-    );
-    return state.value!.messages.last;
+    
+    try {
+      // Send message to server and get the actual result
+      final sentMessage = await GetIt.I<MessagesRepository>().sendMessage(otherDid, message, embed: embed);
+      
+      // Update state with the new message
+      state = AsyncValue.data(
+        ConversationState(other, [...messages, sentMessage]),
+      );
+      
+      return sentMessage;
+    } catch (e) {
+      // If sending fails, keep the current state and rethrow
+      rethrow;
+    }
   }
 
   Future<void> checkForNewMessages() async {

@@ -18,6 +18,20 @@ class MessageBubble extends StatelessWidget {
   final bool showAvatar;
   final String? otherUserAvatar;
   final String? otherUserHandle;
+  String _removeLinksFromText(String text) {
+    // Regex pattern to match URLs
+    final urlPattern = RegExp(
+      r'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)',
+      caseSensitive: false,
+    );
+    
+    String cleanedText = text.replaceAll(urlPattern, '').trim();
+    
+    // Clean up multiple spaces and newlines that might be left after URL removal
+    cleanedText = cleanedText.replaceAll(RegExp(r'\s+'), ' ').trim();
+    
+    return cleanedText;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,28 +51,36 @@ class MessageBubble extends StatelessWidget {
             const SizedBox(width: 40),
           ],
           Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: isCurrentUser
-                    ? AppColors.primary
-                    : isDarkMode
-                    ? Colors.grey.shade800
-                    : Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                message.message,
-                style: TextStyle(
+            child: () {
+              final cleanedMessage = _removeLinksFromText(message.message);
+              // Only show the bubble if there's text content after removing links
+              if (cleanedMessage.isEmpty) {
+                return const SizedBox.shrink();
+              }
+              
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
                   color: isCurrentUser
-                      ? Colors.white
+                      ? AppColors.primary
                       : isDarkMode
-                      ? Colors.white
-                      : Colors.black,
-                  fontSize: 16,
+                      ? Colors.grey.shade800
+                      : Colors.grey.shade200,
+                  borderRadius: BorderRadius.circular(20),
                 ),
-              ),
-            ),
+                child: Text(
+                  cleanedMessage,
+                  style: TextStyle(
+                    color: isCurrentUser
+                        ? Colors.white
+                        : isDarkMode
+                        ? Colors.white
+                        : Colors.black,
+                    fontSize: 16,
+                  ),
+                ),
+              );
+            }(),
           ),
         ],
       ),

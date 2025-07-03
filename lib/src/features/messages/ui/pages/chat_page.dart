@@ -31,8 +31,8 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   final TextEditingController _messageController = TextEditingController();
   final ImagePicker _imagePicker = ImagePicker();
   final ScrollController _scrollController = ScrollController();
-  List<Message> _messages = [];
   String? _currentUserDid;
+
   @override
   void initState() {
     super.initState();
@@ -48,46 +48,38 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   }
 
   List<String> _extractLinks(String text) {
-    final urlRegex = RegExp(r"(?:(?:https?|ftp)://)?[\w/\-?=%.]+\.[\w/\-?=%.]+");
+    final urlRegex = RegExp(
+      r'https?://(?:www\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z]+)+\S*|www\.[a-zA-Z0-9-]+(?:\.[a-zA-Z]+)+\S*',
+      caseSensitive: false,
+      multiLine: false,
+    );
     return urlRegex.allMatches(text).map((match) => match.group(0)!).toList();
   }
 
   Future<void> _sendMessage() async {
-
-    final content = _messageController.text.trim();
+    String content = _messageController.text.trim();
     final links = _extractLinks(content);
+
     // remove links from content
     for (final link in links) {
-      content.replaceAll(link, '');
+      content = content.replaceAll(link, '');
     }
+    content = content.trim(); // Remove extra whitespace after link removal
+
     final linkEmbeds = <Embed>[];
     for (final link in links) {
       linkEmbeds.add(Embed(type: 'link', url: link, preview: link));
     }
-    if (content.isEmpty) return;
+
+    if (content.isEmpty && linkEmbeds.isEmpty) return;
 
     _messageController.clear();
 
     try {
       final chatService = ref.read(conversationProvider(widget.otherUserDid).notifier);
-      final response = await chatService.sendMessage(
-        widget.otherUserDid,
-        content,
-        embed: linkEmbeds,
-      );
+      await chatService.sendMessage(widget.otherUserDid, content, embed: linkEmbeds.isNotEmpty ? linkEmbeds : null);
 
-      // Add the sent message to local list
-      final sentMessage = Message(
-        id: response.id,
-        message: content,
-        senderDid: _currentUserDid!,
-        receiverDid: widget.otherUserDid,
-        timestamp: response.timestamp,
-      );
-
-      setState(() {
-        _messages = [..._messages, sentMessage];
-      });
+      // No need to manage local state since the provider handles it
       _scrollToBottom();
     } catch (e) {
       if (mounted) {

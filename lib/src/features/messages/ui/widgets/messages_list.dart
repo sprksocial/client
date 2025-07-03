@@ -2,9 +2,9 @@ import 'package:any_link_preview/any_link_preview.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/core/widgets/image_content.dart';
 import 'package:sparksocial/src/core/widgets/video_content.dart';
 import 'package:sparksocial/src/features/messages/ui/widgets/message_bubble.dart';
@@ -20,12 +20,148 @@ class MessagesList extends StatelessWidget {
     required this.otherUserAvatar,
   });
 
-
   final List<Message> messages;
   final ScrollController scrollController;
   final String? currentUserDid;
   final String? otherUserHandle;
   final String? otherUserAvatar;
+
+  Future<void> logLinkMetadata(List<String> links) async {
+    if (links.isEmpty) return;
+    for (var link in links) {
+      try {
+        final metadata = await AnyLinkPreview.getMetadata(link: link);
+        GetIt.I<LogService>().getLogger('MessagesList').i('Link metadata for $link: $metadata');
+      } catch (e) {
+        GetIt.I<LogService>().getLogger('MessagesList').e('Failed to get metadata for link $link: $e');
+      }
+    }
+  }
+
+  Future<bool> validateImage(String imageUrl) async {
+    http.Response res;
+    try {
+      res = await http.get(Uri.parse(imageUrl));
+    } catch (e) {
+      return false;
+    }
+    if (res.statusCode != 200) return false;
+    Map<String, dynamic> data = res.headers;
+    return checkIfImage(data['content-type']);
+  }
+
+  bool checkIfImage(String param) {
+    if (param == 'image/jpeg' ||
+        param == 'image/png' ||
+        param == 'image/gif' ||
+        param == 'image/webp' ||
+        param == 'image/bmp' ||
+        param == 'image/svg+xml') {
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> validateVideo(String videoUrl) async {
+    http.Response res;
+    try {
+      res = await http.get(Uri.parse(videoUrl));
+    } catch (e) {
+      return false;
+    }
+    if (res.statusCode != 200) return false;
+    Map<String, dynamic> data = res.headers;
+    return checkIfVideo(data['content-type']);
+  }
+
+  bool checkIfVideo(String param) {
+    if (param == 'video/mp4' ||
+        param == 'video/webm' ||
+        param == 'video/ogg' ||
+        param == 'video/avi' ||
+        param == 'video/mov' ||
+        param == 'video/quicktime') {
+      return true;
+    }
+    return false;
+  }
+
+  Future<List<Widget>?> validateAndCreateEmbeds(List<Embed>? embed) async {
+    List<Widget>? embeds;
+
+    if (embed?.isNotEmpty ?? false) {
+      List<String> images = [];
+      List<String> videos = [];
+      List<String> links = [];
+      for (final embed in embed!) {
+        if (embed.type == 'image') {
+          if (embed.url?.isNotEmpty ?? false) {
+            images.add(embed.url!);
+          }
+        } else if (embed.type == 'video') {
+          if (embed.url?.isNotEmpty ?? false) {
+            videos.add(embed.url!);
+          }
+        } else if (embed.type == 'link') {
+          if (embed.url?.isNotEmpty ?? false) {
+            links.add(embed.url!);
+          }
+        } // eventually audios perhaps..
+      }
+
+      // Check links for images/videos and reclassify them
+      List<String> linksToRemove = [];
+      for (var link in links) {
+        if (link.isEmpty) continue;
+        if (Uri.tryParse(link)?.hasScheme != true) continue; // Skip invalid links
+
+        if (await validateImage(link)) {
+          // If the link is a valid image, add it to images
+          images.add(link);
+          linksToRemove.add(link); // Mark for removal from links
+        } else if (await validateVideo(link)) {
+          // If the link is a valid video, add it to videos
+          videos.add(link);
+          linksToRemove.add(link); // Mark for removal from links
+        }
+      }
+
+      // Remove reclassified links
+      for (var linkToRemove in linksToRemove) {
+        links.remove(linkToRemove);
+      }
+
+      if (images.isNotEmpty) {
+        embeds ??= [];
+        embeds.add(ImageContent(imageUrls: images, borderRadius: BorderRadius.circular(12), thumbnailSize: 200));
+      }
+      if (videos.isNotEmpty) {
+        embeds ??= [];
+        for (var videoUrl in videos) {
+          embeds.add(VideoContent(borderRadius: BorderRadius.circular(12), videoUrl: videoUrl));
+        }
+      }
+      if (links.isNotEmpty) {
+        embeds ??= [];
+        GetIt.I<LogService>().getLogger('MessagesList').i('Links found in message: $links');
+        //logLinkMetadata(links);
+        embeds.add(
+          ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: links.length,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: _LinkPreview(url: links[index]),
+              );
+            },
+          ),
+        );
+      }
+    }
+    return embeds;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,73 +195,6 @@ class MessagesList extends StatelessWidget {
         final isCurrentUser = message.senderDid == currentUserDid;
         final showAvatar = !isCurrentUser && (index == messages.length - 1 || messages[index + 1].senderDid != message.senderDid);
 
-        List<Widget>? embeds;
-
-        if (message.embed?.isNotEmpty ?? false) {
-          List<String> images = [];
-          List<String> videos = [];
-          List<String> links = [];
-          for (final embed in message.embed!) {
-            if (embed.type == 'image') {
-              if (embed.url?.isNotEmpty ?? false) {
-                images.add(embed.url!);
-              }
-            } else if (embed.type == 'video') {
-              if (embed.url?.isNotEmpty ?? false) {
-                videos.add(embed.url!);
-              }
-            } else if (embed.type == 'link') {
-              if (embed.url?.isNotEmpty ?? false) {
-                links.add(embed.url!);
-              }
-            } // eventually audios perhaps..
-          }
-          if (images.isNotEmpty) {
-            embeds ??= [];
-            embeds.add(ImageContent(imageUrls: images, borderRadius: BorderRadius.circular(12), thumbnailSize: 120));
-          }
-          if (videos.isNotEmpty) {
-            embeds ??= [];
-            for (var videoUrl in videos) {
-              embeds.add(VideoContent(borderRadius: BorderRadius.circular(12), videoUrl: videoUrl));
-            }
-          }
-          if (links.isNotEmpty) {
-            embeds ??= [];
-            GetIt.I<LogService>().getLogger('MessagesList').i('Links found in message: $links');
-            embeds.add(
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: links.length,
-                itemBuilder: (context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8.0),
-                    child: AnyLinkPreview(
-                      link: links[index],
-                      displayDirection: UIDirection.uiDirectionVertical,
-                      showMultimedia: true,
-                      bodyMaxLines: 3,
-                      errorBody: 'No description available',
-                      bodyTextOverflow: TextOverflow.ellipsis,
-                      titleStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 15),
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      placeholderWidget: Container(
-                        color: Theme.of(context).colorScheme.surface,
-                        child: const Center(child: CircularProgressIndicator()),
-                      ),
-                      errorWidget: Container(
-                        color: Theme.of(context).colorScheme.surface,
-                        child: const Center(child: Text('Preview didn’t load correctly 😞')),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            );
-          }
-        }
-
         return Column(
           children: [
             MessageBubble(
@@ -135,11 +204,223 @@ class MessagesList extends StatelessWidget {
               otherUserAvatar: otherUserAvatar,
               otherUserHandle: otherUserHandle,
             ),
-            if (embeds != null) ...embeds.map((embed) => Padding(padding: const EdgeInsets.only(top: 8), child: embed)),
+            FutureBuilder<List<Widget>?>(
+              future: validateAndCreateEmbeds(message.embed),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const SizedBox.shrink(); // Show nothing while loading
+                }
+                if (snapshot.hasError) {
+                  GetIt.I<LogService>().getLogger('MessagesList').e('Error validating embeds: ${snapshot.error}');
+                  return const SizedBox.shrink(); // Show nothing on error
+                }
+                final embeds = snapshot.data;
+                if (embeds == null || embeds.isEmpty) return const SizedBox.shrink();
+                return Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Column(
+                    crossAxisAlignment: isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                    children: embeds.map((embed) => 
+                      Row(
+                        mainAxisAlignment: isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+                        children: [
+                          Flexible(child: embed),
+                        ],
+                      ),
+                    ).toList(),
+                  ),
+                );
+              },
+            ),
             const SizedBox(height: 8),
           ],
         );
       },
     );
+  }
+}
+
+class _LinkPreview extends StatelessWidget {
+  const _LinkPreview({required this.url});
+
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: () => _launchUrl(url),
+      child: AnyLinkPreview.builder(
+        link: url,
+        placeholderWidget: const _LinkPreviewPlaceholder(),
+        errorWidget: _LinkPreviewError(url: url),
+        itemBuilder: (_, metadata, imageProvider, svgPicture) => Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: theme.dividerColor, width: 0.5),
+          ),
+          height: 100,
+          child: Row(
+            children: [
+              if (imageProvider != null)
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(12), topLeft: Radius.circular(12)),
+                  child: Image(width: 100, height: 100, fit: BoxFit.cover, image: imageProvider),
+                ),
+              Expanded(child: _LinkPreviewText(metadata: metadata)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _launchUrl(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        await launchUrl(uri, mode: LaunchMode.platformDefault);
+      }
+    } catch (e) {
+      GetIt.I<LogService>().getLogger('_LinkPreview').e('Failed to launch URL $url: $e');
+    }
+  }
+}
+
+class _LinkPreviewPlaceholder extends StatelessWidget {
+  const _LinkPreviewPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      // empty on tap to prevent tap gestures on loading placeholder
+      onTap: () {},
+      child: Container(
+        height: 100,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: theme.colorScheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.dividerColor),
+        ),
+        child: const Center(child: CircularProgressIndicator()),
+      ),
+    );
+  }
+}
+
+class _LinkPreviewError extends StatelessWidget {
+  const _LinkPreviewError({required this.url});
+
+  final String url;
+
+  String get urlStr {
+    if (url.length > 40) {
+      return '${url.substring(0, 40)}...';
+    }
+    return url;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Container(
+      width: double.infinity,
+      height: 100,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: theme.dividerColor),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface,
+              borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12)),
+            ),
+            child: const FittedBox(child: Icon(FluentIcons.link_24_regular)),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: FittedBox(child: Text(urlStr, style: theme.textTheme.titleSmall)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LinkPreviewText extends StatelessWidget {
+  const _LinkPreviewText({required this.metadata});
+
+  final Metadata metadata;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    final title = metadata.title?.isNotEmpty == true && metadata.title != 'null' ? metadata.title : null;
+    final desc = metadata.desc?.isNotEmpty == true && metadata.desc != 'null' ? metadata.desc : null;
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (title?.isNotEmpty ?? false) ...[
+                  Text(
+                    _limitLength(title!, 40),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 2),
+                ],
+                if (desc?.isNotEmpty ?? false)
+                  Text(
+                    desc!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      height: 1.15,
+                      fontSize: theme.textTheme.bodyMedium!.fontSize! - 2,
+                      color: theme.colorScheme.onSurface.withAlpha(150),
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Text(
+            metadata.url ?? '',
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontSize: theme.textTheme.bodySmall!.fontSize! - 2,
+              color: theme.colorScheme.onSurface.withAlpha(150),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _limitLength(String text, int maxLength) {
+    if (text.length <= maxLength) return text;
+    return '${text.substring(0, maxLength)}...';
   }
 }

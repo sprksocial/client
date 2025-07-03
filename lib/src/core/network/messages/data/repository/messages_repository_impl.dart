@@ -141,6 +141,8 @@ class MessagesRepositoryImpl implements MessagesRepository {
         final data = jsonDecode(response.body) as Map<String, dynamic>;
         return Message.fromJson(data['message']);
       } else if (response.statusCode == 401) {
+        await _refreshIfExpired();
+        
         throw Exception('Não autorizado, vê aí se o token tá valido memo');
       } else {
         throw Exception('Erro ao enviar mensagem: ${response.statusCode} - ${response.body}');
