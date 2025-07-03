@@ -199,12 +199,12 @@ class FeedNotifier extends _$FeedNotifier {
       }
 
       // Store the cursor from the initial fetch
-      String? newCursor = state.cursor;
+      // String? newCursor = state.cursor;
       int fetchedCount = 0;
       // starts fetching and storing new posts
       if (!state.isEndOfNetworkFeed) {
         final (int count, List<AtUri> fetchedUris, String? cursor) = await fetch();
-        newCursor = cursor;
+        // newCursor = cursor;
         fetchedCount = count;
         if (count > 0) {
           await store(fetchedUris);
@@ -257,7 +257,7 @@ class FeedNotifier extends _$FeedNotifier {
         loadedPosts: uris,
         freshPostCount: 0, // Set to 0 as per strategy
         extraInfo: extraInfo,
-        cursor: newCursor, // Store the cursor from fetch
+        // cursor: newCursor, // Store the cursor from fetch
         loadingFirstLoad: loadingFirstLoad,
       );
       _isWaitingForFreshPostsAtEnd = state.length <= 1;
