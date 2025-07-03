@@ -4,12 +4,16 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/messages/providers/conversation_provider.dart';
+import 'package:sparksocial/src/features/messages/providers/embed_input_provider.dart';
 import 'package:sparksocial/src/features/messages/providers/polling_timer.dart';
+import 'package:sparksocial/src/features/messages/ui/widgets/message_input.dart';
+import 'package:sparksocial/src/features/messages/ui/widgets/messages_list.dart';
 
 @RoutePage()
 class ChatPage extends ConsumerStatefulWidget {
@@ -26,6 +30,7 @@ class ChatPage extends ConsumerStatefulWidget {
 
 class _ChatPageState extends ConsumerState<ChatPage> {
   final TextEditingController _messageController = TextEditingController();
+  final ImagePicker _imagePicker = ImagePicker();
   final ScrollController _scrollController = ScrollController();
   List<Message> _messages = [];
   String? _currentUserDid;
@@ -50,8 +55,13 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     _messageController.clear();
 
     try {
-      final chatService = ref.read(conversationProvider(widget.otherUserDid).notifier);
-      final response = await chatService.sendMessage(widget.otherUserDid, content);
+      final chatService = ref.read(embedInputProvider(_messageController, _imagePicker, widget.otherUserDid).notifier);
+      final state = ref.read(embedInputProvider(_messageController, _imagePicker, widget.otherUserDid));
+      final response = await chatService.submitMessage(
+        otherDid: widget.otherUserDid,
+        message: content,
+        embeds: state.selectedImages.isNotEmpty ? state.selectedImages.map((e) => Embed(url: e.path)).toList() : null,
+      );
 
       // Add the sent message to local list
       final sentMessage = Message(
@@ -159,7 +169,12 @@ class _ChatPageState extends ConsumerState<ChatPage> {
               },
             ),
           ),
-          MessageInput(controller: _messageController, onSend: _sendMessage),
+          MessageInput(
+            controller: _messageController,
+            onSend: _sendMessage,
+            otherDid: widget.otherUserDid,
+            imagePicker: _imagePicker,
+          ),
         ],
       ),
     );
@@ -185,211 +200,4 @@ Color getAvatarColor(int seed) {
     Colors.indigo,
   ];
   return colors[seed.abs() % colors.length];
-}
-
-// -------------------------  EXTRACTED WIDGETS  -------------------------
-
-class SenderAvatar extends StatelessWidget {
-  const SenderAvatar({super.key, required this.isCurrentUser, required this.otherUserAvatar, required this.otherUserHandle});
-
-  final bool isCurrentUser;
-  final String? otherUserAvatar;
-  final String? otherUserHandle;
-
-  @override
-  Widget build(BuildContext context) {
-    if (isCurrentUser) {
-      return UserAvatar(
-        imageUrl: null, // Current user avatar - can be added later
-        username: 'You',
-        size: 32,
-        backgroundColor: AppColors.primary,
-      );
-    }
-
-    return UserAvatar(
-      imageUrl: otherUserAvatar,
-      username: otherUserHandle ?? 'User',
-      size: 32,
-      backgroundColor: getAvatarColor((otherUserHandle ?? 'User').hashCode),
-    );
-  }
-}
-
-class MessageBubble extends StatelessWidget {
-  const MessageBubble({
-    super.key,
-    required this.message,
-    required this.isCurrentUser,
-    required this.showAvatar,
-    required this.otherUserAvatar,
-    required this.otherUserHandle,
-  });
-
-  final Message message;
-  final bool isCurrentUser;
-  final bool showAvatar;
-  final String? otherUserAvatar;
-  final String? otherUserHandle;
-
-  @override
-  Widget build(BuildContext context) {
-    final brightness = MediaQuery.of(context).platformBrightness;
-    final isDarkMode = brightness == Brightness.dark;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2),
-      child: Row(
-        mainAxisAlignment: isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!isCurrentUser && showAvatar) ...[
-            SenderAvatar(isCurrentUser: false, otherUserAvatar: otherUserAvatar, otherUserHandle: otherUserHandle),
-            const SizedBox(width: 8),
-          ] else if (!isCurrentUser) ...[
-            const SizedBox(width: 40),
-          ],
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: isCurrentUser
-                    ? AppColors.primary
-                    : isDarkMode
-                    ? Colors.grey.shade800
-                    : Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Text(
-                message.message,
-                style: TextStyle(
-                  color: isCurrentUser
-                      ? Colors.white
-                      : isDarkMode
-                      ? Colors.white
-                      : Colors.black,
-                  fontSize: 16,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class MessagesList extends StatelessWidget {
-  const MessagesList({
-    super.key,
-    required this.messages,
-    required this.scrollController,
-    required this.currentUserDid,
-    required this.otherUserHandle,
-    required this.otherUserAvatar,
-  });
-
-  final List<Message> messages;
-  final ScrollController scrollController;
-  final String? currentUserDid;
-  final String? otherUserHandle;
-  final String? otherUserAvatar;
-
-  @override
-  Widget build(BuildContext context) {
-    if (messages.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(FluentIcons.chat_24_regular, size: 64, color: Theme.of(context).colorScheme.onSurface),
-            const SizedBox(height: 16),
-            Text(
-              'No messages yet',
-              style: TextStyle(fontSize: 18, color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Send a message to start the conversation',
-              style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface),
-            ),
-          ],
-        ),
-      );
-    }
-
-    return ListView.builder(
-      controller: scrollController,
-      padding: const EdgeInsets.all(16),
-      itemCount: messages.length,
-      itemBuilder: (context, index) {
-        final message = messages[index];
-        final isCurrentUser = message.senderDid == currentUserDid;
-        final showAvatar = !isCurrentUser && (index == messages.length - 1 || messages[index + 1].senderDid != message.senderDid);
-
-        return MessageBubble(
-          message: message,
-          isCurrentUser: isCurrentUser,
-          showAvatar: showAvatar,
-          otherUserAvatar: otherUserAvatar,
-          otherUserHandle: otherUserHandle,
-        );
-      },
-    );
-  }
-}
-
-class MessageInput extends StatelessWidget {
-  const MessageInput({super.key, required this.controller, required this.onSend, this.isLoading = false});
-
-  final TextEditingController controller;
-  final VoidCallback onSend;
-  final bool isLoading;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5)),
-      ),
-      child: SafeArea(
-        child: Row(
-          children: [
-            Expanded(
-              child: TextField(
-                controller: controller,
-                decoration: InputDecoration(
-                  hintText: 'Type a message...',
-                  hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
-                  filled: true,
-                  fillColor: Theme.of(context).colorScheme.surface,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                ),
-                style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                maxLines: null,
-                textCapitalization: TextCapitalization.sentences,
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
-              child: IconButton(
-                onPressed: isLoading ? null : onSend,
-                icon: isLoading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(Colors.white)),
-                      )
-                    : const Icon(FluentIcons.send_24_filled, color: Colors.white),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 }

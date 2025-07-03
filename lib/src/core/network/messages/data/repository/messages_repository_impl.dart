@@ -122,13 +122,13 @@ class MessagesRepositoryImpl implements MessagesRepository {
   }
 
   @override
-  Future<Message> sendMessage(String did, String message, {Embed? embed}) async {
+  Future<Message> sendMessage(String did, String message, {List<Embed>? embed}) async {
     try {
       await _refreshIfExpired();
       final requestBody = <String, dynamic>{
         'receiver_did': did,
         'message': message,
-        if (embed != null && embed.isNotEmpty) 'embed': [embed.toJson()],
+        if (embed != null && embed.isNotEmpty) 'embed': embed,
       };
 
       final uri = Uri.parse('${AppConfig.messagesServiceUrl}/messages/send');

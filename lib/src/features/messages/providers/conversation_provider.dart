@@ -19,7 +19,7 @@ class Conversation extends _$Conversation {
     return ConversationState(other, messages);
   }
 
-  Future<Message> sendMessage(String otherDid, String message, {Embed? embed}) async {
+  Future<Message> sendMessage(String otherDid, String message, {List<Embed>? embed}) async {
     final other = state.value?.other ?? await GetIt.I<SprkRepository>().actor.getProfile(otherDid);
     final messages = state.value?.messages ?? [];
     state = const AsyncLoading();
