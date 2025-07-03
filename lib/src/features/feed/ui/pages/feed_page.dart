@@ -4,6 +4,7 @@ import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dar
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_refresh_trigger_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/feed_post_widget.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/no_more_posts.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
@@ -20,6 +21,7 @@ class FeedPage extends ConsumerStatefulWidget {
 
 class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClientMixin {
   late final PageController pageController;
+  final _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
   bool _hasInitialized = false;
   bool _isRefreshing = false;
 
@@ -45,6 +47,12 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
     final state = ref.watch(feedNotifierProvider(widget.feed));
     final notifier = ref.read(feedNotifierProvider(widget.feed).notifier);
     final shouldBeActive = ref.watch(settingsProvider.select((settings) => settings.activeFeed == widget.feed));
+
+    ref.listen(feedRefreshTriggerProvider(widget.feed), (previous, next) {
+      if (previous != next) {
+        _refreshIndicatorKey.currentState?.show();
+      }
+    });
 
     // Initialize feed when it becomes active for the first time
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -82,6 +90,7 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
     }
 
     return RefreshIndicator(
+      key: _refreshIndicatorKey,
       onRefresh: onRefresh,
       child: state.loadingFirstLoad
           ? const Center(child: CircularProgressIndicator())

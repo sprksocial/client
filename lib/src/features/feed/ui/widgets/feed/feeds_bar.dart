@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'dart:ui' show lerpDouble;
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_refresh_trigger_provider.dart';
 
 class FeedsBar extends ConsumerStatefulWidget implements PreferredSizeWidget {
   const FeedsBar({super.key, required this.pageController});
@@ -134,10 +135,14 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                   onTap: _isReordering
                       ? null
                       : () {
-                          ref.read(settingsProvider.notifier).setActiveFeed(feed);
-                          final feedIndex = settings.feeds.indexOf(feed);
-                          if (feedIndex != -1 && widget.pageController.hasClients) {
-                            widget.pageController.jumpToPage(feedIndex);
+                          if (settings.activeFeed == feed) {
+                            ref.read(feedRefreshTriggerProvider(feed).notifier).trigger();
+                          } else {
+                            ref.read(settingsProvider.notifier).setActiveFeed(feed);
+                            final feedIndex = settings.feeds.indexOf(feed);
+                            if (feedIndex != -1 && widget.pageController.hasClients) {
+                              widget.pageController.jumpToPage(feedIndex);
+                            }
                           }
                         },
                   borderRadius: BorderRadius.circular(25),
