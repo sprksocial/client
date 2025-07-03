@@ -707,7 +707,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
       List<Label> labels = [];
 
-      final String labelers = sources?.isNotEmpty == true ? sources!.join(',') : 'did:plc:pbgyr67hftvpoqtvaurpsctc';
+      final List<String> labelers = sources?.isNotEmpty == true ? sources! : ['did:plc:pbgyr67hftvpoqtvaurpsctc'];
 
       final parameters = {'uriPatterns': uris, 'sources': labelers, 'limit': limit, 'cursor': cursor};
 
