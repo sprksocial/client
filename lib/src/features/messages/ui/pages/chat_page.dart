@@ -10,7 +10,6 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/messages/providers/conversation_provider.dart';
-import 'package:sparksocial/src/features/messages/providers/embed_input_provider.dart';
 import 'package:sparksocial/src/features/messages/providers/polling_timer.dart';
 import 'package:sparksocial/src/features/messages/ui/widgets/message_input.dart';
 import 'package:sparksocial/src/features/messages/ui/widgets/messages_list.dart';
@@ -48,19 +47,33 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     return widget.otherUserDisplayName ?? widget.otherUserHandle ?? 'Chat';
   }
 
+  List<String> _extractLinks(String text) {
+    final urlRegex = RegExp(r"(?:(?:https?|ftp)://)?[\w/\-?=%.]+\.[\w/\-?=%.]+");
+    return urlRegex.allMatches(text).map((match) => match.group(0)!).toList();
+  }
+
   Future<void> _sendMessage() async {
+
     final content = _messageController.text.trim();
+    final links = _extractLinks(content);
+    // remove links from content
+    for (final link in links) {
+      content.replaceAll(link, '');
+    }
+    final linkEmbeds = <Embed>[];
+    for (final link in links) {
+      linkEmbeds.add(Embed(type: 'link', url: link, preview: link));
+    }
     if (content.isEmpty) return;
 
     _messageController.clear();
 
     try {
-      final chatService = ref.read(embedInputProvider(_messageController, _imagePicker, widget.otherUserDid).notifier);
-      final state = ref.read(embedInputProvider(_messageController, _imagePicker, widget.otherUserDid));
-      final response = await chatService.submitMessage(
-        otherDid: widget.otherUserDid,
-        message: content,
-        embeds: state.selectedImages,
+      final chatService = ref.read(conversationProvider(widget.otherUserDid).notifier);
+      final response = await chatService.sendMessage(
+        widget.otherUserDid,
+        content,
+        embed: linkEmbeds,
       );
 
       // Add the sent message to local list

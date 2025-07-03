@@ -180,7 +180,7 @@ class MessagesTab extends ConsumerWidget {
           itemCount: data.conversations.length,
           padding: EdgeInsets.zero,
           itemBuilder: (context, index) {
-            final conversation = data.conversations[index];
+            // final conversation = data.conversations[index];
 
             return ListTile(
               leading: CircleAvatar(

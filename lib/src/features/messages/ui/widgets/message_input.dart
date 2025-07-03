@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -7,8 +6,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/messages/providers/embed_input_provider.dart';
-import 'package:sparksocial/src/features/messages/providers/embed_input_state.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 
 class MessageInput extends ConsumerWidget {
@@ -22,8 +19,6 @@ class MessageInput extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(embedInputProvider(controller, imagePicker, otherDid));
-    final notifier = ref.read(embedInputProvider(controller, imagePicker, otherDid).notifier);
     final session = ref.watch(authProvider).session;
     return Container(
       padding: const EdgeInsets.all(16),
@@ -50,14 +45,14 @@ class MessageInput extends ConsumerWidget {
                   borderWidth: 0,
                 ),
                 const SizedBox(width: 8),
-                _AttachmentButton(
-                  state: state,
-                  notifier: notifier,
-                  context: context,
-                  borderColor: Theme.of(context).colorScheme.outline,
-                  textColor: Theme.of(context).colorScheme.onSurface,
-                ),
-                const SizedBox(width: 5),
+                // _AttachmentButton(
+                //   state: state,
+                //   notifier: notifier,
+                //   context: context,
+                //   borderColor: Theme.of(context).colorScheme.outline,
+                //   textColor: Theme.of(context).colorScheme.onSurface,
+                // ),
+                // const SizedBox(width: 5),
                 Expanded(
                   child: TextField(
                     controller: controller,
@@ -93,11 +88,11 @@ class MessageInput extends ConsumerWidget {
                 ),
               ],
             ),
-            if (state.selectedImages.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: _SelectedImagesPreview(state: state, notifier: notifier),
-              ),
+            // if (state.selectedImages.isNotEmpty)
+            //   Padding(
+            //     padding: const EdgeInsets.only(top: 8.0),
+            //     child: _SelectedImagesPreview(state: state, notifier: notifier),
+            //   ),
           ],
         ),
       ),
@@ -105,90 +100,90 @@ class MessageInput extends ConsumerWidget {
   }
 }
 
-class _AttachmentButton extends StatelessWidget {
-  const _AttachmentButton({
-    required this.state,
-    required this.notifier,
-    required this.context,
-    required this.borderColor,
-    required this.textColor,
-  });
+// class _AttachmentButton extends StatelessWidget {
+//   const _AttachmentButton({
+//     required this.state,
+//     required this.notifier,
+//     required this.context,
+//     required this.borderColor,
+//     required this.textColor,
+//   });
 
-  final EmbedInputState state;
-  final EmbedInput notifier;
-  final BuildContext context;
-  final Color borderColor;
-  final Color textColor;
+//   final EmbedInputState state;
+//   final EmbedInput notifier;
+//   final BuildContext context;
+//   final Color borderColor;
+//   final Color textColor;
 
-  @override
-  Widget build(BuildContext context) {
-    final bool canAddMoreImages = state.selectedImages.length < 4;
-    final bool enabled = !state.isPosting && canAddMoreImages;
+//   @override
+//   Widget build(BuildContext context) {
+//     final bool canAddMoreImages = state.selectedImages.length < 4;
+//     final bool enabled = !state.isPosting && canAddMoreImages;
 
-    return IconButton(
-      padding: EdgeInsets.zero,
-      visualDensity: VisualDensity.compact,
-      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-      onPressed: enabled ? () => notifier.pickMedia(context) : null,
-      tooltip: enabled ? 'Add media (up to 4)' : (state.isPosting ? 'Posting...' : 'Maximum files reached'),
-      icon: Icon(FluentIcons.image_24_regular, size: 24, color: Theme.of(context).colorScheme.primary),
-    );
-  }
-}
+//     return IconButton(
+//       padding: EdgeInsets.zero,
+//       visualDensity: VisualDensity.compact,
+//       constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+//       onPressed: enabled ? () => notifier.pickMedia(context) : null,
+//       tooltip: enabled ? 'Add media (up to 4)' : (state.isPosting ? 'Posting...' : 'Maximum files reached'),
+//       icon: Icon(FluentIcons.image_24_regular, size: 24, color: Theme.of(context).colorScheme.primary),
+//     );
+//   }
+// }
 
-class _SelectedImagesPreview extends StatelessWidget {
-  const _SelectedImagesPreview({required this.state, required this.notifier});
+// class _SelectedImagesPreview extends StatelessWidget {
+//   const _SelectedImagesPreview({required this.state, required this.notifier});
 
-  final EmbedInputState state;
-  final EmbedInput notifier;
+//   final EmbedInputState state;
+//   final EmbedInput notifier;
 
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 72,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: state.selectedImages.length,
-        itemBuilder: (context, index) {
-          final imageFile = state.selectedImages[index];
-          return Padding(
-            padding: const EdgeInsets.only(right: 8.0),
-            child: Stack(
-              alignment: Alignment.bottomRight,
-              children: [
-                // Image Thumbnail with rounded corners and shadow
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Theme.of(context).colorScheme.outline, width: 0.5),
-                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 26), blurRadius: 4, offset: const Offset(0, 2))],
-                    image: DecorationImage(image: FileImage(File(imageFile.path)), fit: BoxFit.cover),
-                  ),
-                ),
-                // Remove Button (top right)
-                Positioned(
-                  top: 4,
-                  right: 4,
-                  child: Material(
-                    color: Colors.black.withValues(alpha: 128),
-                    shape: const CircleBorder(),
-                    child: InkWell(
-                      onTap: () => notifier.removeImage(index),
-                      customBorder: const CircleBorder(),
-                      child: Container(
-                        padding: const EdgeInsets.all(2),
-                        child: const Icon(FluentIcons.dismiss_16_filled, color: Colors.white, size: 12),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return SizedBox(
+//       height: 72,
+//       child: ListView.builder(
+//         scrollDirection: Axis.horizontal,
+//         itemCount: state.selectedImages.length,
+//         itemBuilder: (context, index) {
+//           final imageFile = state.selectedImages[index];
+//           return Padding(
+//             padding: const EdgeInsets.only(right: 8.0),
+//             child: Stack(
+//               alignment: Alignment.bottomRight,
+//               children: [
+//                 // Image Thumbnail with rounded corners and shadow
+//                 Container(
+//                   width: 72,
+//                   height: 72,
+//                   decoration: BoxDecoration(
+//                     borderRadius: BorderRadius.circular(12),
+//                     border: Border.all(color: Theme.of(context).colorScheme.outline, width: 0.5),
+//                     boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 26), blurRadius: 4, offset: const Offset(0, 2))],
+//                     image: DecorationImage(image: FileImage(File(imageFile.path)), fit: BoxFit.cover),
+//                   ),
+//                 ),
+//                 // Remove Button (top right)
+//                 Positioned(
+//                   top: 4,
+//                   right: 4,
+//                   child: Material(
+//                     color: Colors.black.withValues(alpha: 128),
+//                     shape: const CircleBorder(),
+//                     child: InkWell(
+//                       onTap: () => notifier.removeImage(index),
+//                       customBorder: const CircleBorder(),
+//                       child: Container(
+//                         padding: const EdgeInsets.all(2),
+//                         child: const Icon(FluentIcons.dismiss_16_filled, color: Colors.white, size: 12),
+//                       ),
+//                     ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           );
+//         },
+//       ),
+//     );
+//   }
+// }

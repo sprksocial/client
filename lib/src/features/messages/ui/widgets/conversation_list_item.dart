@@ -96,20 +96,20 @@ class ConversationListItem extends StatelessWidget {
     );
   }
 
-  String _formatTime(DateTime dateTime) {
-    final now = DateTime.now();
-    final difference = now.difference(dateTime);
+  // String _formatTime(DateTime dateTime) {
+  //   final now = DateTime.now();
+  //   final difference = now.difference(dateTime);
 
-    if (difference.inDays > 0) {
-      return '${difference.inDays}d';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m';
-    } else {
-      return 'now';
-    }
-  }
+  //   if (difference.inDays > 0) {
+  //     return '${difference.inDays}d';
+  //   } else if (difference.inHours > 0) {
+  //     return '${difference.inHours}h';
+  //   } else if (difference.inMinutes > 0) {
+  //     return '${difference.inMinutes}m';
+  //   } else {
+  //     return 'now';
+  //   }
+  // }
 }
 
 class ConversationAvatar extends StatelessWidget {

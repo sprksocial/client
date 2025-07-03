@@ -1,10 +1,14 @@
+import 'package:any_link_preview/any_link_preview.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
+import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/core/widgets/image_content.dart';
 import 'package:sparksocial/src/core/widgets/video_content.dart';
-import 'package:sparksocial/src/features/messages/ui/pages/chat_page.dart';
 import 'package:sparksocial/src/features/messages/ui/widgets/message_bubble.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MessagesList extends StatelessWidget {
   const MessagesList({
@@ -15,6 +19,7 @@ class MessagesList extends StatelessWidget {
     required this.otherUserHandle,
     required this.otherUserAvatar,
   });
+
 
   final List<Message> messages;
   final ScrollController scrollController;
@@ -59,6 +64,7 @@ class MessagesList extends StatelessWidget {
         if (message.embed?.isNotEmpty ?? false) {
           List<String> images = [];
           List<String> videos = [];
+          List<String> links = [];
           for (final embed in message.embed!) {
             if (embed.type == 'image') {
               if (embed.url?.isNotEmpty ?? false) {
@@ -69,6 +75,9 @@ class MessagesList extends StatelessWidget {
                 videos.add(embed.url!);
               }
             } else if (embed.type == 'link') {
+              if (embed.url?.isNotEmpty ?? false) {
+                links.add(embed.url!);
+              }
             } // eventually audios perhaps..
           }
           if (images.isNotEmpty) {
@@ -81,6 +90,40 @@ class MessagesList extends StatelessWidget {
               embeds.add(VideoContent(borderRadius: BorderRadius.circular(12), videoUrl: videoUrl));
             }
           }
+          if (links.isNotEmpty) {
+            embeds ??= [];
+            GetIt.I<LogService>().getLogger('MessagesList').i('Links found in message: $links');
+            embeds.add(
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: links.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: AnyLinkPreview(
+                      link: links[index],
+                      displayDirection: UIDirection.uiDirectionVertical,
+                      showMultimedia: true,
+                      bodyMaxLines: 3,
+                      errorBody: 'No description available',
+                      bodyTextOverflow: TextOverflow.ellipsis,
+                      titleStyle: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 15),
+                      backgroundColor: Theme.of(context).colorScheme.surface,
+                      placeholderWidget: Container(
+                        color: Theme.of(context).colorScheme.surface,
+                        child: const Center(child: CircularProgressIndicator()),
+                      ),
+                      errorWidget: Container(
+                        color: Theme.of(context).colorScheme.surface,
+                        child: const Center(child: Text('Preview didn’t load correctly 😞')),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          }
         }
 
         return Column(
@@ -92,12 +135,8 @@ class MessagesList extends StatelessWidget {
               otherUserAvatar: otherUserAvatar,
               otherUserHandle: otherUserHandle,
             ),
-            if (embeds != null) ...embeds.map(
-              (embed) => Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: embed,
-              ),
-            ),
+            if (embeds != null) ...embeds.map((embed) => Padding(padding: const EdgeInsets.only(top: 8), child: embed)),
+            const SizedBox(height: 8),
           ],
         );
       },
