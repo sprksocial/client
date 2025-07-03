@@ -709,12 +709,12 @@ class FeedRepositoryImpl implements FeedRepository {
 
       final String labelers = sources?.isNotEmpty == true ? sources!.join(',') : 'did:plc:pbgyr67hftvpoqtvaurpsctc';
 
-      final parameters = {'uriPatterns': uris.join(','), 'sources': labelers, 'limit': limit, 'cursor': cursor};
+      final parameters = {'uriPatterns': uris, 'sources': labelers, 'limit': limit, 'cursor': cursor};
 
       final response = await atproto.get(
         NSID.parse('com.atproto.label.queryLabels'),
         headers: {'atproto-proxy': 'did:plc:pbgyr67hftvpoqtvaurpsctc#atproto_labeler'},
-        parameters: {'uriPatterns': uris.join(','), 'sources': labelers, 'limit': limit, 'cursor': cursor},
+        parameters: parameters,
         to: (jsonMap) => jsonMap,
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
