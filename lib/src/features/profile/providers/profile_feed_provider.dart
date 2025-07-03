@@ -11,7 +11,6 @@ import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_state.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:atproto/atproto.dart';
 
 part 'profile_feed_provider.g.dart';
@@ -110,9 +109,9 @@ class ProfileFeed extends _$ProfileFeed {
         final followedLabelers = await _settingsRepository.getFollowedLabelers();
         final newPostUris = newPosts.map((post) => post.uri).toList();
         final (cursor: _, labels: additionalLabels) = await _feedRepository.getLabels(newPostUris, sources: followedLabelers);
-        
         // Add the additional labels to the posts
         for (final label in additionalLabels) {
+          _logger.d('Adding label ${label.value} to post ${label.uri}');
           final uri = AtUri.parse(label.uri);
           final post = postViews[uri];
           if (post != null) {
@@ -263,12 +262,12 @@ class ProfileFeed extends _$ProfileFeed {
       if (postView != null) {
         // Collect all labels for this post
         final postLabels = <Label>[];
-        
+
         // Add labels from the post itself
         if (postView.labels != null) {
           postLabels.addAll(postView.labels!);
         }
-        
+
         // Add self labels from the post record
         if (postView.record.selfLabels != null) {
           for (SelfLabel selfLabel in postView.record.selfLabels!) {
