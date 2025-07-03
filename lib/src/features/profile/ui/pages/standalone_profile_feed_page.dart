@@ -85,7 +85,8 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
               }
 
               final postUri = state.loadedPosts[index];
-              return ProfileFeedPostWidget(postUri: postUri, profileUri: profileAtUri, videosOnly: widget.videosOnly);
+              final post = state.postViews[postUri];
+              return ProfileFeedPostWidget(postUri: postUri, profileUri: profileAtUri, videosOnly: widget.videosOnly, post: post);
             },
           );
         },
