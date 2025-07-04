@@ -3,7 +3,6 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/core/config/app_config.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart' hide Embed;
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart' hide Embed;
 import 'package:sparksocial/src/core/utils/utils.dart';
 import 'package:sparksocial/src/features/auth/auth.dart';
 import 'messages_repository.dart';
