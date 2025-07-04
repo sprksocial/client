@@ -1,9 +1,12 @@
 import 'package:any_link_preview/any_link_preview.dart';
+import 'package:atproto/core.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/widgets/image_content.dart';
 import 'package:sparksocial/src/core/widgets/video_content.dart';
@@ -86,6 +89,19 @@ class MessagesList extends StatelessWidget {
     return false;
   }
 
+  /// Checks if a URL is a sprk.so watch URL and extracts the post URI
+  String? extractSprkPostUri(String url) {
+    try {
+      final uri = Uri.parse(url);
+      if (uri.host == 'watch.sprk.so' && uri.queryParameters.containsKey('uri')) {
+        return uri.queryParameters['uri'];
+      }
+    } catch (e) {
+      // Invalid URL
+    }
+    return null;
+  }
+
   Future<List<Widget>?> validateAndCreateEmbeds(List<Embed>? embed) async {
     List<Widget>? embeds;
 
@@ -93,6 +109,7 @@ class MessagesList extends StatelessWidget {
       List<String> images = [];
       List<String> videos = [];
       List<String> links = [];
+      List<String> sprkPosts = [];
       for (final embed in embed!) {
         if (embed.type == 'image') {
           if (embed.url?.isNotEmpty ?? false) {
@@ -104,18 +121,29 @@ class MessagesList extends StatelessWidget {
           }
         } else if (embed.type == 'link') {
           if (embed.url?.isNotEmpty ?? false) {
-            links.add(embed.url!);
+            // Check if this is a sprk.so watch URL
+            final sprkPostUri = extractSprkPostUri(embed.url!);
+            if (sprkPostUri != null) {
+              sprkPosts.add(sprkPostUri);
+            } else {
+              links.add(embed.url!);
+            }
           }
         } // eventually audios perhaps..
       }
 
-      // Check links for images/videos and reclassify them
+      // Check links for images/videos/sprk posts and reclassify them
       List<String> linksToRemove = [];
       for (var link in links) {
         if (link.isEmpty) continue;
         if (Uri.tryParse(link)?.hasScheme != true) continue; // Skip invalid links
 
-        if (await validateImage(link)) {
+        // Check if this is a sprk.so watch URL
+        final sprkPostUri = extractSprkPostUri(link);
+        if (sprkPostUri != null) {
+          sprkPosts.add(sprkPostUri);
+          linksToRemove.add(link);
+        } else if (await validateImage(link)) {
           // If the link is a valid image, add it to images
           images.add(link);
           linksToRemove.add(link); // Mark for removal from links
@@ -141,6 +169,12 @@ class MessagesList extends StatelessWidget {
           embeds.add(VideoContent(borderRadius: BorderRadius.circular(12), videoUrl: videoUrl));
         }
       }
+      if (sprkPosts.isNotEmpty) {
+        embeds ??= [];
+        for (var postUri in sprkPosts) {
+          embeds.add(_SprkPostThumbnail(postUri: postUri));
+        }
+      }
       if (links.isNotEmpty) {
         embeds ??= [];
         GetIt.I<LogService>().getLogger('MessagesList').i('Links found in message: $links');
@@ -148,6 +182,7 @@ class MessagesList extends StatelessWidget {
         embeds.add(
           ListView.builder(
             shrinkWrap: true,
+            cacheExtent: 50,
             physics: const NeverScrollableScrollPhysics(),
             itemCount: links.length,
             itemBuilder: (context, index) {
@@ -208,7 +243,7 @@ class MessagesList extends StatelessWidget {
               future: validateAndCreateEmbeds(message.embed),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SizedBox.shrink(); // Show nothing while loading
+                  return const SizedBox.shrink();
                 }
                 if (snapshot.hasError) {
                   GetIt.I<LogService>().getLogger('MessagesList').e('Error validating embeds: ${snapshot.error}');
@@ -220,14 +255,14 @@ class MessagesList extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 8),
                   child: Column(
                     crossAxisAlignment: isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                    children: embeds.map((embed) => 
-                      Row(
-                        mainAxisAlignment: isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-                        children: [
-                          Flexible(child: embed),
-                        ],
-                      ),
-                    ).toList(),
+                    children: embeds
+                        .map(
+                          (embed) => Row(
+                            mainAxisAlignment: isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+                            children: [Flexible(child: embed)],
+                          ),
+                        )
+                        .toList(),
                   ),
                 );
               },
@@ -422,5 +457,101 @@ class _LinkPreviewText extends StatelessWidget {
   String _limitLength(String text, int maxLength) {
     if (text.length <= maxLength) return text;
     return '${text.substring(0, maxLength)}...';
+  }
+}
+
+class _SprkPostThumbnail extends StatelessWidget {
+  const _SprkPostThumbnail({required this.postUri});
+
+  final String postUri;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: () => _navigateToPost(context),
+      child: Container(
+        width: double.infinity,
+        height: 100,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: theme.dividerColor, width: 0.5),
+          color: theme.colorScheme.surface,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withAlpha(30),
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), bottomLeft: Radius.circular(12)),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(FluentIcons.play_circle_24_filled, size: 32, color: theme.colorScheme.primary),
+                    const SizedBox(height: 4),
+                    Text(
+                      'SPRK',
+                      style: theme.textTheme.labelSmall?.copyWith(color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('View Post', style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Tap to view this post on Spark Social',
+                      style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface.withAlpha(150)),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      postUri,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontSize: theme.textTheme.bodySmall!.fontSize! - 2,
+                        color: theme.colorScheme.onSurface.withAlpha(100),
+                        fontFamily: 'monospace',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _navigateToPost(BuildContext context) {
+    try {
+      // Transform the URI format: insert /so.sprk.feed.post before the post ID
+      String transformedUri = postUri;
+
+      // Find the last slash and insert /so.sprk.feed.post before the post ID
+      int lastSlashIndex = postUri.lastIndexOf('/');
+      if (lastSlashIndex != -1) {
+        String beforePostId = postUri.substring(0, lastSlashIndex);
+        String postId = postUri.substring(lastSlashIndex + 1);
+        transformedUri = '$beforePostId/so.sprk.feed.post/$postId';
+      }
+
+      context.router.push(StandalonePostRoute(postUri: transformedUri));
+    } catch (e) {
+      GetIt.I<LogService>().getLogger('_SprkPostThumbnail').e('Failed to navigate to post $postUri: $e');
+    }
   }
 }

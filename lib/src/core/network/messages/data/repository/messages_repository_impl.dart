@@ -130,6 +130,7 @@ class MessagesRepositoryImpl implements MessagesRepository {
         'message': message,
         if (embed != null && embed.isNotEmpty) 'embed': embed,
       };
+      _logger.d('Sending message to $did: $requestBody');
 
       final uri = Uri.parse('${AppConfig.messagesServiceUrl}/messages/send');
 
