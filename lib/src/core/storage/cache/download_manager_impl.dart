@@ -21,6 +21,9 @@ class DownloadManagerImpl implements DownloadManagerInterface {
     _activeFeed = await GetIt.instance<SettingsRepository>().getActiveFeed();
   }
 
+  @override
+  bool get poolFull => _tasks.length >= FeedState.poolSize;
+
   late final SQLCacheInterface _sqlCache;
   late final SparkLogger _logger;
   late final CacheManagerInterface _cacheManager;

@@ -95,12 +95,14 @@ class FeedRepositoryImpl implements FeedRepository {
       _logger.d('Getting posts on bluesky API for: ${uris.length} URIs');
       final blueskyClient = bsky.Bluesky.fromSession(_client.authRepository.session!);
       final posts = await blueskyClient.feed.getPosts(uris: uris);
-      final filteredPosts = filter ? _parseAndFilterPosts<PostView>(
-        rawPosts: posts.data.posts,
-        fromJson: PostView.fromJson,
-        getPostView: (post) => post,
-        source: 'bsky',
-      ) : posts.data.posts.map((post) => PostView.fromJson(post.toJson())).toList();
+      final filteredPosts = filter
+          ? _parseAndFilterPosts<PostView>(
+              rawPosts: posts.data.posts,
+              fromJson: PostView.fromJson,
+              getPostView: (post) => post,
+              source: 'bsky',
+            )
+          : posts.data.posts.map((post) => PostView.fromJson(post.toJson())).toList();
       return filteredPosts;
     }
     return _client.executeWithRetry(() async {
@@ -705,17 +707,28 @@ class FeedRepositoryImpl implements FeedRepository {
 
       List<Label> labels = [];
 
+      final List<String> labelers = sources?.isNotEmpty == true ? sources! : ['did:plc:pbgyr67hftvpoqtvaurpsctc'];
+
+      final parameters = {'uriPatterns': uris, 'sources': labelers, 'limit': limit, 'cursor': cursor};
+
       final response = await atproto.get(
         NSID.parse('com.atproto.label.queryLabels'),
-        parameters: {'uriPatterns': uris, 'sources': sources, 'limit': limit, 'cursor': cursor},
+        headers: {'atproto-proxy': 'did:plc:pbgyr67hftvpoqtvaurpsctc#atproto_labeler'},
+        parameters: parameters,
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
       );
-
-      if (response.data case EmptyData()) {
-        return (labels: labels, cursor: null);
-      }
+      _logger.d('parameters: $parameters');
+      _logger.d('Labels retrieved: ${response.data}');
 
       for (final label in response.data['labels'] as List<dynamic>) {
-        labels.add(Label.fromJson(label as Map<String, Object?>));
+        final cleanLabel = label as Map<String, Object?>;
+        cleanLabel.remove('sig'); // i am NOT going to convert that sig string into a UInt8List i am going to PASS OUT and DIE
+        cleanLabel.putIfAbsent(
+          'src',
+          () => 'did:plc:pbgyr67hftvpoqtvaurpsctc',
+        ); // fix this when there's multiple labelers support. for now idgaf. src is null for some reason in the response
+        labels.add(Label.fromJson(cleanLabel));
       }
 
       return (labels: labels, cursor: response.data['cursor'] as String?);

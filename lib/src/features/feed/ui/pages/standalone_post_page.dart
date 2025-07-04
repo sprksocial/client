@@ -12,6 +12,8 @@ import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.d
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:atproto_core/atproto_core.dart';
+import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
+import 'package:sparksocial/src/core/utils/label_utils.dart';
 
 @RoutePage()
 class StandalonePostPage extends ConsumerStatefulWidget {
@@ -27,6 +29,9 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
   Future<dynamic>? _postFuture;
   int? _lastUpdateCount;
   final GlobalKey<PostVideoPlayerState> _videoPlayerKey = GlobalKey<PostVideoPlayerState>();
+  bool _showWarningOverlay = false;
+  List<String> _warningLabels = [];
+  bool _shouldBlurContent = false;
 
   @override
   void initState() {
@@ -59,6 +64,33 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
       await sqlCache.cachePost(networkPost.first);
 
       return networkPost.first;
+    }
+  }
+
+  Future<void> _checkContentWarning(PostView postData) async {
+    final labels = postData.labels ?? [];
+    
+    if (labels.isNotEmpty) {
+      final shouldShowWarning = await LabelUtils.shouldShowWarning(labels);
+      final shouldBlurContent = await LabelUtils.shouldBlurContent(labels);
+      if (shouldShowWarning) {
+        final warningLabels = await LabelUtils.getWarningLabels(labels);
+        setState(() {
+          _showWarningOverlay = true;
+          _warningLabels = warningLabels;
+          _shouldBlurContent = shouldBlurContent;
+        });
+      } else {
+        setState(() {
+          _showWarningOverlay = false;
+          _warningLabels = [];
+        });
+      }
+    } else {
+      setState(() {
+        _showWarningOverlay = false;
+        _warningLabels = [];
+      });
     }
   }
 
@@ -97,7 +129,14 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                   if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
                     final postData = snapshot.data! as PostView;
 
-                    return Stack(
+                    // Check for content warning on post load
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      if (mounted) {
+                        _checkContentWarning(postData);
+                      }
+                    });
+
+                    final mainContent = Stack(
                       children: [
                         // Main content
                         switch (postData.embed) {
@@ -172,20 +211,43 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                           bottom: 32,
                           left: 4,
                           right: 80,
-                          child: InfoBar(
-                            username: postData.author.handle,
-                            description: postData.record.text ?? '',
-                            hashtags: postData.record.hashtags,
-                            isSprk: postData.uri.toString().contains('so.sprk'),
-                            onUsernameTap: () {
-                              // Pause video before navigating to profile
-                              _videoPlayerKey.currentState?.pauseVideo();
-                              context.router.push(ProfileRoute(did: postData.author.did));
+                          child: FutureBuilder<List<String>>(
+                            future: LabelUtils.getInformLabels(postData.labels ?? []),
+                            builder: (context, snapshot) {
+                              final informLabels = snapshot.data ?? [];
+                              return InfoBar(
+                                username: postData.author.handle,
+                                description: postData.record.text ?? '',
+                                hashtags: postData.record.hashtags,
+                                informLabels: informLabels,
+                                isSprk: postData.uri.toString().contains('so.sprk'),
+                                onUsernameTap: () {
+                                  // Pause video before navigating to profile
+                                  _videoPlayerKey.currentState?.pauseVideo();
+                                  context.router.push(ProfileRoute(did: postData.author.did));
+                                },
+                              );
                             },
                           ),
                         ),
                       ],
                     );
+
+                    // Return main content with warning overlay if needed
+                    if (_showWarningOverlay && _warningLabels.isNotEmpty) {
+                      return ContentWarningOverlay(
+                        onViewContent: () {
+                          setState(() {
+                            _showWarningOverlay = false;
+                          });
+                        },
+                        warningLabels: _warningLabels,
+                        shouldBlur: _shouldBlurContent,
+                        child: mainContent,
+                      );
+                    }
+
+                    return mainContent;
                   }
                   if (snapshot.hasError) {
                     return Center(

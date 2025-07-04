@@ -40,7 +40,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       // "nudity",
       // "nsfl",
       // "gore",
-      await _storageManager.preferences.setObject<LabelPreference>(
+      await _storageManager.preferences.setObject<Map<String, dynamic>>(
         '${StorageKeys.labelPreferenceKey}_!hide',
         LabelPreference(
           value: '!hide',
@@ -49,9 +49,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
           defaultSetting: Setting.hide,
           setting: Setting.hide,
           adultOnly: false,
-        ),
+        ).toJson(),
       );
-      await _storageManager.preferences.setObject<LabelPreference>(
+      await _storageManager.preferences.setObject<Map<String, dynamic>>(
         '${StorageKeys.labelPreferenceKey}_!no-promote',
         LabelPreference(
           value: '!no-promote',
@@ -60,9 +60,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
           defaultSetting: Setting.hide,
           setting: Setting.hide,
           adultOnly: false,
-        ),
+        ).toJson(),
       );
-      await _storageManager.preferences.setObject<LabelPreference>(
+      await _storageManager.preferences.setObject<Map<String, dynamic>>(
         '${StorageKeys.labelPreferenceKey}_!warn',
         LabelPreference(
           value: '!warn',
@@ -71,9 +71,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
           defaultSetting: Setting.warn,
           setting: Setting.warn,
           adultOnly: false,
-        ),
+        ).toJson(),
       );
-      await _storageManager.preferences.setObject<LabelPreference>(
+      await _storageManager.preferences.setObject<Map<String, dynamic>>(
         '${StorageKeys.labelPreferenceKey}_!no-unauthenticated',
         LabelPreference(
           value: '!no-unauthenticated',
@@ -82,9 +82,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
           defaultSetting: Setting.ignore,
           setting: Setting.ignore,
           adultOnly: false,
-        ),
+        ).toJson(),
       );
-      await _storageManager.preferences.setObject<LabelPreference>(
+      await _storageManager.preferences.setObject<Map<String, dynamic>>(
         '${StorageKeys.labelPreferenceKey}_dmca-violation',
         LabelPreference(
           value: 'dmca-violation',
@@ -93,9 +93,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
           defaultSetting: Setting.hide,
           setting: Setting.hide,
           adultOnly: false,
-        ),
+        ).toJson(),
       );
-      await _storageManager.preferences.setObject<LabelPreference>(
+      await _storageManager.preferences.setObject<Map<String, dynamic>>(
         '${StorageKeys.labelPreferenceKey}_doxxing',
         LabelPreference(
           value: 'doxxing',
@@ -104,9 +104,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
           defaultSetting: Setting.warn,
           setting: Setting.warn,
           adultOnly: false,
-        ),
+        ).toJson(),
       );
-      await _storageManager.preferences.setObject<LabelPreference>(
+      await _storageManager.preferences.setObject<Map<String, dynamic>>(
         '${StorageKeys.labelPreferenceKey}_porn',
         LabelPreference(
           value: 'porn',
@@ -115,9 +115,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
           defaultSetting: Setting.warn,
           setting: Setting.warn,
           adultOnly: true,
-        ),
+        ).toJson(),
       );
-      await _storageManager.preferences.setObject<LabelPreference>(
+      await _storageManager.preferences.setObject<Map<String, dynamic>>(
         '${StorageKeys.labelPreferenceKey}_sexual',
         LabelPreference(
           value: 'sexual',
@@ -126,20 +126,20 @@ class SettingsRepositoryImpl implements SettingsRepository {
           defaultSetting: Setting.warn,
           setting: Setting.warn,
           adultOnly: true,
-        ),
+        ).toJson(),
       );
-      await _storageManager.preferences.setObject<LabelPreference>(
+      await _storageManager.preferences.setObject<Map<String, dynamic>>(
         '${StorageKeys.labelPreferenceKey}_nudity',
         LabelPreference(
           value: 'nudity',
           blurs: Blurs.content,
           severity: Severity.alert,
-          defaultSetting: Setting.ignore,
-          setting: Setting.ignore,
+          defaultSetting: Setting.warn,
+          setting: Setting.warn,
           adultOnly: false,
-        ),
+        ).toJson(),
       );
-      await _storageManager.preferences.setObject<LabelPreference>(
+      await _storageManager.preferences.setObject<Map<String, dynamic>>(
         '${StorageKeys.labelPreferenceKey}_nsfl',
         LabelPreference(
           value: 'nsfl',
@@ -148,10 +148,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
           defaultSetting: Setting.warn,
           setting: Setting.warn,
           adultOnly: true,
-        ),
+        ).toJson(),
       );
-      await _storageManager.preferences.setObject<LabelPreference>(
-        '${StorageKeys.labelPreferenceKey}_!hide',
+      await _storageManager.preferences.setObject<Map<String, dynamic>>(
+        '${StorageKeys.labelPreferenceKey}_gore',
         LabelPreference(
           value: 'gore',
           blurs: Blurs.content,
@@ -159,7 +159,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
           defaultSetting: Setting.warn,
           setting: Setting.warn,
           adultOnly: true,
-        ),
+        ).toJson(),
       );
     }
   }
@@ -297,55 +297,86 @@ class SettingsRepositoryImpl implements SettingsRepository {
     }
     await _storageManager.preferences.setObject<List<String>>(StorageKeys.followedLabelers, labelers);
     for (var labelPreference in labelPreferences) {
-      await _storageManager.preferences.setObject<LabelPreference>(
+      await _storageManager.preferences.setObject<Map<String, dynamic>>(
         '${StorageKeys.labelPreferenceKey}_${labelPreference.value}',
-        labelPreference,
+        labelPreference.toJson(),
       );
     }
   }
 
   @override
   Future<LabelPreference> getLabelPreference(String value) async {
-    final labelPreference = await _storageManager.preferences.getObject<LabelPreference>(
+    final rawJson = await _storageManager.preferences.getObject<Map<String, dynamic>>(
       '${StorageKeys.labelPreferenceKey}_$value',
     );
-    if (labelPreference == null) {
+    if (rawJson == null) {
       throw Exception('Label preference not found');
     }
-    return labelPreference;
+    
+    try {
+      return LabelPreference.fromJson(rawJson);
+    } catch (e) {
+      _logger.e('Error deserializing label preference for $value: $e');
+      throw Exception('Failed to deserialize label preference');
+    }
   }
 
-  Future<void> _setDefaultLabelPreferences(String value, Setting setting) async {
-    final labelPreference = await _storageManager.preferences.getObject<LabelPreference>(
-      '${StorageKeys.labelPreferenceKey}_$value',
-    );
-    await _storageManager.preferences.setObject<LabelPreference>(
-      '${StorageKeys.labelPreferenceKey}_$value',
-      labelPreference!.copyWith(setting: setting),
-    );
-  }
+
 
   @override
   Future<void> setLabelPreference(String value, Blurs blurs, Severity severity, bool adultOnly, Setting setting) async {
-    if (defaultLabels.contains(value)) {
-      await _setDefaultLabelPreferences(value, setting);
-    } else {
-      final labelPreference = await _storageManager.preferences.getObject<LabelPreference>(
-        '${StorageKeys.labelPreferenceKey}_$value',
-      );
-      if (labelPreference == null) {
-        throw Exception('Label preference not found');
+    // Check if a preference already exists
+    final existingRawJson = await _storageManager.preferences.getObject<Map<String, dynamic>>(
+      '${StorageKeys.labelPreferenceKey}_$value',
+    );
+    
+    if (existingRawJson != null) {
+      try {
+        // Update existing preference
+        final existingPreference = LabelPreference.fromJson(existingRawJson);
+        final newLabelPreference = existingPreference.copyWith(
+          blurs: blurs,
+          severity: severity,
+          adultOnly: adultOnly,
+          setting: setting,
+        );
+        await _storageManager.preferences.setObject<Map<String, dynamic>>(
+          '${StorageKeys.labelPreferenceKey}_$value',
+          newLabelPreference.toJson(),
+        );
+        _logger.d('Label preference updated: $value');
+      } catch (e) {
+        _logger.e('Error updating existing label preference for $value: $e');
+        // If we can't deserialize existing, create new
+        final newLabelPreference = LabelPreference(
+          value: value,
+          blurs: blurs,
+          severity: severity,
+          defaultSetting: setting,
+          setting: setting,
+          adultOnly: adultOnly,
+        );
+        await _storageManager.preferences.setObject<Map<String, dynamic>>(
+          '${StorageKeys.labelPreferenceKey}_$value',
+          newLabelPreference.toJson(),
+        );
+        _logger.d('Label preference created (after error): $value');
       }
-      final newLabelPreference = labelPreference.copyWith(
+    } else {
+      // Create new preference
+      final newLabelPreference = LabelPreference(
+        value: value,
         blurs: blurs,
         severity: severity,
-        adultOnly: adultOnly,
+        defaultSetting: setting,
         setting: setting,
+        adultOnly: adultOnly,
       );
-      await _storageManager.preferences.setObject<LabelPreference>(
+      await _storageManager.preferences.setObject<Map<String, dynamic>>(
         '${StorageKeys.labelPreferenceKey}_$value',
-        newLabelPreference,
+        newLabelPreference.toJson(),
       );
+      _logger.d('Label preference created: $value');
     }
   }
 

@@ -17,6 +17,7 @@ import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 import 'package:sparksocial/src/core/storage/cache/cache_manager_interface.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
 
 part 'feed_provider.g.dart';
 
@@ -253,19 +254,21 @@ class FeedNotifier extends _$FeedNotifier {
         loadingFirstLoad = fetchedCount != 0;
       }
 
+      // Filter out posts that should be hidden based on label preferences
+      final filteredUris = await _filterHiddenPosts(uris, extraInfo);
+
       state = state.copyWith(
-        loadedPosts: uris,
+        loadedPosts: filteredUris,
         freshPostCount: 0, // Set to 0 as per strategy
         extraInfo: extraInfo,
         cursor: newCursor, // Store the cursor from fetch
         loadingFirstLoad: loadingFirstLoad,
       );
       _isWaitingForFreshPostsAtEnd = state.length <= 1;
-      _logger.d('First load finished with ${uris.length} posts');
+      _logger.d('First load finished with ${filteredUris.length} posts (${uris.length - filteredUris.length} hidden)');
     } catch (e, stackTrace) {
       _logger.e('Error in loadAndUpdateFirstLoad: $e', stackTrace: stackTrace);
-      state = state.copyWith(loadingFirstLoad: false, error: true, isEndOfNetworkFeed: true);
-      _isWaitingForFreshPostsAtEnd = true;
+      state = state.copyWith(loadingFirstLoad: false, error: true);
     } finally {
       _isLoadingInProgress = false;
     }
@@ -347,9 +350,36 @@ class FeedNotifier extends _$FeedNotifier {
       }
       _logger.d('Downloading ${nonExistingUris.length} new posts');
       final nonExistingPosts = await _feedRepository.getPosts(nonExistingUris, bluesky: _shouldUseBlueskyAPI());
+
+      // gets the subscribed labels for the new posts
+      final followedLabelers = await _settingsRepository.getFollowedLabelers();
+      List<Label> newPostLabels = [];
+      try {
+        final (cursor: _, labels: fetchedLabels) = await _feedRepository.getLabels(nonExistingUris, sources: followedLabelers);
+        newPostLabels = fetchedLabels;
+      } catch (e) {
+        _logger.e('Error getting labels for new posts: $e');
+        newPostLabels = [];
+      }
+
+      List<PostView> postsWithLabels = [];
+      for (var post in nonExistingPosts) {
+        newPostLabels.addAll(post.labels ?? []); // labels from the post
+        if (post.record.selfLabels != null) {
+          final recordLabels = <Label>[];
+          for (SelfLabel selfLabel in post.record.selfLabels!) {
+            recordLabels.add(
+              Label(uri: post.uri.toString(), value: selfLabel.value, src: post.uri.toString(), createdAt: post.indexedAt),
+            );
+          }
+          newPostLabels.addAll(recordLabels); // self labels
+        }
+        postsWithLabels.add(post.copyWith(labels: newPostLabels));
+      }
+
       int newPostsCached = 0;
       int errorCount = 0;
-      for (PostView post in nonExistingPosts) {
+      for (PostView post in postsWithLabels) {
         // concurrent execution
         _downloadManager.submitTask(
           DownloadTask(
@@ -370,7 +400,7 @@ class FeedNotifier extends _$FeedNotifier {
               // it is divided in half to prevent the feed from getting stuck loading big files
               // (the other half will keep being downloaded, but you can start downloading another batch to be more efficient)
               // should use pool to have a limit on the number of concurrent downloads
-              if (newPostsCached == (nonExistingPosts.length - errorCount) >> 1) {
+              if (newPostsCached == (nonExistingPosts.length - errorCount) >> 1 && !_downloadManager.poolFull) {
                 _isCaching = false;
                 _logger.d('Set isCaching to false after downloading $newPostsCached posts');
               }
@@ -493,14 +523,20 @@ class FeedNotifier extends _$FeedNotifier {
           extraInfo.updateAll((key, value) => (postLabels: value.postLabels, hardcodedFeedExtraInfo: newExtraInfos[key]));
         }
       }
+
+      // Filter out posts that should be hidden based on label preferences
+      final filteredUris = await _filterHiddenPosts(uris, extraInfo);
+
       state = state.copyWith(
-        loadedPosts: [...state.loadedPosts, ...uris],
-        freshPostCount: state.freshPostCount - uris.length, // Only subtract the actual new posts loaded
+        loadedPosts: [...state.loadedPosts, ...filteredUris],
+        freshPostCount: state.freshPostCount - filteredUris.length, // Only subtract the actual new posts loaded
         extraInfo: extraInfo,
         loadingFirstLoad: false,
       );
 
-      _logger.d('Load complete. Total loaded posts: ${state.loadedPosts.length}, remaining fresh: ${state.freshPostCount}');
+      _logger.d(
+        'Load complete. Total loaded posts: ${state.loadedPosts.length}, remaining fresh: ${state.freshPostCount} (${uris.length - filteredUris.length} hidden)',
+      );
     } else {
       _logger.d('No fresh posts available to load (freshPostCount: ${state.freshPostCount})');
     }
@@ -577,5 +613,46 @@ class FeedNotifier extends _$FeedNotifier {
 
     _logger.d('Removing post ${uri.toString()}, adjusting index from $currentIndex to $newIndex');
     state = state.copyWith(loadedPosts: updatedPosts, index: newIndex);
+  }
+
+  /// Checks if a post should be hidden based on its labels and user preferences
+  Future<bool> _shouldHidePost(AtUri uri, List<Label> postLabels) async {
+    final hideAdultContent = await _settingsRepository.getHideAdultContent();
+    for (final label in postLabels) {
+      try {
+        final labelPreference = await _settingsRepository.getLabelPreference(label.value);
+        if (labelPreference.setting == Setting.hide || (labelPreference.adultOnly && hideAdultContent)) {
+          _logger.d('Hiding post ${uri.toString()} due to label: ${label.value}');
+          return true;
+        }
+      } catch (e) {
+        // Label preference not found, continue checking other labels
+        continue;
+      }
+    }
+    return false;
+  }
+
+  /// Filters URIs based on label preferences, removing posts that should be hidden
+  Future<List<AtUri>> _filterHiddenPosts(
+    List<AtUri> uris,
+    LinkedHashMap<AtUri, ({List<Label> postLabels, HardcodedFeedExtraInfo? hardcodedFeedExtraInfo})> extraInfo,
+  ) async {
+    final filteredUris = <AtUri>[];
+
+    for (final uri in uris) {
+      final postExtraInfo = extraInfo[uri];
+      if (postExtraInfo != null) {
+        final shouldHide = await _shouldHidePost(uri, postExtraInfo.postLabels);
+        if (!shouldHide) {
+          filteredUris.add(uri);
+        }
+      } else {
+        // No extra info means no labels, so include the post
+        filteredUris.add(uri);
+      }
+    }
+
+    return filteredUris;
   }
 }

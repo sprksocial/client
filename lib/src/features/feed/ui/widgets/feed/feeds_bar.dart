@@ -4,6 +4,9 @@ import 'package:get_it/get_it.dart';
 import 'dart:ui' show lerpDouble;
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:auto_route/auto_route.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
 
 class FeedsBar extends ConsumerStatefulWidget implements PreferredSizeWidget {
   const FeedsBar({super.key, required this.pageController});
@@ -66,7 +69,10 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
       title: LayoutBuilder(
         builder: (context, constraints) {
           final availableWidth = constraints.maxWidth;
-          final horizontalPadding = (availableWidth - totalWidth) / 2.0;
+          // Account for the leading widget (back button) - approximately 56px
+          final leadingWidth = 56.0;
+          final centeringWidth = availableWidth - leadingWidth;
+          final horizontalPadding = leadingWidth + (centeringWidth - totalWidth) / 2.0;
 
           return SizedBox(
             height: 44,
@@ -172,12 +178,12 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
         },
       ),
       actions: [
-        // IconButton(
-        //   icon: const Icon(FluentIcons.options_24_regular),
-        //   color: AppColors.white,
-        //   iconSize: 30,
-        //   onPressed: () => context.router.navigate(FeedSettingsRoute()),
-        // ),
+        IconButton(
+          icon: const Icon(FluentIcons.options_24_regular),
+          color: Colors.white,
+          iconSize: 30,
+          onPressed: () => context.router.navigate(const FeedSettingsRoute()),
+        ),
       ],
     );
   }

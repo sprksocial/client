@@ -14,13 +14,16 @@ import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.d
 import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
 import 'package:sparksocial/src/core/widgets/heart_animation.dart';
+import 'package:sparksocial/src/core/utils/label_utils.dart';
+import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
 
 class ProfileFeedPostWidget extends ConsumerStatefulWidget {
   final AtUri postUri;
   final AtUri profileUri;
   final bool videosOnly;
+  final PostView? post;
 
-  const ProfileFeedPostWidget({super.key, required this.postUri, required this.profileUri, required this.videosOnly});
+  const ProfileFeedPostWidget({super.key, required this.postUri, required this.profileUri, required this.videosOnly, this.post});
 
   @override
   ConsumerState<ProfileFeedPostWidget> createState() => _ProfileFeedPostWidgetState();
@@ -29,8 +32,24 @@ class ProfileFeedPostWidget extends ConsumerStatefulWidget {
 class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
   bool _isAnimatingHeart = false;
   final GlobalKey<SideActionBarState> _sideActionBarKey = GlobalKey<SideActionBarState>();
+  bool _showWarningOverlay = false;
+  bool _shouldBlurContent = false;
+  List<String> _warningLabels = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPostWithFallback().then((post) {
+      if (post != null) {
+        _checkContentWarning(post);
+      }
+    });
+  }
 
   Future<PostView?> _loadPostWithFallback() async {
+    if (widget.post != null) {
+      return widget.post;
+    }
     final sqlCache = GetIt.instance<SQLCacheInterface>();
 
     try {
@@ -88,6 +107,41 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
     }
   }
 
+  Future<void> _checkContentWarning(PostView postData) async {
+    final labels = postData.labels ?? [];
+
+    if (labels.isNotEmpty) {
+      final shouldShowWarning = await LabelUtils.shouldShowWarning(labels);
+
+      final shouldBlurContent = await LabelUtils.shouldBlurContent(labels);
+
+      if (shouldShowWarning) {
+        final warningLabels = await LabelUtils.getWarningLabels(labels);
+        if (mounted) {
+          setState(() {
+            _showWarningOverlay = true;
+            _warningLabels = warningLabels;
+            _shouldBlurContent = shouldBlurContent;
+          });
+        }
+      } else {
+        if (mounted) {
+          setState(() {
+            _showWarningOverlay = false;
+            _warningLabels = [];
+          });
+        }
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          _showWarningOverlay = false;
+          _warningLabels = [];
+        });
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -119,8 +173,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
 
           final post = snapshot.data!;
 
-          // Create a simple post display similar to FeedPostWidget but without feed dependencies
-          return HeartAnimation(
+          final mainContent = HeartAnimation(
             isAnimating: _isAnimatingHeart,
             onEnd: () {
               setState(() {
@@ -168,13 +221,20 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                     bottom: 32,
                     left: 4,
                     right: 80,
-                    child: InfoBar(
-                      username: post.author.handle,
-                      description: post.record.text ?? '',
-                      hashtags: post.record.hashtags,
-                      isSprk: post.uri.toString().contains('so.sprk'),
-                      onUsernameTap: () {
-                        context.router.push(ProfileRoute(did: post.author.did));
+                    child: FutureBuilder<List<String>>(
+                      future: LabelUtils.getInformLabels(post.labels ?? []),
+                      builder: (context, snapshot) {
+                        final informLabels = snapshot.data ?? [];
+                        return InfoBar(
+                          username: post.author.handle,
+                          description: post.record.text ?? '',
+                          hashtags: post.record.hashtags,
+                          informLabels: informLabels,
+                          isSprk: post.uri.toString().contains('so.sprk'),
+                          onUsernameTap: () {
+                            context.router.push(ProfileRoute(did: post.author.did));
+                          },
+                        );
                       },
                     ),
                   ),
@@ -182,6 +242,21 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
               ),
             ),
           );
+
+          if (_showWarningOverlay) {
+            return ContentWarningOverlay(
+              onViewContent: () {
+                setState(() {
+                  _showWarningOverlay = false;
+                });
+              },
+              warningLabels: _warningLabels,
+              shouldBlur: _shouldBlurContent,
+              child: mainContent,
+            );
+          }
+
+          return mainContent;
         },
       ),
     );
