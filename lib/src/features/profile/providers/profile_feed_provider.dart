@@ -6,10 +6,12 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
+import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_state.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:atproto/atproto.dart';
 
 part 'profile_feed_provider.g.dart';
 
@@ -19,6 +21,7 @@ typedef _FeedSourceFetcher = Future<({List<FeedViewPost> posts, String? cursor})
 class ProfileFeed extends _$ProfileFeed {
   late final FeedRepository _feedRepository;
   late final SQLCacheInterface _sqlCache;
+  late final SettingsRepository _settingsRepository;
   late final SparkLogger _logger;
   bool _isLoading = false;
 
@@ -26,6 +29,7 @@ class ProfileFeed extends _$ProfileFeed {
   Future<ProfileFeedState> build(AtUri profileUri, bool videosOnly) async {
     _feedRepository = GetIt.instance<SprkRepository>().feed;
     _sqlCache = GetIt.instance<SQLCacheInterface>();
+    _settingsRepository = GetIt.instance<SettingsRepository>();
     _logger = GetIt.instance<LogService>().getLogger('ProfileFeed ${profileUri.toString()}');
 
     try {
@@ -99,9 +103,35 @@ class ProfileFeed extends _$ProfileFeed {
     newPosts.sort((a, b) => b.indexedAt.compareTo(a.indexedAt));
     allPosts.addAll(newPosts.map((post) => post.uri));
 
-    final filteredPosts = videosOnly
+    // Get additional labels from followed labelers for new posts
+    if (newPosts.isNotEmpty) {
+      try {
+        final followedLabelers = await _settingsRepository.getFollowedLabelers();
+        final newPostUris = newPosts.map((post) => post.uri).toList();
+        final (cursor: _, labels: additionalLabels) = await _feedRepository.getLabels(newPostUris, sources: followedLabelers);
+        // Add the additional labels to the posts
+        for (final label in additionalLabels) {
+          _logger.d('Adding label ${label.value} to post ${label.uri}');
+          final uri = AtUri.parse(label.uri);
+          final post = postViews[uri];
+          if (post != null) {
+            final existingLabels = post.labels != null ? List<Label>.from(post.labels!) : <Label>[];
+            existingLabels.add(label);
+            postViews[uri] = post.copyWith(labels: existingLabels);
+          }
+        }
+      } catch (e) {
+        _logger.e('Error fetching additional labels: $e');
+      }
+    }
+
+    // Filter by video/non-video type first
+    final typeFilteredPosts = videosOnly
         ? allPosts.where((uri) => postTypes[uri] == true).toList()
         : allPosts.where((uri) => postTypes[uri] == false).toList();
+
+    // Then filter based on label preferences
+    final filteredPosts = await _filterHiddenPosts(typeFilteredPosts, postViews);
 
     final isEndOfNetwork =
         (sparkResult.cursor == null && bskyResult.cursor == null) ||
@@ -200,5 +230,68 @@ class ProfileFeed extends _$ProfileFeed {
       _logger.e('Error refreshing posts: $e');
       state = AsyncValue.error(e, StackTrace.current);
     }
+  }
+
+  /// Checks if a post should be hidden based on its labels and user preferences
+  Future<bool> _shouldHidePost(AtUri uri, List<Label> postLabels) async {
+    final hideAdultContent = await _settingsRepository.getHideAdultContent();
+    for (final label in postLabels) {
+      try {
+        final labelPreference = await _settingsRepository.getLabelPreference(label.value);
+        if (labelPreference.setting == Setting.hide || (labelPreference.adultOnly && hideAdultContent)) {
+          _logger.d('Hiding post ${uri.toString()} due to label: ${label.value}');
+          return true;
+        }
+      } catch (e) {
+        // Label preference not found, continue checking other labels
+        continue;
+      }
+    }
+    return false;
+  }
+
+  /// Filters URIs based on label preferences, removing posts that should be hidden
+  Future<List<AtUri>> _filterHiddenPosts(
+    List<AtUri> uris,
+    Map<AtUri, PostView> postViews,
+  ) async {
+    final filteredUris = <AtUri>[];
+
+    for (final uri in uris) {
+      final postView = postViews[uri];
+      if (postView != null) {
+        // Collect all labels for this post
+        final postLabels = <Label>[];
+
+        // Add labels from the post itself
+        if (postView.labels != null) {
+          postLabels.addAll(postView.labels!);
+        }
+
+        // Add self labels from the post record
+        if (postView.record.selfLabels != null) {
+          for (SelfLabel selfLabel in postView.record.selfLabels!) {
+            postLabels.add(
+              Label(
+                uri: postView.uri.toString(),
+                value: selfLabel.value,
+                src: postView.uri.toString(),
+                createdAt: postView.indexedAt,
+              ),
+            );
+          }
+        }
+
+        final shouldHide = await _shouldHidePost(uri, postLabels);
+        if (!shouldHide) {
+          filteredUris.add(uri);
+        }
+      } else {
+        // No post view means no labels, so include the post
+        filteredUris.add(uri);
+      }
+    }
+
+    return filteredUris;
   }
 }

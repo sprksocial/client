@@ -11,6 +11,7 @@ class InfoBar extends StatelessWidget {
   final String username;
   final String description;
   final List<String> hashtags;
+  final List<String> informLabels;
   final bool isSprk;
   final String? altText;
   final VoidCallback? onUsernameTap;
@@ -22,6 +23,7 @@ class InfoBar extends StatelessWidget {
     required this.username,
     required this.description,
     required this.hashtags,
+    this.informLabels = const [],
     this.isSprk = false,
     this.altText,
     this.onUsernameTap,
@@ -33,6 +35,7 @@ class InfoBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasDescription = description.isNotEmpty;
     final hasHashtags = hashtags.isNotEmpty;
+    final hasInformLabels = informLabels.isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,6 +55,10 @@ class InfoBar extends StatelessWidget {
         if (hasDescription && hasHashtags) const SizedBox(height: 6),
 
         if (hasHashtags) SizedBox(height: 25, child: HashtagList(hashtags: hashtags, onHashtagTap: onHashtagTap)),
+
+        if (hasInformLabels && (hasHashtags || hasDescription)) const SizedBox(height: 6),
+
+        if (hasInformLabels) _InformLabels(labels: informLabels),
       ],
     );
   }
@@ -88,6 +95,58 @@ class _AltButton extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _InformLabels extends StatelessWidget {
+  final List<String> labels;
+
+  const _InformLabels({required this.labels});
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 4,
+      children: labels.map((label) => _InformLabelChip(label: label)).toList(),
+    );
+  }
+}
+
+class _InformLabelChip extends StatelessWidget {
+  final String label;
+
+  const _InformLabelChip({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.blue.withAlpha(150),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.blue.withAlpha(100), width: 1),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            FluentIcons.info_16_regular,
+            color: AppColors.white,
+            size: 12,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(
+              color: AppColors.white,
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
       ),
     );
   }

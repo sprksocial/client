@@ -1,4 +1,6 @@
-import 'package:atproto_core/atproto_core.dart';
+import 'dart:ui';
+
+import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -8,6 +10,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/utils/label_utils.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 
 class ProfileGridWidget extends ConsumerStatefulWidget {
@@ -21,22 +24,24 @@ class ProfileGridWidget extends ConsumerStatefulWidget {
 }
 
 class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
-  final ScrollController _scrollController = ScrollController();
+  late final ScrollController scrollController;
 
   @override
   void initState() {
     super.initState();
-    _scrollController.addListener(_onScroll);
+    scrollController = ScrollController();
+    scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    scrollController.removeListener(_onScroll);
+    scrollController.dispose();
     super.dispose();
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 200) {
       ref.read(profileFeedProvider(widget.profileUri, widget.videosOnly).notifier).loadMore();
     }
   }
@@ -68,7 +73,7 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
         }
 
         return GridView.builder(
-          controller: _scrollController,
+          controller: scrollController,
           padding: const EdgeInsets.all(1),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 4,
@@ -93,7 +98,11 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
               return const SizedBox.shrink();
             }
 
-            return ProfileGridTile(postView: postView, postSource: postSource, onTap: () => _onPostTap(postUri));
+            return ProfileGridTile(
+              postView: postView,
+              postSource: postSource,
+              onTap: () => _onPostTap(postUri),
+            );
           },
         );
       },
@@ -135,7 +144,7 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
   }
 }
 
-class ProfileGridTile extends StatelessWidget {
+class ProfileGridTile extends StatefulWidget {
   final PostView postView;
   final String? postSource;
   final VoidCallback onTap;
@@ -143,27 +152,69 @@ class ProfileGridTile extends StatelessWidget {
   const ProfileGridTile({super.key, required this.postView, this.postSource, required this.onTap});
 
   @override
+  State<ProfileGridTile> createState() => _ProfileGridTileState();
+}
+
+class _ProfileGridTileState extends State<ProfileGridTile> {
+  bool _shouldBlur = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkContentWarning();
+  }
+
+  @override
+  void didUpdateWidget(covariant ProfileGridTile oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.postView.uri != oldWidget.postView.uri) {
+      _checkContentWarning();
+    }
+  }
+
+  Future<void> _checkContentWarning() async {
+    final labels = widget.postView.labels ?? [];
+    final shouldBlur = labels.isNotEmpty ? await LabelUtils.shouldBlurContent(labels) : false;
+    if (mounted) {
+      setState(() => _shouldBlur = shouldBlur);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final thumbnailUrl = postView.thumbnailUrl;
+    final thumbnailUrl = widget.postView.thumbnailUrl;
+
+    final image = thumbnailUrl.isNotEmpty
+        ? CachedNetworkImage(
+            imageUrl: thumbnailUrl,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => const SizedBox.shrink(),
+            errorWidget: (context, url, error) => Container(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              child: const Center(child: Icon(FluentIcons.error_circle_24_regular, size: 20)),
+            ),
+          )
+        : Container(
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 20)),
+          );
 
     return GestureDetector(
-      onTap: onTap,
+      onTap: widget.onTap,
       child: Container(
         color: AppColors.black,
         child: thumbnailUrl.isNotEmpty
             ? Stack(
                 fit: StackFit.expand,
                 children: [
-                  CachedNetworkImage(
-                    imageUrl: thumbnailUrl,
-                    fit: BoxFit.cover,
-                    placeholder: (context, url) => const SizedBox.shrink(),
-                    errorWidget: (context, url, error) => Container(
-                      color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                      child: const Center(child: Icon(FluentIcons.error_circle_24_regular, size: 20)),
-                    ),
-                  ),
-                  if (postSource != null)
+                  if (_shouldBlur)
+                    ImageFiltered(
+                      imageFilter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
+                      child: image,
+                    )
+                  else
+                    image,
+                  if (widget.postSource != null)
                     Positioned(
                       top: 4,
                       right: 4,
@@ -171,7 +222,7 @@ class ProfileGridTile extends StatelessWidget {
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(color: Colors.black.withAlpha(150), borderRadius: BorderRadius.circular(4)),
                         child: SvgPicture.asset(
-                          postSource == 'bsky' ? 'assets/images/bsky.svg' : 'assets/images/sprk.svg',
+                          widget.postSource == 'bsky' ? 'assets/images/bsky.svg' : 'assets/images/sprk.svg',
                           width: 12,
                           height: 12,
                         ),
@@ -181,7 +232,7 @@ class ProfileGridTile extends StatelessWidget {
               )
             : Container(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: const Center(child: Icon(FluentIcons.image_off_24_regular)),
+                child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 20)),
               ),
       ),
     );

@@ -69,4 +69,6 @@ abstract class DownloadManagerInterface {
   /// This should be called when the manager is no longer needed to prevent
   /// resource leaks and ensure graceful shutdown of ongoing operations.
   Future<void> dispose();
+
+  bool get poolFull;
 }

@@ -21,6 +21,7 @@ export 'package:sparksocial/src/features/home/ui/pages/empty_page.dart';
 export 'package:sparksocial/src/features/settings/ui/pages/feed_settings_page.dart';
 export 'package:sparksocial/src/features/home/ui/pages/placeholder_page.dart';
 export 'package:sparksocial/src/features/settings/ui/pages/feed_list_page.dart';
+export 'package:sparksocial/src/features/settings/ui/pages/label_settings_page.dart';
 export 'package:sparksocial/src/features/comments/ui/pages/comments_page.dart';
 export 'package:sparksocial/src/features/feed/ui/pages/standalone_post_page.dart';
 export 'package:sparksocial/src/features/comments/ui/pages/replies_page.dart';
