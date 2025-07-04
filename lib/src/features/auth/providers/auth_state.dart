@@ -10,6 +10,7 @@ class AuthState with _$AuthState {
   const factory AuthState({
     @Default(false) bool isAuthenticated,
     Session? session,
+    String? dmAccessToken,
     ATProto? atproto,
     @Default(false) bool isLoading,
     String? error,

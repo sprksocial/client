@@ -1,6 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:video_player/video_player.dart';
 
 part 'comment_state.freezed.dart';
 
@@ -12,7 +11,7 @@ class CommentState with _$CommentState {
     required ThreadViewPost thread,
     @Default(false) bool isVideoInitialized,
     @Default(false) bool isFirstImagePrecached,
-    VideoPlayerController? videoController,
+    String? videoUrl,
   }) = _CommentState;
   
   // Derive isLiked from the viewer state

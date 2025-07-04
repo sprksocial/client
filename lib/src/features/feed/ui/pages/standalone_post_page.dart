@@ -53,7 +53,12 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
       // If cache fails, fetch from network
       final feedRepository = GetIt.instance<SprkRepository>().feed;
       final uri = AtUri.parse(widget.postUri);
-      final isBlueskyPost = uri.collection.toString().startsWith('app.bsky.feed.post');
+      bool isBlueskyPost = false;
+      // try {
+        isBlueskyPost = uri.collection.toString().startsWith('app.bsky.feed.post');
+      // } catch (e) {
+        // what
+      // }
       final networkPost = await feedRepository.getPosts([uri], bluesky: isBlueskyPost);
 
       if (networkPost.isEmpty) {

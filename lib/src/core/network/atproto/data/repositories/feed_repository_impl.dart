@@ -1,12 +1,16 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:atproto/core.dart';
 import 'package:atproto/atproto.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:get_it/get_it.dart';
+import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
+import 'package:path/path.dart' as path;
+import 'package:sparksocial/src/core/config/app_config.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/feed_algorithms/hardcoded_feed_algorithm.dart';
@@ -330,7 +334,7 @@ class FeedRepositoryImpl implements FeedRepository {
           Map<String, dynamic>? embedJson;
           if (imageFiles case List<XFile> files when files.isNotEmpty) {
             _logger.d('Uploading ${files.length} images for comment');
-            final List<Image> uploadedImageMaps = await uploadImages(files, altTexts ?? {});
+            final List<Image> uploadedImageMaps = await uploadImages(imageFiles: files, altTexts: altTexts);
             embedJson = EmbedImage(images: uploadedImageMaps).toJson();
           }
 
@@ -398,7 +402,7 @@ class FeedRepositoryImpl implements FeedRepository {
           }
 
           if (_client.authRepository.atproto case final atproto?) {
-            final List<Image> uploadedImageMaps = await uploadImages(imageFiles, altTexts);
+            final List<Image> uploadedImageMaps = await uploadImages(imageFiles: imageFiles, altTexts: altTexts);
 
             // Create Sprk post first
             final record = PostRecord(
@@ -432,7 +436,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
   /// Helper to upload multiple images, stripping EXIF, and return a list of JSON maps for embedding
   @override
-  Future<List<Image>> uploadImages(List<XFile> imageFiles, Map<String, String> altTexts) async {
+  Future<List<Image>> uploadImages({required List<XFile> imageFiles, Map<String, String>? altTexts}) async {
     _logger.d('Processing ${imageFiles.length} images for upload');
 
     final List<Image> uploadedImageMaps = [];
@@ -464,7 +468,7 @@ class FeedRepositoryImpl implements FeedRepository {
                     _logger.d('Image uploaded successfully: ${imageFile.name}');
 
                     // Add the uploaded image to our result list
-                    uploadedImageMaps.add(Image(alt: altTexts[imageFile.path] ?? '', image: response.data.blob));
+                    uploadedImageMaps.add(Image(alt: altTexts?[imageFile.path] ?? '', image: response.data.blob));
                     break;
                   default:
                     _logger.e('Failed to upload image blob: ${response.status.code}');
@@ -480,6 +484,66 @@ class FeedRepositoryImpl implements FeedRepository {
 
     _logger.d('Successfully processed and uploaded ${uploadedImageMaps.length} images');
     return uploadedImageMaps;
+  }
+
+  @override
+  Future<Blob> uploadVideo(String videoPath) async {
+    _logger.d('Uploading video from path: $videoPath');
+
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+      final authAtProto = _client.authRepository.atproto;
+      if (authAtProto == null || authAtProto.session == null) {
+        throw Exception('AtProto not initialized');
+      }
+
+      // Handle file:// URL scheme
+      String cleanVideoPath = videoPath;
+      if (videoPath.startsWith('file://')) {
+        cleanVideoPath = videoPath.replaceFirst('file://', '');
+      }
+
+      // Validate the video file
+      final file = File(cleanVideoPath);
+      if (!await file.exists()) {
+        throw Exception('Video file not found: $cleanVideoPath');
+      }
+
+      // Check if the video is in a compatible format
+      final videoBytes = await file.readAsBytes();
+      if (videoBytes.isEmpty) {
+        throw Exception('Video file is empty');
+      }
+
+      _logger.i('Video file size: ${videoBytes.length} bytes');
+
+      final pdsService = authAtProto.service;
+      final serviceTokenRes = await authAtProto.server.getServiceAuth(
+        aud: 'did:web:$pdsService',
+        lxm: NSID.parse('com.atproto.repo.uploadBlob'),
+      );
+
+      final serviceToken = serviceTokenRes.data.token;
+      final response = await http.post(
+        Uri.parse('${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.uploadVideo'),
+        headers: {'Authorization': 'Bearer $serviceToken', 'Content-Type': _getContentType(cleanVideoPath)},
+        body: videoBytes,
+      );
+
+      if (response.statusCode != 200) {
+        throw Exception('Failed to upload video: ${response.statusCode} ${response.body}');
+      }
+
+      // Parse the response
+      final responseData = jsonDecode(response.body);
+      Blob blob;
+      //{'jobStatus': {'blob': blob}} = responseData; this is how it should work in the lexicon
+      blob = Blob.fromJson(responseData['blobRef']);
+      return blob;
+    });
   }
 
   /// Crosspost images to Bluesky using same blobs but Bluesky models
@@ -826,5 +890,23 @@ class FeedRepositoryImpl implements FeedRepository {
           throw Exception('Failed to post story: ${response.status} ${response.data}');
       }
     });
+  }
+
+  /// Helper method to determine content type based on file extension
+  String _getContentType(String videoPath) {
+    final extension = path.extension(videoPath).toLowerCase();
+
+    switch (extension) {
+      case '.mp4':
+        return 'video/mp4';
+      case '.mov':
+        return 'video/quicktime';
+      case '.avi':
+        return 'video/x-msvideo';
+      case '.webm':
+        return 'video/webm';
+      default:
+        return 'video/mp4'; // Default to mp4
+    }
   }
 }
