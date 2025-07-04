@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
@@ -38,7 +37,6 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   @override
   void dispose() {
     // Always remove splash screen when disposing splash page
-    FlutterNativeSplash.remove();
     super.dispose();
   }
 
@@ -173,30 +171,34 @@ class _SplashPageState extends ConsumerState<SplashPage> {
   void _navigateToLogin() {
     if (_isNavigating || !mounted) return;
     _isNavigating = true;
-    FlutterNativeSplash.remove();
     context.router.replaceAll([const LoginRoute()]);
   }
 
   void _navigateToRegister() {
     if (_isNavigating || !mounted) return;
     _isNavigating = true;
-    FlutterNativeSplash.remove();
     context.router.replaceAll([const RegisterRoute()]);
   }
 
   void _navigateToMain() {
     if (_isNavigating || !mounted) return;
     _isNavigating = true;
-    FlutterNativeSplash.remove();
     context.router.replaceAll([const MainRoute()]);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Show a minimal loading screen while keeping native splash active
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: AppColors.black,
-      body: Center(child: CircularProgressIndicator(color: AppColors.white)),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'assets/branding/intro.webp',
+            fit: BoxFit.cover,
+          ),
+        ],
+      ),
     );
   }
 }

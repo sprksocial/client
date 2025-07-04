@@ -40,7 +40,6 @@ dependencies:
   sqflite: ^2.4.2
   pool: ^1.5.0
   collection: ^1.19.1
-  flutter_native_splash: ^2.4.1
   carousel_slider: ^5.0.0
   smooth_video_progress: ^0.0.4
   imgly_editor: ^1.51.0
