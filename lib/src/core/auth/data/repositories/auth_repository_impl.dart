@@ -7,6 +7,7 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/core/auth/data/models/login_result.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:sparksocial/src/core/config/app_config.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 
@@ -14,6 +15,9 @@ import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 class AuthRepositoryImpl implements AuthRepository {
   Session? _session;
   ATProto? _atProto;
+  String? _dmAccessToken;
+  String? _dmRefreshToken;
+
   final _logger = GetIt.instance<LogService>().getLogger('AuthRepository');
 
   final Completer<void> _initCompleter = Completer<void>();
@@ -27,6 +31,12 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   ATProto? get atproto => _atProto;
+
+  @override
+  String? get dmAccessToken => _dmAccessToken;
+
+  @override
+  String? get dmRefreshToken => _dmRefreshToken;
 
   AuthRepositoryImpl() {
     _logger.i('Initializing AuthRepository');
@@ -67,6 +77,34 @@ class AuthRepositoryImpl implements AuthRepository {
     return DateTime.now().isAfter(token.exp.subtract(const Duration(minutes: 5)));
   }
 
+  /// Logs in the message service
+  @override
+  Future<void> loginMessageService() async {
+    try {
+      _logger.i('Logging in to message service');
+      final response = await http.post(
+        Uri.parse('${AppConfig.messagesServiceUrl}/auth/login-jwt'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'did': _session!.did, 'jwt': _session!.accessJwt}),
+      );
+      _logger.d('Message service login response status: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        _dmAccessToken = data['accessJwt'];
+        _dmRefreshToken = data['refreshJwt'];
+        await StorageManager.instance.secure.setString(StorageKeys.dmAccessToken, _dmAccessToken!);
+        await StorageManager.instance.secure.setString(StorageKeys.dmRefreshToken, _dmRefreshToken!);
+        _logger.i('Logged in to message service successfully');
+      } else {
+        throw Exception('Failed to login to message service: ${response.statusCode}');
+      }
+    } catch (e) {
+      _logger.e('Failed to login to message service', error: e);
+      rethrow;
+    }
+  }
+
   Future<void> _loadSavedSession() async {
     try {
       _logger.d('Loading saved session');
@@ -90,11 +128,64 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       _atProto = ATProto.fromSession(_session!);
+
+      _dmAccessToken = await StorageManager.instance.secure.getString(StorageKeys.dmAccessToken);
+      _dmRefreshToken = await StorageManager.instance.secure.getString(StorageKeys.dmRefreshToken);
+
+      try {
+        if (_dmAccessToken == null) {
+          _logger.w('DM access token not found, refreshing DM token');
+          if (!await refreshDMToken()) {
+            throw Exception('Failed to refresh DM token');
+          }
+        }
+        final response = await http.get(
+          Uri.parse('${AppConfig.messagesServiceUrl}/auth/session'),
+          headers: {'Authorization': 'Bearer $_dmAccessToken'},
+        );
+        _logger.d('DM session response status: ${response.statusCode}');
+
+        if (response.statusCode == 200) {
+          final data = jsonDecode(response.body);
+          _dmAccessToken = data['access_token'];
+          _dmRefreshToken = data['refresh_token'];
+        } else {
+          if (!await refreshDMToken()) {
+            throw Exception('Failed to refresh DM token');
+          }
+        }
+      } catch (e) {
+        if (!await refreshDMToken()) {
+          _logger.e('Failed to refresh DM token, trying to login again');
+          await loginMessageService();
+        }
+      }
+
       _logger.i('Session loaded successfully for user: ${_session!.handle}');
     } catch (e) {
       _logger.e('Error loading saved session', error: e);
       rethrow;
     }
+  }
+
+  @override
+  Future<bool> refreshDMToken() async {
+    _logger.i('Refreshing DM token $_dmRefreshToken');
+    final response = await http.post(
+      Uri.parse('${AppConfig.messagesServiceUrl}/auth/refresh'),
+      headers: {'Content-Type': 'application/json', 'Cookie': 'refresh_token=$_dmRefreshToken'},
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      await StorageManager.instance.secure.setString(StorageKeys.dmAccessToken, data['access_token']);
+      _dmAccessToken = data['access_token'];
+      _dmRefreshToken = data['refresh_token'];
+      await StorageManager.instance.secure.setString(StorageKeys.dmRefreshToken, data['refresh_token']);
+      return true;
+    }
+    _logger.e('Failed to refresh DM token: ${response.statusCode} - ${response.body}');
+    return false;
   }
 
   Future<void> _refreshSession() async {
@@ -130,6 +221,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
       _session = response.data;
 
+      await refreshDMToken();
+
       await _saveSession(_session!);
       _atProto = ATProto.fromSession(_session!);
       _logger.i('Session refreshed successfully');
@@ -146,6 +239,8 @@ class AuthRepositoryImpl implements AuthRepository {
       _logger.d('Saving session for user: ${sessionData.handle}');
       final sessionJson = sessionData.toJson();
       await StorageManager.instance.secure.setString(StorageKeys.userSession, json.encode(sessionJson));
+      await StorageManager.instance.secure.setString(StorageKeys.dmAccessToken, _dmAccessToken ?? '');
+      await StorageManager.instance.secure.setString(StorageKeys.dmRefreshToken, _dmRefreshToken ?? '');
       _logger.d('Session saved successfully');
     } catch (e) {
       _logger.e('Failed to save session', error: e);
@@ -214,6 +309,7 @@ class AuthRepositoryImpl implements AuthRepository {
         _atProto = ATProto.fromSession(_session!);
         await _saveSession(_session!);
         _logger.i('Login successful for user: $handle');
+        await loginMessageService();
 
         return LoginResult.success();
       } catch (e) {
@@ -250,16 +346,7 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       _logger.d('Account created, creating session');
-      Session session = Session.fromJson({
-        'did': createResponse.data.did,
-        'handle': handle,
-        'email': email,
-        'emailConfirmed': false,
-        'accessJwt': createResponse.data.accessJwt,
-        'refreshJwt': createResponse.data.refreshJwt,
-        'didDoc': createResponse.data.didDoc,
-        'active': true,
-      });
+      await login(handle, password);
 
       _session = session;
       if (_session == null) {
@@ -287,6 +374,12 @@ class AuthRepositoryImpl implements AuthRepository {
         await _clearSavedSession();
         _session = null;
         _atProto = null;
+        _dmAccessToken = null;
+        _dmRefreshToken = null;
+        await http.post(
+          Uri.parse('${AppConfig.messagesServiceUrl}/auth/logout'),
+          headers: {'Authorization': 'Bearer $_dmAccessToken', 'Cookie': 'refresh_token=$_dmRefreshToken'},
+        );
         _logger.i('Logout successful');
       }
     } catch (e) {

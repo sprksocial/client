@@ -8,7 +8,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_state.dart';
 import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
-import 'package:video_player/video_player.dart';
 
 part 'comment_provider.g.dart';
 
@@ -17,9 +16,6 @@ class CommentNotifier extends _$CommentNotifier {
   @override
   CommentState build(Thread thread) {
     _feedRepository = GetIt.instance<SprkRepository>().feed;
-    ref.onDispose(() {
-      state.videoController?.dispose();
-    });
     switch (thread) {
       case ThreadViewPost():
         return CommentState(thread: thread);
@@ -88,24 +84,10 @@ class CommentNotifier extends _$CommentNotifier {
     }
   }
 
-  void initializeVideoPlayer() {
-    final videoUrl = state.thread.post.videoUrl;
-    if (videoUrl != '') {
-      final videoController = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
-      state = state.copyWith(videoController: videoController, isVideoInitialized: true);
-    }
-  }
-
   void preloadFirstImage(BuildContext context) {
     final imageUrls = state.thread.post.imageUrls;
     if (imageUrls.isNotEmpty) {
       precacheImage(CachedNetworkImageProvider(imageUrls.first), context);
-    }
-  }
-
-  void toggleVideoPlayback() {
-    if (state.videoController != null && state.isVideoInitialized) {
-      state.videoController!.value.isPlaying ? state.videoController!.pause() : state.videoController!.play();
     }
   }
 }

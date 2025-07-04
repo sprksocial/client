@@ -192,4 +192,38 @@ class ActorRepositoryImpl implements ActorRepository {
       _logger.d('Preferences updated successfully');
     });
   }
+
+  @override
+  Future<List<ProfileViewDetailed>> getProfiles(List<String> dids) {
+    _logger.d('Getting profiles for DIDs: $dids');
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+      try {
+        final result = await atproto.get(
+          NSID.parse('so.sprk.actor.getProfiles'),
+          parameters: {'actors': dids},
+          headers: {'atproto-proxy': _client.sprkDid},
+          to: (jsonMap) => jsonMap,
+          adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+        );
+        return (result.data["profiles"] as List).map((json) => ProfileViewDetailed.fromJson(json)).toList();
+      } catch (e) {
+        _logger.e('Failed to retrieve profile for DIDs: $dids', error: e);
+        _logger.i('Trying to get profiles from bluesky');
+        final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
+        final profiles = await bluesky.actor.getProfiles(actors: dids);
+        _logger.d('Profiles retrieved successfully from bluesky');
+        return profiles.data.profiles.map((p) => ProfileViewDetailed.fromJson(p.toJson())).toList();
+      }
+    });
+  }
 }

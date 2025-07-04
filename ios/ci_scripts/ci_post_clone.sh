@@ -20,6 +20,7 @@ flutter pub get
 cat > .env << EOL
 VIDEO_SERVICE_URL=https://video.sprk.so
 SPRK_APPVIEW_URL=https://api.sprk.so
+MESSAGES_SERVICE_URL=https://chat.sprk.so
 EOL
 
 # Install CocoaPods using Homebrew.

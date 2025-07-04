@@ -82,7 +82,7 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
                         error: (error, stackTrace) => null,
                         loading: () => null,
                       ),
-                  username: session?.did ?? '',
+                  username: session?.handle ?? '',
                   size: 28,
                   borderWidth: 0,
                 ),

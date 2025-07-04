@@ -63,7 +63,6 @@ class AppRouter extends RootStackRouter {
       page: FeedSettingsRoute.page,
       path: '/settings',
       customRouteBuilder: feedSettingsBuilder,
-      children: [AutoRoute(page: FeedListRoute.page, path: 'list')], // settings tabs
     ),
 
     // Deep linking routes or routes that will be pushed on top of everything
