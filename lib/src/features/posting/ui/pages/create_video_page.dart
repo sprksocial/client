@@ -204,49 +204,55 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
           else
             CameraView(cameraController: cameraState.value?.controller, isInitialized: cameraState.value?.isInitialized ?? false),
 
-          Positioned(
-            top: 20,
-            left: 20,
-            child: GestureDetector(
-              onTap: () => context.router.maybePop(),
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: Colors.black.withAlpha(100), shape: BoxShape.circle),
-                child: const Icon(FluentIcons.dismiss_24_regular, color: Colors.white, size: 24),
-              ),
-            ),
-          ),
-
-          Positioned(
-            top: 20,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: ModeSelector(
-                isVideoMode: _isVideoMode,
-                onModeSelected: (isVideoMode) => setState(() => _isVideoMode = isVideoMode),
-              ),
-            ),
-          ),
-
-          Positioned(
-            bottom: 30,
-            left: 0,
-            right: 0,
-            child: Column(
+          SafeArea(
+            child: Stack(
               children: [
-                if (_isVideoMode) ...[
-                  RecordingBar(isRecording: _isRecording, progress: _recordingProgress, timeText: _recordingTimeText),
-                  const SizedBox(height: 20),
-                ],
-
-                CameraControls(
-                  isVideoMode: _isVideoMode,
-                  isRecording: _isRecording,
-                  onCapturePressed: _onCapturePressed,
-                  onFlipCameraPressed: () => ref.read(cameraProvider.notifier).flipCamera(),
-                  onGalleryPressed: _onVideoGalleryPressed,
-                  onImageGalleryPressed: _onImageGalleryPressed,
+                Positioned(
+                  top: 20,
+                  left: 20,
+                  child: GestureDetector(
+                    onTap: () => context.router.maybePop(),
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: Colors.black.withAlpha(100), shape: BoxShape.circle),
+                      child: const Icon(FluentIcons.dismiss_24_regular, color: Colors.white, size: 24),
+                    ),
+                  ),
+                ),
+            
+                Positioned(
+                  top: 20,
+                  left: 0,
+                  right: 0,
+                  child: Center(
+                    child: ModeSelector(
+                      isVideoMode: _isVideoMode,
+                      onModeSelected: (isVideoMode) => setState(() => _isVideoMode = isVideoMode),
+                    ),
+                  ),
+                ),
+            
+                Positioned(
+                  bottom: 30,
+                  left: 0,
+                  right: 0,
+                  child: Column(
+                    children: [
+                      if (_isVideoMode) ...[
+                        RecordingBar(isRecording: _isRecording, progress: _recordingProgress, timeText: _recordingTimeText),
+                        const SizedBox(height: 20),
+                      ],
+            
+                      CameraControls(
+                        isVideoMode: _isVideoMode,
+                        isRecording: _isRecording,
+                        onCapturePressed: _onCapturePressed,
+                        onFlipCameraPressed: () => ref.read(cameraProvider.notifier).flipCamera(),
+                        onGalleryPressed: _onVideoGalleryPressed,
+                        onImageGalleryPressed: _onImageGalleryPressed,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
