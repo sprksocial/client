@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
+import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/messages/providers/conversations_provider.dart';
 
 @RoutePage()
@@ -67,9 +68,7 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
                   Container(height: 0.5, width: double.infinity, color: theme.colorScheme.outline),
                   Expanded(
                     child: _selectedTabIndex == 0
-                        ? MessagesTab(
-                            onRefresh: () => {ref.invalidate(conversationsProvider)},
-                          )
+                        ? MessagesTab(onRefresh: () => {ref.invalidate(conversationsProvider)})
                         : const ActivitiesTab(),
                   ),
                 ],
@@ -183,12 +182,10 @@ class MessagesTab extends ConsumerWidget {
             // final conversation = data.conversations[index];
 
             return ListTile(
-              leading: CircleAvatar(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-                child: Text(
-                  (data.conversations[index].$1.displayName ?? data.conversations[index].$1.handle)[0].toUpperCase(),
-                  style: const TextStyle(color: Colors.white),
-                ),
+              leading: UserAvatar(
+                imageUrl: data.conversations[index].$1.avatar.toString(),
+                username: data.conversations[index].$1.handle,
+                size: 36,
               ),
               title: Text(
                 data.conversations[index].$1.displayName ?? data.conversations[index].$1.handle,
