@@ -215,7 +215,7 @@ class ActorRepositoryImpl implements ActorRepository {
           to: (jsonMap) => jsonMap,
           adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
         );
-        return (result.data as List).map((json) => ProfileViewDetailed.fromJson(json)).toList();
+        return (result.data["profiles"] as List).map((json) => ProfileViewDetailed.fromJson(json)).toList();
       } catch (e) {
         _logger.e('Failed to retrieve profile for DIDs: $dids', error: e);
         _logger.i('Trying to get profiles from bluesky');

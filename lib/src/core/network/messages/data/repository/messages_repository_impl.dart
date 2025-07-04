@@ -95,18 +95,9 @@ class MessagesRepositoryImpl implements MessagesRepository {
             .map((json) => json['sender_did'] != userDid ? json['sender_did'] as String : json['receiver_did'] as String)
             .where((did) => did.startsWith('did:plc:'))
             .toList();
-        // final profiles = await actorRepository.getProfiles(profileDids);
-        final profiles = <Future<ProfileViewDetailed>>[];
-        for (var did in profileDids) {
-          try {
-            profiles.add(actorRepository.getProfile(did));
-          } catch (e) {
-            //
-          }
-        }
-        final profileFutures = await Future.wait(profiles);
+        final profiles = await actorRepository.getProfiles(profileDids);
         final conversationsList = <(ProfileViewDetailed, Message)>[];
-        profileFutures.asMap().forEach((index, profile) {
+        profiles.asMap().forEach((index, profile) {
           conversationsList.add((profile, messages[index]));
         });
 
@@ -143,7 +134,7 @@ class MessagesRepositoryImpl implements MessagesRepository {
         return Message.fromJson(data['message']);
       } else if (response.statusCode == 401) {
         await _refreshIfExpired();
-        
+
         throw Exception('Não autorizado, vê aí se o token tá valido memo');
       } else {
         throw Exception('Erro ao enviar mensagem: ${response.statusCode} - ${response.body}');
