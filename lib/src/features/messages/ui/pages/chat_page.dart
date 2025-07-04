@@ -6,6 +6,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
@@ -107,38 +108,41 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
-        title: Row(
-          children: [
-            UserAvatar(
-              imageUrl: widget.otherUserAvatar,
-              username: widget.otherUserHandle ?? 'User',
-              size: 36,
-              backgroundColor: getAvatarColor((widget.otherUserHandle ?? 'User').hashCode),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _getConversationTitle(),
-                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  Text(
-                    '@${widget.otherUserHandle ?? 'user'}',
-                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(178), fontSize: 12),
-                  ),
-                ],
+        title: GestureDetector(
+          onTap: () => context.router.push(ProfileRoute(did: widget.otherUserDid)),
+          child: Row(
+            children: [
+              UserAvatar(
+                imageUrl: widget.otherUserAvatar,
+                username: widget.otherUserHandle ?? 'User',
+                size: 36,
+                backgroundColor: getAvatarColor((widget.otherUserHandle ?? 'User').hashCode),
               ),
-            ),
-          ],
-        ),
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: Icon(FluentIcons.more_vertical_24_regular, color: Theme.of(context).colorScheme.onSurface),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _getConversationTitle(),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 16),
+                    ),
+                    Text(
+                      '@${widget.otherUserHandle ?? 'user'}',
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(178), fontSize: 12),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
+        // actions: [
+        //   IconButton(
+        //     onPressed: () {},
+        //     icon: Icon(FluentIcons.more_vertical_24_regular, color: Theme.of(context).colorScheme.onSurface),
+        //   ),
+        // ],
         backgroundColor: Theme.of(context).colorScheme.surface,
         elevation: 0,
       ),
