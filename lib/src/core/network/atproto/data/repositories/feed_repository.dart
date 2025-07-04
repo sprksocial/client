@@ -79,7 +79,12 @@ abstract class FeedRepository {
   ///
   /// [imageFiles] List of image files to upload
   /// [altTexts] Map of file paths to alt texts
-  Future<List<Image>> uploadImages(List<XFile> imageFiles, Map<String, String> altTexts);
+  Future<List<Image>> uploadImages({required List<XFile> imageFiles, Map<String, String>? altTexts});
+
+  /// Upload a video to the server
+  ///
+  /// [videoPath] The path to the video file
+  Future<Blob> uploadVideo(String videoPath);
 
   /// Post a video to the user's feed
   ///

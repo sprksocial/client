@@ -120,7 +120,10 @@ class _StoryReviewPageState extends ConsumerState<StoryReviewPage> {
 
   Future<void> _postImageStory() async {
     final feedRepository = GetIt.I<SprkRepository>().feed;
-    final uploadedImageMaps = await feedRepository.uploadImages([widget.imageFile], {widget.imageFile.path: _altText});
+    final uploadedImageMaps = await feedRepository.uploadImages(
+      imageFiles: [widget.imageFile],
+      altTexts: {widget.imageFile.path: _altText},
+    );
 
     if (uploadedImageMaps.isNotEmpty) {
       ref.read(

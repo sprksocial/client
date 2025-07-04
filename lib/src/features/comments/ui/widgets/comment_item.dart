@@ -1,6 +1,5 @@
 import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,14 +8,14 @@ import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dar
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/widgets/image_content.dart';
 import 'package:sparksocial/src/core/widgets/menu_action_button.dart';
 import 'package:sparksocial/src/core/widgets/report_dialog.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
+import 'package:sparksocial/src/core/widgets/video_content.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_provider.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_state.dart';
 import 'package:sparksocial/src/features/comments/providers/comments_page_provider.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
-import 'package:video_player/video_player.dart';
 
 class CommentItem extends ConsumerStatefulWidget {
   final ThreadViewPost thread;
@@ -37,38 +36,6 @@ class _CommentItemState extends ConsumerState<CommentItem> {
 
   void _navigateToProfile() {
     context.router.push(ProfileRoute(did: commentState.thread.post.author.did));
-  }
-
-  void _showImageCarousel() {
-    if (commentState.thread.post.embed == null) return;
-
-    showDialog(
-      context: context,
-      barrierColor: Colors.black.withValues(alpha: 217),
-      builder: (BuildContext context) {
-        return Dialog(
-          backgroundColor: Colors.transparent,
-          insetPadding: EdgeInsets.zero,
-          child: Stack(
-            children: [
-              ImageCarousel(
-                imageUrls: commentState.thread.post.imageUrls,
-                alts: (commentState.thread.post.embed as EmbedViewImage).images.map((e) => e.alt ?? '').toList(),
-              ),
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 10,
-                right: 10,
-                child: IconButton(
-                  icon: const Icon(FluentIcons.dismiss_24_filled, color: Colors.white, size: 30),
-                  onPressed: () => context.router.maybePop(),
-                  style: IconButton.styleFrom(backgroundColor: Colors.black.withValues(alpha: 77)),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
   }
 
   void _handleReportComment() {
@@ -136,7 +103,6 @@ class _CommentItemState extends ConsumerState<CommentItem> {
   @override
   Widget build(BuildContext context) {
     commentState = ref.watch(commentNotifierProvider(widget.thread));
-    final imageCount = commentState.thread.post.imageUrls.length;
     const double thumbnailSize = 120.0;
 
     final borderRadius = BorderRadius.circular(8);
@@ -206,63 +172,13 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                     if (commentState.thread.post.embed != null) ...[
                       const SizedBox(height: 8),
                       if (hasImages)
-                        GestureDetector(
-                          onTap: _showImageCarousel,
-                          child: Container(
-                            width: thumbnailSize,
-                            height: thumbnailSize,
-                            clipBehavior: Clip.antiAlias,
-                            decoration: BoxDecoration(
-                              borderRadius: borderRadius,
-                              border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 0.5),
-                              color: Theme.of(context).colorScheme.surface,
-                            ),
-                            child: Stack(
-                              fit: StackFit.expand,
-                              children: [
-                                CachedNetworkImage(
-                                  imageUrl: commentState.thread.post.imageUrls.first,
-                                  fit: BoxFit.cover,
-                                  placeholder: (context, url) => Container(
-                                    color: Colors.grey[850]?.withValues(alpha: 128),
-                                    child: const Center(
-                                      child: SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
-                                      ),
-                                    ),
-                                  ),
-                                  errorWidget: (context, url, error) => Container(
-                                    color: AppColors.darkPurple.withValues(alpha: 26),
-                                    child: const Center(
-                                      child: Icon(FluentIcons.image_off_24_regular, size: 24, color: Colors.white70),
-                                    ),
-                                  ),
-                                ),
-
-                                if (imageCount > 1)
-                                  Positioned(
-                                    top: 4,
-                                    right: 4,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withValues(alpha: 179),
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Text(
-                                        '+${imageCount - 1}',
-                                        style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
+                        ImageContent(
+                          imageUrls: commentState.thread.post.imageUrls,
+                          borderRadius: borderRadius,
+                          thumbnailSize: thumbnailSize,
                         )
                       else if (hasVideo)
-                        _VideoContent(ref: ref, commentState: commentState, context: context, borderRadius: borderRadius),
+                        VideoContent(borderRadius: borderRadius, videoUrl: commentState.thread.post.videoUrl),
                     ],
 
                     const SizedBox(height: 8),
@@ -374,53 +290,6 @@ class _ActionButtons extends StatelessWidget {
           child: Text('Reply', style: TextStyle(fontSize: 12, color: secondaryTextColor)),
         ),
       ],
-    );
-  }
-}
-
-class _VideoContent extends StatelessWidget {
-  const _VideoContent({required this.ref, required this.commentState, required this.context, required this.borderRadius});
-
-  final WidgetRef ref;
-  final CommentState commentState;
-  final BuildContext context;
-  final BorderRadius borderRadius;
-
-  @override
-  Widget build(BuildContext context) {
-    final notifier = ref.read(CommentNotifierProvider(commentState.thread).notifier);
-    return GestureDetector(
-      onTap: notifier.toggleVideoPlayback,
-      child: Container(
-        width: double.infinity,
-        height: 200,
-        decoration: BoxDecoration(
-          borderRadius: borderRadius,
-          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 0.5),
-          color: Colors.black,
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            if (commentState.videoController != null && commentState.isVideoInitialized)
-              AspectRatio(
-                aspectRatio: commentState.videoController!.value.aspectRatio,
-                child: VideoPlayer(commentState.videoController!),
-              ),
-
-            if (!commentState.isVideoInitialized) const CircularProgressIndicator(color: AppColors.white),
-
-            if (commentState.isVideoInitialized && !commentState.videoController!.value.isPlaying)
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(color: Colors.black.withValues(alpha: 128), shape: BoxShape.circle),
-                child: const Icon(FluentIcons.play_24_filled, size: 24, color: Colors.white),
-              ),
-          ],
-        ),
-      ),
     );
   }
 }

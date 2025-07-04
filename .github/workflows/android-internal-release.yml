@@ -49,9 +49,10 @@ jobs:
 
       - name: Setup env
         run: |
-          echo "VIDEO_SERVICE_URL=${{ secrets.VIDEO_SERVICE_URL }}" >> .env
-          echo "SPRK_APPVIEW_URL=${{ secrets.SPRK_APPVIEW_URL }}" >> .env
-          echo "SIGNUPS_DISABLED=${{ secrets.SIGNUPS_DISABLED }}" >> .env
+          echo "VIDEO_SERVICE_URL=https://video.sprk.so" >> .env
+          echo "SPRK_APPVIEW_URL=https://api.sprk.so" >> .env
+          echo "MESSAGES_SERVICE_URL=https://chat.sprk.so" >> .env
+          echo "SIGNUPS_DISABLED=false" >> .env
 
       - name: Set versionCode (commit count + run attempt)
         run: |
