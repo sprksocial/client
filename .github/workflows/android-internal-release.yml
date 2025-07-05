@@ -25,8 +25,10 @@ jobs:
           fetch-depth: 0
 
       - name: Setup JDK 17
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
+          distribution: "temurin"
+          cache: "gradle"
           java-version: 17
 
       - name: Setup Flutter

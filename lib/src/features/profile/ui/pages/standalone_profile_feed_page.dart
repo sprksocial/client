@@ -1,5 +1,5 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:atproto_core/atproto_core.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
@@ -9,16 +9,15 @@ import 'package:sparksocial/src/features/profile/ui/widgets/profile_feed_post_wi
 
 @RoutePage()
 class StandaloneProfileFeedPage extends ConsumerStatefulWidget {
-  final String profileUri;
-  final bool videosOnly;
-  final int initialPostIndex;
-
   const StandaloneProfileFeedPage({
-    super.key,
     required this.profileUri,
     required this.videosOnly,
     required this.initialPostIndex,
+    super.key,
   });
+  final String profileUri;
+  final bool videosOnly;
+  final int initialPostIndex;
 
   @override
   ConsumerState<StandaloneProfileFeedPage> createState() => _StandaloneProfileFeedPageState();
@@ -47,7 +46,7 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
 
     return Scaffold(
       backgroundColor: AppColors.black,
-      appBar: AppBar(backgroundColor: AppColors.black, leading: AutoLeadingButton()),
+      appBar: AppBar(backgroundColor: AppColors.black, leading: const AutoLeadingButton()),
       body: feedState.when(
         data: (state) {
           if (state.loadedPosts.isEmpty) {
@@ -71,7 +70,6 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
           return CacheablePageView.builder(
             controller: pageController,
             scrollDirection: Axis.vertical,
-            pageSnapping: true,
             itemCount: state.loadedPosts.length,
             onPageChanged: (index) {
               // Load more posts when approaching the end

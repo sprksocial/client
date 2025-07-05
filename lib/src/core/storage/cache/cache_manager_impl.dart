@@ -1,24 +1,16 @@
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:atproto/core.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:sparksocial/src/core/storage/cache/cache_manager_interface.dart';
 import 'package:get_it/get_it.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/storage/cache/cache_manager_interface.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 
 /// Manages temporary cache files for the application
 class CacheManagerImpl implements CacheManagerInterface {
-  /// Singleton instance
-  static final CacheManagerImpl _instance = CacheManagerImpl._();
-
-  /// Default cache manager for most files
-  late final CacheManager cacheManager;
-
-  /// Logger for debugging
-  late final SparkLogger _logger;
-
   /// Private constructor
   CacheManagerImpl._() {
     cacheManager = CacheManager(
@@ -29,6 +21,15 @@ class CacheManagerImpl implements CacheManagerInterface {
     );
     _logger = GetIt.instance<LogService>().getLogger('CacheManager');
   }
+
+  /// Singleton instance
+  static final CacheManagerImpl _instance = CacheManagerImpl._();
+
+  /// Default cache manager for most files
+  late final CacheManager cacheManager;
+
+  /// Logger for debugging
+  late final SparkLogger _logger;
 
   /// Get the singleton instance
   static CacheManagerImpl get instance => _instance;
@@ -48,7 +49,7 @@ class CacheManagerImpl implements CacheManagerInterface {
     return null;
   }
 
-    /// Download blob from AT Protocol API
+  /// Download blob from AT Protocol API
   Future<Uint8List> _downloadAtProtocolBlob(String did, String cid) async {
     try {
       final sprkRepository = GetIt.instance<SprkRepository>();
@@ -151,7 +152,7 @@ class CacheManagerImpl implements CacheManagerInterface {
   @override
   Future<int> getCacheSize() async {
     final cacheDir = await getTemporaryDirectory();
-    return await _calculateDirSize(cacheDir);
+    return _calculateDirSize(cacheDir);
   }
 
   /// Clear all cached files
@@ -178,7 +179,7 @@ class CacheManagerImpl implements CacheManagerInterface {
 
   /// Helper method to calculate directory size
   Future<int> _calculateDirSize(Directory dir) async {
-    int totalSize = 0;
+    var totalSize = 0;
     try {
       if (dir.existsSync()) {
         dir.listSync(recursive: true, followLinks: false).forEach((FileSystemEntity entity) {

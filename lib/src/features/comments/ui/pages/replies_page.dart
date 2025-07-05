@@ -10,9 +10,8 @@ import 'package:sparksocial/src/features/comments/ui/widgets/comment_item.dart';
 
 @RoutePage()
 class RepliesPage extends ConsumerStatefulWidget {
+  const RepliesPage({required this.postUri, super.key});
   final String postUri;
-
-  const RepliesPage({super.key, required this.postUri});
 
   @override
   ConsumerState<RepliesPage> createState() => _RepliesPageState();
@@ -84,8 +83,8 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
             children: [
               if (data.thread.parent is ThreadViewPost)
                 CommentItem(
-                  key: ValueKey('comment-${(data.thread.parent as ThreadViewPost).post.uri}'),
-                  thread: data.thread.parent as ThreadViewPost,
+                  key: ValueKey('comment-${(data.thread.parent! as ThreadViewPost).post.uri}'),
+                  thread: data.thread.parent! as ThreadViewPost,
                   mainPostUri: AtUri.parse(widget.postUri),
                 ),
               Expanded(
@@ -96,7 +95,7 @@ class _RepliesPageState extends ConsumerState<RepliesPage> {
                   ),
                   itemCount: data.thread.replies?.length ?? 0,
                   itemBuilder: (context, index) {
-                    final comment = data.thread.replies?[index] as ThreadViewPost;
+                    final comment = data.thread.replies![index] as ThreadViewPost;
                     return CommentItem(
                       key: ValueKey('comment-${comment.post.cid}'),
                       thread: comment,

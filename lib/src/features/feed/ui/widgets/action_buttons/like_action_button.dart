@@ -1,15 +1,14 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
-import '../../../../../core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/action_button.dart';
 
 class LikeActionButton extends StatefulWidget {
+  const LikeActionButton({required this.count, super.key, this.isLiked = false, this.onPressed});
   final String count;
   final bool isLiked;
   final VoidCallback? onPressed;
-
-  const LikeActionButton({super.key, required this.count, this.isLiked = false, this.onPressed});
 
   @override
   State<LikeActionButton> createState() => _LikeActionButtonState();
@@ -28,8 +27,8 @@ class _LikeActionButtonState extends State<LikeActionButton> with SingleTickerPr
     _animationController = AnimationController(duration: const Duration(milliseconds: 400), vsync: this);
 
     _scaleAnimation = TweenSequence([
-      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.4), weight: 50),
-      TweenSequenceItem(tween: Tween<double>(begin: 1.4, end: 1.0), weight: 50),
+      TweenSequenceItem(tween: Tween<double>(begin: 1, end: 1.4), weight: 50),
+      TweenSequenceItem(tween: Tween<double>(begin: 1.4, end: 1), weight: 50),
     ]).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
   }
 

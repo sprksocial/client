@@ -2,6 +2,15 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
 class CameraControls extends StatelessWidget {
+  const CameraControls({
+    required this.isVideoMode,
+    required this.isRecording,
+    required this.onCapturePressed,
+    required this.onFlipCameraPressed,
+    required this.onGalleryPressed,
+    required this.onImageGalleryPressed,
+    super.key,
+  });
   final bool isVideoMode;
   final bool isRecording;
   final VoidCallback onCapturePressed;
@@ -9,23 +18,12 @@ class CameraControls extends StatelessWidget {
   final VoidCallback onGalleryPressed;
   final VoidCallback onImageGalleryPressed;
 
-  const CameraControls({
-    super.key,
-    required this.isVideoMode,
-    required this.isRecording,
-    required this.onCapturePressed,
-    required this.onFlipCameraPressed,
-    required this.onGalleryPressed,
-    required this.onImageGalleryPressed,
-  });
-
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (isVideoMode)
             TooltipIconButton(icon: FluentIcons.image_multiple_24_regular, onPressed: onGalleryPressed, tooltip: 'Select Video')
@@ -46,7 +44,7 @@ class CameraControls extends StatelessWidget {
 }
 
 class TooltipIconButton extends StatelessWidget {
-  const TooltipIconButton({super.key, required this.icon, required this.onPressed, required this.tooltip});
+  const TooltipIconButton({required this.icon, required this.onPressed, required this.tooltip, super.key});
 
   final IconData icon;
   final VoidCallback onPressed;
@@ -65,7 +63,7 @@ class TooltipIconButton extends StatelessWidget {
 }
 
 class CaptureButton extends StatelessWidget {
-  const CaptureButton({super.key, required this.isRecording, required this.onCapturePressed, required this.isVideoMode});
+  const CaptureButton({required this.isRecording, required this.onCapturePressed, required this.isVideoMode, super.key});
 
   final bool isRecording;
   final VoidCallback onCapturePressed;
@@ -73,9 +71,9 @@ class CaptureButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double size = isRecording ? 50.0 : 70.0;
-    final double innerPadding = isRecording ? 5.0 : 3.0;
-    final innerShape = isRecording ? BorderRadius.circular(8.0) : null;
+    final size = isRecording ? 50.0 : 70.0;
+    final innerPadding = isRecording ? 5.0 : 3.0;
+    final innerShape = isRecording ? BorderRadius.circular(8) : null;
 
     return GestureDetector(
       onTap: onCapturePressed,

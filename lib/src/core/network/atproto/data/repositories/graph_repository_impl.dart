@@ -2,22 +2,22 @@ import 'dart:convert';
 
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
 
 /// Implementation of Graph-related API endpoints
 class GraphRepositoryImpl implements GraphRepository {
-  final SprkRepository _client;
-  late final SettingsRepository _settingsRepository;
-  final _logger = GetIt.instance<LogService>().getLogger('GraphRepository');
-
   GraphRepositoryImpl(this._client) {
     _logger.v('GraphRepository initialized');
   }
+  final SprkRepository _client;
+  late final SettingsRepository _settingsRepository;
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('GraphRepository');
 
   @override
   Future<FollowersResponse> getFollowers(String did) async {
@@ -39,7 +39,7 @@ class GraphRepositoryImpl implements GraphRepository {
         parameters: {'actor': did},
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) => jsonMap,
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
       _logger.d('Followers retrieved successfully');
       return FollowersResponse.fromJson(result.data as Map<String, dynamic>);
@@ -66,7 +66,7 @@ class GraphRepositoryImpl implements GraphRepository {
         parameters: {'actor': did},
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) => jsonMap,
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
       _logger.d('Follows retrieved successfully');
       return FollowsResponse.fromJson(result.data as Map<String, dynamic>);
@@ -94,6 +94,8 @@ class GraphRepositoryImpl implements GraphRepository {
         throw Exception('Session DID not available');
       }
       try {
+        /// goofy late check to ensure settings repository is initialized
+        // ignore: unnecessary_statements
         _settingsRepository; // goofy late check
       } catch (e) {
         _settingsRepository = GetIt.instance<SettingsRepository>();
@@ -116,7 +118,7 @@ class GraphRepositoryImpl implements GraphRepository {
           throw Exception('Already following this user');
         }
 
-        final followRecord = {"\$type": recordType, "subject": did, "createdAt": DateTime.now().toUtc().toIso8601String()};
+        final followRecord = {r'$type': recordType, 'subject': did, 'createdAt': DateTime.now().toUtc().toIso8601String()};
 
         final result = await atproto.repo.createRecord(collection: collection, record: followRecord);
 

@@ -2,13 +2,12 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
 class CameraPermissionRequest extends StatelessWidget {
+  const CameraPermissionRequest({required this.onRequestPermission, super.key});
   final VoidCallback onRequestPermission;
-
-  const CameraPermissionRequest({super.key, required this.onRequestPermission});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return ColoredBox(
       color: Colors.black,
       child: Center(
         child: Column(

@@ -4,14 +4,6 @@ import 'package:flutter/material.dart';
 
 /// A customizable user avatar with fallback options when no image is available
 class UserAvatar extends StatelessWidget {
-  final String? imageUrl;
-  final String username;
-  final double size;
-  final Color? borderColor;
-  final double borderWidth;
-  final Color? backgroundColor;
-  final Color? fallbackTextColor;
-
   const UserAvatar({
     super.key,
     this.imageUrl,
@@ -22,6 +14,13 @@ class UserAvatar extends StatelessWidget {
     this.backgroundColor,
     this.fallbackTextColor,
   });
+  final String? imageUrl;
+  final String username;
+  final double size;
+  final Color? borderColor;
+  final double borderWidth;
+  final Color? backgroundColor;
+  final Color? fallbackTextColor;
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +64,7 @@ class UserAvatar extends StatelessWidget {
       child: CachedNetworkImage(
         imageUrl: imageUrl!,
         fit: BoxFit.cover,
-        placeholder: (context, url) => Container(
+        placeholder: (context, url) => ColoredBox(
           color: effectiveBackgroundColor,
           child: Center(
             child: username.isNotEmpty
@@ -76,7 +75,7 @@ class UserAvatar extends StatelessWidget {
                 : Icon(FluentIcons.person_24_regular, size: size * 0.5, color: effectiveFallbackTextColor),
           ),
         ),
-        errorWidget: (context, url, error) => Container(
+        errorWidget: (context, url, error) => ColoredBox(
           color: effectiveBackgroundColor,
           child: Center(
             child: username.isNotEmpty

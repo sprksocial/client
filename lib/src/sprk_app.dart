@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/di/service_locator.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
+import 'package:sparksocial/src/core/theme/data/models/app_theme.dart';
+import 'package:sparksocial/src/core/theme/domain/theme_provider.dart';
 
-import 'core/theme/data/models/app_theme.dart';
-import 'core/theme/domain/theme_provider.dart';
-
-/// SprkApp is the root widget of the new architecture.
-/// As features are migrated, they will be integrated here.
 class SprkApp extends ConsumerStatefulWidget {
   const SprkApp({super.key});
 
@@ -31,7 +27,6 @@ class _SprkAppState extends ConsumerState<SprkApp> {
     // Force dark status bar and navigation bar
     SystemChrome.setSystemUIOverlayStyle(AppTheme.darkSystemUiStyle);
 
-    // Watch theme mode from the provider
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
@@ -43,11 +38,4 @@ class _SprkAppState extends ConsumerState<SprkApp> {
       routerConfig: _appRouter.config(),
     );
   }
-}
-
-/// This method configures all dependencies required for the new architecture.
-/// It should be called before the app starts.
-Future<void> configureDependencies() async {
-  // Initialize GetIt
-  await initServiceLocator();
 }

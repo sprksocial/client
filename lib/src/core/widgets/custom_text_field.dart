@@ -2,22 +2,21 @@ import 'package:flutter/material.dart';
 
 /// A custom styled text field with optional undo functionality.
 class CustomTextField extends StatelessWidget {
+  const CustomTextField({
+    required this.controller,
+    required this.hintText,
+    super.key,
+    this.fillColor,
+    this.maxLines = 1,
+    this.onUndo,
+    this.validator,
+  });
   final TextEditingController controller;
   final String hintText;
   final Color? fillColor;
   final int maxLines;
   final VoidCallback? onUndo;
   final String? Function(String?)? validator;
-
-  const CustomTextField({
-    super.key,
-    required this.controller,
-    required this.hintText,
-    this.fillColor,
-    this.maxLines = 1,
-    this.onUndo,
-    this.validator,
-  });
 
   @override
   Widget build(BuildContext context) {

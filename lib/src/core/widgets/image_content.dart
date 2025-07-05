@@ -6,7 +6,7 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
 
 class ImageContent extends StatelessWidget {
-  const ImageContent({super.key, required this.imageUrls, required this.borderRadius, this.thumbnailSize = 100});
+  const ImageContent({required this.imageUrls, required this.borderRadius, super.key, this.thumbnailSize = 100});
   final List<String> imageUrls;
   final BorderRadius borderRadius;
   final double thumbnailSize;
@@ -63,7 +63,7 @@ class ImageContent extends StatelessWidget {
                   child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54)),
                 ),
               ),
-              errorWidget: (context, url, error) => Container(
+              errorWidget: (context, url, error) => ColoredBox(
                 color: AppColors.darkPurple.withValues(alpha: 26),
                 child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 24, color: Colors.white70)),
               ),

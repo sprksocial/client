@@ -67,6 +67,7 @@ class CustomFeed with _$CustomFeed {
 /// HardCoded feeds are "fake" and completely generated in the frontend
 @freezed
 class Feed with _$Feed {
+  factory Feed.fromJson(Map<String, dynamic> json) => _$FeedFromJson(json);
   const Feed._();
   @JsonSerializable(explicitToJson: true)
   const factory Feed.custom({required String name, @AtUriConverter() required AtUri uri}) = FeedCustom;
@@ -81,8 +82,6 @@ class Feed with _$Feed {
 
   String get identifier =>
       when(custom: (name, uri) => uri.toString(), hardCoded: (hardCodedFeed) => 'hardcoded:${hardCodedFeed.name}');
-
-  factory Feed.fromJson(Map<String, dynamic> json) => _$FeedFromJson(json);
 }
 
 /// Skeleton of a FeedView. Needs to be hydrated.
@@ -111,7 +110,6 @@ sealed class HardcodedFeedExtraInfo with _$HardcodedFeedExtraInfo {
 /// GetTimeline returns a FeedViewPost array
 @freezed
 class FeedViewPost with _$FeedViewPost {
-  const FeedViewPost._();
   @JsonSerializable(explicitToJson: true)
   const factory FeedViewPost({
     required PostView post,
@@ -119,19 +117,20 @@ class FeedViewPost with _$FeedViewPost {
     // "reason": { "type": "union", "refs": ["#reasonRepost", "#reasonPin"] } i think we don't have to use this value for now
     // there's also a String feedContext "Context provided by feed generator that may be passed back alongside interactions."
   }) = _FeedViewPostPost;
+  const FeedViewPost._();
 
   factory FeedViewPost.fromJson(Map<String, dynamic> json) => _$FeedViewPostFromJson(json);
 }
 
 @freezed
 class ReplyRef with _$ReplyRef {
-  const ReplyRef._();
   @JsonSerializable(explicitToJson: true)
   const factory ReplyRef({
     required ReplyRefPostReference root, // post, not found or blocked
     required ReplyRefPostReference parent, // post, not found or blocked
     ProfileViewBasic? grandparentAuthor,
   }) = _ReplyRef;
+  const ReplyRef._();
 
   factory ReplyRef.fromJson(Map<String, dynamic> json) => _$ReplyRefFromJson(json);
 }
@@ -166,25 +165,24 @@ sealed class ReplyRefPostReference with _$ReplyRefPostReference {
 
 @freezed
 class BlockedAuthor with _$BlockedAuthor {
-  const BlockedAuthor._();
   @JsonSerializable(explicitToJson: true)
   const factory BlockedAuthor({required String did, Viewer? viewer}) = _BlockedAuthor;
+  const BlockedAuthor._();
 
   factory BlockedAuthor.fromJson(Map<String, dynamic> json) => _$BlockedAuthorFromJson(json);
 }
 
 @freezed
 class PostThread with _$PostThread {
-  const PostThread._();
   @JsonSerializable(explicitToJson: true)
   const factory PostThread({required PostView post, List<PostView>? parent, List<PostView>? replies}) = _PostThread;
+  const PostThread._();
 
   factory PostThread.fromJson(Map<String, dynamic> json) => _$PostThreadFromJson(json);
 }
 
 @freezed
 class Viewer with _$Viewer {
-  const Viewer._();
   @JsonSerializable(explicitToJson: true)
   const factory Viewer({
     @AtUriConverter() AtUri? repost,
@@ -195,21 +193,21 @@ class Viewer with _$Viewer {
     bool? embeddingDisabled,
     bool? pinned,
   }) = _Viewer;
+  const Viewer._();
 
   factory Viewer.fromJson(Map<String, dynamic> json) => _$ViewerFromJson(json);
 }
 
 @freezed
 class PostView with _$PostView {
-  const PostView._();
   @JsonSerializable(explicitToJson: true)
   const factory PostView({
     @AtUriConverter() required AtUri uri,
     required String cid,
     required ProfileViewBasic author,
     required PostRecord record,
-    @Default(false) bool isRepost,
     required DateTime indexedAt,
+    @Default(false) bool isRepost,
     int? likeCount,
     int? replyCount,
     int? repostCount,
@@ -219,6 +217,7 @@ class PostView with _$PostView {
     //SoundView? sound,
     EmbedView? embed, // aturi
   }) = _PostView;
+  const PostView._();
 
   factory PostView.fromJson(Map<String, dynamic> json) => _$PostViewFromJson(json);
 
@@ -423,8 +422,6 @@ sealed class EmbedView with _$EmbedView {
 
 @freezed
 class EmbedViewExternal with _$EmbedViewExternal {
-  const EmbedViewExternal._();
-
   @JsonSerializable(explicitToJson: true)
   const factory EmbedViewExternal({
     required String uri,
@@ -432,25 +429,26 @@ class EmbedViewExternal with _$EmbedViewExternal {
     @Default('') String description,
     @AtUriConverter() AtUri? thumb,
   }) = _EmbedViewExternal;
+  const EmbedViewExternal._();
 
   factory EmbedViewExternal.fromJson(Map<String, dynamic> json) => _$EmbedViewExternalFromJson(json);
 }
 
 @freezed
 class FeedSkeleton with _$FeedSkeleton {
-  const FeedSkeleton._();
   @JsonSerializable(explicitToJson: true)
   const factory FeedSkeleton({required List<SkeletonFeedPost> feed, String? cursor}) = _FeedSkeleton;
+  const FeedSkeleton._();
 
   factory FeedSkeleton.fromJson(Map<String, dynamic> json) => _$FeedSkeletonFromJson(json);
 }
 
 @freezed
 class ImageUploadResult with _$ImageUploadResult {
-  const ImageUploadResult._();
   @JsonSerializable(explicitToJson: true)
   const factory ImageUploadResult({required String fullsize, required String alt, required Map<String, dynamic> image}) =
       _ImageUploadResult;
+  const ImageUploadResult._();
 
   factory ImageUploadResult.fromJson(Map<String, dynamic> json) => _$ImageUploadResultFromJson(json);
 }
@@ -458,8 +456,6 @@ class ImageUploadResult with _$ImageUploadResult {
 /// Represents the index range for a facet in the text
 @freezed
 class FacetIndex with _$FacetIndex {
-  const FacetIndex._();
-
   @JsonSerializable(explicitToJson: true)
   const factory FacetIndex({
     /// Start index (inclusive)
@@ -468,6 +464,7 @@ class FacetIndex with _$FacetIndex {
     /// End index (exclusive)
     required int byteEnd,
   }) = _FacetIndex;
+  const FacetIndex._();
 
   /// Create a FacetIndex from JSON
   factory FacetIndex.fromJson(Map<String, dynamic> json) => _$FacetIndexFromJson(json);
@@ -517,8 +514,6 @@ class FacetFeature with _$FacetFeature {
 /// Represents a richtext facet for text formatting, mentions, links, etc.
 @freezed
 class Facet with _$Facet {
-  const Facet._();
-
   @JsonSerializable(explicitToJson: true)
   const factory Facet({
     /// Index range for the facet in the text
@@ -527,6 +522,7 @@ class Facet with _$Facet {
     /// Features represented by this facet (mention, link, hashtag, etc.)
     required List<FacetFeature> features,
   }) = _Facet;
+  const Facet._();
 
   /// Create a Facet from JSON
   factory Facet.fromJson(Map<String, dynamic> json) => _$FacetFromJson(json);
@@ -534,8 +530,6 @@ class Facet with _$Facet {
 
 @freezed
 class ViewImage with _$ViewImage {
-  const ViewImage._();
-
   @JsonSerializable(explicitToJson: true)
   const factory ViewImage({
     @AtUriConverter() required AtUri thumb,
@@ -543,6 +537,7 @@ class ViewImage with _$ViewImage {
     String? alt,
     // aspectRatio: {width: int, height: int}
   }) = _ViewImage;
+  const ViewImage._();
 
   factory ViewImage.fromJson(Map<String, dynamic> json) => _$ViewImageFromJson(json);
 }
@@ -574,7 +569,7 @@ class Thread with _$Thread {
     switch (thread) {
       case bsky.UPostThreadViewRecord(:final data):
         try {
-          bsky.EmbedView? embed = data.post.embed;
+          var embed = data.post.embed;
           if (data.post.embed is bsky.UEmbedViewExternal) {
             embed = null;
           }
@@ -645,9 +640,9 @@ class Thread with _$Thread {
                 // Check nested embeds array in the record value
                 if (recordJson['embeds'] != null && recordJson['embeds'] is List) {
                   final embedsList = recordJson['embeds'] as List;
-                  bool shouldRemoveEmbed = false;
+                  var shouldRemoveEmbed = false;
 
-                  for (var nestedEmbed in embedsList) {
+                  for (final nestedEmbed in embedsList) {
                     if (nestedEmbed is Map<String, dynamic>) {
                       // Check external embeds in the nested embeds
                       if (nestedEmbed[r'$type'] == 'app.bsky.embed.external#view' && nestedEmbed['cid'] == null) {
@@ -671,11 +666,13 @@ class Thread with _$Thread {
                 final recordEmbedJson = embedJson['record'] as Map<String, dynamic>;
                 if (recordEmbedJson['record'] != null) {
                   final recordJson = recordEmbedJson['record'] as Map<String, dynamic>;
-                  
+
                   // Check if it's a viewRecord and has required fields
                   if (recordJson[r'$type'] == 'app.bsky.embed.record#viewRecord') {
-                    if (recordJson['uri'] == null || recordJson['cid'] == null || 
-                        recordJson['author'] == null || recordJson['value'] == null || 
+                    if (recordJson['uri'] == null ||
+                        recordJson['cid'] == null ||
+                        recordJson['author'] == null ||
+                        recordJson['value'] == null ||
                         recordJson['indexedAt'] == null) {
                       postViewJson.remove('embed');
                     }
@@ -687,22 +684,24 @@ class Thread with _$Thread {
             // Additional safety check - if we have any embed that might contain a record view, validate it
             void validateRecordViewInEmbed(Map<String, dynamic> embedData, String path) {
               if (embedData[r'$type'] == 'app.bsky.embed.record#viewRecord') {
-                if (embedData['uri'] == null || embedData['cid'] == null || 
-                    embedData['author'] == null || embedData['value'] == null || 
+                if (embedData['uri'] == null ||
+                    embedData['cid'] == null ||
+                    embedData['author'] == null ||
+                    embedData['value'] == null ||
                     embedData['indexedAt'] == null) {
                   postViewJson.remove('embed');
                   return;
                 }
               }
-              
+
               // Recursively check nested structures
               embedData.forEach((key, value) {
                 if (value is Map<String, dynamic>) {
                   validateRecordViewInEmbed(value, '$path.$key');
                 } else if (value is List) {
-                  for (int i = 0; i < value.length; i++) {
+                  for (var i = 0; i < value.length; i++) {
                     if (value[i] is Map<String, dynamic>) {
-                      validateRecordViewInEmbed(value[i], '$path.$key[$i]');
+                      validateRecordViewInEmbed(value[i] as Map<String, dynamic>, '$path.$key[$i]');
                     }
                   }
                 }
@@ -738,7 +737,6 @@ class Thread with _$Thread {
                 })
                 .whereType<Thread>()
                 .toList(),
-            context: null,
           );
           return thread;
         } catch (e) {
@@ -756,16 +754,15 @@ class Thread with _$Thread {
 
 @freezed
 class ThreadContext with _$ThreadContext {
-  const ThreadContext._();
   @JsonSerializable(explicitToJson: true)
   const factory ThreadContext({@AtUriConverter() AtUri? rootAuthorLike}) = _ThreadContext;
+  const ThreadContext._();
 
   factory ThreadContext.fromJson(Map<String, dynamic> json) => _$ThreadContextFromJson(json);
 }
 
 @freezed
 class StoryView with _$StoryView {
-  const StoryView._();
   @JsonSerializable(explicitToJson: true)
   const factory StoryView({
     required String cid,
@@ -776,6 +773,7 @@ class StoryView with _$StoryView {
     EmbedView? media,
     // viewer eventually i think
   }) = _StoryView;
+  const StoryView._();
 
   factory StoryView.fromJson(Map<String, dynamic> json) => _$StoryViewFromJson(json);
 }

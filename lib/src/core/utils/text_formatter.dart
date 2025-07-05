@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../theme/data/models/colors.dart';
-import '../widgets/mentioned_text.dart';
+import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/widgets/mentioned_text.dart';
 
 /// Utility class for text formatting and processing
 class TextFormatter {
@@ -30,19 +30,19 @@ class TextFormatter {
 
   /// Finds username matches in a text string
   static List<Match> findUsernameMatches(String text) {
-    final RegExp usernameRegex = RegExp(r'@([a-zA-Z0-9_.-]+\.[a-zA-Z]{2,}|[a-zA-Z0-9_]+)', caseSensitive: false);
+    final usernameRegex = RegExp(r'@([a-zA-Z0-9_.-]+\.[a-zA-Z]{2,}|[a-zA-Z0-9_]+)', caseSensitive: false);
 
     return usernameRegex.allMatches(text).toList();
   }
 
   /// Extracts URLs from a text string
   static List<String> extractUrls(String text) {
-    final RegExp urlRegex = RegExp(
+    final urlRegex = RegExp(
       r'(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})',
       caseSensitive: false,
     );
 
-    final List<String> urls = [];
+    final urls = <String>[];
     for (final Match match in urlRegex.allMatches(text)) {
       final url = match.group(0)!;
       if (url.startsWith('@')) continue;
@@ -78,7 +78,6 @@ class TextFormatter {
       onUsernameTap: onUsernameTap,
       expandText: expandDescription,
       maxLines: expandDescription ? null : 2,
-      overflow: TextOverflow.ellipsis,
       textStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14),
       mentionStyle: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
     );

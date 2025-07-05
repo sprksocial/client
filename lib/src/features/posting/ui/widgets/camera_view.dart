@@ -1,13 +1,12 @@
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:flutter/material.dart';
 
 class CameraView extends StatefulWidget {
+  const CameraView({required this.cameraController, required this.isInitialized, super.key});
   final CameraController? cameraController;
   final bool isInitialized;
-
-  const CameraView({super.key, required this.cameraController, required this.isInitialized});
 
   @override
   State<CameraView> createState() => _CameraViewState();
@@ -17,9 +16,9 @@ class _CameraViewState extends State<CameraView> {
   @override
   Widget build(BuildContext context) {
     if (!widget.isInitialized || widget.cameraController == null || !widget.cameraController!.value.isInitialized) {
-      return Container(
+      return const ColoredBox(
         color: Colors.black,
-        child: const Center(
+        child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -48,9 +47,9 @@ class _CameraViewState extends State<CameraView> {
         child: CameraPreview(widget.cameraController!),
       );
     } catch (e) {
-      return Container(
+      return const ColoredBox(
         color: Colors.black,
-        child: const Center(
+        child: Center(
           child: Text('Camera preview unavailable', style: TextStyle(color: Colors.red, fontSize: 16)),
         ),
       );

@@ -5,12 +5,12 @@ import 'package:sparksocial/src/features/messages/ui/widgets/sender_avatar.dart'
 
 class MessageBubble extends StatelessWidget {
   const MessageBubble({
-    super.key,
     required this.message,
     required this.isCurrentUser,
     required this.showAvatar,
     required this.otherUserAvatar,
     required this.otherUserHandle,
+    super.key,
   });
 
   final Message message;
@@ -24,13 +24,11 @@ class MessageBubble extends StatelessWidget {
       r'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)',
       caseSensitive: false,
     );
-    
-    String cleanedText = text.replaceAll(urlPattern, '').trim();
-    
+
+    var cleanedText = text.replaceAll(urlPattern, '').trim();
+
     // Clean up multiple spaces and newlines that might be left after URL removal
-    cleanedText = cleanedText.replaceAll(RegExp(r'\s+'), ' ').trim();
-    
-    return cleanedText;
+    return cleanedText = cleanedText.replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 
   @override
@@ -57,7 +55,7 @@ class MessageBubble extends StatelessWidget {
               if (cleanedMessage.isEmpty) {
                 return const SizedBox.shrink();
               }
-              
+
               return Container(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(

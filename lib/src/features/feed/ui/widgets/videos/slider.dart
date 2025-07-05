@@ -37,7 +37,7 @@ class BottomAlignedSliderTrackShape extends RoundedRectSliderTrackShape {
     // 1. Calculate the visual track rectangle, aligned to the bottom.
     // We use the `getPreferredRect` from the superclass to get the correct
     // horizontal dimensions and offsets.
-    final Rect preferredRect = super.getPreferredRect(
+    final preferredRect = super.getPreferredRect(
       parentBox: parentBox,
       offset: offset,
       sliderTheme: sliderTheme,
@@ -45,10 +45,10 @@ class BottomAlignedSliderTrackShape extends RoundedRectSliderTrackShape {
       isDiscrete: isDiscrete,
     );
 
-    final double trackHeight = sliderTheme.trackHeight!;
+    final trackHeight = sliderTheme.trackHeight!;
     // The visual track is at the bottom of the parentBox.
     // We subtract the track height to get the top of our visual track.
-    final Rect trackRect = Rect.fromLTRB(
+    final trackRect = Rect.fromLTRB(
       preferredRect.left,
       parentBox.size.height - trackHeight,
       preferredRect.right,
@@ -58,47 +58,43 @@ class BottomAlignedSliderTrackShape extends RoundedRectSliderTrackShape {
     // 2. Adjust the thumb's vertical position to match our new visual track.
     // The incoming `thumbCenter` is for the centered hitbox, so we create a
     // new Offset for painting.
-    final Offset adjustedThumbCenter = Offset(
+    final adjustedThumbCenter = Offset(
       thumbCenter.dx,
       trackRect.center.dy, // Center of our bottom-aligned track
     );
 
     // 3. Adjust the secondary offset's vertical position as well.
-    final Offset? adjustedSecondaryOffset = secondaryOffset != null
-        ? Offset(secondaryOffset.dx, trackRect.center.dy)
-        : null;
+    final adjustedSecondaryOffset = secondaryOffset != null ? Offset(secondaryOffset.dx, trackRect.center.dy) : null;
 
     // --- End of Custom Logic ---
-
 
     // The rest of this method is a copy of the original
     // `RoundedRectSliderTrackShape.paint` method, but it uses our
     // new `trackRect`, `adjustedThumbCenter`, and `adjustedSecondaryOffset` values.
 
-    final ColorTween activeTrackColorTween = ColorTween(
+    final activeTrackColorTween = ColorTween(
       begin: sliderTheme.disabledActiveTrackColor,
       end: sliderTheme.activeTrackColor,
     );
-    final ColorTween inactiveTrackColorTween = ColorTween(
+    final inactiveTrackColorTween = ColorTween(
       begin: sliderTheme.disabledInactiveTrackColor,
       end: sliderTheme.inactiveTrackColor,
     );
-    final Paint activePaint = Paint()..color = activeTrackColorTween.evaluate(enableAnimation)!;
-    final Paint inactivePaint = Paint()..color = inactiveTrackColorTween.evaluate(enableAnimation)!;
+    final activePaint = Paint()..color = activeTrackColorTween.evaluate(enableAnimation)!;
+    final inactivePaint = Paint()..color = inactiveTrackColorTween.evaluate(enableAnimation)!;
     final (Paint leftTrackPaint, Paint rightTrackPaint) = switch (textDirection) {
       TextDirection.ltr => (activePaint, inactivePaint),
       TextDirection.rtl => (inactivePaint, activePaint),
     };
 
-    final Radius trackRadius = Radius.circular(trackRect.height / 2);
-    final Radius activeTrackRadius = Radius.circular(
+    final trackRadius = Radius.circular(trackRect.height / 2);
+    final activeTrackRadius = Radius.circular(
       (trackRect.height + additionalActiveTrackHeight) / 2,
     );
-    final bool isLTR = textDirection == TextDirection.ltr;
-    final bool isRTL = textDirection == TextDirection.rtl;
+    final isLTR = textDirection == TextDirection.ltr;
+    final isRTL = textDirection == TextDirection.rtl;
 
-    final bool drawInactiveTrack =
-        adjustedThumbCenter.dx < (trackRect.right - (sliderTheme.trackHeight! / 2));
+    final drawInactiveTrack = adjustedThumbCenter.dx < (trackRect.right - (sliderTheme.trackHeight! / 2));
     if (drawInactiveTrack) {
       // Draw the inactive track segment.
       context.canvas.drawRRect(
@@ -112,7 +108,7 @@ class BottomAlignedSliderTrackShape extends RoundedRectSliderTrackShape {
         rightTrackPaint,
       );
     }
-    final bool drawActiveTrack = adjustedThumbCenter.dx > (trackRect.left + (sliderTheme.trackHeight! / 2));
+    final drawActiveTrack = adjustedThumbCenter.dx > (trackRect.left + (sliderTheme.trackHeight! / 2));
     if (drawActiveTrack) {
       // Draw the active track segment.
       context.canvas.drawRRect(
@@ -127,17 +123,16 @@ class BottomAlignedSliderTrackShape extends RoundedRectSliderTrackShape {
       );
     }
 
-    final bool showSecondaryTrack =
+    final showSecondaryTrack =
         (adjustedSecondaryOffset != null) &&
         (isLTR ? (adjustedSecondaryOffset.dx > adjustedThumbCenter.dx) : (adjustedSecondaryOffset.dx < adjustedThumbCenter.dx));
 
     if (showSecondaryTrack) {
-      final ColorTween secondaryTrackColorTween = ColorTween(
+      final secondaryTrackColorTween = ColorTween(
         begin: sliderTheme.disabledSecondaryActiveTrackColor,
         end: sliderTheme.secondaryActiveTrackColor,
       );
-      final Paint secondaryTrackPaint =
-          Paint()..color = secondaryTrackColorTween.evaluate(enableAnimation)!;
+      final secondaryTrackPaint = Paint()..color = secondaryTrackColorTween.evaluate(enableAnimation)!;
       if (isLTR) {
         context.canvas.drawRRect(
           RRect.fromLTRBAndCorners(

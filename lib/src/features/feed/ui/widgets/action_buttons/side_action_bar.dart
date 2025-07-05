@@ -1,23 +1,33 @@
 import 'package:atproto/core.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:auto_route/auto_route.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
-
 import 'package:sparksocial/src/core/widgets/menu_action_button.dart';
 import 'package:sparksocial/src/core/widgets/report_dialog.dart';
 import 'package:sparksocial/src/features/feed/providers/delete_post.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/profile_action_button.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/like_action_button.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/comment_action_button.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/like_action_button.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/profile_action_button.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/share_action_button.dart';
 
 class SideActionBar extends ConsumerStatefulWidget {
+  const SideActionBar({
+    required this.post,
+    super.key,
+    this.likeCount = '0',
+    this.commentCount = '0',
+    this.shareCount = '0',
+    this.isLiked = false,
+    this.profileImageUrl,
+    this.isImage = false,
+    this.onProfilePressed,
+  });
   final String likeCount;
   final String commentCount;
   final String shareCount;
@@ -28,18 +38,6 @@ class SideActionBar extends ConsumerStatefulWidget {
   final bool isImage;
   // Add callback for profile navigation to allow pausing video
   final VoidCallback? onProfilePressed;
-
-  const SideActionBar({
-    super.key,
-    this.likeCount = '0',
-    this.commentCount = '0',
-    this.shareCount = '0',
-    this.isLiked = false,
-    this.profileImageUrl,
-    required this.post,
-    this.isImage = false,
-    this.onProfilePressed,
-  });
 
   @override
   ConsumerState<SideActionBar> createState() => SideActionBarState();
@@ -111,7 +109,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 
           // Update the post's viewer field to remove the like reference
           final updatedPost = currentPost.copyWith(
-            viewer: currentPost.viewer?.copyWith(like: null) ?? Viewer(like: null, repost: currentPost.viewer?.repost),
+            viewer: currentPost.viewer?.copyWith(like: null) ?? Viewer(repost: currentPost.viewer?.repost),
           );
 
           // Update cache with the modified post
@@ -136,10 +134,10 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 
   void _handleShare() {
     final currentPost = _currentPost ?? widget.post;
-    String postUri = currentPost.uri.toString();
+    var postUri = currentPost.uri.toString();
     String shareUrl;
-    String embedCode = '';
-    bool showEmbed = true;
+    var embedCode = '';
+    var showEmbed = true;
 
     // Special case for Bluesky posts
     if (postUri.contains('/app.bsky.feed.post/')) {
@@ -297,11 +295,10 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 }
 
 class SharePanel extends StatefulWidget {
+  const SharePanel({required this.shareUrl, required this.embedCode, super.key, this.showEmbed = true});
   final String shareUrl;
   final String embedCode;
   final bool showEmbed;
-
-  const SharePanel({super.key, required this.shareUrl, required this.embedCode, this.showEmbed = true});
 
   @override
   State<SharePanel> createState() => _SharePanelState();
@@ -363,7 +360,7 @@ class _SharePanelState extends State<SharePanel> {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-        boxShadow: [BoxShadow(color: theme.colorScheme.shadow.withValues(alpha: 0.2), blurRadius: 10, spreadRadius: 0)],
+        boxShadow: [BoxShadow(color: theme.colorScheme.shadow.withValues(alpha: 0.2), blurRadius: 10)],
       ),
       child: DraggableScrollableSheet(
         initialChildSize: 0.4,
@@ -435,16 +432,7 @@ class _SharePanelState extends State<SharePanel> {
 }
 
 class CopyField extends StatelessWidget {
-  final String text;
-  final BuildContext context;
-  final Color bgColor;
-  final Color textColor;
-  final bool isLink;
-  final bool isCopied;
-  final Function(String, BuildContext, bool) onCopy;
-
   const CopyField({
-    super.key,
     required this.text,
     required this.context,
     required this.bgColor,
@@ -452,7 +440,15 @@ class CopyField extends StatelessWidget {
     required this.isLink,
     required this.isCopied,
     required this.onCopy,
+    super.key,
   });
+  final String text;
+  final BuildContext context;
+  final Color bgColor;
+  final Color textColor;
+  final bool isLink;
+  final bool isCopied;
+  final Function(String, BuildContext, bool) onCopy;
 
   @override
   Widget build(BuildContext context) {
@@ -490,7 +486,7 @@ class CopyField extends StatelessWidget {
                     return ScaleTransition(scale: animation, child: child);
                   },
                   child: isCopied
-                      ? Icon(Icons.check_circle, key: const ValueKey('copied'), color: Colors.green, size: 20)
+                      ? const Icon(Icons.check_circle, key: ValueKey('copied'), color: Colors.green, size: 20)
                       : Icon(Icons.content_copy_rounded, key: const ValueKey('copy'), color: accentColor, size: 20),
                 ),
               ),

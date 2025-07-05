@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:collection/collection.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pool/pool.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
@@ -8,7 +9,6 @@ import 'package:sparksocial/src/core/storage/preferences/settings_repository.dar
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
-import 'package:collection/collection.dart';
 
 class DownloadManagerImpl implements DownloadManagerInterface {
   DownloadManagerImpl() : _pool = Pool(FeedState.poolSize) {
@@ -75,7 +75,7 @@ class DownloadManagerImpl implements DownloadManagerInterface {
     final newTasks = <DownloadTask>[];
 
     while (_tasks.isNotEmpty) {
-      var task = _tasks.removeFirst();
+      final task = _tasks.removeFirst();
       if (task.status == DownloadTaskStatus.pending) {
         // Try to acquire a pool resource. If pool is full, withResource will wait.
         // We want to submit to the pool and let it manage, not block _processQueue.
@@ -83,7 +83,7 @@ class DownloadManagerImpl implements DownloadManagerInterface {
         // that would make _processQueue sequential for task submission to pool.
         // Instead, we launch it and let the pool handle concurrency.
 
-        _pool
+        await _pool
             .withResource(() => _executeTask(task))
             .then((_) {
               // This 'then' block executes after _executeTask is fully done
@@ -93,7 +93,7 @@ class DownloadManagerImpl implements DownloadManagerInterface {
             .catchError((e, s) {
               // This catchError is for unexpected errors from _pool.withResource itself,
               // or if _executeTask re-throws an error not caught internally.
-              _logger.e('Error from pool for task ${task.uri}: $e', error: e, stackTrace: s);
+              _logger.e('Error from pool for task ${task.uri}: $e', error: e, stackTrace: s as StackTrace);
               // Ensure task is marked as failed and removed if not already
               if (task.status != DownloadTaskStatus.failed && task.status != DownloadTaskStatus.completed) {
                 task.status = DownloadTaskStatus.failed;
@@ -163,16 +163,14 @@ class DownloadManagerImpl implements DownloadManagerInterface {
               throw Exception('Video file was not properly cached after download: ${task.post.videoUrl}');
             }
             _logger.d('Video file successfully cached: ${task.post.videoUrl}');
-            break;
           case EmbedViewImage():
-            for (String url in task.post.imageUrls) {
+            for (final url in task.post.imageUrls) {
               // Download the image and verify it's cached
               final fileInfo = await CachedNetworkImageProvider.defaultCacheManager.downloadFile(url, key: url);
               if (fileInfo.statusCode != 200) {
                 _logger.w('Image file was not properly cached after download: $url');
               }
             }
-            break;
           case EmbedViewBskyRecordWithMedia(:final media):
             // Handle nested media in record with media embeds
             switch (media) {
@@ -190,20 +188,17 @@ class DownloadManagerImpl implements DownloadManagerInterface {
                   throw Exception('Video file was not properly cached after download: ${task.post.videoUrl}');
                 }
                 _logger.d('Video file successfully cached: ${task.post.videoUrl}');
-                break;
               case EmbedViewImage() || EmbedViewBskyImages():
-                for (String url in task.post.imageUrls) {
+                for (final url in task.post.imageUrls) {
                   // Download the image and verify it's cached
                   final fileInfo = await CachedNetworkImageProvider.defaultCacheManager.downloadFile(url, key: url);
                   if (fileInfo.statusCode != 200) {
                     _logger.w('Image file was not properly cached after download: $url');
                   }
                 }
-                break;
               case _:
                 throw Exception('Unsupported media type: ${media.runtimeType}');
             }
-            break;
           case _:
             throw Exception('Unsupported media type: ${task.post.embed.runtimeType}');
         }

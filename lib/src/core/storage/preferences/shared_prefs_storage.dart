@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'local_storage_interface.dart';
+import 'package:sparksocial/src/core/storage/preferences/local_storage_interface.dart';
 
 /// Implementation of LocalStorageInterface using SharedPreferences
 class SharedPrefsStorage implements LocalStorageInterface {
-  final SharedPreferences _prefs;
-
   SharedPrefsStorage(this._prefs);
+  final SharedPreferences _prefs;
 
   /// Factory constructor to create a SharedPrefsStorage instance
   static Future<SharedPrefsStorage> create() async {

@@ -1,20 +1,20 @@
+import 'dart:async';
+
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'dart:async';
-
 import 'package:sparksocial/src/features/stories/ui/pages/story_page.dart';
 
 @RoutePage()
 class AuthorStoriesPage extends ConsumerStatefulWidget {
   const AuthorStoriesPage({
-    super.key,
     required this.author,
     required this.stories,
+    super.key,
     this.initialStoryIndex = 0,
     this.onPreviousAuthor,
     this.onNextAuthor,
@@ -40,8 +40,8 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
   late final PageController _pageController;
   late final List<AnimationController> _progressControllers;
   int _currentStoryIndex = 0;
-  double _dragOffset = 0.0;
-  double _dragScale = 1.0;
+  double _dragOffset = 0;
+  double _dragScale = 1;
   bool _isDragging = false;
   bool _isCurrentStoryLoading = true;
 
@@ -94,7 +94,7 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
       setState(() {
         _isCurrentStoryLoading = isLoading;
       });
-      
+
       if (isLoading) {
         _pause();
       } else {
@@ -181,7 +181,7 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
     final startScale = _dragScale;
     const steps = 30;
     const duration = Duration(milliseconds: 10);
-    int step = 0;
+    var step = 0;
     Timer.periodic(duration, (timer) {
       step++;
       final t = step / steps;

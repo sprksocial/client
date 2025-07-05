@@ -35,7 +35,7 @@ class _LabelSettingsPageState extends ConsumerState<LabelSettingsPage> {
       setState(() => _isLoading = true);
 
       final followedLabelers = await _settingsRepository.getFollowedLabelers();
-      final Map<String, LabelPreference> preferences = {};
+      final preferences = <String, LabelPreference>{};
 
       _logger.d('Loading preferences for ${defaultLabels.length} default labels');
 
@@ -346,16 +346,15 @@ class _LabelSettingsPageState extends ConsumerState<LabelSettingsPage> {
 }
 
 class LabelSettingTile extends StatelessWidget {
-  final String label;
-  final LabelPreference preference;
-  final Function(String label, {Setting? setting, Blurs? blurs, Severity? severity}) onPreferenceUpdate;
-
   const LabelSettingTile({
-    super.key,
     required this.label,
     required this.preference,
     required this.onPreferenceUpdate,
+    super.key,
   });
+  final String label;
+  final LabelPreference preference;
+  final Function(String label, {Setting? setting, Blurs? blurs, Severity? severity}) onPreferenceUpdate;
 
   @override
   Widget build(BuildContext context) {

@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class TimeDisplay extends StatelessWidget {
+  const TimeDisplay({required this.position, required this.duration, super.key});
   final Duration position;
   final Duration duration;
-
-  const TimeDisplay({super.key, required this.position, required this.duration});
 
   String _formatDuration(Duration duration) {
     final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
@@ -19,7 +18,7 @@ class TimeDisplay extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.black.withAlpha(180), 
+          color: AppColors.black.withAlpha(180),
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
@@ -32,8 +31,8 @@ class TimeDisplay extends StatelessWidget {
         child: Text(
           '${_formatDuration(position)} / ${_formatDuration(duration)}',
           style: const TextStyle(
-            color: AppColors.white, 
-            fontWeight: FontWeight.bold, 
+            color: AppColors.white,
+            fontWeight: FontWeight.bold,
             fontSize: 16,
             letterSpacing: 0.5,
           ),

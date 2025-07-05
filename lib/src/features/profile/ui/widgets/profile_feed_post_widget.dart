@@ -1,5 +1,5 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:atproto_core/atproto_core.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -8,22 +8,21 @@ import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repo
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/utils/label_utils.dart';
+import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
+import 'package:sparksocial/src/core/widgets/heart_animation.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
-import 'package:sparksocial/src/core/widgets/heart_animation.dart';
-import 'package:sparksocial/src/core/utils/label_utils.dart';
-import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
 
 class ProfileFeedPostWidget extends ConsumerStatefulWidget {
+  const ProfileFeedPostWidget({required this.postUri, required this.profileUri, required this.videosOnly, super.key, this.post});
   final AtUri postUri;
   final AtUri profileUri;
   final bool videosOnly;
   final PostView? post;
-
-  const ProfileFeedPostWidget({super.key, required this.postUri, required this.profileUri, required this.videosOnly, this.post});
 
   @override
   ConsumerState<ProfileFeedPostWidget> createState() => _ProfileFeedPostWidgetState();
@@ -149,16 +148,16 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
         future: _loadPostWithFallback(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Container(
+            return const ColoredBox(
               color: AppColors.black,
-              child: const Center(child: CircularProgressIndicator(color: AppColors.white)),
+              child: Center(child: CircularProgressIndicator(color: AppColors.white)),
             );
           }
 
           if (snapshot.hasError || !snapshot.hasData) {
-            return Container(
+            return const ColoredBox(
               color: AppColors.black,
-              child: const Center(
+              child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [

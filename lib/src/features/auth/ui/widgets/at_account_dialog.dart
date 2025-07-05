@@ -1,9 +1,8 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// A widget that displays an information icon for AT Accounts.
 /// When tapped, it shows a dialog explaining what an AT Account is.
@@ -40,13 +39,13 @@ class _ATAccountDialog extends StatelessWidget {
     return AlertDialog(
       backgroundColor: AppColors.deepPurple,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      titlePadding: const EdgeInsets.only(top: 32, left: 24, right: 24, bottom: 0),
+      titlePadding: const EdgeInsets.only(top: 32, left: 24, right: 24),
       contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
       title: Column(
         children: [
           SvgPicture.asset('assets/images/ataccount.svg', height: 40),
           const SizedBox(height: 18),
-          Text(
+          const Text(
             'What is an AT Account?',
             style: TextStyle(color: AppColors.lightLavender, fontWeight: FontWeight.bold, fontSize: 20),
             textAlign: TextAlign.center,
@@ -77,10 +76,9 @@ class _ATAccountDialog extends StatelessWidget {
 
 /// Actions for the AT Account dialog.
 class _ATAccountDialogActions extends StatelessWidget {
+  const _ATAccountDialogActions({required this.onGotIt, required this.onLearnMore});
   final VoidCallback onGotIt;
   final VoidCallback onLearnMore;
-
-  const _ATAccountDialogActions({required this.onGotIt, required this.onLearnMore});
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +87,7 @@ class _ATAccountDialogActions extends StatelessWidget {
         Expanded(
           child: TextButton(
             onPressed: onLearnMore,
-            child: Text(
+            child: const Text(
               'Learn more',
               style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold, fontSize: 16),
             ),

@@ -1,8 +1,10 @@
 import 'dart:collection';
 
+import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
@@ -10,12 +12,8 @@ import 'package:sparksocial/src/core/storage/preferences/settings_repository.dar
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_state.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
-import 'package:atproto/atproto.dart';
 
 part 'profile_feed_provider.g.dart';
-
-typedef _FeedSourceFetcher = Future<({List<FeedViewPost> posts, String? cursor})> Function(String? cursor);
 
 @riverpod
 class ProfileFeed extends _$ProfileFeed {
@@ -30,7 +28,7 @@ class ProfileFeed extends _$ProfileFeed {
     _feedRepository = GetIt.instance<SprkRepository>().feed;
     _sqlCache = GetIt.instance<SQLCacheInterface>();
     _settingsRepository = GetIt.instance<SettingsRepository>();
-    _logger = GetIt.instance<LogService>().getLogger('ProfileFeed ${profileUri.toString()}');
+    _logger = GetIt.instance<LogService>().getLogger('ProfileFeed $profileUri');
 
     try {
       final result = await _loadUnifiedFeed(
@@ -66,7 +64,7 @@ class ProfileFeed extends _$ProfileFeed {
     final newPosts = <PostView>[];
 
     final sparkResult = await _fetchFromSource(
-      (cursor) => _feedRepository.getAuthorFeed(profileUri, limit: ProfileFeedState.fetchLimit, cursor: cursor, bluesky: false),
+      (cursor) => _feedRepository.getAuthorFeed(profileUri, limit: ProfileFeedState.fetchLimit, cursor: cursor),
       sparkCursor,
       'Sprk',
     );
@@ -127,7 +125,7 @@ class ProfileFeed extends _$ProfileFeed {
 
     // Filter by video/non-video type first
     final typeFilteredPosts = videosOnly
-        ? allPosts.where((uri) => postTypes[uri] == true).toList()
+        ? allPosts.where((uri) => postTypes[uri] ?? true).toList()
         : allPosts.where((uri) => postTypes[uri] == false).toList();
 
     // Then filter based on label preferences
@@ -152,7 +150,7 @@ class ProfileFeed extends _$ProfileFeed {
   }
 
   Future<({List<FeedViewPost> posts, String? cursor})> _fetchFromSource(
-    _FeedSourceFetcher fetcher,
+    Future<({List<FeedViewPost> posts, String? cursor})> Function(String? cursor) fetcher,
     String? cursor,
     String sourceName,
   ) async {
@@ -182,7 +180,7 @@ class ProfileFeed extends _$ProfileFeed {
   }
 
   Future<void> loadMore() async {
-    if (_isLoading || state.value?.isEndOfNetwork == true) return;
+    if (_isLoading || (state.value?.isEndOfNetwork ?? true)) return;
 
     _isLoading = true;
     final currentState = state.value;
@@ -239,7 +237,7 @@ class ProfileFeed extends _$ProfileFeed {
       try {
         final labelPreference = await _settingsRepository.getLabelPreference(label.value);
         if (labelPreference.setting == Setting.hide || (labelPreference.adultOnly && hideAdultContent)) {
-          _logger.d('Hiding post ${uri.toString()} due to label: ${label.value}');
+          _logger.d('Hiding post $uri due to label: ${label.value}');
           return true;
         }
       } catch (e) {
@@ -270,7 +268,7 @@ class ProfileFeed extends _$ProfileFeed {
 
         // Add self labels from the post record
         if (postView.record.selfLabels != null) {
-          for (SelfLabel selfLabel in postView.record.selfLabels!) {
+          for (final selfLabel in postView.record.selfLabels!) {
             postLabels.add(
               Label(
                 uri: postView.uri.toString(),

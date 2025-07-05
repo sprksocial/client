@@ -1,14 +1,21 @@
 // ignore_for_file: avoid_print
 
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
-import 'package:synchronized/synchronized.dart';
 
-import 'log_level.dart';
-import 'log_output.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:sparksocial/src/core/utils/logging/log_level.dart';
+import 'package:sparksocial/src/core/utils/logging/log_output.dart';
+import 'package:synchronized/synchronized.dart';
 
 /// Outputs logs to a file
 class FileOutput implements LogOutput {
+  /// Constructor
+  FileOutput({
+    String fileName = 'spark_app.log',
+    int maxFileSize = 10 * 1024 * 1024, // 10 MB
+  }) : _fileName = fileName,
+       _maxFileSize = maxFileSize;
+
   /// The file to write logs to
   File? _file;
 
@@ -23,13 +30,6 @@ class FileOutput implements LogOutput {
 
   /// Whether the file has been initialized
   bool _initialized = false;
-
-  /// Constructor
-  FileOutput({
-    String fileName = 'spark_app.log',
-    int maxFileSize = 10 * 1024 * 1024, // 10 MB
-  }) : _fileName = fileName,
-       _maxFileSize = maxFileSize;
 
   /// Initialize the file output
   Future<void> initialize() async {
@@ -103,7 +103,7 @@ class FileOutput implements LogOutput {
     if (_file == null) return false;
 
     try {
-      final fileStats = await _file!.stat();
+      final fileStats = _file!.statSync();
       return fileStats.size > _maxFileSize;
     } catch (e) {
       return false;

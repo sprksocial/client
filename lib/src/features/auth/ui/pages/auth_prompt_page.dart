@@ -8,9 +8,8 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 @RoutePage()
 class AuthPromptPage extends StatelessWidget {
-  final VoidCallback? onClose;
-
   const AuthPromptPage({super.key, this.onClose});
+  final VoidCallback? onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +35,7 @@ class AuthPromptPage extends StatelessWidget {
           SafeArea(
             child: Center(
               child: Padding(
-                padding: const EdgeInsets.all(24.0),
+                padding: const EdgeInsets.all(24),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -46,13 +45,13 @@ class AuthPromptPage extends StatelessWidget {
                       width: 140,
                     ),
                     const SizedBox(height: 21),
-                    Text(
+                    const Text(
                       'Welcome to Spark',
                       style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.white),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 5),
-                    SizedBox(
+                    const SizedBox(
                       width: 340,
                       child: Text(
                         'Add an account to create videos, connect with friends, and more.',

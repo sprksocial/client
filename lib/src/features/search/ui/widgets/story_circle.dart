@@ -1,22 +1,21 @@
-import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class StoryCircle extends StatelessWidget {
+  const StoryCircle({
+    required this.username,
+    required this.imageUrl,
+    super.key,
+    this.isLive = false,
+    this.isYourStory = false,
+    this.onTap,
+  });
   final String username;
   final String imageUrl;
   final bool isLive;
   final bool isYourStory;
   final VoidCallback? onTap;
-
-  const StoryCircle({
-    super.key,
-    required this.username,
-    required this.imageUrl,
-    this.isLive = false,
-    this.isYourStory = false,
-    this.onTap,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +62,7 @@ class StoryCircle extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: colorScheme.primary,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.black, width: 1.5),
+                      border: Border.all(width: 1.5),
                     ),
                     child: const Icon(FluentIcons.add_24_regular, size: 16, color: Colors.white),
                   ),

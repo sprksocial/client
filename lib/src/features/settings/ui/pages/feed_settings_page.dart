@@ -12,8 +12,7 @@ class FeedSettingsPage extends ConsumerStatefulWidget {
   ConsumerState<FeedSettingsPage> createState() => _FeedSettingsPageState();
 }
 
-class _FeedSettingsPageState extends ConsumerState<FeedSettingsPage>
-    with SingleTickerProviderStateMixin {
+class _FeedSettingsPageState extends ConsumerState<FeedSettingsPage> with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -45,10 +44,9 @@ class _FeedSettingsPageState extends ConsumerState<FeedSettingsPage>
           controller: _tabController,
           labelColor: textColor,
           unselectedLabelColor: textColor.withAlpha(127),
-          isScrollable: false,
           tabs: const [
-            Tab(text: "Your Feeds"),
-            Tab(text: "Content Labels"),
+            Tab(text: 'Your Feeds'),
+            Tab(text: 'Content Labels'),
           ],
         ),
       ),

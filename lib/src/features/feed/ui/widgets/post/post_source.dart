@@ -3,10 +3,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class PostSource extends StatelessWidget {
+  const PostSource({required this.username, super.key, this.isSprk = false});
   final String username;
   final bool isSprk;
-
-  const PostSource({super.key, required this.username, this.isSprk = false});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +25,7 @@ class PostSource extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(42),
             boxShadow: [
-              BoxShadow(color: AppColors.black.withAlpha(30), blurRadius: 4, spreadRadius: 1, offset: const Offset(0, 0)),
+              BoxShadow(color: AppColors.black.withAlpha(30), blurRadius: 4, spreadRadius: 1),
             ],
           ),
           child: isSprk

@@ -1,23 +1,23 @@
+import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
+import 'package:sparksocial/src/core/utils/label_utils.dart';
+import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
 import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:atproto_core/atproto_core.dart';
-import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
-import 'package:sparksocial/src/core/utils/label_utils.dart';
 
 @RoutePage()
 class StandalonePostPage extends ConsumerStatefulWidget {
-  const StandalonePostPage({super.key, required this.postUri});
+  const StandalonePostPage({required this.postUri, super.key});
 
   final String postUri;
 
@@ -53,11 +53,11 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
       // If cache fails, fetch from network
       final feedRepository = GetIt.instance<SprkRepository>().feed;
       final uri = AtUri.parse(widget.postUri);
-      bool isBlueskyPost = false;
+      var isBlueskyPost = false;
       // try {
-        isBlueskyPost = uri.collection.toString().startsWith('app.bsky.feed.post');
+      isBlueskyPost = uri.collection.toString().startsWith('app.bsky.feed.post');
       // } catch (e) {
-        // what
+      // what
       // }
       final networkPost = await feedRepository.getPosts([uri], bluesky: isBlueskyPost);
 
@@ -74,7 +74,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
 
   Future<void> _checkContentWarning(PostView postData) async {
     final labels = postData.labels ?? [];
-    
+
     if (labels.isNotEmpty) {
       final shouldShowWarning = await LabelUtils.shouldShowWarning(labels);
       final shouldBlurContent = await LabelUtils.shouldBlurContent(labels);
@@ -108,9 +108,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
       _lastUpdateCount = updateCount;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) {
-          setState(() {
-            _loadPost();
-          });
+          setState(_loadPost);
         }
       });
     }

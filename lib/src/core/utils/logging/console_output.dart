@@ -1,11 +1,14 @@
 import 'dart:developer' as developer;
 
 import 'package:flutter/foundation.dart';
-import 'log_level.dart';
-import 'log_output.dart';
+import 'package:sparksocial/src/core/utils/logging/log_level.dart';
+import 'package:sparksocial/src/core/utils/logging/log_output.dart';
 
 /// Outputs logs to the console
 class ConsoleOutput implements LogOutput {
+  /// Constructor
+  ConsoleOutput({this.useColors = true});
+
   /// Color codes for different log levels
   static const Map<LogLevel, String> _colorCodes = {
     LogLevel.verbose: '\x1B[37m', // White
@@ -23,16 +26,13 @@ class ConsoleOutput implements LogOutput {
   /// Whether to use colors in the output
   final bool useColors;
 
-  /// Constructor
-  ConsoleOutput({this.useColors = true});
-
   @override
   void output(LogLevel level, String message, DateTime timestamp, Object? error, StackTrace? stackTrace) {
     final timeString = _formatTime(timestamp);
     final levelString = '[${level.name}]'.padRight(9);
     final prefix = '$timeString $levelString';
 
-    String formattedMessage = '$prefix $message';
+    var formattedMessage = '$prefix $message';
 
     if (error != null) {
       formattedMessage += '\nError: $error';

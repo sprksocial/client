@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/routing/pages.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:video_player/video_player.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:sparksocial/src/core/network/atproto/atproto.dart';
+import 'package:sparksocial/src/core/routing/pages.dart';
+import 'package:video_player/video_player.dart';
 
 part 'app_router.gr.dart';
 
@@ -14,7 +14,7 @@ part 'app_router.gr.dart';
 @AutoRouterConfig()
 class AppRouter extends RootStackRouter {
   @override
-  RouteType get defaultRouteType => RouteType.adaptive();
+  RouteType get defaultRouteType => const RouteType.adaptive();
 
   @override
   List<AutoRoute> get routes => [
@@ -110,8 +110,6 @@ class AppRouter extends RootStackRouter {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       useSafeArea: true,
-      enableDrag: true,
-      isDismissible: true,
     );
   }
 
@@ -122,7 +120,6 @@ class AppRouter extends RootStackRouter {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       useSafeArea: true,
-      enableDrag: true,
     );
   }
 }

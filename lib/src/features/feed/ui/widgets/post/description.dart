@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class Description extends StatefulWidget {
+  const Description({required this.text, super.key, this.style, this.maxLines = 2, this.onExpandToggle});
   final String text;
   final TextStyle? style;
   final int maxLines;
   final Function(bool isExpanded)? onExpandToggle;
-
-  const Description({super.key, required this.text, this.style, this.maxLines = 2, this.onExpandToggle});
 
   @override
   State<Description> createState() => _DescriptionState();
@@ -24,8 +23,8 @@ class _DescriptionState extends State<Description> with SingleTickerProviderStat
     _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
 
     _scaleAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.03), weight: 30),
-      TweenSequenceItem(tween: Tween<double>(begin: 1.03, end: 1.0), weight: 70),
+      TweenSequenceItem(tween: Tween<double>(begin: 1, end: 1.03), weight: 30),
+      TweenSequenceItem(tween: Tween<double>(begin: 1.03, end: 1), weight: 70),
     ]).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
   }
 

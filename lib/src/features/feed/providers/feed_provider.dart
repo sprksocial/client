@@ -5,10 +5,12 @@ import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/feed_algorithms/hardcoded_feed_algorithm.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/storage/cache/cache_manager_interface.dart';
 import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
@@ -16,8 +18,6 @@ import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
-import 'package:sparksocial/src/core/storage/cache/cache_manager_interface.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
 
 part 'feed_provider.g.dart';
 
@@ -60,14 +60,14 @@ class FeedNotifier extends _$FeedNotifier {
       // If we were waiting at the end of the feed and new posts have arrived
       if (_isWaitingForFreshPostsAtEnd && next.freshPostCount > 0) {
         _logger.d('New posts arrived! Loading...');
-        Future.microtask(() => load()); // Prevent synchronous execution during state change
+        Future.microtask(load); // Prevent synchronous execution during state change
       }
 
       // Update preserved state whenever state changes
       _preservedState = next;
     });
 
-    var isActive = ref.watch(settingsProvider).activeFeed == feed;
+    final isActive = ref.watch(settingsProvider).activeFeed == feed;
 
     // If this notifier has been built before and we have preserved state, use it
     if (_hasBeenBuilt && _preservedState != null) {
@@ -101,6 +101,7 @@ class FeedNotifier extends _$FeedNotifier {
   bool _isInitialized() {
     try {
       // Try to access one of the late final fields
+      // ignore: unnecessary_statements
       _feedRepository;
       return true;
     } catch (e) {
@@ -148,8 +149,8 @@ class FeedNotifier extends _$FeedNotifier {
 
       // gets ONLY the first f cached posts from the database (not all)
       final uriStrings = await _sqlCache.getUrisForFeed(_feed, limit: FeedState.firstLoadLimit);
-      final uris = uriStrings.map((e) => AtUri.parse(e)).toList();
-      List<Label> labels = <Label>[];
+      final uris = uriStrings.map(AtUri.parse).toList();
+      final labels = <Label>[];
 
       // adds the initial uris to the list of initial uris so that they are not fetched again
       _initialUris.addAll(uris);
@@ -158,7 +159,7 @@ class FeedNotifier extends _$FeedNotifier {
       if (uris.isNotEmpty) {
         // Get existing cached posts to preserve viewer information (like status)
         final cachedPosts = await _sqlCache.getPostsByUris(uris);
-        final cachedPostsMap = {for (var post in cachedPosts) post.uri: post};
+        final cachedPostsMap = {for (final post in cachedPosts) post.uri: post};
 
         // gets the subscribed labels for the posts
         final followedLabelers = await _settingsRepository.getFollowedLabelers();
@@ -168,8 +169,8 @@ class FeedNotifier extends _$FeedNotifier {
         final updatedPostViews = await _feedRepository.getPosts(uris, bluesky: _shouldUseBlueskyAPI());
 
         // Preserve viewer information from cached posts when updating with fresh data
-        final List<PostView> mergedPosts = [];
-        for (var freshPost in updatedPostViews) {
+        final mergedPosts = <PostView>[];
+        for (final freshPost in updatedPostViews) {
           final cachedPost = cachedPostsMap[freshPost.uri];
           PostView finalPost;
 
@@ -183,11 +184,11 @@ class FeedNotifier extends _$FeedNotifier {
           mergedPosts.add(finalPost);
         }
 
-        for (var post in mergedPosts) {
+        for (final post in mergedPosts) {
           labels.addAll(post.labels ?? []); // labels from the post
           if (post.record.selfLabels != null) {
             final recordLabels = <Label>[];
-            for (SelfLabel selfLabel in post.record.selfLabels!) {
+            for (final selfLabel in post.record.selfLabels!) {
               recordLabels.add(
                 Label(uri: post.uri.toString(), value: selfLabel.value, src: post.uri.toString(), createdAt: post.indexedAt),
               );
@@ -200,12 +201,12 @@ class FeedNotifier extends _$FeedNotifier {
       }
 
       // Store the cursor from the initial fetch
-      String? newCursor = state.cursor;
-      int fetchedCount = 0;
+      // String? newCursor = state.cursor;
+      var fetchedCount = 0;
       // starts fetching and storing new posts
       if (!state.isEndOfNetworkFeed) {
         final (int count, List<AtUri> fetchedUris, String? cursor) = await fetch();
-        newCursor = cursor;
+        // newCursor = cursor;
         fetchedCount = count;
         if (count > 0) {
           await store(fetchedUris);
@@ -219,7 +220,7 @@ class FeedNotifier extends _$FeedNotifier {
         state.extraInfo,
       );
 
-      for (Label newLabel in labels) {
+      for (final newLabel in labels) {
         final uri = AtUri.parse(newLabel.uri);
         extraInfo.update(uri, (value) {
           final existingLabels = value.postLabels;
@@ -261,7 +262,7 @@ class FeedNotifier extends _$FeedNotifier {
         loadedPosts: filteredUris,
         freshPostCount: 0, // Set to 0 as per strategy
         extraInfo: extraInfo,
-        cursor: newCursor, // Store the cursor from fetch
+        // cursor: newCursor, // Store the cursor from fetch
         loadingFirstLoad: loadingFirstLoad,
       );
       _isWaitingForFreshPostsAtEnd = state.length <= 1;
@@ -293,7 +294,7 @@ class FeedNotifier extends _$FeedNotifier {
   Future<void> store(List<AtUri> uris) async {
     _logger.d('Store called with ${uris.length} URIs. Current freshPostCount: ${state.freshPostCount}');
     _isCaching = true; // Set caching flag immediately
-    int updatedPostCount = 0;
+    var updatedPostCount = 0;
     state = state.copyWith(error: false);
     try {
       // checks if the posts have already been cached
@@ -304,13 +305,13 @@ class FeedNotifier extends _$FeedNotifier {
 
         // Get existing cached posts to preserve viewer information (like status)
         final cachedPosts = await _sqlCache.getPostsByUris(existingUris);
-        final cachedPostsMap = {for (var post in cachedPosts) post.uri: post};
+        final cachedPostsMap = {for (final post in cachedPosts) post.uri: post};
 
         final posts = await _feedRepository.getPosts(existingUris, bluesky: _shouldUseBlueskyAPI());
 
         // Preserve viewer information from cached posts when updating with fresh data
-        final List<PostView> mergedPosts = [];
-        for (var freshPost in posts) {
+        final mergedPosts = <PostView>[];
+        for (final freshPost in posts) {
           final cachedPost = cachedPostsMap[freshPost.uri];
           PostView finalPost;
 
@@ -353,7 +354,7 @@ class FeedNotifier extends _$FeedNotifier {
 
       // gets the subscribed labels for the new posts
       final followedLabelers = await _settingsRepository.getFollowedLabelers();
-      List<Label> newPostLabels = [];
+      var newPostLabels = <Label>[];
       try {
         final (cursor: _, labels: fetchedLabels) = await _feedRepository.getLabels(nonExistingUris, sources: followedLabelers);
         newPostLabels = fetchedLabels;
@@ -362,12 +363,12 @@ class FeedNotifier extends _$FeedNotifier {
         newPostLabels = [];
       }
 
-      List<PostView> postsWithLabels = [];
-      for (var post in nonExistingPosts) {
+      final postsWithLabels = <PostView>[];
+      for (final post in nonExistingPosts) {
         newPostLabels.addAll(post.labels ?? []); // labels from the post
         if (post.record.selfLabels != null) {
           final recordLabels = <Label>[];
-          for (SelfLabel selfLabel in post.record.selfLabels!) {
+          for (final selfLabel in post.record.selfLabels!) {
             recordLabels.add(
               Label(uri: post.uri.toString(), value: selfLabel.value, src: post.uri.toString(), createdAt: post.indexedAt),
             );
@@ -377,9 +378,9 @@ class FeedNotifier extends _$FeedNotifier {
         postsWithLabels.add(post.copyWith(labels: newPostLabels));
       }
 
-      int newPostsCached = 0;
-      int errorCount = 0;
-      for (PostView post in postsWithLabels) {
+      var newPostsCached = 0;
+      var errorCount = 0;
+      for (final post in postsWithLabels) {
         // concurrent execution
         _downloadManager.submitTask(
           DownloadTask(
@@ -445,7 +446,7 @@ class FeedNotifier extends _$FeedNotifier {
 
       // gets the subscribed labels for the posts
       final followedLabelers = await _settingsRepository.getFollowedLabelers();
-      List<Label> labels = [];
+      var labels = <Label>[];
       try {
         final (cursor: _, labels: fetchedLabels) = await _feedRepository.getLabels(uris, sources: followedLabelers);
         labels = fetchedLabels;
@@ -456,11 +457,11 @@ class FeedNotifier extends _$FeedNotifier {
 
       // Get the post data for the new URIs
       final newPosts = posts.where((post) => uris.contains(post.uri)).toList();
-      for (var post in newPosts) {
+      for (final post in newPosts) {
         labels.addAll(post.labels ?? []); // labels from the post
         if (post.record.selfLabels != null) {
           final recordLabels = <Label>[];
-          for (SelfLabel selfLabel in post.record.selfLabels!) {
+          for (final selfLabel in post.record.selfLabels!) {
             recordLabels.add(
               Label(uri: post.uri.toString(), value: selfLabel.value, src: post.uri.toString(), createdAt: post.indexedAt),
             );
@@ -491,7 +492,7 @@ class FeedNotifier extends _$FeedNotifier {
         state.extraInfo,
       );
 
-      for (Label newLabel in labels) {
+      for (final newLabel in labels) {
         final uri = AtUri.parse(newLabel.uri);
         extraInfo.update(uri, (value) {
           final existingLabels = value.postLabels;
@@ -592,7 +593,7 @@ class FeedNotifier extends _$FeedNotifier {
     final updatedPosts = state.loadedPosts.where((e) => e != uri).toList();
 
     // Adjust the index if necessary
-    int newIndex = currentIndex;
+    var newIndex = currentIndex;
     if (postIndex != -1) {
       if (postIndex < currentIndex) {
         // Post was deleted before current position, adjust index down
@@ -611,7 +612,7 @@ class FeedNotifier extends _$FeedNotifier {
       }
     }
 
-    _logger.d('Removing post ${uri.toString()}, adjusting index from $currentIndex to $newIndex');
+    _logger.d('Removing post $uri, adjusting index from $currentIndex to $newIndex');
     state = state.copyWith(loadedPosts: updatedPosts, index: newIndex);
   }
 
@@ -622,7 +623,7 @@ class FeedNotifier extends _$FeedNotifier {
       try {
         final labelPreference = await _settingsRepository.getLabelPreference(label.value);
         if (labelPreference.setting == Setting.hide || (labelPreference.adultOnly && hideAdultContent)) {
-          _logger.d('Hiding post ${uri.toString()} due to label: ${label.value}');
+          _logger.d('Hiding post $uri due to label: ${label.value}');
           return true;
         }
       } catch (e) {

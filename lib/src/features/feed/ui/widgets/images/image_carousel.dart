@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class ImageCarousel extends ConsumerStatefulWidget {
-  const ImageCarousel({super.key, required this.imageUrls, this.alts});
+  const ImageCarousel({required this.imageUrls, super.key, this.alts});
   final List<String> imageUrls;
   final List<String>? alts;
 
@@ -35,7 +35,7 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
             return Stack(
               children: [
                 DecoratedBox(
-                  decoration: BoxDecoration(color: AppColors.black),
+                  decoration: const BoxDecoration(color: AppColors.black),
                   child: CachedNetworkImage(
                     imageUrl: widget.imageUrls[realIndex],
                     fit: BoxFit.contain,
@@ -50,9 +50,6 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
             );
           },
           options: CarouselOptions(
-            initialPage: 0,
-            pageSnapping: true,
-            scrollDirection: Axis.horizontal,
             aspectRatio: 0.5,
             height: MediaQuery.of(context).size.height,
             viewportFraction: 1,
@@ -82,21 +79,20 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
             ),
           ),
         ),
-        
+
         Positioned(
           bottom: 10,
           left: 0,
           right: 0,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               ...List.generate(
                 widget.imageUrls.length,
                 (index) => Container(
-                  width: 8.0,
-                  height: 8.0,
-                  margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: currentIndex == index ? Colors.white : Colors.white.withAlpha(128),

@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:sparksocial/src/features/settings/providers/settings_state.dart';
 import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
-import 'settings_state.dart';
-import '../../../core/storage/preferences/settings_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 
 part 'settings_provider.g.dart';
 
@@ -29,20 +29,11 @@ class Settings extends _$Settings {
 
     // Load settings asynchronously but return a temporary state immediately
     // This prevents blocking the UI while loading
-    Future.microtask(() => loadSettings());
+    Future.microtask(loadSettings);
 
     // Return temporary default state that will be replaced by loadSettings()
-    return SettingsState(
+    return const SettingsState(
       activeFeed: Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
-      feedBlurEnabled: false,
-      hideAdultContent: true,
-      followMode: FollowMode.sprk,
-      feeds: [
-        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
-        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
-        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
-      ],
-      postToBskyEnabled: false,
     );
   }
 
@@ -137,12 +128,13 @@ class Settings extends _$Settings {
 
   /// Reorders a feed in feeds list
   Future<void> reorderFeed(int oldIndex, int newIndex) async {
+    var actualNewIndex = newIndex;
     if (newIndex == state.feeds.length) {
-      newIndex = state.feeds.length - 1;
+      actualNewIndex = state.feeds.length - 1;
     }
     final updatedList = [...state.feeds];
     final feed = updatedList.removeAt(oldIndex);
-    updatedList.insert(newIndex, feed);
+    updatedList.insert(actualNewIndex, feed);
     await _repository.setFeeds(updatedList);
     state = state.copyWith(feeds: updatedList);
   }

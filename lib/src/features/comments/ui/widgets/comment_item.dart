@@ -18,9 +18,9 @@ import 'package:sparksocial/src/features/comments/providers/comment_state.dart';
 import 'package:sparksocial/src/features/comments/providers/comments_page_provider.dart';
 
 class CommentItem extends ConsumerStatefulWidget {
+  const CommentItem({required this.thread, required this.mainPostUri, super.key});
   final ThreadViewPost thread;
   final AtUri mainPostUri;
-  const CommentItem({super.key, required this.thread, required this.mainPostUri});
 
   @override
   ConsumerState<CommentItem> createState() => _CommentItemState();
@@ -103,11 +103,11 @@ class _CommentItemState extends ConsumerState<CommentItem> {
   @override
   Widget build(BuildContext context) {
     commentState = ref.watch(commentNotifierProvider(widget.thread));
-    const double thumbnailSize = 120.0;
+    const double thumbnailSize = 120;
 
     final borderRadius = BorderRadius.circular(8);
-    final bool hasImages = commentState.thread.post.embed is EmbedViewImage;
-    final bool hasVideo = commentState.thread.post.embed is EmbedViewVideo;
+    final hasImages = commentState.thread.post.embed is EmbedViewImage;
+    final hasVideo = commentState.thread.post.embed is EmbedViewVideo;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -133,7 +133,6 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                           child: GestureDetector(
                             onTap: _navigateToProfile,
                             child: Row(
-                              crossAxisAlignment: CrossAxisAlignment.center,
                               children: [
                                 Text(
                                   commentState.thread.post.author.handle,
@@ -152,15 +151,10 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                           ),
                         ),
                         MenuActionButton(
-                          onPressed: () {
-                            _handleReportComment();
-                          },
-                          onDeletePressed: () {
-                            _handleDeleteComment();
-                          },
+                          onPressed: _handleReportComment,
+                          onDeletePressed: _handleDeleteComment,
                           isCompact: true,
                           backgroundColor: Theme.of(context).colorScheme.surface,
-                          isProfile: false,
                           authorDid: commentState.thread.post.author.did,
                         ),
                       ],
@@ -236,7 +230,7 @@ class _RepliesSection extends StatelessWidget {
         margin: const EdgeInsets.only(left: 64),
         padding: const EdgeInsets.only(top: 4, bottom: 8),
         decoration: BoxDecoration(
-          border: Border(left: BorderSide(color: Theme.of(context).colorScheme.surface, width: 1)),
+          border: Border(left: BorderSide(color: Theme.of(context).colorScheme.surface)),
         ),
         child: Text('Show ${commentState.thread.post.replyCount} replies'),
       ),
@@ -305,7 +299,6 @@ class _Avatar extends StatelessWidget {
       imageUrl: widget.thread.post.author.avatar.toString(),
       username: widget.thread.post.author.handle,
       size: 36,
-      borderWidth: 0,
     );
   }
 }

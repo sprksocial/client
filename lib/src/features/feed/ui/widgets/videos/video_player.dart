@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -7,13 +9,12 @@ import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/slider.dart';
-import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/time_display.dart';
+import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
 import 'package:video_player/video_player.dart';
-import 'dart:async';
 
 class PostVideoPlayer extends ConsumerStatefulWidget {
-  const PostVideoPlayer({super.key, required this.videoUrl, this.feed, this.index, required this.isSparkPost});
+  const PostVideoPlayer({required this.videoUrl, required this.isSparkPost, super.key, this.feed, this.index});
 
   final String videoUrl;
   final Feed? feed;
@@ -58,7 +59,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
     super.initState();
     _bounceController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
     _bounceAnimation = Tween<double>(
-      begin: 1.0,
+      begin: 1,
       end: 1.3,
     ).animate(CurvedAnimation(parent: _bounceController, curve: Curves.elasticOut));
     initVideoPlayer();
@@ -170,7 +171,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
     if (!isInitialized) return;
     _isSeeking = true;
     videoController.pause();
-    videoController.setVolume(0.0);
+    videoController.setVolume(0);
   }
 
   void _onSeekChanged(double value) {
@@ -184,7 +185,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
   void _onSeekEnd(double value) {
     if (!isInitialized) return;
     _isSeeking = false;
-    videoController.setVolume(1.0);
+    videoController.setVolume(1);
     videoController.play();
   }
 
@@ -217,7 +218,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       _lastFeedIndex = feedState.index;
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted && !_userInteracted) {
-          bool shouldPlay = feedState.index == widget.index && isOnFeedsTab;
+          final shouldPlay = feedState.index == widget.index && isOnFeedsTab;
           _handleAutoPlayPause(shouldPlay);
         }
       });
@@ -252,7 +253,6 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
             children: [
               SizedBox.expand(
                 child: FittedBox(
-                  fit: BoxFit.contain,
                   child: SizedBox(
                     width: videoController.value.size.width,
                     height: videoController.value.size.height,
@@ -326,7 +326,6 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
                       ),
                       child: Slider(
                         value: position.inMilliseconds.toDouble(),
-                        min: 0,
                         max: duration.inMilliseconds.toDouble(),
                         onChanged: _onSeekChanged,
                         onChangeStart: _onSeekStart,

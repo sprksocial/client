@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
+import 'package:sparksocial/src/core/theme/data/repositories/theme_repository.dart';
 import 'package:sparksocial/src/core/theme/domain/theme_provider.dart';
-import 'theme_repository.dart';
 
 /// Implementation of ThemeRepository using SharedPreferences
 class ThemeRepositoryImpl implements ThemeRepository {
-  final StorageManager _storageManager;
-
   const ThemeRepositoryImpl(this._storageManager);
+  final StorageManager _storageManager;
 
   @override
   Future<ThemeMode?> getThemeMode() async {

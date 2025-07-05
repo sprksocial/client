@@ -1,20 +1,19 @@
 import 'dart:convert';
 
 import 'package:atproto_core/atproto_core.dart';
+import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:get_it/get_it.dart';
-
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
 class LabelerRepositoryImpl extends LabelerRepository {
-  final SprkRepository _client;
-  final _logger = GetIt.instance<LogService>().getLogger('LabelerAPI');
-
   LabelerRepositoryImpl(this._client) {
     _logger.v('LabelerAPI initialized');
   }
+  final SprkRepository _client;
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('LabelerAPI');
 
   @override
   Future<LabelerView> getServices(List<String> dids) async {
@@ -35,8 +34,8 @@ class LabelerRepositoryImpl extends LabelerRepository {
         NSID.parse('so.sprk.labeler.getServices'),
         parameters: {'dids': dids, 'detailed': false},
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => LabelerView.fromJson(jsonMap),
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+        to: LabelerView.fromJson,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
       if (result.status != HttpStatus.ok) {
         _logger.e('Failed to retrieve labeler services for DIDs: $dids');
@@ -66,8 +65,8 @@ class LabelerRepositoryImpl extends LabelerRepository {
         NSID.parse('so.sprk.labeler.getServices'),
         parameters: {'dids': dids, 'detailed': true},
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => LabelerViewDetailed.fromJson(jsonMap),
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+        to: LabelerViewDetailed.fromJson,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
       if (result.status != HttpStatus.ok) {
         _logger.e('Failed to retrieve labeler services for DIDs: $dids');

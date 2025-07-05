@@ -8,6 +8,7 @@ part 'records.g.dart';
 
 @Freezed(unionKey: r'$type')
 class Record with _$Record {
+  factory Record.fromJson(Map<String, dynamic> json) => _$RecordFromJson(json);
   const Record._();
   @JsonSerializable(explicitToJson: true)
   @FreezedUnionValue('so.sprk.feed.post')
@@ -27,10 +28,10 @@ class Record with _$Record {
   @FreezedUnionValue('so.sprk.feed.story')
   const factory Record.story({
     required Embed media,
+    required DateTime createdAt,
     StrongRef? sound,
     List<SelfLabel>? selfLabels,
     List<String>? tags,
-    required DateTime createdAt,
   }) = StoryRecord;
 
   @JsonSerializable(explicitToJson: true)
@@ -75,16 +76,14 @@ class Record with _$Record {
     final regex = RegExp(r'#(\w+)');
     return regex.allMatches(text).map((match) => match.group(1)!).toList();
   }
-
-  factory Record.fromJson(Map<String, dynamic> json) => _$RecordFromJson(json);
 }
 
 /// Skeleton of a ReplyRef. Needs to be hydrated.
 @freezed
 class RecordReplyRef with _$RecordReplyRef {
-  const RecordReplyRef._();
   @JsonSerializable(explicitToJson: true)
   const factory RecordReplyRef({required StrongRef root, required StrongRef parent}) = _RecordReplyRef;
+  const RecordReplyRef._();
 
   factory RecordReplyRef.fromJson(Map<String, dynamic> json) => _$RecordReplyRefFromJson(json);
 }
@@ -143,8 +142,6 @@ sealed class Embed with _$Embed {
 
 @freezed
 class EmbedExternal with _$EmbedExternal {
-  const EmbedExternal._();
-
   @JsonSerializable(explicitToJson: true)
   const factory EmbedExternal({
     required String uri,
@@ -152,20 +149,20 @@ class EmbedExternal with _$EmbedExternal {
     @Default('') String description,
     Blob? thumb,
   }) = _EmbedExternal;
+  const EmbedExternal._();
 
   factory EmbedExternal.fromJson(Map<String, dynamic> json) => _$EmbedExternalFromJson(json);
 }
 
 @freezed
 class Image with _$Image {
-  const Image._();
-
   @JsonSerializable(explicitToJson: true)
   const factory Image({
     required Blob image,
     String? alt,
     // aspectRatio: {width: int, height: int}
   }) = _Image;
+  const Image._();
 
   factory Image.fromJson(Map<String, dynamic> json) => _$ImageFromJson(json);
 }

@@ -4,16 +4,25 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart'; // Import image_picker
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/comments/providers/comment_input_state.dart';
-import 'package:sparksocial/src/features/comments/providers/comment_input_provider.dart';
 import 'package:sparksocial/src/core/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
+import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
+import 'package:sparksocial/src/features/comments/providers/comment_input_provider.dart';
+import 'package:sparksocial/src/features/comments/providers/comment_input_state.dart';
+import 'package:sparksocial/src/features/comments/ui/widgets/emoji_picker.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 
-import 'emoji_picker.dart';
-
 class CommentInputWidget extends ConsumerStatefulWidget {
+  const CommentInputWidget({
+    required this.videoId,
+    required this.postCid,
+    required this.postUri,
+    required this.isSprk,
+    super.key,
+    this.focusNode,
+    this.rootCid,
+    this.rootUri,
+  });
   final String videoId;
   // Video post info
   final String postCid;
@@ -23,17 +32,6 @@ class CommentInputWidget extends ConsumerStatefulWidget {
   final String? rootUri;
   final FocusNode? focusNode;
   final bool isSprk;
-
-  const CommentInputWidget({
-    super.key,
-    required this.videoId,
-    required this.postCid,
-    required this.postUri,
-    this.focusNode,
-    required this.isSprk,
-    this.rootCid,
-    this.rootUri,
-  });
 
   @override
   ConsumerState<CommentInputWidget> createState() => _CommentInputState();
@@ -72,7 +70,6 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
             decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, borderRadius: BorderRadius.circular(32)),
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 UserAvatar(
                   imageUrl: ref
@@ -84,7 +81,6 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
                       ),
                   username: session?.handle ?? '',
                   size: 28,
-                  borderWidth: 0,
                 ),
                 const SizedBox(width: 8),
                 _AttachmentButton(
@@ -112,7 +108,7 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
           // Selected Images Preview (only show if images are selected)
           if (state.selectedImages.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: 8.0),
+              padding: const EdgeInsets.only(top: 8),
               child: _SelectedImagesPreview(state: state, notifier: notifier),
             ),
         ],
@@ -140,7 +136,7 @@ class _TextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String hint = 'Add a comment...';
+    const hint = 'Add a comment...';
 
     return TextField(
       controller: state.textController,
@@ -216,8 +212,8 @@ class _AttachmentButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool canAddMoreImages = state.selectedImages.length < 4;
-    final bool enabled = !state.isPosting && canAddMoreImages;
+    final canAddMoreImages = state.selectedImages.length < 4;
+    final enabled = !state.isPosting && canAddMoreImages;
 
     return IconButton(
       padding: EdgeInsets.zero,
@@ -247,7 +243,7 @@ class _SelectedImagesPreview extends StatelessWidget {
           final imageFile = state.selectedImages[index];
           final alt = state.altTexts[imageFile.path];
           return Padding(
-            padding: const EdgeInsets.only(right: 8.0),
+            padding: const EdgeInsets.only(right: 8),
             child: Stack(
               alignment: Alignment.bottomRight,
               children: [
@@ -280,13 +276,13 @@ class _SelectedImagesPreview extends StatelessWidget {
                         }
                       },
                       borderRadius: BorderRadius.circular(8),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         child: Row(
                           children: [
                             Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 14),
-                            const SizedBox(width: 2),
-                            const Text(
+                            SizedBox(width: 2),
+                            Text(
                               'ALT',
                               style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                             ),

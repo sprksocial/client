@@ -3,6 +3,16 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 /// A customized text field widget for profile editing
 class ProfileTextField extends StatefulWidget {
+  /// Creates a profile text field
+  const ProfileTextField({
+    required this.initialValue,
+    required this.hintText,
+    required this.onChanged,
+    required this.bgColor,
+    super.key,
+    this.maxLines = 1,
+  });
+
   /// Initial value of the text field
   final String initialValue;
 
@@ -17,16 +27,6 @@ class ProfileTextField extends StatefulWidget {
 
   /// Number of lines for the text field
   final int maxLines;
-
-  /// Creates a profile text field
-  const ProfileTextField({
-    super.key,
-    required this.initialValue,
-    required this.hintText,
-    required this.onChanged,
-    required this.bgColor,
-    this.maxLines = 1,
-  });
 
   @override
   State<ProfileTextField> createState() => _ProfileTextFieldState();
@@ -65,14 +65,17 @@ class _ProfileTextFieldState extends State<ProfileTextField> {
         hintText: widget.hintText,
         filled: true,
         fillColor: widget.bgColor,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: AppColors.border)),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.border),
+          borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: AppColors.primary),
+          borderSide: const BorderSide(color: AppColors.primary),
         ),
       ),
     );
