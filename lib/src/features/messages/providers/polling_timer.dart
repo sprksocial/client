@@ -12,7 +12,5 @@ void pollingTrigger(Ref ref, String otherDid) {
     ref.read(conversationProvider(otherDid).notifier).checkForNewMessages();
   });
 
-  ref.onDispose(() {
-    timer.cancel();
-  });
+  ref.onDispose(timer.cancel);
 }

@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 
 // Placeholder for ProfileStatItem widget
 class ProfileStatItem extends StatelessWidget {
+  const ProfileStatItem({required this.count, required this.label, super.key});
   final String count;
   final String label;
-  const ProfileStatItem({super.key, required this.count, required this.label});
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
+    final theme = Theme.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,

@@ -11,14 +11,13 @@ import 'package:sparksocial/src/features/posting/providers/upload_provider.dart'
 import 'package:sparksocial/src/features/posting/providers/video_upload_provider.dart';
 import 'package:sparksocial/src/features/posting/providers/video_upload_state.dart';
 import 'package:sparksocial/src/features/posting/ui/widgets/video_thumbnail.dart';
-import 'package:video_player/video_player.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:video_player/video_player.dart';
 
 @RoutePage()
 class VideoReviewPage extends ConsumerStatefulWidget {
+  const VideoReviewPage({required this.videoPath, super.key});
   final String videoPath;
-
-  const VideoReviewPage({super.key, required this.videoPath});
 
   @override
   ConsumerState<VideoReviewPage> createState() => _VideoReviewPageState();
@@ -37,7 +36,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
   }
 
   void _initVideoPlayer() {
-    String videoPath = widget.videoPath;
+    var videoPath = widget.videoPath;
 
     // Handle file:// URL scheme
     if (videoPath.startsWith('file://')) {
@@ -105,7 +104,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         // Show error without blocking UI
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to upload video: ${e.toString()}'), backgroundColor: Colors.red));
+        ).showSnackBar(SnackBar(content: Text('Failed to upload video: $e'), backgroundColor: Colors.red));
 
         // Update upload service with error state
         final uploadNotifier = ref.read(uploadProvider.notifier);
@@ -135,15 +134,14 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Video preview big on top with ALT overlay
                       LayoutBuilder(
                         builder: (context, constraints) {
                           final maxWidth = constraints.maxWidth;
-                          final maxHeight = 320.0;
+                          const maxHeight = 320.0;
                           if (!_controller.value.isInitialized) {
                             return SizedBox(
                               height: maxHeight,
@@ -170,8 +168,8 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                             );
                           }
                           final aspectRatio = _controller.value.aspectRatio;
-                          double width = maxWidth;
-                          double height = width / aspectRatio;
+                          var width = maxWidth;
+                          var height = width / aspectRatio;
                           if (height > maxHeight) {
                             height = maxHeight;
                             width = height * aspectRatio;
@@ -201,8 +199,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                                         _controller.pause();
                                         final result = await showDialog<String>(
                                           context: context,
-                                          builder: (context) =>
-                                              AltTextEditorDialog(imageFile: null, initialAltText: _videoAltText),
+                                          builder: (context) => AltTextEditorDialog(initialAltText: _videoAltText),
                                         );
                                         if (result != null) {
                                           setState(() {
@@ -219,7 +216,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 16),
+                                            const Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 16),
                                             const SizedBox(width: 4),
                                             Text(
                                               _videoAltText.isEmpty ? 'ALT' : 'ALT',
@@ -251,7 +248,6 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Material(
-                                elevation: 0,
                                 color: Colors.transparent,
                                 borderRadius: BorderRadius.circular(12),
                                 child: TextField(
@@ -264,11 +260,11 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                                     hintStyle: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(color: theme.colorScheme.outline, width: 1),
+                                      borderSide: BorderSide(color: theme.colorScheme.outline),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(color: theme.colorScheme.outline, width: 1),
+                                      borderSide: BorderSide(color: theme.colorScheme.outline),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
@@ -333,7 +329,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

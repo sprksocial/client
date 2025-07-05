@@ -1,5 +1,5 @@
-import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:atproto_core/atproto_core.dart';
+import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';

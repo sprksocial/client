@@ -1,13 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
 
 class SoundCard extends StatelessWidget {
+  const SoundCard({required this.title, required this.artist, required this.imageUrl, super.key, this.onTap});
   final String title;
   final String artist;
   final String imageUrl;
   final VoidCallback? onTap;
-
-  const SoundCard({super.key, required this.title, required this.artist, required this.imageUrl, this.onTap});
 
   @override
   Widget build(BuildContext context) {

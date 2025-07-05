@@ -3,11 +3,12 @@ import 'dart:async';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/search/providers/search_state.dart';
 
 part 'search_provider.g.dart';
@@ -16,10 +17,10 @@ part 'search_provider.g.dart';
 @riverpod
 class Search extends _$Search {
   Timer? _debounce;
-  final _logger = GetIt.instance<LogService>().getLogger('SearchProvider');
-  final _actorRepository = GetIt.instance<ActorRepository>();
-  final _authRepository = GetIt.instance<AuthRepository>();
-  final _graphRepository = GetIt.instance<GraphRepository>();
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('SearchProvider');
+  final ActorRepository _actorRepository = GetIt.instance<ActorRepository>();
+  final AuthRepository _authRepository = GetIt.instance<AuthRepository>();
+  final GraphRepository _graphRepository = GetIt.instance<GraphRepository>();
 
   @override
   SearchState build() {
@@ -146,7 +147,7 @@ class Search extends _$Search {
       if (userIndex != -1) {
         final user = updatedResults[userIndex];
 
-        final updatedUser = user.copyWith(viewer: ActorViewer(following: null));
+        final updatedUser = user.copyWith(viewer: const ActorViewer());
 
         updatedResults[userIndex] = updatedUser;
         state = state.copyWith(searchResults: updatedResults);

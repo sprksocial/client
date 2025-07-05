@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
@@ -17,12 +17,11 @@ import 'package:sparksocial/src/features/messages/ui/widgets/messages_list.dart'
 
 @RoutePage()
 class ChatPage extends ConsumerStatefulWidget {
+  const ChatPage({required this.otherUserDid, super.key, this.otherUserHandle, this.otherUserDisplayName, this.otherUserAvatar});
   final String otherUserDid;
   final String? otherUserHandle;
   final String? otherUserDisplayName;
   final String? otherUserAvatar;
-
-  const ChatPage({super.key, required this.otherUserDid, this.otherUserHandle, this.otherUserDisplayName, this.otherUserAvatar});
 
   @override
   ConsumerState<ChatPage> createState() => _ChatPageState();
@@ -52,13 +51,12 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     final urlRegex = RegExp(
       r'https?://(?:www\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z]+)+\S*|www\.[a-zA-Z0-9-]+(?:\.[a-zA-Z]+)+\S*',
       caseSensitive: false,
-      multiLine: false,
     );
     return urlRegex.allMatches(text).map((match) => match.group(0)!).toList();
   }
 
   Future<void> _sendMessage() async {
-    String content = _messageController.text.trim();
+    var content = _messageController.text.trim();
     final links = _extractLinks(content);
 
     // remove links from content
@@ -84,7 +82,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
       _scrollToBottom();
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send message: ${e.toString()}')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send message: $e')));
       }
     }
   }

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 
 class ModeSelector extends StatelessWidget {
+  const ModeSelector({required this.isVideoMode, required this.onModeSelected, super.key});
   final bool isVideoMode;
   final Function(bool) onModeSelected;
-
-  const ModeSelector({super.key, required this.isVideoMode, required this.onModeSelected});
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +22,7 @@ class ModeSelector extends StatelessWidget {
 }
 
 class ModeButton extends StatelessWidget {
-  const ModeButton({super.key, required this.label, required this.isSelected, required this.onTap});
+  const ModeButton({required this.label, required this.isSelected, required this.onTap, super.key});
 
   final String label;
   final bool isSelected;

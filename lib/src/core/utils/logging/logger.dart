@@ -1,8 +1,19 @@
-import 'log_level.dart';
-import 'log_output.dart';
+import 'package:sparksocial/src/core/utils/logging/log_level.dart';
+import 'package:sparksocial/src/core/utils/logging/log_output.dart';
 
 /// A flexible and customizable logging system for Spark Social
 class SparkLogger {
+  /// Constructor
+  SparkLogger({
+    String name = '',
+    LogLevel minLevel = LogLevel.info,
+    List<LogOutput> outputs = const [],
+    bool includeStackTrace = true,
+  }) : _name = name,
+       _minLevel = minLevel,
+       _outputs = List.from(outputs),
+       _includeStackTrace = includeStackTrace;
+
   /// The minimum log level that will be output
   final LogLevel _minLevel;
 
@@ -14,17 +25,6 @@ class SparkLogger {
 
   /// Whether to include stack traces for errors
   final bool _includeStackTrace;
-
-  /// Constructor
-  SparkLogger({
-    String name = '',
-    LogLevel minLevel = LogLevel.info,
-    List<LogOutput> outputs = const [],
-    bool includeStackTrace = true,
-  }) : _name = name,
-       _minLevel = minLevel,
-       _outputs = List.from(outputs),
-       _includeStackTrace = includeStackTrace;
 
   /// Log a verbose message
   void v(String message, {Object? error, StackTrace? stackTrace}) {
@@ -64,10 +64,10 @@ class SparkLogger {
     }
 
     // Add name prefix if provided
-    final String prefixedMessage = _name.isNotEmpty ? '[$_name] $message' : message;
+    final prefixedMessage = _name.isNotEmpty ? '[$_name] $message' : message;
 
     // Get stack trace if requested and not provided
-    StackTrace? trace = stackTrace;
+    var trace = stackTrace;
     if (error != null && trace == null && _includeStackTrace) {
       trace = StackTrace.current;
     }

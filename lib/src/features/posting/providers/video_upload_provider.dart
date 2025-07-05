@@ -1,13 +1,11 @@
-
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
+import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
-
-import '../../../core/auth/data/repositories/auth_repository.dart';
-import '../../../core/utils/logging/log_service.dart';
-import 'video_upload_state.dart';
+import 'package:sparksocial/src/features/posting/providers/video_upload_state.dart';
 
 part 'video_upload_provider.g.dart';
 
@@ -134,10 +132,10 @@ class VideoUpload extends _$VideoUpload {
 
     // Create Bluesky video post record using direct JSON structure
     final bskyPostRecord = <String, dynamic>{
-      "\$type": "app.bsky.feed.post",
-      "text": text,
-      "embed": {"\$type": "app.bsky.embed.video", "video": blob.toJson(), "alt": altText},
-      "createdAt": DateTime.now().toUtc().toIso8601String(),
+      r'$type': 'app.bsky.feed.post',
+      'text': text,
+      'embed': {r'$type': 'app.bsky.embed.video', 'video': blob.toJson(), 'alt': altText},
+      'createdAt': DateTime.now().toUtc().toIso8601String(),
     };
 
     final bskyAtProto = _authRepository.atproto!;

@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:flutter/services.dart';
-
-import 'core/theme/data/models/app_theme.dart';
-import 'core/theme/domain/theme_provider.dart';
+import 'package:sparksocial/src/core/theme/data/models/app_theme.dart';
+import 'package:sparksocial/src/core/theme/domain/theme_provider.dart';
 
 class SprkApp extends ConsumerStatefulWidget {
   const SprkApp({super.key});

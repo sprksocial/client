@@ -9,6 +9,7 @@ class FeedRefreshTrigger extends StateNotifier<int> {
   }
 }
 
-final feedRefreshTriggerProvider = StateNotifierProvider.family<FeedRefreshTrigger, int, Feed>(
-  (ref, feed) => FeedRefreshTrigger(),
-);
+final StateNotifierProviderFamily<FeedRefreshTrigger, int, Feed> feedRefreshTriggerProvider =
+    StateNotifierProvider.family<FeedRefreshTrigger, int, Feed>(
+      (ref, feed) => FeedRefreshTrigger(),
+    );

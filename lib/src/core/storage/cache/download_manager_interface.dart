@@ -50,7 +50,6 @@ class DownloadTask {
 }
 
 abstract class DownloadManagerInterface {
-
   /// Sets the currently active feed. Tasks related to the active feed
   /// may be prioritized.
   ///

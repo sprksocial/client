@@ -3,19 +3,19 @@ import 'dart:typed_data';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/features/profile/providers/edit_profile_state.dart';
 import 'package:sparksocial/src/features/profile/providers/edit_profile_provider.dart';
+import 'package:sparksocial/src/features/profile/providers/edit_profile_state.dart';
 
 /// Widget for editing the profile avatar
 class ProfileAvatarEditor extends StatefulWidget {
+  /// Creates a profile avatar editor
+  const ProfileAvatarEditor({required this.state, required this.notifier, super.key});
+
   /// Current state of the profile being edited
   final EditProfileState state;
 
   /// The notifier to trigger actions on the profile
   final EditProfile notifier;
-
-  /// Creates a profile avatar editor
-  const ProfileAvatarEditor({super.key, required this.state, required this.notifier});
 
   @override
   State<ProfileAvatarEditor> createState() => _ProfileAvatarEditorState();

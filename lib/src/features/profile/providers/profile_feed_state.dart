@@ -9,7 +9,6 @@ part 'profile_feed_state.freezed.dart';
 
 @freezed
 abstract class ProfileFeedState with _$ProfileFeedState {
-  const ProfileFeedState._();
   const factory ProfileFeedState({
     required List<AtUri> loadedPosts,
     required bool isEndOfNetwork,
@@ -21,11 +20,12 @@ abstract class ProfileFeedState with _$ProfileFeedState {
     @Default(<AtUri, PostView>{}) Map<AtUri, PostView> postViews,
     @Default(null) String? blueskyCursor,
   }) = _ProfileFeedState;
+  const ProfileFeedState._();
 
   int get length => loadedPosts.length;
   int get allPostsLength => allPosts.length;
 
-  List<AtUri> get videoPosts => allPosts.where((uri) => postTypes[uri] == true).toList();
+  List<AtUri> get videoPosts => allPosts.where((uri) => postTypes[uri] ?? true).toList();
   List<AtUri> get imagePosts => allPosts.where((uri) => postTypes[uri] == false).toList();
 
   static const int fetchLimit = 16; // number of posts to fetch at a time

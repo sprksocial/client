@@ -1,26 +1,26 @@
-import 'package:auto_route/auto_route.dart';
 import 'package:atproto/atproto.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/utils/label_utils.dart';
+import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
+import 'package:sparksocial/src/core/widgets/heart_animation.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
-import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
+import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
 import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/widgets/heart_animation.dart';
-import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
-import 'package:sparksocial/src/core/utils/label_utils.dart';
 
 class FeedPostWidget extends ConsumerStatefulWidget {
-  const FeedPostWidget({super.key, required this.index, required this.feed});
+  const FeedPostWidget({required this.index, required this.feed, super.key});
 
   final int index;
   final Feed feed;
@@ -103,7 +103,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
     if (widget.index < feedState.loadedPosts.length) {
       final uri = feedState.loadedPosts[widget.index];
       final extraInfo = feedState.extraInfo[uri];
-      
+
       if (extraInfo != null && extraInfo.postLabels.isNotEmpty && !_userDismissedWarning) {
         final shouldShowWarning = await LabelUtils.shouldShowWarning(extraInfo.postLabels);
         if (shouldShowWarning) {
@@ -147,9 +147,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
         _lastUpdateCount = updateCount;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            setState(() {
-              _loadPost();
-            });
+            setState(_loadPost);
             _checkContentWarning(currentUri);
           }
         });
@@ -251,8 +249,8 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                     child: Builder(
                       builder: (context) {
                         final feedState = ref.read(feedNotifierProvider(widget.feed));
-                        List<Label> labels = [];
-                        
+                        var labels = <Label>[];
+
                         if (widget.index < feedState.loadedPosts.length) {
                           final uri = feedState.loadedPosts[widget.index];
                           final extraInfo = feedState.extraInfo[uri];
@@ -260,7 +258,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                             labels = extraInfo.postLabels;
                           }
                         }
-                        
+
                         return FutureBuilder<List<String>>(
                           future: LabelUtils.getInformLabels(labels),
                           builder: (context, snapshot) {
@@ -305,15 +303,15 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
         }
         if (snapshot.hasError) {
           return DecoratedBox(
-            decoration: BoxDecoration(color: AppColors.black),
+            decoration: const BoxDecoration(color: AppColors.black),
             child: Center(
               child: Text('Error loading post: ${snapshot.error}', style: const TextStyle(color: Colors.white)),
             ),
           );
         }
-        return DecoratedBox(
+        return const DecoratedBox(
           decoration: BoxDecoration(color: AppColors.black),
-          child: const Center(child: CircularProgressIndicator(color: AppColors.white)),
+          child: Center(child: CircularProgressIndicator(color: AppColors.white)),
         );
       },
     );

@@ -6,20 +6,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
 class ReportDialog extends ConsumerStatefulWidget {
+  const ReportDialog({required this.postUri, required this.postCid, super.key, this.onSubmit});
   final String postUri;
   final String postCid;
   final Function(ReportSubject subject, ModerationReasonType reasonType, String? reason, ModerationService? service)? onSubmit;
-
-  const ReportDialog({super.key, required this.postUri, required this.postCid, this.onSubmit});
 
   @override
   ConsumerState<ReportDialog> createState() => _ReportDialogState();
 }
 
 class _ReportDialogState extends ConsumerState<ReportDialog> {
-  final _logger = GetIt.instance<LogService>().getLogger('ReportDialog');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ReportDialog');
   ModerationReasonType _selectedReason = ModerationReasonType.spam;
   final TextEditingController _additionalInfoController = TextEditingController();
   bool _isSubmitting = false;
@@ -131,7 +131,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
 
             if (_errorMessage != null)
               Padding(
-                padding: const EdgeInsets.only(top: 8.0),
+                padding: const EdgeInsets.only(top: 8),
                 child: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
@@ -166,17 +166,16 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
 }
 
 class _ReasonTile extends StatelessWidget {
-  final ModerationReasonType reason;
-  final ModerationReasonType selectedReason;
-  final Map<String, String> reasonDescription;
-  final ValueChanged<ModerationReasonType?> onChanged;
-
   const _ReasonTile({
     required this.reason,
     required this.selectedReason,
     required this.reasonDescription,
     required this.onChanged,
   });
+  final ModerationReasonType reason;
+  final ModerationReasonType selectedReason;
+  final Map<String, String> reasonDescription;
+  final ValueChanged<ModerationReasonType?> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -194,7 +193,7 @@ class _ReasonTile extends StatelessWidget {
       value: reason,
       groupValue: selectedReason,
       activeColor: theme.colorScheme.primary,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 0),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 4),
       dense: true,
       visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
       onChanged: onChanged,

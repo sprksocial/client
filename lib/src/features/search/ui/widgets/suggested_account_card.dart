@@ -3,6 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 
 class SuggestedAccountCard extends StatelessWidget {
+  const SuggestedAccountCard({
+    required this.username,
+    required this.handle,
+    required this.avatarUrl,
+    super.key,
+    this.description,
+    this.onTap,
+    this.onFollowTap,
+    this.onUnfollowTap,
+    this.showFollowButton = true,
+    this.isFollowing = false,
+  });
   final String username;
   final String handle;
   final String avatarUrl;
@@ -12,19 +24,6 @@ class SuggestedAccountCard extends StatelessWidget {
   final VoidCallback? onUnfollowTap;
   final bool showFollowButton;
   final bool isFollowing;
-
-  const SuggestedAccountCard({
-    super.key,
-    required this.username,
-    required this.handle,
-    required this.avatarUrl,
-    this.description,
-    this.onTap,
-    this.onFollowTap,
-    this.onUnfollowTap,
-    this.showFollowButton = true,
-    this.isFollowing = false,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +66,7 @@ class SuggestedAccountCard extends StatelessWidget {
                   ),
                   if (description != null && description!.isNotEmpty)
                     Padding(
-                      padding: const EdgeInsets.only(top: 2.0),
+                      padding: const EdgeInsets.only(top: 2),
                       child: Text(
                         description!,
                         style: TextStyle(fontSize: 13, color: secondaryTextColor),

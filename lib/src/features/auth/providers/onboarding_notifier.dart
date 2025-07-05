@@ -1,8 +1,8 @@
 import 'dart:typed_data';
+
+import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:get_it/get_it.dart';
-
 import 'package:sparksocial/src/core/auth/data/models/onboarding_screen_state.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
@@ -30,12 +30,10 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     try {
       final session = _authRepository.session;
       if (session == null || session.did.isEmpty) {
-        _logger.e("User not authenticated or DID is missing.");
+        _logger.e('User not authenticated or DID is missing.');
         return const OnboardingScreenState(
           isLoading: false,
-          errorMessage: "User not authenticated",
-          displayName: '',
-          description: '',
+          errorMessage: 'User not authenticated',
         );
       }
       final userDid = session.did;
@@ -54,12 +52,11 @@ class OnboardingNotifier extends _$OnboardingNotifier {
         description: profileDataMap?.description ?? '',
         initialAvatarCid: avatarCid,
         initialAvatarUrl: avatarUrl,
-        localAvatarBytes: null,
         userDid: userDid,
       );
     } catch (e, s) {
       _logger.e('Failed to load Bsky profile', error: e, stackTrace: s);
-      return OnboardingScreenState(isLoading: false, errorMessage: "Failed to load profile.", displayName: '', description: '');
+      return const OnboardingScreenState(isLoading: false, errorMessage: 'Failed to load profile.');
     }
   }
 

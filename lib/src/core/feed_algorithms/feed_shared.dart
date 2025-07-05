@@ -3,7 +3,7 @@ import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dar
 
 Future<FeedSkeleton> sharedSkeletonFunction({int? limit, String? cursor}) async {
   limit ??= 10;
-  return FeedSkeleton(feed: []); // TODO: implement
+  return const FeedSkeleton(feed: []); // TODO: implement
 }
 
 Future<Map<AtUri, HardcodedFeedExtraInfoShared>> sharedExtraInfoFunction(List<AtUri> uris) async {

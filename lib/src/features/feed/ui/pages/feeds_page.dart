@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
 import 'package:sparksocial/src/features/feed/ui/pages/feed_page.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/feeds_bar.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 
 @RoutePage()
 class FeedsPage extends ConsumerStatefulWidget {
@@ -89,9 +89,8 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
     // Check if we need to initialize or update the page controller
     final needsInitialization = !_isInitialized;
     final activeFeedChanged = _lastActiveFeed != activeFeed;
-    final feedsListChanged = _lastFeedsList == null ||
-        _lastFeedsList!.length != feeds.length ||
-        !_lastFeedsList!.every((feed) => feeds.contains(feed));
+    final feedsListChanged =
+        _lastFeedsList == null || _lastFeedsList!.length != feeds.length || !_lastFeedsList!.every(feeds.contains);
 
     if (needsInitialization || activeFeedChanged || feedsListChanged) {
       _updatePageController(feeds, activeFeed);
@@ -113,7 +112,6 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
           PageView.builder(
             controller: _pageController,
             itemCount: feeds.length,
-            pageSnapping: true,
             onPageChanged: (index) {
               // Prevent recursive updates
               if (_isPageControllerUpdating) return;

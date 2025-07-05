@@ -2,28 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class AuthRequiredContent extends StatelessWidget {
+  const AuthRequiredContent({
+    required this.title,
+    required this.description,
+    required this.icon,
+    required this.onLoginPressed,
+    super.key,
+  });
   final String title;
   final String description;
   final IconData icon;
   final VoidCallback onLoginPressed;
 
-  const AuthRequiredContent({
-    super.key,
-    required this.title,
-    required this.description,
-    required this.icon,
-    required this.onLoginPressed,
-  });
-
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
+    final theme = Theme.of(context);
 
     return SliverFillRemaining(
       hasScrollBody: false,
       child: Center(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -52,7 +51,10 @@ class AuthRequiredContent extends StatelessWidget {
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
                 onPressed: onLoginPressed,
-                child: const Text('Login', style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.white)),
+                child: const Text(
+                  'Login',
+                  style: TextStyle(fontWeight: FontWeight.bold, color: AppColors.white),
+                ),
               ),
             ],
           ),

@@ -1,23 +1,23 @@
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository_impl.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/atproto.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository_impl.dart';
 import 'package:sparksocial/src/core/storage/cache/cache_manager_impl.dart';
 import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
+import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
+import 'package:sparksocial/src/core/storage/preferences/settings_repository_impl.dart';
+import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/theme/data/repositories/theme_repository.dart';
 import 'package:sparksocial/src/core/theme/data/repositories/theme_repository_impl.dart';
-import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
-import 'package:sparksocial/src/features/auth/auth.dart';
-import 'package:sparksocial/src/core/storage/storage.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
-import 'package:sparksocial/src/core/storage/preferences/settings_repository_impl.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository_impl.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository_impl.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
+import 'package:sparksocial/src/features/auth/auth.dart';
 
 // This is the ONLY PLACE IN THE ENTIRE APP where implementations are imported
 // All the other files should import interfaces only (polymorphism) to keep everything decoupled

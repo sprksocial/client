@@ -16,9 +16,7 @@ class Camera extends _$Camera {
   FutureOr<CameraState> build() async {
     _logger = GetIt.instance<LogService>().getLogger('Camera');
 
-    ref.onDispose(() {
-      _disposeCamera();
-    });
+    ref.onDispose(_disposeCamera);
 
     _logger.i('Initializing camera provider');
 
@@ -55,7 +53,7 @@ class Camera extends _$Camera {
   Future<CameraController> _createCameraController(CameraDescription camera) async {
     _logger.d('Creating camera controller for: ${camera.name}');
 
-    final controller = CameraController(camera, ResolutionPreset.max, enableAudio: true, imageFormatGroup: ImageFormatGroup.jpeg);
+    final controller = CameraController(camera, ResolutionPreset.max, imageFormatGroup: ImageFormatGroup.jpeg);
 
     await controller.initialize();
 

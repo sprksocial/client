@@ -8,9 +8,14 @@ import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/core/auth/data/repositories/identity_repository.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
 /// Implementation of [IdentityRepository] with caching capabilities
 class IdentityRepositoryImpl implements IdentityRepository {
+  /// Creates a new [IdentityRepositoryImpl] instance and loads the cache
+  IdentityRepositoryImpl(this._storageManager) {
+    _loadCache();
+  }
   final Map<String, String> _didToHandleCache = {};
   final Map<String, String> _handleToDidCache = {};
   final Map<String, Map<String, dynamic>> _didDocCache = {};
@@ -18,12 +23,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
   static const Duration _cacheExpiration = Duration(hours: 2);
 
   final StorageManager _storageManager;
-  final _logger = GetIt.instance<LogService>().getLogger('IdentityRepository');
-
-  /// Creates a new [IdentityRepositoryImpl] instance and loads the cache
-  IdentityRepositoryImpl(this._storageManager) {
-    _loadCache();
-  }
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('IdentityRepository');
 
   Future<void> _loadCache() async {
     try {
@@ -55,7 +55,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
   }
 
   void _loadDidToHandleCache(String jsonData) {
-    final Map<String, dynamic> data = json.decode(jsonData);
+    final data = json.decode(jsonData) as Map<String, dynamic>;
     _didToHandleCache.clear();
 
     data.forEach((key, value) {
@@ -66,7 +66,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
   }
 
   void _loadHandleToDidCache(String jsonData) {
-    final Map<String, dynamic> data = json.decode(jsonData);
+    final data = json.decode(jsonData) as Map<String, dynamic>;
     _handleToDidCache.clear();
 
     data.forEach((key, value) {
@@ -77,7 +77,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
   }
 
   void _loadDidDocCache(String jsonData) {
-    final Map<String, dynamic> data = json.decode(jsonData);
+    final data = json.decode(jsonData) as Map<String, dynamic>;
     _didDocCache.clear();
 
     data.forEach((key, value) {
@@ -147,7 +147,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
       return null;
     }
 
-    for (var aka in alsoKnownAs) {
+    for (final aka in alsoKnownAs) {
       if (aka is String && aka.startsWith('at://')) {
         final handle = aka.replaceFirst('at://', '');
 
@@ -187,7 +187,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
     }
 
     final didDoc = json.decode(response.body);
-    _didDocCache[did] = didDoc;
+    _didDocCache[did] = didDoc as Map<String, dynamic>;
     await _saveCache();
 
     return didDoc;
@@ -195,7 +195,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
 
   @override
   Future<Map<String, dynamic>?> resolveHandleToDidDoc(String handle) async {
-    String? did = _handleToDidCache[handle];
+    var did = _handleToDidCache[handle];
 
     if (did == null) {
       did = await resolveHandleToDid(handle);
@@ -204,7 +204,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
       }
     }
 
-    return await resolveDidToDidDoc(did);
+    return resolveDidToDidDoc(did);
   }
 
   @override
@@ -237,7 +237,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
   @override
   Future<Map<String, String?>> resolveDidsToHandles(List<String> dids) async {
     final results = <String, String?>{};
-    final futures = <Future>[];
+    final futures = <Future<String?>>[];
 
     for (final did in dids) {
       if (_didToHandleCache.containsKey(did)) {
@@ -248,6 +248,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
       futures.add(
         resolveDidToHandle(did).then((handle) {
           results[did] = handle;
+          return null;
         }),
       );
     }
@@ -262,7 +263,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
   @override
   Future<Map<String, String?>> resolveHandlesToDids(List<String> handles) async {
     final results = <String, String?>{};
-    final futures = <Future>[];
+    final futures = <Future<String?>>[];
 
     for (final handle in handles) {
       if (_handleToDidCache.containsKey(handle)) {
@@ -273,6 +274,7 @@ class IdentityRepositoryImpl implements IdentityRepository {
       futures.add(
         resolveHandleToDid(handle).then((did) {
           results[handle] = did;
+          return null;
         }),
       );
     }

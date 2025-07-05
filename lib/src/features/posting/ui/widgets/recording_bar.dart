@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
 class RecordingBar extends StatelessWidget {
+  const RecordingBar({required this.isRecording, required this.progress, required this.timeText, super.key});
   final bool isRecording;
   final double progress; // 0.0 to 1.0
   final String timeText;
-
-  const RecordingBar({super.key, required this.isRecording, required this.progress, required this.timeText});
 
   @override
   Widget build(BuildContext context) {

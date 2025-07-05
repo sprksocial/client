@@ -7,8 +7,8 @@ class EarlySupporterSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final bool isDarkMode = theme.brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
@@ -32,7 +32,10 @@ class EarlySupporterSheet extends StatelessWidget {
             colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
           ),
           const SizedBox(height: 16),
-          const Text('Early supporter', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary)),
+          const Text(
+            'Early supporter',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: AppColors.primary),
+          ),
           const SizedBox(height: 24),
           Text.rich(
             TextSpan(
@@ -54,7 +57,10 @@ class EarlySupporterSheet extends StatelessWidget {
               style: TextStyle(fontSize: 16, color: isDarkMode ? Colors.grey.shade400 : Colors.grey.shade600),
               children: const [
                 TextSpan(text: 'Thanks to them, '),
-                TextSpan(text: 'Spark is a reality', style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold)),
+                TextSpan(
+                  text: 'Spark is a reality',
+                  style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+                ),
                 TextSpan(text: '.'),
               ],
             ),

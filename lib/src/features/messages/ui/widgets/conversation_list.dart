@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
+
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
-import 'conversation_list_item.dart';
+import 'package:sparksocial/src/features/messages/ui/widgets/conversation_list_item.dart';
 
 class ConversationList extends StatelessWidget {
+  const ConversationList({required this.conversations, super.key, this.onConversationTap, this.onConversationLongPress});
   final List<(ProfileViewDetailed, Message)> conversations;
   final Function((ProfileViewDetailed, Message))? onConversationTap;
   final Function((ProfileViewDetailed, Message))? onConversationLongPress;
-
-  const ConversationList({super.key, required this.conversations, this.onConversationTap, this.onConversationLongPress});
 
   @override
   Widget build(BuildContext context) {

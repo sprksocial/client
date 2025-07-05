@@ -21,12 +21,12 @@ class _StoriesListState extends ConsumerState<StoriesList> {
 
   @override
   Widget build(BuildContext context) {
-    final storiesByAuthor = ref.watch(storiesByAuthorProvider(limit: 30, cursor: _cursor));
+    final storiesByAuthor = ref.watch(storiesByAuthorProvider(cursor: _cursor));
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
               Text(
@@ -47,7 +47,7 @@ class _StoriesListState extends ConsumerState<StoriesList> {
               final authorsList = data.storiesByAuthor.entries.toList();
               return ListView.builder(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
                 itemCount: authorsList.length + 1, // +1 for add story button
                 itemBuilder: (context, index) {
                   if (index == 0) {
@@ -89,7 +89,7 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       color: Theme.of(context).colorScheme.primary,
-                                      border: Border.all(color: Colors.black, width: 2),
+                                      border: Border.all(width: 2),
                                     ),
                                     child: const Icon(FluentIcons.add_12_regular, color: Colors.white, size: 12),
                                   ),
@@ -128,7 +128,7 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                                 storiesByAuthor: data.storiesByAuthor,
                                 initialAuthorIndex: realIndex,
                               ),
-                            )
+                            ),
                           },
                           child: Stack(
                             children: [

@@ -1,10 +1,22 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import '../theme/data/models/colors.dart';
-import '../utils/text_formatter.dart';
+import 'package:flutter/material.dart';
+import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/utils/text_formatter.dart';
 
 /// A widget that displays text with clickable @mentions
 class MentionedText extends StatelessWidget {
+  /// Creates a text widget with clickable @mentions
+  const MentionedText({
+    required this.text,
+    required this.onUsernameTap,
+    super.key,
+    this.expandText = false,
+    this.maxLines = 2,
+    this.overflow = TextOverflow.ellipsis,
+    this.textStyle,
+    this.mentionStyle,
+  });
+
   /// The text to display, which may contain @mentions
   final String text;
 
@@ -26,18 +38,6 @@ class MentionedText extends StatelessWidget {
   /// Text style to apply to the @mentions, merged with textStyle
   final TextStyle? mentionStyle;
 
-  /// Creates a text widget with clickable @mentions
-  const MentionedText({
-    super.key,
-    required this.text,
-    required this.onUsernameTap,
-    this.expandText = false,
-    this.maxLines = 2,
-    this.overflow = TextOverflow.ellipsis,
-    this.textStyle,
-    this.mentionStyle,
-  });
-
   @override
   Widget build(BuildContext context) {
     final usernameMatches = TextFormatter.findUsernameMatches(text);
@@ -49,8 +49,8 @@ class MentionedText extends StatelessWidget {
     final effectiveMentionStyle = mentionStyle ?? const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold);
 
     // Build text spans for mentions
-    final List<InlineSpan> spans = [];
-    int lastEnd = 0;
+    final spans = <InlineSpan>[];
+    var lastEnd = 0;
 
     usernameMatches.sort((a, b) => a.start.compareTo(b.start));
 
@@ -75,7 +75,7 @@ class MentionedText extends StatelessWidget {
       spans.add(TextSpan(text: text.substring(lastEnd), style: baseStyle));
     }
 
-    final TextSpan textSpan = TextSpan(children: spans, style: baseStyle);
+    final textSpan = TextSpan(children: spans, style: baseStyle);
 
     return RichText(
       text: textSpan,

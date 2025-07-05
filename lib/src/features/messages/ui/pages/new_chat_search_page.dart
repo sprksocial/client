@@ -1,11 +1,11 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/search/providers/search_provider.dart';
 import 'package:sparksocial/src/features/search/ui/widgets/suggested_account_card.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 
 @RoutePage()
 class NewChatSearchPage extends ConsumerStatefulWidget {
@@ -50,7 +50,7 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16),
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
@@ -77,7 +77,7 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(color: colorScheme.outline),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
                 ),
               ),
@@ -111,7 +111,7 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
                     unselectedLabelColor: theme.textTheme.bodyMedium?.color,
                   ),
                 ),
-                Expanded(child: TabBarView(children: [const _UserResults()])),
+                const Expanded(child: TabBarView(children: [_UserResults()])),
               ],
             ],
           ),
@@ -195,7 +195,7 @@ class _UserResultsState extends ConsumerState<_UserResults> {
         if (index >= state.searchResults.length) {
           // Loading indicator at bottom
           return const Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(16),
             child: Center(child: CircularProgressIndicator()),
           );
         }

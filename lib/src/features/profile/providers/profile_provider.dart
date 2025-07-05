@@ -2,30 +2,29 @@ import 'dart:async';
 
 import 'package:atproto/atproto.dart' as atp;
 import 'package:atproto_core/atproto_core.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:get_it/get_it.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_state.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
+import 'package:sparksocial/src/features/profile/providers/profile_state.dart';
 
 part 'profile_provider.g.dart';
 
 @riverpod
 class ProfileNotifier extends _$ProfileNotifier {
-  late final AuthRepository authRepository;
-  late final ActorRepository actorRepository;
-  late final SprkRepository sprkRepository;
-  late final SparkLogger logger;
-
   ProfileNotifier() {
     authRepository = GetIt.instance<AuthRepository>();
     actorRepository = GetIt.instance<ActorRepository>();
     sprkRepository = GetIt.instance<SprkRepository>();
     logger = GetIt.instance<LogService>().getLogger('ProfileNotifier');
   }
+  late final AuthRepository authRepository;
+  late final ActorRepository actorRepository;
+  late final SprkRepository sprkRepository;
+  late final SparkLogger logger;
 
   @override
   Future<ProfileState> build({String? did}) async {
@@ -36,7 +35,7 @@ class ProfileNotifier extends _$ProfileNotifier {
   }
 
   Future<void> loadProfileData(String? targetDidArgument, ProfileState currentState) async {
-    final String? effectiveDid = targetDidArgument ?? authRepository.session?.did;
+    final effectiveDid = targetDidArgument ?? authRepository.session?.did;
 
     if (!authRepository.isAuthenticated && effectiveDid == null) {
       logger.i('User not authenticated and no DID provided, showing auth prompt.');
@@ -56,7 +55,7 @@ class ProfileNotifier extends _$ProfileNotifier {
 
       logger.d('Profile loaded successfully for $effectiveDid: ${profile.handle}');
 
-      final bool isEarlySupporter = await actorRepository.isEarlySupporter(effectiveDid);
+      final isEarlySupporter = await actorRepository.isEarlySupporter(effectiveDid);
       logger.d('Early supporter status for $effectiveDid: $isEarlySupporter');
 
       state = AsyncData(
@@ -175,7 +174,7 @@ class ProfileNotifier extends _$ProfileNotifier {
     } catch (e, s) {
       logger.e('Error toggling follow for ${profile.did}', error: e, stackTrace: s);
       state = AsyncData(originalStateValue);
-      throw Exception('Failed to toggle follow: ${e.toString()}');
+      throw Exception('Failed to toggle follow: $e');
     }
   }
 
@@ -197,7 +196,7 @@ class ProfileNotifier extends _$ProfileNotifier {
       return result;
     } catch (e, s) {
       logger.e('Error creating report for $did', error: e, stackTrace: s);
-      throw Exception('Failed to create report: ${e.toString()}');
+      throw Exception('Failed to create report: $e');
     }
   }
 

@@ -7,7 +7,6 @@ part 'actor_models.g.dart';
 
 @freezed
 class ActorViewer with _$ActorViewer {
-  const ActorViewer._();
   @JsonSerializable(explicitToJson: true)
   const factory ActorViewer({
     bool? muted,
@@ -19,18 +18,19 @@ class ActorViewer with _$ActorViewer {
     @AtUriConverter() AtUri? followedBy,
     KnownFollowers? followers,
   }) = _ActorViewer;
+  const ActorViewer._();
 
   factory ActorViewer.fromJson(Map<String, dynamic> json) => _$ActorViewerFromJson(json);
 }
 
 @freezed
 class KnownFollowers with _$KnownFollowers {
-  const KnownFollowers._();
   @JsonSerializable(explicitToJson: true)
   const factory KnownFollowers({
     required int count,
     required List<String> followersDids, // to avoid circular dependency
   }) = _KnownFollowers;
+  const KnownFollowers._();
 
   factory KnownFollowers.fromJson(Map<String, dynamic> json) => switch (json) {
     {'followers': final List<ProfileViewBasic> profiles, 'count': final int count} => _$KnownFollowersFromJson({
@@ -43,7 +43,6 @@ class KnownFollowers with _$KnownFollowers {
 
 @freezed
 class ProfileViewBasic with _$ProfileViewBasic {
-  const ProfileViewBasic._();
   @JsonSerializable(explicitToJson: true)
   const factory ProfileViewBasic({
     required String did,
@@ -54,13 +53,13 @@ class ProfileViewBasic with _$ProfileViewBasic {
     ActorViewer? viewer,
     List<StrongRef>? stories,
   }) = _ProfileViewBasic;
+  const ProfileViewBasic._();
 
   factory ProfileViewBasic.fromJson(Map<String, dynamic> json) => _$ProfileViewBasicFromJson(json);
 }
 
 @freezed
 class ProfileView with _$ProfileView {
-  const ProfileView._();
   @JsonSerializable(explicitToJson: true)
   const factory ProfileView({
     required String did,
@@ -74,6 +73,7 @@ class ProfileView with _$ProfileView {
     List<Label>? labels,
     // no stories here for some reason
   }) = _ProfileView;
+  const ProfileView._();
 
   factory ProfileView.fromJson(Map<String, dynamic> json) => _$ProfileViewFromJson(json);
 }
@@ -81,12 +81,6 @@ class ProfileView with _$ProfileView {
 /// Response wrapper for paginated actor search.
 class SearchActorsResponse {
   SearchActorsResponse({required this.actors, this.cursor});
-
-  /// List of returned actor profiles.
-  final List<ProfileView> actors;
-
-  /// Cursor indicating the next page of results, or null when no more pages.
-  final String? cursor;
 
   /// Create a [SearchActorsResponse] from JSON.
   factory SearchActorsResponse.fromJson(Map<String, dynamic> json) {
@@ -97,13 +91,18 @@ class SearchActorsResponse {
     );
   }
 
+  /// List of returned actor profiles.
+  final List<ProfileView> actors;
+
+  /// Cursor indicating the next page of results, or null when no more pages.
+  final String? cursor;
+
   /// Convert the object back to JSON.
   Map<String, dynamic> toJson() => {'actors': actors.map((e) => e.toJson()).toList(), if (cursor != null) 'cursor': cursor};
 }
 
 @freezed
 class ProfileViewDetailed with _$ProfileViewDetailed {
-  const ProfileViewDetailed._();
   @JsonSerializable(explicitToJson: true)
   const factory ProfileViewDetailed({
     required String did,
@@ -123,6 +122,7 @@ class ProfileViewDetailed with _$ProfileViewDetailed {
     StrongRef? pinnedPost, // this is a list if the backend implements https://github.com/sprksocial/spark-back-end/issues/13
     List<StrongRef>? stories,
   }) = _ProfileViewDetailed;
+  const ProfileViewDetailed._();
 
   factory ProfileViewDetailed.fromJson(Map<String, dynamic> json) => _$ProfileViewDetailedFromJson(json);
 }

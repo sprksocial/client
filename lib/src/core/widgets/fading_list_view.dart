@@ -1,9 +1,20 @@
 import 'package:flutter/material.dart';
 
-import '../theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 /// A list view with fading edges for a smooth scrolling experience
 class FadingListView extends StatelessWidget {
+  const FadingListView({
+    required this.children,
+    super.key,
+    this.isHorizontal = true,
+    this.padding,
+    this.itemSpacing = 8.0,
+    this.fadeWidth = 24.0,
+    this.controller,
+    this.mainAxisAlignment = MainAxisAlignment.start,
+    this.crossAxisAlignment = CrossAxisAlignment.center,
+  });
   final List<Widget> children;
   final bool isHorizontal;
   final EdgeInsetsGeometry? padding;
@@ -13,18 +24,6 @@ class FadingListView extends StatelessWidget {
   final MainAxisAlignment mainAxisAlignment;
   final CrossAxisAlignment crossAxisAlignment;
 
-  const FadingListView({
-    super.key,
-    required this.children,
-    this.isHorizontal = true,
-    this.padding,
-    this.itemSpacing = 8.0,
-    this.fadeWidth = 24.0,
-    this.controller,
-    this.mainAxisAlignment = MainAxisAlignment.start,
-    this.crossAxisAlignment = CrossAxisAlignment.center,
-  });
-
   @override
   Widget build(BuildContext context) {
     if (children.isEmpty) {
@@ -32,8 +31,8 @@ class FadingListView extends StatelessWidget {
     }
 
     // Add spacing between items
-    final List<Widget> itemsWithSpacing = [];
-    for (int i = 0; i < children.length; i++) {
+    final itemsWithSpacing = <Widget>[];
+    for (var i = 0; i < children.length; i++) {
       itemsWithSpacing.add(children[i]);
       if (i < children.length - 1) {
         itemsWithSpacing.add(isHorizontal ? SizedBox(width: itemSpacing) : SizedBox(height: itemSpacing));
@@ -50,7 +49,6 @@ class FadingListView extends StatelessWidget {
           )
         : SingleChildScrollView(
             controller: controller,
-            scrollDirection: Axis.vertical,
             padding: EdgeInsets.symmetric(vertical: fadeWidth).add(padding ?? EdgeInsets.zero),
             child: Column(
               mainAxisAlignment: mainAxisAlignment,

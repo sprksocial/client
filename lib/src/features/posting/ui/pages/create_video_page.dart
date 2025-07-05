@@ -16,9 +16,8 @@ import 'package:sparksocial/src/features/posting/ui/widgets/recording_bar.dart';
 
 @RoutePage()
 class CreateVideoPage extends ConsumerStatefulWidget {
-  final bool isStoryMode;
-
   const CreateVideoPage({super.key, this.isStoryMode = false});
+  final bool isStoryMode;
 
   @override
   ConsumerState<CreateVideoPage> createState() => _CreateVideoPageState();
@@ -27,7 +26,7 @@ class CreateVideoPage extends ConsumerStatefulWidget {
 class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsBindingObserver {
   bool _isVideoMode = true;
   bool _isRecording = false;
-  double _recordingProgress = 0.0;
+  double _recordingProgress = 0;
   String _recordingTimeText = '00:00 / 03:00';
   Timer? _recordingTimer;
   int _recordingSeconds = 0;
@@ -55,9 +54,9 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
     super.dispose();
   }
 
-  void _onVideoGalleryPressed() async {
+  Future<void> _onVideoGalleryPressed() async {
     try {
-      final XFile? video = await _picker.pickVideo(source: ImageSource.gallery, maxDuration: const Duration(seconds: 180));
+      final video = await _picker.pickVideo(source: ImageSource.gallery, maxDuration: const Duration(seconds: 180));
 
       if (video != null && mounted) {
         if (widget.isStoryMode) {
@@ -73,7 +72,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
           builder: (BuildContext context) {
             return AlertDialog(
               title: const Text('Error'),
-              content: Text('Failed to select video: ${e.toString()}'),
+              content: Text('Failed to select video: $e'),
               actions: [TextButton(onPressed: () => context.router.maybePop(), child: const Text('OK'))],
             );
           },
@@ -82,20 +81,20 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
     }
   }
 
-  void _onImageGalleryPressed() async {
+  Future<void> _onImageGalleryPressed() async {
     try {
       if (widget.isStoryMode) {
         // For stories, only allow one image
-        final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+        final image = await _picker.pickImage(source: ImageSource.gallery);
         if (image != null && mounted) {
           context.router.push(StoryReviewRoute(videoPath: '', imageFile: image));
         }
       } else {
         // For regular posts, allow multiple images
         const maxImages = 12;
-        final List<XFile> pickedFiles = await _picker.pickMultiImage(limit: maxImages);
+        final pickedFiles = await _picker.pickMultiImage(limit: maxImages);
         if (pickedFiles.isEmpty) return;
-        final List<XFile> limitedFiles = pickedFiles.length > maxImages ? pickedFiles.sublist(0, maxImages) : pickedFiles;
+        final limitedFiles = pickedFiles.length > maxImages ? pickedFiles.sublist(0, maxImages) : pickedFiles;
         if (!mounted) return;
         context.router.push(ImageReviewRoute(imageFiles: limitedFiles));
       }
@@ -106,7 +105,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
         builder: (BuildContext context) {
           return AlertDialog(
             title: const Text('Error'),
-            content: Text('Failed to select images: ${e.toString()}'),
+            content: Text('Failed to select images: $e'),
             actions: [TextButton(onPressed: () => context.router.maybePop(), child: const Text('OK'))],
           );
         },
@@ -114,7 +113,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
     }
   }
 
-  void _onCapturePressed() async {
+  Future<void> _onCapturePressed() async {
     if (!_isVideoMode) {
       await _takePhoto();
     } else {
@@ -123,7 +122,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
   }
 
   Future<void> _takePhoto() async {
-    final XFile? photo = await ref.read(cameraProvider.notifier).takePhoto();
+    final photo = await ref.read(cameraProvider.notifier).takePhoto();
     if (photo != null) {
       if (widget.isStoryMode) {
         if (mounted) {
@@ -135,7 +134,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
 
   Future<void> _toggleVideoRecording() async {
     if (_isRecording) {
-      final XFile? video = await ref.read(cameraProvider.notifier).stopVideoRecording();
+      final video = await ref.read(cameraProvider.notifier).stopVideoRecording();
       _stopRecordingTimer();
 
       setState(() {
@@ -155,7 +154,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
         }
       }
     } else {
-      bool success = await ref.read(cameraProvider.notifier).startVideoRecording();
+      final success = await ref.read(cameraProvider.notifier).startVideoRecording();
       if (success) {
         setState(() {
           _isRecording = true;
@@ -176,10 +175,10 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
         _recordingSeconds++;
         _recordingProgress = _recordingSeconds / _maxRecordingSeconds;
 
-        final int minutes = _recordingSeconds ~/ 60;
-        final int seconds = _recordingSeconds % 60;
-        final String minutesStr = minutes.toString().padLeft(2, '0');
-        final String secondsStr = seconds.toString().padLeft(2, '0');
+        final minutes = _recordingSeconds ~/ 60;
+        final seconds = _recordingSeconds % 60;
+        final minutesStr = minutes.toString().padLeft(2, '0');
+        final secondsStr = seconds.toString().padLeft(2, '0');
 
         _recordingTimeText = '$minutesStr:$secondsStr / 03:00';
       });
@@ -219,7 +218,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
                     ),
                   ),
                 ),
-            
+
                 Positioned(
                   top: 20,
                   left: 0,
@@ -231,7 +230,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
                     ),
                   ),
                 ),
-            
+
                 Positioned(
                   bottom: 30,
                   left: 0,
@@ -242,7 +241,7 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
                         RecordingBar(isRecording: _isRecording, progress: _recordingProgress, timeText: _recordingTimeText),
                         const SizedBox(height: 20),
                       ],
-            
+
                       CameraControls(
                         isVideoMode: _isVideoMode,
                         isRecording: _isRecording,

@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 
 class HeartAnimation extends StatefulWidget {
+  const HeartAnimation({
+    required this.isAnimating,
+    required this.child,
+    super.key,
+    this.duration = const Duration(milliseconds: 1000),
+    this.onEnd,
+  });
   final bool isAnimating;
   final Duration duration;
   final VoidCallback? onEnd;
   final Widget child;
-
-  const HeartAnimation({
-    super.key,
-    required this.isAnimating,
-    this.duration = const Duration(milliseconds: 1000),
-    this.onEnd,
-    required this.child,
-  });
 
   @override
   State<HeartAnimation> createState() => _HeartAnimationState();
@@ -28,12 +27,12 @@ class _HeartAnimationState extends State<HeartAnimation> with TickerProviderStat
     super.initState();
     _controller = AnimationController(duration: widget.duration, vsync: this);
 
-    _scaleAnimation = Tween<double>(begin: 0.0, end: 1.4).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
+    _scaleAnimation = Tween<double>(begin: 0, end: 1.4).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
 
-    _opacityAnimation = Tween<double>(begin: 0.8, end: 0.0).animate(
+    _opacityAnimation = Tween<double>(begin: 0.8, end: 0).animate(
       CurvedAnimation(
         parent: _controller,
-        curve: const Interval(0.5, 1.0, curve: Curves.easeOut),
+        curve: const Interval(0.5, 1, curve: Curves.easeOut),
       ),
     );
 
@@ -80,7 +79,7 @@ class _HeartAnimationState extends State<HeartAnimation> with TickerProviderStat
                         Icons.favorite,
                         color: Colors.red,
                         size: 100,
-                        shadows: [Shadow(offset: Offset(0, 0), blurRadius: 10, color: Colors.red)],
+                        shadows: [Shadow(blurRadius: 10, color: Colors.red)],
                       ),
                     ),
                   );

@@ -4,7 +4,7 @@ import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/messages/ui/pages/chat_page.dart';
 
 class SenderAvatar extends StatelessWidget {
-  const SenderAvatar({super.key, required this.isCurrentUser, required this.otherUserAvatar, required this.otherUserHandle});
+  const SenderAvatar({required this.isCurrentUser, required this.otherUserAvatar, required this.otherUserHandle, super.key});
 
   final bool isCurrentUser;
   final String? otherUserAvatar;
@@ -13,8 +13,7 @@ class SenderAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isCurrentUser) {
-      return UserAvatar(
-        imageUrl: null, // Current user avatar - can be added later
+      return const UserAvatar(
         username: 'You',
         size: 32,
         backgroundColor: AppColors.primary,

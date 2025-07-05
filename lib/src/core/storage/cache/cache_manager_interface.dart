@@ -11,7 +11,7 @@ abstract class CacheManagerInterface {
   Future<File?> getCachedFile(String url);
 
   /// Store a file in the cache with the given key
-  Future<void> putFile(String url, Uint8List fileBytes);  
+  Future<void> putFile(String url, Uint8List fileBytes);
 
   /// Remove a specific file from cache
   Future<void> removeFile(String url);

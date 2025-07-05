@@ -5,9 +5,9 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class ContentWarningOverlay extends StatelessWidget {
   const ContentWarningOverlay({
-    super.key,
     required this.onViewContent,
     required this.warningLabels,
+    super.key,
     this.shouldBlur = false,
     this.child,
   });
@@ -22,12 +22,12 @@ class ContentWarningOverlay extends StatelessWidget {
       children: [
         // Original content (blurred/hidden)
         if (child != null)
-          if (shouldBlur) ImageFiltered(imageFilter: ImageFilter.blur(sigmaX: 40.0, sigmaY: 40.0), child: child!) else child!,
+          if (shouldBlur) ImageFiltered(imageFilter: ImageFilter.blur(sigmaX: 40, sigmaY: 40), child: child) else child!,
         // Warning overlay
         Positioned.fill(
           child: Center(
             child: Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

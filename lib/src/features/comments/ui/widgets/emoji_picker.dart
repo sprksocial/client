@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
-
 class EmojiPicker extends StatelessWidget {
+  const EmojiPicker({required this.onEmojiSelected, required this.isDarkMode, super.key});
   final Function(String) onEmojiSelected;
   final bool isDarkMode;
   static const List<String> _emojis = ['❤️', '😂', '👍', '🔥', '😍', '🙌', '👏', '🎉', '😮', '🤔', '👀', '💯', '🤣', '😊', '🙏'];
-
-  const EmojiPicker({super.key, required this.onEmojiSelected, required this.isDarkMode});
 
   // Common emojis list
   @override
@@ -42,7 +40,6 @@ class _EmojiItem extends StatelessWidget {
 
   final String emoji;
   final Function(String) onEmojiSelected;
-
 
   @override
   Widget build(BuildContext context) {

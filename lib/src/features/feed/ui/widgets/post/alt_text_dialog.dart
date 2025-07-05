@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 
 /// A dialog that displays the alt text (image description) for an image.
 class AltTextDialog extends StatelessWidget {
+  const AltTextDialog({required this.altText, super.key});
   final String altText;
-
-  const AltTextDialog({super.key, required this.altText});
 
   @override
   Widget build(BuildContext context) {

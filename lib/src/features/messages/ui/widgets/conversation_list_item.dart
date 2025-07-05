@@ -5,18 +5,17 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 
 class ConversationListItem extends StatelessWidget {
+  const ConversationListItem({
+    required this.message,
+    required this.otherUserProfile,
+    super.key,
+    this.onTap,
+    this.onLongPress,
+  });
   final Message message;
   final ProfileViewDetailed otherUserProfile;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
-
-  const ConversationListItem({
-    super.key,
-    required this.message,
-    required this.otherUserProfile,
-    this.onTap,
-    this.onLongPress,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +23,7 @@ class ConversationListItem extends StatelessWidget {
       onTap: onTap,
       onLongPress: onLongPress,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           border: Border(bottom: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5)),
@@ -113,8 +112,8 @@ class ConversationListItem extends StatelessWidget {
 }
 
 class ConversationAvatar extends StatelessWidget {
+  const ConversationAvatar({required this.otherUserProfile, super.key});
   final ProfileViewDetailed otherUserProfile;
-  const ConversationAvatar({super.key, required this.otherUserProfile});
 
   Color _getAvatarColor(int seed) {
     final colors = [
@@ -141,7 +140,7 @@ class ConversationAvatar extends StatelessWidget {
         imageUrl: otherUserProfile.avatar.toString(),
         username: otherUserProfile.handle,
         size: 48,
-        backgroundColor: _getAvatarColor((otherUserProfile.handle).hashCode),
+        backgroundColor: _getAvatarColor(otherUserProfile.handle.hashCode),
       ),
     );
   }

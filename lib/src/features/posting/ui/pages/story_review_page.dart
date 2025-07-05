@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart' hide Image;
@@ -14,14 +15,12 @@ import 'package:sparksocial/src/features/posting/providers/video_upload_provider
 import 'package:sparksocial/src/features/posting/providers/video_upload_state.dart';
 import 'package:sparksocial/src/features/posting/ui/widgets/video_thumbnail.dart';
 import 'package:video_player/video_player.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 @RoutePage()
 class StoryReviewPage extends ConsumerStatefulWidget {
+  const StoryReviewPage({required this.videoPath, required this.imageFile, super.key});
   final String videoPath;
   final XFile imageFile;
-
-  const StoryReviewPage({super.key, required this.videoPath, required this.imageFile});
 
   @override
   ConsumerState<StoryReviewPage> createState() => _StoryReviewPageState();
@@ -43,7 +42,7 @@ class _StoryReviewPageState extends ConsumerState<StoryReviewPage> {
   void _initVideoPlayer() {
     if (widget.videoPath.isEmpty) return;
 
-    String videoPath = widget.videoPath;
+    var videoPath = widget.videoPath;
     if (videoPath.startsWith('file://')) {
       videoPath = videoPath.replaceFirst('file://', '');
     }
@@ -94,7 +93,7 @@ class _StoryReviewPageState extends ConsumerState<StoryReviewPage> {
 
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to post story: ${e.toString()}'), backgroundColor: Colors.red));
+        ).showSnackBar(SnackBar(content: Text('Failed to post story: $e'), backgroundColor: Colors.red));
 
         final uploadService = ref.read(uploadProvider.notifier);
         final taskId = uploadService.registerTask('story');
@@ -157,9 +156,8 @@ class _StoryReviewPageState extends ConsumerState<StoryReviewPage> {
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Media preview
                       LayoutBuilder(
@@ -203,14 +201,14 @@ class _StoryReviewPageState extends ConsumerState<StoryReviewPage> {
                                             }
                                           },
                                           borderRadius: BorderRadius.circular(8),
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                          child: const Padding(
+                                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                             child: Row(
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 16),
-                                                const SizedBox(width: 4),
-                                                const Text(
+                                                SizedBox(width: 4),
+                                                Text(
                                                   'ALT',
                                                   style: TextStyle(
                                                     color: Colors.white,
@@ -230,10 +228,10 @@ class _StoryReviewPageState extends ConsumerState<StoryReviewPage> {
                             }
 
                             // Fallback loader if neither video nor image is ready
-                            return SizedBox(
+                            return const SizedBox(
                               height: maxHeight,
                               width: double.infinity,
-                              child: const Center(child: CircularProgressIndicator()),
+                              child: Center(child: CircularProgressIndicator()),
                             );
                           }
 
@@ -265,8 +263,8 @@ class _StoryReviewPageState extends ConsumerState<StoryReviewPage> {
                           }
 
                           final aspectRatio = _controller!.value.aspectRatio;
-                          double width = maxWidth;
-                          double height = width / aspectRatio;
+                          var width = maxWidth;
+                          var height = width / aspectRatio;
                           if (height > maxHeight) {
                             height = maxHeight;
                             width = height * aspectRatio;
@@ -317,7 +315,7 @@ class _StoryReviewPageState extends ConsumerState<StoryReviewPage> {
                                         child: Row(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 16),
+                                            const Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 16),
                                             const SizedBox(width: 4),
                                             Text(
                                               _altText.isEmpty ? 'ALT' : 'ALT',
@@ -344,7 +342,7 @@ class _StoryReviewPageState extends ConsumerState<StoryReviewPage> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

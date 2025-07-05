@@ -3,9 +3,9 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/messages/providers/conversations_provider.dart';
 
@@ -98,10 +98,9 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
 }
 
 class CustomTabBar extends StatelessWidget {
+  const CustomTabBar({required this.selectedTabIndex, required this.onTabChanged, super.key});
   final int selectedTabIndex;
   final Function(int) onTabChanged;
-
-  const CustomTabBar({super.key, required this.selectedTabIndex, required this.onTabChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -122,11 +121,10 @@ class CustomTabBar extends StatelessWidget {
 }
 
 class TabItem extends StatelessWidget {
+  const TabItem({required this.isSelected, required this.label, required this.onTap, super.key});
   final bool isSelected;
   final String label;
   final VoidCallback onTap;
-
-  const TabItem({super.key, required this.isSelected, required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -165,9 +163,8 @@ class TabItem extends StatelessWidget {
 }
 
 class MessagesTab extends ConsumerWidget {
+  const MessagesTab({required this.onRefresh, super.key});
   final VoidCallback onRefresh;
-
-  const MessagesTab({super.key, required this.onRefresh});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -26,10 +26,11 @@ class CacheablePageView extends StatefulWidget {
     this.clipBehavior = Clip.hardEdge,
     this.scrollBehavior,
     this.padEnds = true,
-  })  : controller = controller ?? _defaultPageController,
-        childrenDelegate = SliverChildListDelegate(children);
+  }) : controller = controller ?? _defaultPageController,
+       childrenDelegate = SliverChildListDelegate(children);
 
   CacheablePageView.builder({
+    required NullableIndexedWidgetBuilder itemBuilder,
     super.key,
     this.scrollDirection = Axis.horizontal,
     this.reverse = false,
@@ -37,7 +38,6 @@ class CacheablePageView extends StatefulWidget {
     this.physics,
     this.pageSnapping = true,
     this.onPageChanged,
-    required NullableIndexedWidgetBuilder itemBuilder,
     ChildIndexGetter? findChildIndexCallback,
     int? itemCount,
     this.dragStartBehavior = DragStartBehavior.start,
@@ -47,14 +47,15 @@ class CacheablePageView extends StatefulWidget {
     this.clipBehavior = Clip.hardEdge,
     this.scrollBehavior,
     this.padEnds = true,
-  })  : controller = controller ?? _defaultPageController,
-        childrenDelegate = SliverChildBuilderDelegate(
-          itemBuilder,
-          findChildIndexCallback: findChildIndexCallback,
-          childCount: itemCount,
-        );
+  }) : controller = controller ?? _defaultPageController,
+       childrenDelegate = SliverChildBuilderDelegate(
+         itemBuilder,
+         findChildIndexCallback: findChildIndexCallback,
+         childCount: itemCount,
+       );
 
   CacheablePageView.custom({
+    required this.childrenDelegate,
     super.key,
     this.scrollDirection = Axis.horizontal,
     this.reverse = false,
@@ -62,7 +63,6 @@ class CacheablePageView extends StatefulWidget {
     this.physics,
     this.pageSnapping = true,
     this.onPageChanged,
-    required this.childrenDelegate,
     this.dragStartBehavior = DragStartBehavior.start,
     this.cachePageExtent = 0,
     this.allowImplicitScrolling = false,
@@ -117,12 +117,9 @@ class _CacheablePageViewState extends State<CacheablePageView> {
     switch (widget.scrollDirection) {
       case Axis.horizontal:
         assert(debugCheckHasDirectionality(context));
-        final TextDirection textDirection = Directionality.of(context);
-        final AxisDirection axisDirection =
-            textDirectionToAxisDirection(textDirection);
-        return widget.reverse
-            ? flipAxisDirection(axisDirection)
-            : axisDirection;
+        final textDirection = Directionality.of(context);
+        final axisDirection = textDirectionToAxisDirection(textDirection);
+        return widget.reverse ? flipAxisDirection(axisDirection) : axisDirection;
       case Axis.vertical:
         return widget.reverse ? AxisDirection.up : AxisDirection.down;
     }
@@ -130,23 +127,21 @@ class _CacheablePageViewState extends State<CacheablePageView> {
 
   @override
   Widget build(BuildContext context) {
-    final AxisDirection axisDirection = _getDirection(context);
-    final ScrollPhysics physics = _ForceImplicitScrollPhysics(
-      allowImplicitScrolling: widget.allowImplicitScrolling,
-    ).applyTo(
-      widget.pageSnapping
-          ? _kPagePhysics.applyTo(widget.physics ??
-              widget.scrollBehavior?.getScrollPhysics(context))
-          : widget.physics ?? widget.scrollBehavior?.getScrollPhysics(context),
-    );
+    final axisDirection = _getDirection(context);
+    final ScrollPhysics physics =
+        _ForceImplicitScrollPhysics(
+          allowImplicitScrolling: widget.allowImplicitScrolling,
+        ).applyTo(
+          widget.pageSnapping
+              ? _kPagePhysics.applyTo(widget.physics ?? widget.scrollBehavior?.getScrollPhysics(context))
+              : widget.physics ?? widget.scrollBehavior?.getScrollPhysics(context),
+        );
 
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification notification) {
-        if (notification.depth == 0 &&
-            widget.onPageChanged != null &&
-            notification is ScrollUpdateNotification) {
-          final PageMetrics metrics = notification.metrics as PageMetrics;
-          final int currentPage = metrics.page!.round();
+        if (notification.depth == 0 && widget.onPageChanged != null && notification is ScrollUpdateNotification) {
+          final metrics = notification.metrics as PageMetrics;
+          final currentPage = metrics.page!.round();
           if (currentPage != _lastReportedPage) {
             _lastReportedPage = currentPage;
             widget.onPageChanged!(currentPage);
@@ -160,35 +155,33 @@ class _CacheablePageViewState extends State<CacheablePageView> {
         controller: widget.controller,
         physics: physics,
         restorationId: widget.restorationId,
-        scrollBehavior: widget.scrollBehavior ??
-            ScrollConfiguration.of(context).copyWith(scrollbars: false),
+        scrollBehavior: widget.scrollBehavior ?? ScrollConfiguration.of(context).copyWith(scrollbars: false),
         viewportBuilder: (BuildContext context, ViewportOffset position) {
           return LayoutBuilder(
-              builder: (BuildContext context, BoxConstraints constraints) {
-            double cacheExtent;
+            builder: (BuildContext context, BoxConstraints constraints) {
+              double cacheExtent;
 
-            switch (widget.scrollDirection) {
-              case Axis.vertical:
-                cacheExtent = constraints.maxHeight * widget.cachePageExtent;
-                break;
+              switch (widget.scrollDirection) {
+                case Axis.vertical:
+                  cacheExtent = constraints.maxHeight * widget.cachePageExtent;
 
-              case Axis.horizontal:
-                cacheExtent = constraints.maxWidth * widget.cachePageExtent;
-                break;
-            }
+                case Axis.horizontal:
+                  cacheExtent = constraints.maxWidth * widget.cachePageExtent;
+              }
 
-            return Viewport(
-              cacheExtent: cacheExtent,
-              axisDirection: axisDirection,
-              offset: position,
-              slivers: <Widget>[
-                SliverFillViewport(
-                  viewportFraction: widget.controller.viewportFraction,
-                  delegate: widget.childrenDelegate,
-                ),
-              ],
-            );
-          });
+              return Viewport(
+                cacheExtent: cacheExtent,
+                axisDirection: axisDirection,
+                offset: position,
+                slivers: <Widget>[
+                  SliverFillViewport(
+                    viewportFraction: widget.controller.viewportFraction,
+                    delegate: widget.childrenDelegate,
+                  ),
+                ],
+              );
+            },
+          );
         },
       ),
     );
@@ -197,21 +190,14 @@ class _CacheablePageViewState extends State<CacheablePageView> {
   @override
   void debugFillProperties(DiagnosticPropertiesBuilder description) {
     super.debugFillProperties(description);
-    description
-        .add(EnumProperty<Axis>('scrollDirection', widget.scrollDirection));
+    description.add(EnumProperty<Axis>('scrollDirection', widget.scrollDirection));
+    description.add(FlagProperty('reverse', value: widget.reverse, ifTrue: 'reversed'));
+    description.add(DiagnosticsProperty<PageController>('controller', widget.controller, showName: false));
+    description.add(DiagnosticsProperty<ScrollPhysics>('physics', widget.physics, showName: false));
+    description.add(FlagProperty('pageSnapping', value: widget.pageSnapping, ifFalse: 'snapping disabled'));
     description.add(
-        FlagProperty('reverse', value: widget.reverse, ifTrue: 'reversed'));
-    description.add(DiagnosticsProperty<PageController>(
-        'controller', widget.controller,
-        showName: false));
-    description.add(DiagnosticsProperty<ScrollPhysics>(
-        'physics', widget.physics,
-        showName: false));
-    description.add(FlagProperty('pageSnapping',
-        value: widget.pageSnapping, ifFalse: 'snapping disabled'));
-    description.add(FlagProperty('allowImplicitScrolling',
-        value: widget.allowImplicitScrolling,
-        ifTrue: 'allow implicit scrolling'));
+      FlagProperty('allowImplicitScrolling', value: widget.allowImplicitScrolling, ifTrue: 'allow implicit scrolling'),
+    );
   }
 }
 

@@ -6,9 +6,11 @@ class NoMorePosts extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DecoratedBox(
+    return const DecoratedBox(
       decoration: BoxDecoration(color: AppColors.black),
-      child: const Center(child: Text('No more posts in this feed.', style: TextStyle(color: AppColors.white))),
+      child: Center(
+        child: Text('No more posts in this feed.', style: TextStyle(color: AppColors.white)),
+      ),
     );
   }
 }

@@ -1,17 +1,16 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 
-import 'logging.dart';
+import 'package:sparksocial/src/core/utils/logging/logging.dart';
 
 /// A ProviderObserver that logs provider changes
 class SparkRiverpodLogger extends ProviderObserver {
-  final LogService _logService;
-  late final SparkLogger _logger;
-
   /// Constructor
   SparkRiverpodLogger({LogService? logService}) : _logService = logService ?? GetIt.instance<LogService>() {
     _logger = _logService.getLogger('Riverpod');
   }
+  final LogService _logService;
+  late final SparkLogger _logger;
 
   @override
   void didAddProvider(ProviderBase<Object?> provider, Object? value, ProviderContainer container) {
@@ -98,7 +97,7 @@ class SparkRiverpodLogger extends ProviderObserver {
   /// Generates diff for List objects
   String _generateListDiff(List previous, List current) {
     final changes = <String>[];
-    
+
     // Find added items (items in current but not in previous)
     final added = <dynamic>[];
     for (final item in current) {
@@ -106,7 +105,7 @@ class SparkRiverpodLogger extends ProviderObserver {
         added.add(item);
       }
     }
-    
+
     // Find removed items (items in previous but not in current)
     final removed = <dynamic>[];
     for (final item in previous) {
@@ -114,12 +113,12 @@ class SparkRiverpodLogger extends ProviderObserver {
         removed.add(item);
       }
     }
-    
+
     // Add length change if different
     if (previous.length != current.length) {
       changes.add('length: ${previous.length} → ${current.length}');
     }
-    
+
     // Add removed items
     if (removed.isNotEmpty) {
       if (removed.length <= 3) {
@@ -128,7 +127,7 @@ class SparkRiverpodLogger extends ProviderObserver {
         changes.add('removed: ${removed.length} items');
       }
     }
-    
+
     // Add added items
     if (added.isNotEmpty) {
       if (added.length <= 3) {
@@ -137,12 +136,14 @@ class SparkRiverpodLogger extends ProviderObserver {
         changes.add('added: ${added.length} items');
       }
     }
-    
+
     // If no adds/removes but lists are different, check for positional changes
     if (changes.isEmpty && previous.length == current.length) {
-      for (int i = 0; i < previous.length; i++) {
+      for (var i = 0; i < previous.length; i++) {
         if (previous[i] != current[i]) {
-          changes.add('[$i]: ${_truncateIfNeeded(previous[i].toString(), maxLength: 50)} → ${_truncateIfNeeded(current[i].toString(), maxLength: 50)}');
+          changes.add(
+            '[$i]: ${_truncateIfNeeded(previous[i].toString(), maxLength: 50)} → ${_truncateIfNeeded(current[i].toString(), maxLength: 50)}',
+          );
           if (changes.length >= 3) {
             changes.add('... and ${previous.length - i - 1} more changes');
             break;
@@ -154,13 +155,13 @@ class SparkRiverpodLogger extends ProviderObserver {
     return changes.isEmpty ? 'No changes' : changes.join(', ');
   }
 
-    /// Tries to parse structured objects like ClassName(field1: value1, field2: value2)
+  /// Tries to parse structured objects like ClassName(field1: value1, field2: value2)
   String? _tryParseStructuredObjectDiff(String previous, String current) {
     final prevFields = _parseStructuredObject(previous);
     final currFields = _parseStructuredObject(current);
-    
+
     if (prevFields == null || currFields == null) return null;
-    
+
     final changes = <String>[];
     final allKeys = {...prevFields.keys, ...currFields.keys};
 
@@ -182,7 +183,9 @@ class SparkRiverpodLogger extends ProviderObserver {
           if (listDiff != null) {
             changes.add('$key: $listDiff');
           } else {
-            changes.add('$key: ${_truncateIfNeeded(prevValue, maxLength: 100)} → ${_truncateIfNeeded(currValue, maxLength: 100)}');
+            changes.add(
+              '$key: ${_truncateIfNeeded(prevValue, maxLength: 100)} → ${_truncateIfNeeded(currValue, maxLength: 100)}',
+            );
           }
         }
       }
@@ -222,24 +225,24 @@ class SparkRiverpodLogger extends ProviderObserver {
     return fields.isEmpty ? null : fields;
   }
 
-    /// Splits field strings by comma, handling nested structures
+  /// Splits field strings by comma, handling nested structures
   List<String> _splitFields(String content) {
     final parts = <String>[];
     final buffer = StringBuffer();
-    int depth = 0;
-    bool inString = false;
+    var depth = 0;
+    var inString = false;
     String? currentQuote;
-    
-    for (int i = 0; i < content.length; i++) {
+
+    for (var i = 0; i < content.length; i++) {
       final char = content[i];
-      
+
       // Handle string literals
       if (!inString && (char == '"' || char == "'")) {
         inString = true;
         currentQuote = char;
       } else if (inString && char == currentQuote) {
         // Check if it's not escaped
-        if (i == 0 || content[i - 1] != '\\') {
+        if (i == 0 || content[i - 1] != r'\') {
           inString = false;
           currentQuote = null;
         }
@@ -259,43 +262,42 @@ class SparkRiverpodLogger extends ProviderObserver {
           continue;
         }
       }
-      
+
       buffer.write(char);
     }
-    
+
     // Add the last part
     final lastPart = buffer.toString().trim();
     if (lastPart.isNotEmpty) {
       parts.add(lastPart);
     }
-    
+
     return parts;
   }
 
   /// Tries to parse field values as lists and generate list diffs
   String? _tryParseFieldAsListDiff(String prevValue, String currValue) {
     // Check if both values look like lists [...]
-    if (!prevValue.startsWith('[') || !prevValue.endsWith(']') ||
-        !currValue.startsWith('[') || !currValue.endsWith(']')) {
+    if (!prevValue.startsWith('[') || !prevValue.endsWith(']') || !currValue.startsWith('[') || !currValue.endsWith(']')) {
       return null;
     }
 
     // Parse the list contents
     final prevList = _parseListString(prevValue);
     final currList = _parseListString(currValue);
-    
+
     if (prevList == null || currList == null) return null;
-    
+
     return _generateListDiff(prevList, currList);
   }
 
   /// Parses a list string like "[item1, item2, item3]" into a List
   List<String>? _parseListString(String listStr) {
     if (!listStr.startsWith('[') || !listStr.endsWith(']')) return null;
-    
+
     final content = listStr.substring(1, listStr.length - 1).trim();
     if (content.isEmpty) return <String>[];
-    
+
     // Split by comma, handling nested structures
     return _splitFields(content);
   }

@@ -3,20 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class ProfileDescription extends StatefulWidget {
-  final String text;
-  final TextStyle? style;
-  final int maxLines;
-  final Function(bool isExpanded)? onExpandToggle;
-  final Function(String username)? onMentionTap;
-
   const ProfileDescription({
-    super.key,
     required this.text,
+    super.key,
     this.style,
     this.maxLines = 2,
     this.onExpandToggle,
     this.onMentionTap,
   });
+  final String text;
+  final TextStyle? style;
+  final int maxLines;
+  final Function(bool isExpanded)? onExpandToggle;
+  final Function(String username)? onMentionTap;
 
   @override
   State<ProfileDescription> createState() => _ProfileDescriptionState();
@@ -33,8 +32,8 @@ class _ProfileDescriptionState extends State<ProfileDescription> with SingleTick
     _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 300));
 
     _scaleAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.03), weight: 30),
-      TweenSequenceItem(tween: Tween<double>(begin: 1.03, end: 1.0), weight: 70),
+      TweenSequenceItem(tween: Tween<double>(begin: 1, end: 1.03), weight: 30),
+      TweenSequenceItem(tween: Tween<double>(begin: 1.03, end: 1), weight: 70),
     ]).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
   }
 
@@ -60,13 +59,13 @@ class _ProfileDescriptionState extends State<ProfileDescription> with SingleTick
   }
 
   List<Match> _findUsernameMatches(String text) {
-    final RegExp usernameRegex = RegExp(r'\B@([a-zA-Z0-9_.-]+\.[a-zA-Z]{2,}|[a-zA-Z0-9_]+)', caseSensitive: false);
+    final usernameRegex = RegExp(r'\B@([a-zA-Z0-9_.-]+\.[a-zA-Z]{2,}|[a-zA-Z0-9_]+)', caseSensitive: false);
     return usernameRegex.allMatches(text).toList();
   }
 
   List<InlineSpan> _buildTextSpans(String text, List<Match> usernameMatches, TextStyle defaultStyle) {
-    final List<InlineSpan> spans = [];
-    int lastEnd = 0;
+    final spans = <InlineSpan>[];
+    var lastEnd = 0;
 
     usernameMatches.sort((a, b) => a.start.compareTo(b.start));
 
@@ -75,18 +74,17 @@ class _ProfileDescriptionState extends State<ProfileDescription> with SingleTick
         spans.add(TextSpan(text: text.substring(lastEnd, match.start))); // Default style is applied by RichText
       }
 
-      final String username = match.group(0)!;
+      final username = match.group(0)!;
       spans.add(
         TextSpan(
           text: username,
           style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
-          recognizer:
-              TapGestureRecognizer()
-                ..onTap = () {
-                  if (widget.onMentionTap != null) {
-                    widget.onMentionTap!(username);
-                  }
-                },
+          recognizer: TapGestureRecognizer()
+            ..onTap = () {
+              if (widget.onMentionTap != null) {
+                widget.onMentionTap!(username);
+              }
+            },
         ),
       );
       lastEnd = match.end;
@@ -100,12 +98,12 @@ class _ProfileDescriptionState extends State<ProfileDescription> with SingleTick
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
+    final theme = Theme.of(context);
     final usernameMatches = _findUsernameMatches(widget.text);
-    final TextStyle defaultStyle =
+    final defaultStyle =
         widget.style ?? TextStyle(color: theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurface, fontSize: 14);
 
-    final TextSpan textSpan = TextSpan(
+    final textSpan = TextSpan(
       children: _buildTextSpans(widget.text, usernameMatches, defaultStyle),
       style: defaultStyle, // Apply default style to the parent TextSpan
     );

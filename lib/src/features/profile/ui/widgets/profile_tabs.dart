@@ -2,15 +2,16 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
 class ProfileTabs extends StatelessWidget {
+  // This might be handled by a provider later if tabs change based on auth state
+
+  const ProfileTabs({required this.selectedIndex, required this.onTabSelected, required this.isAuthenticated, super.key});
   final int selectedIndex;
   final Function(int) onTabSelected;
-  final bool isAuthenticated; // This might be handled by a provider later if tabs change based on auth state
-
-  const ProfileTabs({super.key, required this.selectedIndex, required this.onTabSelected, required this.isAuthenticated});
+  final bool isAuthenticated;
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
+    final theme = Theme.of(context);
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.surface, // Updated color
@@ -49,17 +50,16 @@ class ProfileTabs extends StatelessWidget {
 }
 
 class _ProfileTabItemWidget extends StatelessWidget {
+  const _ProfileTabItemWidget({required this.icon, required this.filledIcon, required this.isSelected, required this.onTap});
   final IconData icon;
   final IconData filledIcon;
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _ProfileTabItemWidget({required this.icon, required this.filledIcon, required this.isSelected, required this.onTap});
-
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final Color iconColor = isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant;
+    final theme = Theme.of(context);
+    final iconColor = isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant;
 
     return Expanded(
       // Ensures tabs take equal space
@@ -84,10 +84,9 @@ class _ProfileTabItemWidget extends StatelessWidget {
 }
 
 class StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
+  StickyTabBarDelegate({required this.child, this.height = 50.0});
   final Widget child;
   final double height;
-
-  StickyTabBarDelegate({required this.child, this.height = 50.0});
 
   @override
   Widget build(BuildContext context, double shrinkOffset, bool overlapsContent) {
@@ -105,7 +104,7 @@ class StickyTabBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    if (oldDelegate case StickyTabBarDelegate delegate) {
+    if (oldDelegate case final StickyTabBarDelegate delegate) {
       return delegate.height != height || delegate.child != child;
     }
     return true;

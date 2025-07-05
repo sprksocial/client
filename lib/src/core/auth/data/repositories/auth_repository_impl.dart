@@ -1,24 +1,30 @@
-import 'dart:convert';
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+
 import 'package:sparksocial/src/core/auth/data/models/login_result.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/config/app_config.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
 /// Implementation of the authentication repository for AT Protocol
 class AuthRepositoryImpl implements AuthRepository {
+  AuthRepositoryImpl() {
+    _logger.i('Initializing AuthRepository');
+    _initialize();
+  }
   Session? _session;
   ATProto? _atProto;
   String? _dmAccessToken;
   String? _dmRefreshToken;
 
-  final _logger = GetIt.instance<LogService>().getLogger('AuthRepository');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('AuthRepository');
 
   final Completer<void> _initCompleter = Completer<void>();
   Future<void> get initializationComplete => _initCompleter.future;
@@ -37,11 +43,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   String? get dmRefreshToken => _dmRefreshToken;
-
-  AuthRepositoryImpl() {
-    _logger.i('Initializing AuthRepository');
-    _initialize();
-  }
 
   Future<void> _initialize() async {
     try {
@@ -63,9 +64,9 @@ class AuthRepositoryImpl implements AuthRepository {
       return null;
     }
 
-    final pdsService = services.firstWhere((s) => s['id'] == '#atproto_pds', orElse: () => {});
+    final pdsService = services.firstWhere((s) => s['id'] == '#atproto_pds');
 
-    final String? pdsUrl = pdsService['serviceEndpoint'] as String?;
+    final pdsUrl = pdsService['serviceEndpoint'] as String?;
     if (pdsUrl == null) {
       return null;
     }
@@ -91,8 +92,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        _dmAccessToken = data['accessJwt'];
-        _dmRefreshToken = data['refreshJwt'];
+        _dmAccessToken = data['accessJwt'] as String?;
+        _dmRefreshToken = data['refreshJwt'] as String?;
         await StorageManager.instance.secure.setString(StorageKeys.dmAccessToken, _dmAccessToken!);
         await StorageManager.instance.secure.setString(StorageKeys.dmRefreshToken, _dmRefreshToken!);
         _logger.i('Logged in to message service successfully');
@@ -115,7 +116,7 @@ class AuthRepositoryImpl implements AuthRepository {
         return;
       }
 
-      _session = Session.fromJson(json.decode(savedSessionJson));
+      _session = Session.fromJson(json.decode(savedSessionJson) as Map<String, dynamic>);
       if (_session == null) {
         _logger.w('Failed to parse saved session');
         return;
@@ -147,8 +148,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
-          _dmAccessToken = data['access_token'];
-          _dmRefreshToken = data['refresh_token'];
+          _dmAccessToken = data['access_token'] as String?;
+          _dmRefreshToken = data['refresh_token'] as String?;
         } else {
           if (!await refreshDMToken()) {
             throw Exception('Failed to refresh DM token');
@@ -178,10 +179,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      await StorageManager.instance.secure.setString(StorageKeys.dmAccessToken, data['access_token']);
-      _dmAccessToken = data['access_token'];
-      _dmRefreshToken = data['refresh_token'];
-      await StorageManager.instance.secure.setString(StorageKeys.dmRefreshToken, data['refresh_token']);
+      await StorageManager.instance.secure.setString(StorageKeys.dmAccessToken, data['access_token'] as String? ?? '');
+      _dmAccessToken = data['access_token'] as String?;
+      _dmRefreshToken = data['refresh_token'] as String?;
+      await StorageManager.instance.secure.setString(StorageKeys.dmRefreshToken, data['refresh_token'] as String? ?? '');
       return true;
     }
     _logger.e('Failed to refresh DM token: ${response.statusCode} - ${response.body}');
@@ -196,13 +197,13 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       _logger.i('Refreshing session for user: ${_session!.handle}');
-      String? service = _session!.didDoc != null ? _extractPdsDomain(_session!.didDoc!) : null;
+      var service = _session!.didDoc != null ? _extractPdsDomain(_session!.didDoc!) : null;
 
       if (service == null) {
         _logger.d('Fetching DID document from PLC directory');
         final didDocResponse = await http.get(Uri.parse('https://plc.directory/${_session!.did}'));
         if (didDocResponse.statusCode == 200) {
-          service = _extractPdsDomain(json.decode(didDocResponse.body));
+          service = _extractPdsDomain(json.decode(didDocResponse.body) as Map<String, dynamic>);
         }
       }
 
@@ -263,13 +264,13 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<LoginResult> login(String handle, String password, {String? authCode}) async {
     try {
       _logger.i('Login attempt for user: $handle');
-      ATProto at = ATProto.anonymous(service: 'pds.sprk.so');
+      final at = ATProto.anonymous(service: 'pds.sprk.so');
       _logger.d('Resolving handle: $handle');
       final didRes = await at.identity.resolveHandle(handle: handle);
-      String did = didRes.data.did;
-      _logger.d('Resolved DID: $did');
-
-      _logger.d('Fetching DID document');
+      final did = didRes.data.did;
+      _logger
+        ..d('Resolved DID: $did')
+        ..d('Fetching DID document');
       final didDocResponse = await http.get(Uri.parse('https://plc.directory/$did'));
 
       if (didDocResponse.statusCode != 200) {
@@ -279,8 +280,8 @@ class AuthRepositoryImpl implements AuthRepository {
 
       final didDoc = json.decode(didDocResponse.body);
 
-      String? pdsUrl =
-          (didDoc['service'] as List<dynamic>).firstWhere((s) => s['id'] == '#atproto_pds', orElse: () => {})['serviceEndpoint']
+      final pdsUrl =
+          (didDoc['service'] as List<dynamic>).firstWhere((s) => s['id'] == '#atproto_pds', orElse: () => '')['serviceEndpoint']
               as String?;
 
       if (pdsUrl == null) {
@@ -288,7 +289,7 @@ class AuthRepositoryImpl implements AuthRepository {
         throw Exception('PDS endpoint not found in DID document');
       }
 
-      String pdsDomain = Uri.parse(pdsUrl).host;
+      final pdsDomain = Uri.parse(pdsUrl).host;
       _logger.d('Using PDS domain: $pdsDomain');
 
       try {
@@ -332,7 +333,7 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<({bool success, String? error})> register(String handle, String email, String password, String? inviteCode) async {
     try {
       _logger.i('Registration attempt for handle: $handle, email: $email');
-      ATProto at = ATProto.anonymous(service: 'pds.sprk.so');
+      final at = ATProto.anonymous(service: 'pds.sprk.so');
       _logger.d('Creating account');
       final createResponse = await at.server.createAccount(
         handle: handle,

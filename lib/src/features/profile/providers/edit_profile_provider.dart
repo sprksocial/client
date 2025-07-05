@@ -1,15 +1,15 @@
 import 'dart:typed_data';
 
 import 'package:atproto/core.dart';
+import 'package:get_it/get_it.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
+import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/profile/providers/edit_profile_state.dart';
-import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 
 part 'edit_profile_provider.g.dart';
@@ -99,7 +99,7 @@ class EditProfile extends _$EditProfile {
         // Ensure the 'avatar' field exists and is a Map before converting to Blob.
         // If it's null, it means the user had no avatar on the record.
         if (recordData['avatar'] is Map<String, dynamic>) {
-          avatarToSend = Blob.fromJson(recordData['avatar']);
+          avatarToSend = Blob.fromJson(recordData['avatar'] as Map<String, dynamic>);
           logger.d('Blob avatar: $avatarToSend');
         } else {
           // This case handles an inconsistency where localAvatar was a string (URL),

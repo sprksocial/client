@@ -1,10 +1,11 @@
+import 'dart:ui' show lerpDouble;
+
 import 'package:auto_route/auto_route.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'dart:ui' show lerpDouble;
 
 @RoutePage()
 class FeedListPage extends ConsumerStatefulWidget {
@@ -132,15 +133,15 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                     },
                     onReorder: (oldIndex, newIndex) async {
                       if (_isReordering) return;
-                      
+
                       setState(() => _isReordering = true);
-                      
+
                       try {
                         // Adjust newIndex if moving down the list
                         if (newIndex > oldIndex) newIndex -= 1;
-                        
+
                         await ref.read(settingsProvider.notifier).reorderFeed(oldIndex, newIndex);
-                        
+
                         // Small delay to allow state to settle
                         await Future.delayed(const Duration(milliseconds: 50));
                       } catch (e) {
@@ -162,7 +163,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                           final animValue = Curves.easeInOutCubic.transform(animation.value);
                           final elevation = lerpDouble(2, 8, animValue)!;
                           final scale = lerpDouble(1, 1.05, animValue)!;
-                          
+
                           return Transform.scale(
                             scale: scale,
                             child: Material(
@@ -216,16 +217,16 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                                 ),
                               const SizedBox(width: 8),
                               Icon(
-                                FluentIcons.re_order_dots_vertical_24_regular, 
-                                color: _isReordering 
-                                  ? colorScheme.primary.withAlpha(128)
-                                  : colorScheme.onSurface.withAlpha(178),
+                                FluentIcons.re_order_dots_vertical_24_regular,
+                                color: _isReordering ? colorScheme.primary.withAlpha(128) : colorScheme.onSurface.withAlpha(178),
                               ),
                             ],
                           ),
-                          onTap: _isReordering ? null : () {
-                            ref.read(settingsProvider.notifier).setActiveFeed(feed);
-                          },
+                          onTap: _isReordering
+                              ? null
+                              : () {
+                                  ref.read(settingsProvider.notifier).setActiveFeed(feed);
+                                },
                         ),
                       );
                     },

@@ -6,9 +6,8 @@ import 'package:sparksocial/src/features/profile/ui/widgets/profile_grid_widget.
 
 @RoutePage()
 class ProfileVideosPage extends ConsumerWidget {
-  final String did;
-
   const ProfileVideosPage({@PathParam('did') required this.did, super.key});
+  final String did;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -17,4 +16,4 @@ class ProfileVideosPage extends ConsumerWidget {
       videosOnly: true,
     );
   }
-} 
+}

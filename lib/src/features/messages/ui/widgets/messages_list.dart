@@ -14,12 +14,12 @@ import 'package:url_launcher/url_launcher.dart';
 
 class MessagesList extends StatelessWidget {
   const MessagesList({
-    super.key,
     required this.messages,
     required this.scrollController,
     required this.currentUserDid,
     required this.otherUserHandle,
     required this.otherUserAvatar,
+    super.key,
   });
 
   final List<Message> messages;
@@ -30,7 +30,7 @@ class MessagesList extends StatelessWidget {
 
   Future<void> logLinkMetadata(List<String> links) async {
     if (links.isEmpty) return;
-    for (var link in links) {
+    for (final link in links) {
       try {
         final metadata = await AnyLinkPreview.getMetadata(link: link);
         GetIt.I<LogService>().getLogger('MessagesList').i('Link metadata for $link: $metadata');
@@ -48,8 +48,8 @@ class MessagesList extends StatelessWidget {
       return false;
     }
     if (res.statusCode != 200) return false;
-    Map<String, dynamic> data = res.headers;
-    return checkIfImage(data['content-type']);
+    final Map<String, dynamic> data = res.headers;
+    return checkIfImage(data['content-type'] as String);
   }
 
   bool checkIfImage(String param) {
@@ -72,8 +72,8 @@ class MessagesList extends StatelessWidget {
       return false;
     }
     if (res.statusCode != 200) return false;
-    Map<String, dynamic> data = res.headers;
-    return checkIfVideo(data['content-type']);
+    final Map<String, dynamic> data = res.headers;
+    return checkIfVideo(data['content-type'] as String);
   }
 
   bool checkIfVideo(String param) {
@@ -105,10 +105,10 @@ class MessagesList extends StatelessWidget {
     List<Widget>? embeds;
 
     if (embed?.isNotEmpty ?? false) {
-      List<String> images = [];
-      List<String> videos = [];
-      List<String> links = [];
-      List<String> sprkPosts = [];
+      final images = <String>[];
+      final videos = <String>[];
+      final links = <String>[];
+      final sprkPosts = <String>[];
       for (final embed in embed!) {
         if (embed.type == 'image') {
           if (embed.url?.isNotEmpty ?? false) {
@@ -132,8 +132,8 @@ class MessagesList extends StatelessWidget {
       }
 
       // Check links for images/videos/sprk posts and reclassify them
-      List<String> linksToRemove = [];
-      for (var link in links) {
+      final linksToRemove = <String>[];
+      for (final link in links) {
         if (link.isEmpty) continue;
         if (Uri.tryParse(link)?.hasScheme != true) continue; // Skip invalid links
 
@@ -154,7 +154,7 @@ class MessagesList extends StatelessWidget {
       }
 
       // Remove reclassified links
-      for (var linkToRemove in linksToRemove) {
+      for (final linkToRemove in linksToRemove) {
         links.remove(linkToRemove);
       }
 
@@ -164,13 +164,13 @@ class MessagesList extends StatelessWidget {
       }
       if (videos.isNotEmpty) {
         embeds ??= [];
-        for (var videoUrl in videos) {
+        for (final videoUrl in videos) {
           embeds.add(VideoContent(borderRadius: BorderRadius.circular(12), videoUrl: videoUrl));
         }
       }
       if (sprkPosts.isNotEmpty) {
         embeds ??= [];
-        for (var postUri in sprkPosts) {
+        for (final postUri in sprkPosts) {
           embeds.add(_SprkPostThumbnail(postUri: postUri));
         }
       }
@@ -186,7 +186,7 @@ class MessagesList extends StatelessWidget {
             itemCount: links.length,
             itemBuilder: (context, index) {
               return Padding(
-                padding: const EdgeInsets.only(top: 8.0),
+                padding: const EdgeInsets.only(top: 8),
                 child: _LinkPreview(url: links[index]),
               );
             },
@@ -316,7 +316,7 @@ class _LinkPreview extends StatelessWidget {
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
-        await launchUrl(uri, mode: LaunchMode.platformDefault);
+        await launchUrl(uri);
       }
     } catch (e) {
       GetIt.I<LogService>().getLogger('_LinkPreview').e('Failed to launch URL $url: $e');
@@ -385,7 +385,7 @@ class _LinkPreviewError extends StatelessWidget {
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(8),
               child: FittedBox(child: Text(urlStr, style: theme.textTheme.titleSmall)),
             ),
           ),
@@ -404,11 +404,11 @@ class _LinkPreviewText extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final title = metadata.title?.isNotEmpty == true && metadata.title != 'null' ? metadata.title : null;
-    final desc = metadata.desc?.isNotEmpty == true && metadata.desc != 'null' ? metadata.desc : null;
+    final title = metadata.title?.isNotEmpty ?? true && metadata.title != 'null' ? metadata.title : null;
+    final desc = metadata.desc?.isNotEmpty ?? true && metadata.desc != 'null' ? metadata.desc : null;
 
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.all(8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -503,7 +503,7 @@ class _SprkPostThumbnail extends StatelessWidget {
             ),
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.all(12.0),
+                padding: const EdgeInsets.all(12),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -538,13 +538,13 @@ class _SprkPostThumbnail extends StatelessWidget {
   void _navigateToPost(BuildContext context) {
     try {
       // Transform the URI format: insert /so.sprk.feed.post before the post ID
-      String transformedUri = postUri;
+      var transformedUri = postUri;
 
       // Find the last slash and insert /so.sprk.feed.post before the post ID
-      int lastSlashIndex = postUri.lastIndexOf('/');
+      final lastSlashIndex = postUri.lastIndexOf('/');
       if (lastSlashIndex != -1) {
-        String beforePostId = postUri.substring(0, lastSlashIndex);
-        String postId = postUri.substring(lastSlashIndex + 1);
+        final beforePostId = postUri.substring(0, lastSlashIndex);
+        final postId = postUri.substring(lastSlashIndex + 1);
         transformedUri = '$beforePostId/so.sprk.feed.post/$postId';
       }
 

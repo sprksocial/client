@@ -14,10 +14,9 @@ import 'package:sparksocial/src/core/utils/label_utils.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 
 class ProfileGridWidget extends ConsumerStatefulWidget {
+  const ProfileGridWidget({required this.profileUri, required this.videosOnly, super.key});
   final AtUri profileUri;
   final bool videosOnly;
-
-  const ProfileGridWidget({super.key, required this.profileUri, required this.videosOnly});
 
   @override
   ConsumerState<ProfileGridWidget> createState() => _ProfileGridWidgetState();
@@ -84,7 +83,7 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
           itemCount: state.loadedPosts.length + (state.isEndOfNetwork ? 0 : 1),
           itemBuilder: (context, index) {
             if (index >= state.loadedPosts.length) {
-              return Container(
+              return ColoredBox(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
               );
@@ -145,11 +144,10 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
 }
 
 class ProfileGridTile extends StatefulWidget {
+  const ProfileGridTile({required this.postView, required this.onTap, super.key, this.postSource});
   final PostView postView;
   final String? postSource;
   final VoidCallback onTap;
-
-  const ProfileGridTile({super.key, required this.postView, this.postSource, required this.onTap});
 
   @override
   State<ProfileGridTile> createState() => _ProfileGridTileState();
@@ -189,19 +187,19 @@ class _ProfileGridTileState extends State<ProfileGridTile> {
             imageUrl: thumbnailUrl,
             fit: BoxFit.cover,
             placeholder: (context, url) => const SizedBox.shrink(),
-            errorWidget: (context, url, error) => Container(
+            errorWidget: (context, url, error) => ColoredBox(
               color: Theme.of(context).colorScheme.surfaceContainerHighest,
               child: const Center(child: Icon(FluentIcons.error_circle_24_regular, size: 20)),
             ),
           )
-        : Container(
+        : ColoredBox(
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 20)),
           );
 
     return GestureDetector(
       onTap: widget.onTap,
-      child: Container(
+      child: ColoredBox(
         color: AppColors.black,
         child: thumbnailUrl.isNotEmpty
             ? Stack(
@@ -209,7 +207,7 @@ class _ProfileGridTileState extends State<ProfileGridTile> {
                 children: [
                   if (_shouldBlur)
                     ImageFiltered(
-                      imageFilter: ImageFilter.blur(sigmaX: 20.0, sigmaY: 20.0),
+                      imageFilter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                       child: image,
                     )
                   else
@@ -230,7 +228,7 @@ class _ProfileGridTileState extends State<ProfileGridTile> {
                     ),
                 ],
               )
-            : Container(
+            : ColoredBox(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 20)),
               ),

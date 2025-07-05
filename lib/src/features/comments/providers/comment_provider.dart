@@ -33,12 +33,12 @@ class CommentNotifier extends _$CommentNotifier {
   Future<void> toggleLike() async {
     final wasLiked = state.isLiked;
     final currentLikeCount = state.thread.post.likeCount ?? 0;
-    
+
     try {
       if (wasLiked) {
         // Capture the like reference before optimistic update
         final likeUri = state.thread.post.viewer!.like!;
-        
+
         // Optimistically update UI for unlike
         final updatedPost = state.thread.post.copyWith(
           viewer: state.thread.post.viewer?.copyWith(like: null),
@@ -47,34 +47,33 @@ class CommentNotifier extends _$CommentNotifier {
         state = state.copyWith(
           thread: state.thread.copyWith(post: updatedPost),
         );
-        
+
         // Perform the actual unlike using the captured reference
         await _feedRepository.unlikePost(likeUri);
-        
+
         // Trigger UI updates
         ref.read(postUpdateProvider(state.thread.post.uri.toString()).notifier).state++;
       } else {
         // Optimistically update UI for like
         final response = await _feedRepository.likePost(state.thread.post.cid, state.thread.post.uri);
-        
+
         final updatedPost = state.thread.post.copyWith(
-          viewer: state.thread.post.viewer?.copyWith(like: response.uri) ?? 
-                  Viewer(like: response.uri),
+          viewer: state.thread.post.viewer?.copyWith(like: response.uri) ?? Viewer(like: response.uri),
           likeCount: currentLikeCount + 1,
         );
         state = state.copyWith(
           thread: state.thread.copyWith(post: updatedPost),
         );
-        
+
         // Trigger UI updates
         ref.read(postUpdateProvider(state.thread.post.uri.toString()).notifier).state++;
       }
     } catch (e) {
       // Revert optimistic update on error
       final revertedPost = state.thread.post.copyWith(
-        viewer: wasLiked 
-          ? state.thread.post.viewer?.copyWith(like: state.thread.post.viewer?.like)
-          : state.thread.post.viewer?.copyWith(like: null),
+        viewer: wasLiked
+            ? state.thread.post.viewer?.copyWith(like: state.thread.post.viewer?.like)
+            : state.thread.post.viewer?.copyWith(like: null),
         likeCount: currentLikeCount,
       );
       state = state.copyWith(
@@ -102,7 +101,7 @@ Future<StrongRef> postComment(
   Map<String, String>? altTexts,
 }) async {
   final feedRepository = GetIt.instance<SprkRepository>().feed;
-  return await feedRepository.postComment(
+  return feedRepository.postComment(
     text,
     parentCid,
     AtUri.parse(parentUri),

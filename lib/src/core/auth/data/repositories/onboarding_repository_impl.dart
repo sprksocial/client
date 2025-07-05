@@ -4,22 +4,21 @@ import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart' as bs;
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
-
 import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'onboarding_repository.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
 class OnboardingRepositoryImpl implements OnboardingRepository {
-  final RepoRepository _repoRepository;
-  final AuthRepository _authRepository;
-  final _logger = GetIt.instance<LogService>().getLogger('OnboardingRepository');
-
   OnboardingRepositoryImpl({required RepoRepository repoRepository, required AuthRepository authRepository})
     : _repoRepository = repoRepository,
       _authRepository = authRepository;
+  final RepoRepository _repoRepository;
+  final AuthRepository _authRepository;
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('OnboardingRepository');
 
   Session? get _session => _authRepository.session;
   ATProto? get _atproto => _authRepository.atproto;
@@ -87,7 +86,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     }
 
     final record = <String, dynamic>{
-      '\$type': 'so.sprk.actor.profile',
+      r'$type': 'so.sprk.actor.profile',
       'displayName': displayName,
       'description': description,
       if (avatarField != null) 'avatar': avatarField,
@@ -112,11 +111,11 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
 
     // Convert raw data to our structured model
     final rawData = response.data.toJson();
-    final List<dynamic> rawFollows = rawData['follows'] as List<dynamic>;
+    final rawFollows = rawData['follows'] as List<dynamic>;
 
     final follows = rawFollows
         .map(
-          (followData) => ProfileView.fromJson(followData),
+          (followData) => ProfileView.fromJson(followData as Map<String, dynamic>),
         )
         .toList();
 
@@ -126,7 +125,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
   @override
   Future<void> createSparkFollow(String subject) async {
     final record = <String, dynamic>{
-      '\$type': 'so.sprk.graph.follow',
+      r'$type': 'so.sprk.graph.follow',
       'subject': subject,
       'createdAt': DateTime.now().toUtc().toIso8601String(),
     };

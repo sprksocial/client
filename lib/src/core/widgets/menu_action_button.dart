@@ -6,15 +6,6 @@ import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class MenuActionButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  final VoidCallback? onDeletePressed;
-  final bool isCompact;
-  final Color? backgroundColor;
-  final bool isProfile;
-  final bool isOnVideo;
-  final bool isOwnPost;
-  final String? authorDid;
-
   const MenuActionButton({
     super.key,
     this.onPressed,
@@ -26,6 +17,14 @@ class MenuActionButton extends StatelessWidget {
     this.isOwnPost = false,
     this.authorDid,
   });
+  final VoidCallback? onPressed;
+  final VoidCallback? onDeletePressed;
+  final bool isCompact;
+  final Color? backgroundColor;
+  final bool isProfile;
+  final bool isOnVideo;
+  final bool isOwnPost;
+  final String? authorDid;
 
   void _showOptionsMenu(BuildContext context) {
     final theme = Theme.of(context);
@@ -51,7 +50,7 @@ class MenuActionButton extends StatelessWidget {
               if (isCurrentUserAuthor)
                 ListTile(
                   leading: const Icon(Icons.delete_outline, color: Colors.red),
-                  title: Text('Delete', style: TextStyle(color: Colors.red)),
+                  title: const Text('Delete', style: TextStyle(color: Colors.red)),
                   onTap: () async {
                     await context.router.maybePop();
                     if (onDeletePressed != null) {
@@ -104,13 +103,6 @@ class MenuActionButton extends StatelessWidget {
 }
 
 class CompactMenuButton extends StatelessWidget {
-  final VoidCallback? onPressed;
-  final VoidCallback? onDeletePressed;
-  final Color? backgroundColor;
-  final bool isProfile;
-  final bool isOnVideo;
-  final String? authorDid;
-
   const CompactMenuButton({
     super.key,
     this.onPressed,
@@ -120,6 +112,12 @@ class CompactMenuButton extends StatelessWidget {
     this.isOnVideo = false,
     this.authorDid,
   });
+  final VoidCallback? onPressed;
+  final VoidCallback? onDeletePressed;
+  final Color? backgroundColor;
+  final bool isProfile;
+  final bool isOnVideo;
+  final String? authorDid;
 
   @override
   Widget build(BuildContext context) {

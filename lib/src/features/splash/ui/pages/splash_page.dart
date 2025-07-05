@@ -4,16 +4,17 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository_impl.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
+import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/splash/providers/splash_providers.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'package:sparksocial/src/features/splash/providers/splash_providers.dart';
 
 @RoutePage()
 class SplashPage extends ConsumerStatefulWidget {
@@ -24,7 +25,7 @@ class SplashPage extends ConsumerStatefulWidget {
 }
 
 class _SplashPageState extends ConsumerState<SplashPage> {
-  final _logger = GetIt.instance<LogService>().getLogger('SplashPage');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('SplashPage');
   bool _isNavigating = false;
   bool _hasStartedFeedLoading = false;
 
@@ -69,7 +70,7 @@ class _SplashPageState extends ConsumerState<SplashPage> {
         return;
       }
 
-      final bool isSessionValid = await authRepository.validateSession();
+      final isSessionValid = await authRepository.validateSession();
 
       if (!mounted) return;
 

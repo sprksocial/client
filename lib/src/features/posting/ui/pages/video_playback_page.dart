@@ -6,9 +6,8 @@ import 'package:video_player/video_player.dart';
 
 @RoutePage()
 class VideoPlaybackPage extends StatefulWidget {
+  const VideoPlaybackPage({required this.controller, super.key});
   final VideoPlayerController controller;
-
-  const VideoPlaybackPage({super.key, required this.controller});
 
   @override
   State<VideoPlaybackPage> createState() => _VideoPlaybackPageState();
@@ -97,7 +96,7 @@ class _VideoPlaybackPageState extends State<VideoPlaybackPage> {
             // Controls overlay
             if (_showControls)
               Positioned.fill(
-                child: Container(
+                child: ColoredBox(
                   color: Colors.black.withAlpha(100),
                   child: Stack(
                     alignment: Alignment.center,
@@ -154,7 +153,6 @@ class _VideoPlaybackPageState extends State<VideoPlaybackPage> {
                               ),
                               child: Slider(
                                 value: position.inMilliseconds.toDouble(),
-                                min: 0,
                                 max: duration.inMilliseconds.toDouble(),
                                 onChanged: (value) {
                                   widget.controller.seekTo(Duration(milliseconds: value.toInt()));

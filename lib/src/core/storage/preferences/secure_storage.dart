@@ -1,17 +1,17 @@
 import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:sparksocial/src/core/storage/preferences/local_storage_interface.dart';
 import 'package:synchronized/synchronized.dart';
-import 'local_storage_interface.dart';
 
 /// Implementation of LocalStorageInterface using FlutterSecureStorage
 /// for storing sensitive data like tokens, credentials, etc.
 class SecureStorage implements LocalStorageInterface {
-  final FlutterSecureStorage _secureStorage;
-  final Lock _lock = Lock();
-
   /// Creates a new SecureStorage instance
   /// If no secureStorage is provided, a default one will be created
   SecureStorage({FlutterSecureStorage? secureStorage}) : _secureStorage = secureStorage ?? const FlutterSecureStorage();
+  final FlutterSecureStorage _secureStorage;
+  final Lock _lock = Lock();
 
   @override
   Future<void> setString(String key, String value) async {

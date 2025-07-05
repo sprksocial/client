@@ -8,6 +8,7 @@ part 'settings_state.freezed.dart';
 @freezed
 class SettingsState with _$SettingsState {
   const factory SettingsState({
+    required Feed activeFeed,
     @Default(false) bool feedBlurEnabled,
     @Default(true) bool hideAdultContent,
     @Default(FollowMode.sprk) FollowMode followMode,
@@ -17,7 +18,6 @@ class SettingsState with _$SettingsState {
       Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
     ])
     List<Feed> feeds,
-    required Feed activeFeed,
     @Default(false) bool postToBskyEnabled,
   }) = _SettingsState;
 }

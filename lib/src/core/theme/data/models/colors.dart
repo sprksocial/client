@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 /// Application color constants.
-/// 
+///
 /// These colors are used throughout the application to ensure consistency
 /// and maintainability.
 class AppColors {
@@ -19,7 +19,7 @@ class AppColors {
   static const Color deepPurple = Color(0xFF28232D);
   static const Color richPurple = Color(0xFF330072);
   static const Color brightPurple = Color(0xFFB20AFF);
-  
+
   // Core colors
   static const Color pink = Color(0xFFFF2696); // Main app color for buttons and highlights
   static const Color white = Color(0xFFFFFFFF);
@@ -70,4 +70,4 @@ class AppColors {
   static const Color unselectedIconLight = darkPurple;
   static const Color selectedIconDark = white;
   static const Color unselectedIconDark = darkPurple;
-} 
+}
