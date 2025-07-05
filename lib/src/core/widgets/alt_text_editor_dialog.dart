@@ -6,10 +6,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class AltTextEditorDialog extends StatefulWidget {
+  const AltTextEditorDialog({required this.initialAltText, super.key, this.imageFile});
   final XFile? imageFile;
   final String initialAltText;
-
-  const AltTextEditorDialog({super.key, this.imageFile, required this.initialAltText});
 
   @override
   State<AltTextEditorDialog> createState() => _AltTextEditorDialogState();
@@ -45,11 +44,10 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
       insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               if (widget.imageFile != null)
                 ClipRRect(
@@ -63,7 +61,7 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
                 decoration: BoxDecoration(
                   color: inputBackgroundColor,
                   borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: borderColor, width: 1),
+                  border: Border.all(color: borderColor),
                 ),
                 child: TextField(
                   controller: _controller,

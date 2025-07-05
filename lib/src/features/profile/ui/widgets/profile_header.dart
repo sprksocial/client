@@ -4,23 +4,31 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
-
+import 'package:sparksocial/src/core/auth/data/repositories/identity_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart' as actor_models;
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/core/utils/text_formatter.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/identity_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-
 // Local imports for other profile widgets that will be migrated
-import 'profile_description.dart';
-import 'profile_links.dart'; // Placeholder will be created
-import 'profile_stat_item.dart'; // Placeholder will be created
+import 'package:sparksocial/src/features/profile/ui/widgets/profile_description.dart';
+import 'package:sparksocial/src/features/profile/ui/widgets/profile_links.dart'; // Placeholder will be created
+import 'package:sparksocial/src/features/profile/ui/widgets/profile_stat_item.dart'; // Placeholder will be created
 
 class ProfileHeader extends StatefulWidget {
+  const ProfileHeader({
+    required this.profile,
+    required this.isCurrentUser,
+    required this.onEarlySupporterTap,
+    required this.onEditTap,
+    required this.onShareTap,
+    required this.onFollowTap,
+    super.key,
+    this.isEarlySupporter = false,
+  });
   final actor_models.ProfileViewDetailed profile;
   final bool isCurrentUser;
   final bool isEarlySupporter;
@@ -28,17 +36,6 @@ class ProfileHeader extends StatefulWidget {
   final VoidCallback onEditTap;
   final VoidCallback onShareTap;
   final VoidCallback onFollowTap;
-
-  const ProfileHeader({
-    super.key,
-    required this.profile,
-    required this.isCurrentUser,
-    this.isEarlySupporter = false,
-    required this.onEarlySupporterTap,
-    required this.onEditTap,
-    required this.onShareTap,
-    required this.onFollowTap,
-  });
 
   @override
   State<ProfileHeader> createState() => _ProfileHeaderState();
@@ -59,10 +56,10 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
   Future<void> _handleUsernameTap(String username) async {
     try {
-      final String cleanUsername = username.startsWith('@') ? username.substring(1) : username;
+      final cleanUsername = username.startsWith('@') ? username.substring(1) : username;
       _logger.d('Username clicked: $cleanUsername');
 
-      final String? didRes = await _identityRepository.resolveHandleToDid(cleanUsername);
+      final didRes = await _identityRepository.resolveHandleToDid(cleanUsername);
       if (didRes == null) {
         _logger.w('Could not resolve handle to DID for $cleanUsername');
         return;
@@ -79,9 +76,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
     if (!(widget.profile.stories?.isNotEmpty ?? false)) return;
 
     try {
-      final storyUris = widget.profile.stories!
-          .map((strongRef) => strongRef.uri)
-          .toList();
+      final storyUris = widget.profile.stories!.map((strongRef) => strongRef.uri).toList();
 
       if (storyUris.isEmpty) return;
       final stories = await _sprkRepository.feed.getStoryViews(storyUris);
@@ -103,7 +98,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
       if (mounted) {
         context.router.push(
-          AllStoriesRoute(storiesByAuthor: {authorBasic: stories}, initialAuthorIndex: 0),
+          AllStoriesRoute(storiesByAuthor: {authorBasic: stories}),
         );
       }
     } catch (e, s) {
@@ -113,11 +108,11 @@ class _ProfileHeaderState extends State<ProfileHeader> {
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData theme = Theme.of(context);
-    final bool isDarkMode = theme.brightness == Brightness.dark;
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
 
     // Determine if the profile has any stories associated with it.
-    final bool hasStories = (widget.profile.stories?.isNotEmpty ?? false);
+    final hasStories = widget.profile.stories?.isNotEmpty ?? false;
 
     final String displayNameForAvatar;
     if (widget.profile.displayName case final String dn when dn.isNotEmpty) {
@@ -129,7 +124,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
     final Widget avatarWidget;
     if (widget.profile.avatar case final AtUri av when av.toString().isNotEmpty) {
       avatarWidget = ClipOval(
-        child: UserAvatar(imageUrl: av.toString(), username: displayNameForAvatar, size: 90, borderWidth: 0),
+        child: UserAvatar(imageUrl: av.toString(), username: displayNameForAvatar, size: 90),
       );
     } else {
       avatarWidget = Icon(
@@ -146,23 +141,22 @@ class _ProfileHeaderState extends State<ProfileHeader> {
       headerDisplayName = widget.profile.handle;
     }
 
-    final String handle = widget.profile.handle;
-    final String description = widget.profile.description ?? '';
+    final handle = widget.profile.handle;
+    final description = widget.profile.description ?? '';
 
-    final String postsCount = TextFormatter.formatCount(widget.profile.postsCount);
-    final String followersCount = TextFormatter.formatCount(widget.profile.followersCount);
-    final String followsCount = TextFormatter.formatCount(widget.profile.followsCount);
+    final postsCount = TextFormatter.formatCount(widget.profile.postsCount);
+    final followersCount = TextFormatter.formatCount(widget.profile.followersCount);
+    final followsCount = TextFormatter.formatCount(widget.profile.followsCount);
 
-    final List<String> links = TextFormatter.extractUrls(description);
-    final List<String> uniqueLinks = links.toSet().toList();
+    final links = TextFormatter.extractUrls(description);
+    final uniqueLinks = links.toSet().toList();
 
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Stack(
                 children: [
@@ -183,8 +177,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                           : BoxDecoration(
                               color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender,
                               shape: BoxShape.circle,
-                              border: Border.all(
-                                  color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender, width: 2),
+                              border: Border.all(color: isDarkMode ? AppColors.darkPurple : AppColors.lightLavender, width: 2),
                             ),
                       child: hasStories
                           ? Container(
@@ -209,8 +202,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                             color: AppColors.primary,
                             border: Border.all(color: isDarkMode ? AppColors.deepPurple : AppColors.white, width: 2),
                           ),
-                          child:
-                              const Center(child: Icon(FluentIcons.add_24_filled, size: 18, color: AppColors.white)),
+                          child: const Center(child: Icon(FluentIcons.add_24_filled, size: 18, color: AppColors.white)),
                         ),
                       ),
                     ),
@@ -272,7 +264,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
               ),
             if (uniqueLinks.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.only(top: 4.0),
+                padding: const EdgeInsets.only(top: 4),
                 child: ProfileLinks(links: uniqueLinks),
               ),
           ],
@@ -281,7 +273,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
             children: [
               if (widget.isCurrentUser) ...[
                 Expanded(
-                  flex: 1,
                   child: Container(
                     constraints: const BoxConstraints(minHeight: 36),
                     child: ElevatedButton(
@@ -300,7 +291,6 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                 const SizedBox(width: 8),
               ] else ...[
                 Expanded(
-                  flex: 1,
                   child: Container(
                     constraints: const BoxConstraints(minHeight: 36),
                     child: ElevatedButton(

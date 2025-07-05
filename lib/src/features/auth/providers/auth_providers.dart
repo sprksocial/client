@@ -3,11 +3,11 @@ import 'package:atproto/core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_state.dart';
 import 'package:sparksocial/src/core/auth/data/models/login_result.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:sparksocial/src/features/auth/providers/auth_state.dart';
 
 part 'auth_providers.g.dart';
 
@@ -33,8 +33,6 @@ class Auth extends _$Auth {
       isAuthenticated: _authRepository.isAuthenticated,
       session: _authRepository.session,
       atproto: _authRepository.atproto,
-      isLoading: false,
-      error: null,
     );
   }
 
@@ -74,8 +72,8 @@ class Auth extends _$Auth {
       return result;
     } catch (e, stackTrace) {
       _logger.e('Login error', error: e, stackTrace: stackTrace);
-      state = state.copyWith(isLoading: false, error: 'Login failed: ${e.toString()}');
-      return LoginResult.failed('Login failed: ${e.toString()}');
+      state = state.copyWith(isLoading: false, error: 'Login failed: $e');
+      return LoginResult.failed('Login failed: $e');
     }
   }
 
@@ -97,7 +95,7 @@ class Auth extends _$Auth {
       return LoginResult.success();
     } catch (e, stackTrace) {
       _logger.e('Registration error', error: e, stackTrace: stackTrace);
-      final errorMsg = 'Registration failed: ${e.toString()}';
+      final errorMsg = 'Registration failed: $e';
       state = state.copyWith(isLoading: false, error: errorMsg);
       return LoginResult.failed(errorMsg);
     }
@@ -114,7 +112,7 @@ class Auth extends _$Auth {
       state = state.copyWith(isLoading: false);
     } catch (e, stackTrace) {
       _logger.e('Logout error', error: e, stackTrace: stackTrace);
-      state = state.copyWith(isLoading: false, error: 'Logout failed: ${e.toString()}');
+      state = state.copyWith(isLoading: false, error: 'Logout failed: $e');
     }
   }
 
@@ -129,7 +127,7 @@ class Auth extends _$Auth {
       return result;
     } catch (e, stackTrace) {
       _logger.e('Session validation error', error: e, stackTrace: stackTrace);
-      state = state.copyWith(error: 'Session validation failed: ${e.toString()}');
+      state = state.copyWith(error: 'Session validation failed: $e');
       return false;
     }
   }
@@ -145,7 +143,7 @@ class Auth extends _$Auth {
       return result;
     } catch (e, stackTrace) {
       _logger.e('Token refresh error', error: e, stackTrace: stackTrace);
-      state = state.copyWith(error: 'Token refresh failed: ${e.toString()}');
+      state = state.copyWith(error: 'Token refresh failed: $e');
       return false;
     }
   }

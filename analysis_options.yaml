@@ -1,7 +1,34 @@
-include: package:flutter_lints/flutter.yaml
+include:
+  - package:very_good_analysis/analysis_options.yaml
+  - package:flutter_lints/flutter.yaml
 
 formatter:
   page_width: 130
 analyzer:
   errors:
+    avoid_catches_without_on_clauses: ignore
+    avoid_dynamic_calls: ignore
+    cascade_invocations: ignore
+    inference_failure_on_function_invocation: ignore
+    inference_failure_on_instance_creation: ignore
     invalid_annotation_target: ignore
+    lines_longer_than_80_chars: ignore
+    comment_references: ignore # enable when starting documentation
+    public_member_api_docs: ignore # enable when starting documentation
+    sort_pub_dependencies: ignore
+    prefer_null_aware_method_calls: ignore
+    strict_raw_type: ignore
+    avoid_equals_and_hash_code_on_mutable_classes: ignore
+    inference_failure_on_function_return_type: ignore
+    inference_failure_on_untyped_parameter: ignore
+    flutter_style_todos: ignore
+    specify_nonobvious_property_types: ignore
+    unnecessary_null_checks: ignore
+    sort_constructors_first: ignore
+    unawaited_futures: ignore
+    avoid_positional_boolean_parameters: ignore
+    use_setters_to_change_properties: ignore
+    prefer_asserts_with_message: ignore
+    document_ignores: ignore
+    one_member_abstracts: ignore
+    avoid_bool_literals_in_conditional_expressions: ignore

@@ -5,10 +5,9 @@ part 'message_models.g.dart';
 
 @freezed
 class Embed with _$Embed {
-  const Embed._();
-
   @JsonSerializable(explicitToJson: true)
   const factory Embed({String? url, String? type, String? preview}) = _Embed;
+  const Embed._();
 
   factory Embed.fromJson(Map<String, dynamic> json) => _$EmbedFromJson(json);
 
@@ -18,7 +17,6 @@ class Embed with _$Embed {
 
 @freezed
 class Message with _$Message {
-  const Message._();
   @JsonSerializable(explicitToJson: true)
   const factory Message({
     required int id,
@@ -28,6 +26,7 @@ class Message with _$Message {
     @JsonKey(name: 'timestampz') required DateTime timestamp,
     List<Embed>? embed,
   }) = _Message;
+  const Message._();
 
   factory Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
 }

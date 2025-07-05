@@ -29,9 +29,8 @@ void showFullscreenImage(BuildContext context, XFile imageFile) {
 
 @RoutePage()
 class ImageReviewPage extends ConsumerStatefulWidget {
+  const ImageReviewPage({required this.imageFiles, super.key});
   final List<XFile> imageFiles;
-
-  const ImageReviewPage({super.key, required this.imageFiles});
 
   @override
   ConsumerState<ImageReviewPage> createState() => _ImageReviewPageState();
@@ -70,7 +69,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
     super.dispose();
   }
 
-  void _editAltText(XFile imageFile) async {
+  Future<void> _editAltText(XFile imageFile) async {
     final path = imageFile.path;
     final initialText = _altTexts[path] ?? '';
     final result = await showDialog<String>(
@@ -84,10 +83,10 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   }
 
   Future<void> _pickMoreImages() async {
-    final int remaining = _maxImages - _imageFiles.length;
+    final remaining = _maxImages - _imageFiles.length;
     if (remaining <= 0) return;
     try {
-      final List<XFile> pickedFiles = await _picker.pickMultiImage(limit: remaining);
+      final pickedFiles = await _picker.pickMultiImage(limit: remaining);
       if (pickedFiles.isEmpty) return;
       setState(() {
         _imageFiles.addAll(pickedFiles);
@@ -99,7 +98,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Failed to select images: ${e.toString()}'), backgroundColor: Colors.red));
+      ).showSnackBar(SnackBar(content: Text('Failed to select images: $e'), backgroundColor: Colors.red));
     }
   }
 
@@ -127,7 +126,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       });
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Failed to create post: ${e.toString()}'), backgroundColor: Colors.red));
+      ).showSnackBar(SnackBar(content: Text('Failed to create post: $e'), backgroundColor: Colors.red));
       final uploadService = ref.read(uploadProvider.notifier);
       final tasks = uploadService.registerTask('image');
       uploadService.failTask(tasks, e.toString());
@@ -156,13 +155,13 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
             Expanded(
               child: SingleChildScrollView(
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       if (_imageFiles.isNotEmpty)
                         AspectRatio(
-                          aspectRatio: 1.0,
+                          aspectRatio: 1,
                           child: Stack(
                             alignment: Alignment.bottomCenter,
                             children: [
@@ -176,7 +175,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                                     child: Stack(
                                       children: [
                                         Container(
-                                          margin: const EdgeInsets.symmetric(horizontal: 4.0),
+                                          margin: const EdgeInsets.symmetric(horizontal: 4),
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(8),
                                             image: DecorationImage(image: FileImage(File(image.path)), fit: BoxFit.cover),
@@ -194,8 +193,8 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                                                 child: InkWell(
                                                   onTap: () => _editAltText(image),
                                                   borderRadius: BorderRadius.circular(8),
-                                                  child: Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                                  child: const Padding(
+                                                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                                     child: Row(
                                                       children: [
                                                         Icon(
@@ -203,9 +202,9 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                                                           color: Colors.white,
                                                           size: 16,
                                                         ),
-                                                        const SizedBox(width: 2),
+                                                        SizedBox(width: 2),
                                                         Text(
-                                                          "ALT",
+                                                          'ALT',
                                                           style: TextStyle(
                                                             color: Colors.white,
                                                             fontSize: 12,
@@ -294,7 +293,6 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Material(
-                                elevation: 0,
                                 color: Colors.transparent,
                                 borderRadius: BorderRadius.circular(12),
                                 child: TextField(
@@ -307,11 +305,11 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                                     hintStyle: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurfaceVariant),
                                     border: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(color: theme.colorScheme.outline, width: 1),
+                                      borderSide: BorderSide(color: theme.colorScheme.outline),
                                     ),
                                     enabledBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
-                                      borderSide: BorderSide(color: theme.colorScheme.outline, width: 1),
+                                      borderSide: BorderSide(color: theme.colorScheme.outline),
                                     ),
                                     focusedBorder: OutlineInputBorder(
                                       borderRadius: BorderRadius.circular(12),
@@ -376,10 +374,10 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                                     color: Colors.orange.withAlpha(25),
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: Row(
+                                  child: const Row(
                                     children: [
-                                      const Icon(Icons.info_outline, color: Colors.orange, size: 20),
-                                      const SizedBox(width: 8),
+                                      Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                                      SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
                                           'Bluesky supports a maximum of 4 images. Your Bluesky post will link to the full Spark post instead.',
@@ -400,7 +398,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(

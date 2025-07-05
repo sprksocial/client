@@ -1,5 +1,7 @@
 /// Storage keys used throughout the application
 class StorageKeys {
+  // Private constructor to prevent instantiation
+  StorageKeys._();
   static const String userSession = 'user_session';
   static const String dmAccessToken = 'dm_access_token';
   static const String dmRefreshToken = 'dm_refresh_token';
@@ -27,7 +29,4 @@ class StorageKeys {
 
   /// Post to Bluesky
   static const String postToBskyKey = 'post_to_bsky_enabled';
-
-  // Private constructor to prevent instantiation
-  StorageKeys._();
 }

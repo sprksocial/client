@@ -1,6 +1,6 @@
+import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:atproto/atproto.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 
 /// Interface for Feed-related API endpoints

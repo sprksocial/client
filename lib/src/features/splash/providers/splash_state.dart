@@ -10,4 +10,4 @@ class SplashState with _$SplashState {
     /// Whether the image is loaded
     @Default(false) bool isImageLoaded,
   }) = _SplashState;
-} 
+}

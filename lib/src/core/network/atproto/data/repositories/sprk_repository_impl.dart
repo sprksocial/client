@@ -1,26 +1,29 @@
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/config/app_config.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/labeler_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository_impl.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository_impl.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/labeler_repository_impl.dart';
-
+import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository.dart';
 // Feature-specific repositories
 import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/labeler_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/labeler_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
 /// Client for interacting with Spark API endpoints
 class SprkRepositoryImpl implements SprkRepository {
+  SprkRepositoryImpl(this._authRepository) : _sprkDid = _getSprkDid() {
+    _logger.d('SprkRepository initialized with DID: $_sprkDid');
+  }
   final AuthRepository _authRepository;
   final String _sprkDid;
-  final _logger = GetIt.instance<LogService>().getLogger('SprkRepository');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('SprkRepository');
 
   /// Get the authentication service
   @override
@@ -30,13 +33,9 @@ class SprkRepositoryImpl implements SprkRepository {
   @override
   String get sprkDid => _sprkDid;
 
-  SprkRepositoryImpl(this._authRepository) : _sprkDid = _getSprkDid() {
-    _logger.d('SprkRepository initialized with DID: $_sprkDid');
-  }
-
   static String _getSprkDid() {
     final sprkAppView = Uri.parse(AppConfig.appViewUrl);
-    return "did:web:${sprkAppView.host}#sprk_appview";
+    return 'did:web:${sprkAppView.host}#sprk_appview';
   }
 
   /// Execute API request with token expiration handling
@@ -58,7 +57,7 @@ class SprkRepositoryImpl implements SprkRepository {
 
         _logger.i('Token refreshed successfully, retrying API call');
         // Retry the call with the new token
-        return await apiCall();
+        return apiCall();
       }
 
       _logger.e('API call failed', error: e);

@@ -1,16 +1,15 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:auto_route/auto_route.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/utils/uppercase_text_formatter.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/auth/providers/onboarding_providers.dart';
 import 'package:sparksocial/src/features/auth/ui/widgets/at_account_dialog.dart';
-import 'package:sparksocial/src/core/utils/uppercase_text_formatter.dart';
 
 @RoutePage()
 class LoginPage extends ConsumerStatefulWidget {
@@ -64,7 +63,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (!mounted) return;
 
       if (result.isSuccess) {
-        TextInput.finishAutofillContext(shouldSave: true);
+        TextInput.finishAutofillContext();
         final hasSparkProfile = await ref.read(onboardingRepositoryProvider).hasSparkProfile();
 
         if (!mounted) return;
@@ -99,7 +98,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24.0),
+                padding: const EdgeInsets.all(24),
                 child: Form(
                   key: _formKey,
                   autovalidateMode: AutovalidateMode.onUserInteraction,
@@ -113,7 +112,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         width: 140,
                       ),
                       const SizedBox(height: 21),
-                      Text(
+                      const Text(
                         'Login to your account',
                         style: TextStyle(color: AppColors.white, fontSize: 26, fontWeight: FontWeight.bold),
                         textAlign: TextAlign.center,
@@ -125,7 +124,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           alignment: WrapAlignment.center,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            Text(
+                            const Text(
                               'Login using your existing ',
                               style: TextStyle(color: AppColors.white, fontSize: 20, height: 1.7),
                             ),
@@ -145,7 +144,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               focusNode: _handleFocusNode,
                               decoration: InputDecoration(
                                 hintText: 'Handle',
-                                hintStyle: TextStyle(color: AppColors.hintText),
+                                hintStyle: const TextStyle(color: AppColors.hintText),
                                 prefixIcon: const Icon(FluentIcons.person_24_regular, color: AppColors.primary),
                                 filled: true,
                                 fillColor: AppColors.white.withAlpha(255),
@@ -156,7 +155,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               textInputAction: TextInputAction.next,
                               keyboardType: TextInputType.emailAddress,
                               autofillHints: const [AutofillHints.username, AutofillHints.email],
-                              onEditingComplete: () => _passwordFocusNode.requestFocus(),
+                              onEditingComplete: _passwordFocusNode.requestFocus,
                             ),
                             const SizedBox(height: 16),
 
@@ -165,7 +164,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               focusNode: _passwordFocusNode,
                               decoration: InputDecoration(
                                 hintText: 'Password',
-                                hintStyle: TextStyle(color: AppColors.hintText),
+                                hintStyle: const TextStyle(color: AppColors.hintText),
                                 prefixIcon: const Icon(FluentIcons.lock_closed_24_regular, color: AppColors.primary),
                                 suffixIcon: IconButton(
                                   onPressed: () {
@@ -239,8 +238,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           padding: const EdgeInsets.only(bottom: 16),
                           child: Text(
                             switch (error) {
-                              String e when e.contains('must be a valid handle') => 'Invalid handle',
-                              String e when e.contains('identifier or password') => 'Invalid handle or password',
+                              final String e when e.contains('must be a valid handle') => 'Invalid handle',
+                              final String e when e.contains('identifier or password') => 'Invalid handle or password',
                               _ => error,
                             },
                             style: const TextStyle(color: AppColors.error, fontSize: 14),

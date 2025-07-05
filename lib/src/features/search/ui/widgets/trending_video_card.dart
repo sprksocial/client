@@ -4,11 +4,10 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/utils/text_formatter.dart';
 
 class TrendingVideoCard extends StatelessWidget {
+  const TrendingVideoCard({required this.thumbnailUrl, required this.viewCount, super.key, this.onTap});
   final String thumbnailUrl;
   final int viewCount;
   final VoidCallback? onTap;
-
-  const TrendingVideoCard({super.key, required this.thumbnailUrl, required this.viewCount, this.onTap});
 
   @override
   Widget build(BuildContext context) {

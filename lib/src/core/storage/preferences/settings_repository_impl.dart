@@ -1,21 +1,16 @@
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
-  late final SQLCacheInterface _sqlCache;
-  late final StorageManager _storageManager;
-  late final SparkLogger _logger;
-  late final SprkRepository _sprkRepository;
-
   SettingsRepositoryImpl() {
     _sqlCache = GetIt.instance<SQLCacheInterface>();
     _storageManager = GetIt.instance<StorageManager>();
@@ -23,6 +18,10 @@ class SettingsRepositoryImpl implements SettingsRepository {
     _sprkRepository = GetIt.instance<SprkRepository>();
     _setupDefaultLabelPreferences();
   }
+  late final SQLCacheInterface _sqlCache;
+  late final StorageManager _storageManager;
+  late final SparkLogger _logger;
+  late final SprkRepository _sprkRepository;
 
   Future<void> _setupDefaultLabelPreferences() async {
     if (await _storageManager.preferences.getObject<bool>(StorageKeys.defaultLabelsAreSetupKey) ?? false) {
@@ -211,9 +210,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
     if (feedsJson == null) {
       _logger.d('No feeds found in storage, using defaults');
       final defaultFeeds = [
-        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
-        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
-        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
+        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
+        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
+        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
       ];
       await setFeeds(defaultFeeds);
       return defaultFeeds;
@@ -228,9 +227,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
       _logger.e('Error deserializing feeds: $e');
       // If deserialization fails, return defaults
       final defaultFeeds = [
-        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
-        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
-        Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
+        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
+        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
+        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
       ];
       await setFeeds(defaultFeeds);
       return defaultFeeds;
@@ -243,7 +242,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
     final activeFeedJson = await _storageManager.preferences.getObject<Map<String, dynamic>>(StorageKeys.activeFeedKey);
     if (activeFeedJson == null) {
       _logger.d('No active feed found in storage, using default (Latest)');
-      return Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk);
+      return const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk);
     }
 
     try {
@@ -253,7 +252,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
     } catch (e) {
       _logger.e('Error deserializing active feed: $e');
       // If deserialization fails, return default
-      return Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk);
+      return const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk);
     }
   }
 
@@ -296,7 +295,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
       labelers.add('did:plc:pbgyr67hftvpoqtvaurpsctc');
     }
     await _storageManager.preferences.setObject<List<String>>(StorageKeys.followedLabelers, labelers);
-    for (var labelPreference in labelPreferences) {
+    for (final labelPreference in labelPreferences) {
       await _storageManager.preferences.setObject<Map<String, dynamic>>(
         '${StorageKeys.labelPreferenceKey}_${labelPreference.value}',
         labelPreference.toJson(),
@@ -312,7 +311,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
     if (rawJson == null) {
       throw Exception('Label preference not found');
     }
-    
+
     try {
       return LabelPreference.fromJson(rawJson);
     } catch (e) {
@@ -321,15 +320,13 @@ class SettingsRepositoryImpl implements SettingsRepository {
     }
   }
 
-
-
   @override
   Future<void> setLabelPreference(String value, Blurs blurs, Severity severity, bool adultOnly, Setting setting) async {
     // Check if a preference already exists
     final existingRawJson = await _storageManager.preferences.getObject<Map<String, dynamic>>(
       '${StorageKeys.labelPreferenceKey}_$value',
     );
-    
+
     if (existingRawJson != null) {
       try {
         // Update existing preference

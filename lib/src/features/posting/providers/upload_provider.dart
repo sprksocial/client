@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-import 'upload_state.dart';
+import 'package:sparksocial/src/features/posting/providers/upload_state.dart';
 
 part 'upload_provider.g.dart';
 
@@ -21,8 +21,8 @@ class Upload extends _$Upload {
 
   // Register a new upload task
   String registerTask(String type) {
-    final String id = DateTime.now().millisecondsSinceEpoch.toString();
-    final UploadTask newTask = UploadTask(id: id, type: type);
+    final id = DateTime.now().millisecondsSinceEpoch.toString();
+    final newTask = UploadTask(id: id, type: type);
 
     state = state.copyWith(tasks: {...state.tasks, id: newTask});
 
@@ -32,7 +32,7 @@ class Upload extends _$Upload {
   // Start an upload task
   void startTask(String id) {
     if (state.tasks.containsKey(id)) {
-      final UploadTask updatedTask = state.tasks[id]!.copyWith(status: UploadStatus.uploading);
+      final updatedTask = state.tasks[id]!.copyWith(status: UploadStatus.uploading);
 
       state = state.copyWith(tasks: {...state.tasks, id: updatedTask});
 
@@ -43,7 +43,7 @@ class Upload extends _$Upload {
   // Complete an upload task
   void completeTask(String id) {
     if (state.tasks.containsKey(id)) {
-      final UploadTask updatedTask = state.tasks[id]!.copyWith(status: UploadStatus.completed);
+      final updatedTask = state.tasks[id]!.copyWith(status: UploadStatus.completed);
 
       state = state.copyWith(tasks: {...state.tasks, id: updatedTask});
 
@@ -56,7 +56,7 @@ class Upload extends _$Upload {
   // Mark a task as failed
   void failTask(String id, String errorMessage) {
     if (state.tasks.containsKey(id)) {
-      final UploadTask updatedTask = state.tasks[id]!.copyWith(status: UploadStatus.error, errorMessage: errorMessage);
+      final updatedTask = state.tasks[id]!.copyWith(status: UploadStatus.error, errorMessage: errorMessage);
 
       state = state.copyWith(tasks: {...state.tasks, id: updatedTask});
 
@@ -66,7 +66,7 @@ class Upload extends _$Upload {
 
   // Clear all completed tasks
   void clearCompletedTasks() {
-    final Map<String, UploadTask> filteredTasks = Map.fromEntries(
+    final filteredTasks = Map<String, UploadTask>.fromEntries(
       state.tasks.entries.where((entry) => entry.value.status != UploadStatus.completed),
     );
 
@@ -75,13 +75,13 @@ class Upload extends _$Upload {
   }
 
   void _updateActiveStatus() {
-    final bool isAnyTaskActive = state.tasks.values.any((task) => task.status == UploadStatus.uploading);
+    final isAnyTaskActive = state.tasks.values.any((task) => task.status == UploadStatus.uploading);
 
     state = state.copyWith(isAnyTaskActive: isAnyTaskActive);
   }
 
   void _updateCompletedStatus() {
-    final bool isAnyTaskCompleted = state.tasks.values.any((task) => task.status == UploadStatus.completed);
+    final isAnyTaskCompleted = state.tasks.values.any((task) => task.status == UploadStatus.completed);
 
     state = state.copyWith(isAnyTaskCompleted: isAnyTaskCompleted);
   }
@@ -91,8 +91,6 @@ class Upload extends _$Upload {
     _completedTasksTimer?.cancel();
 
     // Set up new timer to clear completed tasks after 3 seconds
-    _completedTasksTimer = Timer(const Duration(seconds: 3), () {
-      clearCompletedTasks();
-    });
+    _completedTasksTimer = Timer(const Duration(seconds: 3), clearCompletedTasks);
   }
 }

@@ -1,8 +1,8 @@
 import 'dart:async';
 
+import 'package:atproto_core/atproto_core.dart'; // For AtUri
 // We need models for method signatures
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
-import 'package:atproto_core/atproto_core.dart'; // For AtUri
 
 abstract class SQLCacheInterface {
   /// Caches a single [PostView]. If it already exists, it's updated.
@@ -71,7 +71,6 @@ abstract class SQLCacheInterface {
   /// The new posts are added after the existing posts in the feed's order.
   /// It's assumed that the [PostView]s corresponding to `postUris` are already cached.
   Future<void> appendPostsToFeed(Feed feed, List<String> postUris);
-
 
   /// Clears all associations with a specific [Feed] from the cache.
   /// Neither the feed metadata nor the posts are removed, only the associations.

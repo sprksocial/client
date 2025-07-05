@@ -9,7 +9,6 @@ part 'feed_state.freezed.dart';
 
 @freezed
 abstract class FeedState with _$FeedState {
-  const FeedState._();
   const factory FeedState({
     required bool active,
     required List<AtUri> loadedPosts,
@@ -21,6 +20,7 @@ abstract class FeedState with _$FeedState {
     required bool error,
     required LinkedHashMap<AtUri, ({List<Label> postLabels, HardcodedFeedExtraInfo? hardcodedFeedExtraInfo})> extraInfo,
   }) = _FeedState;
+  const FeedState._();
 
   int get length => loadedPosts.length;
 

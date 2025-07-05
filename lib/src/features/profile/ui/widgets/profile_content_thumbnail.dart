@@ -1,35 +1,33 @@
-import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 
 class ProfileContentThumbnail extends StatelessWidget {
+  const ProfileContentThumbnail({
+    required this.index,
+    required this.backgroundColor,
+    required this.icon,
+    required this.viewCount,
+    super.key,
+    this.duration,
+  });
   final int index;
   final Color backgroundColor;
   final IconData icon;
   final String viewCount;
   final String? duration;
 
-  const ProfileContentThumbnail({
-    super.key,
-    required this.index,
-    required this.backgroundColor,
-    required this.icon,
-    required this.viewCount,
-    this.duration,
-  });
-
   @override
   Widget build(BuildContext context) {
-    final SparkLogger logger = GetIt.instance<LogService>().getLogger('ProfileContentThumbnail');
+    final logger = GetIt.instance<LogService>().getLogger('ProfileContentThumbnail');
 
     return GestureDetector(
       onTap: () {
         logger.d('Content clicked at index $index');
       },
-      child: Container(
+      child: ColoredBox(
         color: backgroundColor,
         child: Stack(
           children: [

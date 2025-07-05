@@ -2,9 +2,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
+import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
+import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 
 enum FollowMode { sprk, bsky }
 
@@ -47,7 +47,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
         // Show error message
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Logout failed: ${e.toString()}'),
+            content: Text('Logout failed: $e'),
             backgroundColor: Colors.red,
           ),
         );
@@ -65,7 +65,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
     final brightness = Theme.of(context).brightness;
     final isDark = brightness == Brightness.dark;
     final itemColor = isDark ? Colors.grey.shade800 : Colors.grey.shade200;
-    final pinkColor = const Color(0xFFE91E63);
+    const pinkColor = Color(0xFFE91E63);
 
     final displayValues = _followModeMap.keys.toList();
     final modeValues = _followModeMap.values.toList();
@@ -89,7 +89,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
         padding: const EdgeInsets.symmetric(horizontal: 16),
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            padding: const EdgeInsets.symmetric(vertical: 8),
             child: Container(
               decoration: BoxDecoration(color: itemColor, borderRadius: BorderRadius.circular(16)),
               padding: const EdgeInsets.all(16),
@@ -112,7 +112,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
                       // Spark exclusive button
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
                           child: ElevatedButton(
                             onPressed: () => _handleFollowModeChange(modeValues[0]),
                             style: ElevatedButton.styleFrom(
@@ -139,7 +139,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
                       ),
                       Expanded(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
                           child: ElevatedButton(
                             onPressed: () => _handleFollowModeChange(modeValues[1]),
                             style: ElevatedButton.styleFrom(

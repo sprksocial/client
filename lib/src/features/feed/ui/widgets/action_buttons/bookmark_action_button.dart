@@ -1,13 +1,12 @@
-import 'package:flutter/material.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class BookmarkActionButton extends StatefulWidget {
+  const BookmarkActionButton({required this.count, super.key, this.isBookmarked = false, this.onPressed});
   final String count;
   final bool isBookmarked;
   final VoidCallback? onPressed;
-
-  const BookmarkActionButton({super.key, required this.count, this.isBookmarked = false, this.onPressed});
 
   @override
   State<BookmarkActionButton> createState() => _BookmarkActionButtonState();
@@ -26,8 +25,8 @@ class _BookmarkActionButtonState extends State<BookmarkActionButton> with Single
     _animationController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
 
     _scaleAnimation = TweenSequence([
-      TweenSequenceItem(tween: Tween<double>(begin: 1.0, end: 1.2), weight: 50),
-      TweenSequenceItem(tween: Tween<double>(begin: 1.2, end: 1.0), weight: 50),
+      TweenSequenceItem(tween: Tween<double>(begin: 1, end: 1.2), weight: 50),
+      TweenSequenceItem(tween: Tween<double>(begin: 1.2, end: 1), weight: 50),
     ]).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeInOut));
   }
 

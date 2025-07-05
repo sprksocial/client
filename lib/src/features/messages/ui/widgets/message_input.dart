@@ -1,4 +1,3 @@
-
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,7 +8,14 @@ import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 
 class MessageInput extends ConsumerWidget {
-  const MessageInput({super.key, required this.controller, required this.onSend, this.isLoading = false, required this.otherDid, required this.imagePicker});
+  const MessageInput({
+    required this.controller,
+    required this.onSend,
+    required this.otherDid,
+    required this.imagePicker,
+    super.key,
+    this.isLoading = false,
+  });
 
   final TextEditingController controller;
   final ImagePicker imagePicker;
@@ -30,7 +36,6 @@ class MessageInput extends ConsumerWidget {
         child: Column(
           children: [
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 UserAvatar(
                   imageUrl: ref
@@ -42,7 +47,6 @@ class MessageInput extends ConsumerWidget {
                       ),
                   username: session?.handle ?? '',
                   size: 28,
-                  borderWidth: 0,
                 ),
                 const SizedBox(width: 8),
                 // _AttachmentButton(

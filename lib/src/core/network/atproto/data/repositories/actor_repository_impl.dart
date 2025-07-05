@@ -6,17 +6,17 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
 /// Actor-related API endpoints implementation
 class ActorRepositoryImpl implements ActorRepository {
-  final SprkRepository _client;
-  final _logger = GetIt.instance<LogService>().getLogger('ActorAPI');
-
   ActorRepositoryImpl(this._client) {
     _logger.v('ActorAPI initialized');
   }
+  final SprkRepository _client;
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ActorAPI');
 
   @override
   Future<ProfileViewDetailed> getProfile(String did) async {
@@ -38,12 +38,12 @@ class ActorRepositoryImpl implements ActorRepository {
           parameters: {'actor': did},
           headers: {'atproto-proxy': _client.sprkDid},
           to: (jsonMap) => jsonMap,
-          adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+          adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
         );
         return ProfileViewDetailed.fromJson(result.data as Map<String, dynamic>);
       } catch (e) {
-        _logger.e('Failed to retrieve profile for DID: $did', error: e);
-        _logger.i('Trying to get profile from bluesky');
+        _logger..e('Failed to retrieve profile for DID: $did', error: e)
+        ..i('Trying to get profile from bluesky');
         final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
         final profile = await bluesky.actor.getProfile(actor: did);
         _logger.d('Profile retrieved successfully from bluesky');
@@ -77,7 +77,7 @@ class ActorRepositoryImpl implements ActorRepository {
         parameters: parameters,
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) => jsonMap,
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
 
       _logger.d('Actor search completed successfully');
@@ -118,7 +118,7 @@ class ActorRepositoryImpl implements ActorRepository {
       final response = await http.get(Uri.parse('https://spark-match.sparksplatforms.workers.dev/?did=$did'));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final bool isSupporter = data['found'] == true;
+        final isSupporter = data['found'] == true;
         _logger.d('Early supporter status for $did: $isSupporter');
         return isSupporter;
       }
@@ -149,7 +149,7 @@ class ActorRepositoryImpl implements ActorRepository {
         NSID.parse('so.sprk.actor.getPreferences'),
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) => jsonMap,
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
 
       if (result.status != HttpStatus.ok) {
@@ -213,12 +213,12 @@ class ActorRepositoryImpl implements ActorRepository {
           parameters: {'actors': dids},
           headers: {'atproto-proxy': _client.sprkDid},
           to: (jsonMap) => jsonMap,
-          adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+          adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
         );
-        return (result.data["profiles"] as List).map((json) => ProfileViewDetailed.fromJson(json)).toList();
+        return (result.data['profiles']! as List).map((json) => ProfileViewDetailed.fromJson(json as Map<String, dynamic>)).toList();
       } catch (e) {
-        _logger.e('Failed to retrieve profile for DIDs: $dids', error: e);
-        _logger.i('Trying to get profiles from bluesky');
+        _logger..e('Failed to retrieve profile for DIDs: $dids', error: e)
+        ..i('Trying to get profiles from bluesky');
         final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
         final profiles = await bluesky.actor.getProfiles(actors: dids);
         _logger.d('Profiles retrieved successfully from bluesky');

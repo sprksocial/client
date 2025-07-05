@@ -1,15 +1,15 @@
 import 'package:auto_route/auto_route.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:video_player/video_player.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:video_player/video_player.dart';
 
 @RoutePage()
 class StoryPage extends ConsumerStatefulWidget {
   const StoryPage({
-    super.key,
     required this.story,
+    super.key,
     this.onLoadingStateChanged,
   });
 
@@ -39,9 +39,7 @@ class _StoryPageState extends ConsumerState<StoryPage> with TickerProviderStateM
   }
 
   void _updateLoadingState() {
-    final bool isLoading = _isVideoStory(widget.story)
-        ? !_isVideoInitialized
-        : !_isImageLoaded;
+    final isLoading = _isVideoStory(widget.story) ? !_isVideoInitialized : !_isImageLoaded;
 
     if (_isLoading != isLoading) {
       _isLoading = isLoading;
@@ -140,8 +138,7 @@ class _StoryPageState extends ConsumerState<StoryPage> with TickerProviderStateM
       mediaContent = CachedNetworkImage(
         imageUrl: imageUrl,
         fit: BoxFit.cover,
-        progressIndicatorBuilder: (context, url, progress) =>
-            const Center(child: CircularProgressIndicator()),
+        progressIndicatorBuilder: (context, url, progress) => const Center(child: CircularProgressIndicator()),
         errorWidget: (context, url, error) {
           // Consider error state as "loaded" to avoid infinite loading
           WidgetsBinding.instance.addPostFrameCallback((_) {

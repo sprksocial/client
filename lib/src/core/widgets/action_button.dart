@@ -1,6 +1,16 @@
 import 'package:flutter/material.dart';
 
 class ActionButton extends StatelessWidget {
+  const ActionButton({
+    required this.icon,
+    required this.label,
+    super.key,
+    this.onPressed,
+    this.color,
+    this.isAnimating = false,
+    this.scale = 1.0,
+    this.showLabel = true,
+  });
   final IconData icon;
   final String label;
   final VoidCallback? onPressed;
@@ -8,17 +18,6 @@ class ActionButton extends StatelessWidget {
   final bool isAnimating;
   final double scale;
   final bool showLabel;
-
-  const ActionButton({
-    super.key,
-    required this.icon,
-    required this.label,
-    this.onPressed,
-    this.color,
-    this.isAnimating = false,
-    this.scale = 1.0,
-    this.showLabel = true,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -67,8 +66,8 @@ class ActionButton extends StatelessWidget {
               color: Colors.white,
               fontSize: 12,
               shadows: <Shadow>[
-                Shadow(offset: Offset(0, 0), blurRadius: 20.0, color: Color(0xFF000000)),
-                Shadow(offset: Offset(1, 1), blurRadius: 8.0, color: Colors.black87),
+                Shadow(blurRadius: 20),
+                Shadow(offset: Offset(1, 1), blurRadius: 8, color: Colors.black87),
               ],
             ),
           ),

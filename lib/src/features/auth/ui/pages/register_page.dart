@@ -1,8 +1,8 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:auto_route/auto_route.dart';
 import 'package:sparksocial/src/core/config/app_config.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
@@ -43,7 +43,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       _errorMessage = null;
     });
 
-    final String handle = "${_handleController.text}.sprk.so";
+    final handle = '${_handleController.text}.sprk.so';
 
     final authNotifier = ref.read(authProvider.notifier);
     final result = await authNotifier.register(
@@ -93,13 +93,13 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
             child: GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: ListView(
                   children: [
                     const SizedBox(height: 24),
                     Center(child: SvgPicture.asset('assets/images/logo_dark_mode.svg', height: 140, width: 140)),
                     const SizedBox(height: 21),
-                    Center(
+                    const Center(
                       child: Text(
                         'Create Account',
                         style: TextStyle(color: AppColors.white, fontSize: 26, fontWeight: FontWeight.bold),
@@ -114,7 +114,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           alignment: WrapAlignment.center,
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
-                            Text('Create your new ', style: TextStyle(color: AppColors.white, fontSize: 20, height: 1.7)),
+                            const Text('Create your new ', style: TextStyle(color: AppColors.white, fontSize: 20, height: 1.7)),
                             SvgPicture.asset('assets/images/ataccount.svg', height: 25, width: 100),
                             const SizedBox(width: 4),
                             const ATAccountInfoIcon(),
@@ -129,11 +129,11 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(color: AppColors.error.withAlpha(26), borderRadius: BorderRadius.circular(12)),
-                        child: Row(
+                        child: const Row(
                           children: [
-                            const Icon(FluentIcons.warning_24_regular, color: AppColors.error),
-                            const SizedBox(width: 8),
-                            const Expanded(
+                            Icon(FluentIcons.warning_24_regular, color: AppColors.error),
+                            SizedBox(width: 8),
+                            Expanded(
                               child: Text(
                                 'New account registration is currently disabled while we correct issues in our system. We will try to re-enable it as soon as possible.',
                                 style: TextStyle(color: AppColors.error),
@@ -144,7 +144,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       ),
                       const SizedBox(height: 24),
                     ],
-                    Text(
+                    const Text(
                       'Email',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.white),
                     ),
@@ -154,7 +154,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       keyboardType: TextInputType.emailAddress,
                       decoration: InputDecoration(
                         hintText: 'Your email address',
-                        hintStyle: TextStyle(color: AppColors.hintText),
+                        hintStyle: const TextStyle(color: AppColors.hintText),
                         filled: true,
                         fillColor: AppColors.white.withAlpha(255),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
@@ -166,7 +166,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     ),
 
                     const SizedBox(height: 24),
-                    Text(
+                    const Text(
                       'Username',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.white),
                     ),
@@ -175,7 +175,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       controller: _handleController,
                       decoration: InputDecoration(
                         hintText: 'username',
-                        hintStyle: TextStyle(color: AppColors.hintText),
+                        hintStyle: const TextStyle(color: AppColors.hintText),
                         filled: true,
                         fillColor: AppColors.white.withAlpha(255),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
@@ -183,7 +183,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         suffixIcon: Padding(
                           padding: const EdgeInsets.only(right: 16),
                           child: Center(
-                            widthFactor: 1.0,
+                            widthFactor: 1,
                             child: Text('.sprk.so', style: TextStyle(fontSize: 16, color: colorScheme.primary)),
                           ),
                         ),
@@ -195,7 +195,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
                     const SizedBox(height: 24),
 
-                    Text(
+                    const Text(
                       'Password',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.white),
                     ),
@@ -205,7 +205,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       obscureText: !_isPasswordVisible,
                       decoration: InputDecoration(
                         hintText: 'Your password',
-                        hintStyle: TextStyle(color: AppColors.hintText),
+                        hintStyle: const TextStyle(color: AppColors.hintText),
                         filled: true,
                         fillColor: AppColors.white.withAlpha(255),
                         border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
@@ -272,7 +272,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text('Already have an account?', style: TextStyle(color: AppColors.white)),
+                        const Text('Already have an account?', style: TextStyle(color: AppColors.white)),
                         TextButton(
                           onPressed: () => context.router.push(const LoginRoute()),
                           child: const Text(

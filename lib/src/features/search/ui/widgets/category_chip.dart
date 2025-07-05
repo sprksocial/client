@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 
 class CategoryChip extends StatelessWidget {
+  const CategoryChip({required this.label, super.key, this.onTap, this.isSelected = false});
   final String label;
   final VoidCallback? onTap;
   final bool isSelected;
-
-  const CategoryChip({super.key, required this.label, this.onTap, this.isSelected = false});
 
   @override
   Widget build(BuildContext context) {

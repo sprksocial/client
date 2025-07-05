@@ -6,9 +6,9 @@ import 'package:sparksocial/src/core/storage/preferences/settings_repository.dar
 class LabelUtils {
   static Future<bool> shouldShowWarning(List<Label> labels) async {
     if (labels.isEmpty) return false;
-    
+
     final settingsRepository = GetIt.instance<SettingsRepository>();
-    
+
     for (final label in labels) {
       try {
         final preference = await settingsRepository.getLabelPreference(label.value);
@@ -20,15 +20,15 @@ class LabelUtils {
         continue;
       }
     }
-    
+
     return false;
   }
 
   static Future<bool> shouldBlurContent(List<Label> labels) async {
     if (labels.isEmpty) return false;
-    
+
     final settingsRepository = GetIt.instance<SettingsRepository>();
-    
+
     for (final label in labels) {
       try {
         final preference = await settingsRepository.getLabelPreference(label.value);
@@ -43,13 +43,13 @@ class LabelUtils {
 
     return false;
   }
-  
+
   static Future<List<String>> getWarningLabels(List<Label> labels) async {
     if (labels.isEmpty) return [];
-    
+
     final settingsRepository = GetIt.instance<SettingsRepository>();
     final warningLabels = <String>[];
-    
+
     for (final label in labels) {
       try {
         final preference = await settingsRepository.getLabelPreference(label.value);
@@ -61,16 +61,16 @@ class LabelUtils {
         continue;
       }
     }
-    
+
     return warningLabels;
   }
 
   static Future<List<String>> getInformLabels(List<Label> labels) async {
     if (labels.isEmpty) return [];
-    
+
     final settingsRepository = GetIt.instance<SettingsRepository>();
     final informLabels = <String>[];
-    
+
     for (final label in labels) {
       try {
         final preference = await settingsRepository.getLabelPreference(label.value);
@@ -82,7 +82,7 @@ class LabelUtils {
         continue;
       }
     }
-    
+
     return informLabels;
   }
-} 
+}

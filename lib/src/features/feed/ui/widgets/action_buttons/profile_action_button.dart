@@ -5,18 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 class ProfileActionButton extends StatefulWidget {
-  final String? profileImageUrl;
-  final VoidCallback? onPressed;
-  final VoidCallback? onFollowPressed;
-  final double size;
-  final BoxBorder? border;
-  final bool showFollowButton;
-  final bool isFollowing;
-  final double followButtonBottomOffset;
-  final double followButtonRightOffset;
-  final double verticalOffset;
-  final bool debugHitboxes;
-
   const ProfileActionButton({
     super.key,
     this.profileImageUrl,
@@ -31,6 +19,17 @@ class ProfileActionButton extends StatefulWidget {
     this.verticalOffset = 0,
     this.debugHitboxes = false,
   });
+  final String? profileImageUrl;
+  final VoidCallback? onPressed;
+  final VoidCallback? onFollowPressed;
+  final double size;
+  final BoxBorder? border;
+  final bool showFollowButton;
+  final bool isFollowing;
+  final double followButtonBottomOffset;
+  final double followButtonRightOffset;
+  final double verticalOffset;
+  final bool debugHitboxes;
 
   @override
   State<ProfileActionButton> createState() => _ProfileActionButtonState();
@@ -60,12 +59,11 @@ class _ProfileActionButtonState extends State<ProfileActionButton> {
   @override
   Widget build(BuildContext context) {
     final followButtonSize = widget.size * 0.5;
-    final bool hasValidImage =
+    final hasValidImage =
         widget.profileImageUrl != null && widget.profileImageUrl!.isNotEmpty && !widget.profileImageUrl!.contains('undefined');
 
     return Material(
       color: Colors.transparent,
-      elevation: 0,
       child: SizedBox(
         width: widget.size,
         height: widget.size,
@@ -88,22 +86,24 @@ class _ProfileActionButtonState extends State<ProfileActionButton> {
                       border: widget.border ?? Border.all(color: AppColors.white, width: 2),
                     ),
                     child: ClipOval(
-                      child:
-                          hasValidImage
-                              ? CachedNetworkImage(
-                                imageUrl: widget.profileImageUrl!,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(color: AppColors.deepPurple),
-                                errorWidget:
-                                    (context, url, error) => Container(
-                                      color: AppColors.deepPurple,
-                                      child: Center(child: Icon(Icons.person, color: AppColors.white, size: widget.size * 0.5)),
-                                    ),
-                              )
-                              : Container(
+                      child: hasValidImage
+                          ? CachedNetworkImage(
+                              imageUrl: widget.profileImageUrl!,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => Container(color: AppColors.deepPurple),
+                              errorWidget: (context, url, error) => ColoredBox(
                                 color: AppColors.deepPurple,
-                                child: Center(child: Icon(Icons.person, color: AppColors.white, size: widget.size * 0.5)),
+                                child: Center(
+                                  child: Icon(Icons.person, color: AppColors.white, size: widget.size * 0.5),
+                                ),
                               ),
+                            )
+                          : ColoredBox(
+                              color: AppColors.deepPurple,
+                              child: Center(
+                                child: Icon(Icons.person, color: AppColors.white, size: widget.size * 0.5),
+                              ),
+                            ),
                     ),
                   ),
                 ),

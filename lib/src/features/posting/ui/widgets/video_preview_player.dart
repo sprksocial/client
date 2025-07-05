@@ -1,11 +1,10 @@
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 
 class VideoPreviewPlayer extends StatefulWidget {
+  const VideoPreviewPlayer({required this.controller, super.key});
   final VideoPlayerController controller;
-
-  const VideoPreviewPlayer({super.key, required this.controller});
 
   @override
   State<VideoPreviewPlayer> createState() => _VideoPreviewPlayerState();
@@ -70,7 +69,7 @@ class _VideoPreviewPlayerState extends State<VideoPreviewPlayer> {
         children: [
           AspectRatio(aspectRatio: widget.controller.value.aspectRatio, child: VideoPlayer(widget.controller)),
           if (_showControls)
-            Container(
+            ColoredBox(
               color: Colors.black.withAlpha(100),
               child: Center(
                 child: IconButton(

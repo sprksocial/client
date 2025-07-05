@@ -1,4 +1,4 @@
-import 'log_level.dart';
+import 'package:sparksocial/src/core/utils/logging/log_level.dart';
 
 /// Interface for log outputs
 abstract class LogOutput {

@@ -1,6 +1,6 @@
 name: sparksocial
-description: "A new Flutter project."
-publish_to: 'none'
+description: "Spark mobile app"
+publish_to: "none"
 # The number after + should stay fixed, the android workflow will change it on every build
 version: 0.2.0+1
 
@@ -11,32 +11,23 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_dotenv: ^5.1.0
-  ionicons: ^0.2.2
-  cupertino_icons: ^1.0.6
   video_player: ^2.10.0
   cached_network_image: ^3.3.1
   camera: ^0.11.1
   path_provider: ^2.1.2
-  flutter_launcher_icons: ^0.14.3
-  flutter_svg: ^2.0.7
+  flutter_svg: ^2.2.0
   atproto: ^0.13.3
   bluesky: ^0.18.10
   http: ^1.2.0
   url_launcher: ^6.2.5
-  dio: ^5.4.0
   shared_preferences: ^2.5.3
   fvp: ^0.32.1
-  lucide_icons_flutter: ^3.0.5
   fluentui_system_icons: ^1.1.273
   image_picker: ^1.0.7
   path: ^1.9.1
-  preload_page_view: ^0.2.0
-  mime: ^1.0.6
   image: ^4.5.4
   flutter_cache_manager: ^3.3.1
-  # New architecture dependencies
   synchronized: ^3.1.0
-  logger: ^2.0.2
   flutter_riverpod: ^2.4.9
   riverpod_annotation: ^2.3.3
   freezed: ^2.4.6
@@ -49,11 +40,9 @@ dependencies:
   sqflite: ^2.4.2
   pool: ^1.5.0
   collection: ^1.19.1
-  flutter_native_splash: ^2.4.1
   carousel_slider: ^5.0.0
   smooth_video_progress: ^0.0.4
   imgly_editor: ^1.51.0
-  socket_io_client: ^3.1.2
   web_socket_channel: ^3.0.3
   any_link_preview: ^3.0.3
 
@@ -61,11 +50,12 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  # New architecture dev dependencies
-  build_runner: ^2.4.8
+  build_runner: ^2.5.4
   riverpod_generator: ^2.3.9
   json_serializable: ^6.7.1
   auto_route_generator: ^10.2.3
+  flutter_launcher_icons: ^0.14.3
+  very_good_analysis: ^9.0.0
 
 flutter_launcher_icons:
   android: true

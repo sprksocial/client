@@ -1,6 +1,6 @@
-import 'log_level.dart';
-import 'logger.dart';
-import 'logger_factory.dart';
+import 'package:sparksocial/src/core/utils/logging/log_level.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:sparksocial/src/core/utils/logging/logger_factory.dart';
 
 /// Log service for dependency injection
 class LogService {

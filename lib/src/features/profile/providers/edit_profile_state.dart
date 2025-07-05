@@ -21,4 +21,4 @@ class EditProfileState with _$EditProfileState {
     initialAvatar: profile.avatar,
     localAvatar: profile.avatar,
   );
-} 
+}

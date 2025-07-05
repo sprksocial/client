@@ -1,13 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/auth/data/models/onboarding_screen_state.dart'; // Import for OnboardingScreenState
+import 'package:sparksocial/src/core/routing/app_router.dart';
+import 'package:sparksocial/src/core/widgets/custom_text_field.dart'; // Corrected path
 import 'package:sparksocial/src/features/auth/providers/onboarding_notifier.dart';
 import 'package:sparksocial/src/features/auth/providers/onboarding_providers.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
-import 'package:sparksocial/src/core/widgets/custom_text_field.dart'; // Corrected path
 
 @RoutePage()
 class OnboardingPage extends ConsumerStatefulWidget {
@@ -92,7 +92,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       context.router.replaceAll([const MainRoute()]);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error completing profile: ${e.toString()}')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error completing profile: $e')));
     } finally {
       if (mounted) {
         setState(() {
@@ -137,9 +137,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Error: ${err.toString()}'),
+              Text('Error: $err'),
               const SizedBox(height: 8),
-              ElevatedButton(onPressed: () => notifier.reloadProfile(), child: const Text('Retry')),
+              ElevatedButton(onPressed: notifier.reloadProfile, child: const Text('Retry')),
             ],
           ),
         ),
@@ -151,8 +151,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
             avatarImageProvider = NetworkImage(notifier.currentAvatarDisplayUrl!);
           }
 
-          final bool hasLocalAvatar = state.localAvatarBytes != null;
-          final bool isAvatarActive = hasLocalAvatar || notifier.currentAvatarDisplayUrl != null;
+          final hasLocalAvatar = state.localAvatarBytes != null;
+          final isAvatarActive = hasLocalAvatar || notifier.currentAvatarDisplayUrl != null;
 
           return Center(
             child: Padding(
@@ -167,7 +167,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                         alignment: Alignment.bottomRight, // Changed alignment for better visibility
                         children: [
                           GestureDetector(
-                            onTap: () => notifier.pickAvatar(),
+                            onTap: notifier.pickAvatar,
                             child: CircleAvatar(
                               radius: 50,
                               backgroundImage: avatarImageProvider,
@@ -186,11 +186,11 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                               children: [
                                 if (hasLocalAvatar) // Show undo if a local avatar is picked
                                   Padding(
-                                    padding: const EdgeInsets.all(4.0),
+                                    padding: const EdgeInsets.all(4),
                                     child: GestureDetector(
-                                      onTap: () => notifier.revertAvatarToInitial(),
+                                      onTap: notifier.revertAvatarToInitial,
                                       child: Container(
-                                        decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                                        decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
                                         padding: const EdgeInsets.all(4),
                                         child: const Icon(Icons.undo, size: 16, color: Colors.white),
                                       ),
@@ -198,11 +198,11 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                                   ),
                                 if (isAvatarActive) // Show close if any avatar is active
                                   Padding(
-                                    padding: const EdgeInsets.all(4.0),
+                                    padding: const EdgeInsets.all(4),
                                     child: GestureDetector(
-                                      onTap: () => notifier.clearAvatarSelection(),
+                                      onTap: notifier.clearAvatarSelection,
                                       child: Container(
-                                        decoration: BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                                        decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
                                         padding: const EdgeInsets.all(4),
                                         child: const Icon(Icons.close, size: 16, color: Colors.white),
                                       ),
@@ -227,7 +227,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                             onUndo:
                                 (state.bskyProfileRecord?.displayName != null &&
                                     _displayNameController.text != (state.bskyProfileRecord?.displayName ?? ''))
-                                ? () => notifier.resetDisplayName()
+                                ? notifier.resetDisplayName
                                 : null,
                             validator: (value) {
                               if (value == null || value.trim().isEmpty) return 'Display Name is required';
@@ -244,7 +244,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                             onUndo:
                                 (state.bskyProfileRecord?.description != null &&
                                     _descriptionController.text != (state.bskyProfileRecord?.description ?? ''))
-                                ? () => notifier.resetDescription()
+                                ? notifier.resetDescription
                                 : null,
                             validator: (value) {
                               if (value != null && value.trim().length > 256) return 'Bio cannot exceed 256 characters';

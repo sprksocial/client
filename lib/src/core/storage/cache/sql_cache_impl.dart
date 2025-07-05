@@ -2,15 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:atproto/atproto.dart';
+import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:path/path.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sqflite/sqflite.dart';
-
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
-import 'package:atproto_core/atproto_core.dart';
 
 // --- Post Table ---
 const String _tablePosts = 'cached_posts';
@@ -43,12 +42,11 @@ const String _columnPostUriFK = 'post_uri_fk'; // TEXT, Foreign Key to cached_po
 const String _columnAssociationOrder = 'association_order'; // INTEGER, for ordering posts within a feed
 
 class SQLCacheImpl implements SQLCacheInterface {
-  static Database? _database;
-  late final SparkLogger _logger;
-
   SQLCacheImpl() {
     _logger = GetIt.instance<LogService>().getLogger('SQLCacheImpl');
   }
+  static Database? _database;
+  late final SparkLogger _logger;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -57,8 +55,8 @@ class SQLCacheImpl implements SQLCacheInterface {
   }
 
   Future<Database> _initDB() async {
-    String path = join(await getDatabasesPath(), 'sparksocial_sql_cache.db');
-    return await openDatabase(
+    final path = join(await getDatabasesPath(), 'sparksocial_sql_cache.db');
+    return openDatabase(
       path,
       version: 2, // Increment this if you change the schema
       onCreate: _onCreate,
@@ -67,7 +65,7 @@ class SQLCacheImpl implements SQLCacheInterface {
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    Batch batch = db.batch();
+    final batch = db.batch();
     // Posts Table
     batch.execute('''
       CREATE TABLE $_tablePosts (
@@ -194,7 +192,7 @@ class SQLCacheImpl implements SQLCacheInterface {
       whereArgs: uris.map((uri) => uri.toString()).toList(),
     );
 
-    return maps.map((map) => _mapToPostView(map)).toList();
+    return maps.map(_mapToPostView).toList();
   }
 
   /// Given a list of AtUris, returns a sub-list containing only those URIs
@@ -226,7 +224,7 @@ class SQLCacheImpl implements SQLCacheInterface {
       limit: limit,
       offset: offset,
     );
-    return maps.map((map) => _mapToPostView(map)).toList();
+    return maps.map(_mapToPostView).toList();
   }
 
   /// Converts a Map from SQLite back to a PostView.
@@ -235,22 +233,21 @@ class SQLCacheImpl implements SQLCacheInterface {
     return PostView(
       uri: AtUri.parse(map[_columnUri] as String),
       cid: map[_columnString] as String,
-      author: ProfileViewBasic.fromJson(jsonDecode(map[_columnAuthor] as String)),
-      record: PostRecord.fromJson(jsonDecode(map[_columnRecord] as String)),
+      author: ProfileViewBasic.fromJson(jsonDecode(map[_columnAuthor] as String) as Map<String, dynamic>),
+      record: PostRecord.fromJson(jsonDecode(map[_columnRecord] as String) as Map<String, dynamic>),
       isRepost: (map[_columnIsRepost] as int) == 1,
       indexedAt: DateTime.parse(map[_columnIndexedAt] as String),
       likeCount: map[_columnLikeCount] as int?,
       replyCount: map[_columnReplyCount] as int?,
       repostCount: map[_columnRepostCount] as int?,
       quoteCount: map[_columnQuoteCount] as int?,
-      labels:
-          map[_columnLabels] != null
-              ? (jsonDecode(map[_columnLabels] as String) as List<dynamic>)
-                  .map((e) => Label.fromJson(e as Map<String, dynamic>))
-                  .toList()
-              : null,
-      viewer: map[_columnViewer] != null ? Viewer.fromJson(jsonDecode(map[_columnViewer] as String)) : null,
-      embed: map[_columnEmbed] != null ? EmbedView.fromJson(jsonDecode(map[_columnEmbed] as String)) : null,
+      labels: map[_columnLabels] != null
+          ? (jsonDecode(map[_columnLabels] as String) as List<dynamic>)
+                .map((e) => Label.fromJson(e as Map<String, dynamic>))
+                .toList()
+          : null,
+      viewer: map[_columnViewer] != null ? Viewer.fromJson(jsonDecode(map[_columnViewer] as String) as Map<String, dynamic>) : null,
+      embed: map[_columnEmbed] != null ? EmbedView.fromJson(jsonDecode(map[_columnEmbed] as String) as Map<String, dynamic>) : null,
     );
   }
 
@@ -301,7 +298,7 @@ class SQLCacheImpl implements SQLCacheInterface {
 
       // 2. Add new associations in order
       final batch = txn.batch();
-      for (int i = 0; i < postUris.length; i++) {
+      for (var i = 0; i < postUris.length; i++) {
         batch.insert(
           _tableFeedPostAssociations,
           {
@@ -341,8 +338,8 @@ class SQLCacheImpl implements SQLCacheInterface {
   Future<List<PostView>> getPostsForFeed(Feed feed, {int? limit, int? offset}) async {
     final feedIdentifier = feed.identifier;
     final db = await database;
-    List<dynamic> arguments = [feedIdentifier];
-    String limitClause = '';
+    final arguments = <dynamic>[feedIdentifier];
+    var limitClause = '';
 
     if (limit != null) {
       limitClause += ' LIMIT ?';
@@ -359,7 +356,8 @@ class SQLCacheImpl implements SQLCacheInterface {
       arguments.add(offset);
     }
 
-    final String sql = '''
+    final sql =
+        '''
       SELECT p.*
       FROM $_tablePosts p
       INNER JOIN $_tableFeedPostAssociations fpa ON p.$_columnUri = fpa.$_columnPostUriFK
@@ -369,7 +367,7 @@ class SQLCacheImpl implements SQLCacheInterface {
     ''';
 
     final List<Map<String, dynamic>> maps = await db.rawQuery(sql, arguments);
-    return maps.map((map) => _mapToPostView(map)).toList();
+    return maps.map(_mapToPostView).toList();
   }
 
   /// Retrieves post URIs for a specific feed, ordered by their association order
@@ -377,15 +375,15 @@ class SQLCacheImpl implements SQLCacheInterface {
   ///
   /// Does NOT update the `lastAccessed` timestamp of any posts.
   ///
-  /// - [feedIdentifier]: The identifier of the feed.
+  /// - [feed]: The identifier of the feed.
   /// - [limit]: The maximum number of URIs to retrieve. If null, no limit.
   /// - [offset]: The number of URIs to skip before starting to retrieve. Requires [limit] to be set.
   @override
   Future<List<String>> getUrisForFeed(Feed feed, {int? limit, int? offset}) async {
     final feedIdentifier = feed.identifier;
     final db = await database;
-    List<dynamic> arguments = [feedIdentifier];
-    String limitClause = '';
+    final arguments = <dynamic>[feedIdentifier];
+    var limitClause = '';
 
     if (limit != null) {
       limitClause += ' LIMIT ?';
@@ -399,7 +397,8 @@ class SQLCacheImpl implements SQLCacheInterface {
       arguments.add(offset);
     }
 
-    final String sql = '''
+    final sql =
+        '''
       SELECT p.$_columnUri
       FROM $_tablePosts p
       INNER JOIN $_tableFeedPostAssociations fpa ON p.$_columnUri = fpa.$_columnPostUriFK
@@ -429,14 +428,14 @@ class SQLCacheImpl implements SQLCacheInterface {
         whereArgs: [feedIdentifier],
       );
 
-      int currentMaxOrder = -1; // Start before 0 if feed is empty
+      var currentMaxOrder = -1; // Start before 0 if feed is empty
       if (maxOrderResult.isNotEmpty && maxOrderResult.first['max_order'] != null) {
         currentMaxOrder = maxOrderResult.first['max_order'] as int;
       }
 
       // 2. Add new associations with incrementing order
       final batch = txn.batch();
-      for (int i = 0; i < postUris.length; i++) {
+      for (var i = 0; i < postUris.length; i++) {
         batch.insert(_tableFeedPostAssociations, {
           _columnFeedIdentifierFK: feedIdentifier,
           _columnPostUriFK: postUris[i],
@@ -472,11 +471,11 @@ class SQLCacheImpl implements SQLCacheInterface {
     final db = await database;
     final cacheManager = GetIt.instance<CacheManagerInterface>();
     final countResult = await db.rawQuery('SELECT COUNT(*) FROM $_tablePosts');
-    final int currentSize = Sqflite.firstIntValue(countResult) ?? 0;
-    int deletedCount = 0;
+    final currentSize = Sqflite.firstIntValue(countResult) ?? 0;
+    var deletedCount = 0;
 
     if (currentSize > postsToKeep) {
-      final int numToDelete = currentSize - postsToKeep;
+      final numToDelete = currentSize - postsToKeep;
       // Find the URIs of the posts to delete (oldest ones)
       final List<Map<String, dynamic>> toDeleteMaps = await db.query(
         _tablePosts,
@@ -487,11 +486,11 @@ class SQLCacheImpl implements SQLCacheInterface {
 
       if (toDeleteMaps.isNotEmpty) {
         for (final map in toDeleteMaps) {
-          final String uri = map[_columnUri] as String;
+          final uri = map[_columnUri] as String;
           await cacheManager.removeFile(uri);
         }
 
-        final List<String> urisToDelete = toDeleteMaps.map((map) => map[_columnUri] as String).toList();
+        final urisToDelete = toDeleteMaps.map((map) => map[_columnUri] as String).toList();
         final placeholders = List.generate(urisToDelete.length, (index) => '?').join(',');
         deletedCount = await db.delete(_tablePosts, where: '$_columnUri IN ($placeholders)', whereArgs: urisToDelete);
       }
@@ -514,11 +513,11 @@ class SQLCacheImpl implements SQLCacheInterface {
       whereArgs: [cutoffTimestamp],
     );
     for (final map in toDeleteMaps) {
-      final String uri = map[_columnUri];
+      final uri = map[_columnUri] as String;
       await cacheManager.removeFile(uri);
     }
 
-    return await db.delete(_tablePosts, where: '$_columnLastAccessed < ?', whereArgs: [cutoffTimestamp]);
+    return db.delete(_tablePosts, where: '$_columnLastAccessed < ?', whereArgs: [cutoffTimestamp]);
   }
 
   /// Clears the entire PostView cache from the database.

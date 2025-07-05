@@ -16,13 +16,11 @@ class CommentInput extends _$CommentInput {
     ref.onDispose(() {
       textController.dispose();
     });
-    textController.addListener(() {
-      updateCanSubmit();
-    });
+    textController.addListener(updateCanSubmit);
     return CommentInputState(textController: textController, imagePicker: imagePicker);
   }
 
-  late final _logger = GetIt.instance.get<LogService>().getLogger('CommentInputNotifier');
+  late final SparkLogger _logger = GetIt.instance.get<LogService>().getLogger('CommentInputNotifier');
 
   void updateCanSubmit() {
     final textIsNotEmpty = state.textController.text.trim().isNotEmpty;
@@ -61,12 +59,12 @@ class CommentInput extends _$CommentInput {
     final currentImageCount = state.selectedImages.length;
     if (currentImageCount >= maxImages) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('You can select up to $maxImages images.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You can select up to $maxImages images.')));
       return;
     }
 
     try {
-      final List<XFile> pickedFiles = await state.imagePicker.pickMultiImage(limit: maxImages - currentImageCount);
+      final pickedFiles = await state.imagePicker.pickMultiImage(limit: maxImages - currentImageCount);
       if (pickedFiles.isNotEmpty) {
         state = state.copyWith(selectedImages: [...state.selectedImages, ...pickedFiles]);
         updateCanSubmit();
@@ -114,10 +112,10 @@ class CommentInput extends _$CommentInput {
     } catch (e) {
       // If posting fails, just reset isPosting but keep the form data
       state = state.copyWith(isPosting: false);
-      
+
       // Log the error for debugging
       _logger.e('Error posting comment: $e');
-      
+
       rethrow;
     }
   }

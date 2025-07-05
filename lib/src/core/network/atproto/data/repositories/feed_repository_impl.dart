@@ -2,31 +2,32 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:atproto/core.dart';
 import 'package:atproto/atproto.dart';
+import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
+/// embed converter 
+// ignore: implementation_imports
+import 'package:bluesky/src/services/entities/converter/embed_converter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:sparksocial/src/core/config/app_config.dart';
+import 'package:sparksocial/src/core/feed_algorithms/hardcoded_feed_algorithm.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
-import 'package:sparksocial/src/core/feed_algorithms/hardcoded_feed_algorithm.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-// ignore: implementation_imports
-import 'package:bluesky/src/services/entities/converter/embed_converter.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
 /// Implementation of Feed-related API endpoints
 class FeedRepositoryImpl implements FeedRepository {
-  final SprkRepository _client;
-  final _logger = GetIt.instance<LogService>().getLogger('FeedRepository');
-
   FeedRepositoryImpl(this._client) {
     _logger.v('FeedRepository initialized');
   }
+  final SprkRepository _client;
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('FeedRepository');
 
   List<T> _parseAndFilterPosts<T>({
     required List<dynamic> rawPosts,
@@ -41,7 +42,7 @@ class FeedRepositoryImpl implements FeedRepository {
         if (postData['reply'] != null) {
           continue;
         }
-        final parsedPost = fromJson(postData);
+        final parsedPost = fromJson(postData as Map<String, dynamic>);
         final postView = getPostView(parsedPost);
 
         if (postView.hasSupportedMedia) {
@@ -81,8 +82,8 @@ class FeedRepositoryImpl implements FeedRepository {
             NSID.parse('so.sprk.feed.getFeedSkeleton'),
             parameters: {'feed': feed, 'limit': limit, 'cursor': cursor},
             service: 'feeds.sprk.so',
-            to: (jsonMap) => FeedSkeleton.fromJson(jsonMap),
-            adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+            to: FeedSkeleton.fromJson,
+            adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
           );
           _logger.d('Feed skeleton retrieved successfully');
           return result.data;
@@ -126,7 +127,7 @@ class FeedRepositoryImpl implements FeedRepository {
         parameters: {'uris': uris},
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) {
-          final posts = jsonMap['posts'] as List<dynamic>;
+          final posts = jsonMap['posts']! as List<dynamic>;
           return _parseAndFilterPosts<PostView>(
             rawPosts: posts,
             fromJson: PostView.fromJson,
@@ -134,7 +135,7 @@ class FeedRepositoryImpl implements FeedRepository {
             source: 'sprk',
           );
         },
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
       _logger.d('Posts retrieved successfully');
 
@@ -196,7 +197,7 @@ class FeedRepositoryImpl implements FeedRepository {
           parameters: parameters,
           headers: {'atproto-proxy': _client.sprkDid},
           to: (jsonMap) {
-            final rawFeed = jsonMap['feed'] as List<dynamic>;
+            final rawFeed = jsonMap['feed']! as List<dynamic>;
             final feedPosts = _parseAndFilterPosts<FeedViewPost>(
               rawPosts: rawFeed,
               fromJson: FeedViewPost.fromJson,
@@ -205,7 +206,7 @@ class FeedRepositoryImpl implements FeedRepository {
             );
             return (posts: feedPosts, cursor: jsonMap['cursor'] as String?);
           },
-          adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+          adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
         );
         _logger.d('Author feed retrieved successfully from Sprk');
         return result.data;
@@ -270,9 +271,9 @@ class FeedRepositoryImpl implements FeedRepository {
 
       final likeRecord = {
         // eventually use a like record class here for consistency
-        "\$type": "so.sprk.feed.like",
-        "subject": {"cid": postCid, "uri": postUri.toString()},
-        "createdAt": DateTime.now().toUtc().toIso8601String(),
+        r'$type': 'so.sprk.feed.like',
+        'subject': {'cid': postCid, 'uri': postUri.toString()},
+        'createdAt': DateTime.now().toUtc().toIso8601String(),
       };
 
       final result = await atproto.repo.createRecord(collection: NSID.parse('so.sprk.feed.like'), record: likeRecord);
@@ -332,21 +333,21 @@ class FeedRepositoryImpl implements FeedRepository {
 
           // Upload images if provided
           Map<String, dynamic>? embedJson;
-          if (imageFiles case List<XFile> files when files.isNotEmpty) {
+          if (imageFiles case final List<XFile> files when files.isNotEmpty) {
             _logger.d('Uploading ${files.length} images for comment');
-            final List<Image> uploadedImageMaps = await uploadImages(imageFiles: files, altTexts: altTexts);
+            final uploadedImageMaps = await uploadImages(imageFiles: files, altTexts: altTexts);
             embedJson = EmbedImage(images: uploadedImageMaps).toJson();
           }
 
           // Create the correct record JSON depending on the target platform.
-          final bool isSprk = parentUri.toString().contains('sprk');
+          final isSprk = parentUri.toString().contains('sprk');
 
           final Map<String, dynamic> recordJson;
           final NSID collection;
 
           if (isSprk) {
             // Sprk comment
-            final PostRecord sprkRecord = PostRecord(
+            final sprkRecord = PostRecord(
               text: text,
               reply: RecordReplyRef(
                 root: StrongRef(uri: effectiveRootUri, cid: effectiveRootCid),
@@ -359,7 +360,7 @@ class FeedRepositoryImpl implements FeedRepository {
             collection = NSID.parse('so.sprk.feed.post');
           } else {
             // Bluesky comment
-            final bsky.PostRecord bskyRecord = bsky.PostRecord(
+            final bskyRecord = bsky.PostRecord(
               text: text,
               createdAt: DateTime.now(),
               reply: bsky.ReplyRef(
@@ -391,7 +392,7 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Creating image post with ${imageFiles.length} images, crosspost: $crosspostToBsky');
 
     switch (imageFiles) {
-      case List<XFile> files when files.isEmpty:
+      case final List<XFile> files when files.isEmpty:
         _logger.e('No images provided for image post');
         throw ArgumentError('At least one image is required for an image post.');
       default:
@@ -402,7 +403,7 @@ class FeedRepositoryImpl implements FeedRepository {
           }
 
           if (_client.authRepository.atproto case final atproto?) {
-            final List<Image> uploadedImageMaps = await uploadImages(imageFiles: imageFiles, altTexts: altTexts);
+            final uploadedImageMaps = await uploadImages(imageFiles: imageFiles, altTexts: altTexts);
 
             // Create Sprk post first
             final record = PostRecord(
@@ -439,7 +440,7 @@ class FeedRepositoryImpl implements FeedRepository {
   Future<List<Image>> uploadImages({required List<XFile> imageFiles, Map<String, String>? altTexts}) async {
     _logger.d('Processing ${imageFiles.length} images for upload');
 
-    final List<Image> uploadedImageMaps = [];
+    final uploadedImageMaps = <Image>[];
     for (final imageFile in imageFiles) {
       try {
         _logger.d('Processing image: ${imageFile.name}');
@@ -469,7 +470,6 @@ class FeedRepositoryImpl implements FeedRepository {
 
                     // Add the uploaded image to our result list
                     uploadedImageMaps.add(Image(alt: altTexts?[imageFile.path] ?? '', image: response.data.blob));
-                    break;
                   default:
                     _logger.e('Failed to upload image blob: ${response.status.code}');
                     throw Exception('Blob upload failed for ${imageFile.name}: ${response.status.code}');
@@ -501,14 +501,14 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       // Handle file:// URL scheme
-      String cleanVideoPath = videoPath;
+      var cleanVideoPath = videoPath;
       if (videoPath.startsWith('file://')) {
         cleanVideoPath = videoPath.replaceFirst('file://', '');
       }
 
       // Validate the video file
       final file = File(cleanVideoPath);
-      if (!await file.exists()) {
+      if (!file.existsSync()) {
         throw Exception('Video file not found: $cleanVideoPath');
       }
 
@@ -539,10 +539,8 @@ class FeedRepositoryImpl implements FeedRepository {
 
       // Parse the response
       final responseData = jsonDecode(response.body);
-      Blob blob;
       //{'jobStatus': {'blob': blob}} = responseData; this is how it should work in the lexicon
-      blob = Blob.fromJson(responseData['blobRef']);
-      return blob;
+      return Blob.fromJson(responseData['blobRef'] as Map<String, dynamic>);
     });
   }
 
@@ -556,8 +554,8 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Crossposting to Bluesky with ${sparkImages.length} images');
 
     // Convert Spark images to Bluesky images and handle 4-image limit
-    final List<bsky.Image> bskyImages = [];
-    final maxBskyImages = 4;
+    final bskyImages = <bsky.Image>[];
+    const maxBskyImages = 4;
     final imagesToUse = sparkImages.take(maxBskyImages).toList();
 
     for (final sparkImage in imagesToUse) {
@@ -570,8 +568,8 @@ class FeedRepositoryImpl implements FeedRepository {
     }
 
     // Determine final text for Bluesky post
-    String finalText = text;
-    List<bsky.Facet> facets = [];
+    var finalText = text;
+    final facets = <bsky.Facet>[];
 
     // If more than 4 images, add link to Spark post
     if (sparkImages.length > maxBskyImages) {
@@ -603,7 +601,7 @@ class FeedRepositoryImpl implements FeedRepository {
             ),
           );
         } else {
-          final ellipsis = '...';
+          const ellipsis = '...';
           final croppedTextLength = availableTextLength - ellipsis.length;
           final croppedText = text.substring(0, croppedTextLength);
           finalText = '$croppedText$ellipsis$linkWithNewlines';
@@ -657,7 +655,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
         switch (response.status.code) {
           case 200:
-            _logger.i('Post deleted successfully: ${postUri.toString()}');
+            _logger.i('Post deleted successfully: $postUri');
             return true;
           default:
             _logger.e('Failed to delete post: ${response.status.code}');
@@ -703,13 +701,12 @@ class FeedRepositoryImpl implements FeedRepository {
         record: record.toJson(),
       );
 
-      switch (response.status) {
-        case HttpStatus.ok:
-          _logger.i('Video posted successfully: ${response.data.uri}');
-          return response.data;
-        default:
-          _logger.e('Failed to post video: ${response.status} ${response.data}');
-          throw Exception('Failed to post video: ${response.status} ${response.data}');
+      if (response.status == HttpStatus.ok) {
+        _logger.i('Video posted successfully: ${response.data.uri}');
+        return response.data;
+      } else {
+        _logger.e('Failed to post video: ${response.status} ${response.data}');
+        throw Exception('Failed to post video: ${response.status} ${response.data}');
       }
     });
   }
@@ -736,13 +733,13 @@ class FeedRepositoryImpl implements FeedRepository {
         final response = await bluesky.feed.getPostThread(uri: uri, depth: depth, parentHeight: parentHeight);
         return Thread.fromBsky(thread: response.data.thread, uri: uri);
       }
-      final source = 'so.sprk.feed.getPostThread';
+      const source = 'so.sprk.feed.getPostThread';
       final response = await atproto.get(
         NSID.parse(source),
         parameters: {'uri': uri.toString(), 'depth': depth, 'parentHeight': parentHeight},
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) {
-          return Thread.fromJson(jsonMap['thread'] as Map<String, dynamic>);
+          return Thread.fromJson(jsonMap['thread']! as Map<String, dynamic>);
         },
       );
 
@@ -769,9 +766,9 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      List<Label> labels = [];
+      final labels = <Label>[];
 
-      final List<String> labelers = sources?.isNotEmpty == true ? sources! : ['did:plc:pbgyr67hftvpoqtvaurpsctc'];
+      final labelers = sources?.isNotEmpty ?? true ? sources! : ['did:plc:pbgyr67hftvpoqtvaurpsctc'];
 
       final parameters = {'uriPatterns': uris, 'sources': labelers, 'limit': limit, 'cursor': cursor};
 
@@ -780,18 +777,19 @@ class FeedRepositoryImpl implements FeedRepository {
         headers: {'atproto-proxy': 'did:plc:pbgyr67hftvpoqtvaurpsctc#atproto_labeler'},
         parameters: parameters,
         to: (jsonMap) => jsonMap,
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8)),
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
-      _logger.d('parameters: $parameters');
-      _logger.d('Labels retrieved: ${response.data}');
+      _logger
+        ..d('parameters: $parameters')
+        ..d('Labels retrieved: ${response.data}');
 
-      for (final label in response.data['labels'] as List<dynamic>) {
-        final cleanLabel = label as Map<String, Object?>;
-        cleanLabel.remove('sig'); // i am NOT going to convert that sig string into a UInt8List i am going to PASS OUT and DIE
-        cleanLabel.putIfAbsent(
-          'src',
-          () => 'did:plc:pbgyr67hftvpoqtvaurpsctc',
-        ); // fix this when there's multiple labelers support. for now idgaf. src is null for some reason in the response
+      for (final label in response.data['labels']! as List<dynamic>) {
+        final cleanLabel = label as Map<String, Object?>
+          ..remove('sig') // i am NOT going to convert that sig string into a UInt8List i am going to PASS OUT and DIE
+          ..putIfAbsent(
+            'src',
+            () => 'did:plc:pbgyr67hftvpoqtvaurpsctc',
+          ); // fix this when there's multiple labelers support. for now idgaf. src is null for some reason in the response
         labels.add(Label.fromJson(cleanLabel));
       }
 
@@ -823,7 +821,7 @@ class FeedRepositoryImpl implements FeedRepository {
         to: (jsonMap) {
           final storiesByAuthorMap = <ProfileViewBasic, List<StoryView>>{};
 
-          final storiesByAuthorArray = jsonMap['storiesByAuthor'] as List<dynamic>;
+          final storiesByAuthorArray = jsonMap['storiesByAuthor']! as List<dynamic>;
           for (final item in storiesByAuthorArray) {
             final itemMap = item as Map<String, dynamic>;
             final author = ProfileViewBasic.fromJson(itemMap['author'] as Map<String, dynamic>);
@@ -859,7 +857,8 @@ class FeedRepositoryImpl implements FeedRepository {
         NSID.parse('so.sprk.feed.getStories'),
         parameters: {'uris': storyUris},
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => (jsonMap['stories'] as List<dynamic>).map((story) => StoryView.fromJson(story)).toList(),
+        to: (jsonMap) =>
+            (jsonMap['stories']! as List<dynamic>).map((story) => StoryView.fromJson(story as Map<String, dynamic>)).toList(),
       );
 
       return response.data;
@@ -881,13 +880,12 @@ class FeedRepositoryImpl implements FeedRepository {
         record: record.toJson(),
       );
 
-      switch (response.status) {
-        case HttpStatus.ok:
-          _logger.i('Story posted successfully: ${response.data.uri}');
-          return response.data;
-        default:
-          _logger.e('Failed to post story: ${response.status} ${response.data}');
-          throw Exception('Failed to post story: ${response.status} ${response.data}');
+      if (response.status == HttpStatus.ok) {
+        _logger.i('Story posted successfully: ${response.data.uri}');
+        return response.data;
+      } else {
+        _logger.e('Failed to post story: ${response.status} ${response.data}');
+        throw Exception('Failed to post story: ${response.status} ${response.data}');
       }
     });
   }

@@ -11,11 +11,10 @@ import 'package:sparksocial/src/features/comments/ui/widgets/comment_item.dart';
 
 @RoutePage()
 class CommentsPage extends ConsumerStatefulWidget {
+  const CommentsPage({required this.postUri, required this.isSprk, super.key, this.post});
   final String postUri;
   final bool isSprk;
   final PostView? post;
-
-  const CommentsPage({super.key, required this.postUri, required this.isSprk, this.post});
 
   @override
   ConsumerState<CommentsPage> createState() => _CommentsPageState();
@@ -56,8 +55,8 @@ class _CommentsPageState extends ConsumerState<CommentsPage> with SingleTickerPr
             color: backgroundColor,
             borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
           ),
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+          child: const ClipRRect(
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
             child: AutoRouter(),
           ),
         ),
@@ -195,7 +194,7 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
                 padding: const EdgeInsets.only(bottom: 16),
                 itemCount: data.thread.replies?.length ?? 0,
                 itemBuilder: (context, index) {
-                  final comment = data.thread.replies?[index] as ThreadViewPost;
+                  final comment = data.thread.replies![index] as ThreadViewPost;
                   return CommentItem(key: ValueKey('comment-${comment.post.cid}'), thread: comment, mainPostUri: _postAtUri);
                 },
               );
@@ -222,12 +221,6 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
 
 // Separate widget to handle keyboard awareness without rebuilding the provider
 class _KeyboardAwareCommentInput extends StatelessWidget {
-  final String videoId;
-  final String postCid;
-  final String postUri;
-  final bool isSprk;
-  final FocusNode focusNode;
-
   const _KeyboardAwareCommentInput({
     required this.videoId,
     required this.postCid,
@@ -235,6 +228,11 @@ class _KeyboardAwareCommentInput extends StatelessWidget {
     required this.isSprk,
     required this.focusNode,
   });
+  final String videoId;
+  final String postCid;
+  final String postUri;
+  final bool isSprk;
+  final FocusNode focusNode;
 
   @override
   Widget build(BuildContext context) {

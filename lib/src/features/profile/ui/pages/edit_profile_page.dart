@@ -1,17 +1,17 @@
 import 'dart:typed_data';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:sparksocial/src/features/profile/providers/edit_profile_provider.dart';
 import 'package:sparksocial/src/core/widgets/custom_text_field.dart';
+import 'package:sparksocial/src/features/profile/providers/edit_profile_provider.dart';
 
 /// Edit profile page that allows users to update their profile information
 @RoutePage()
 class EditProfilePage extends ConsumerStatefulWidget {
+  const EditProfilePage({required this.profile, super.key});
   final ProfileViewDetailed profile;
-
-  const EditProfilePage({super.key, required this.profile});
 
   @override
   ConsumerState<EditProfilePage> createState() => _EditProfilePageState();
@@ -77,7 +77,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       context.router.pop();
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating profile: ${e.toString()}')));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating profile: $e')));
     } finally {
       if (mounted) {
         setState(() {
@@ -127,8 +127,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
       }
     }
 
-    final bool hasLocalAvatar =
-        editProfileState.localAvatar != null && editProfileState.localAvatar != editProfileState.initialAvatar;
+    final hasLocalAvatar = editProfileState.localAvatar != null && editProfileState.localAvatar != editProfileState.initialAvatar;
 
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
@@ -153,7 +152,7 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                       alignment: Alignment.bottomRight,
                       children: [
                         GestureDetector(
-                          onTap: () => editProfileNotifier.pickAvatar(),
+                          onTap: editProfileNotifier.pickAvatar,
                           child: CircleAvatar(
                             radius: 50,
                             backgroundImage: avatarImageProvider,
@@ -171,9 +170,9 @@ class _EditProfilePageState extends ConsumerState<EditProfilePage> {
                             children: [
                               if (hasLocalAvatar)
                                 Padding(
-                                  padding: const EdgeInsets.all(4.0),
+                                  padding: const EdgeInsets.all(4),
                                   child: GestureDetector(
-                                    onTap: () => editProfileNotifier.revertAvatar(),
+                                    onTap: editProfileNotifier.revertAvatar,
                                     child: Container(
                                       decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
                                       padding: const EdgeInsets.all(4),

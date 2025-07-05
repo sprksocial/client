@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/search/providers/search_provider.dart';
 import 'package:sparksocial/src/features/search/ui/widgets/suggested_account_card.dart';
-import 'package:sparksocial/src/features/stories/ui/widgets/stories_list.dart';
 import 'package:sparksocial/src/features/stories/providers/stories_by_author.dart';
+import 'package:sparksocial/src/features/stories/ui/widgets/stories_list.dart';
 
 /// Search page to find users
 @RoutePage()
@@ -53,7 +53,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Padding(
-                padding: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.all(16),
                 child: TextField(
                   controller: _searchController,
                   decoration: InputDecoration(
@@ -80,7 +80,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(color: colorScheme.outline),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
                 ),
               ),
@@ -90,11 +90,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   child: RefreshIndicator(
                     onRefresh: () async {
                       // Refresh the stories timeline
-                      ref.invalidate(storiesByAuthorProvider(limit: 30, cursor: null));
+                      ref.invalidate(storiesByAuthorProvider());
                     },
                     child: CustomScrollView(
                       slivers: [
-                        SliverToBoxAdapter(child: StoriesList()),
+                        const SliverToBoxAdapter(child: StoriesList()),
                         SliverFillRemaining(
                           hasScrollBody: false,
                           child: Center(
@@ -131,7 +131,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                     unselectedLabelColor: theme.textTheme.bodyMedium?.color,
                   ),
                 ),
-                Expanded(child: TabBarView(children: [const UserResults()])),
+                const Expanded(child: TabBarView(children: [UserResults()])),
               ],
             ],
           ),
@@ -197,7 +197,7 @@ class _UserResultsState extends ConsumerState<UserResults> {
         if (index >= state.searchResults.length) {
           // Loading indicator at bottom
           return const Padding(
-            padding: EdgeInsets.all(16.0),
+            padding: EdgeInsets.all(16),
             child: Center(child: CircularProgressIndicator()),
           );
         }

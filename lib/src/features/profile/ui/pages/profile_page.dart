@@ -2,22 +2,21 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart'; // For EditProfileRoute, LoginRoute
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/core/widgets/menu_action_button.dart';
 import 'package:sparksocial/src/core/widgets/report_dialog.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_header.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/early_supporter_sheet.dart';
+import 'package:sparksocial/src/features/profile/ui/widgets/profile_header.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_tabs.dart';
-import 'package:get_it/get_it.dart';
 
 @RoutePage()
 class ProfilePage extends ConsumerStatefulWidget {
-  final String did;
-
   const ProfilePage({@PathParam('did') required this.did, super.key});
+  final String did;
 
   @override
   ConsumerState<ProfilePage> createState() => _ProfilePageState();
@@ -37,8 +36,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => SafeArea(
-        child: Padding(padding: const EdgeInsets.only(top: 20), child: EarlySupporterSheet()),
+      builder: (context) => const SafeArea(
+        child: Padding(padding: EdgeInsets.only(top: 20), child: EarlySupporterSheet()),
       ),
     );
   }
@@ -53,7 +52,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     return profileStateAsync.when(
       data: (state) {
         if (state.showAuthPrompt) {
-          context.router.push(AuthPromptRoute(onClose: () => notifier.hideAuthPrompt()));
+          context.router.push(AuthPromptRoute(onClose: notifier.hideAuthPrompt));
         }
 
         final profile = state.profile;
@@ -65,11 +64,11 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             context: context,
             message: 'Profile not found',
             stackTrace: null,
-            onRetry: () => notifier.refreshProfile(),
+            onRetry: notifier.refreshProfile,
             theme: theme,
           );
         }
-        final bool isCurrentUser = notifier.isCurrentUser();
+        final isCurrentUser = notifier.isCurrentUser();
 
         return AutoTabsRouter(
           routes: [
@@ -94,18 +93,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 actions: [
                   if (isCurrentUser)
                     Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
+                      padding: const EdgeInsets.only(right: 8),
                       child: IconButton(
                         padding: EdgeInsets.zero,
                         onPressed: () {
-                          context.router.push(ProfileSettingsRoute());
+                          context.router.push(const ProfileSettingsRoute());
                         },
                         icon: Icon(FluentIcons.options_24_regular, color: Theme.of(context).colorScheme.onSurface),
                       ),
                     )
                   else
                     Padding(
-                      padding: const EdgeInsets.only(right: 8.0),
+                      padding: const EdgeInsets.only(right: 8),
                       child: MenuActionButton(
                         // Assuming this widget is fine
                         onPressed: () => showDialog(
@@ -152,7 +151,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               ),
               body: SafeArea(
                 child: RefreshIndicator(
-                  onRefresh: () => notifier.refreshProfile(),
+                  onRefresh: notifier.refreshProfile,
                   child: CustomScrollView(
                     key: PageStorageKey<String>('profile_${widget.did}'), // Use the passed did
                     slivers: [
@@ -204,7 +203,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(
                                   context,
-                                ).showSnackBar(SnackBar(content: Text('Error: ${e.toString()}'), backgroundColor: Colors.red));
+                                ).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
                               }
                             }
                           },
@@ -215,7 +214,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         delegate: StickyTabBarDelegate(
                           child: ProfileTabs(
                             selectedIndex: tabsRouter.activeIndex,
-                            onTabSelected: (index) => tabsRouter.setActiveIndex(index),
+                            onTabSelected: tabsRouter.setActiveIndex,
                             isAuthenticated: isCurrentUser,
                           ),
                         ),
@@ -239,7 +238,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         context: context,
         message: error.toString(),
         stackTrace: stackTrace,
-        onRetry: () => notifier.refreshProfile(),
+        onRetry: notifier.refreshProfile,
         theme: theme,
       ),
     );
@@ -248,12 +247,12 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
 class ErrorScreen extends StatelessWidget {
   const ErrorScreen({
-    super.key,
     required this.context,
     required this.message,
     required this.stackTrace,
     required this.onRetry,
     required this.theme,
+    super.key,
   });
 
   final BuildContext context;

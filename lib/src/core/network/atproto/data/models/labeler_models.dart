@@ -7,17 +7,17 @@ part 'labeler_models.freezed.dart';
 part 'labeler_models.g.dart';
 
 const defaultLabels = [
-  "!hide",
-  "!no-promote",
-  "!warn",
-  "!no-unauthenticated",
-  "dmca-violation",
-  "doxxing",
-  "porn",
-  "sexual",
-  "nudity",
-  "nsfl",
-  "gore",
+  '!hide',
+  '!no-promote',
+  '!warn',
+  '!no-unauthenticated',
+  'dmca-violation',
+  'doxxing',
+  'porn',
+  'sexual',
+  'nudity',
+  'nsfl',
+  'gore',
 ];
 
 enum Blurs {
@@ -70,7 +70,6 @@ enum Setting {
 
 @freezed
 abstract class LabelPreference with _$LabelPreference {
-  const LabelPreference._();
   @JsonSerializable(explicitToJson: true)
   factory LabelPreference({
     required String value,
@@ -80,13 +79,13 @@ abstract class LabelPreference with _$LabelPreference {
     required Setting setting,
     required bool adultOnly,
   }) = _LabelPreference;
+  const LabelPreference._();
 
   factory LabelPreference.fromJson(Map<String, dynamic> json) => _$LabelPreferenceFromJson(json);
 }
 
 @freezed
 abstract class LabelerView with _$LabelerView {
-  const LabelerView._();
   @JsonSerializable(explicitToJson: true)
   factory LabelerView({
     @AtUriConverter() required AtUri uri,
@@ -98,13 +97,13 @@ abstract class LabelerView with _$LabelerView {
     LabelerViewerState? labelerViewer,
     List<Label>? labels,
   }) = _LabelerView;
+  const LabelerView._();
 
   factory LabelerView.fromJson(Map<String, dynamic> json) => _$LabelerViewFromJson(json);
 }
 
 @freezed
 abstract class LabelerViewDetailed with _$LabelerViewDetailed {
-  const LabelerViewDetailed._();
   @JsonSerializable(explicitToJson: true)
   factory LabelerViewDetailed({
     @AtUriConverter() required AtUri uri,
@@ -117,29 +116,30 @@ abstract class LabelerViewDetailed with _$LabelerViewDetailed {
     LabelerPolicies? policies,
     List<Label>? labels,
   }) = _LabelerViewDetailed;
+  const LabelerViewDetailed._();
 
   factory LabelerViewDetailed.fromJson(Map<String, dynamic> json) => _$LabelerViewDetailedFromJson(json);
 }
 
 @freezed
 abstract class LabelerViewerState with _$LabelerViewerState {
-  const LabelerViewerState._();
   @JsonSerializable(explicitToJson: true)
   factory LabelerViewerState({@AtUriConverter() required AtUri like, @AtUriConverter() required AtUri look}) =
       _LabelerViewerState;
+  const LabelerViewerState._();
 
   factory LabelerViewerState.fromJson(Map<String, dynamic> json) => _$LabelerViewerStateFromJson(json);
 }
 
 @freezed
 abstract class LabelerPolicies with _$LabelerPolicies {
-  const LabelerPolicies._();
   @JsonSerializable(explicitToJson: true)
   factory LabelerPolicies({
     required List<String>
     labelValues, // knownValues (array of strings, optional): a set of suggested or common values for this field. Values are not limited to this set (aka, not a closed enum).
     List<LabelValueDefinition>? labelValueDefinitions,
   }) = _LabelerPolicies;
+  const LabelerPolicies._();
 
   factory LabelerPolicies.fromJson(Map<String, dynamic> json) => _$LabelerPoliciesFromJson(json);
 }

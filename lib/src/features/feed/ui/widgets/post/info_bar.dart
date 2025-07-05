@@ -2,12 +2,23 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/alt_text_dialog.dart';
-
-import 'hashtag_list.dart';
-import 'post_source.dart';
-import 'description.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/post/description.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/post/hashtag_list.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/post/post_source.dart';
 
 class InfoBar extends StatelessWidget {
+  const InfoBar({
+    required this.username,
+    required this.description,
+    required this.hashtags,
+    super.key,
+    this.informLabels = const [],
+    this.isSprk = false,
+    this.altText,
+    this.onUsernameTap,
+    this.onHashtagTap,
+    this.onDescriptionExpandToggle,
+  });
   final String username;
   final String description;
   final List<String> hashtags;
@@ -17,19 +28,6 @@ class InfoBar extends StatelessWidget {
   final VoidCallback? onUsernameTap;
   final Function(String)? onHashtagTap;
   final Function(bool isExpanded)? onDescriptionExpandToggle;
-
-  const InfoBar({
-    super.key,
-    required this.username,
-    required this.description,
-    required this.hashtags,
-    this.informLabels = const [],
-    this.isSprk = false,
-    this.altText,
-    this.onUsernameTap,
-    this.onHashtagTap,
-    this.onDescriptionExpandToggle,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -41,9 +39,13 @@ class InfoBar extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Expanded(child: GestureDetector(onTap: onUsernameTap, child: PostSource(username: username, isSprk: isSprk))),
+            Expanded(
+              child: GestureDetector(
+                onTap: onUsernameTap,
+                child: PostSource(username: username, isSprk: isSprk),
+              ),
+            ),
             if (altText != null && altText!.trim().isNotEmpty) _AltButton(altText: altText!),
           ],
         ),
@@ -54,7 +56,11 @@ class InfoBar extends StatelessWidget {
 
         if (hasDescription && hasHashtags) const SizedBox(height: 6),
 
-        if (hasHashtags) SizedBox(height: 25, child: HashtagList(hashtags: hashtags, onHashtagTap: onHashtagTap)),
+        if (hasHashtags)
+          SizedBox(
+            height: 25,
+            child: HashtagList(hashtags: hashtags, onHashtagTap: onHashtagTap),
+          ),
 
         if (hasInformLabels && (hasHashtags || hasDescription)) const SizedBox(height: 6),
 
@@ -65,9 +71,8 @@ class InfoBar extends StatelessWidget {
 }
 
 class _AltButton extends StatelessWidget {
-  final String altText;
-
   const _AltButton({required this.altText});
+  final String altText;
 
   @override
   Widget build(BuildContext context) {
@@ -84,14 +89,17 @@ class _AltButton extends StatelessWidget {
             builder: (_) => AltTextDialog(altText: altText),
           );
         },
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        child: const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: const [
+            children: [
               Icon(FluentIcons.image_alt_text_20_regular, color: AppColors.white, size: 18),
               SizedBox(width: 6),
-              Text('ALT', style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+              Text(
+                'ALT',
+                style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold, fontSize: 12),
+              ),
             ],
           ),
         ),
@@ -101,9 +109,8 @@ class _AltButton extends StatelessWidget {
 }
 
 class _InformLabels extends StatelessWidget {
-  final List<String> labels;
-
   const _InformLabels({required this.labels});
+  final List<String> labels;
 
   @override
   Widget build(BuildContext context) {
@@ -116,9 +123,8 @@ class _InformLabels extends StatelessWidget {
 }
 
 class _InformLabelChip extends StatelessWidget {
-  final String label;
-
   const _InformLabelChip({required this.label});
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -127,12 +133,12 @@ class _InformLabelChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.blue.withAlpha(150),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.blue.withAlpha(100), width: 1),
+        border: Border.all(color: AppColors.blue.withAlpha(100)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
+          const Icon(
             FluentIcons.info_16_regular,
             color: AppColors.white,
             size: 12,

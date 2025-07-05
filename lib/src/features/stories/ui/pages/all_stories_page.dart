@@ -2,13 +2,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'author_stories_page.dart';
+import 'package:sparksocial/src/features/stories/ui/pages/author_stories_page.dart';
 
 @RoutePage()
 class AllStoriesPage extends StatefulWidget {
   const AllStoriesPage({
-    super.key,
     required this.storiesByAuthor,
+    super.key,
     this.initialAuthorIndex = 0,
   });
 
@@ -53,15 +53,15 @@ class _AllStoriesPageState extends State<AllStoriesPage> {
               stories: entry.value,
               onPreviousAuthor: index > 0
                   ? () => _pageController.previousPage(
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeInOut,
-                      )
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                    )
                   : null,
               onNextAuthor: index < _authorsList.length - 1
                   ? () => _pageController.nextPage(
-                        duration: const Duration(milliseconds: 250),
-                        curve: Curves.easeInOut,
-                      )
+                      duration: const Duration(milliseconds: 250),
+                      curve: Curves.easeInOut,
+                    )
                   : null,
             );
           },

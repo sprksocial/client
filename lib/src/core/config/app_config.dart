@@ -23,7 +23,7 @@ class AppConfig {
   static int get apiTimeoutSeconds => _getIntValue('API_TIMEOUT_SECONDS', 30);
 
   /// Maximum upload file size in MB.
-  static double get maxUploadSizeMB => _getDoubleValue('MAX_UPLOAD_SIZE_MB', 100.0);
+  static double get maxUploadSizeMB => _getDoubleValue('MAX_UPLOAD_SIZE_MB', 100);
 
   /// The current application environment (development, production, etc.)
   static String get environment => _getStringValue('ENVIRONMENT', 'development');

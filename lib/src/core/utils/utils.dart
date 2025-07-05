@@ -1,4 +1,2 @@
-library;
-
-export 'text_formatter.dart';
 export 'logging/logging.dart';
+export 'text_formatter.dart';

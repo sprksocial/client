@@ -1,15 +1,17 @@
+import 'dart:ui' show lerpDouble;
+
+import 'package:auto_route/auto_route.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'dart:ui' show lerpDouble;
-import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:auto_route/auto_route.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
+import 'package:sparksocial/src/core/utils/logging/logging.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_refresh_trigger_provider.dart';
+import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 
 class FeedsBar extends ConsumerStatefulWidget implements PreferredSizeWidget {
-  const FeedsBar({super.key, required this.pageController});
+  const FeedsBar({required this.pageController, super.key});
 
   final PageController pageController;
 
@@ -70,7 +72,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
         builder: (context, constraints) {
           final availableWidth = constraints.maxWidth;
           // Account for the leading widget (back button) - approximately 56px
-          final leadingWidth = 56.0;
+          const leadingWidth = 56.0;
           final centeringWidth = availableWidth - leadingWidth;
           final horizontalPadding = leadingWidth + (centeringWidth - totalWidth) / 2.0;
 
@@ -140,10 +142,14 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
                   onTap: _isReordering
                       ? null
                       : () {
-                          ref.read(settingsProvider.notifier).setActiveFeed(feed);
-                          final feedIndex = settings.feeds.indexOf(feed);
-                          if (feedIndex != -1 && widget.pageController.hasClients) {
-                            widget.pageController.jumpToPage(feedIndex);
+                          if (settings.activeFeed == feed) {
+                            ref.read(feedRefreshTriggerProvider(feed).notifier).trigger();
+                          } else {
+                            ref.read(settingsProvider.notifier).setActiveFeed(feed);
+                            final feedIndex = settings.feeds.indexOf(feed);
+                            if (feedIndex != -1 && widget.pageController.hasClients) {
+                              widget.pageController.jumpToPage(feedIndex);
+                            }
                           }
                         },
                   borderRadius: BorderRadius.circular(25),

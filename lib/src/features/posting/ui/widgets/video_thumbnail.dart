@@ -5,9 +5,8 @@ import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoThumbnail extends StatefulWidget {
+  const VideoThumbnail({required this.controller, super.key});
   final VideoPlayerController controller;
-
-  const VideoThumbnail({super.key, required this.controller});
 
   @override
   State<VideoThumbnail> createState() => _VideoThumbnailState();

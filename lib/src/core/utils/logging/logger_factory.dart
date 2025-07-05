@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 
-import 'console_output.dart';
-import 'file_output.dart';
-import 'log_level.dart';
-import 'log_output.dart';
-import 'logger.dart';
+import 'package:sparksocial/src/core/utils/logging/console_output.dart';
+import 'package:sparksocial/src/core/utils/logging/file_output.dart';
+import 'package:sparksocial/src/core/utils/logging/log_level.dart';
+import 'package:sparksocial/src/core/utils/logging/log_output.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
 /// Factory for creating logger instances
 class LoggerFactory {

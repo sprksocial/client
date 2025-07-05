@@ -1,22 +1,22 @@
-import 'dart:typed_data';
 import 'dart:convert';
+import 'dart:typed_data';
 
-import 'package:atproto/core.dart';
 import 'package:atproto/atproto.dart';
+import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
+import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
 /// Repository-related API endpoints implementation
 class RepoRepositoryImpl implements RepoRepository {
-  final SprkRepositoryImpl _client;
-  final _logger = GetIt.instance<LogService>().getLogger('RepoAPI');
-
   RepoRepositoryImpl(this._client) {
     _logger.v('RepoAPI initialized');
   }
+  final SprkRepositoryImpl _client;
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('RepoAPI');
 
   @override
   Future<({Record record, StrongRef strongRef})> getRecord({required AtUri uri}) async {
@@ -97,9 +97,9 @@ class RepoRepositoryImpl implements RepoRepository {
 
       // Delete cross-posted Bluesky counterpart if it exists
       try {
-        final String did = uri.hostname;
-        final String rkey = uri.rkey;
-        final AtUri blueskyUri = AtUri.parse('at://$did/app.bsky.feed.post/$rkey');
+        final did = uri.hostname;
+        final rkey = uri.rkey;
+        final blueskyUri = AtUri.parse('at://$did/app.bsky.feed.post/$rkey');
 
         _logger.d('Attempting to delete Bluesky counterpart post: $blueskyUri');
 
@@ -214,12 +214,12 @@ class RepoRepositoryImpl implements RepoRepository {
         if (subjectData is StrongRef) {
           final strongRef = subjectData.toJson();
           body = {
-            'subject': {'\$type': 'com.atproto.repo.strongRef', 'uri': strongRef['uri'], 'cid': strongRef['cid']},
+            'subject': {r'$type': 'com.atproto.repo.strongRef', 'uri': strongRef['uri'], 'cid': strongRef['cid']},
             'reasonType': reasonType.value,
           };
         } else if (subjectData is RepoRef) {
           body = {
-            'subject': {'\$type': 'com.atproto.admin.defs.repoRef', 'did': subjectData.did},
+            'subject': {r'$type': 'com.atproto.admin.defs.repoRef', 'did': subjectData.did},
             'reasonType': reasonType.value,
           };
         } else {

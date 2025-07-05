@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'colors.dart';
+import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 
 /// Application theme management class that provides theme data
 /// for both light and dark themes.
@@ -61,13 +61,10 @@ class AppTheme {
       primary: AppColors.primary,
       secondary: AppColors.secondary,
       tertiary: AppColors.accent,
-      surface: AppColors.background,
       error: AppColors.error,
-      onPrimary: AppColors.white,
       onSecondary: AppColors.white,
       onTertiary: AppColors.white,
       onSurface: AppColors.textPrimary,
-      onError: AppColors.white,
     ),
     primaryColor: AppColors.primary,
     useMaterial3: true,
@@ -129,7 +126,7 @@ class AppTheme {
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.border, width: 1),
+        borderSide: const BorderSide(color: AppColors.border),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -250,7 +247,7 @@ class AppTheme {
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: AppColors.border, width: 1),
+        borderSide: const BorderSide(color: AppColors.border),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),

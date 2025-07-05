@@ -2,11 +2,11 @@ import 'package:bluesky/bluesky.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
-import '../../../core/network/atproto/data/repositories/sprk_repository.dart';
-import '../../../core/auth/data/repositories/auth_repository.dart';
-import '../../../core/auth/data/repositories/onboarding_repository_impl.dart';
-import '../../../core/auth/data/repositories/onboarding_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 
 part 'onboarding_providers.g.dart';
 
@@ -94,7 +94,7 @@ class OnboardingState extends _$OnboardingState {
     try {
       final repository = ref.read(onboardingRepositoryProvider);
       String? cursor;
-      bool hasMore = true;
+      var hasMore = true;
 
       // Loop to get all follows with pagination
       while (hasMore) {

@@ -4,7 +4,7 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoContent extends StatefulWidget {
-  const VideoContent({super.key, required this.borderRadius, required this.videoUrl});
+  const VideoContent({required this.borderRadius, required this.videoUrl, super.key});
   final BorderRadius borderRadius;
   final String videoUrl;
 
@@ -13,7 +13,6 @@ class VideoContent extends StatefulWidget {
 }
 
 class _VideoContentState extends State<VideoContent> {
-
   VideoPlayerController? videoController;
 
   @override
