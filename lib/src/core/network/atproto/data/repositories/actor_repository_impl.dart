@@ -42,8 +42,9 @@ class ActorRepositoryImpl implements ActorRepository {
         );
         return ProfileViewDetailed.fromJson(result.data as Map<String, dynamic>);
       } catch (e) {
-        _logger..e('Failed to retrieve profile for DID: $did', error: e)
-        ..i('Trying to get profile from bluesky');
+        _logger
+          ..e('Failed to retrieve profile for DID: $did', error: e)
+          ..i('Trying to get profile from bluesky');
         final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
         final profile = await bluesky.actor.getProfile(actor: did);
         _logger.d('Profile retrieved successfully from bluesky');
@@ -195,8 +196,12 @@ class ActorRepositoryImpl implements ActorRepository {
 
   @override
   Future<List<ProfileViewDetailed>> getProfiles(List<String> dids) {
-    _logger.d('Getting profiles for DIDs: $dids');
     return _client.executeWithRetry(() async {
+      _logger.d('Getting profiles for DIDs: $dids');
+      if (dids.isEmpty) {
+        _logger.w('No DIDs provided, returning empty list');
+        return <ProfileViewDetailed>[];
+      }
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
@@ -215,10 +220,13 @@ class ActorRepositoryImpl implements ActorRepository {
           to: (jsonMap) => jsonMap,
           adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
         );
-        return (result.data['profiles']! as List).map((json) => ProfileViewDetailed.fromJson(json as Map<String, dynamic>)).toList();
+        return (result.data['profiles']! as List)
+            .map((json) => ProfileViewDetailed.fromJson(json as Map<String, dynamic>))
+            .toList();
       } catch (e) {
-        _logger..e('Failed to retrieve profile for DIDs: $dids', error: e)
-        ..i('Trying to get profiles from bluesky');
+        _logger
+          ..e('Failed to retrieve profile for DIDs: $dids', error: e)
+          ..i('Trying to get profiles from bluesky');
         final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
         final profiles = await bluesky.actor.getProfiles(actors: dids);
         _logger.d('Profiles retrieved successfully from bluesky');
