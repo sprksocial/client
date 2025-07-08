@@ -13,10 +13,10 @@ import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/core/utils/text_formatter.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
-// Local imports for other profile widgets that will be migrated
+import 'package:sparksocial/src/features/profile/ui/pages/user_list_page.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_description.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_links.dart'; // Placeholder will be created
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_stat_item.dart'; // Placeholder will be created
+import 'package:sparksocial/src/features/profile/ui/widgets/profile_links.dart';
+import 'package:sparksocial/src/features/profile/ui/widgets/profile_stat_item.dart';
 
 class ProfileHeader extends StatefulWidget {
   const ProfileHeader({
@@ -214,8 +214,16 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     ProfileStatItem(count: postsCount, label: 'Posts'),
-                    ProfileStatItem(count: followersCount, label: 'Followers'),
-                    ProfileStatItem(count: followsCount, label: 'Following'),
+                    GestureDetector(
+                      onTap: () => context.router.push(UserListRoute(did: widget.profile.did, type: UserListType.followers)),
+                      behavior: HitTestBehavior.opaque,
+                      child: ProfileStatItem(count: followersCount, label: 'Followers'),
+                    ),
+                    GestureDetector(
+                      onTap: () => context.router.push(UserListRoute(did: widget.profile.did, type: UserListType.following)),
+                      behavior: HitTestBehavior.opaque,
+                      child: ProfileStatItem(count: followsCount, label: 'Following'),
+                    ),
                   ],
                 ),
               ),

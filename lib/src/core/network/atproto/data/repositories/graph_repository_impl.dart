@@ -33,16 +33,20 @@ class GraphRepositoryImpl implements GraphRepository {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       }
-
-      final result = await atproto.get(
-        NSID.parse('so.sprk.graph.getFollowers'),
-        parameters: {'actor': did},
-        headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
-      );
-      _logger.d('Followers retrieved successfully');
-      return FollowersResponse.fromJson(result.data as Map<String, dynamic>);
+      try {
+        final result = await atproto.get(
+          NSID.parse('so.sprk.graph.getFollowers'),
+          parameters: {'actor': did},
+          headers: {'atproto-proxy': _client.sprkDid},
+          to: (jsonMap) => jsonMap,
+          adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        );
+        _logger.d('Followers retrieved successfully');
+        return FollowersResponse.fromJson(result.data as Map<String, dynamic>);
+      } on FormatException catch (fe) {
+        _logger.e('Error retrieving followers for DID: $did', error: fe);
+        throw Exception('Failed to retrieve followers for DID: $did');
+      }
     });
   }
 
@@ -60,16 +64,20 @@ class GraphRepositoryImpl implements GraphRepository {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       }
-
-      final result = await atproto.get(
-        NSID.parse('so.sprk.graph.getFollows'),
-        parameters: {'actor': did},
-        headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
-      );
-      _logger.d('Follows retrieved successfully');
-      return FollowsResponse.fromJson(result.data as Map<String, dynamic>);
+      try {
+        final result = await atproto.get(
+          NSID.parse('so.sprk.graph.getFollows'),
+          parameters: {'actor': did},
+          headers: {'atproto-proxy': _client.sprkDid},
+          to: (jsonMap) => jsonMap,
+          adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        );
+        _logger.d('Follows retrieved successfully');
+        return FollowsResponse.fromJson(result.data as Map<String, dynamic>);
+      } on FormatException catch (fe) {
+        _logger.e('Error retrieving follows for DID: $did', error: fe);
+        throw Exception('Failed to retrieve follows for DID: $did');
+      }
     });
   }
 
