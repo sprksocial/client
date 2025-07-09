@@ -6,12 +6,14 @@ abstract class GraphRepository {
   /// Get followers for a DID
   ///
   /// [did] The DID to get followers for
-  Future<FollowersResponse> getFollowers(String did);
+  /// [cursor] Optional cursor for pagination
+  Future<FollowersResponse> getFollowers(String did, {String? cursor});
 
   /// Get follows for a DID
   ///
   /// [did] The DID to get follows for
-  Future<FollowsResponse> getFollows(String did);
+  /// [cursor] Optional cursor for pagination
+  Future<FollowsResponse> getFollows(String did, {String? cursor});
 
   /// Follow a user
   ///
