@@ -1,4 +1,3 @@
-import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -122,7 +121,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
     }
 
     final Widget avatarWidget;
-    if (widget.profile.avatar case final AtUri av when av.toString().isNotEmpty) {
+    if (widget.profile.avatar case final Uri av when av.toString().isNotEmpty) {
       avatarWidget = ClipOval(
         child: UserAvatar(imageUrl: av.toString(), username: displayNameForAvatar, size: 90),
       );

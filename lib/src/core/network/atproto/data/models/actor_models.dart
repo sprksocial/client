@@ -1,6 +1,7 @@
 import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sparksocial/src/core/utils/uri_converter.dart';
 
 part 'actor_models.freezed.dart';
 part 'actor_models.g.dart';
@@ -48,7 +49,7 @@ class ProfileViewBasic with _$ProfileViewBasic {
     required String did,
     required String handle,
     String? displayName,
-    @AtUriConverter() AtUri? avatar,
+    @UriConverter() Uri? avatar,
     // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
     ActorViewer? viewer,
     List<StrongRef>? stories,
@@ -66,7 +67,7 @@ class ProfileView with _$ProfileView {
     required String handle,
     String? displayName,
     String? description,
-    @AtUriConverter() AtUri? avatar,
+    @UriConverter() Uri? avatar,
     // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
     // indexedAt and createdAt
     ActorViewer? viewer,
@@ -109,8 +110,8 @@ class ProfileViewDetailed with _$ProfileViewDetailed {
     required String handle,
     String? displayName,
     String? description,
-    @AtUriConverter() AtUri? avatar,
-    @AtUriConverter() AtUri? banner,
+    @UriConverter() Uri? avatar,
+    @UriConverter() Uri? banner,
     int? followersCount,
     int? followsCount,
     int? postsCount,

@@ -21,6 +21,8 @@ class PaginatedUserList {
     bool? isFetchingMore,
     bool updateCursor = false,
   }) {
+    // remove profiles with unknown.invalid handle
+    profiles?.removeWhere((profile) => profile.handle == 'unknown.invalid' || profile.handle.isEmpty);
     return PaginatedUserList(
       profiles: profiles ?? this.profiles,
       cursor: updateCursor ? cursor : this.cursor,
@@ -81,7 +83,7 @@ class UserList extends _$UserList {
               displayName: fetchedProfile.displayName,
               description: fetchedProfile.description,
               handle: fetchedProfile.handle,
-              avatar: fetchedProfile.avatar != null ? AtUri.parse(fetchedProfile.avatar!) : null,
+              avatar: fetchedProfile.avatar != null ? Uri.parse(fetchedProfile.avatar!) : null,
             );
           }
         }
