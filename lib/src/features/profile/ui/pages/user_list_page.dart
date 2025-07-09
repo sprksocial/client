@@ -7,16 +7,42 @@ import 'package:sparksocial/src/features/profile/ui/widgets/user_list_view.dart'
 enum UserListType { followers, following }
 
 @RoutePage()
-class UserListPage extends ConsumerWidget {
+class UserListPage extends ConsumerStatefulWidget {
   final String did;
   final UserListType type;
 
   const UserListPage({required this.did, required this.type, super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final userListAsync = ref.watch(userListProvider(did: did, type: type));
-    final title = type == UserListType.followers ? 'Followers' : 'Following';
+  ConsumerState<UserListPage> createState() => _UserListPageState();
+}
+
+class _UserListPageState extends ConsumerState<UserListPage> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels == _scrollController.position.maxScrollExtent) {
+      ref.read(userListProvider(did: widget.did, type: widget.type).notifier).fetchMore();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final userListAsync = ref.watch(userListProvider(did: widget.did, type: widget.type));
+    final title = widget.type == UserListType.followers ? 'Followers' : 'Following';
 
     return Scaffold(
       appBar: AppBar(
@@ -24,11 +50,15 @@ class UserListPage extends ConsumerWidget {
       ),
       body: RefreshIndicator(
         onRefresh: () async {
-          ref.invalidate(userListProvider(did: did, type: type));
-          await ref.read(userListProvider(did: did, type: type).future);
+          ref.invalidate(userListProvider(did: widget.did, type: widget.type));
+          await ref.read(userListProvider(did: widget.did, type: widget.type).future);
         },
         child: userListAsync.when(
-          data: (users) => UserListView(users: users),
+          data: (userList) => UserListView(
+            users: userList.profiles,
+            scrollController: _scrollController,
+            isFetchingMore: userList.isFetchingMore,
+          ),
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (error, stack) => ListView(
             physics: const AlwaysScrollableScrollPhysics(),

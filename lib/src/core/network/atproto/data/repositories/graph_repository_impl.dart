@@ -20,8 +20,8 @@ class GraphRepositoryImpl implements GraphRepository {
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger('GraphRepository');
 
   @override
-  Future<FollowersResponse> getFollowers(String did) async {
-    _logger.d('Getting followers for DID: $did');
+  Future<FollowersResponse> getFollowers(String did, {String? cursor}) async {
+    _logger.d('Getting followers for DID: $did with cursor: $cursor');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
@@ -34,9 +34,13 @@ class GraphRepositoryImpl implements GraphRepository {
         throw Exception('AtProto not initialized');
       }
       try {
+        final params = <String, dynamic>{'actor': did};
+        if (cursor != null) {
+          params['cursor'] = cursor;
+        }
         final result = await atproto.get(
           NSID.parse('so.sprk.graph.getFollowers'),
-          parameters: {'actor': did},
+          parameters: params,
           headers: {'atproto-proxy': _client.sprkDid},
           to: (jsonMap) => jsonMap,
           adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
@@ -51,8 +55,8 @@ class GraphRepositoryImpl implements GraphRepository {
   }
 
   @override
-  Future<FollowsResponse> getFollows(String did) async {
-    _logger.d('Getting follows for DID: $did');
+  Future<FollowsResponse> getFollows(String did, {String? cursor}) async {
+    _logger.d('Getting follows for DID: $did with cursor: $cursor');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
@@ -65,9 +69,13 @@ class GraphRepositoryImpl implements GraphRepository {
         throw Exception('AtProto not initialized');
       }
       try {
+        final params = <String, dynamic>{'actor': did};
+        if (cursor != null) {
+          params['cursor'] = cursor;
+        }
         final result = await atproto.get(
           NSID.parse('so.sprk.graph.getFollows'),
-          parameters: {'actor': did},
+          parameters: params,
           headers: {'atproto-proxy': _client.sprkDid},
           to: (jsonMap) => jsonMap,
           adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,

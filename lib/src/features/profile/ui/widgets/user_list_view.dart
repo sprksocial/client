@@ -9,8 +9,10 @@ import 'package:sparksocial/src/features/search/ui/widgets/suggested_account_car
 
 class UserListView extends ConsumerWidget {
   final List<ProfileView> users;
+  final ScrollController? scrollController;
+  final bool isFetchingMore;
 
-  const UserListView({required this.users, super.key});
+  const UserListView({required this.users, this.scrollController, this.isFetchingMore = false, super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,8 +23,17 @@ class UserListView extends ConsumerWidget {
     }
 
     return ListView.builder(
-      itemCount: users.length,
+      controller: scrollController,
+      itemCount: users.length + (isFetchingMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (isFetchingMore && index == users.length) {
+          return const Center(
+            child: Padding(
+              padding: EdgeInsets.all(8),
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
         final user = users[index];
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
