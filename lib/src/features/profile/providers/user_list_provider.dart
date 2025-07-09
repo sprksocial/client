@@ -51,6 +51,9 @@ class UserList extends _$UserList {
 
     await _fetchAndMergeProfilesFromBsky(profiles);
 
+    // remove profiles with unknown.invalid handle
+    profiles.removeWhere((profile) => profile.handle == 'unknown.invalid' || profile.handle.isEmpty);
+
     return PaginatedUserList(profiles: profiles, cursor: cursor);
   }
 
