@@ -1,13 +1,11 @@
-import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/search/providers/post_search_provider.dart';
 import 'package:sparksocial/src/features/search/providers/search_provider.dart';
 import 'package:sparksocial/src/features/search/ui/pages/post_results.dart';
-import 'package:sparksocial/src/features/search/ui/widgets/suggested_account_card.dart';
+import 'package:sparksocial/src/features/search/ui/pages/user_results.dart';
 import 'package:sparksocial/src/features/stories/providers/stories_by_author.dart';
 import 'package:sparksocial/src/features/stories/ui/widgets/stories_list.dart';
 
@@ -124,96 +122,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           ),
         ),
       ),
-    );
-  }
-}
-
-class UserResults extends ConsumerStatefulWidget {
-  const UserResults({super.key});
-
-  @override
-  ConsumerState<UserResults> createState() => _UserResultsState();
-}
-
-class _UserResultsState extends ConsumerState<UserResults> {
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
-      // Trigger pagination when close to the bottom
-      ref.read(searchProvider.notifier).loadMoreUsers();
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final state = ref.watch(searchProvider);
-
-    if (state.isLoading && state.searchResults.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if (state.error != null) {
-      return Center(
-        child: Text(state.error!, style: const TextStyle(color: Colors.red)),
-      );
-    }
-    if (state.query.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    final itemCount = state.isLoadingMore ? state.searchResults.length + 1 : state.searchResults.length;
-
-    return ListView.builder(
-      controller: _scrollController,
-      itemCount: itemCount,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      itemBuilder: (context, index) {
-        if (index >= state.searchResults.length) {
-          // Loading indicator at bottom
-          return const Padding(
-            padding: EdgeInsets.all(16),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        final actor = state.searchResults[index];
-
-        // Check if the user is being followed
-        final isFollowing = actor.viewer?.following != null;
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 8),
-          child: SuggestedAccountCard(
-            username: actor.displayName ?? actor.handle,
-            handle: '@${actor.handle}',
-            avatarUrl: actor.avatar?.toString() ?? '',
-            description: actor.description ?? '',
-            onTap: () {
-              if (actor.did.isNotEmpty) {
-                context.router.push(ProfileRoute(did: actor.did));
-              }
-            },
-            showFollowButton: !ref.read(searchProvider.notifier).isCurrentUser(actor.did),
-            isFollowing: isFollowing,
-            onFollowTap: () => ref.read(searchProvider.notifier).followUser(actor.did),
-            onUnfollowTap: () =>
-                ref.read(searchProvider.notifier).unfollowUser(actor.did, actor.viewer?.following ?? AtUri.parse('')),
-          ),
-        );
-      },
     );
   }
 }
