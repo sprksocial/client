@@ -11,8 +11,8 @@ import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/posting/providers/post_story.dart';
 import 'package:sparksocial/src/features/posting/providers/upload_provider.dart';
-import 'package:sparksocial/src/features/posting/providers/video_upload_provider.dart';
-import 'package:sparksocial/src/features/posting/providers/video_upload_state.dart';
+import 'package:sparksocial/src/features/posting/providers/video_upload_progress_provider.dart';
+import 'package:sparksocial/src/features/posting/providers/video_upload_progress_state.dart';
 import 'package:sparksocial/src/features/posting/ui/widgets/video_thumbnail.dart';
 import 'package:video_player/video_player.dart';
 
@@ -103,9 +103,9 @@ class _StoryReviewPageState extends ConsumerState<StoryReviewPage> {
   }
 
   Future<void> _postVideoStory() async {
-    final videoService = ref.read(videoUploadProvider(widget.videoPath).notifier);
+    final videoService = ref.read(videoUploadProgressProvider(widget.videoPath).notifier);
     await videoService.processVideo(widget.videoPath);
-    final state = ref.read(videoUploadProvider(widget.videoPath));
+    final state = ref.read(videoUploadProgressProvider(widget.videoPath));
     if (state is VideoUploadStateVideoProcessed) {
       ref.read(
         postStoryProvider(

@@ -8,8 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/posting/providers/upload_provider.dart';
-import 'package:sparksocial/src/features/posting/providers/video_upload_provider.dart';
-import 'package:sparksocial/src/features/posting/providers/video_upload_state.dart';
+import 'package:sparksocial/src/features/posting/providers/video_upload_progress_provider.dart';
+import 'package:sparksocial/src/features/posting/providers/video_upload_progress_state.dart';
 import 'package:sparksocial/src/features/posting/ui/widgets/video_thumbnail.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 import 'package:video_player/video_player.dart';
@@ -79,7 +79,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
       }
 
       // Process and post the video with the video upload provider
-      final videoUploadNotifier = ref.read(videoUploadProvider(widget.videoPath).notifier);
+      final videoUploadNotifier = ref.read(videoUploadProgressProvider(widget.videoPath).notifier);
       await videoUploadNotifier.processAndPostVideo(
         videoPath: widget.videoPath,
         description: description,
@@ -89,7 +89,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
 
       // Mark task as completed
       uploadNotifier.completeTask(taskId);
-      switch (ref.read(videoUploadProvider(widget.videoPath).select((state) => state))) {
+      switch (ref.read(videoUploadProgressProvider(widget.videoPath).select((state) => state))) {
         case VideoUploadStatePosted(:final postRef):
           return postRef;
         default:

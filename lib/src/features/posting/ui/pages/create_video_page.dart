@@ -17,7 +17,7 @@ import 'package:sparksocial/src/features/posting/ui/widgets/recording_bar.dart';
 @RoutePage()
 class CreateVideoPage extends ConsumerStatefulWidget {
   const CreateVideoPage({super.key, this.isStoryMode = false});
-  final bool isStoryMode;
+  final bool isStoryMode; // TODO: remove this and use imgly for stories
 
   @override
   ConsumerState<CreateVideoPage> createState() => _CreateVideoPageState();
@@ -25,12 +25,6 @@ class CreateVideoPage extends ConsumerStatefulWidget {
 
 class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsBindingObserver {
   bool _isVideoMode = true;
-  bool _isRecording = false;
-  double _recordingProgress = 0;
-  String _recordingTimeText = '00:00 / 03:00';
-  Timer? _recordingTimer;
-  int _recordingSeconds = 0;
-  final int _maxRecordingSeconds = 180; // 3 minutes
   final ImagePicker _picker = ImagePicker();
   final bool _cameraPermissionDenied = false;
 
@@ -49,146 +43,10 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _stopRecordingTimer();
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     super.dispose();
   }
 
-  Future<void> _onVideoGalleryPressed() async {
-    try {
-      final video = await _picker.pickVideo(source: ImageSource.gallery, maxDuration: const Duration(seconds: 180));
-
-      if (video != null && mounted) {
-        if (widget.isStoryMode) {
-          context.router.push(StoryReviewRoute(videoPath: video.path, imageFile: XFile('')));
-        } else {
-          context.router.push(VideoReviewRoute(videoPath: video.path));
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Error'),
-              content: Text('Failed to select video: $e'),
-              actions: [TextButton(onPressed: () => context.router.maybePop(), child: const Text('OK'))],
-            );
-          },
-        );
-      }
-    }
-  }
-
-  Future<void> _onImageGalleryPressed() async {
-    try {
-      if (widget.isStoryMode) {
-        // For stories, only allow one image
-        final image = await _picker.pickImage(source: ImageSource.gallery);
-        if (image != null && mounted) {
-          context.router.push(StoryReviewRoute(videoPath: '', imageFile: image));
-        }
-      } else {
-        // For regular posts, allow multiple images
-        const maxImages = 12;
-        final pickedFiles = await _picker.pickMultiImage(limit: maxImages);
-        if (pickedFiles.isEmpty) return;
-        final limitedFiles = pickedFiles.length > maxImages ? pickedFiles.sublist(0, maxImages) : pickedFiles;
-        if (!mounted) return;
-        context.router.push(ImageReviewRoute(imageFiles: limitedFiles));
-      }
-    } catch (e) {
-      if (!mounted) return;
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text('Error'),
-            content: Text('Failed to select images: $e'),
-            actions: [TextButton(onPressed: () => context.router.maybePop(), child: const Text('OK'))],
-          );
-        },
-      );
-    }
-  }
-
-  Future<void> _onCapturePressed() async {
-    if (!_isVideoMode) {
-      await _takePhoto();
-    } else {
-      await _toggleVideoRecording();
-    }
-  }
-
-  Future<void> _takePhoto() async {
-    final photo = await ref.read(cameraProvider.notifier).takePhoto();
-    if (photo != null) {
-      if (widget.isStoryMode) {
-        if (mounted) {
-          context.router.push(StoryReviewRoute(videoPath: '', imageFile: photo));
-        }
-      }
-    }
-  }
-
-  Future<void> _toggleVideoRecording() async {
-    if (_isRecording) {
-      final video = await ref.read(cameraProvider.notifier).stopVideoRecording();
-      _stopRecordingTimer();
-
-      setState(() {
-        _isRecording = false;
-        _recordingProgress = 0.0;
-        _recordingTimeText = '00:00 / 03:00';
-        _recordingSeconds = 0;
-      });
-
-      if (video != null && mounted) {
-        if (mounted) {
-          if (widget.isStoryMode) {
-            context.router.push(StoryReviewRoute(videoPath: video.path, imageFile: XFile('')));
-          } else {
-            context.router.push(VideoReviewRoute(videoPath: video.path));
-          }
-        }
-      }
-    } else {
-      final success = await ref.read(cameraProvider.notifier).startVideoRecording();
-      if (success) {
-        setState(() {
-          _isRecording = true;
-        });
-        _startRecordingTimer();
-      }
-    }
-  }
-
-  void _startRecordingTimer() {
-    _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (_recordingSeconds >= _maxRecordingSeconds) {
-        _toggleVideoRecording();
-        return;
-      }
-
-      setState(() {
-        _recordingSeconds++;
-        _recordingProgress = _recordingSeconds / _maxRecordingSeconds;
-
-        final minutes = _recordingSeconds ~/ 60;
-        final seconds = _recordingSeconds % 60;
-        final minutesStr = minutes.toString().padLeft(2, '0');
-        final secondsStr = seconds.toString().padLeft(2, '0');
-
-        _recordingTimeText = '$minutesStr:$secondsStr / 03:00';
-      });
-    });
-  }
-
-  void _stopRecordingTimer() {
-    _recordingTimer?.cancel();
-    _recordingTimer = null;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -228,29 +86,6 @@ class _CreateVideoPageState extends ConsumerState<CreateVideoPage> with WidgetsB
                       isVideoMode: _isVideoMode,
                       onModeSelected: (isVideoMode) => setState(() => _isVideoMode = isVideoMode),
                     ),
-                  ),
-                ),
-
-                Positioned(
-                  bottom: 30,
-                  left: 0,
-                  right: 0,
-                  child: Column(
-                    children: [
-                      if (_isVideoMode) ...[
-                        RecordingBar(isRecording: _isRecording, progress: _recordingProgress, timeText: _recordingTimeText),
-                        const SizedBox(height: 20),
-                      ],
-
-                      CameraControls(
-                        isVideoMode: _isVideoMode,
-                        isRecording: _isRecording,
-                        onCapturePressed: _onCapturePressed,
-                        onFlipCameraPressed: () => ref.read(cameraProvider.notifier).flipCamera(),
-                        onGalleryPressed: _onVideoGalleryPressed,
-                        onImageGalleryPressed: _onImageGalleryPressed,
-                      ),
-                    ],
                   ),
                 ),
               ],

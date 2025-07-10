@@ -5,38 +5,38 @@ import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/posting/providers/video_upload_state.dart';
+import 'package:sparksocial/src/features/posting/providers/video_upload_progress_state.dart';
 
-part 'video_upload_provider.g.dart';
+part 'video_upload_progress_provider.g.dart';
 
 @riverpod
-class VideoUpload extends _$VideoUpload {
+class VideoUploadProgress extends _$VideoUploadProgress {
   late final AuthRepository _authRepository;
   late final FeedRepository _feedRepository;
   late final SparkLogger _logger;
 
   @override
-  VideoUploadState build(String videoPath) {
+  VideoUploadProgressState build(String videoPath) {
     _authRepository = GetIt.instance<SprkRepository>().authRepository;
     _feedRepository = GetIt.instance<SprkRepository>().feed;
     _logger = GetIt.instance<LogService>().getLogger('VideoService');
-    return VideoUploadState.initial(videoPath: videoPath);
+    return VideoUploadProgressState.initial(videoPath: videoPath);
   }
 
   /// Process a video file and upload it to the video service
   Future<void> processVideo(String videoPath) async {
     try {
-      state = VideoUploadState.processingVideo(videoPath: videoPath);
+      state = VideoUploadProgressState.processingVideo(videoPath: videoPath);
       _logger.i('Starting video processing for: $videoPath');
 
       final blob = await _feedRepository.uploadVideo(videoPath);
 
-      state = VideoUploadState.videoProcessed(videoPath: videoPath, blob: blob);
+      state = VideoUploadProgressState.videoProcessed(videoPath: videoPath, blob: blob);
 
       _logger.i('Video processed successfully');
     } catch (error, stackTrace) {
       _logger.e('Error processing video', error: error, stackTrace: stackTrace);
-      state = VideoUploadState.error(message: error.toString(), videoPath: videoPath);
+      state = VideoUploadProgressState.error(message: error.toString(), videoPath: videoPath);
     }
   }
 
@@ -49,7 +49,7 @@ class VideoUpload extends _$VideoUpload {
     bool crosspostToBsky = false,
   }) async {
     try {
-      state = VideoUploadState.postingVideo(
+      state = VideoUploadProgressState.postingVideo(
         videoPath: videoPath ?? state.currentVideoPath ?? '',
         blob: blob,
         description: description,
@@ -90,12 +90,12 @@ class VideoUpload extends _$VideoUpload {
         }
       }
 
-      state = VideoUploadState.posted(videoPath: videoPath ?? state.currentVideoPath ?? '', blob: blob, postRef: recordRes.data);
+      state = VideoUploadProgressState.posted(videoPath: videoPath ?? state.currentVideoPath ?? '', blob: blob, postRef: recordRes.data);
 
       _logger.i('Video posted successfully');
     } catch (error, stackTrace) {
       _logger.e('Error posting video', error: error, stackTrace: stackTrace);
-      state = VideoUploadState.error(message: error.toString(), videoPath: videoPath ?? state.currentVideoPath, blob: blob);
+      state = VideoUploadProgressState.error(message: error.toString(), videoPath: videoPath ?? state.currentVideoPath, blob: blob);
     }
   }
 

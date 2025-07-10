@@ -7,25 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:imgly_editor/imgly_editor.dart';
+import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart' hide Image;
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/widgets/alt_text_editor_dialog.dart';
+import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/posting/providers/upload_provider.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
-
-void showFullscreenImage(BuildContext context, XFile imageFile) {
-  showDialog(
-    context: context,
-    builder: (context) => Dialog(
-      backgroundColor: Colors.transparent,
-      insetPadding: EdgeInsets.zero,
-      child: GestureDetector(
-        onTap: () => context.router.maybePop(),
-        child: InteractiveViewer(child: Center(child: Image.file(File(imageFile.path)))),
-      ),
-    ),
-  );
-}
 
 @RoutePage()
 class ImageReviewPage extends ConsumerStatefulWidget {
@@ -46,6 +35,25 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   final ImagePicker _picker = ImagePicker();
   final Map<String, String> _altTexts = {};
   late final FeedRepository _feedRepository;
+  final Map<String, String?> _sceneMap = {};
+
+  Future<void> showFullscreenImage(BuildContext context, XFile imageFile) async {
+    final handle = ref.read(sessionProvider)?.handle;
+    // if there's a scene use it, or else create a new one from the image
+    final source = _sceneMap[imageFile.path] != null
+        ? Source.fromScene(_sceneMap[imageFile.path]!)
+        : Source.fromImage(imageFile.path);
+    final newImage = await GetIt.I<IMGLYRepository>().openImageEditor(userID: handle, source: source);
+    // If the user edited the image, replace the original file in the list
+    if (newImage != null) {
+      if (newImage.artifact != null) {
+        setState(() {
+          _imageFiles[_currentPage] = XFile(newImage.artifact!);
+          _sceneMap[newImage.artifact!] = newImage.scene;
+        });
+      }
+    }
+  }
 
   @override
   void initState() {
