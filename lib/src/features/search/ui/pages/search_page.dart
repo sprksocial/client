@@ -4,7 +4,9 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
+import 'package:sparksocial/src/features/search/providers/post_search_provider.dart';
 import 'package:sparksocial/src/features/search/providers/search_provider.dart';
+import 'package:sparksocial/src/features/search/ui/pages/post_results.dart';
 import 'package:sparksocial/src/features/search/ui/widgets/suggested_account_card.dart';
 import 'package:sparksocial/src/features/stories/providers/stories_by_author.dart';
 import 'package:sparksocial/src/features/stories/ui/widgets/stories_list.dart';
@@ -22,20 +24,15 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
 
   @override
-  void initState() {
-    super.initState();
-    _searchController.addListener(_onSearchChanged);
-  }
-
-  @override
   void dispose() {
-    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
   }
 
-  void _onSearchChanged() {
-    ref.read(searchProvider.notifier).updateQuery(_searchController.text.trim());
+  void _onSearchChanged(String query) {
+    final trimmedQuery = query.trim();
+    ref.read(searchProvider.notifier).updateQuery(trimmedQuery);
+    ref.read(postSearchProvider.notifier).updateQuery(trimmedQuery);
   }
 
   @override
@@ -45,7 +42,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     final colorScheme = theme.colorScheme;
 
     return DefaultTabController(
-      length: 1,
+      length: 2,
       child: Scaffold(
         backgroundColor: colorScheme.surface,
         body: SafeArea(
@@ -56,8 +53,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 padding: const EdgeInsets.all(16),
                 child: TextField(
                   controller: _searchController,
+                  onChanged: _onSearchChanged,
                   decoration: InputDecoration(
-                    hintText: 'Search users',
+                    hintText: 'Search users, posts...',
                     prefixIcon: Icon(FluentIcons.search_24_regular, color: theme.textTheme.bodyMedium?.color),
                     filled: true,
                     suffixIcon: _searchController.text.isNotEmpty
@@ -67,6 +65,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                             onPressed: () {
                               _searchController.clear();
                               ref.read(searchProvider.notifier).updateQuery('');
+                              ref.read(postSearchProvider.notifier).updateQuery('');
                             },
                             icon: const Icon(FluentIcons.dismiss_24_regular),
                           )
@@ -85,53 +84,41 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                 ),
               ),
               // ==== Stories or Search Results ====
-              if (searchState.query.isEmpty) ...[
+              if (searchState.query.isEmpty)
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: () async {
                       // Refresh the stories timeline
                       ref.invalidate(storiesByAuthorProvider());
                     },
-                    child: CustomScrollView(
+                    child: const CustomScrollView(
                       slivers: [
-                        const SliverToBoxAdapter(child: StoriesList()),
+                        SliverToBoxAdapter(child: StoriesList()),
                         SliverFillRemaining(
                           hasScrollBody: false,
                           child: Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(FluentIcons.search_24_regular, size: 48, color: theme.textTheme.bodyMedium?.color),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'Search for users',
-                                  style: TextStyle(fontSize: 16, color: theme.textTheme.bodyMedium?.color),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Tap the search bar above to find people',
-                                  style: TextStyle(fontSize: 14, color: theme.textTheme.bodyMedium?.color?.withAlpha(180)),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
+                            child: Text('Discover new content'),
                           ),
                         ),
                       ],
                     ),
                   ),
+                )
+              else ...[
+                const TabBar(
+                  tabs: [
+                    Tab(text: 'Posts'),
+                    Tab(text: 'Users'),
+                  ],
                 ),
-              ] else ...[
-                Theme(
-                  data: Theme.of(context).copyWith(tabBarTheme: const TabBarThemeData(dividerColor: Colors.transparent)),
-                  child: TabBar(
-                    tabs: const [Tab(text: 'Users')],
-                    indicatorColor: colorScheme.primary,
-                    labelColor: theme.textTheme.bodyLarge?.color,
-                    unselectedLabelColor: theme.textTheme.bodyMedium?.color,
+                const Expanded(
+                  child: TabBarView(
+                    children: [
+                      PostResults(),
+                      UserResults(),
+                    ],
                   ),
                 ),
-                const Expanded(child: TabBarView(children: [UserResults()])),
               ],
             ],
           ),
