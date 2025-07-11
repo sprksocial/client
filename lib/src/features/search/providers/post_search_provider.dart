@@ -32,7 +32,7 @@ class PostSearch extends _$PostSearch {
   /// Update the search query and trigger search with debounce
   void updateQuery(String query) {
     // Update query and reset pagination state
-    state = state.copyWith(query: query, searchResults: [], nextCursor: null, error: null);
+    state = state.copyWith(query: query, searchResults: [], sprkNextCursor: null, bskyNextCursor: null, error: null);
 
     if (query.isEmpty) {
       state = state.copyWith(isLoading: false);
@@ -58,64 +58,63 @@ class PostSearch extends _$PostSearch {
     try {
       final bskySession = _authRepository.session;
       if (bskySession == null) {
-        // Handle case where user is not logged in, or only search sprk
-        final response = await _feedRepository.searchPosts(query);
-        state = state.copyWith(
-          searchResults: response.posts,
-          nextCursor: response.cursor,
-          isLoading: false,
-        );
         return;
       }
 
       final bskyApi = bsky.Bluesky.fromSession(bskySession);
       final sprkSearch = _feedRepository.searchPosts(query);
-      final bskySearch = bskyApi.feed.searchPosts(query, sort: 'latest');
+      final bskySearch = bskyApi.feed.searchPosts(query, sort: 'top');
 
       final results = await Future.wait([sprkSearch, bskySearch]);
 
       final sprkResponse = results[0] as ({String? cursor, List<PostView> posts});
       final bskyResponse = results[1] as XRPCResponse<bsky.PostsByQuery>;
 
-      final bskyPosts = <PostView>[];
-      for (var i = 0; i < bskyResponse.data.posts.length; i++) {
-        try {
-          final post = bskyResponse.data.posts[i];
-          final postJson = post.toJson();
-          if (postJson['record']['reply'] != null || post.embed == null) {
-            _logger.d('Skipping reply or no embed post ${i + 1}/${bskyResponse.data.posts.length}: ${post.uri}');
-            continue;
-          }
+      final bskyPosts = bskyResponse.data.posts
+          .asMap()
+          .entries
+          .map((entry) {
+            final index = entry.key;
+            final post = entry.value;
 
-          _logger.d('Converting bsky post ${i + 1}/${bskyResponse.data.posts.length}: $postJson');
+            try {
+              final postJson = post.toJson();
+              if (postJson['record']['reply'] != null || post.embed == null) {
+                return null;
+              }
+              return PostView.fromJson(postJson);
+            } catch (e, stackTrace) {
+              final postJson = post.toJson();
+              _logger.e('Failed to convert bsky post ${index + 1}/${bskyResponse.data.posts.length}');
+              _logger.e('Post URI: ${post.uri}');
+              _logger.e('Post JSON: $postJson');
+              _logger.e('Error: $e');
+              _logger.e('Stack trace: $stackTrace');
+              return null;
+            }
+          })
+          .where((post) => post != null && post.hasSupportedMedia)
+          .cast<PostView>()
+          .toList();
 
-          final postView = PostView.fromJson(postJson);
-          bskyPosts.add(postView);
-          _logger.d('Successfully converted bsky post ${i + 1}: ${post.uri}');
-        } catch (e, stackTrace) {
-          final post = bskyResponse.data.posts[i];
-          final postJson = post.toJson();
-          _logger.e('Failed to convert bsky post ${i + 1}/${bskyResponse.data.posts.length}');
-          _logger.e('Post URI: ${post.uri}');
-          _logger.e('Post JSON: $postJson');
-          _logger.e('Error: $e');
-          _logger.e('Stack trace: $stackTrace');
-          // Continue processing other posts instead of failing completely
-        }
-      }
-
-      bskyPosts.removeWhere((post) => post.hasSupportedMedia == false);
       _logger.d('Successfully converted ${bskyPosts.length}/${bskyResponse.data.posts.length} bsky posts');
 
       final combinedPosts = [...sprkResponse.posts, ...bskyPosts];
-      //combinedPosts.shuffle();
 
       state = state.copyWith(
         searchResults: combinedPosts,
-        nextCursor: sprkResponse.cursor, // TODO: Handle bsky cursor
+        sprkNextCursor: sprkResponse.cursor,
+        bskyNextCursor: bskyResponse.data.cursor,
         isLoading: false,
       );
-      _logger.d('Search completed with ${combinedPosts.length} results, nextCursor: ${sprkResponse.cursor}');
+      _logger.d(
+        'Search completed with ${combinedPosts.length} results, sprkNextCursor: ${sprkResponse.cursor}, bskyNextCursor: ${bskyResponse.data.cursor}',
+      );
+
+      // If we have very few results, try to load more immediately
+      if (state.searchResults.length < 10 && (state.sprkNextCursor != null || state.bskyNextCursor != null)) {
+        await loadMorePosts();
+      }
     } catch (e) {
       _logger.e('Error searching posts: $e');
       state = state.copyWith(error: e.toString(), isLoading: false);
@@ -124,24 +123,87 @@ class PostSearch extends _$PostSearch {
 
   /// Load more posts using the next cursor if available
   Future<void> loadMorePosts() async {
-    final nextCursor = state.nextCursor;
-    if (nextCursor == null || nextCursor.isEmpty || state.isLoadingMore) {
-      return;
-    }
+    if (state.isLoadingMore) return;
 
     state = state.copyWith(isLoadingMore: true);
 
     try {
-      // TODO: Handle pagination for both bsky and sprk
-      final response = await _feedRepository.searchPosts(state.query, cursor: nextCursor);
-      state = state.copyWith(
-        searchResults: [...state.searchResults, ...response.posts],
-        nextCursor: response.cursor,
-        isLoadingMore: false,
-      );
+      await _loadMorePostsRecursive();
     } catch (e) {
       _logger.e('Error loading more posts: $e');
       state = state.copyWith(error: e.toString(), isLoadingMore: false);
+    } finally {
+      if (state.isLoadingMore) {
+        state = state.copyWith(isLoadingMore: false);
+      }
+    }
+  }
+
+  Future<void> _loadMorePostsRecursive() async {
+    final sprkCursor = state.sprkNextCursor;
+    if (sprkCursor != null && sprkCursor.isNotEmpty) {
+      final response = await _feedRepository.searchPosts(state.query, cursor: sprkCursor);
+      state = state.copyWith(
+        searchResults: [...state.searchResults, ...response.posts],
+        sprkNextCursor: response.cursor,
+      );
+
+      // If sprk is exhausted now and we have a bsky cursor, fetch from bsky.
+      if ((response.cursor == null || response.cursor!.isEmpty) &&
+          (state.bskyNextCursor != null && state.bskyNextCursor!.isNotEmpty)) {
+        await _loadMorePostsRecursive();
+      }
+      return;
+    }
+
+    final bskyCursor = state.bskyNextCursor;
+    if (bskyCursor != null && bskyCursor.isNotEmpty) {
+      final bskySession = _authRepository.session;
+      if (bskySession == null) {
+        return;
+      }
+      final bskyApi = bsky.Bluesky.fromSession(bskySession);
+      final response = await bskyApi.feed.searchPosts(state.query, sort: 'latest', cursor: bskyCursor);
+
+      final bskyPosts = response.data.posts
+          .asMap()
+          .entries
+          .map((entry) {
+            final index = entry.key;
+            final post = entry.value;
+
+            try {
+              final postJson = post.toJson();
+              if (postJson['record']['reply'] != null || post.embed == null) {
+                return null;
+              }
+              return PostView.fromJson(postJson);
+            } catch (e, stackTrace) {
+              final postJson = post.toJson();
+              _logger.e('Failed to convert bsky post ${index + 1}/${response.data.posts.length}');
+              _logger.e('Post URI: ${post.uri}');
+              _logger.e('Post JSON: $postJson');
+              _logger.e('Error: $e');
+              _logger.e('Stack trace: $stackTrace');
+              return null;
+            }
+          })
+          .where((post) => post != null && post.hasSupportedMedia)
+          .cast<PostView>()
+          .toList();
+
+      final initialCount = state.searchResults.length;
+      state = state.copyWith(
+        searchResults: [...state.searchResults, ...bskyPosts],
+        bskyNextCursor: response.data.cursor,
+      );
+
+      // If we still have few results and a cursor, and we actually added new posts, recurse.
+      if (state.searchResults.length < 10 &&
+          (state.bskyNextCursor != null && state.bskyNextCursor!.isNotEmpty) &&
+          state.searchResults.length > initialCount) {
+        await _loadMorePostsRecursive();
+      }
     }
   }
 }

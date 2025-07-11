@@ -16,7 +16,10 @@ class PostSearchState with _$PostSearchState {
     @Default([]) List<PostView> searchResults,
 
     /// Cursor for the next page of results (if any)
-    String? nextCursor,
+    String? sprkNextCursor,
+
+    /// Cursor for the next page of bsky results (if any)
+    String? bskyNextCursor,
 
     /// Whether more results are currently loading
     @Default(false) bool isLoadingMore,
