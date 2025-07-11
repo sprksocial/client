@@ -56,6 +56,8 @@ class _UserListPageState extends ConsumerState<UserListPage> {
         child: userListAsync.when(
           data: (userList) => UserListView(
             users: userList.profiles,
+            did: widget.did,
+            type: widget.type,
             scrollController: _scrollController,
             isFetchingMore: userList.isFetchingMore,
           ),
