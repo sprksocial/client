@@ -173,8 +173,6 @@ class ProfileFeed extends _$ProfileFeed {
       image: (images) => false,
       bskyImages: (images) => false,
       bskyRecord: (record) => false,
-      bskyRecordViewRecord:
-          (uri, cid, author, value, indexedAt, labels, replyCount, repostCount, likeCount, quoteCount, embeds) => false,
       bskyExternal: (external) => false,
     );
   }
