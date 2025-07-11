@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
+import 'package:sparksocial/src/core/utils/label_utils.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/search/providers/post_search_state.dart';
@@ -99,7 +100,10 @@ class PostSearch extends _$PostSearch {
 
       _logger.d('Successfully converted ${bskyPosts.length}/${bskyResponse.data.posts.length} bsky posts');
 
-      final combinedPosts = [...sprkResponse.posts, ...bskyPosts];
+      final filteredSprkPosts = await _filterHiddenPosts(sprkResponse.posts);
+      final filteredBskyPosts = await _filterHiddenPosts(bskyPosts);
+
+      final combinedPosts = [...filteredSprkPosts, ...filteredBskyPosts];
 
       state = state.copyWith(
         searchResults: combinedPosts,
@@ -143,8 +147,9 @@ class PostSearch extends _$PostSearch {
     final sprkCursor = state.sprkNextCursor;
     if (sprkCursor != null && sprkCursor.isNotEmpty) {
       final response = await _feedRepository.searchPosts(state.query, cursor: sprkCursor);
+      final filteredPosts = await _filterHiddenPosts(response.posts);
       state = state.copyWith(
-        searchResults: [...state.searchResults, ...response.posts],
+        searchResults: [...state.searchResults, ...filteredPosts],
         sprkNextCursor: response.cursor,
       );
 
@@ -193,8 +198,9 @@ class PostSearch extends _$PostSearch {
           .toList();
 
       final initialCount = state.searchResults.length;
+      final filteredBskyPosts = await _filterHiddenPosts(bskyPosts);
       state = state.copyWith(
-        searchResults: [...state.searchResults, ...bskyPosts],
+        searchResults: [...state.searchResults, ...filteredBskyPosts],
         bskyNextCursor: response.data.cursor,
       );
 
@@ -205,5 +211,16 @@ class PostSearch extends _$PostSearch {
         await _loadMorePostsRecursive();
       }
     }
+  }
+
+  Future<List<PostView>> _filterHiddenPosts(List<PostView> posts) async {
+    final filteredPosts = <PostView>[];
+    for (final post in posts) {
+      if (!await LabelUtils.shouldHideContent(post.labels ?? [])) {
+        filteredPosts.add(post);
+      }
+    }
+
+    return filteredPosts;
   }
 }
