@@ -107,6 +107,7 @@ class _PostCardState extends State<PostCard> {
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
+
                     ),
                   if (widget.post.record.text?.isNotEmpty ?? false) const SizedBox(height: 8),
                   Row(

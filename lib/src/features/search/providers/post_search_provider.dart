@@ -35,6 +35,9 @@ class PostSearch extends _$PostSearch {
       return;
     }
 
+    // Set loading state immediately for non-empty queries
+    state = state.copyWith(isLoading: true);
+
     // Debounce the search
     if (_debounce?.isActive ?? false) _debounce!.cancel();
     _debounce = Timer(const Duration(milliseconds: 500), () {

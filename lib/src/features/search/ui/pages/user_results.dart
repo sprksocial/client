@@ -13,8 +13,11 @@ class UserResults extends ConsumerStatefulWidget {
   ConsumerState<UserResults> createState() => _UserResultsState();
 }
 
-class _UserResultsState extends ConsumerState<UserResults> {
+class _UserResultsState extends ConsumerState<UserResults> with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -38,6 +41,7 @@ class _UserResultsState extends ConsumerState<UserResults> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final state = ref.watch(searchProvider);
     final theme = Theme.of(context);
 

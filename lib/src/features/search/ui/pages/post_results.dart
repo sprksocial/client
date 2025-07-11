@@ -1,5 +1,7 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/search/providers/post_search_provider.dart';
 import 'package:sparksocial/src/features/search/ui/widgets/post_card.dart';
 
@@ -10,8 +12,11 @@ class PostResults extends ConsumerStatefulWidget {
   ConsumerState<PostResults> createState() => _PostResultsState();
 }
 
-class _PostResultsState extends ConsumerState<PostResults> {
+class _PostResultsState extends ConsumerState<PostResults> with AutomaticKeepAliveClientMixin {
   final ScrollController _scrollController = ScrollController();
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -34,6 +39,7 @@ class _PostResultsState extends ConsumerState<PostResults> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     final state = ref.watch(postSearchProvider);
     final theme = Theme.of(context);
 
@@ -166,7 +172,7 @@ class _PostResultsState extends ConsumerState<PostResults> {
                 return PostCard(
                   post: post,
                   onTap: () {
-                    // TODO: Navigate to post detail
+                    context.router.push(StandalonePostRoute(postUri: post.uri.toString()));
                   },
                 );
               },
