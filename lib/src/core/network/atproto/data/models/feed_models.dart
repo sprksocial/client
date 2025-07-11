@@ -4,6 +4,7 @@ import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:sparksocial/src/core/utils/uri_converter.dart';
 
 part 'feed_models.freezed.dart';
 part 'feed_models.g.dart';
@@ -415,7 +416,7 @@ sealed class EmbedView with _$EmbedView {
 
   @FreezedUnionValue('app.bsky.embed.external#view')
   @JsonSerializable(explicitToJson: true)
-  const factory EmbedView.bskyExternal({required EmbedViewExternal external, required String cid}) = EmbedViewBskyExternal;
+  const factory EmbedView.bskyExternal({required EmbedViewExternal external}) = EmbedViewBskyExternal;
 
   factory EmbedView.fromJson(Map<String, dynamic> json) => _$EmbedViewFromJson(json);
 }
@@ -427,7 +428,7 @@ class EmbedViewExternal with _$EmbedViewExternal {
     required String uri,
     @Default('') String title,
     @Default('') String description,
-    @AtUriConverter() AtUri? thumb,
+    @UriConverter() Uri? thumb,
   }) = _EmbedViewExternal;
   const EmbedViewExternal._();
 
