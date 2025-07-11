@@ -26,7 +26,7 @@ class StandalonePostPage extends ConsumerStatefulWidget {
 }
 
 class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
-  Future<dynamic>? _postFuture;
+  Future<PostView>? _postFuture;
   int? _lastUpdateCount;
   final GlobalKey<PostVideoPlayerState> _videoPlayerKey = GlobalKey<PostVideoPlayerState>();
   bool _showWarningOverlay = false;
@@ -41,6 +41,11 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
 
   void _loadPost() {
     _postFuture = _loadPostWithFallback();
+    _postFuture?.then((post) {
+      if (mounted) {
+        _checkContentWarning(post);
+      }
+    });
   }
 
   Future<PostView> _loadPostWithFallback() async {
@@ -126,18 +131,11 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
       body: SafeArea(
         child: _postFuture == null
             ? const Center(child: CircularProgressIndicator())
-            : FutureBuilder(
+            : FutureBuilder<PostView>(
                 future: _postFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
-                    final postData = snapshot.data! as PostView;
-
-                    // Check for content warning on post load
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (mounted) {
-                        _checkContentWarning(postData);
-                      }
-                    });
+                    final postData = snapshot.data!;
 
                     final mainContent = Stack(
                       children: [

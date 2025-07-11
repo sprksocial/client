@@ -4,6 +4,7 @@ import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:sparksocial/src/core/utils/uri_converter.dart';
 
 part 'feed_models.freezed.dart';
 part 'feed_models.g.dart';
@@ -390,32 +391,16 @@ sealed class EmbedView with _$EmbedView {
 
   @FreezedUnionValue('app.bsky.embed.record#view')
   @JsonSerializable(explicitToJson: true)
-  const factory EmbedView.bskyRecord({required EmbedViewBskyRecordViewRecord record}) = EmbedViewBskyRecord;
-
-  @FreezedUnionValue('app.bsky.embed.record#viewRecord')
-  @JsonSerializable(explicitToJson: true)
-  const factory EmbedView.bskyRecordViewRecord({
-    @AtUriConverter() required AtUri uri,
-    required String cid,
-    required ProfileViewBasic author,
-    required dynamic value,
-    required DateTime indexedAt,
-    @Default([]) List<Label> labels,
-    int? replyCount,
-    int? repostCount,
-    int? likeCount,
-    int? quoteCount,
-    @Default([]) List<EmbedView> embeds,
-  }) = EmbedViewBskyRecordViewRecord;
+  const factory EmbedView.bskyRecord({required EmbedViewRecord record}) = EmbedViewBskyRecord;
 
   @FreezedUnionValue('app.bsky.embed.recordWithMedia#view')
   @JsonSerializable(explicitToJson: true)
-  const factory EmbedView.bskyRecordWithMedia({required EmbedViewBskyRecord record, required EmbedView media}) =
+  const factory EmbedView.bskyRecordWithMedia({required EmbedViewRecord record, required EmbedView media}) =
       EmbedViewBskyRecordWithMedia;
 
   @FreezedUnionValue('app.bsky.embed.external#view')
   @JsonSerializable(explicitToJson: true)
-  const factory EmbedView.bskyExternal({required EmbedViewExternal external, required String cid}) = EmbedViewBskyExternal;
+  const factory EmbedView.bskyExternal({required EmbedViewExternal external}) = EmbedViewBskyExternal;
 
   factory EmbedView.fromJson(Map<String, dynamic> json) => _$EmbedViewFromJson(json);
 }
@@ -427,11 +412,52 @@ class EmbedViewExternal with _$EmbedViewExternal {
     required String uri,
     @Default('') String title,
     @Default('') String description,
-    @AtUriConverter() AtUri? thumb,
+    @UriConverter() Uri? thumb,
   }) = _EmbedViewExternal;
   const EmbedViewExternal._();
 
   factory EmbedViewExternal.fromJson(Map<String, dynamic> json) => _$EmbedViewExternalFromJson(json);
+}
+
+@Freezed(unionKey: r'$type')
+sealed class EmbedViewRecord with _$EmbedViewRecord {
+  const EmbedViewRecord._();
+
+  /// A full, viewable record.
+  @FreezedUnionValue('app.bsky.embed.record#viewRecord')
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedViewRecord.record({
+    @AtUriConverter() required AtUri uri,
+    required String cid,
+    required ProfileViewBasic author,
+    required dynamic value, // This is typically a PostRecord
+    required DateTime indexedAt,
+    @Default([]) List<Label> labels,
+    int? replyCount,
+    int? repostCount,
+    int? likeCount,
+    int? quoteCount,
+    @Default([]) List<EmbedView> embeds,
+  }) = EmbedViewRecord_Record;
+
+  /// A placeholder for a record that could not be found.
+  @FreezedUnionValue('app.bsky.embed.record#viewNotFound')
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedViewRecord.notFound({
+    @AtUriConverter() required AtUri uri,
+    required bool notFound,
+  }) = EmbedViewRecord_NotFound;
+
+  /// A placeholder for a record that is blocked.
+  @FreezedUnionValue('app.bsky.embed.record#viewBlocked')
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedViewRecord.blocked({
+    @AtUriConverter() required AtUri uri,
+    required bool blocked,
+    required BlockedAuthor author,
+  }) = EmbedViewRecord_Blocked;
+
+  factory EmbedViewRecord.fromJson(Map<String, dynamic> json) => _$EmbedViewRecordFromJson(json);
 }
 
 @freezed

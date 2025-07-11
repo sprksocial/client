@@ -139,4 +139,15 @@ abstract class FeedRepository {
   ///
   /// [storyUris] List of story URIs to fetch
   Future<List<StoryView>> getStoryViews(List<AtUri> storyUris);
+
+  /// Search for posts
+  /// [query] The search query string
+  /// [limit] The number of items to return (default 20)
+  /// [cursor] Pagination cursor for the next set of results
+  Future<({List<PostView> posts, String? cursor})> searchPosts(
+    String query, {
+    int limit = 20,
+    String sort = 'latest',
+    String? cursor,
+  });
 }
