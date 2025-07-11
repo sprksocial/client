@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
-/// embed converter 
 // ignore: implementation_imports
 import 'package:bluesky/src/services/entities/converter/embed_converter.dart';
 import 'package:get_it/get_it.dart';
@@ -887,6 +886,53 @@ class FeedRepositoryImpl implements FeedRepository {
         _logger.e('Failed to post story: ${response.status} ${response.data}');
         throw Exception('Failed to post story: ${response.status} ${response.data}');
       }
+    });
+  }
+
+  @override
+  Future<({List<PostView> posts, String? cursor})> searchPosts(
+    String query, {
+    int limit = 20,
+    String sort = 'latest',
+    String? cursor,
+  }) async {
+    _logger.d('Searching posts with query: $query, limit: $limit, sort: $sort, cursor: $cursor');
+
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final parameters = <String, dynamic>{
+        'q': query,
+        'limit': limit,
+        'sort': sort,
+        'cursor': cursor,
+      };
+
+      final response = await atproto.get(
+        NSID.parse('so.sprk.feed.searchPosts'),
+        parameters: parameters,
+        headers: {'atproto-proxy': _client.sprkDid},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+      );
+
+      final posts = (response.data['posts']! as List<dynamic>)
+          .map((post) => post as Map<String, dynamic>)
+          .map(PostView.fromJson)
+          .toList();
+
+      final newCursor = response.data['cursor'] as String?;
+
+      return (posts: posts, cursor: newCursor);
     });
   }
 

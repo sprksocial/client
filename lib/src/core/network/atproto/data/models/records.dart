@@ -127,7 +127,7 @@ sealed class Embed with _$Embed {
   @FreezedUnionValue('app.bsky.embed.recordWithMedia')
   @JsonSerializable(explicitToJson: true)
   const factory Embed.bskyRecordWithMedia({
-    required StrongRef record,
+    required EmbedBskyRecord record,
     required Embed media,
   }) = EmbedBskyRecordWithMedia;
 
