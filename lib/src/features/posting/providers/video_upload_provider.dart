@@ -5,38 +5,39 @@ import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/posting/providers/video_upload_progress_state.dart';
+import 'package:sparksocial/src/features/posting/providers/post_story.dart';
+import 'package:sparksocial/src/features/posting/providers/video_upload_state.dart';
 
-part 'video_upload_progress_provider.g.dart';
+part 'video_upload_provider.g.dart';
 
 @riverpod
-class VideoUploadProgress extends _$VideoUploadProgress {
+class VideoUpload extends _$VideoUpload {
   late final AuthRepository _authRepository;
   late final FeedRepository _feedRepository;
   late final SparkLogger _logger;
 
   @override
-  VideoUploadProgressState build(String videoPath) {
+  VideoUploadState build(String videoPath) {
     _authRepository = GetIt.instance<SprkRepository>().authRepository;
     _feedRepository = GetIt.instance<SprkRepository>().feed;
     _logger = GetIt.instance<LogService>().getLogger('VideoService');
-    return VideoUploadProgressState.initial(videoPath: videoPath);
+    return VideoUploadState.initial(videoPath: videoPath);
   }
 
   /// Process a video file and upload it to the video service
   Future<void> processVideo(String videoPath) async {
     try {
-      state = VideoUploadProgressState.processingVideo(videoPath: videoPath);
+      state = VideoUploadState.processingVideo(videoPath: videoPath);
       _logger.i('Starting video processing for: $videoPath');
 
       final blob = await _feedRepository.uploadVideo(videoPath);
 
-      state = VideoUploadProgressState.videoProcessed(videoPath: videoPath, blob: blob);
+      state = VideoUploadState.videoProcessed(videoPath: videoPath, blob: blob);
 
       _logger.i('Video processed successfully');
     } catch (error, stackTrace) {
       _logger.e('Error processing video', error: error, stackTrace: stackTrace);
-      state = VideoUploadProgressState.error(message: error.toString(), videoPath: videoPath);
+      state = VideoUploadState.error(message: error.toString(), videoPath: videoPath);
     }
   }
 
@@ -49,7 +50,7 @@ class VideoUploadProgress extends _$VideoUploadProgress {
     bool crosspostToBsky = false,
   }) async {
     try {
-      state = VideoUploadProgressState.postingVideo(
+      state = VideoUploadState.postingVideo(
         videoPath: videoPath ?? state.currentVideoPath ?? '',
         blob: blob,
         description: description,
@@ -90,12 +91,12 @@ class VideoUploadProgress extends _$VideoUploadProgress {
         }
       }
 
-      state = VideoUploadProgressState.posted(videoPath: videoPath ?? state.currentVideoPath ?? '', blob: blob, postRef: recordRes.data);
+      state = VideoUploadState.posted(videoPath: videoPath ?? state.currentVideoPath ?? '', blob: blob, postRef: recordRes.data);
 
       _logger.i('Video posted successfully');
     } catch (error, stackTrace) {
       _logger.e('Error posting video', error: error, stackTrace: stackTrace);
-      state = VideoUploadProgressState.error(message: error.toString(), videoPath: videoPath ?? state.currentVideoPath, blob: blob);
+      state = VideoUploadState.error(message: error.toString(), videoPath: videoPath ?? state.currentVideoPath, blob: blob);
     }
   }
 
@@ -105,19 +106,32 @@ class VideoUploadProgress extends _$VideoUploadProgress {
     String description = '',
     String altText = '',
     bool crosspostToBsky = false,
+    bool storyMode = false,
   }) async {
     await processVideo(videoPath);
 
     // Check if processing was successful
     final currentState = state;
     if (currentState is VideoUploadStateVideoProcessed) {
-      await postVideo(
-        blob: currentState.blob,
-        description: description,
-        altText: altText,
-        videoPath: videoPath,
-        crosspostToBsky: crosspostToBsky,
-      );
+      if (storyMode) {
+        // Post as a story
+        ref.read(
+          postStoryProvider(
+            EmbedVideo(video: currentState.blob),
+            selfLabels: [],
+            tags: [],
+          ),
+        );
+      } else {
+        // Post as a regular video
+        await postVideo(
+          blob: currentState.blob,
+          description: description,
+          altText: altText,
+          videoPath: videoPath,
+          crosspostToBsky: crosspostToBsky,
+        );
+      }
     }
   }
 

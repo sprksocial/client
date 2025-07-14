@@ -2,10 +2,10 @@ import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:imgly_editor/model/editor_result.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/pages.dart';
 import 'package:sparksocial/src/features/profile/ui/pages/user_list_page.dart';
-import 'package:video_player/video_player.dart';
 
 part 'app_router.gr.dart';
 
@@ -78,10 +78,7 @@ class AppRouter extends RootStackRouter {
       ],
     ),
     AutoRoute(page: UserListRoute.page, path: '/profile/:did/users'),
-    AutoRoute(page: VideoPlaybackRoute.page, path: '/video-playback'),
     AutoRoute(page: VideoReviewRoute.page, path: '/video-review'),
-    AutoRoute(page: StoryReviewRoute.page, path: '/story-review'),
-    AutoRoute(page: CreateVideoRoute.page, path: '/create-video'),
     AutoRoute(page: ImageReviewRoute.page, path: '/image-review'),
 
     // Stories pages

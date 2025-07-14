@@ -2,23 +2,23 @@ import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
-part 'video_upload_progress_state.freezed.dart';
+part 'video_upload_state.freezed.dart';
 
 @freezed
-class VideoUploadProgressState with _$VideoUploadProgressState {
-  const VideoUploadProgressState._();
+class VideoUploadState with _$VideoUploadState {
+  const VideoUploadState._();
 
   /// Initial state
-  const factory VideoUploadProgressState.initial({required String videoPath}) = VideoUploadStateInitial;
+  const factory VideoUploadState.initial({required String videoPath}) = VideoUploadStateInitial;
 
   /// Processing video file
-  const factory VideoUploadProgressState.processingVideo({required String videoPath}) = VideoUploadStateProcessingVideo;
+  const factory VideoUploadState.processingVideo({required String videoPath}) = VideoUploadStateProcessingVideo;
 
   /// Video processed successfully
-  const factory VideoUploadProgressState.videoProcessed({required String videoPath, required Blob blob}) = VideoUploadStateVideoProcessed;
+  const factory VideoUploadState.videoProcessed({required String videoPath, required Blob blob}) = VideoUploadStateVideoProcessed;
 
   /// Posting video to feed
-  const factory VideoUploadProgressState.postingVideo({
+  const factory VideoUploadState.postingVideo({
     required String videoPath,
     required Blob blob,
     required String description,
@@ -26,11 +26,11 @@ class VideoUploadProgressState with _$VideoUploadProgressState {
   }) = VideoUploadStatePostingVideo;
 
   /// Video posted successfully
-  const factory VideoUploadProgressState.posted({required String videoPath, required Blob blob, required StrongRef postRef}) =
+  const factory VideoUploadState.posted({required String videoPath, required Blob blob, required StrongRef postRef}) =
       VideoUploadStatePosted;
 
   /// Error occurred
-  const factory VideoUploadProgressState.error({required String message, String? videoPath, Blob? blob}) = VideoUploadStateError;
+  const factory VideoUploadState.error({required String message, String? videoPath, Blob? blob}) = VideoUploadStateError;
 
   /// Whether the service is currently busy
   bool get isBusy => when(

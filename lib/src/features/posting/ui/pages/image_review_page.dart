@@ -3,23 +3,25 @@ import 'dart:io';
 import 'package:atproto/atproto.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide Image;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:imgly_editor/imgly_editor.dart';
 import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart' hide Image;
+import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
+import 'package:sparksocial/src/features/posting/providers/post_story.dart';
 import 'package:sparksocial/src/features/posting/providers/upload_provider.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
 class ImageReviewPage extends ConsumerStatefulWidget {
-  const ImageReviewPage({required this.imageFiles, super.key});
+  const ImageReviewPage({required this.imageFiles, required this.storyMode, super.key});
   final List<XFile> imageFiles;
+  final bool storyMode;
 
   @override
   ConsumerState<ImageReviewPage> createState() => _ImageReviewPageState();
@@ -37,19 +39,21 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   late final FeedRepository _feedRepository;
   final Map<String, String?> _sceneMap = {};
 
-  Future<void> showFullscreenImage(BuildContext context, XFile imageFile) async {
+  Future<void> showImageEditor(BuildContext context, XFile imageFile) async {
     final handle = ref.read(sessionProvider)?.handle;
     // if there's a scene use it, or else create a new one from the image
     final source = _sceneMap[imageFile.path] != null
         ? Source.fromScene(_sceneMap[imageFile.path]!)
-        : Source.fromImage(imageFile.path);
+        : Source.fromImage('file://${imageFile.path}');
+
     final newImage = await GetIt.I<IMGLYRepository>().openImageEditor(userID: handle, source: source);
     // If the user edited the image, replace the original file in the list
     if (newImage != null) {
       if (newImage.artifact != null) {
+        final uri = Uri.parse(newImage.artifact!).toFilePath(windows: false);
         setState(() {
-          _imageFiles[_currentPage] = XFile(newImage.artifact!);
-          _sceneMap[newImage.artifact!] = newImage.scene;
+          _imageFiles[_currentPage] = XFile(uri);
+          _sceneMap[uri] = newImage.scene;
         });
       }
     }
@@ -124,7 +128,26 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       if (mounted) {
         context.router.pushAndPopUntil(const MainRoute(), predicate: (route) => false);
       }
-      final result = await _feedRepository.postImages(description, _imageFiles, _altTexts, crosspostToBsky: crosspostEnabled);
+      StrongRef result;
+      if (widget.storyMode) {
+        final uploadedImage = await _feedRepository.uploadImages(
+          imageFiles: _imageFiles,
+          altTexts: _altTexts,
+        );
+        if (uploadedImage.isEmpty) {
+          throw Exception('No images uploaded');
+        }
+        result = ref
+            .read(
+              postStoryProvider(
+                Embed.image(images: uploadedImage),
+              ),
+            )
+            .value!;
+      } else {
+        // Post as a regular image post
+        result = await _feedRepository.postImages(description, _imageFiles, _altTexts, crosspostToBsky: crosspostEnabled);
+      }
       uploadService.completeTask(taskId);
       return result;
     } catch (e) {
@@ -179,7 +202,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                                 itemBuilder: (context, index) {
                                   final image = _imageFiles[index];
                                   return GestureDetector(
-                                    onTap: () => showFullscreenImage(context, image),
+                                    onTap: () => showImageEditor(context, image),
                                     child: Stack(
                                       children: [
                                         Container(
@@ -271,25 +294,26 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                             ],
                           ),
                         ),
-                      const SizedBox(height: 20),
+                      if (!widget.storyMode) const SizedBox(height: 20),
                       // Add More Images Button
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: canPickMore ? _pickMoreImages : null,
-                          icon: const Icon(FluentIcons.add_24_regular),
-                          label: Text(
-                            canPickMore ? 'Add More Images (${_imageFiles.length}/$_maxImages)' : 'Image Limit Reached',
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Theme.of(context).colorScheme.primary,
-                            disabledBackgroundColor: Theme.of(context).colorScheme.primary.withAlpha(100),
-                            foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      if (!widget.storyMode)
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: canPickMore ? _pickMoreImages : null,
+                            icon: const Icon(FluentIcons.add_24_regular),
+                            label: Text(
+                              canPickMore ? 'Add More Images (${_imageFiles.length}/$_maxImages)' : 'Image Limit Reached',
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Theme.of(context).colorScheme.primary,
+                              disabledBackgroundColor: Theme.of(context).colorScheme.primary.withAlpha(100),
+                              foregroundColor: Theme.of(context).colorScheme.onPrimary,
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            ),
                           ),
                         ),
-                      ),
                       const SizedBox(height: 20),
                       // Description input with character count
                       Builder(
@@ -415,7 +439,10 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                       : () async {
                           final postRef = await _uploadImagesAndPost();
                           if (context.mounted && postRef != null) {
-                            context.router.push(StandalonePostRoute(postUri: postRef.uri.toString()));
+                            context.router.popUntilRoot();
+                            if (!widget.storyMode) {
+                              context.router.push(StandalonePostRoute(postUri: postRef.uri.toString()));
+                            }
                           }
                         },
                   style: ElevatedButton.styleFrom(

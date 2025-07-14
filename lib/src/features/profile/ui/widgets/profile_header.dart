@@ -192,7 +192,7 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                       right: 0,
                       bottom: 0,
                       child: GestureDetector(
-                        onTap: () => context.router.push(CreateVideoRoute(isStoryMode: true)),
+                        // TODO: ontap create story
                         child: Container(
                           width: 30,
                           height: 30,

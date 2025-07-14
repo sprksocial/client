@@ -50,16 +50,15 @@ class _MainPageState extends ConsumerState<MainPage> {
                 leading: Icon(Icons.camera_alt, color: colorScheme.onSurface),
                 title: Text('Record', style: TextStyle(color: colorScheme.onSurface)),
                 onTap: () async {
-                  context.router.pop(context);
-                  // camera -> open editor -> video review page -> upload page -> post page
+                  // camera -> open editor -> video review page -> post page
                   final cameraResult = await imglyRepository.openCamera(userID: handle);
                   if (cameraResult != null && cameraResult.recording != null && cameraResult.recording!.recordings.isNotEmpty) {
                     if (context.mounted) {
                       final video = await imglyRepository.openVideoEditor(
                         source: Source.fromVideo(cameraResult.recording!.recordings.first.videos.first.uri),
                       );
-                      if (video != null && video.artifact != null && context.mounted) {
-                        context.router.push(VideoReviewRoute(videoPath: video.artifact!));
+                      if (video != null && context.mounted) {
+                        context.router.push(VideoReviewRoute(editorResult: video, storyMode: false));
                       }
                     }
                   }
@@ -69,18 +68,17 @@ class _MainPageState extends ConsumerState<MainPage> {
                 leading: Icon(Icons.videocam, color: colorScheme.onSurface),
                 title: Text('Upload Video', style: TextStyle(color: colorScheme.onSurface)),
                 onTap: () async {
-                  context.router.pop(context);
-                  // pick video -> open editor -> video review page -> upload page -> post page
+                  // pick video -> open editor -> video review page -> post page
                   final pickedVideo = await ImagePicker().pickVideo(
                     source: ImageSource.gallery,
                     maxDuration: const Duration(seconds: 180),
                   );
                   if (pickedVideo != null && context.mounted) {
                     final video = await imglyRepository.openVideoEditor(
-                      source: Source.fromVideo(pickedVideo.path),
+                      source: Source.fromVideo('file://${pickedVideo.path}'),
                     );
-                    if (video != null && video.artifact != null && context.mounted) {
-                      context.router.push(VideoReviewRoute(videoPath: video.artifact!));
+                    if (video != null && context.mounted) {
+                      context.router.push(VideoReviewRoute(editorResult: video, storyMode: false));
                     }
                   }
                 },
@@ -89,13 +87,13 @@ class _MainPageState extends ConsumerState<MainPage> {
                 leading: Icon(Icons.photo_library, color: colorScheme.onSurface),
                 title: Text('Upload Images', style: TextStyle(color: colorScheme.onSurface)),
                 onTap: () async {
-                  context.router.pop(context);
-                  // pick images -> images review page (image editor when image is selected) -> upload page -> post page
+                  // pick images -> images review page (image editor when image is selected) -> post page
                   final pickedImages = await ImagePicker().pickMultiImage(limit: 12);
                   if (context.mounted && pickedImages.isNotEmpty) {
                     context.router.push(
                       ImageReviewRoute(
                         imageFiles: pickedImages,
+                        storyMode: false,
                       ),
                     );
                   }
