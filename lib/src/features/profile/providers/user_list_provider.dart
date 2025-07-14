@@ -1,5 +1,5 @@
 import 'package:atproto_core/atproto_core.dart';
-import 'package:bluesky/bluesky.dart';
+import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/di/service_locator.dart';
@@ -36,6 +36,12 @@ class UserList extends _$UserList {
   final GraphRepository _graphRepository = sl<GraphRepository>();
   final AuthRepository _authRepository = sl<AuthRepository>();
 
+  bool isCurrentUser(String did) {
+    final session = _authRepository.session;
+    if (session == null) return false;
+    return session.did == did;
+  }
+
   @override
   Future<PaginatedUserList> build({required String did, required UserListType type}) async {
     List<ProfileView> profiles;
@@ -65,12 +71,12 @@ class UserList extends _$UserList {
     if (didsToFetch.isNotEmpty) {
       final session = _authRepository.session;
       if (session != null) {
-        final bsky = Bluesky.fromSession(session);
-        final fetchedProfiles = <ActorProfile>[];
+        final bskyClient = bsky.Bluesky.fromSession(session);
+        final fetchedProfiles = <bsky.ActorProfile>[];
 
         for (var i = 0; i < didsToFetch.length; i += 25) {
           final batch = didsToFetch.sublist(i, i + 25 > didsToFetch.length ? didsToFetch.length : i + 25);
-          final profilesResponse = await bsky.actor.getProfiles(actors: batch);
+          final profilesResponse = await bskyClient.actor.getProfiles(actors: batch);
           fetchedProfiles.addAll(profilesResponse.data.profiles);
         }
         final profilesMap = {for (final p in fetchedProfiles) p.did: p};
@@ -88,6 +94,42 @@ class UserList extends _$UserList {
           }
         }
       }
+    }
+  }
+
+  Future<void> followUser(String userDid) async {
+    try {
+      final response = await _graphRepository.followUser(userDid);
+      final updatedProfiles = state.value!.profiles.map((p) {
+        if (p.did == userDid) {
+          return p.copyWith(
+            viewer: p.viewer?.copyWith(following: AtUri.parse(response.uri)) ?? ActorViewer(following: AtUri.parse(response.uri)),
+          );
+        }
+        return p;
+      }).toList();
+      state = AsyncValue.data(state.value!.copyWith(profiles: updatedProfiles));
+    } catch (e) {
+      // handle error, maybe revert state
+    }
+  }
+
+  Future<void> unfollowUser(String userDid) async {
+    final profile = state.value!.profiles.firstWhere((p) => p.did == userDid);
+    final followUri = profile.viewer?.following;
+    if (followUri == null) return;
+
+    try {
+      await _graphRepository.unfollowUser(followUri);
+      final updatedProfiles = state.value!.profiles.map((p) {
+        if (p.did == userDid) {
+          return p.copyWith(viewer: p.viewer?.copyWith(following: null));
+        }
+        return p;
+      }).toList();
+      state = AsyncValue.data(state.value!.copyWith(profiles: updatedProfiles));
+    } catch (e) {
+      // handle error, maybe revert state
     }
   }
 
@@ -123,43 +165,6 @@ class UserList extends _$UserList {
     } catch (e) {
       // Revert on error
       state = AsyncValue.data(state.value!.copyWith(isFetchingMore: false));
-    }
-  }
-
-  Future<void> toggleFollow(String did) async {
-    final currentState = state.valueOrNull;
-    if (currentState == null) return;
-
-    final userIndex = currentState.profiles.indexWhere((user) => user.did == did);
-    if (userIndex == -1) return;
-
-    final user = currentState.profiles[userIndex];
-    final isCurrentlyFollowing = user.viewer?.following != null;
-    final currentFollowUri = user.viewer?.following;
-
-    // Optimistic UI update
-    final updatedUser = user.copyWith(
-      viewer: user.viewer?.copyWith(following: isCurrentlyFollowing ? null : AtUri.parse('at://temp/uri')),
-    );
-    final newList = List<ProfileView>.from(currentState.profiles);
-    newList[userIndex] = updatedUser;
-    state = AsyncValue.data(currentState.copyWith(profiles: newList));
-
-    try {
-      final newUriString = await _graphRepository.toggleFollow(did, currentFollowUri);
-      final newUri = newUriString != null ? AtUri.parse(newUriString) : null;
-
-      // Final state update with correct URI
-      final finalUser = user.copyWith(
-        viewer: user.viewer?.copyWith(following: newUri),
-      );
-      final finalList = List<ProfileView>.from(state.value!.profiles);
-      finalList[userIndex] = finalUser;
-      state = AsyncValue.data(currentState.copyWith(profiles: finalList));
-    } catch (e) {
-      // Revert on error
-      state = AsyncValue.data(currentState);
-      // Optionally, show an error message to the user
     }
   }
 }
