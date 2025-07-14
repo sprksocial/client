@@ -11,8 +11,17 @@ class UserListView extends ConsumerWidget {
   final List<ProfileView> users;
   final ScrollController? scrollController;
   final bool isFetchingMore;
+  final String did;
+  final UserListType type;
 
-  const UserListView({required this.users, this.scrollController, this.isFetchingMore = false, super.key});
+  const UserListView({
+    required this.users,
+    required this.did,
+    required this.type,
+    this.scrollController,
+    this.isFetchingMore = false,
+    super.key,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,12 +52,13 @@ class UserListView extends ConsumerWidget {
             avatarUrl: user.avatar.toString(),
             description: user.description,
             isFollowing: user.viewer?.following != null,
+            showFollowButton: !ref.read(userListProvider(did: did, type: type).notifier).isCurrentUser(user.did),
             onTap: () => context.router.push(ProfileRoute(did: user.did)),
             onFollowTap: () {
-              ref.read(userListProvider(did: user.did, type: UserListType.followers).notifier).toggleFollow(user.did);
+              ref.read(userListProvider(did: did, type: type).notifier).followUser(user.did);
             },
             onUnfollowTap: () {
-              ref.read(userListProvider(did: user.did, type: UserListType.following).notifier).toggleFollow(user.did);
+              ref.read(userListProvider(did: did, type: type).notifier).unfollowUser(user.did);
             },
           ),
         );
