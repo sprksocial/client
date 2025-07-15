@@ -125,9 +125,6 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       final description = _descriptionController.text;
       final taskId = uploadService.registerTask('image');
       uploadService.startTask(taskId);
-      if (mounted) {
-        context.router.pushAndPopUntil(const MainRoute(), predicate: (route) => false);
-      }
       StrongRef result;
       if (widget.storyMode) {
         final uploadedImage = await _feedRepository.uploadImages(

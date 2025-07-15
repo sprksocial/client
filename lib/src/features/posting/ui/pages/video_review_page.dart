@@ -30,21 +30,19 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
   final TextEditingController _descriptionController = TextEditingController();
   bool _isPosting = false;
   final String _videoAltText = '';
-  String _scene = '';
-  String _currentTaskId = '';
+  late EditorResult _editorResult;
   late XFile _video;
 
   @override
   void initState() {
     super.initState();
-    _scene = widget.editorResult.scene!;
+    _editorResult = widget.editorResult;
     _video = XFile(Uri.parse(widget.editorResult.artifact!).toFilePath(windows: false));
   }
 
   @override
   void dispose() {
     _descriptionController.dispose();
-    ref.read(uploadProvider.notifier).failTask(_currentTaskId, 'Video upload cancelled');
     super.dispose();
   }
 
@@ -55,14 +53,13 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
       _isPosting = true;
     });
 
+    // Register a new upload task
+    final uploadNotifier = ref.read(uploadProvider.notifier);
+    final taskId = uploadNotifier.registerTask('video');
+
     try {
       final description = _descriptionController.text;
       final crosspostEnabled = ref.read(settingsProvider).postToBskyEnabled;
-
-      // Register a new upload task
-      final uploadNotifier = ref.read(uploadProvider.notifier);
-      final taskId = uploadNotifier.registerTask('video');
-      _currentTaskId = taskId;
 
       uploadNotifier.startTask(taskId);
 
@@ -76,10 +73,20 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         storyMode: widget.storyMode,
       );
 
-      // Mark task as completed
+      final state = ref.read(videoUploadProvider(_video.path));
+
       uploadNotifier.completeTask(taskId);
-      switch (ref.read(videoUploadProvider(_video.path).select((state) => state))) {
+
+      setState(() {
+        _isPosting = false;
+      });
+      
+
+      switch (state) {
         case VideoUploadStatePosted(:final postRef):
+          if (mounted && !widget.storyMode) {
+            context.router.push(StandalonePostRoute(postUri: postRef.uri.toString()));
+          }
           return postRef;
         default:
           return null;
@@ -96,8 +103,6 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         ).showSnackBar(SnackBar(content: Text('Failed to upload video: $e'), backgroundColor: Colors.red));
 
         // Update upload service with error state
-        final uploadNotifier = ref.read(uploadProvider.notifier);
-        final taskId = uploadNotifier.registerTask('video');
         uploadNotifier.failTask(taskId, e.toString());
       }
     }
@@ -118,221 +123,208 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         title: Text('Edit Video', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
       ),
       body: SafeArea(
-        child: _isPosting
-            ? Center(
-                child: Column(
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: () {
-                        ref.read(uploadProvider.notifier).failTask(_currentTaskId, 'Video upload cancelled');
-                        setState(() {
-                          _isPosting = false;
-                        });
-                      },
-                      child: const Text('Cancel Upload'),
-                    ),
-                  ],
-                ),
-              )
-            : Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          children: [
-                            // Video preview big on top with ALT overlay
-                            Stack(
-                              children: [
-                                ClipRRect(
-                                  borderRadius: BorderRadius.circular(12),
-                                  child: AspectRatio(
-                                    aspectRatio: 1,
-                                    child: GestureDetector(
-                                      onTap: () async {
-                                        final imgly = GetIt.I<IMGLYRepository>();
-                                        final handle = ref.read(sessionProvider)?.handle;
-                                        final newResult = await imgly.openVideoEditor(
-                                          userID: handle,
-                                          source: Source.fromScene(_scene),
-                                        );
-                                        if (newResult != null) {
-                                          setState(() {
-                                            _scene = newResult.scene!;
-                                            _video = XFile(Uri.parse(newResult.artifact!).toFilePath(windows: false));
-                                          });
-                                        }
-                                      },
-                                      child: Image.file(
-                                        File(widget.editorResult.thumbnail!),
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                // ALT button overlay (bottom right)
-                                Positioned(
-                                  bottom: 12,
-                                  right: 12,
-                                  child: Material(
-                                    color: Colors.black.withAlpha(100),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      // Video preview big on top with ALT overlay
+                      Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: AspectRatio(
+                              aspectRatio: 1,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  final imgly = GetIt.I<IMGLYRepository>();
+                                  final handle = ref.read(sessionProvider)?.handle;
+                                  final newResult = await imgly.openVideoEditor(
+                                    userID: handle,
+                                    source: Source.fromScene(_editorResult.scene!),
+                                  );
+                                  if (newResult != null) {
+                                    setState(() {
+                                      _editorResult = newResult;
+                                      _video = XFile(Uri.parse(newResult.artifact!).toFilePath(windows: false));
+                                    });
+                                  }
+                                },
+                                child: Container(
+                                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                                  decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(8),
-                                    child: InkWell(
-                                      onTap: () async {},
-                                      borderRadius: BorderRadius.circular(8),
-                                      child: Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                        child: Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            const Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 16),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              _videoAltText.isEmpty ? 'ALT' : 'ALT',
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
+                                    image: DecorationImage(
+                                      image: FileImage(
+                                        File(Uri.tryParse(_editorResult.thumbnail ?? '')?.toFilePath(windows: false) ?? ''),
                                       ),
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-                            // Description input with character count
-                            Builder(
-                              builder: (context) {
-                                final theme = Theme.of(context);
-                                final textLength = _descriptionController.text.runes.length;
-
-                                return Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Material(
-                                      color: Colors.transparent,
-                                      borderRadius: BorderRadius.circular(12),
-                                      child: TextField(
-                                        controller: _descriptionController,
-                                        maxLength: 300,
-                                        maxLines: 4,
-                                        style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurface),
-                                        decoration: InputDecoration(
-                                          hintText: 'Add a description... (optional)',
-                                          hintStyle: theme.textTheme.bodyLarge?.copyWith(
-                                            color: theme.colorScheme.onSurfaceVariant,
-                                          ),
-                                          border: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: BorderSide(color: theme.colorScheme.outline),
-                                          ),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: BorderSide(color: theme.colorScheme.outline),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(12),
-                                            borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
-                                          ),
-                                          filled: true,
-                                          fillColor: theme.colorScheme.surfaceContainerHighest,
-                                          contentPadding: const EdgeInsets.all(16),
-                                          counterText: '',
-                                        ),
-                                        onChanged: (_) => setState(() {}),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Align(
-                                      alignment: Alignment.centerRight,
-                                      child: Text(
-                                        '$textLength/300',
-                                        style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                            const SizedBox(height: 20),
-                            // Bluesky Cross-posting Switch
-                            Consumer(
-                              builder: (context, ref, _) {
-                                final settings = ref.watch(settingsProvider);
-                                return Column(
-                                  children: [
-                                    Container(
-                                      decoration: BoxDecoration(
-                                        color: Theme.of(context).colorScheme.surface,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: ListTile(
-                                        title: Text(
-                                          'Post to Bluesky',
-                                          style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                                        ),
-                                        trailing: Switch(
-                                          value: settings.postToBskyEnabled,
-                                          onChanged: (bool value) {
-                                            ref.read(settingsProvider.notifier).setPostToBsky(value);
-                                          },
-                                          activeColor: Theme.of(context).colorScheme.primary,
-                                        ),
-                                        onTap: () {
-                                          ref.read(settingsProvider.notifier).setPostToBsky(!settings.postToBskyEnabled);
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _isPosting
-                            ? null
-                            : () async {
-                                final postRef = await _uploadVideo();
-                                if (context.mounted && postRef != null && !widget.storyMode) {
-                                  context.router.push(StandalonePostRoute(postUri: postRef.uri.toString()));
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          disabledBackgroundColor: Theme.of(context).colorScheme.primary.withAlpha(100),
-                        ),
-                        child: _isPosting
-                            ? const SizedBox(
-                                height: 20,
-                                width: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                              )
-                            : const Text(
-                                'Post',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
                               ),
+                            ),
+                          ),
+                          // ALT button overlay (bottom right)
+                          Positioned(
+                            bottom: 12,
+                            right: 12,
+                            child: Material(
+                              color: Colors.black.withAlpha(100),
+                              borderRadius: BorderRadius.circular(8),
+                              child: InkWell(
+                                onTap: () async {},
+                                borderRadius: BorderRadius.circular(8),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 16),
+                                      const SizedBox(width: 4),
+                                      Text(
+                                        _videoAltText.isEmpty ? 'ALT' : 'ALT',
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
+                      const SizedBox(height: 20),
+                      // Description input with character count
+                      Builder(
+                        builder: (context) {
+                          final theme = Theme.of(context);
+                          final textLength = _descriptionController.text.runes.length;
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Material(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                                child: TextField(
+                                  controller: _descriptionController,
+                                  maxLength: 300,
+                                  maxLines: 4,
+                                  style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onSurface),
+                                  decoration: InputDecoration(
+                                    hintText: 'Add a description... (optional)',
+                                    hintStyle: theme.textTheme.bodyLarge?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: theme.colorScheme.outline),
+                                    ),
+                                    enabledBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: theme.colorScheme.outline),
+                                    ),
+                                    focusedBorder: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                      borderSide: BorderSide(color: theme.colorScheme.primary, width: 2),
+                                    ),
+                                    filled: true,
+                                    fillColor: theme.colorScheme.surfaceContainerHighest,
+                                    contentPadding: const EdgeInsets.all(16),
+                                    counterText: '',
+                                  ),
+                                  onChanged: (_) => setState(() {}),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Align(
+                                alignment: Alignment.centerRight,
+                                child: Text(
+                                  '$textLength/300',
+                                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      // Bluesky Cross-posting Switch
+                      Consumer(
+                        builder: (context, ref, _) {
+                          final settings = ref.watch(settingsProvider);
+                          return Column(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: ListTile(
+                                  title: Text(
+                                    'Post to Bluesky',
+                                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                                  ),
+                                  trailing: Switch(
+                                    value: settings.postToBskyEnabled,
+                                    onChanged: (bool value) {
+                                      ref.read(settingsProvider.notifier).setPostToBsky(value);
+                                    },
+                                    activeColor: Theme.of(context).colorScheme.primary,
+                                  ),
+                                  onTap: () {
+                                    ref.read(settingsProvider.notifier).setPostToBsky(!settings.postToBskyEnabled);
+                                  },
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isPosting
+                      ? null
+                      : () async {
+                          await _uploadVideo();
+                        },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                    disabledBackgroundColor: Theme.of(context).colorScheme.primary.withAlpha(100),
+                  ),
+                  child: _isPosting
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                        )
+                      : const Text(
+                          'Post',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

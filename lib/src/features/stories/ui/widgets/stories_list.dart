@@ -195,11 +195,9 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                       ),
                     );
                   }
-
                   final realIndex = index - 1;
                   final authorEntry = authorsList[realIndex];
                   final author = authorEntry.key;
-
                   return Container(
                     margin: const EdgeInsets.only(right: 12),
                     child: Column(
