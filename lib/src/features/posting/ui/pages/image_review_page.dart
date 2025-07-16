@@ -14,7 +14,6 @@ import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/posting/providers/post_story.dart';
-import 'package:sparksocial/src/features/posting/providers/upload_provider.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
@@ -120,11 +119,8 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       _isPosting = true;
     });
     try {
-      final uploadService = ref.read(uploadProvider.notifier);
       final crosspostEnabled = ref.read(settingsProvider).postToBskyEnabled;
       final description = _descriptionController.text;
-      final taskId = uploadService.registerTask('image');
-      uploadService.startTask(taskId);
       StrongRef result;
       if (widget.storyMode) {
         final uploadedImage = await _feedRepository.uploadImages(
@@ -145,7 +141,6 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
         // Post as a regular image post
         result = await _feedRepository.postImages(description, _imageFiles, _altTexts, crosspostToBsky: crosspostEnabled);
       }
-      uploadService.completeTask(taskId);
       return result;
     } catch (e) {
       if (!mounted) return null;
@@ -155,9 +150,6 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Failed to create post: $e'), backgroundColor: Colors.red));
-      final uploadService = ref.read(uploadProvider.notifier);
-      final tasks = uploadService.registerTask('image');
-      uploadService.failTask(tasks, e.toString());
     }
     return null;
   }

@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:atproto/atproto.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -11,9 +10,7 @@ import 'package:imgly_editor/imgly_editor.dart';
 import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/posting/providers/upload_provider.dart';
 import 'package:sparksocial/src/features/posting/providers/video_upload_provider.dart';
-import 'package:sparksocial/src/features/posting/providers/video_upload_state.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
@@ -46,50 +43,45 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
     super.dispose();
   }
 
-  Future<StrongRef?> _uploadVideo() async {
-    if (_isPosting) return null;
+  Future<void> _uploadVideo() async {
+    if (_isPosting) return;
 
     setState(() {
       _isPosting = true;
     });
 
-    // Register a new upload task
-    final uploadNotifier = ref.read(uploadProvider.notifier);
-    final taskId = uploadNotifier.registerTask('video');
-
     try {
       final description = _descriptionController.text;
       final crosspostEnabled = ref.read(settingsProvider).postToBskyEnabled;
 
-      uploadNotifier.startTask(taskId);
-
       // Process and post the video with the video upload provider
-      final videoUploadNotifier = ref.read(videoUploadProvider(_video.path).notifier);
-      await videoUploadNotifier.processAndPostVideo(
-        videoPath: _video.path,
-        description: description,
-        altText: _videoAltText,
-        crosspostToBsky: crosspostEnabled,
-        storyMode: widget.storyMode,
+      final postRef = await ref.read(
+        processAndPostVideoProvider(
+          videoPath: _video.path,
+          description: description,
+          altText: _videoAltText,
+          crosspostToBsky: crosspostEnabled,
+          storyMode: widget.storyMode,
+        ).future,
       );
-
-      final state = ref.read(videoUploadProvider(_video.path));
-
-      uploadNotifier.completeTask(taskId);
 
       setState(() {
         _isPosting = false;
       });
-      
 
-      switch (state) {
-        case VideoUploadStatePosted(:final postRef):
-          if (mounted && !widget.storyMode) {
-            context.router.push(StandalonePostRoute(postUri: postRef.uri.toString()));
-          }
-          return postRef;
-        default:
-          return null;
+      if (mounted && !widget.storyMode) {
+        context.router.popUntilRoot();
+        if (postRef == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to post video. Please try again.')),
+          );
+          return;
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Video posted successfully!')),
+          );
+          context.router.push(StandalonePostRoute(postUri: postRef.uri.toString()));
+        }
       }
     } catch (e) {
       if (mounted) {
@@ -101,12 +93,9 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         ScaffoldMessenger.of(
           context,
         ).showSnackBar(SnackBar(content: Text('Failed to upload video: $e'), backgroundColor: Colors.red));
-
-        // Update upload service with error state
-        uploadNotifier.failTask(taskId, e.toString());
       }
     }
-    return null;
+    return;
   }
 
   @override

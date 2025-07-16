@@ -7,7 +7,7 @@ import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 part 'post_story.g.dart';
 
 @riverpod
-FutureOr<StrongRef> postStory(Ref ref, Embed embed, {List<SelfLabel>? selfLabels, List<String>? tags}) async {
+FutureOr<StrongRef?> postStory(Ref ref, Embed embed, {List<SelfLabel>? selfLabels, List<String>? tags}) async {
   final feedRepository = GetIt.I<SprkRepository>().feed;
   return await feedRepository.postStory(embed, selfLabels: selfLabels, tags: tags);
 }
