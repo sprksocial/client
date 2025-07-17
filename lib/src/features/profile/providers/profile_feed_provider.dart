@@ -17,19 +17,14 @@ part 'profile_feed_provider.g.dart';
 
 @riverpod
 class ProfileFeed extends _$ProfileFeed {
-  late final FeedRepository _feedRepository;
-  late final SQLCacheInterface _sqlCache;
-  late final SettingsRepository _settingsRepository;
-  late final SparkLogger _logger;
+  final FeedRepository _feedRepository = GetIt.instance<SprkRepository>().feed;
+  final SQLCacheInterface _sqlCache = GetIt.instance<SQLCacheInterface>();
+  final SettingsRepository _settingsRepository = GetIt.instance<SettingsRepository>();
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ProfileFeed');
   bool _isLoading = false;
 
   @override
   Future<ProfileFeedState> build(AtUri profileUri, bool videosOnly) async {
-    _feedRepository = GetIt.instance<SprkRepository>().feed;
-    _sqlCache = GetIt.instance<SQLCacheInterface>();
-    _settingsRepository = GetIt.instance<SettingsRepository>();
-    _logger = GetIt.instance<LogService>().getLogger('ProfileFeed $profileUri');
-
     try {
       final result = await _loadUnifiedFeed(
         profileUri: profileUri,
@@ -291,5 +286,15 @@ class ProfileFeed extends _$ProfileFeed {
     }
 
     return filteredUris;
+  }
+
+  Future<void> deletePost(AtUri postUri) async {
+    try {
+      await GetIt.I<SQLCacheInterface>().deletePost(postUri);
+      await GetIt.I<SprkRepository>().repo.deleteRecord(uri: postUri);
+      ref.invalidateSelf();
+    } catch (e) {
+      throw Exception('Failed to delete post: $e');
+    }
   }
 }
