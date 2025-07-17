@@ -10,6 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:imgly_editor/imgly_editor.dart';
 import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
+import 'package:sparksocial/src/core/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/posting/providers/video_upload_provider.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
@@ -28,7 +29,7 @@ class VideoReviewPage extends ConsumerStatefulWidget {
 class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
   final TextEditingController _descriptionController = TextEditingController();
   bool _isPosting = false;
-  final String _videoAltText = '';
+  String _videoAltText = '';
   late EditorResult _editorResult;
   late XFile _video;
 
@@ -43,6 +44,21 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
   void dispose() {
     _descriptionController.dispose();
     super.dispose();
+  }
+
+  Future<void> _editAltText() async {
+    final initialText = _videoAltText;
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AltTextEditorDialog(
+        imageFile: Uri.parse(_editorResult.artifact!).toFilePath(windows: false),
+        initialAltText: initialText,
+      ),
+    );
+    if (result == null) return;
+    setState(() {
+      _videoAltText = result.trim();
+    });
   }
 
   Future<void> _uploadVideo() async {
@@ -166,6 +182,27 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                               ),
                             ),
                           ),
+                          Positioned(
+                            bottom: 8,
+                            left: 8,
+                            child: Container(
+                              padding: const EdgeInsets.all(4),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withAlpha(150),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: const Row(
+                                children: [
+                                  Icon(Icons.edit, color: Colors.white, size: 16),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Tap to edit',
+                                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                           // ALT button overlay (bottom right)
                           Positioned(
                             bottom: 12,
@@ -174,18 +211,18 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                               color: Colors.black.withAlpha(100),
                               borderRadius: BorderRadius.circular(8),
                               child: InkWell(
-                                onTap: () async {},
+                                onTap: _editAltText,
                                 borderRadius: BorderRadius.circular(8),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                child: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 16),
-                                      const SizedBox(width: 4),
+                                      Icon(FluentIcons.image_alt_text_20_regular, color: Colors.white, size: 16),
+                                      SizedBox(width: 4),
                                       Text(
-                                        _videoAltText.isEmpty ? 'ALT' : 'ALT',
-                                        style: const TextStyle(
+                                        'ALT',
+                                        style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,

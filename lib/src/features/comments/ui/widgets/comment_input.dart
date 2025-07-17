@@ -269,7 +269,7 @@ class _SelectedImagesPreview extends StatelessWidget {
                       onTap: () async {
                         final result = await showDialog<String>(
                           context: context,
-                          builder: (context) => AltTextEditorDialog(imageFile: imageFile, initialAltText: alt ?? ''),
+                          builder: (context) => AltTextEditorDialog(imageFile: imageFile.path, initialAltText: alt ?? ''),
                         );
                         if (result != null) {
                           notifier.updateAltText(imageFile.path, result.trim());

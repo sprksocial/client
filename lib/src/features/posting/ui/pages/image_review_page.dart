@@ -87,7 +87,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
     final initialText = _altTexts[path] ?? '';
     final result = await showDialog<String>(
       context: context,
-      builder: (context) => AltTextEditorDialog(imageFile: imageFile, initialAltText: initialText),
+      builder: (context) => AltTextEditorDialog(imageFile: imageFile.path, initialAltText: initialText),
     );
     if (result == null) return;
     setState(() {
@@ -201,6 +201,27 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                                           decoration: BoxDecoration(
                                             borderRadius: BorderRadius.circular(8),
                                             image: DecorationImage(image: FileImage(File(image.path)), fit: BoxFit.cover),
+                                          ),
+                                        ),
+                                        Positioned(
+                                          bottom: 8,
+                                          left: 8,
+                                          child: Container(
+                                            padding: const EdgeInsets.all(4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.black.withAlpha(150),
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: const Row(
+                                              children: [
+                                                Icon(Icons.edit, color: Colors.white, size: 16),
+                                                SizedBox(width: 4),
+                                                Text(
+                                                  'Tap to edit',
+                                                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ),
                                         Positioned(
