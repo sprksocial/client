@@ -139,7 +139,7 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                       child: Column(
                         children: [
                           GestureDetector(
-                            onTap: () => _showCreateMenu,
+                            onTap: () => _showCreateMenu(context),
                             child: Stack(
                               children: [
                                 Container(

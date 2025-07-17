@@ -69,7 +69,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
         _isPosting = false;
       });
 
-      if (mounted && !widget.storyMode) {
+      if (mounted) {
         context.router.popUntilRoot();
         if (postRef == null) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -80,7 +80,9 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Video posted successfully!')),
           );
-          context.router.push(StandalonePostRoute(postUri: postRef.uri.toString()));
+          if (!widget.storyMode) {
+            context.router.push(StandalonePostRoute(postUri: postRef.uri.toString()));
+          }
         }
       }
     } catch (e) {
