@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -11,6 +12,7 @@ import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/posting/providers/video_upload_provider.dart';
+import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
@@ -71,6 +73,11 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
 
       if (mounted) {
         context.router.popUntilRoot();
+        final did = ref.read(sessionProvider)?.did;
+        if (did != null) {
+          ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), false));
+          ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), true));
+        }
         if (postRef == null) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Failed to post video. Please try again.')),

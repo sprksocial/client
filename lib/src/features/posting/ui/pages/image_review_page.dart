@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:atproto/atproto.dart';
+import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart' hide Image;
@@ -14,6 +15,7 @@ import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/posting/providers/post_story.dart';
+import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
@@ -429,6 +431,11 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                           final postRef = await _uploadImagesAndPost();
                           if (context.mounted && postRef != null) {
                             context.router.popUntilRoot();
+                            final did = ref.read(sessionProvider)?.did;
+                            if (did != null) {
+                              ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), false));
+                              ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), true));
+                            }
                             if (!widget.storyMode) {
                               context.router.push(StandalonePostRoute(postUri: postRef.uri.toString()));
                             }
