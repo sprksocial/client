@@ -10,6 +10,9 @@ class AppConfig {
   /// Base URL for the video processing service.
   static String get videoServiceUrl => _getStringValue('VIDEO_SERVICE_URL', 'http://localhost:3000');
 
+  /// License key for the img.ly editor.
+  static String get license => _getStringValue('SHOWCASES_LICENSE_FLUTTER', '');
+
   /// URL for the app view (web view display).
   static String get appViewUrl => _getStringValue('SPRK_APPVIEW_URL', 'http://localhost:3000');
 

@@ -64,16 +64,23 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
       // } catch (e) {
       // what
       // }
-      final networkPost = await feedRepository.getPosts([uri], bluesky: isBlueskyPost);
+      const maxRetries = 3;
+      const delay = Duration(seconds: 2);
+      for (final i = 0; i < maxRetries; i) {
+        final networkPost = await feedRepository.getPosts([uri], bluesky: isBlueskyPost);
 
-      if (networkPost.isEmpty) {
-        throw Exception('Post not found');
+        if (networkPost.isNotEmpty) {
+          // Cache the post for future use
+          await sqlCache.cachePost(networkPost.first);
+          return networkPost.first;
+        }
+
+        // If post not found, wait and retry
+        if (i < maxRetries - 1) {
+          await Future.delayed(delay);
+        }
       }
-
-      // Cache the post for future use
-      await sqlCache.cachePost(networkPost.first);
-
-      return networkPost.first;
+      throw Exception('Failed to load post after $maxRetries attempts');
     }
   }
 

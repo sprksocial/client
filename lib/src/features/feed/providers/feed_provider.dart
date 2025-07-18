@@ -585,37 +585,6 @@ class FeedNotifier extends _$FeedNotifier {
     }
   }
 
-  Future<void> removePost(AtUri uri) async {
-    final currentIndex = state.index;
-    final postIndex = state.loadedPosts.indexOf(uri);
-
-    // Remove the post from the loaded posts list
-    final updatedPosts = state.loadedPosts.where((e) => e != uri).toList();
-
-    // Adjust the index if necessary
-    var newIndex = currentIndex;
-    if (postIndex != -1) {
-      if (postIndex < currentIndex) {
-        // Post was deleted before current position, adjust index down
-        newIndex = currentIndex - 1;
-      } else if (postIndex == currentIndex && updatedPosts.isNotEmpty) {
-        // Current post was deleted, stay at same index (which will show next post)
-        // If we're at the end, move to the previous post
-        if (newIndex >= updatedPosts.length) {
-          newIndex = updatedPosts.length - 1;
-        }
-      }
-      // Ensure index is within bounds
-      newIndex = math.max(0, newIndex);
-      if (updatedPosts.isNotEmpty) {
-        newIndex = math.min(newIndex, updatedPosts.length - 1);
-      }
-    }
-
-    _logger.d('Removing post $uri, adjusting index from $currentIndex to $newIndex');
-    state = state.copyWith(loadedPosts: updatedPosts, index: newIndex);
-  }
-
   /// Checks if a post should be hidden based on its labels and user preferences
   Future<bool> _shouldHidePost(AtUri uri, List<Label> postLabels) async {
     final hideAdultContent = await _settingsRepository.getHideAdultContent();

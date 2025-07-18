@@ -7,14 +7,16 @@ import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
+import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/widgets/menu_action_button.dart';
 import 'package:sparksocial/src/core/widgets/report_dialog.dart';
-import 'package:sparksocial/src/features/feed/providers/delete_post.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/comment_action_button.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/like_action_button.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/profile_action_button.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/share_action_button.dart';
+import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 
 class SideActionBar extends ConsumerStatefulWidget {
   const SideActionBar({
@@ -224,7 +226,15 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 
     try {
       final currentPost = _currentPost ?? widget.post;
-      ref.read(deletePostProvider(AtUri.parse(currentPost.uri.toString())));
+      await GetIt.I<SQLCacheInterface>().deletePost(currentPost.uri);
+      await GetIt.I<SprkRepository>().repo.deleteRecord(uri: currentPost.uri);
+      final feeds = await GetIt.I<SettingsRepository>().getFeeds();
+      for (final feed in feeds) {
+        ref.invalidate(feedNotifierProvider(feed));
+      }
+      final did = currentPost.author.did;
+      ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), true));
+      ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), false));
       messenger.showSnackBar(const SnackBar(content: Text('Post deleted successfully!')));
       if (context.mounted) {
         context.router.popUntilRoot();

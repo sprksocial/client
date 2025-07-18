@@ -2,6 +2,8 @@ import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository_impl.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository_impl.dart';
+import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
+import 'package:sparksocial/src/core/imgly/imgly_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
@@ -30,6 +32,8 @@ final GetIt sl = GetIt.instance;
 Future<void> initServiceLocator() async {
   // Register LogService
   sl.registerSingleton<LogService>(LogService());
+
+  sl.registerLazySingleton<IMGLYRepository>(IMGLYRepositoryImpl.new);
 
   // Register storage dependencies
   // Initialize storage manager
