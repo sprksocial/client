@@ -21,6 +21,7 @@ cat > .env << EOL
 VIDEO_SERVICE_URL=https://video.sprk.so
 SPRK_APPVIEW_URL=https://api.sprk.so
 MESSAGES_SERVICE_URL=https://chat.sprk.so
+SHOWCASES_LICENSE_FLUTTER=$SHOWCASES_LICENSE_FLUTTER
 EOL
 
 # Install CocoaPods using Homebrew.
