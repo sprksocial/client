@@ -16,7 +16,6 @@ class GraphRepositoryImpl implements GraphRepository {
     _logger.v('GraphRepository initialized');
   }
   final SprkRepository _client;
-  late final SettingsRepository _settingsRepository;
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger('GraphRepository');
 
   @override
@@ -109,15 +108,10 @@ class GraphRepositoryImpl implements GraphRepository {
         _logger.e('Session DID not available for authenticated user');
         throw Exception('Session DID not available');
       }
-      try {
-        /// goofy late check to ensure settings repository is initialized
-        // ignore: unnecessary_statements
-        _settingsRepository; // goofy late check
-      } catch (e) {
-        _settingsRepository = GetIt.instance<SettingsRepository>();
-      }
 
-      final followMode = await _settingsRepository.getFollowMode();
+      final settingsRepository = GetIt.instance<SettingsRepository>();
+
+      final followMode = await settingsRepository.getFollowMode();
       _logger.d('Using follow mode: $followMode');
 
       final collection = followMode == FollowMode.sprk ? NSID.parse('so.sprk.graph.follow') : NSID.parse('app.bsky.graph.follow');

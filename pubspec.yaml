@@ -42,7 +42,8 @@ dependencies:
   collection: ^1.19.1
   carousel_slider: ^5.0.0
   smooth_video_progress: ^0.0.4
-  imgly_editor: ^1.51.0
+  imgly_editor: ^1.53.0
+  imgly_camera: ^1.53.0
   web_socket_channel: ^3.0.3
   any_link_preview: ^3.0.3
 

@@ -1,9 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_it/get_it.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:imgly_editor/model/source.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/identity_repository.dart';
+import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart' as actor_models;
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
@@ -12,12 +16,13 @@ import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/core/utils/text_formatter.dart';
 import 'package:sparksocial/src/core/widgets/user_avatar.dart';
+import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/profile/ui/pages/user_list_page.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_description.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_links.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_stat_item.dart';
 
-class ProfileHeader extends StatefulWidget {
+class ProfileHeader extends ConsumerStatefulWidget {
   const ProfileHeader({
     required this.profile,
     required this.isCurrentUser,
@@ -37,10 +42,10 @@ class ProfileHeader extends StatefulWidget {
   final VoidCallback onFollowTap;
 
   @override
-  State<ProfileHeader> createState() => _ProfileHeaderState();
+  ConsumerState<ProfileHeader> createState() => _ProfileHeaderState();
 }
 
-class _ProfileHeaderState extends State<ProfileHeader> {
+class _ProfileHeaderState extends ConsumerState<ProfileHeader> {
   late final SparkLogger _logger;
   late final IdentityRepository _identityRepository;
   late final SprkRepository _sprkRepository;
@@ -192,7 +197,88 @@ class _ProfileHeaderState extends State<ProfileHeader> {
                       right: 0,
                       bottom: 0,
                       child: GestureDetector(
-                        onTap: () => context.router.push(CreateVideoRoute(isStoryMode: true)),
+                        onTap: () async {
+                          final colorScheme = Theme.of(context).colorScheme;
+                          final imglyRepository = GetIt.I<IMGLYRepository>();
+                          final handle = ref.read(sessionProvider)?.handle;
+                          showModalBottomSheet(
+                            context: context,
+                            backgroundColor: Colors.transparent,
+                            builder: (BuildContext context) {
+                              return SafeArea(
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: colorScheme.surface,
+                                    borderRadius: const BorderRadius.only(
+                                      topLeft: Radius.circular(20),
+                                      topRight: Radius.circular(20),
+                                    ),
+                                  ),
+                                  child: Wrap(
+                                    children: <Widget>[
+                                      ListTile(
+                                        leading: Icon(Icons.camera_alt, color: colorScheme.onSurface),
+                                        title: Text('Record', style: TextStyle(color: colorScheme.onSurface)),
+                                        onTap: () async {
+                                          // camera -> open editor -> video review page -> post page
+                                          final cameraResult = await imglyRepository.openCamera(userID: handle);
+                                          if (cameraResult != null &&
+                                              cameraResult.recording != null &&
+                                              cameraResult.recording!.recordings.isNotEmpty) {
+                                            if (context.mounted) {
+                                              final video = await imglyRepository.openVideoEditor(
+                                                source: Source.fromVideo(cameraResult.recording!.recordings.first.videos.first.uri),
+                                              );
+                                              if (video != null && context.mounted) {
+                                                context.router.push(VideoReviewRoute(editorResult: video, storyMode: true));
+                                              }
+                                            }
+                                          }
+                                        },
+                                      ),
+                                      ListTile(
+                                        leading: Icon(Icons.videocam, color: colorScheme.onSurface),
+                                        title: Text('Upload Video', style: TextStyle(color: colorScheme.onSurface)),
+                                        onTap: () async {
+                                          // pick video -> open editor -> video review page -> post page
+                                          final pickedVideo = await ImagePicker().pickVideo(
+                                            source: ImageSource.gallery,
+                                            maxDuration: const Duration(seconds: 180),
+                                          );
+                                          if (pickedVideo != null && context.mounted) {
+                                            final video = await imglyRepository.openVideoEditor(
+                                              source: Source.fromVideo('file://${pickedVideo.path}'),
+                                            );
+                                            if (video != null && context.mounted) {
+                                              context.router.push(VideoReviewRoute(editorResult: video, storyMode: true));
+                                            }
+                                          }
+                                        },
+                                      ),
+                                      ListTile(
+                                        leading: Icon(Icons.photo_library, color: colorScheme.onSurface),
+                                        title: Text('Upload Images', style: TextStyle(color: colorScheme.onSurface)),
+                                        onTap: () async {
+                                          // pick images -> images review page (image editor when image is selected) -> post page
+                                          final pickedImages = await ImagePicker().pickMultiImage(limit: 12);
+                                          if (context.mounted && pickedImages.isNotEmpty) {
+                                            context.router.push(
+                                              ImageReviewRoute(
+                                                imageFiles: pickedImages,
+                                                storyMode: true,
+                                              ),
+                                            );
+                                          }
+                                        },
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
                         child: Container(
                           width: 30,
                           height: 30,

@@ -54,6 +54,7 @@ jobs:
           echo "VIDEO_SERVICE_URL=https://video.sprk.so" >> .env
           echo "SPRK_APPVIEW_URL=https://api.sprk.so" >> .env
           echo "MESSAGES_SERVICE_URL=https://chat.sprk.so" >> .env
+          echo "SHOWCASES_LICENSE_FLUTTER=${{ secrets.SHOWCASES_LICENSE_FLUTTER }}" >> .env
           echo "SIGNUPS_DISABLED=false" >> .env
 
       - name: Set versionCode (commit count + run attempt)

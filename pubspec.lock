@@ -808,14 +808,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1+1"
+  imgly_camera:
+    dependency: "direct main"
+    description:
+      name: imgly_camera
+      sha256: "8615ee58667550dce32c36196bf6917f54ba57d75f0c864ced937f22f16dce56"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.53.0"
   imgly_editor:
     dependency: "direct main"
     description:
       name: imgly_editor
-      sha256: "290d9e5f4f7308a4a03376a9df53fe8f5ae375df83879bf1f36a49334087896f"
+      sha256: "73f3685371e533e785ae27d873c4865b4ec13d610ff055091f4effe91d1a9cf9"
       url: "https://pub.dev"
     source: hosted
-    version: "1.51.0"
+    version: "1.53.0"
   io:
     dependency: transitive
     description:
