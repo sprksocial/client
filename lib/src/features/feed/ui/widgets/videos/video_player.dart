@@ -1,8 +1,6 @@
 import 'dart:async';
 
 import 'package:better_player_plus/better_player_plus.dart';
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
@@ -98,7 +96,6 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
           controlsConfiguration: BetterPlayerControlsConfiguration(
             showControls: false,
             playerTheme: BetterPlayerTheme.custom,
-            
           ),
           looping: true,
           fit: BoxFit.contain,
@@ -138,13 +135,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
   @override
   Widget build(BuildContext context) {
     if (!isInitialized) {
-      return CachedNetworkImage(
-        imageUrl: widget.thumbnail,
-        fit: BoxFit.contain,
-        height: MediaQuery.of(context).size.height,
-        placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
-        errorWidget: (context, url, error) => const Center(child: Icon(FluentIcons.error_circle_24_regular)),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     // Watch navigation state - handle changes only when they actually occur
