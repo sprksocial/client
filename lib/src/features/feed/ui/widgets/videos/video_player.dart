@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:better_player_plus/better_player_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animated_progress_bar/flutter_animated_progress_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
@@ -22,6 +23,7 @@ class PostVideoPlayer extends ConsumerStatefulWidget {
 
 class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerProviderStateMixin {
   BetterPlayerController? videoController;
+  late final ProgressBarController _progressController;
   bool _userInteracted = false; // Track if user manually played/paused
 
   late AnimationController _bounceController;
@@ -42,6 +44,11 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       begin: 1,
       end: 1.3,
     ).animate(CurvedAnimation(parent: _bounceController, curve: Curves.elasticOut));
+    _progressController = ProgressBarController(
+      vsync: this,
+      waitingDuration: const Duration(milliseconds: 100),
+      barAnimationDuration: const Duration(milliseconds: 200),
+    );
     initVideoPlayer();
   }
 
@@ -93,13 +100,11 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       );
       final videoControllerTemp = BetterPlayerController(
         const BetterPlayerConfiguration(
-          controlsConfiguration: BetterPlayerControlsConfiguration(
-            showControls: false,
-            playerTheme: BetterPlayerTheme.custom,
-          ),
+          controlsConfiguration: BetterPlayerControlsConfiguration(showControls: false),
           looping: true,
           fit: BoxFit.contain,
           expandToFill: false,
+          allowedScreenSleep: false,
         ),
       );
       videoControllerTemp.setupDataSource(dataSource);
@@ -211,6 +216,32 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
                   ),
                 ),
               ),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: FutureBuilder(
+              future: videoController?.videoPlayerController?.position,
+              builder: (context, snapshot) {
+                final position = snapshot.data;
+                return ProgressBar(
+                  controller: _progressController,
+                  progress: position ?? Duration.zero,
+                  total: videoController?.videoPlayerController?.value.duration ?? Duration.zero,
+                  thumbGlowRadius: 0,
+                  collapsedThumbRadius: 0,
+                  collapsedProgressBarColor: AppColors.primary,
+                  expandedBarHeight: 16,
+
+                  onSeek: (duration) {
+                    if (videoController?.videoPlayerController != null) {
+                      videoController?.videoPlayerController?.seekTo(duration);
+                    }
+                  },
+                );
+              },
             ),
           ),
         ],
