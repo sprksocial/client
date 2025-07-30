@@ -147,14 +147,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
       child: FutureBuilder<PostView?>(
         future: _loadPostWithFallback(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const ColoredBox(
-              color: AppColors.black,
-              child: Center(child: CircularProgressIndicator(color: AppColors.white)),
-            );
-          }
-
-          if (snapshot.hasError || !snapshot.hasData) {
+          if (!snapshot.hasData) {
             return const ColoredBox(
               color: AppColors.black,
               child: Center(

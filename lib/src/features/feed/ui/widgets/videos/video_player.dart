@@ -4,8 +4,10 @@ import 'package:better_player_plus/better_player_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animated_progress_bar/flutter_animated_progress_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
 
@@ -39,7 +41,10 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
   @override
   void initState() {
     super.initState();
-    _bounceController = AnimationController(duration: const Duration(milliseconds: 300), vsync: this);
+    _bounceController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
     _bounceAnimation = Tween<double>(
       begin: 1,
       end: 1.3,
@@ -50,6 +55,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       barAnimationDuration: const Duration(milliseconds: 200),
     );
     initVideoPlayer();
+    GetIt.I<LogService>().getLogger('PostVideoPlayer').i('Initialized PostVideoPlayer with video URL: ${widget.videoUrl}');
   }
 
   void pauseVideo() {
@@ -107,7 +113,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
           allowedScreenSleep: false,
         ),
       );
-      videoControllerTemp.setupDataSource(dataSource);
+      await videoControllerTemp.setupDataSource(dataSource);
       videoControllerTemp.addEventsListener(_videoListener);
       if (!mounted) return;
       setState(() {
@@ -159,19 +165,20 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
         }
       });
     }
-
-    // Handle feed index changes only when they actually change
-    if (feedState != null && _lastFeedIndex != feedState.index) {
-      _lastFeedIndex = feedState.index;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && !_userInteracted) {
-          final shouldPlay = feedState.index == widget.index && isOnFeedsTab;
-          _handleAutoPlayPause(shouldPlay);
-        }
-      });
-    } else if (widget.feed == null && widget.index == null) {
-      _handleAutoPlayPause(true);
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Handle feed index changes only when they actually change
+      if (feedState != null && _lastFeedIndex != feedState.index) {
+        _lastFeedIndex = feedState.index;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && !_userInteracted) {
+            final shouldPlay = feedState.index == widget.index && isOnFeedsTab;
+            _handleAutoPlayPause(shouldPlay);
+          }
+        });
+      } else if (widget.feed == null && widget.index == null) {
+        _handleAutoPlayPause(true);
+      }
+    });
 
     return GestureDetector(
       onTap: () {
