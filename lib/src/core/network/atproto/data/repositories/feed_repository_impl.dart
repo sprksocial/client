@@ -538,8 +538,9 @@ class FeedRepositoryImpl implements FeedRepository {
 
       // Parse the response
       dynamic responseData = jsonDecode(response.body);
+      _logger.d('Video upload response: $responseData');
       while (responseData['jobStatus']?['state'] == 'JOB_STATE_PROCESSING') {
-        _logger.d('Video upload in progress, status: ${responseData['jobStatus']?['status']}');
+        _logger.d('Video upload in progress, status: ${responseData['jobStatus']?['state']}');
         await Future.delayed(const Duration(seconds: 2));
         response = await http.get(
           Uri.parse('${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.getJobStatus').replace(
@@ -553,6 +554,7 @@ class FeedRepositoryImpl implements FeedRepository {
           throw Exception('Failed to check video upload status: ${response.statusCode} ${response.body}');
         } else {
           responseData = jsonDecode(response.body);
+          _logger.d('Video upload status response: $responseData');
         }
       }
       if (responseData['jobStatus']?['state'] == 'JOB_STATE_FAILED') {
