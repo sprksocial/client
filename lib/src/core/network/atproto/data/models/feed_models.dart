@@ -285,8 +285,8 @@ class PostView with _$PostView {
 
   String get videoUrl {
     switch (embed) {
-      case EmbedViewVideo():
-        return 'https://hls.sprk.so/watch/${author.did}/$cid/playlist.m3u8';
+      case EmbedViewVideo(:final playlist):
+        return playlist.toString();
       case EmbedViewBskyVideo(:final playlist):
         // For Bluesky videos, return the AT URI as-is for blob API handling
         return playlist.toString();
