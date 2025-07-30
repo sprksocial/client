@@ -2,7 +2,6 @@ import 'dart:collection';
 
 import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
-import 'package:better_player_plus/better_player_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
