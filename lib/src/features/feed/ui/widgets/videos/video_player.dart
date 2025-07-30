@@ -71,6 +71,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
   void dispose() {
     _bounceController.dispose();
     videoController?.dispose();
+    _progressController.dispose();
     super.dispose();
   }
 
@@ -81,6 +82,12 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       if (paused) {
         _bounceController.reset();
         _bounceController.forward();
+      }
+
+      final playing = event.betterPlayerEventType == BetterPlayerEventType.play;
+      if (playing) {
+        _bounceController.stop();
+        _bounceController.value = 1.0; // Reset bounce animation when playing
       }
     }
   }
