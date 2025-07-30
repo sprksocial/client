@@ -2,6 +2,7 @@ import 'dart:collection';
 
 import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
+import 'package:better_player_plus/better_player_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
@@ -22,6 +23,7 @@ class ProfileFeed extends _$ProfileFeed {
   final SettingsRepository _settingsRepository = GetIt.instance<SettingsRepository>();
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ProfileFeed');
   bool _isLoading = false;
+  
 
   @override
   Future<ProfileFeedState> build(AtUri profileUri, bool videosOnly) async {
@@ -171,6 +173,8 @@ class ProfileFeed extends _$ProfileFeed {
       bskyExternal: (external) => false,
     );
   }
+
+  
 
   Future<void> loadMore() async {
     if (_isLoading || (state.value?.isEndOfNetwork ?? true)) return;
