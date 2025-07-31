@@ -11,7 +11,6 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_dotenv: ^5.1.0
-  video_player: ^2.10.0
   cached_network_image: ^3.3.1
   camera: ^0.11.1
   path_provider: ^2.1.2
@@ -41,11 +40,12 @@ dependencies:
   pool: ^1.5.0
   collection: ^1.19.1
   carousel_slider: ^5.0.0
-  smooth_video_progress: ^0.0.4
   imgly_editor: ^1.53.0
   imgly_camera: ^1.53.0
   web_socket_channel: ^3.0.3
   any_link_preview: ^3.0.3
+  better_player_plus: ^1.0.8
+  flutter_animated_progress_bar: ^1.0.5
 
 dev_dependencies:
   flutter_test:

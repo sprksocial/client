@@ -3,11 +3,11 @@ import 'dart:convert';
 
 import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
+import 'package:better_player_plus/better_player_plus.dart';
 import 'package:get_it/get_it.dart';
 import 'package:path/path.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
-import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -246,8 +246,12 @@ class SQLCacheImpl implements SQLCacheInterface {
                 .map((e) => Label.fromJson(e as Map<String, dynamic>))
                 .toList()
           : null,
-      viewer: map[_columnViewer] != null ? Viewer.fromJson(jsonDecode(map[_columnViewer] as String) as Map<String, dynamic>) : null,
-      embed: map[_columnEmbed] != null ? EmbedView.fromJson(jsonDecode(map[_columnEmbed] as String) as Map<String, dynamic>) : null,
+      viewer: map[_columnViewer] != null
+          ? Viewer.fromJson(jsonDecode(map[_columnViewer] as String) as Map<String, dynamic>)
+          : null,
+      embed: map[_columnEmbed] != null
+          ? EmbedView.fromJson(jsonDecode(map[_columnEmbed] as String) as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -469,7 +473,6 @@ class SQLCacheImpl implements SQLCacheInterface {
   @override
   Future<int> evictLeastRecentlyAccessed({required int postsToKeep}) async {
     final db = await database;
-    final cacheManager = GetIt.instance<CacheManagerInterface>();
     final countResult = await db.rawQuery('SELECT COUNT(*) FROM $_tablePosts');
     final currentSize = Sqflite.firstIntValue(countResult) ?? 0;
     var deletedCount = 0;
@@ -485,11 +488,6 @@ class SQLCacheImpl implements SQLCacheInterface {
       );
 
       if (toDeleteMaps.isNotEmpty) {
-        for (final map in toDeleteMaps) {
-          final uri = map[_columnUri] as String;
-          await cacheManager.removeFile(uri);
-        }
-
         final urisToDelete = toDeleteMaps.map((map) => map[_columnUri] as String).toList();
         final placeholders = List.generate(urisToDelete.length, (index) => '?').join(',');
         deletedCount = await db.delete(_tablePosts, where: '$_columnUri IN ($placeholders)', whereArgs: urisToDelete);
@@ -505,18 +503,6 @@ class SQLCacheImpl implements SQLCacheInterface {
     final db = await database;
     final cutoffTimestamp = DateTime.now().subtract(maxAge).millisecondsSinceEpoch;
 
-    final cacheManager = GetIt.instance<CacheManagerInterface>();
-    final List<Map<String, dynamic>> toDeleteMaps = await db.query(
-      _tablePosts,
-      columns: [_columnUri],
-      where: '$_columnLastAccessed < ?',
-      whereArgs: [cutoffTimestamp],
-    );
-    for (final map in toDeleteMaps) {
-      final uri = map[_columnUri] as String;
-      await cacheManager.removeFile(uri);
-    }
-
     return db.delete(_tablePosts, where: '$_columnLastAccessed < ?', whereArgs: [cutoffTimestamp]);
   }
 
@@ -524,13 +510,12 @@ class SQLCacheImpl implements SQLCacheInterface {
   @override
   Future<void> clearAllData() async {
     final db = await database;
-    final cacheManager = GetIt.instance<CacheManagerInterface>();
     await db.transaction((txn) async {
       await txn.delete(_tableFeedPostAssociations);
       await txn.delete(_tablePosts);
       await txn.delete(_tableFeeds);
     });
-    await cacheManager.clearCache();
+    await BetterPlayerController(const BetterPlayerConfiguration()).clearCache();
   }
 
   /// Closes the database. Not typically needed for a singleton service

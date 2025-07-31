@@ -10,7 +10,6 @@ import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_rep
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository_impl.dart';
-import 'package:sparksocial/src/core/storage/cache/cache_manager_impl.dart';
 import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
@@ -43,9 +42,6 @@ Future<void> initServiceLocator() async {
   final sqlCache = SQLCacheImpl();
   await sqlCache.database;
   sl.registerSingleton<SQLCacheInterface>(sqlCache);
-
-  // Register cache manager
-  sl.registerSingleton<CacheManagerInterface>(CacheManagerImpl.instance);
 
   final downloadManager = DownloadManagerImpl();
   sl.registerSingleton<DownloadManagerInterface>(downloadManager);
