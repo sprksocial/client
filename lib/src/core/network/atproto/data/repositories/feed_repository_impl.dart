@@ -526,7 +526,7 @@ class FeedRepositoryImpl implements FeedRepository {
       );
 
       final serviceToken = serviceTokenRes.data.token;
-      final response = await http.post(
+      var response = await http.post(
         Uri.parse('${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.uploadVideo'),
         headers: {'Authorization': 'Bearer $serviceToken', 'Content-Type': _getContentType(cleanVideoPath)},
         body: videoBytes,
@@ -537,9 +537,38 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       // Parse the response
-      final responseData = jsonDecode(response.body);
-      //{'jobStatus': {'blob': blob}} = responseData; this is how it should work in the lexicon
-      return Blob.fromJson(responseData['blobRef'] as Map<String, dynamic>);
+      dynamic responseData = jsonDecode(response.body);
+      _logger.d('Video upload response: $responseData');
+      while (responseData['jobStatus']?['state'] == 'JOB_STATE_PROCESSING') {
+        _logger.d('Video upload in progress, status: ${responseData['jobStatus']?['state']}');
+        await Future.delayed(const Duration(seconds: 2));
+        response = await http.get(
+          Uri.parse('${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.getJobStatus').replace(
+            queryParameters: {
+              'jobId': responseData['jobStatus']?['jobId'],
+            },
+          ),
+          headers: {'Authorization': 'Bearer $serviceToken', 'Content-Type': _getContentType(cleanVideoPath)},
+        );
+        if (response.statusCode != 200) {
+          throw Exception('Failed to check video upload status: ${response.statusCode} ${response.body}');
+        } else {
+          responseData = jsonDecode(response.body);
+          _logger.d('Video upload status response: $responseData');
+        }
+      }
+      if (responseData['jobStatus']?['state'] == 'JOB_STATE_FAILED') {
+        throw Exception('Video upload failed: ${responseData['jobStatus']?['status']}');
+      }
+      Map<String, dynamic> blob;
+      if (responseData case {'jobStatus': {'blob': final blobData}}) {
+        blob = blobData as Map<String, dynamic>;
+      } else if (responseData case {'blobRef': final blobRef}) {
+        blob = blobRef as Map<String, dynamic>;
+      } else {
+        throw Exception('Unexpected response format: $responseData');
+      }
+      return Blob.fromJson(blob);
     });
   }
 

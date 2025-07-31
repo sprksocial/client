@@ -1,4 +1,3 @@
-export 'cache/cache_manager_interface.dart';
 export 'cache/download_manager_impl.dart';
 export 'cache/sql_cache_impl.dart';
 export 'preferences/local_storage_interface.dart';

@@ -200,44 +200,47 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
             child: GestureDetector(
               onDoubleTap: () => _handleDoubleTapLike(postData),
               child: Stack(
+                alignment: Alignment.center,
                 children: [
                   // Main content
-                  switch (postData.embed) {
-                    EmbedViewVideo() => PostVideoPlayer(
-                      key: _videoPlayerKey,
-                      videoUrl: postData.videoUrl,
-                      feed: widget.feed,
-                      index: widget.index,
-                      isSparkPost: true,
-                    ),
-                    EmbedViewBskyVideo() => PostVideoPlayer(
-                      key: _videoPlayerKey,
-                      videoUrl: postData.videoUrl,
-                      feed: widget.feed,
-                      index: widget.index,
-                      isSparkPost: false,
-                    ),
-                    EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
-                    EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
+                  Positioned.fill(
+                    child: switch (postData.embed) {
                       EmbedViewVideo() => PostVideoPlayer(
                         key: _videoPlayerKey,
                         videoUrl: postData.videoUrl,
                         feed: widget.feed,
                         index: widget.index,
-                        isSparkPost: true,
+                        thumbnail: postData.thumbnailUrl,
                       ),
                       EmbedViewBskyVideo() => PostVideoPlayer(
                         key: _videoPlayerKey,
                         videoUrl: postData.videoUrl,
                         feed: widget.feed,
                         index: widget.index,
-                        isSparkPost: false,
+                        thumbnail: postData.thumbnailUrl,
                       ),
                       EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                      EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
+                        EmbedViewVideo() => PostVideoPlayer(
+                          key: _videoPlayerKey,
+                          videoUrl: postData.videoUrl,
+                          feed: widget.feed,
+                          index: widget.index,
+                          thumbnail: postData.thumbnailUrl,
+                        ),
+                        EmbedViewBskyVideo() => PostVideoPlayer(
+                          key: _videoPlayerKey,
+                          videoUrl: postData.videoUrl,
+                          feed: widget.feed,
+                          index: widget.index,
+                          thumbnail: postData.thumbnailUrl,
+                        ),
+                        EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                        _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
+                      },
                       _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                     },
-                    _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
-                  },
+                  ),
 
                   // Side action bar
                   Positioned(bottom: 4, right: 4, child: sideActionBar),

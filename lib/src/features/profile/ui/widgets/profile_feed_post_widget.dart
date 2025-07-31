@@ -147,14 +147,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
       child: FutureBuilder<PostView?>(
         future: _loadPostWithFallback(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const ColoredBox(
-              color: AppColors.black,
-              child: Center(child: CircularProgressIndicator(color: AppColors.white)),
-            );
-          }
-
-          if (snapshot.hasError || !snapshot.hasData) {
+          if (!snapshot.hasData) {
             return const ColoredBox(
               color: AppColors.black,
               child: Center(
@@ -185,12 +178,12 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                 children: [
                   // Main content
                   switch (post.embed) {
-                    EmbedViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: true),
-                    EmbedViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: false),
+                    EmbedViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
+                    EmbedViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
                     EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
                     EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
-                      EmbedViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: true),
-                      EmbedViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, isSparkPost: false),
+                      EmbedViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
+                      EmbedViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
                       EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
                       _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                     },

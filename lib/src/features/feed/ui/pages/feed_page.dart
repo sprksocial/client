@@ -111,6 +111,7 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
               scrollDirection: Axis.vertical,
               restorationId: widget.feed.identifier,
               physics: shouldBeActive ? const PageScrollPhysics() : const NeverScrollableScrollPhysics(),
+              allowImplicitScrolling: true,
               onPageChanged: (index) {
                 // Only handle page changes when active
                 if (shouldBeActive) {
