@@ -251,8 +251,8 @@ class PostView with _$PostView {
   }
 
   /// Resolves AT Protocol blob URLs to HTTP URLs for display
-  String _resolveAtUriToHttpUrl(AtUri atUri, {bool isFullsize = false}) {
-    final uriString = atUri.toString();
+  String _resolveAtUriToHttpUrl(Uri uri, {bool isFullsize = false}) {
+    final uriString = uri.toString();
 
     // If it's already an HTTP URL, return as is
     if (uriString.startsWith('http://') || uriString.startsWith('https://')) {
@@ -366,8 +366,8 @@ sealed class EmbedView with _$EmbedView {
   @JsonSerializable(explicitToJson: true)
   const factory EmbedView.video({
     required String cid,
-    @AtUriConverter() required AtUri playlist,
-    @AtUriConverter() required AtUri thumbnail,
+    @AtUriConverter() required Uri playlist,
+    @AtUriConverter() required Uri thumbnail,
     String? alt,
   }) = EmbedViewVideo;
 
@@ -380,8 +380,8 @@ sealed class EmbedView with _$EmbedView {
   @JsonSerializable(explicitToJson: true)
   const factory EmbedView.bskyVideo({
     required String cid,
-    @AtUriConverter() required AtUri playlist,
-    @AtUriConverter() required AtUri thumbnail,
+    @AtUriConverter() required Uri playlist,
+    @AtUriConverter() required Uri thumbnail,
     String? alt,
   }) = EmbedViewBskyVideo;
 
@@ -510,7 +510,7 @@ class FacetFeature with _$FacetFeature {
   /// Link feature for URLs
   @FreezedUnionValue('#link')
   @JsonSerializable(explicitToJson: true)
-  const factory FacetFeature.link({@AtUriConverter() required AtUri uri}) = LinkFeature;
+  const factory FacetFeature.link({@AtUriConverter() required Uri uri}) = LinkFeature;
 
   /// Tag feature for hashtags
   @FreezedUnionValue('#tag')
@@ -558,8 +558,8 @@ class Facet with _$Facet {
 class ViewImage with _$ViewImage {
   @JsonSerializable(explicitToJson: true)
   const factory ViewImage({
-    @AtUriConverter() required AtUri thumb,
-    @AtUriConverter() required AtUri fullsize,
+    @AtUriConverter() required Uri thumb,
+    @AtUriConverter() required Uri fullsize,
     String? alt,
     // aspectRatio: {width: int, height: int}
   }) = _ViewImage;
