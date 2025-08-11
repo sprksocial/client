@@ -8,7 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:imgly_editor/model/source.dart';
 import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/widgets/user_avatar.dart';
+import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 import 'package:sparksocial/src/features/stories/providers/stories_by_author.dart';

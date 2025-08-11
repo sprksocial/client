@@ -8,7 +8,7 @@ import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository_impl.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';

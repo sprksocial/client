@@ -2,8 +2,8 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/core/widgets/user_avatar.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 

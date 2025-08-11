@@ -1,6 +1,6 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 
 class BookmarkActionButton extends StatefulWidget {
   const BookmarkActionButton({required this.count, super.key, this.isBookmarked = false, this.onPressed});

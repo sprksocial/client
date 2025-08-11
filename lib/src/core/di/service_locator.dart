@@ -15,8 +15,8 @@ import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository_impl.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
-import 'package:sparksocial/src/core/theme/data/repositories/theme_repository.dart';
-import 'package:sparksocial/src/core/theme/data/repositories/theme_repository_impl.dart';
+import 'package:sparksocial/src/core/ui/theme/data/repositories/theme_repository.dart';
+import 'package:sparksocial/src/core/ui/theme/data/repositories/theme_repository_impl.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/features/auth/auth.dart';
 

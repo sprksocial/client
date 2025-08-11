@@ -2,7 +2,7 @@ import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_feed_post_widget.dart';

@@ -7,7 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:imgly_editor/imgly_editor.dart';
 import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_refresh_trigger_provider.dart';
 import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';

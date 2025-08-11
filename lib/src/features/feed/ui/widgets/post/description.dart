@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 
 class Description extends StatefulWidget {
   const Description({required this.text, super.key, this.style, this.maxLines = 2, this.onExpandToggle});

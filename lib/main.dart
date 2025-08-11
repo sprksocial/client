@@ -5,7 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:fvp/fvp.dart' as fvp;
 import 'package:sparksocial/src/core/di/service_locator.dart';
-import 'package:sparksocial/src/core/theme/data/models/app_theme.dart';
+import 'package:sparksocial/src/core/ui/theme/data/models/app_theme.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/core/utils/logging/riverpod_logger.dart';
 import 'package:sparksocial/src/sprk_app.dart';

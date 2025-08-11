@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/core/widgets/user_avatar.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/messages/ui/pages/chat_page.dart';
 
 class SenderAvatar extends StatelessWidget {

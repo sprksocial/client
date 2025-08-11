@@ -1,6 +1,6 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/alt_text_dialog.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/description.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/hashtag_list.dart';

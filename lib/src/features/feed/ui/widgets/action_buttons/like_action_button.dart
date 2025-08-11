@@ -1,8 +1,8 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/core/widgets/action_button.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:sparksocial/src/core/ui/widgets/action_button.dart';
 
 class LikeActionButton extends StatefulWidget {
   const LikeActionButton({required this.count, super.key, this.isLiked = false, this.onPressed});

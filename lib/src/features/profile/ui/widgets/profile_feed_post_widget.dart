@@ -7,10 +7,10 @@ import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dar
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:sparksocial/src/core/ui/widgets/content_warning_overlay.dart';
+import 'package:sparksocial/src/core/ui/widgets/heart_animation.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
-import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
-import 'package:sparksocial/src/core/widgets/heart_animation.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';

@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
+import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/messages/providers/conversations_provider.dart';
 
 @RoutePage()

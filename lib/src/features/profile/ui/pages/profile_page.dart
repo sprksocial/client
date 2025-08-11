@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart'; // For EditProfileRoute, LoginRoute
+import 'package:sparksocial/src/core/ui/widgets/menu_action_button.dart';
+import 'package:sparksocial/src/core/ui/widgets/report_dialog.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/core/widgets/menu_action_button.dart';
-import 'package:sparksocial/src/core/widgets/report_dialog.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/early_supporter_sheet.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_header.dart';

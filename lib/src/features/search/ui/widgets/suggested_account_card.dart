@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:sparksocial/src/core/widgets/user_avatar.dart';
+import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
 
 class SuggestedAccountCard extends StatelessWidget {
   const SuggestedAccountCard({

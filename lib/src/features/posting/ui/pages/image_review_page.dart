@@ -12,7 +12,7 @@ import 'package:imgly_editor/imgly_editor.dart';
 import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/widgets/alt_text_editor_dialog.dart';
+import 'package:sparksocial/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/posting/providers/post_story.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
