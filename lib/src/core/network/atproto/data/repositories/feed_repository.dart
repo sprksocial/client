@@ -83,8 +83,9 @@ abstract class FeedRepository {
 
   /// Upload a video to the server
   ///
+  /// Returns the processed video blob and, if available, the extracted audio (details + blob).
   /// [videoPath] The path to the video file
-  Future<Blob> uploadVideo(String videoPath);
+  Future<({Blob video, ({Map<String, String>? details, Blob blob})? audio})> uploadVideo(String videoPath);
 
   /// Post a video to the user's feed
   ///
@@ -101,6 +102,7 @@ abstract class FeedRepository {
     List<String>? tags,
     List<String>? langs,
     List<SelfLabel>? selfLabels,
+    ({Map<String, String>? details, Blob blob})? audio,
   });
 
   /// Post a story to the user's feed

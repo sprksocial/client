@@ -486,7 +486,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<Blob> uploadVideo(String videoPath) async {
+  Future<({Blob video, ({Map<String, String>? details, Blob blob})? audio})> uploadVideo(String videoPath) async {
     _logger.d('Uploading video from path: $videoPath');
 
     return _client.executeWithRetry(() async {
@@ -539,7 +539,8 @@ class FeedRepositoryImpl implements FeedRepository {
       // Parse the response
       dynamic responseData = jsonDecode(response.body);
       _logger.d('Video upload response: $responseData');
-      while (responseData['jobStatus']?['state'] == 'JOB_STATE_PROCESSING') {
+      while (responseData['jobStatus']?['state'] != 'JOB_STATE_COMPLETED' &&
+          responseData['jobStatus']?['state'] != 'JOB_STATE_FAILED') {
         _logger.d('Video upload in progress, status: ${responseData['jobStatus']?['state']}');
         await Future.delayed(const Duration(seconds: 2));
         response = await http.get(
@@ -558,18 +559,74 @@ class FeedRepositoryImpl implements FeedRepository {
         }
       }
       if (responseData['jobStatus']?['state'] == 'JOB_STATE_FAILED') {
-        throw Exception('Video upload failed: ${responseData['jobStatus']?['status']}');
+        throw Exception('Video upload failed: ${responseData['jobStatus']?['error']}');
       }
       Map<String, dynamic> blob;
+      Map<String, dynamic>? audioJson;
       if (responseData case {'jobStatus': {'blob': final blobData}}) {
         blob = blobData as Map<String, dynamic>;
+        // Optional extracted audio present when completed
+        if (responseData['jobStatus']?['audio'] != null) {
+          audioJson = responseData['jobStatus']['audio'] as Map<String, dynamic>;
+        }
       } else if (responseData case {'blobRef': final blobRef}) {
         blob = blobRef as Map<String, dynamic>;
       } else {
         throw Exception('Unexpected response format: $responseData');
       }
-      return Blob.fromJson(blob);
+
+      final videoBlob = Blob.fromJson(blob);
+      if (audioJson != null) {
+        final audioBlobMap = audioJson['blob'] as Map<String, dynamic>?;
+        final detailsMap = <String, String>{};
+        if (audioJson['details'] != null && audioJson['details'] is Map<String, dynamic>) {
+          final d = audioJson['details'] as Map<String, dynamic>;
+          if (d['title'] != null) {
+            detailsMap['title'] = d['title'] as String;
+          }
+          if (d['artist'] != null) {
+            detailsMap['artist'] = d['artist'] as String;
+          }
+        }
+        if (audioBlobMap != null) {
+          final audioBlob = Blob.fromJson(audioBlobMap);
+          return (video: videoBlob, audio: (details: detailsMap.isEmpty ? null : detailsMap, blob: audioBlob));
+        }
+      }
+
+      return (video: videoBlob, audio: null);
     });
+  }
+
+  /// Creates a so.sprk.feed.audio record
+  Future<StrongRef> _createAudioRecord({
+    required ({Map<String, String>? details, Blob blob}) audio,
+  }) async {
+    if (!_client.authRepository.isAuthenticated) {
+      _logger.w('Not authenticated');
+      throw Exception('Not authenticated');
+    }
+    final atproto = _client.authRepository.atproto;
+    if (atproto == null) {
+      _logger.e('AtProto not initialized');
+      throw Exception('AtProto not initialized');
+    }
+
+    final record = <String, dynamic>{
+      r'$type': 'so.sprk.feed.audio',
+      'sound': audio.blob.toJson(),
+      if (audio.details != null) 'details': audio.details,
+      'title': 'Original Audio',
+      'createdAt': DateTime.now().toUtc().toIso8601String(),
+    };
+
+    final response = await atproto.repo.createRecord(
+      collection: NSID.parse('so.sprk.feed.audio'),
+      record: record,
+    );
+
+    _logger.i('Audio record created successfully: ${response.data.uri}');
+    return response.data;
   }
 
   /// Crosspost images to Bluesky using same blobs but Bluesky models
@@ -704,6 +761,7 @@ class FeedRepositoryImpl implements FeedRepository {
     List<String>? tags,
     List<String>? langs,
     List<SelfLabel>? selfLabels,
+    ({Map<String, String>? details, Blob blob})? audio,
   }) async {
     _logger.d('Posting video with description: $text');
 
@@ -723,10 +781,28 @@ class FeedRepositoryImpl implements FeedRepository {
         // facets
       );
 
-      // Create the post record
+      // If audio is provided, create the audio record first
+      StrongRef? audioRef;
+      if (audio != null) {
+        try {
+          audioRef = await _createAudioRecord(audio: audio);
+          _logger.i('Audio record created: ${audioRef.uri}');
+        } catch (e, st) {
+          _logger.w('Failed to create audio record, continuing without audio: $e', error: e, stackTrace: st);
+          audioRef = null;
+        }
+      }
+
+      // Build post JSON; include sound StrongRef if we have an audioRef
+      final postJson = Map<String, dynamic>.from(record.toJson());
+      if (audioRef != null) {
+        postJson['sound'] = audioRef.toJson();
+      }
+
+      // Create the post record (with sound if available)
       final response = await _client.authRepository.atproto!.repo.createRecord(
         collection: NSID.parse('so.sprk.feed.post'),
-        record: record.toJson(),
+        record: postJson,
       );
 
       if (response.status == HttpStatus.ok) {
