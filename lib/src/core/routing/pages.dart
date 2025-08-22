@@ -1,3 +1,4 @@
+export 'package:sparksocial/src/features/audio/ui/pages/audio_page.dart';
 export 'package:sparksocial/src/features/auth/ui/pages/auth_prompt_page.dart';
 export 'package:sparksocial/src/features/auth/ui/pages/login_page.dart';
 export 'package:sparksocial/src/features/auth/ui/pages/onboarding_page.dart';

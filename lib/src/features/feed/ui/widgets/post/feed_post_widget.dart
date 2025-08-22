@@ -10,6 +10,7 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
 import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
 import 'package:sparksocial/src/core/widgets/heart_animation.dart';
+import 'package:sparksocial/src/core/widgets/sound_bar.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
@@ -246,7 +247,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                   Positioned(bottom: 4, right: 4, child: sideActionBar),
 
                   Positioned(
-                    bottom: 32,
+                    bottom: (postData.isSprk && postData.sound != null) ? 56 : 32,
                     left: 4,
                     right: 80,
                     child: Builder(
@@ -282,6 +283,42 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                       },
                     ),
                   ),
+
+                  // Sound bar (Spark posts only)
+                  if (postData.isSprk && postData.sound != null)
+                    Positioned(
+                      bottom: 4,
+                      left: 4,
+                      right: 80,
+                      child: SoundBar(
+                        title: postData.sound!.title,
+                        subtitle: () {
+                          final d = postData.sound!.details;
+                          final artist = d?.artist;
+                          final track = d?.title;
+                          final parts = [
+                            artist,
+                            track,
+                          ].whereType<String>().map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+                          return parts.isNotEmpty ? parts.join(' • ') : 'Original audio';
+                        }(),
+                        coverArtUrl: postData.sound!.coverArt,
+                        onTap: () {
+                          _videoPlayerKey.currentState?.pauseVideo();
+                          final sound = postData.sound!;
+                          context.router.push(
+                            AudioRoute(
+                              audioUri: sound.uri.toString(),
+                              title: sound.title,
+                              coverArtUrl: sound.coverArt,
+                              useCount: sound.useCount,
+                              artist: sound.details?.artist,
+                              trackTitle: sound.details?.title,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                 ],
               ),
             ),

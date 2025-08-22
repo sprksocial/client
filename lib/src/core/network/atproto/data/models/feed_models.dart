@@ -215,7 +215,7 @@ class PostView with _$PostView {
     int? quoteCount,
     List<Label>? labels,
     Viewer? viewer,
-    //SoundView? sound,
+    AudioView? sound,
     EmbedView? embed, // aturi
   }) = _PostView;
   const PostView._();
@@ -355,6 +355,37 @@ class PostView with _$PostView {
         return '';
     }
   }
+}
+
+@freezed
+class AudioView with _$AudioView {
+  @JsonSerializable(explicitToJson: true)
+  const factory AudioView({
+    @AtUriConverter() required AtUri uri,
+    required String cid,
+    required ProfileViewBasic author,
+    required dynamic record,
+    required String title,
+    required String coverArt,
+    required DateTime indexedAt,
+    int? useCount,
+    AudioDetails? details,
+    @Default([]) List<Label> labels,
+  }) = _AudioView;
+  const AudioView._();
+
+  factory AudioView.fromJson(Map<String, dynamic> json) => _$AudioViewFromJson(json);
+}
+
+@freezed
+class AudioDetails with _$AudioDetails {
+  @JsonSerializable(explicitToJson: true)
+  const factory AudioDetails({
+    String? artist,
+    String? title,
+  }) = _AudioDetails;
+
+  factory AudioDetails.fromJson(Map<String, dynamic> json) => _$AudioDetailsFromJson(json);
 }
 
 @Freezed(unionKey: r'$type')

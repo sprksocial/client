@@ -9,6 +9,7 @@ import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
 import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
+import 'package:sparksocial/src/core/widgets/sound_bar.dart';
 import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
@@ -216,7 +217,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                         ),
 
                         Positioned(
-                          bottom: 32,
+                          bottom: (postData.isSprk && postData.sound != null) ? 56 : 32,
                           left: 4,
                           right: 80,
                           child: FutureBuilder<List<String>>(
@@ -238,6 +239,42 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                             },
                           ),
                         ),
+
+                        // Sound bar (Spark posts only)
+                        if (postData.isSprk && postData.sound != null)
+                          Positioned(
+                            bottom: 4,
+                            left: 4,
+                            right: 80,
+                            child: SoundBar(
+                              title: postData.sound!.title,
+                              subtitle: () {
+                                final d = postData.sound!.details;
+                                final artist = d?.artist?.trim();
+                                final track = d?.title?.trim();
+                                final titleNorm = postData.sound!.title.trim().toLowerCase();
+                                final parts = <String>[];
+                                if (artist != null && artist.isNotEmpty) parts.add(artist);
+                                if (track != null && track.isNotEmpty && track.toLowerCase() != titleNorm) parts.add(track);
+                                return parts.isNotEmpty ? parts.join(' • ') : 'Original audio';
+                              }(),
+                              coverArtUrl: postData.sound!.coverArt,
+                              onTap: () {
+                                _videoPlayerKey.currentState?.pauseVideo();
+                                final sound = postData.sound!;
+                                context.router.push(
+                                  AudioRoute(
+                                    audioUri: sound.uri.toString(),
+                                    title: sound.title,
+                                    coverArtUrl: sound.coverArt,
+                                    useCount: sound.useCount,
+                                    artist: sound.details?.artist,
+                                    trackTitle: sound.details?.title,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
                       ],
                     );
 

@@ -11,6 +11,7 @@ import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
 import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
 import 'package:sparksocial/src/core/widgets/heart_animation.dart';
+import 'package:sparksocial/src/core/widgets/sound_bar.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
@@ -210,7 +211,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                   ),
 
                   Positioned(
-                    bottom: 32,
+                    bottom: (post.isSprk && post.sound != null) ? 56 : 32,
                     left: 4,
                     right: 80,
                     child: FutureBuilder<List<String>>(
@@ -230,6 +231,41 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                       },
                     ),
                   ),
+
+                  // Sound bar (Spark posts only)
+                  if (post.isSprk && post.sound != null)
+                    Positioned(
+                      bottom: 4,
+                      left: 4,
+                      right: 80,
+                      child: SoundBar(
+                        title: post.sound!.title,
+                        subtitle: () {
+                          final d = post.sound!.details;
+                          final artist = d?.artist;
+                          final track = d?.title;
+                          final parts = [
+                            artist,
+                            track,
+                          ].whereType<String>().map((s) => s.trim()).where((s) => s.isNotEmpty).toList();
+                          return parts.isNotEmpty ? parts.join(' • ') : 'Original audio';
+                        }(),
+                        coverArtUrl: post.sound!.coverArt,
+                        onTap: () {
+                          final sound = post.sound!;
+                          context.router.push(
+                            AudioRoute(
+                              audioUri: sound.uri.toString(),
+                              title: sound.title,
+                              coverArtUrl: sound.coverArt,
+                              useCount: sound.useCount,
+                              artist: sound.details?.artist,
+                              trackTitle: sound.details?.title,
+                            ),
+                          );
+                        },
+                      ),
+                    ),
                 ],
               ),
             ),
