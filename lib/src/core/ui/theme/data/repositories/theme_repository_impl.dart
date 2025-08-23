@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/ui/theme/data/repositories/theme_repository.dart';
-import 'package:sparksocial/src/core/ui/theme/domain/theme_provider.dart';
+import 'package:sparksocial/src/core/ui/theme/providers/theme_provider.dart';
 
 /// Implementation of ThemeRepository using SharedPreferences
 class ThemeRepositoryImpl implements ThemeRepository {

@@ -111,7 +111,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           child: Row(
             children: [
               UserAvatar(
-                imageUrl: widget.otherUserAvatar,
+                imageUrl: widget.otherUserAvatar ?? '',
                 username: widget.otherUserHandle ?? 'User',
                 size: 36,
                 backgroundColor: getAvatarColor((widget.otherUserHandle ?? 'User').hashCode),

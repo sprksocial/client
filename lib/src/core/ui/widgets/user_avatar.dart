@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 class UserAvatar extends StatelessWidget {
   const UserAvatar({
     super.key,
-    this.imageUrl,
+    this.imageUrl = '',
     this.username = '',
     this.size = 40,
     this.borderColor,
@@ -14,7 +14,7 @@ class UserAvatar extends StatelessWidget {
     this.backgroundColor,
     this.fallbackTextColor,
   });
-  final String? imageUrl;
+  final String imageUrl;
   final String username;
   final double size;
   final Color? borderColor;
@@ -32,7 +32,7 @@ class UserAvatar extends StatelessWidget {
     final effectiveFallbackTextColor = fallbackTextColor ?? colorScheme.onPrimary;
 
     // If no image URL is provided, show fallback avatar
-    if (imageUrl == null || imageUrl!.isEmpty) {
+    if (imageUrl.isEmpty) {
       return Container(
         width: size,
         height: size,
@@ -62,7 +62,7 @@ class UserAvatar extends StatelessWidget {
       ),
       clipBehavior: Clip.antiAlias,
       child: CachedNetworkImage(
-        imageUrl: imageUrl!,
+        imageUrl: imageUrl,
         fit: BoxFit.cover,
         placeholder: (context, url) => ColoredBox(
           color: effectiveBackgroundColor,

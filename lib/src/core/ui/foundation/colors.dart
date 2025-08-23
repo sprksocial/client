@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+// DEPRECATED, USE DESIGN SYSTEM TOKENS
 
 /// Application color constants.
 ///

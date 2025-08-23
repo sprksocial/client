@@ -26,35 +26,6 @@ class AppTheme {
     systemNavigationBarIconBrightness: Brightness.dark,
   );
 
-  /// Get the selected UI style based on brightness
-  static SystemUiOverlayStyle getSystemUiStyle(Brightness brightness) {
-    return brightness == Brightness.dark ? darkSystemUiStyle : lightSystemUiStyle;
-  }
-
-  /// Get primary text color from theme context
-  static Color getTextColor(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    return brightness == Brightness.dark ? AppColors.textLight : AppColors.textPrimary;
-  }
-
-  /// Get secondary text color from theme context
-  static Color getSecondaryTextColor(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    return brightness == Brightness.dark ? AppColors.textLight.withAlpha(128) : AppColors.textSecondary;
-  }
-
-  /// Get background color from theme context
-  static Color getBackgroundColor(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    return brightness == Brightness.dark ? AppColors.nearBlack : AppColors.background;
-  }
-
-  /// Get navigation background color from theme context
-  static Color getNavBackgroundColor(BuildContext context) {
-    final brightness = Theme.of(context).brightness;
-    return brightness == Brightness.dark ? AppColors.nearBlack : AppColors.lightBackground;
-  }
-
   /// Light theme configuration
   static final ThemeData lightTheme = ThemeData(
     colorScheme: const ColorScheme.light(

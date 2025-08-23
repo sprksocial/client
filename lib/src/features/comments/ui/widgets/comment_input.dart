@@ -75,9 +75,9 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
                   imageUrl: ref
                       .read(profileNotifierProvider(did: session?.did ?? ''))
                       .when(
-                        data: (profileData) => profileData.profile?.avatar?.toString(),
-                        error: (error, stackTrace) => null,
-                        loading: () => null,
+                        data: (profileData) => profileData.profile?.avatar?.toString() ?? '',
+                        error: (error, stackTrace) => '',
+                        loading: () => '',
                       ),
                   username: session?.handle ?? '',
                   size: 28,

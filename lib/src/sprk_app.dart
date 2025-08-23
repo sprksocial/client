@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/l10n/app_localizations.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/ui/theme/data/models/app_theme.dart';
-import 'package:sparksocial/src/core/ui/theme/domain/theme_provider.dart';
+import 'package:sparksocial/src/core/ui/theme/providers/theme_provider.dart';
 
 class SprkApp extends ConsumerStatefulWidget {
   const SprkApp({super.key});
@@ -35,6 +37,16 @@ class _SprkAppState extends ConsumerState<SprkApp> {
       darkTheme: AppTheme.darkTheme,
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localeResolutionCallback: (locale, supportedLocales) {
+        for (final supportedLocale in supportedLocales) {
+          if (supportedLocale.languageCode == locale?.languageCode) {
+            return supportedLocale;
+          }
+        }
+        return supportedLocales.first;
+      },
       routerConfig: _appRouter.config(),
     );
   }

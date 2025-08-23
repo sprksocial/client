@@ -160,8 +160,8 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                                         .read(profileNotifierProvider(did: ref.read(sessionProvider)!.did))
                                         .when(
                                           data: (profileData) => profileData.profile!.avatar.toString(),
-                                          error: (error, stackTrace) => null,
-                                          loading: () => null,
+                                          error: (error, stackTrace) => '',
+                                          loading: () => '',
                                         ),
                                   ),
                                 ),

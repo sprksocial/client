@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/ui/theme/data/repositories/theme_repository.dart';
-import 'package:sparksocial/src/core/ui/theme/domain/theme_state.dart';
+import 'package:sparksocial/src/core/ui/theme/providers/theme_state.dart';
 
 part 'theme_provider.g.dart';
 

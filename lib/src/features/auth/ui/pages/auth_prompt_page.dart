@@ -17,13 +17,13 @@ class AuthPromptPage extends StatelessWidget {
     final isDarkMode = brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(context),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: onClose != null
           ? AppBar(
               leading: IconButton(
                 padding: EdgeInsets.zero,
                 onPressed: onClose,
-                icon: Icon(FluentIcons.dismiss_24_regular, color: AppTheme.getTextColor(context)),
+                icon: Icon(FluentIcons.dismiss_24_regular, color: Theme.of(context).colorScheme.onSurface),
               ),
               backgroundColor: Colors.transparent,
               elevation: 0,
@@ -109,7 +109,7 @@ class AuthPromptPage extends StatelessWidget {
                       const SizedBox(height: 24),
                       TextButton(
                         onPressed: onClose,
-                        child: Text('Continue browsing', style: TextStyle(color: AppTheme.getSecondaryTextColor(context))),
+                        child: Text('Continue browsing', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
                       ),
                     ],
                   ],

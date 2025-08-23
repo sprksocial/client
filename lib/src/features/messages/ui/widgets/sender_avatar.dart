@@ -21,7 +21,7 @@ class SenderAvatar extends StatelessWidget {
     }
 
     return UserAvatar(
-      imageUrl: otherUserAvatar,
+      imageUrl: otherUserAvatar ?? '',
       username: otherUserHandle ?? 'User',
       size: 32,
       backgroundColor: getAvatarColor((otherUserHandle ?? 'User').hashCode),
