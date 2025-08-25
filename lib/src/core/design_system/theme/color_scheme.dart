@@ -6,66 +6,85 @@ class AppColorScheme {
   AppColorScheme._();
 
   /// Light theme color scheme
-  /// This translates our design tokens into Material Design's ColorScheme
-  static const ColorScheme light = ColorScheme.light(
+  static const ColorScheme light = ColorScheme(
+    brightness: Brightness.light,
     // Primary colors - Used for prominent UI elements like FAB, app bars
-    primary: AppColors.primary,
-    primaryContainer: AppColors.primaryLight,
-    onPrimaryContainer: AppColors.onPrimary,
+    primary: AppColors.primary500,
+    onPrimary: AppColors.primary900,
+    primaryContainer: AppColors.primary100,
+    onPrimaryContainer: AppColors.primary900,
 
     // Secondary colors - Used for less prominent elements like chips, switches
-    secondary: AppColors.secondary,
-    secondaryContainer: AppColors.secondaryLight,
-    onSecondaryContainer: AppColors.onSecondary,
-    onSurface: AppColors.onSurface,
-    surfaceContainerHighest: AppColors.surfaceVariant,
-    onSurfaceVariant: AppColors.onSurfaceVariant,
+    secondary: AppColors.turquoise600,
+    onSecondary: AppColors.greyWhite,
+    secondaryContainer: AppColors.turquoise100,
+    onSecondaryContainer: AppColors.turquoise900,
+
+    // Tertiary colors - Used as an additional accent color
+    tertiary: AppColors.coralReef600,
+    onTertiary: AppColors.greyWhite,
+    tertiaryContainer: AppColors.coralReef100,
+    onTertiaryContainer: AppColors.coralReef900,
 
     // Error colors - Used for error states and destructive actions
-    error: AppColors.error,
-    errorContainer: AppColors.errorLight,
-    onErrorContainer: AppColors.onError,
+    error: AppColors.red600,
+    onError: AppColors.red900,
+    errorContainer: AppColors.red100,
+    onErrorContainer: AppColors.red900,
+    onSurface: AppColors.grey800,
+    surfaceContainerHighest: AppColors.grey50,
+    onSurfaceVariant: AppColors.grey700,
 
     // Additional colors for borders and outlines
-    outline: AppColors.border,
-    outlineVariant: AppColors.neutral200,
-    shadow: AppColors.neutral900,
-    scrim: AppColors.overlay,
-    inverseSurface: AppColors.neutral800,
-    onInverseSurface: AppColors.surface,
-    inversePrimary: AppColors.primaryLight,
-    surfaceTint: AppColors.surfaceTint,
+    surface: AppColors.greyWhite,
+    outline: AppColors.grey200,
+    outlineVariant: AppColors.grey100,
+    inverseSurface: AppColors.grey800,
+    onInverseSurface: AppColors.grey50,
+    inversePrimary: AppColors.primary300,
+    shadow: AppColors.greyBlack,
+    scrim: AppColors.greyBlack,
   );
 
   /// Dark theme color scheme
   /// Provides appropriate colors for dark mode while maintaining brand identity
-  static const ColorScheme dark = ColorScheme.dark(
-    primary: AppColors.primaryLight,
-    onPrimary: AppColors.neutral900,
-    primaryContainer: AppColors.primaryDark,
-    onPrimaryContainer: AppColors.surface,
+  static const ColorScheme dark = ColorScheme(
+    brightness: Brightness.dark,
+    // Primary colors
+    primary: AppColors.primary500,
+    onPrimary: AppColors.primary900,
+    primaryContainer: AppColors.primary800,
+    onPrimaryContainer: AppColors.primary100,
 
-    secondary: AppColors.secondaryLight,
-    onSecondary: AppColors.neutral900,
-    secondaryContainer: AppColors.secondaryDark,
-    onSecondaryContainer: AppColors.surface,
+    // Secondary colors
+    secondary: AppColors.turquoise400,
+    onSecondary: AppColors.turquoise900,
+    secondaryContainer: AppColors.turquoise800,
+    onSecondaryContainer: AppColors.turquoise100,
 
-    surface: AppColors.neutral800,
-    surfaceContainerHighest: AppColors.neutral700,
-    onSurfaceVariant: AppColors.neutral200,
+    // Tertiary colors
+    tertiary: AppColors.coralReef400,
+    onTertiary: AppColors.coralReef900,
+    tertiaryContainer: AppColors.coralReef800,
+    onTertiaryContainer: AppColors.coralReef100,
 
-    error: AppColors.errorLight,
-    onError: AppColors.neutral900,
-    errorContainer: AppColors.errorDark,
-    onErrorContainer: AppColors.surface,
+    // Error colors
+    error: AppColors.red400,
+    onError: AppColors.red900,
+    errorContainer: AppColors.red800,
+    onErrorContainer: AppColors.red100,
+    surface: AppColors.grey900,
+    onSurface: AppColors.grey100,
+    surfaceContainerHighest: AppColors.grey700,
+    onSurfaceVariant: AppColors.grey200,
 
-    outline: AppColors.neutral600,
-    outlineVariant: AppColors.neutral700,
-    shadow: AppColors.shadow,
-    scrim: AppColors.overlay,
-    inverseSurface: AppColors.surface,
-    onInverseSurface: AppColors.neutral900,
-    inversePrimary: AppColors.primary,
-    surfaceTint: AppColors.primary,
+    // Additional colors for borders and outlines
+    outline: AppColors.grey500,
+    outlineVariant: AppColors.grey600,
+    inverseSurface: AppColors.grey100,
+    onInverseSurface: AppColors.grey800,
+    inversePrimary: AppColors.primary700,
+    shadow: AppColors.greyBlack,
+    scrim: AppColors.greyBlack,
   );
 }

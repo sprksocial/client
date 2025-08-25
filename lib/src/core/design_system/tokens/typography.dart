@@ -1,127 +1,588 @@
 import 'package:flutter/material.dart';
 
-/// https://medium.com/@vosarat1995/material-3-you-typography-cheatsheet-ffc58c540181
 class AppTypography {
-  AppTypography._();
-
-  static const String fontFamily = 'Inter';
-
-  // Display styles - Large, prominent text
-  static const TextStyle displayLarge = TextStyle(
-    fontFamily: fontFamily,
-    fontSize: 57,
-    fontWeight: FontWeight.w400,
-    height: 1.12,
-    letterSpacing: -0.25,
+  static const displayXxlBold = TextStyle(
+    fontFamily: 'Fraunces',
+    fontStyle: FontStyle.normal,
+    fontSize: 112,
+    decoration: TextDecoration.none,
+    letterSpacing: -4.48,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 700),
+    ],
   );
 
-  static const TextStyle displayMedium = TextStyle(
-    fontFamily: fontFamily,
-    fontSize: 45,
-    fontWeight: FontWeight.w400,
-    height: 1.16,
+  static const displayXxlMedium = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w600,
+    fontStyle: FontStyle.normal,
+    fontSize: 112,
+    decoration: TextDecoration.none,
+    letterSpacing: -4.48,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 600),
+    ],
   );
 
-  static const TextStyle displaySmall = TextStyle(
-    fontFamily: fontFamily,
-    fontSize: 36,
-    fontWeight: FontWeight.w400,
-    height: 1.22,
+  static const displayXxlLight = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w300,
+    fontStyle: FontStyle.normal,
+    fontSize: 112,
+    decoration: TextDecoration.none,
+    letterSpacing: -4.48,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 300),
+    ],
   );
 
-  // Headline styles - High-emphasis text
-  static const TextStyle headlineLarge = TextStyle(
-    fontFamily: fontFamily,
+  static const displayXlLight = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w300,
+    fontStyle: FontStyle.normal,
+    fontSize: 96,
+    decoration: TextDecoration.none,
+    letterSpacing: -3.84,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 300),
+    ],
+  );
+
+  static const displayXlMedium = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w600,
+    fontStyle: FontStyle.normal,
+    fontSize: 96,
+    decoration: TextDecoration.none,
+    letterSpacing: -3.84,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 600),
+    ],
+  );
+
+  static const displayXlBold = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w700,
+    fontStyle: FontStyle.normal,
+    fontSize: 96,
+    decoration: TextDecoration.none,
+    letterSpacing: -3.84,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 700),
+    ],
+  );
+
+  static const displayLargeThin = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w300,
+    fontStyle: FontStyle.normal,
+    fontSize: 88,
+    decoration: TextDecoration.none,
+    letterSpacing: -3.52,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 300),
+    ],
+  );
+
+  static const displayLargeMedium = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w600,
+    fontStyle: FontStyle.normal,
+    fontSize: 88,
+    decoration: TextDecoration.none,
+    letterSpacing: -3.52,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 600),
+    ],
+  );
+
+  static const displayLargeBold = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w700,
+    fontStyle: FontStyle.normal,
+    fontSize: 88,
+    decoration: TextDecoration.none,
+    letterSpacing: -3.52,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 700),
+    ],
+  );
+
+  static const displayMediumThin = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w300,
+    fontStyle: FontStyle.normal,
+    fontSize: 72,
+    decoration: TextDecoration.none,
+    letterSpacing: -2.88,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 300),
+    ],
+  );
+
+  static const displayMediumMedium = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w600,
+    fontStyle: FontStyle.normal,
+    fontSize: 72,
+    decoration: TextDecoration.none,
+    letterSpacing: -2.88,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 600),
+    ],
+  );
+
+  static const displayMediumBold = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w700,
+    fontStyle: FontStyle.normal,
+    fontSize: 72,
+    decoration: TextDecoration.none,
+    letterSpacing: -2.88,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 700),
+    ],
+  );
+
+  static const displaySmallThin = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w300,
+    fontStyle: FontStyle.normal,
+    fontSize: 64,
+    decoration: TextDecoration.none,
+    letterSpacing: -1.92,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 300),
+    ],
+  );
+
+  static const displaySmallMedium = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w600,
+    fontStyle: FontStyle.normal,
+    fontSize: 64,
+    decoration: TextDecoration.none,
+    letterSpacing: -1.92,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 600),
+    ],
+  );
+
+  static const displaySmallBold = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w700,
+    fontStyle: FontStyle.normal,
+    fontSize: 64,
+    decoration: TextDecoration.none,
+    letterSpacing: -1.92,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 700),
+    ],
+  );
+
+  static const headlineXlThin = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w300,
+    fontStyle: FontStyle.normal,
+    fontSize: 56,
+    decoration: TextDecoration.none,
+    letterSpacing: -1.68,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 300),
+    ],
+  );
+
+  static const headlineXlMedium = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w500,
+    fontStyle: FontStyle.normal,
+    fontSize: 56,
+    decoration: TextDecoration.none,
+    letterSpacing: -1.68,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 500),
+    ],
+  );
+
+  static const headlineXlBold = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w700,
+    fontStyle: FontStyle.normal,
+    fontSize: 56,
+    decoration: TextDecoration.none,
+    letterSpacing: -1.68,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 700),
+    ],
+  );
+
+  static const headlineLargeThin = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w300,
+    fontStyle: FontStyle.normal,
+    fontSize: 48,
+    decoration: TextDecoration.none,
+    letterSpacing: -1.44,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 300),
+    ],
+  );
+
+  static const headlineLargeMedium = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w500,
+    fontStyle: FontStyle.normal,
+    fontSize: 48,
+    decoration: TextDecoration.none,
+    letterSpacing: -1.44,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 500),
+    ],
+  );
+
+  static const headlineLargeBold = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w700,
+    fontStyle: FontStyle.normal,
+    fontSize: 48,
+    decoration: TextDecoration.none,
+    letterSpacing: -1.44,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 700),
+    ],
+  );
+
+  static const headlineMediumThin = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w300,
+    fontStyle: FontStyle.normal,
     fontSize: 32,
-    fontWeight: FontWeight.w400,
-    height: 1.25,
+    decoration: TextDecoration.none,
+    letterSpacing: -0.64,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 300),
+    ],
   );
 
-  static const TextStyle headlineMedium = TextStyle(
-    fontFamily: fontFamily,
-    fontSize: 28,
-    fontWeight: FontWeight.w400,
-    height: 1.29,
+  static const headlineMediumMedium = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w500,
+    fontStyle: FontStyle.normal,
+    fontSize: 32,
+    decoration: TextDecoration.none,
+    letterSpacing: -0.64,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 500),
+    ],
   );
 
-  static const TextStyle headlineSmall = TextStyle(
-    fontFamily: fontFamily,
+  static const headlineMediumBold = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w700,
+    fontStyle: FontStyle.normal,
+    fontSize: 32,
+    decoration: TextDecoration.none,
+    letterSpacing: -0.64,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 700),
+    ],
+  );
+
+  static const headlineSmallThin = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w300,
+    fontStyle: FontStyle.normal,
     fontSize: 24,
-    fontWeight: FontWeight.w400,
-    height: 1.33,
+    decoration: TextDecoration.none,
+    letterSpacing: -0.48,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 300),
+    ],
   );
 
-  // Title styles - Medium-emphasis text
-  static const TextStyle titleLarge = TextStyle(
-    fontFamily: fontFamily,
-    fontSize: 22,
-    fontWeight: FontWeight.w400,
-    height: 1.27,
-  );
-
-  static const TextStyle titleMedium = TextStyle(
-    fontFamily: fontFamily,
-    fontSize: 16,
+  static const headlineSmallMedium = TextStyle(
+    fontFamily: 'SN Pro',
     fontWeight: FontWeight.w500,
-    height: 1.5,
-    letterSpacing: 0.15,
+    fontStyle: FontStyle.normal,
+    fontSize: 24,
+    decoration: TextDecoration.none,
+    letterSpacing: -0.48,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 500),
+    ],
   );
 
-  static const TextStyle titleSmall = TextStyle(
-    fontFamily: fontFamily,
+  static const headlineSmallBold = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w700,
+    fontStyle: FontStyle.normal,
+    fontSize: 24,
+    decoration: TextDecoration.none,
+    letterSpacing: -0.48,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 700),
+    ],
+  );
+
+  static const textSmallThin = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w300,
+    fontStyle: FontStyle.normal,
     fontSize: 14,
+    decoration: TextDecoration.none,
+    letterSpacing: 0,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 300),
+    ],
+  );
+
+  static const textSmallMedium = TextStyle(
+    fontFamily: 'SN Pro',
     fontWeight: FontWeight.w500,
-    height: 1.43,
-    letterSpacing: 0.1,
-  );
-
-  // Body styles - Main content text
-  static const TextStyle bodyLarge = TextStyle(
-    fontFamily: fontFamily,
-    fontSize: 16,
-    fontWeight: FontWeight.w400,
-    height: 1.5,
-    letterSpacing: 0.5,
-  );
-
-  static const TextStyle bodyMedium = TextStyle(
-    fontFamily: fontFamily,
+    fontStyle: FontStyle.normal,
     fontSize: 14,
-    fontWeight: FontWeight.w400,
-    height: 1.43,
-    letterSpacing: 0.25,
+    decoration: TextDecoration.none,
+    letterSpacing: 0,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 500),
+    ],
   );
 
-  static const TextStyle bodySmall = TextStyle(
-    fontFamily: fontFamily,
+  static const textSmallBold = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w700,
+    fontStyle: FontStyle.normal,
+    fontSize: 14,
+    decoration: TextDecoration.none,
+    letterSpacing: 0,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 700),
+    ],
+  );
+
+  static const textExtraSmallThin = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w300,
+    fontStyle: FontStyle.normal,
     fontSize: 12,
-    fontWeight: FontWeight.w400,
-    height: 1.33,
-    letterSpacing: 0.4,
+    decoration: TextDecoration.none,
+    letterSpacing: 0,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 300),
+    ],
   );
 
-  // Label styles - UI element text
-  static const TextStyle labelLarge = TextStyle(
-    fontFamily: fontFamily,
-    fontSize: 14,
+  static const textExtraSmallMedium = TextStyle(
+    fontFamily: 'SN Pro',
     fontWeight: FontWeight.w500,
-    height: 1.43,
-    letterSpacing: 0.1,
-  );
-
-  static const TextStyle labelMedium = TextStyle(
-    fontFamily: fontFamily,
+    fontStyle: FontStyle.normal,
     fontSize: 12,
-    fontWeight: FontWeight.w500,
-    height: 1.33,
-    letterSpacing: 0.5,
+    decoration: TextDecoration.none,
+    letterSpacing: 0,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 500),
+    ],
   );
 
-  static const TextStyle labelSmall = TextStyle(
-    fontFamily: fontFamily,
-    fontSize: 11,
-    fontWeight: FontWeight.w500,
-    height: 1.45,
-    letterSpacing: 0.5,
+  static const textExtraSmallBold = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w700,
+    fontStyle: FontStyle.normal,
+    fontSize: 12,
+    decoration: TextDecoration.none,
+    letterSpacing: 0,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 700),
+    ],
   );
+
+  static const textLargeThin = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w300,
+    fontStyle: FontStyle.normal,
+    fontSize: 18,
+    decoration: TextDecoration.none,
+    letterSpacing: 0,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 300),
+    ],
+  );
+
+  static const textLargeMedium = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w500,
+    fontStyle: FontStyle.normal,
+    fontSize: 18,
+    decoration: TextDecoration.none,
+    letterSpacing: 0,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 500),
+    ],
+  );
+
+  static const textLargeBold = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w700,
+    fontStyle: FontStyle.normal,
+    fontSize: 18,
+    decoration: TextDecoration.none,
+    letterSpacing: 0,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 700),
+    ],
+  );
+
+  static const textMediumThin = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w300,
+    fontStyle: FontStyle.normal,
+    fontSize: 16,
+    decoration: TextDecoration.none,
+    letterSpacing: 0,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 300),
+    ],
+  );
+
+  static const textMediumMedium = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w500,
+    fontStyle: FontStyle.normal,
+    fontSize: 16,
+    decoration: TextDecoration.none,
+    letterSpacing: 0,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 500),
+    ],
+  );
+
+  static const textMediumBold = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w700,
+    fontStyle: FontStyle.normal,
+    fontSize: 16,
+    decoration: TextDecoration.none,
+    letterSpacing: 0,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 700),
+    ],
+  );
+
+  static const textXlThin = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w300,
+    fontStyle: FontStyle.normal,
+    fontSize: 20,
+    decoration: TextDecoration.none,
+    letterSpacing: 0,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 300),
+    ],
+  );
+
+  static const textXlMedium = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w500,
+    fontStyle: FontStyle.normal,
+    fontSize: 20,
+    decoration: TextDecoration.none,
+    letterSpacing: 0,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 500),
+    ],
+  );
+
+  static const textXlBold = TextStyle(
+    fontFamily: 'SN Pro',
+    fontWeight: FontWeight.w700,
+    fontStyle: FontStyle.normal,
+    fontSize: 20,
+    decoration: TextDecoration.none,
+    letterSpacing: 0,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 700),
+    ],
+  );
+
+  static const bannerLMedium = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w600,
+    fontStyle: FontStyle.normal,
+    fontSize: 320,
+    decoration: TextDecoration.none,
+    letterSpacing: -16,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 600),
+    ],
+  );
+
+  static const bannerMMedium = TextStyle(
+    fontFamily: 'Fraunces',
+    fontWeight: FontWeight.w600,
+    fontStyle: FontStyle.normal,
+    fontSize: 240,
+    decoration: TextDecoration.none,
+    letterSpacing: -12,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 600),
+    ],
+  );
+
+  static const metaTitle = TextStyle(
+    fontFamily: 'SN Pro',
+    fontStyle: FontStyle.normal,
+    fontSize: 112,
+    decoration: TextDecoration.none,
+    letterSpacing: -4.48,
+    leadingDistribution: TextLeadingDistribution.even,
+    fontVariations: [
+      FontVariation('wght', 590),
+    ],
+  );
+
+  AppTypography._();
 }

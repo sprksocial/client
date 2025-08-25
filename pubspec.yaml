@@ -87,3 +87,10 @@ flutter:
     - assets/branding/
     - assets/icons/
     - .env
+  fonts:
+    - family: Fraunces
+      fonts:
+        - asset: assets/fonts/Fraunces-Variable.ttf
+    - family: SN Pro
+      fonts:
+        - asset: assets/fonts/SNPro-Variable.ttf

@@ -24,11 +24,21 @@ class AppConstants {
   static const double maxContentWidth = 1200;
   static const double minTapTargetSize = 44;
 
-  // Common opacity values
   static const int opacityDisabled = 97;
   static const int opacityHover = 10;
   static const int opacityFocus = 31;
   static const int opacityPressed = 41;
   static const int opacityDrag = 41;
   static const int opacityShadow = 76;
+
+  // blur
+  static const int blurBottomBar = 20;
+  static const int blur1 = 12;
+  static const int blur2 = 22;
+  static const int blur3 = 32;
+  static const int blur4 = 42;
+  static const int blur5 = 52;
+  static const int blur6 = 62;
+  static const int blurGlass = 5;
+
 }

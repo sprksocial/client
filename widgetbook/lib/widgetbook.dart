@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
+import 'package:sparksocial/src/core/design_system/theme/app_theme.dart';
 
-// Import the generated directories variable
 import 'widgetbook.directories.g.dart';
-
-void main() {
-  runApp(const WidgetbookApp());
-}
 
 @widgetbook.App()
 class WidgetbookApp extends StatelessWidget {
@@ -23,11 +19,11 @@ class WidgetbookApp extends StatelessWidget {
           themes: [
             WidgetbookTheme(
               name: 'Light',
-              data: ThemeData.light(),
+              data: AppTheme.light,
             ),
             WidgetbookTheme(
               name: 'Dark',
-              data: ThemeData.dark(),
+              data: AppTheme.dark,
             ),
           ],
         ),

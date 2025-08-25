@@ -1,71 +1,189 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  AppColors._(); 
+  static const primary50 = Color(0xfffef1f8);
 
-  // Primary colors - Main brand colors
-  static const Color primary = Color(0xFFFF2696);
-  static const Color primaryLight = Color(0xFF42A5F5);
-  static const Color primaryDark = Color(0xFF1565C0);
-  static const Color onPrimary = Color(0xFFFFFFFF);
+  static const primary100 = Color(0xfffee5f4);
 
-  // Secondary colors - Accent colors
-  static const Color secondary = Color(0xFFB20AFF);
-  static const Color secondaryLight = Color(0xFF4FDFE7);
-  static const Color secondaryDark = Color(0xFF02A894);
-  static const Color onSecondary = Color(0xFF000000);
+  static const primary200 = Color(0xffffcaea);
 
-  // Surface colors - Backgrounds and containers
-  static const Color surface = Color(0xFFFFFFFF);
-  static const Color surfaceVariant = Color(0xFFF5F5F5);
-  static const Color surfaceTint = Color(0xFFE3F2FD);
-  static const Color onSurface = Color(0xFF1C1B1F);
-  static const Color onSurfaceVariant = Color(0xFF49454F);
+  static const primary300 = Color(0xffff9fd7);
 
-  // Background colors
-  static const Color background = Color(0xFFFFFBFE);
-  static const Color onBackground = Color(0xFF1C1B1F);
+  static const primary400 = Color(0xffff63ba);
 
-  // Status colors - For feedback and states
-  static const Color success = Color(0xFF4CAF50);
-  static const Color successLight = Color(0xFF81C784);
-  static const Color successDark = Color(0xFF388E3C);
-  static const Color onSuccess = Color(0xFFFFFFFF);
+  static const primary500 = Color(0xffff2696);
 
-  static const Color warning = Color(0xFFFF9800);
-  static const Color warningLight = Color(0xFFFFB74D);
-  static const Color warningDark = Color(0xFFF57C00);
-  static const Color onWarning = Color(0xFF000000);
+  static const primary600 = Color(0xfff0127a);
 
-  static const Color error = Color(0xFFD32F2F);
-  static const Color errorLight = Color(0xFFE57373);
-  static const Color errorDark = Color(0xFFC62828);
-  static const Color onError = Color(0xFFFFFFFF);
+  static const primary700 = Color(0xffd1055f);
 
-  static const Color info = Color(0xFF2196F3);
-  static const Color infoLight = Color(0xFF64B5F6);
-  static const Color infoDark = Color(0xFF1976D2);
-  static const Color onInfo = Color(0xFFFFFFFF);
+  static const primary800 = Color(0xffad074e);
 
-  // Neutral colors - Grays and borders
-  static const Color neutral100 = Color(0xFFF5F5F5);
-  static const Color neutral200 = Color(0xFFEEEEEE);
-  static const Color neutral300 = Color(0xFFE0E0E0);
-  static const Color neutral400 = Color(0xFFBDBDBD);
-  static const Color neutral500 = Color(0xFF9E9E9E);
-  static const Color neutral600 = Color(0xFF757575);
-  static const Color neutral700 = Color(0xFF616161);
-  static const Color neutral800 = Color(0xFF424242);
-  static const Color neutral900 = Color(0xFF212121);
+  static const primary900 = Color(0xff580024);
 
-  // Border colors
-  static const Color border = neutral300;
-  static const Color borderFocus = primary;
-  static const Color borderError = error;
+  static const grey50 = Color(0xfff2f2f0);
 
-  // Overlay colors - For modals and overlays
-  static const Color overlay = Color(0x80000000);
-  static const Color scrim = Color(0x1A000000);
+  static const grey100 = Color(0xffdcdde4);
 
-  static const Color shadow = Color(0xFF000000);
+  static const grey200 = Color(0xffa3a4b5);
+
+  static const grey300 = Color(0xff67697c);
+
+  static const grey400 = Color(0xff4d4f60);
+
+  static const grey500 = Color(0xff373946);
+
+  static const grey600 = Color(0xff292a36);
+
+  static const grey700 = Color(0xff20212b);
+
+  static const grey800 = Color(0xff16171f);
+
+  static const grey900 = Color(0xff010109);
+
+  static const greyWhite = Color(0xffffffff);
+
+  static const greyBlack = Color(0xff000000);
+
+  static const coralReef100 = Color(0xffffd9d1);
+
+  static const coralReef200 = Color(0xffffccc1);
+
+  static const coralReef300 = Color(0xffffb2a3);
+
+  static const coralReef400 = Color(0xffff9984);
+
+  static const coralReef500 = Color(0xffff7f65);
+
+  static const coralReef600 = Color(0xffd86851);
+
+  static const coralReef700 = Color(0xffb1503d);
+
+  static const coralReef50 = Color(0xffffe5e0);
+
+  static const coralReef800 = Color(0xff8a3928);
+
+  static const coralReef900 = Color(0xff632114);
+
+  static const turquoise100 = Color(0xffc8f9f9);
+
+  static const turquoise200 = Color(0xffb5f7f7);
+
+  static const turquoise300 = Color(0xff91f3f3);
+
+  static const turquoise400 = Color(0xff6cefef);
+
+  static const turquoise500 = Color(0xff47ebeb);
+
+  static const turquoise600 = Color(0xff39bebe);
+
+  static const turquoise700 = Color(0xff2b9191);
+
+  static const turquoise50 = Color(0xffdafbfb);
+
+  static const turquoise800 = Color(0xff1d6363);
+
+  static const turquoise900 = Color(0xff0f3636);
+
+  static const rajah100 = Color(0xfffef0e1);
+
+  static const rajah200 = Color(0xfffee8d2);
+
+  static const rajah300 = Color(0xfffde0c3);
+
+  static const rajah400 = Color(0xfffdd1a6);
+
+  static const rajah500 = Color(0xfffcc188);
+
+  static const rajah600 = Color(0xfffbb26a);
+
+  static const rajah700 = Color(0xffd59455);
+
+  static const rajah50 = Color(0xfffff7f0);
+
+  static const rajah800 = Color(0xffaf7740);
+
+  static const rajah900 = Color(0xff88592c);
+
+  static const indigo100 = Color(0xffd0bafe);
+
+  static const indigo200 = Color(0xffb897fe);
+
+  static const indigo300 = Color(0xffa175fd);
+
+  static const indigo400 = Color(0xff8952fd);
+
+  static const indigo500 = Color(0xff7042d2);
+
+  static const indigo600 = Color(0xff5731a7);
+
+  static const indigo700 = Color(0xff3f217d);
+
+  static const indigo50 = Color(0xffe7dcff);
+
+  static const indigo800 = Color(0xff321967);
+
+  static const indigo900 = Color(0xff261052);
+
+  static const blue100 = Color(0xffa9aef5);
+
+  static const blue200 = Color(0xff7e85f1);
+
+  static const blue300 = Color(0xff535dec);
+
+  static const blue400 = Color(0xff2834e7);
+
+  static const blue500 = Color(0xff202ab9);
+
+  static const blue600 = Color(0xff181f8b);
+
+  static const blue700 = Color(0xff10155c);
+
+  static const blue50 = Color(0xffd4d6fa);
+
+  static const blue800 = Color(0xff0c1045);
+
+  static const blue900 = Color(0xff080a2e);
+
+  static const red100 = Color(0xfffcc5d2);
+
+  static const red200 = Color(0xfffbb1c3);
+
+  static const red300 = Color(0xfffa8ba4);
+
+  static const red400 = Color(0xfff86486);
+
+  static const red500 = Color(0xfff63d68);
+
+  static const red600 = Color(0xffc73154);
+
+  static const red700 = Color(0xff982540);
+
+  static const red50 = Color(0xfffdd8e1);
+
+  static const red800 = Color(0xff69182b);
+
+  static const red900 = Color(0xff521221);
+
+  static const green50 = Color(0xffe9fbf0);
+
+  static const green100 = Color(0xffd3f6e0);
+
+  static const green500 = Color(0xff23d464);
+
+  static const green400 = Color(0xff4fdd83);
+
+  static const green300 = Color(0xff7be5a2);
+
+  static const green200 = Color(0xffa7eec1);
+
+  static const green600 = Color(0xff1caa50);
+
+  static const green700 = Color(0xff157f3c);
+
+  static const green800 = Color(0xff0e5528);
+
+  static const green900 = Color(0xff0b401e);
+
+  AppColors._();
 }

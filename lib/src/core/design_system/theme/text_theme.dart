@@ -10,29 +10,29 @@ class AppTextTheme {
   /// Light theme text theme
   static const TextTheme light = TextTheme(
     // Display styles - Used for hero text and large headings
-    displayLarge: AppTypography.displayLarge,
-    displayMedium: AppTypography.displayMedium,
-    displaySmall: AppTypography.displaySmall,
+    displayLarge: AppTypography.displayLargeBold,
+    displayMedium: AppTypography.displayMediumBold,
+    displaySmall: AppTypography.displaySmallBold,
 
     // Headline styles - Used for section headers and important text
-    headlineLarge: AppTypography.headlineLarge,
-    headlineMedium: AppTypography.headlineMedium,
-    headlineSmall: AppTypography.headlineSmall,
+    headlineLarge: AppTypography.headlineXlBold,
+    headlineMedium: AppTypography.headlineLargeBold,
+    headlineSmall: AppTypography.headlineMediumBold,
 
     // Title styles - Used for list items, card titles
-    titleLarge: AppTypography.titleLarge,
-    titleMedium: AppTypography.titleMedium,
-    titleSmall: AppTypography.titleSmall,
+    titleLarge: AppTypography.headlineLargeMedium,
+    titleMedium: AppTypography.headlineMediumMedium,
+    titleSmall: AppTypography.headlineSmallMedium,
 
     // Body styles - Used for paragraphs and main content
-    bodyLarge: AppTypography.bodyLarge,
-    bodyMedium: AppTypography.bodyMedium,
-    bodySmall: AppTypography.bodySmall,
+    bodyLarge: AppTypography.textLargeMedium,
+    bodyMedium: AppTypography.textMediumMedium,
+    bodySmall: AppTypography.textSmallMedium,
 
     // Label styles - Used for buttons, tabs, form labels
-    labelLarge: AppTypography.labelLarge,
-    labelMedium: AppTypography.labelMedium,
-    labelSmall: AppTypography.labelSmall,
+    labelLarge: AppTypography.textLargeBold,
+    labelMedium: AppTypography.textMediumBold,
+    labelSmall: AppTypography.textSmallBold,
   );
 
   /// Dark theme text theme
