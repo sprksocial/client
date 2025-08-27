@@ -22,10 +22,8 @@ class AudioPostsNotifier extends StateNotifier<AudioPostsState> {
     state = state.copyWith(isLoading: true, posts: <PostView>[]);
     try {
       final uri = AtUri.parse(audioUri);
-      final query = uri.rkey.isNotEmpty ? uri.rkey : audioUri;
-      final res = await _feedRepository.searchPosts(query);
-      final filtered = res.posts.where((p) => p.sound?.uri.toString() == audioUri).toList();
-      state = state.copyWith(isLoading: false, posts: filtered, nextCursor: res.cursor);
+      final res = await _feedRepository.getPostsByAudio(uri, limit: 30);
+      state = state.copyWith(isLoading: false, posts: res.posts, nextCursor: res.cursor);
     } catch (e) {
       _logger.e('Failed to load audio posts: $e');
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -37,12 +35,10 @@ class AudioPostsNotifier extends StateNotifier<AudioPostsState> {
     state = state.copyWith(isLoadingMore: true);
     try {
       final uri = AtUri.parse(audioUri);
-      final query = uri.rkey.isNotEmpty ? uri.rkey : audioUri;
-      final res = await _feedRepository.searchPosts(query, cursor: state.nextCursor);
-      final filtered = res.posts.where((p) => p.sound?.uri.toString() == audioUri).toList();
+      final res = await _feedRepository.getPostsByAudio(uri, cursor: state.nextCursor, limit: 30);
       state = state.copyWith(
         isLoadingMore: false,
-        posts: [...state.posts, ...filtered],
+        posts: [...state.posts, ...res.posts],
         nextCursor: res.cursor,
       );
     } catch (e) {

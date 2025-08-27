@@ -995,6 +995,52 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
+  Future<({List<PostView> posts, String? cursor, AudioView? audio})> getPostsByAudio(
+    AtUri audioUri, {
+    int limit = 20,
+    String? cursor,
+  }) async {
+    _logger.d('Getting posts by audio: $audioUri, limit: $limit, cursor: $cursor');
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final parameters = <String, dynamic>{
+        'uri': audioUri.toString(),
+        'limit': limit.clamp(1, 100),
+        if (cursor != null) 'cursor': cursor,
+      };
+
+      final response = await atproto.get(
+        NSID.parse('so.sprk.feed.getPostsByAudio'),
+        parameters: parameters,
+        headers: {'atproto-proxy': _client.sprkDid},
+        to: (jsonMap) => jsonMap,
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+      );
+
+      final posts = (response.data['posts']! as List<dynamic>)
+          .map((post) => post as Map<String, dynamic>)
+          .map(PostView.fromJson)
+          .toList();
+
+      final jsonAudio = response.data['audio'] as Map<String, dynamic>?;
+      final audio = jsonAudio != null ? AudioView.fromJson(jsonAudio) : null;
+      final newCursor = response.data['cursor'] as String?;
+
+      return (posts: posts, cursor: newCursor, audio: audio);
+    });
+  }
+
+  @override
   Future<({List<PostView> posts, String? cursor})> searchPosts(
     String query, {
     int limit = 20,

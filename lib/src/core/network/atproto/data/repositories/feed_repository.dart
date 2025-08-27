@@ -152,4 +152,15 @@ abstract class FeedRepository {
     String sort = 'latest',
     String? cursor,
   });
+
+  /// Get posts that use a given audio (by AT-URI)
+  ///
+  /// [audioUri] The AT-URI of the audio record to find referencing posts for
+  /// [limit] The number of items to return (default 20, max 100)
+  /// [cursor] Pagination cursor for the next set of results
+  Future<({List<PostView> posts, String? cursor, AudioView? audio})> getPostsByAudio(
+    AtUri audioUri, {
+    int limit = 20,
+    String? cursor,
+  });
 }
