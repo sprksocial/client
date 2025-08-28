@@ -35,14 +35,14 @@ class SoundBar extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                Colors.black.withOpacity(0.55),
-                Colors.black.withOpacity(0.35),
+                Colors.black.withValues(alpha: 0.55),
+                Colors.black.withValues(alpha: 0.35),
               ],
             ),
-            border: Border.all(color: Colors.white.withOpacity(0.08)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.35),
+                color: Colors.black.withValues(alpha: 0.35),
                 blurRadius: 12,
                 offset: const Offset(0, 6),
               ),
@@ -52,8 +52,8 @@ class SoundBar extends StatelessWidget {
             type: MaterialType.transparency,
             child: InkWell(
               onTap: onTap,
-              splashColor: Colors.white.withOpacity(0.08),
-              highlightColor: Colors.white.withOpacity(0.04),
+              splashColor: Colors.white.withValues(alpha: 0.08),
+              highlightColor: Colors.white.withValues(alpha: 0.04),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 child: Row(
@@ -66,12 +66,12 @@ class SoundBar extends StatelessWidget {
                         width: 42,
                         height: 42,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, _, __) => Container(
+                        errorBuilder: (context, _, _) => Container(
                           width: 42,
                           height: 42,
                           color: Colors.white10,
                           alignment: Alignment.center,
-                          child: Icon(Icons.music_note, color: Colors.white.withOpacity(0.8)),
+                          child: Icon(Icons.music_note, color: Colors.white.withValues(alpha: 0.8)),
                         ),
                       ),
                     ),
@@ -100,7 +100,7 @@ class SoundBar extends StatelessWidget {
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: textTheme.bodySmall?.copyWith(
-                                color: Colors.white.withOpacity(0.85),
+                                color: Colors.white.withValues(alpha: 0.85),
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -134,9 +134,9 @@ class _DefaultTrailing extends StatelessWidget {
       height: 36,
       padding: const EdgeInsets.symmetric(horizontal: 10),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
+        color: Colors.white.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withOpacity(0.12)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
       ),
       child: const Icon(Icons.chevron_right, color: Colors.white, size: 22),
     );
