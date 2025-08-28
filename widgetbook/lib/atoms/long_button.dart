@@ -3,7 +3,7 @@ import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 
 // Assuming the LongButton component is located at this path
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/long_button.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/long_button.dart';
 
 @UseCase(
   name: 'no_ui',
