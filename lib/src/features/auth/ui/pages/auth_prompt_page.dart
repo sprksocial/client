@@ -3,7 +3,6 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/theme/data/models/app_theme.dart';
 import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 
 @RoutePage()

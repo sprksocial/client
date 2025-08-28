@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 class AppGradients {
@@ -9,8 +11,8 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0xffff97cd),
-    Color(0xffff349d),
+      Color(0xffff97cd),
+      Color(0xffff349d),
     ],
   );
 
@@ -22,8 +24,8 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0xffffcee2),
-    Color(0xfff99bb1),
+      Color(0xffffcee2),
+      Color(0xfff99bb1),
     ],
   );
 
@@ -37,10 +39,10 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0x4dffffff),
-    Color(0x26ffffff),
-    Color(0x1affffff),
-    Color(0x4dffffff),
+      Color(0x4dffffff),
+      Color(0x26ffffff),
+      Color(0x1affffff),
+      Color(0x4dffffff),
     ],
   );
 
@@ -52,8 +54,8 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0xffffcee2),
-    Color(0xfff99bb1),
+      Color(0xffffcee2),
+      Color(0xfff99bb1),
     ],
   );
 
@@ -65,8 +67,8 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0xffff97cd),
-    Color(0xffff349d),
+      Color(0xffff97cd),
+      Color(0xffff349d),
     ],
   );
 
@@ -79,9 +81,9 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0xffff7f65),
-    Color(0xfff63d68),
-    Color(0xffffd9d1),
+      Color(0xffff7f65),
+      Color(0xfff63d68),
+      Color(0xffffd9d1),
     ],
   );
 
@@ -94,9 +96,9 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0xfffbb1c3),
-    Color(0xff2834e7),
-    Color(0xff000000),
+      Color(0xfffbb1c3),
+      Color(0xff2834e7),
+      Color(0xff000000),
     ],
   );
 
@@ -109,9 +111,9 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0xffffd9d1),
-    Color(0xff7042d2),
-    Color(0xff000000),
+      Color(0xffffd9d1),
+      Color(0xff7042d2),
+      Color(0xff000000),
     ],
   );
 
@@ -124,9 +126,9 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0xff91f3f3),
-    Color(0xff4648ff),
-    Color(0xff000000),
+      Color(0xff91f3f3),
+      Color(0xff4648ff),
+      Color(0xff000000),
     ],
   );
 
@@ -139,9 +141,9 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0xffffccc1),
-    Color(0xfff63d68),
-    Color(0xff000000),
+      Color(0xffffccc1),
+      Color(0xfff63d68),
+      Color(0xff000000),
     ],
   );
 
@@ -153,8 +155,8 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0xff16171f),
-    Color(0xff000000),
+      Color(0xff16171f),
+      Color(0xff000000),
     ],
   );
 
@@ -166,8 +168,8 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0xff20212b),
-    Color(0xff16171f),
+      Color(0xff20212b),
+      Color(0xff16171f),
     ],
   );
 
@@ -179,8 +181,8 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0xff373946),
-    Color(0xff16171f),
+      Color(0xff373946),
+      Color(0xff16171f),
     ],
   );
 
@@ -192,8 +194,8 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0xff4d4f60),
-    Color(0xff292a36),
+      Color(0xff4d4f60),
+      Color(0xff292a36),
     ],
   );
 
@@ -207,16 +209,17 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0x4dffffff),
-    Color(0x26ffffff),
-    Color(0x1affffff),
-    Color(0x4dffffff),
+      Color(0x4dffffff),
+      Color(0x26ffffff),
+      Color(0x1affffff),
+      Color(0x4dffffff),
     ],
   );
 
   static const glassStroke = LinearGradient(
     begin: Alignment(-0.8200000000000001, -0.8),
     end: Alignment(0.72, 0.8200000000000001),
+    transform: GradientRotation(45 * (math.pi / 180)),
     stops: [
       0,
       0.3702,
@@ -224,10 +227,10 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0x4dffffff),
-    Color(0x26ffffff),
-    Color(0x1affffff),
-    Color(0x4dffffff),
+      Color(0x3FFFFFFF), // was 6 * 5, now 9 * 7
+      Color(0x1CFFFFFF), // was 3 * 5, now 4 * 7
+      Color(0x15FFFFFF), // was 2 * 5, now 3 * 7
+      Color(0x31FFFFFF), // was 6 * 5, now 7 * 7
     ],
   );
 
@@ -241,10 +244,10 @@ class AppGradients {
       1,
     ],
     colors: [
-    Color(0x4d000000),
-    Color(0x26000000),
-    Color(0x1a000000),
-    Color(0x4d000000),
+      Color(0x4d000000),
+      Color(0x26000000),
+      Color(0x1a000000),
+      Color(0x4d000000),
     ],
   );
 

@@ -50,6 +50,7 @@ dependencies:
   flutter_animated_progress_bar: ^1.0.5
   intl: ^0.20.2
   video_player: ^2.10.0
+  gradient_borders: ^1.0.1
 
 dev_dependencies:
   flutter_test:

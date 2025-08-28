@@ -2,3 +2,4 @@ include: package:flutter_lints/flutter.yaml
 analyzer:
   errors:
     implementation_imports: ignore
+    avoid_print: ignore
