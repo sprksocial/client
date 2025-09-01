@@ -5,16 +5,19 @@ class InteractivePressable extends StatefulWidget {
   final VoidCallback? onTap;
   final FocusNode? focusNode;
   final double pressedScale;
-  final double pressedOpacity;
   final Duration duration;
+  final Color overlayColor;
+  final BorderRadius? borderRadius;
 
   const InteractivePressable({
-    required this.child, super.key,
+    required this.child,
+    super.key,
     this.onTap,
     this.focusNode,
     this.pressedScale = 0.95,
-    this.pressedOpacity = 0.6,
     this.duration = const Duration(milliseconds: 120),
+    this.overlayColor = Colors.black26,
+    this.borderRadius,
   });
 
   @override
@@ -39,11 +42,21 @@ class _InteractivePressableState extends State<InteractivePressable> {
         scale: _isPressed ? widget.pressedScale : 1.0,
         duration: widget.duration,
         curve: Curves.easeOut,
-        child: AnimatedOpacity(
-          opacity: _isPressed ? widget.pressedOpacity : 1.0,
-          duration: widget.duration,
-          curve: Curves.easeOut,
-          child: widget.child,
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            widget.child,
+            Positioned.fill(
+              child: AnimatedContainer(
+                duration: widget.duration,
+                curve: Curves.easeOut,
+                decoration: BoxDecoration(
+                  color: _isPressed ? widget.overlayColor : Colors.transparent,
+                  borderRadius: widget.borderRadius,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

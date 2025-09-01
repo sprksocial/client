@@ -32,7 +32,7 @@ class AppColorScheme {
     errorContainer: AppColors.red100,
     onErrorContainer: AppColors.red900,
     onSurface: AppColors.grey800,
-    surfaceContainerHighest: AppColors.grey50,
+    surfaceContainerHighest: AppColors.lightGreyButton,
     onSurfaceVariant: AppColors.grey700,
 
     // Additional colors for borders and outlines
@@ -40,7 +40,7 @@ class AppColorScheme {
     outline: AppColors.grey200,
     outlineVariant: AppColors.grey100,
     inverseSurface: AppColors.grey800,
-    onInverseSurface: AppColors.grey50,
+    onInverseSurface: AppColors.lightGreyButton,
     inversePrimary: AppColors.primary300,
     shadow: AppColors.greyBlack,
     scrim: AppColors.greyBlack,

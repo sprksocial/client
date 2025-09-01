@@ -57,6 +57,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.7.0"
+  assets:
+    dependency: "direct main"
+    description:
+      path: assets
+      relative: true
+    source: path
+    version: "0.0.0"
   async:
     dependency: transitive
     description:
@@ -653,6 +660,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.15.2"
+  fonts:
+    dependency: "direct main"
+    description:
+      path: fonts
+      relative: true
+    source: path
+    version: "0.0.0"
   freezed:
     dependency: "direct main"
     description:

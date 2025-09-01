@@ -1,6 +1,6 @@
 name: widgetbook_workspace
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 version: 0.1.0
 
 environment:
@@ -13,6 +13,10 @@ dependencies:
   widgetbook_annotation: ^3.6.0
   sparksocial:
     path: ../
+  fonts:
+    path: ../fonts
+  assets:
+    path: ../assets
 
 dev_dependencies:
   flutter_test:
@@ -26,7 +30,7 @@ flutter:
   fonts:
     - family: Fraunces
       fonts:
-        - asset: assets/fonts/Fraunces-Variable.ttf
+        - asset: packages/fonts/Fraunces-Variable.ttf
     - family: SN Pro
       fonts:
-        - asset: assets/fonts/SNPro-Variable.ttf
+        - asset: packages/fonts/SNPro-Variable.ttf

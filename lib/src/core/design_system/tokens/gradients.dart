@@ -251,5 +251,72 @@ class AppGradients {
     ],
   );
 
+  static const darkStroke = LinearGradient(
+    begin: Alignment(-0.8200000000000001, -0.8),
+    end: Alignment(0.72, 0.8200000000000001),
+    transform: GradientRotation(45 * (math.pi / 180)),
+    stops: [
+      0,
+      0.3702,
+      0.7212,
+      1,
+    ],
+    colors: [
+      Color(0xFF313131),
+      Color(0xFF232323),
+      Color(0xFF1E1E1E),
+      Color(0xFF313131),
+    ],
+  );
+
+  static const softDarkStroke = LinearGradient(
+    begin: Alignment(-0.8200000000000001, -0.8),
+    end: Alignment(0.72, 0.8200000000000001),
+    transform: GradientRotation(45 * (math.pi / 180)),
+    stops: [
+      0,
+      0.7212,
+      1,
+    ],
+    colors: [
+      Color(0xFF6F6F6F),
+      Color(0xFF3D3D3D),
+      Color(0xFF6F6F6F),
+    ],
+  );
+
+  static const lightStroke = LinearGradient(
+    begin: Alignment(-0.8200000000000001, -0.8),
+    end: Alignment(0.72, 0.8200000000000001),
+    transform: GradientRotation(45 * (math.pi / 180)),
+    stops: [
+      0,
+      0.3702,
+      0.7212,
+      1,
+    ],
+    colors: [
+      Color(0xFFFEFEFE),
+      Color(0xFFFCFCFC),
+      Color(0xFFF1F1F1),
+      Color(0xFFFEFEFE),
+    ],
+  );
+  static const softLightStroke = LinearGradient(
+    begin: Alignment(-0.8200000000000001, -0.8),
+    end: Alignment(0.72, 0.8200000000000001),
+    transform: GradientRotation(45 * (math.pi / 180)),
+    stops: [
+      0,
+      0.7212,
+      1,
+    ],
+    colors: [
+      Color(0xFFB0B0B0),
+      Color(0xFFD2D2D2),
+      Color(0xFFB0B0B0),
+    ],
+  );
+
   AppGradients._();
 }

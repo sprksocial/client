@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppTypography {
   static const displayXxlBold = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontStyle: FontStyle.normal,
     fontSize: 112,
@@ -14,6 +15,7 @@ class AppTypography {
   );
 
   static const displayXxlMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w600,
     fontStyle: FontStyle.normal,
@@ -27,6 +29,7 @@ class AppTypography {
   );
 
   static const displayXxlLight = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w300,
     fontStyle: FontStyle.normal,
@@ -40,6 +43,7 @@ class AppTypography {
   );
 
   static const displayXlLight = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w300,
     fontStyle: FontStyle.normal,
@@ -53,6 +57,7 @@ class AppTypography {
   );
 
   static const displayXlMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w600,
     fontStyle: FontStyle.normal,
@@ -66,6 +71,7 @@ class AppTypography {
   );
 
   static const displayXlBold = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w700,
     fontStyle: FontStyle.normal,
@@ -79,6 +85,7 @@ class AppTypography {
   );
 
   static const displayLargeThin = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w300,
     fontStyle: FontStyle.normal,
@@ -92,6 +99,7 @@ class AppTypography {
   );
 
   static const displayLargeMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w600,
     fontStyle: FontStyle.normal,
@@ -105,6 +113,7 @@ class AppTypography {
   );
 
   static const displayLargeBold = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w700,
     fontStyle: FontStyle.normal,
@@ -118,6 +127,7 @@ class AppTypography {
   );
 
   static const displayMediumThin = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w300,
     fontStyle: FontStyle.normal,
@@ -131,6 +141,7 @@ class AppTypography {
   );
 
   static const displayMediumMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w600,
     fontStyle: FontStyle.normal,
@@ -144,6 +155,7 @@ class AppTypography {
   );
 
   static const displayMediumBold = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w700,
     fontStyle: FontStyle.normal,
@@ -157,6 +169,7 @@ class AppTypography {
   );
 
   static const displaySmallThin = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w300,
     fontStyle: FontStyle.normal,
@@ -170,6 +183,7 @@ class AppTypography {
   );
 
   static const displaySmallMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w600,
     fontStyle: FontStyle.normal,
@@ -183,6 +197,7 @@ class AppTypography {
   );
 
   static const displaySmallBold = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w700,
     fontStyle: FontStyle.normal,
@@ -196,6 +211,7 @@ class AppTypography {
   );
 
   static const headlineXlThin = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w300,
     fontStyle: FontStyle.normal,
@@ -209,6 +225,7 @@ class AppTypography {
   );
 
   static const headlineXlMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w500,
     fontStyle: FontStyle.normal,
@@ -222,6 +239,7 @@ class AppTypography {
   );
 
   static const headlineXlBold = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w700,
     fontStyle: FontStyle.normal,
@@ -235,6 +253,7 @@ class AppTypography {
   );
 
   static const headlineLargeThin = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w300,
     fontStyle: FontStyle.normal,
@@ -248,6 +267,7 @@ class AppTypography {
   );
 
   static const headlineLargeMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w500,
     fontStyle: FontStyle.normal,
@@ -261,6 +281,7 @@ class AppTypography {
   );
 
   static const headlineLargeBold = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w700,
     fontStyle: FontStyle.normal,
@@ -274,6 +295,7 @@ class AppTypography {
   );
 
   static const headlineMediumThin = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w300,
     fontStyle: FontStyle.normal,
@@ -287,6 +309,7 @@ class AppTypography {
   );
 
   static const headlineMediumMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w500,
     fontStyle: FontStyle.normal,
@@ -300,6 +323,7 @@ class AppTypography {
   );
 
   static const headlineMediumBold = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w700,
     fontStyle: FontStyle.normal,
@@ -313,6 +337,7 @@ class AppTypography {
   );
 
   static const headlineSmallThin = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w300,
     fontStyle: FontStyle.normal,
@@ -326,6 +351,7 @@ class AppTypography {
   );
 
   static const headlineSmallMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w500,
     fontStyle: FontStyle.normal,
@@ -339,6 +365,7 @@ class AppTypography {
   );
 
   static const headlineSmallBold = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w700,
     fontStyle: FontStyle.normal,
@@ -352,6 +379,7 @@ class AppTypography {
   );
 
   static const textSmallThin = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w300,
     fontStyle: FontStyle.normal,
@@ -365,6 +393,7 @@ class AppTypography {
   );
 
   static const textSmallMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w500,
     fontStyle: FontStyle.normal,
@@ -378,6 +407,7 @@ class AppTypography {
   );
 
   static const textSmallBold = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w700,
     fontStyle: FontStyle.normal,
@@ -391,6 +421,7 @@ class AppTypography {
   );
 
   static const textExtraSmallThin = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w300,
     fontStyle: FontStyle.normal,
@@ -404,6 +435,7 @@ class AppTypography {
   );
 
   static const textExtraSmallMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w500,
     fontStyle: FontStyle.normal,
@@ -417,6 +449,7 @@ class AppTypography {
   );
 
   static const textExtraSmallBold = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w700,
     fontStyle: FontStyle.normal,
@@ -430,6 +463,7 @@ class AppTypography {
   );
 
   static const textLargeThin = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w300,
     fontStyle: FontStyle.normal,
@@ -443,6 +477,7 @@ class AppTypography {
   );
 
   static const textLargeMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w500,
     fontStyle: FontStyle.normal,
@@ -456,6 +491,7 @@ class AppTypography {
   );
 
   static const textLargeBold = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w700,
     fontStyle: FontStyle.normal,
@@ -469,6 +505,7 @@ class AppTypography {
   );
 
   static const textMediumThin = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w300,
     fontStyle: FontStyle.normal,
@@ -482,6 +519,7 @@ class AppTypography {
   );
 
   static const textMediumMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w500,
     fontStyle: FontStyle.normal,
@@ -495,6 +533,7 @@ class AppTypography {
   );
 
   static const textMediumBold = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w700,
     fontStyle: FontStyle.normal,
@@ -508,6 +547,7 @@ class AppTypography {
   );
 
   static const textXlThin = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w300,
     fontStyle: FontStyle.normal,
@@ -521,6 +561,7 @@ class AppTypography {
   );
 
   static const textXlMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w500,
     fontStyle: FontStyle.normal,
@@ -534,6 +575,7 @@ class AppTypography {
   );
 
   static const textXlBold = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontWeight: FontWeight.w700,
     fontStyle: FontStyle.normal,
@@ -547,6 +589,7 @@ class AppTypography {
   );
 
   static const bannerLMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w600,
     fontStyle: FontStyle.normal,
@@ -560,6 +603,7 @@ class AppTypography {
   );
 
   static const bannerMMedium = TextStyle(
+    package: 'fonts',
     fontFamily: 'Fraunces',
     fontWeight: FontWeight.w600,
     fontStyle: FontStyle.normal,
@@ -573,6 +617,7 @@ class AppTypography {
   );
 
   static const metaTitle = TextStyle(
+    package: 'fonts',
     fontFamily: 'SN Pro',
     fontStyle: FontStyle.normal,
     fontSize: 112,

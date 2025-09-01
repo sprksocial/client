@@ -51,6 +51,10 @@ dependencies:
   intl: ^0.20.2
   video_player: ^2.10.0
   gradient_borders: ^1.0.1
+  fonts:
+    path: fonts
+  assets:
+    path: assets
 
 dev_dependencies:
   flutter_test:
@@ -84,14 +88,11 @@ flutter:
   uses-material-design: true
   generate: true
   assets:
-    - assets/images/
-    - assets/branding/
-    - assets/icons/
     - .env
   fonts:
     - family: Fraunces
       fonts:
-        - asset: assets/fonts/Fraunces-Variable.ttf
+        - asset: packages/fonts/Fraunces-Variable.ttf
     - family: SN Pro
       fonts:
-        - asset: assets/fonts/SNPro-Variable.ttf
+        - asset: packages/fonts/SNPro-Variable.ttf

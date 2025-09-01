@@ -34,7 +34,7 @@ Widget buildAppColorsUseCase(BuildContext context) {
           ColorPalettePreview(
             name: 'Grey',
             colors: [
-              AppColors.grey50,
+              AppColors.lightGreyButton,
               AppColors.grey100,
               AppColors.grey200,
               AppColors.grey300,
