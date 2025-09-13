@@ -5,7 +5,6 @@ import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
@@ -108,10 +107,8 @@ class GraphRepositoryImpl implements GraphRepository {
         throw Exception('Session DID not available');
       }
 
-      final settingsRepository = GetIt.instance<SettingsRepository>();
-
       final collection = NSID.parse('so.sprk.graph.follow');
-      final recordType = 'so.sprk.graph.follow';
+      const recordType = 'so.sprk.graph.follow';
 
       try {
         _logger.d('Checking if already following user: $did');

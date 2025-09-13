@@ -1,7 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
@@ -13,13 +12,11 @@ class SettingsRepositoryImpl implements SettingsRepository {
     _sqlCache = GetIt.instance<SQLCacheInterface>();
     _storageManager = GetIt.instance<StorageManager>();
     _logger = GetIt.instance<LogService>().getLogger('SettingsRepository');
-    _sprkRepository = GetIt.instance<SprkRepository>();
     _setupDefaultLabelPreferences();
   }
   late final SQLCacheInterface _sqlCache;
   late final StorageManager _storageManager;
   late final SparkLogger _logger;
-  late final SprkRepository _sprkRepository;
 
   Future<void> _setupDefaultLabelPreferences() async {
     if (await _storageManager.preferences.getObject<bool>(StorageKeys.defaultLabelsAreSetupKey) ?? false) {
