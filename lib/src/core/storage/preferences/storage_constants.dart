@@ -29,4 +29,7 @@ class StorageKeys {
 
   /// Post to Bluesky
   static const String postToBskyKey = 'post_to_bsky_enabled';
+
+  /// Story auto deletion
+  static const String storyAutoDeleteEnabled = 'story_auto_delete_enabled';
 }
