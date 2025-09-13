@@ -1,4 +1,11 @@
 PODS:
+  - better_player_plus (1.0.0):
+    - Cache (~> 6.0.0)
+    - Flutter
+    - GCDWebServer
+    - HLSCachingReverseProxyServer
+    - PINCache
+  - Cache (6.0.0)
   - camera_avfoundation (0.0.1):
     - Flutter
   - Flutter (1.0.0)
@@ -8,6 +15,12 @@ PODS:
     - Flutter
     - FlutterMacOS
     - mdk (~> 0.33.0)
+  - GCDWebServer (3.5.4):
+    - GCDWebServer/Core (= 3.5.4)
+  - GCDWebServer/Core (3.5.4)
+  - HLSCachingReverseProxyServer (0.1.0):
+    - GCDWebServer (~> 3.5)
+    - PINCache (>= 3.0.1-beta.3)
   - image_picker_ios (0.0.1):
     - Flutter
   - imgly_camera (1.53.0):
@@ -69,9 +82,19 @@ PODS:
     - IMGLYEditor (= 1.53.0)
   - Kingfisher (7.10.2)
   - mdk (0.33.1)
+  - package_info_plus (0.4.5):
+    - Flutter
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - PINCache (3.0.4):
+    - PINCache/Arc-exception-safe (= 3.0.4)
+    - PINCache/Core (= 3.0.4)
+  - PINCache/Arc-exception-safe (3.0.4):
+    - PINCache/Core
+  - PINCache/Core (3.0.4):
+    - PINOperation (~> 1.2.3)
+  - PINOperation (1.2.3)
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -84,8 +107,11 @@ PODS:
   - video_player_avfoundation (0.0.1):
     - Flutter
     - FlutterMacOS
+  - wakelock_plus (0.0.1):
+    - Flutter
 
 DEPENDENCIES:
+  - better_player_plus (from `.symlinks/plugins/better_player_plus/ios`)
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - Flutter (from `Flutter`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
@@ -93,14 +119,19 @@ DEPENDENCIES:
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - imgly_camera (from `.symlinks/plugins/imgly_camera/ios`)
   - imgly_editor (from `.symlinks/plugins/imgly_editor/ios`)
+  - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
   - video_player_avfoundation (from `.symlinks/plugins/video_player_avfoundation/darwin`)
+  - wakelock_plus (from `.symlinks/plugins/wakelock_plus/ios`)
 
 SPEC REPOS:
   trunk:
+    - Cache
+    - GCDWebServer
+    - HLSCachingReverseProxyServer
     - IMGLYApparelEditor
     - IMGLYCamera
     - IMGLYCore
@@ -114,9 +145,13 @@ SPEC REPOS:
     - IMGLYVideoEditor
     - Kingfisher
     - mdk
+    - PINCache
+    - PINOperation
     - SwiftUIIntrospect
 
 EXTERNAL SOURCES:
+  better_player_plus:
+    :path: ".symlinks/plugins/better_player_plus/ios"
   camera_avfoundation:
     :path: ".symlinks/plugins/camera_avfoundation/ios"
   Flutter:
@@ -131,6 +166,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/imgly_camera/ios"
   imgly_editor:
     :path: ".symlinks/plugins/imgly_editor/ios"
+  package_info_plus:
+    :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   shared_preferences_foundation:
@@ -141,12 +178,18 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
   video_player_avfoundation:
     :path: ".symlinks/plugins/video_player_avfoundation/darwin"
+  wakelock_plus:
+    :path: ".symlinks/plugins/wakelock_plus/ios"
 
 SPEC CHECKSUMS:
+  better_player_plus: 10794c0ed1b3b4ae058939e22a6172f850a2039b
+  Cache: 4ca7e00363fca5455f26534e5607634c820ffc2d
   camera_avfoundation: 04b44aeb14070126c6529e5ab82cc7c9fca107cf
   Flutter: e0871f40cf51350855a761d2e70bf5af5b9b5de7
   flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
   fvp: 3f9a3f729e969cb76d1692c615c9e33508563121
+  GCDWebServer: 2c156a56c8226e2d5c0c3f208a3621ccffbe3ce4
+  HLSCachingReverseProxyServer: 59935e1e0244ad7f3375d75b5ef46e8eb26ab181
   image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
   imgly_camera: a54c0c9f3d33d8c21cce402637a7079ef07f402f
   imgly_editor: 449432a405a670b291c81b67f40d10ecf4eb1f09
@@ -163,12 +206,16 @@ SPEC CHECKSUMS:
   IMGLYVideoEditor: 74d46a79a162ac7706fb8457e3f967ec269fe84a
   Kingfisher: 99edc495d3b7607e6425f0d6f6847b2abd6d716d
   mdk: 622e3452cea55a982c0712ec9ce931d8ec718b22
+  package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
+  PINCache: d9a87a0ff397acffe9e2f0db972ac14680441158
+  PINOperation: fb563bcc9c32c26d6c78aaff967d405aa2ee74a7
   shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   SwiftUIIntrospect: 434b406dc6f5e30744bb6e180f90343f6a8eba8c
   url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
   video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
+  wakelock_plus: e29112ab3ef0b318e58cfa5c32326458be66b556
 
 PODFILE CHECKSUM: e716c32704b29904c5fe233535ab45faecf8c549
 

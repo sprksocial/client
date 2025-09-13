@@ -8,7 +8,6 @@ import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repo
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
 
 /// Implementation of Graph-related API endpoints
 class GraphRepositoryImpl implements GraphRepository {
@@ -111,11 +110,8 @@ class GraphRepositoryImpl implements GraphRepository {
 
       final settingsRepository = GetIt.instance<SettingsRepository>();
 
-      final followMode = await settingsRepository.getFollowMode();
-      _logger.d('Using follow mode: $followMode');
-
-      final collection = followMode == FollowMode.sprk ? NSID.parse('so.sprk.graph.follow') : NSID.parse('app.bsky.graph.follow');
-      final recordType = followMode == FollowMode.sprk ? 'so.sprk.graph.follow' : 'app.bsky.graph.follow';
+      final collection = NSID.parse('so.sprk.graph.follow');
+      final recordType = 'so.sprk.graph.follow';
 
       try {
         _logger.d('Checking if already following user: $did');

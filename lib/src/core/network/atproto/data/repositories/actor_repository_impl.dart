@@ -165,7 +165,6 @@ class ActorRepositoryImpl implements ActorRepository {
 
   @override
   Future<void> putPreferences(UserPreferences preferences) async {
-    _logger.d('Updating user preferences: ${preferences.followMode}');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
@@ -178,17 +177,19 @@ class ActorRepositoryImpl implements ActorRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final result = await atproto.post(
-        NSID.parse('so.sprk.actor.putPreferences'),
-        body: preferences.toJson(),
-        headers: {'atproto-proxy': _client.sprkDid},
-        // to: (jsonMap) => jsonMap,
-      );
+      // @TODO: Implement putPreferences for feeds not followMode
 
-      if (result.status != HttpStatus.ok) {
-        _logger.e('Failed to update preferences');
-        throw Exception('Failed to update preferences');
-      }
+      // final result = await atproto.post(
+      //   NSID.parse('so.sprk.actor.putPreferences'),
+      //   body: preferences.toJson(),
+      //   headers: {'atproto-proxy': _client.sprkDid},
+      //   // to: (jsonMap) => jsonMap,
+      // );
+
+      // if (result.status != HttpStatus.ok) {
+      //   _logger.e('Failed to update preferences');
+      //   throw Exception('Failed to update preferences');
+      // }
 
       _logger.d('Preferences updated successfully');
     });

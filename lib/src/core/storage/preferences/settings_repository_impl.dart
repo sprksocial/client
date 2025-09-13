@@ -1,5 +1,4 @@
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -8,7 +7,6 @@ import 'package:sparksocial/src/core/storage/preferences/settings_repository.dar
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
 
 class SettingsRepositoryImpl implements SettingsRepository {
   SettingsRepositoryImpl() {
@@ -181,17 +179,6 @@ class SettingsRepositoryImpl implements SettingsRepository {
   @override
   Future<void> setHideAdultContent(bool value) async {
     await _storageManager.preferences.setBool(StorageKeys.hideAdultContentKey, value);
-  }
-
-  @override
-  Future<FollowMode> getFollowMode() async {
-    final followModeString = await _storageManager.preferences.getString(StorageKeys.followModeKey);
-    return FollowMode.values.firstWhere((mode) => mode.name == followModeString, orElse: () => FollowMode.sprk);
-  }
-
-  @override
-  Future<void> setFollowMode(FollowMode followMode) async {
-    await _storageManager.preferences.setString(StorageKeys.followModeKey, followMode.name);
   }
 
   @override
@@ -374,59 +361,6 @@ class SettingsRepositoryImpl implements SettingsRepository {
         newLabelPreference.toJson(),
       );
       _logger.d('Label preference created: $value');
-    }
-  }
-
-  @override
-  Future<void> syncFollowModeFromServer() async {
-    try {
-      _logger.d('Syncing follow mode from server...');
-
-      if (!_sprkRepository.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated, skipping server sync');
-        return;
-      }
-
-      final preferences = await _sprkRepository.actor.getPreferences();
-      final serverFollowMode = FollowMode.values.firstWhere(
-        (mode) => mode.name == preferences.followMode,
-        orElse: () => FollowMode.sprk,
-      );
-
-      // Get current local value to check if it changed
-      final currentFollowMode = await getFollowMode();
-
-      if (currentFollowMode != serverFollowMode) {
-        _logger.d('Follow mode changed from server: $currentFollowMode -> $serverFollowMode');
-        await setFollowMode(serverFollowMode);
-      } else {
-        _logger.d('Follow mode is in sync with server: $serverFollowMode');
-      }
-    } catch (e) {
-      _logger.w('Failed to sync follow mode from server', error: e);
-    }
-  }
-
-  @override
-  Future<void> setFollowModeWithSync(FollowMode followMode) async {
-    try {
-      _logger.d('Setting follow mode with sync: $followMode');
-
-      // Set locally first
-      await setFollowMode(followMode);
-
-      // Sync with backend if authenticated
-      if (_sprkRepository.authRepository.isAuthenticated) {
-        final preferences = UserPreferences(followMode: followMode.name);
-        await _sprkRepository.actor.putPreferences(preferences);
-        _logger.d('Follow mode synced with server successfully');
-      } else {
-        _logger.w('Not authenticated, follow mode saved locally only');
-      }
-    } catch (e) {
-      _logger.e('Failed to sync follow mode with server', error: e);
-      // Keep the local change even if sync fails
-      rethrow;
     }
   }
 
