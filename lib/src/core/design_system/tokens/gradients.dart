@@ -302,6 +302,7 @@ class AppGradients {
       Color(0xFFFEFEFE),
     ],
   );
+
   static const softLightStroke = LinearGradient(
     begin: Alignment(-0.8200000000000001, -0.8),
     end: Alignment(0.72, 0.8200000000000001),
@@ -316,6 +317,12 @@ class AppGradients {
       Color(0xFFD2D2D2),
       Color(0xFFB0B0B0),
     ],
+  );
+
+  static const green = LinearGradient(
+    colors: [Color(0xFF97FFBF), Color(0xFF34FF34)],
+    begin: Alignment(-0.8, -1),
+    end: Alignment(0.8, 1),
   );
 
   AppGradients._();

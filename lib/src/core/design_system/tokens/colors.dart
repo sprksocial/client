@@ -21,7 +21,7 @@ class AppColors {
 
   static const primary900 = Color(0xff580024);
 
-  static const darkGreyButton = Color(0xff1A1A1A);
+  static const darkGreyButton = Color(0xff2c2c2c);
 
   static const lightGreyButton = Color(0xfff2f2f0);
 
