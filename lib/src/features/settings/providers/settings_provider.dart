@@ -6,7 +6,6 @@ import 'package:sparksocial/src/core/storage/preferences/settings_repository.dar
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_state.dart';
-import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
 
 part 'settings_provider.g.dart';
 
@@ -44,20 +43,18 @@ class Settings extends _$Settings {
 
       final feedBlurEnabled = await _repository.getFeedBlurEnabled();
       final hideAdultContent = await _repository.getHideAdultContent();
-      final followMode = await _repository.getFollowMode();
       final feeds = await _repository.getFeeds();
       final activeFeed = await _repository.getActiveFeed();
       final postToBskyEnabled = await _repository.getPostToBskyEnabled();
 
       _logger.d(
-        'Settings loaded - activeFeed: ${activeFeed.name}, feeds: ${feeds.map((f) => f.name).join(', ')}, followMode: $followMode',
+        'Settings loaded - activeFeed: ${activeFeed.name}, feeds: ${feeds.map((f) => f.name).join(', ')}',
       );
 
       state = SettingsState(
         activeFeed: activeFeed,
         feedBlurEnabled: feedBlurEnabled,
         hideAdultContent: hideAdultContent,
-        followMode: followMode,
         feeds: feeds,
         postToBskyEnabled: postToBskyEnabled,
       );
@@ -81,12 +78,6 @@ class Settings extends _$Settings {
     state = state.copyWith(hideAdultContent: value);
   }
 
-  /// Sets follow mode setting
-  Future<void> setFollowMode(FollowMode followMode) async {
-    await _repository.setFollowModeWithSync(followMode);
-    state = state.copyWith(followMode: followMode);
-  }
-
   /// Sets Post to Bluesky setting
   Future<void> setPostToBsky(bool value) async {
     await _repository.setPostToBskyEnabled(value);
@@ -101,10 +92,6 @@ class Settings extends _$Settings {
   /// - Manually from the settings UI if user wants to refresh preferences
   Future<void> syncPreferencesFromServer() async {
     try {
-      _logger.d('Syncing preferences from server...');
-      await _repository.syncFollowModeFromServer();
-
-      // Reload settings to get updated values
       await loadSettings();
       _logger.d('Preferences synced successfully');
     } catch (e) {
