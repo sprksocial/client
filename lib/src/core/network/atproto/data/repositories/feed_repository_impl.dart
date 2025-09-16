@@ -901,7 +901,7 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('Not authenticated');
       }
 
-      final record = StoryRecord(createdAt: DateTime.now(), media: embed, selfLabels: selfLabels, tags: tags);
+      final record = StoryRecord(createdAt: DateTime.now(), media: embed, tags: tags);
 
       final response = await _client.authRepository.atproto!.repo.createRecord(
         collection: NSID.parse('so.sprk.feed.story'),
