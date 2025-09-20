@@ -132,13 +132,14 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
         if (uploadedImage.isEmpty) {
           throw Exception('No images uploaded');
         }
-        result = ref
-            .read(
-              postStoryProvider(
-                Embed.image(images: uploadedImage),
-              ),
-            )
-            .value!;
+        final storyProvider = postStoryProvider(
+          Embed.image(images: uploadedImage),
+        );
+        final asyncResult = await ref.read(storyProvider.future);
+        if (asyncResult == null) {
+          throw Exception('Story post returned null StrongRef');
+        }
+        result = asyncResult;
       } else {
         // Post as a regular image post
         result = await _feedRepository.postImages(description, _imageFiles, _altTexts, crosspostToBsky: crosspostEnabled);
@@ -455,6 +456,11 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                       : () async {
                           final postRef = await _uploadImagesAndPost();
                           if (context.mounted && postRef != null) {
+                            if (widget.storyMode) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Story posted successfully!')),
+                              );
+                            }
                             context.router.popUntilRoot();
                             final did = ref.read(sessionProvider)?.did;
                             if (did != null) {
