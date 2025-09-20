@@ -46,6 +46,7 @@ dependencies:
   any_link_preview: ^3.0.3
   better_player_plus: ^1.0.8
   flutter_animated_progress_bar: ^1.0.5
+  video_player: ^2.10.0
 
 dev_dependencies:
   flutter_test:
