@@ -20,9 +20,15 @@ class StoryAutoDeletePref extends _$StoryAutoDeletePref {
   Future<bool> build() async {
     _logger = GetIt.I<LogService>().getLogger('StoryAutoDeletePref');
     final prefs = StorageManager.instance.preferences;
-    final enabled = await prefs.getBool(StorageKeys.storyAutoDeleteEnabled) ?? false;
-    _logger.d('Loaded auto delete preference: $enabled');
-    return enabled;
+    var stored = await prefs.getBool(StorageKeys.storyAutoDeleteEnabled);
+    if (stored == null) {
+      stored = true;
+      await prefs.setBool(StorageKeys.storyAutoDeleteEnabled, true);
+      _logger.d('Auto delete preference not found. Setting default to true.');
+    } else {
+      _logger.d('Loaded auto delete preference: $stored');
+    }
+    return stored;
   }
 
   Future<void> setEnabled(bool value) async {
