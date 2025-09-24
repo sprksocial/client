@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
@@ -13,6 +14,7 @@ class FeedTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (!selected) {
       return InteractivePressable(
         onTap: onTap,
@@ -28,18 +30,17 @@ class FeedTag extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
           child: Container(
-            width: 47,
-            height: 25,
+            height: 30,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
             decoration: BoxDecoration(
-              color: Colors.white.withAlpha(50),
+              color: isDark ? Colors.white.withAlpha(50) : Colors.black.withAlpha(50),
               borderRadius: BorderRadius.circular(9),
               border: Border.all(
-                color: Colors.white.withAlpha(37),
+                color: isDark ? Colors.white.withAlpha(37) : Colors.black.withAlpha(37),
               ),
             ),
             child: Center(
-              child: Text(text, style: AppTypography.textMediumMedium),
+              child: Text(text, style: AppTypography.textMediumMedium.copyWith(color: Colors.white)),
             ),
           ),
         ),

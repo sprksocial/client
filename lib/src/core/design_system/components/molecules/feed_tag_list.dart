@@ -36,7 +36,7 @@ class _FeedTagListState extends State<FeedTagList> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 25,
+      height: 30,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.only(left: 40),
