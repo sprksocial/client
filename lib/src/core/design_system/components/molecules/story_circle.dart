@@ -74,10 +74,11 @@ class StoryCircle extends StatelessWidget {
   }
 
   static const double _widgetWidth = 74;
-  static const double _widgetHeight = 96;
+  static const double _widgetHeight = 102;
   static const double _imageContainerSize = 74;
   static const double _imageSize = 64;
-  static const double _gap = 10;
+  static const double _liveGap = 10;
+  static const double _gap = 5;
 
   @override
   Widget build(BuildContext context) {
@@ -96,12 +97,21 @@ class StoryCircle extends StatelessWidget {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   gradient: _getBorderGradient(),
+                  // border: Border.all(width: 2, color: AppColors.primary500),
+                  // borderRadius: BorderRadius.circular(_imageContainerSize / 2),
                 ),
-                child: Center(
-                  child: CircleAvatar(
-                    radius: _imageSize / 2,
-                    backgroundColor: const Color(0xFFD9D9D9),
-                    backgroundImage: CachedNetworkImageProvider(imageUrl),
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.transparent,
+                    ),
+                    child: CircleAvatar(
+                      radius: _imageSize / 2,
+                      backgroundColor: const Color(0xFFD9D9D9),
+                      backgroundImage: CachedNetworkImageProvider(imageUrl),
+                    ),
                   ),
                 ),
               ),
@@ -109,7 +119,7 @@ class StoryCircle extends StatelessWidget {
               if (type == StoryType.create) _CreateButton(),
             ],
           ),
-          const SizedBox(height: _gap),
+          SizedBox(height: type == StoryType.live ? _liveGap : _gap),
           SizedBox(
             width: _widgetWidth,
             child: Text(
@@ -148,12 +158,12 @@ class _LiveBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      bottom: 5,
+      bottom: -10,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
         decoration: BoxDecoration(
           gradient: AppGradients.accent,
-          borderRadius: BorderRadius.circular(3),
+          borderRadius: BorderRadius.circular(8),
           border: Border.all(width: 2),
         ),
         child: Text(live, style: AppTypography.textExtraSmallMedium),

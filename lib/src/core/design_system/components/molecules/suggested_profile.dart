@@ -28,7 +28,7 @@ class SuggestedProfile extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
       width: 313,
-      height: 56,
+      height: 60,
       child: Container(
         decoration: BoxDecoration(
           color: isDark ? AppColors.grey700 : AppColors.grey100,

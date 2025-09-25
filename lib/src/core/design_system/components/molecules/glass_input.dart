@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
 
@@ -101,8 +102,12 @@ class GlassInput extends StatelessWidget {
                         color: Colors.white.withAlpha(128),
                       ),
                       border: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      focusColor: Colors.transparent,
+                      fillColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
                       isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(vertical: 8),
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                     ),
                   ),
                 ),

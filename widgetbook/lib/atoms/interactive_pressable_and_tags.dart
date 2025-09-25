@@ -52,13 +52,24 @@ Widget buildInteractivePressableDefaultUseCase(BuildContext context) {
 @UseCase(name: 'tag_basic', type: Tag)
 Widget buildTagBasicUseCase(BuildContext context) {
   return Center(
-    child: Tag(
-      mainText: context.knobs.string(label: 'main', initialValue: 'Main'),
-      secondaryText: context.knobs.string(
-        label: 'secondary',
-        initialValue: '42',
+    child: ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: context.knobs.double.slider(
+          label: 'max_width',
+          initialValue: 200,
+          min: 100,
+          max: 400,
+          divisions: 30,
+        ),
       ),
-      onTap: () => print('Tag tapped'),
+      child: Tag(
+        mainText: context.knobs.string(label: 'main', initialValue: 'Main'),
+        secondaryText: context.knobs.string(
+          label: 'secondary',
+          initialValue: '1.8M',
+        ),
+        onTap: () => print('Tag tapped'),
+      ),
     ),
   );
 }
@@ -66,12 +77,24 @@ Widget buildTagBasicUseCase(BuildContext context) {
 @UseCase(name: 'glassmorphic_tag_with_delete', type: GlassmorphicTag)
 Widget buildGlassmorphicTagWithDeleteUseCase(BuildContext context) {
   return Center(
-    child: GlassmorphicTag(
-      label: context.knobs.string(label: 'label', initialValue: 'hashtag'),
-      onTap: () => print('GlassmorphicTag tapped'),
-      onDeleted: context.knobs.boolean(label: 'show_delete', initialValue: true)
-          ? () => print('Delete pressed')
-          : null,
+    child: ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: context.knobs.double.slider(
+          label: 'max_width',
+          initialValue: 200,
+          min: 100,
+          max: 400,
+          divisions: 30,
+        ),
+      ),
+      child: GlassmorphicTag(
+        label: context.knobs.string(label: 'label', initialValue: 'hashtag'),
+        onTap: () => print('GlassmorphicTag tapped'),
+        onDeleted:
+            context.knobs.boolean(label: 'show_delete', initialValue: true)
+            ? () => print('Delete pressed')
+            : null,
+      ),
     ),
   );
 }
@@ -79,22 +102,35 @@ Widget buildGlassmorphicTagWithDeleteUseCase(BuildContext context) {
 @UseCase(name: 'feed_tag_selected_states', type: FeedTag)
 Widget buildFeedTagSelectedStatesUseCase(BuildContext context) {
   final selected = context.knobs.boolean(label: 'selected', initialValue: true);
-  return Wrap(
-    spacing: 24,
-    runSpacing: 16,
-    children: [
-      FeedTag(
-        id: '1',
-        text: 'Art',
-        selected: selected,
-        onTap: () => print('Art tapped'),
+  return Center(
+    child: ConstrainedBox(
+      constraints: BoxConstraints(
+        maxWidth: context.knobs.double.slider(
+          label: 'max_width',
+          initialValue: 300,
+          min: 200,
+          max: 500,
+          divisions: 30,
+        ),
       ),
-      FeedTag(
-        id: '2',
-        text: 'Tech',
-        selected: !selected,
-        onTap: () => print('Tech tapped'),
+      child: Wrap(
+        spacing: 24,
+        runSpacing: 16,
+        children: [
+          FeedTag(
+            id: '1',
+            text: 'Art',
+            selected: selected,
+            onTap: () => print('Art tapped'),
+          ),
+          FeedTag(
+            id: '2',
+            text: 'Tech',
+            selected: !selected,
+            onTap: () => print('Tech tapped'),
+          ),
+        ],
       ),
-    ],
+    ),
   );
 }

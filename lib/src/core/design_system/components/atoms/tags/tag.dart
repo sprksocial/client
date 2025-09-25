@@ -22,8 +22,9 @@ class Tag extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(13),
       child: Container(
-        width: 107,
-        height: 35,
+
+        // width: 107,
+        // height: 35,
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkGreyButton : AppColors.lightGreyButton,
@@ -37,7 +38,7 @@ class Tag extends StatelessWidget {
           children: [
             Text(mainText, style: AppTypography.textMediumMedium),
             const SizedBox(width: 5),
-            Text(secondaryText, style: AppTypography.textSmallMedium),
+            Text(secondaryText, style: AppTypography.textExtraSmallMedium.copyWith(color: AppColors.grey300)),
           ],
         ),
       ),

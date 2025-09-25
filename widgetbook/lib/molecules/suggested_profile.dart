@@ -11,18 +11,20 @@ Widget buildSuggestedProfileFollowCardUseCase(BuildContext context) {
     label: 'is_following',
     initialValue: false,
   );
-  return SuggestedProfile(
-    imageUrl: _demoImage,
-    userName: context.knobs.string(
-      label: 'user_name',
-      initialValue: 'Jane Doe',
+  return Center(
+    child: SuggestedProfile(
+      imageUrl: _demoImage,
+      userName: context.knobs.string(
+        label: 'user_name',
+        initialValue: 'Jane Doe',
+      ),
+      userHandle: context.knobs.string(
+        label: 'user_handle',
+        initialValue: '@janedoe',
+      ),
+      isFollowing: isFollowing,
+      onFollow: () => print('Follow'),
+      onUnfollow: () => print('Unfollow'),
     ),
-    userHandle: context.knobs.string(
-      label: 'user_handle',
-      initialValue: '@janedoe',
-    ),
-    isFollowing: isFollowing,
-    onFollow: () => print('Follow'),
-    onUnfollow: () => print('Unfollow'),
   );
 }

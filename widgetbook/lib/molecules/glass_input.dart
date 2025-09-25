@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/design_system/components/molecules/glass_input.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart';
@@ -18,26 +19,33 @@ final _chatMessagesProvider = StateProvider.autoDispose<List<String>>(
 @UseCase(name: 'comment', type: GlassInput)
 Widget buildGlassInputCommentUseCase(BuildContext context) {
   return Center(
-    child: GlassInput.comment(
-      hintText: context.knobs.string(
-        label: 'hint',
-        initialValue: 'Add a comment...',
+    child: Container(
+      constraints: BoxConstraints(
+        maxWidth: context.knobs.double.slider(
+          label: 'width',
+          initialValue: 210,
+          min: 160,
+          max: 400,
+          divisions: 24,
+        ),
       ),
-      leadingWidgets: [
-        if (context.knobs.boolean(label: 'show_avatar', initialValue: true))
-          const CircleAvatar(radius: 10),
-      ],
-      actionWidgets: [
-        if (context.knobs.boolean(
-          label: 'show_action_icon',
-          initialValue: true,
-        ))
-          Icon(
-            Icons.emoji_emotions_outlined,
-            size: 18,
-            color: Colors.white.withAlpha(180),
-          ),
-      ],
+      child: GlassInput.comment(
+        hintText: context.knobs.string(
+          label: 'hint',
+          initialValue: 'Add a comment...',
+        ),
+        leadingWidgets: [
+          if (context.knobs.boolean(label: 'show_avatar', initialValue: true))
+            const CircleAvatar(radius: 10),
+        ],
+        actionWidgets: [
+          if (context.knobs.boolean(
+            label: 'show_action_icon',
+            initialValue: true,
+          ))
+            AppIcons.smiley(),
+        ],
+      ),
     ),
   );
 }
@@ -76,11 +84,13 @@ Widget buildGlassInputSearchUseCase(BuildContext context) {
 @UseCase(name: 'chat_interactive', type: GlassInput)
 Widget buildGlassInputChatInteractiveUseCase(BuildContext context) {
   return ProviderScope(
-    child: _ChatDemo(
-      showSend: context.knobs.boolean(label: 'show_send', initialValue: true),
-      placeholder: context.knobs.string(
-        label: 'hint',
-        initialValue: 'Message...',
+    child: Center(
+      child: _ChatDemo(
+        showSend: context.knobs.boolean(label: 'show_send', initialValue: true),
+        placeholder: context.knobs.string(
+          label: 'hint',
+          initialValue: 'Message...',
+        ),
       ),
     ),
   );

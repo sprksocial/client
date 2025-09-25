@@ -39,7 +39,6 @@ class _FeedTagListState extends State<FeedTagList> {
       height: 30,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.only(left: 40),
         separatorBuilder: (context, index) => const SizedBox(width: 30),
         itemCount: widget.tags.length,
         itemBuilder: (context, index) {

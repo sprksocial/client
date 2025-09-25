@@ -20,9 +20,21 @@ Widget buildFeedTagListInteractiveUseCase(BuildContext context) {
     divisions: tagCount - 1,
   );
   final tags = List.generate(tagCount, (i) => (id: 'tag_$i', text: 'Tag $i'));
-  return FeedTagList(
-    tags: tags,
-    selectedTagId: tags[selectedIndex].id,
-    onTagTap: (id) => print('Tag tapped: $id'),
+  return Center(
+    child: Container(
+      constraints: BoxConstraints(
+        maxWidth: context.knobs.double.slider(
+          label: 'max_width',
+          initialValue: 400,
+          min: 200,
+          max: 800,
+        ),
+      ),
+      child: FeedTagList(
+        tags: tags,
+        selectedTagId: tags[selectedIndex].id,
+        onTagTap: (id) => print('Tag tapped: $id'),
+      ),
+    ),
   );
 }
