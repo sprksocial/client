@@ -13,6 +13,8 @@ import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
+const dmsEnabled = false;
+
 /// Implementation of the authentication repository for AT Protocol
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl() {
@@ -81,6 +83,10 @@ class AuthRepositoryImpl implements AuthRepository {
   /// Logs in the message service
   @override
   Future<void> loginMessageService() async {
+    if (!dmsEnabled) {
+      _logger.w('DMs are disabled, skipping message service login');
+      return;
+    }
     try {
       _logger.i('Logging in to message service');
       final response = await http.post(
@@ -129,10 +135,12 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       _atProto = ATProto.fromSession(_session!);
-
+      if (!dmsEnabled) {
+        _logger.w('DMs are disabled, skipping DM token load');
+        return;
+      }
       _dmAccessToken = await StorageManager.instance.secure.getString(StorageKeys.dmAccessToken);
       _dmRefreshToken = await StorageManager.instance.secure.getString(StorageKeys.dmRefreshToken);
-
       try {
         if (_dmAccessToken == null) {
           _logger.w('DM access token not found, refreshing DM token');
@@ -161,7 +169,6 @@ class AuthRepositoryImpl implements AuthRepository {
           await loginMessageService();
         }
       }
-
       _logger.i('Session loaded successfully for user: ${_session!.handle}');
     } catch (e) {
       _logger.e('Error loading saved session', error: e);
@@ -171,6 +178,10 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<bool> refreshDMToken() async {
+    if (!dmsEnabled) {
+      _logger.w('DMs are disabled, skipping DM token refresh');
+      return true;
+    }
     _logger.i('Refreshing DM token $_dmRefreshToken');
     final response = await http.post(
       Uri.parse('${AppConfig.messagesServiceUrl}/auth/refresh'),
@@ -310,6 +321,10 @@ class AuthRepositoryImpl implements AuthRepository {
         _atProto = ATProto.fromSession(_session!);
         await _saveSession(_session!);
         _logger.i('Login successful for user: $handle');
+        if (!dmsEnabled) {
+          _logger.w('DMs are disabled, skipping message service login');
+          return LoginResult.success();
+        }
         await loginMessageService();
 
         return LoginResult.success();
