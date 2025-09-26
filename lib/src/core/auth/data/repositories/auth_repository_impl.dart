@@ -102,7 +102,6 @@ class AuthRepositoryImpl implements AuthRepository {
       }
     } catch (e) {
       _logger.e('Failed to login to message service', error: e);
-      rethrow;
     }
   }
 
@@ -129,15 +128,13 @@ class AuthRepositoryImpl implements AuthRepository {
       }
 
       _atProto = ATProto.fromSession(_session!);
-
       _dmAccessToken = await StorageManager.instance.secure.getString(StorageKeys.dmAccessToken);
       _dmRefreshToken = await StorageManager.instance.secure.getString(StorageKeys.dmRefreshToken);
-
       try {
         if (_dmAccessToken == null) {
           _logger.w('DM access token not found, refreshing DM token');
           if (!await refreshDMToken()) {
-            throw Exception('Failed to refresh DM token');
+            //throw Exception('Failed to refresh DM token');
           }
         }
         final response = await http.get(
@@ -152,20 +149,17 @@ class AuthRepositoryImpl implements AuthRepository {
           _dmRefreshToken = data['refresh_token'] as String?;
         } else {
           if (!await refreshDMToken()) {
-            throw Exception('Failed to refresh DM token');
+            //throw Exception('Failed to refresh DM token');
           }
         }
       } catch (e) {
         if (!await refreshDMToken()) {
-          _logger.e('Failed to refresh DM token, trying to login again');
-          await loginMessageService();
+          _logger.e('Failed to refresh DM token');
         }
       }
-
       _logger.i('Session loaded successfully for user: ${_session!.handle}');
     } catch (e) {
       _logger.e('Error loading saved session', error: e);
-      rethrow;
     }
   }
 
@@ -222,7 +216,7 @@ class AuthRepositoryImpl implements AuthRepository {
 
       _session = response.data;
 
-      await refreshDMToken();
+      // await refreshDMToken();
 
       await _saveSession(_session!);
       _atProto = ATProto.fromSession(_session!);
