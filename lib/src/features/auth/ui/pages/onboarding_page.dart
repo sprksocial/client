@@ -6,8 +6,6 @@ import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/ui/widgets/custom_text_field.dart'; // Corrected path
 import 'package:sparksocial/src/features/auth/providers/onboarding_notifier.dart';
 import 'package:sparksocial/src/features/auth/providers/onboarding_providers.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
-import 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
 
 @RoutePage()
 class OnboardingPage extends ConsumerStatefulWidget {
@@ -65,9 +63,6 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     });
 
     try {
-      // Set follow mode to bsky
-      await ref.read(settingsProvider.notifier).setFollowMode(FollowMode.bsky);
-
       // Create the profile
       final onboardingState = ref.read(onboardingStateProvider.notifier);
 

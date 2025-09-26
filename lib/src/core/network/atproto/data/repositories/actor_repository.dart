@@ -30,6 +30,8 @@ abstract class ActorRepository {
   /// [did] The DID of the user to check
   Future<bool> isEarlySupporter(String did);
 
+  /// @TODO: Fix preferences for feeds, remove followMode
+
   /// Get user preferences from the backend
   Future<UserPreferences> getPreferences();
 
