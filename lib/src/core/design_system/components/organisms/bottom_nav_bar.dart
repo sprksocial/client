@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 import 'package:sparksocial/src/core/design_system/tokens/constants.dart';
-import 'package:sparksocial/src/core/design_system/tokens/gradients.dart';
 
 class SparkBottomNavBar extends StatelessWidget {
   const SparkBottomNavBar({
@@ -24,42 +23,42 @@ class SparkBottomNavBar extends StatelessWidget {
     final media = MediaQuery.of(context);
     final bottom = media.padding.bottom;
 
-    return Padding(
+    return Container(
       padding: EdgeInsets.only(bottom: bottom == 0 ? 8 : bottom),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           _BarBackground(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+
                 children: [
                   _NavIcon(
                     isSelected: currentIndex == 0,
                     onTap: () => onTap(0),
-                    builder: (c, selected) => selected ? AppIcons.navbarHomeFilled(size: 28) : AppIcons.navbarHome(size: 28),
+                    builder: (c, selected) => selected ? AppIcons.navbarHomeFilled() : AppIcons.navbarHome(),
                   ),
-                  const SizedBox(width: 28),
+
                   _NavIcon(
                     isSelected: currentIndex == 1,
                     onTap: () => onTap(1),
-                    builder: (c, selected) =>
-                        selected ? AppIcons.navbarExploreFilled(size: 28) : AppIcons.navbarExplore(size: 28),
+                    builder: (c, selected) => selected ? AppIcons.navbarExploreFilled() : AppIcons.navbarExplore(),
                   ),
-                  const Spacer(),
+
                   _NavIcon(
                     isSelected: currentIndex == 2,
                     onTap: () => onTap(2),
-                    builder: (c, selected) => selected ? AppIcons.navbarPostFilled(size: 28) : AppIcons.navbarPost(size: 28),
+                    builder: (c, selected) => selected ? AppIcons.navbarPostFilled() : AppIcons.navbarPost(),
                   ),
-                  const Spacer(),
+
                   _NavIcon(
                     isSelected: currentIndex == 3,
                     onTap: () => onTap(3),
-                    builder: (c, selected) =>
-                        selected ? AppIcons.navbarMessagesFilled(size: 28) : AppIcons.navbarMessages(size: 28),
+                    builder: (c, selected) => selected ? AppIcons.navbarMessagesFilled() : AppIcons.navbarMessages(),
                   ),
-                  const SizedBox(width: 28),
+
                   _ProfileAvatar(
                     isSelected: currentIndex == 4,
                     image: userAvatar,
@@ -82,22 +81,15 @@ class _BarBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(0),
-      child: Container(
-        decoration: const BoxDecoration(
-          gradient: AppGradients.gradientGreyGrey2,
-        ),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: AppConstants.blurBottomBar.toDouble(), sigmaY: AppConstants.blurBottomBar.toDouble()),
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.black,
-              border: Border(
-                top: BorderSide(color: Colors.white.withOpacity(0.08), width: 0.5),
-                bottom: BorderSide(color: Colors.white.withOpacity(0.05), width: 0.5),
-              ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: AppConstants.blurBottomBar.toDouble(), sigmaY: AppConstants.blurBottomBar.toDouble()),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            border: Border(
+              top: BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 2),
             ),
-            child: child,
           ),
+          child: child,
         ),
       ),
     );

@@ -5,7 +5,6 @@ import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 
 @UseCase(name: 'default', type: SparkBottomNavBar)
 Widget buildSparkBottomNavBarUseCase(BuildContext context) {
-  // Knob only provides an initial value; interaction handled locally.
   final initialIndex = context.knobs.int.slider(
     label: 'initialIndex',
     initialValue: 0,
@@ -55,10 +54,13 @@ Widget buildSparkBottomNavBarUseCase(BuildContext context) {
             Positioned.fill(
               child: Align(
                 alignment: Alignment.bottomCenter,
-                child: SparkBottomNavBar(
-                  currentIndex: selected,
-                  onTap: (i) => setState(() => selected = i),
-                  userAvatar: NetworkImage(avatarUrl),
+                child: Container(
+                  constraints: const BoxConstraints(maxWidth: 450),
+                  child: SparkBottomNavBar(
+                    currentIndex: selected,
+                    onTap: (i) => setState(() => selected = i),
+                    userAvatar: NetworkImage(avatarUrl),
+                  ),
                 ),
               ),
             ),
