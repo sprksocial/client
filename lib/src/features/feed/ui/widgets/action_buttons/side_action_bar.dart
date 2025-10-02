@@ -301,13 +301,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
           shareCount: widget.shareCount,
           isLiked: _isLiked,
           isCurated: isCurated,
-          curateDestinations: curateDestinations.isEmpty
-              ? const [
-                  CurateDestination('For You'),
-                  CurateDestination('Following'),
-                  CurateDestination('Latest'),
-                ]
-              : curateDestinations,
+          curateDestinations: curateDestinations,
         );
       },
     );

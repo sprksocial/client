@@ -222,13 +222,132 @@ Widget buildSparkSideActionBarCuratePopoverUseCase(BuildContext context) {
           onCurate: () {
             setState(() {
               curated = true;
-              curateCount += 1; // simulate an addition
+              curateCount += 1;
             });
             print('Curated! Total: $curateCount');
           },
           onComment: () => print('Comment tapped'),
           onLike: () => print('Like tapped'),
           onShare: () => print('Share tapped'),
+        ),
+      );
+    },
+  );
+}
+
+@UseCase(name: 'with_image_background', type: SparkSideActionBar)
+Widget buildSparkSideActionBarWithImageBackgroundUseCase(BuildContext context) {
+  final imageUrl = context.knobs.string(
+    label: 'imageUrl',
+    initialValue:
+        'https://picsum.photos/600/1200?random=${DateTime.now().millisecond % 20}',
+  );
+
+  final likeCount = context.knobs.string(
+    label: 'likeCount',
+    initialValue: '2.4k',
+  );
+
+  final commentCount = context.knobs.string(
+    label: 'commentCount',
+    initialValue: '156',
+  );
+
+  final curateCount = context.knobs.string(
+    label: 'curateCount',
+    initialValue: '42',
+  );
+
+  final shareCount = context.knobs.string(
+    label: 'shareCount',
+    initialValue: '89',
+  );
+
+  final isLiked = context.knobs.boolean(label: 'isLiked', initialValue: true);
+
+  final isCurated = context.knobs.boolean(
+    label: 'isCurated',
+    initialValue: false,
+  );
+
+  return StatefulBuilder(
+    builder: (ctx, setState) {
+      var liked = isLiked;
+      var curated = isCurated;
+
+      return Scaffold(
+        backgroundColor: Colors.black,
+        body: Stack(
+          children: [
+            Positioned.fill(
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey.shade900,
+                    child: const Center(
+                      child: Icon(
+                        Icons.broken_image,
+                        color: Colors.white54,
+                        size: 64,
+                      ),
+                    ),
+                  );
+                },
+                loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Container(
+                    color: Colors.grey.shade900,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        value: loadingProgress.expectedTotalBytes != null
+                            ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                            : null,
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            Positioned(
+              right: 16,
+              bottom: 100,
+              child: SparkSideActionBar(
+                likeCount: likeCount,
+                commentCount: commentCount,
+                curateCount: curateCount,
+                shareCount: shareCount,
+                isLiked: liked,
+                isCurated: curated,
+                curateDestinations: [
+                  CurateDestination(
+                    'Feed 1',
+                    onSelected: () => print('Feed 1 selected'),
+                  ),
+                  CurateDestination(
+                    'Feed 2',
+                    onSelected: () => print('Feed 2 selected'),
+                  ),
+                  CurateDestination(
+                    'Feed 3',
+                    onSelected: () => print('Feed 3 selected'),
+                  ),
+                ],
+                onLike: () {
+                  setState(() => liked = !liked);
+                  print('Like toggled: $liked');
+                },
+                onComment: () => print('Comment tapped'),
+                onCurate: () {
+                  setState(() => curated = true);
+                  print('Curated!');
+                },
+                onShare: () => print('Share tapped'),
+              ),
+            ),
+          ],
         ),
       );
     },

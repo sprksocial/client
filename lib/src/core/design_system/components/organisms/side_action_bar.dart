@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 import 'package:sparksocial/src/core/design_system/tokens/constants.dart';
 
 /// Curate popover item data
@@ -53,6 +52,7 @@ class SparkSideActionBar extends StatefulWidget {
 class _SparkSideActionBarState extends State<SparkSideActionBar> {
   final GlobalKey _curateKey = GlobalKey();
   OverlayEntry? _overlay;
+  OverlayEntry? _overlayIcon; // icon overlay above popover
   bool _showingPopover = false;
 
   @override
@@ -77,6 +77,7 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
 
     final target = renderBox.localToGlobal(Offset.zero, ancestor: overlayBox);
     final size = renderBox.size;
+    final iconCenter = Offset(target.dx + size.width / 2, target.dy + size.height / 2);
 
     _overlay = OverlayEntry(
       builder: (ctx) {
@@ -86,8 +87,9 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
           child: Stack(
             children: [
               Positioned(
-                top: target.dy - 8,
-                right: MediaQuery.of(context).size.width - target.dx - size.width / 2 - 6,
+                // Place so the connector circle (shiftX=30) centers behind icon; fine-tune offsets empirically.
+                top: iconCenter.dy - 48,
+                right: MediaQuery.of(context).size.width - target.dx + 16 - 30,
                 child: _CuratePopover(
                   destinations: widget.curateDestinations,
                   onSelected: (d) {
@@ -102,61 +104,68 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
         );
       },
     );
+    // Add icon overlay above popover for correct z-order (bar bg -> popover -> actual icon)
+    _overlayIcon = OverlayEntry(
+      builder: (ctx) => Positioned(
+        left: target.dx,
+        top: target.dy,
+        width: size.width,
+        height: size.height,
+        child: IgnorePointer(
+          child: Center(child: AppIcons.sideCurate(size: 32)),
+        ),
+      ),
+    );
 
-    Overlay.of(context).insert(_overlay!);
+    final overlayState = Overlay.of(context);
+    overlayState.insert(_overlay!); // background popover
+    overlayState.insert(_overlayIcon!); // icon on top
     setState(() => _showingPopover = true);
   }
 
   void _removePopover() {
     _overlay?.remove();
+    _overlayIcon?.remove();
     _overlay = null;
+    _overlayIcon = null;
     if (mounted) setState(() => _showingPopover = false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(
-          sigmaX: AppConstants.blurBottomBar.toDouble(),
-          sigmaY: AppConstants.blurBottomBar.toDouble(),
-        ),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _ActionItem(
-                isActive: widget.isLiked,
-                label: widget.likeCount,
-                icon: widget.isLiked ? AppIcons.like(color: AppColors.primary500) : AppIcons.like(color: Colors.white),
-                onTap: widget.onLike,
-              ),
-              const SizedBox(height: 20),
-              _ActionItem(
-                icon: AppIcons.comment(size: 32),
-                label: widget.commentCount,
-                onTap: widget.onComment,
-              ),
-              const SizedBox(height: 20),
-              _ActionItem(
-                key: _curateKey,
-                // Active if externally marked as curated OR while the popover is visible.
-                isActive: widget.isCurated || _showingPopover,
-                icon: AppIcons.sideCurate(size: 32),
-                label: widget.curateCount,
-                onTap: _togglePopover,
-              ),
-              const SizedBox(height: 20),
-              _ActionItem(
-                icon: AppIcons.sideShare(size: 80),
-                label: widget.shareCount,
-                onTap: widget.onShare,
-              ),
-            ],
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ActionItem(
+            isActive: widget.isLiked,
+            label: widget.likeCount,
+            icon: widget.isLiked ? AppIcons.likeFilled(size: 32) : AppIcons.like(size: 32),
+            onTap: widget.onLike,
           ),
-        ),
+          const SizedBox(height: 20),
+          _ActionItem(
+            icon: AppIcons.comment(size: 32),
+            label: widget.commentCount,
+            onTap: widget.onComment,
+          ),
+          const SizedBox(height: 20),
+          _ActionItem(
+            key: _curateKey,
+            // Active if externally marked as curated OR while the popover is visible.
+            isActive: widget.isCurated || _showingPopover,
+            icon: AppIcons.sideCurate(size: 32),
+            label: widget.curateCount,
+            onTap: _togglePopover,
+          ),
+          const SizedBox(height: 20),
+          _ActionItem(
+            icon: AppIcons.sideShare(size: 80),
+            label: widget.shareCount,
+            onTap: widget.onShare,
+          ),
+        ],
       ),
     );
   }
@@ -214,41 +223,67 @@ class _CuratePopover extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Shape with notch on right side where action button sits.
+    return _ConnectorPopover(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (int i = 0; i < destinations.length; i++) ...[
+            GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => onSelected(destinations[i]),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  destinations[i].label,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    height: 1.2,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black54,
+                        offset: Offset(0, 1),
+                        blurRadius: 2,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            if (i < destinations.length - 1)
+              Container(
+                height: 1,
+                color: Colors.white.withValues(alpha: 0.25),
+              ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Popover shape: rounded rectangle with a circular connector bubble
+/// protruding from the top-right that visually aligns with the curate icon.
+class _ConnectorPopover extends StatelessWidget {
+  const _ConnectorPopover({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
     return Material(
       type: MaterialType.transparency,
-      child: ClipPath(
-        clipper: _PopoverClipper(),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-          child: Container(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
-            decoration: BoxDecoration(
-              color: Colors.black.withAlpha(140),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withAlpha(39)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                for (final d in destinations)
-                  GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => onSelected(d),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Text(
-                        d.label,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
+      child: _ConnectorShape(
+        child: ClipPath(
+          clipper: _ConnectorPopoverClipper(),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+            child: Container(
+              // Increased vertical padding + larger right padding to account for bigger connector circle
+              padding: const EdgeInsets.fromLTRB(20, 18, 20 + 40, 18),
+              decoration: const BoxDecoration(),
+              child: child,
             ),
           ),
         ),
@@ -257,32 +292,70 @@ class _CuratePopover extends StatelessWidget {
   }
 }
 
-class _PopoverClipper extends CustomClipper<Path> {
+class _ConnectorShape extends StatelessWidget {
+  const _ConnectorShape({required this.child});
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      foregroundPainter: _ConnectorPopoverBorderPainter(),
+      painter: _ConnectorPopoverBackgroundPainter(),
+      child: child,
+    );
+  }
+}
+
+class _ConnectorPopoverClipper extends CustomClipper<Path> {
+  static const double radius = 22; // slightly larger pill
+  static const double connectorRadius = 24; // bigger circle to wrap icon
+  static const double overlap = 10; // how much circle cuts into main rect
+  static const double connectorShiftX = 16; // pushes circle further right
+  static const double connectorShiftDown = 24; // pushes circle downward
+
   @override
   Path getClip(Size size) {
-    const notchSize = 24.0; // width of the right side notch
-    const radius = 18.0;
-    final path = Path();
-    // Start top-left
-    path.moveTo(radius, 0);
-    path.quadraticBezierTo(0, 0, 0, radius);
-    path.lineTo(0, size.height - radius);
-    path.quadraticBezierTo(0, size.height, radius, size.height);
-    // Bottom to right (before notch)
-    path.lineTo(size.width - radius, size.height);
-    path.quadraticBezierTo(size.width, size.height, size.width, size.height - radius);
-    // Up to notch start
-    path.lineTo(size.width, notchSize + radius);
-    // Notch inward (to align with action button circle)
-    path.quadraticBezierTo(size.width, notchSize, size.width - radius, notchSize);
-    // Continue up with corner
-    path.lineTo(radius + 4, notchSize);
-    path.quadraticBezierTo(0, notchSize, 0, notchSize - radius);
-    path.lineTo(0, radius);
-    path.quadraticBezierTo(0, 0, radius, 0);
-    return path;
+    // Main body excludes connector width minus overlap
+    final bodyWidth = size.width - (connectorRadius - connectorShiftX) + overlap;
+    final bodyRect = RRect.fromLTRBR(0, 0, bodyWidth, size.height, const Radius.circular(radius));
+    final rectPath = Path()..addRRect(bodyRect);
+    final circleCenter = Offset(
+      bodyWidth - overlap + connectorShiftX,
+      connectorRadius + connectorShiftDown,
+    ); // shifted circle
+    final circlePath = Path()..addOval(Rect.fromCircle(center: circleCenter, radius: connectorRadius));
+    return Path.combine(PathOperation.union, rectPath, circlePath);
   }
 
   @override
   bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
+}
+
+class _ConnectorPopoverBackgroundPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final clipper = _ConnectorPopoverClipper();
+    final path = clipper.getClip(size);
+    final paintFill = Paint()..color = Colors.white.withValues(alpha: 0.20);
+    canvas.drawPath(path, paintFill);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+class _ConnectorPopoverBorderPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final clipper = _ConnectorPopoverClipper();
+    final path = clipper.getClip(size);
+    final border = Paint()
+      ..color = Colors.white.withValues(alpha: 0.30)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.5;
+    canvas.drawPath(path, border);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
