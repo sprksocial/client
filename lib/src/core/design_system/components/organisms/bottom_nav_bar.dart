@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 import 'package:sparksocial/src/core/design_system/tokens/constants.dart';
 
 class SparkBottomNavBar extends StatelessWidget {
@@ -20,56 +19,51 @@ class SparkBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final media = MediaQuery.of(context);
-    final bottom = media.padding.bottom;
 
-    return Container(
-      padding: EdgeInsets.only(bottom: bottom == 0 ? 8 : bottom),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _BarBackground(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _BarBackground(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
-                children: [
-                  _NavIcon(
-                    isSelected: currentIndex == 0,
-                    onTap: () => onTap(0),
-                    builder: (c, selected) => selected ? AppIcons.navbarHomeFilled() : AppIcons.navbarHome(),
-                  ),
+              children: [
+                _NavIcon(
+                  isSelected: currentIndex == 0,
+                  onTap: () => onTap(0),
+                  builder: (c, selected) => selected ? AppIcons.navbarHomeFilled() : AppIcons.navbarHome(),
+                ),
 
-                  _NavIcon(
-                    isSelected: currentIndex == 1,
-                    onTap: () => onTap(1),
-                    builder: (c, selected) => selected ? AppIcons.navbarExploreFilled() : AppIcons.navbarExplore(),
-                  ),
+                _NavIcon(
+                  isSelected: currentIndex == 1,
+                  onTap: () => onTap(1),
+                  builder: (c, selected) => selected ? AppIcons.navbarExploreFilled() : AppIcons.navbarExplore(),
+                ),
 
-                  _NavIcon(
-                    isSelected: currentIndex == 2,
-                    onTap: () => onTap(2),
-                    builder: (c, selected) => selected ? AppIcons.navbarPostFilled() : AppIcons.navbarPost(),
-                  ),
+                _NavIcon(
+                  isSelected: currentIndex == 2,
+                  onTap: () => onTap(2),
+                  builder: (c, selected) => selected ? AppIcons.navbarPostFilled() : AppIcons.navbarPost(),
+                ),
 
-                  _NavIcon(
-                    isSelected: currentIndex == 3,
-                    onTap: () => onTap(3),
-                    builder: (c, selected) => selected ? AppIcons.navbarMessagesFilled() : AppIcons.navbarMessages(),
-                  ),
+                _NavIcon(
+                  isSelected: currentIndex == 3,
+                  onTap: () => onTap(3),
+                  builder: (c, selected) => selected ? AppIcons.navbarMessagesFilled() : AppIcons.navbarMessages(),
+                ),
 
-                  _ProfileAvatar(
-                    isSelected: currentIndex == 4,
-                    image: userAvatar,
-                    onTap: () => onTap(4),
-                  ),
-                ],
-              ),
+                _ProfileAvatar(
+                  isSelected: currentIndex == 4,
+                  image: userAvatar,
+                  onTap: () => onTap(4),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -135,8 +129,7 @@ class _ProfileAvatar extends StatelessWidget {
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          width: isSelected ? 2 : 1,
-          color: isSelected ? AppColors.primary500 : Colors.white,
+          color: Colors.white,
         ),
         image: DecorationImage(image: image, fit: BoxFit.cover),
       ),

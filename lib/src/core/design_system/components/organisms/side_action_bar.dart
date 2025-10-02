@@ -224,9 +224,9 @@ class _CuratePopover extends StatelessWidget {
           child: Container(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.55),
+              color: Colors.black.withAlpha(140),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white.withOpacity(0.15)),
+              border: Border.all(color: Colors.white.withAlpha(39)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,

@@ -4,19 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/design_system/components/organisms/side_action_bar.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
-import 'package:sparksocial/src/core/ui/widgets/menu_action_button.dart';
-import 'package:sparksocial/src/core/ui/widgets/report_dialog.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/comment_action_button.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/like_action_button.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/profile_action_button.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/share_action_button.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 
 class SideActionBar extends ConsumerStatefulWidget {
   const SideActionBar({
@@ -191,115 +184,132 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     );
   }
 
-  void _handleReport(BuildContext context) {
-    final currentPost = _currentPost ?? widget.post;
-    showDialog(
-      context: context,
-      builder: (context) => ReportDialog(postUri: currentPost.uri.toString(), postCid: currentPost.cid),
-    );
-  }
+  // TODO: These handlers were part of the old design with profile and menu buttons.
+  // They may need to be reintegrated if those UI elements are added back.
+  // For now, they're kept for reference but not actively used.
 
-  Future<void> _handleDelete(BuildContext context) async {
-    // Cache context-dependent objects *before* the first await
-    final messenger = ScaffoldMessenger.of(context);
+  // void _handleReport(BuildContext context) {
+  //   final currentPost = _currentPost ?? widget.post;
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) => ReportDialog(postUri: currentPost.uri.toString(), postCid: currentPost.cid),
+  //   );
+  // }
 
-    // Confirm deletion
-    final shouldDelete =
-        await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Delete Post'),
-            content: const Text('Are you sure you want to delete this post? This action cannot be undone.'),
-            actions: [
-              TextButton(onPressed: () => context.router.maybePop(false), child: const Text('Cancel')),
-              TextButton(
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                onPressed: () => context.router.maybePop(true),
-                child: const Text('Delete'),
-              ),
-            ],
-          ),
-        ) ??
-        false;
+  // Future<void> _handleDelete(BuildContext context) async {
+  //   final messenger = ScaffoldMessenger.of(context);
+  //   final shouldDelete =
+  //       await showDialog<bool>(
+  //         context: context,
+  //         builder: (context) => AlertDialog(
+  //           title: const Text('Delete Post'),
+  //           content: const Text('Are you sure you want to delete this post? This action cannot be undone.'),
+  //           actions: [
+  //             TextButton(onPressed: () => context.router.maybePop(false), child: const Text('Cancel')),
+  //             TextButton(
+  //               style: TextButton.styleFrom(foregroundColor: Colors.red),
+  //               onPressed: () => context.router.maybePop(true),
+  //               child: const Text('Delete'),
+  //             ),
+  //           ],
+  //         ),
+  //       ) ??
+  //       false;
+  //   if (!shouldDelete || !mounted) return;
+  //   try {
+  //     final currentPost = _currentPost ?? widget.post;
+  //     await GetIt.I<SQLCacheInterface>().deletePost(currentPost.uri);
+  //     await GetIt.I<SprkRepository>().repo.deleteRecord(uri: currentPost.uri);
+  //     final feeds = await GetIt.I<SettingsRepository>().getFeeds();
+  //     for (final feed in feeds) {
+  //       ref.invalidate(feedNotifierProvider(feed));
+  //     }
+  //     final did = currentPost.author.did;
+  //     ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), true));
+  //     ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), false));
+  //     messenger.showSnackBar(const SnackBar(content: Text('Post deleted successfully!')));
+  //     if (context.mounted) {
+  //       context.router.popUntilRoot();
+  //     }
+  //   } catch (e) {
+  //     if (mounted) {
+  //       messenger.showSnackBar(SnackBar(content: Text('Error deleting post: $e')));
+  //     }
+  //   }
+  // }
 
-    if (!shouldDelete || !mounted) return;
-
-    try {
-      final currentPost = _currentPost ?? widget.post;
-      await GetIt.I<SQLCacheInterface>().deletePost(currentPost.uri);
-      await GetIt.I<SprkRepository>().repo.deleteRecord(uri: currentPost.uri);
-      final feeds = await GetIt.I<SettingsRepository>().getFeeds();
-      for (final feed in feeds) {
-        ref.invalidate(feedNotifierProvider(feed));
-      }
-      final did = currentPost.author.did;
-      ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), true));
-      ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), false));
-      messenger.showSnackBar(const SnackBar(content: Text('Post deleted successfully!')));
-      if (context.mounted) {
-        context.router.popUntilRoot();
-      }
-    } catch (e) {
-      if (mounted) {
-        messenger.showSnackBar(SnackBar(content: Text('Error deleting post: $e')));
-      }
-    }
-  }
-
-  void _handleProfilePressed() {
-    // Call custom callback if provided (for video pausing)
-    if (widget.onProfilePressed != null) {
-      widget.onProfilePressed!();
-    }
-
-    final currentPost = _currentPost ?? widget.post;
-    context.router.push(ProfileRoute(did: currentPost.author.did));
-  }
+  // void _handleProfilePressed() {
+  //   if (widget.onProfilePressed != null) {
+  //     widget.onProfilePressed!();
+  //   }
+  //   final currentPost = _currentPost ?? widget.post;
+  //   context.router.push(ProfileRoute(did: currentPost.author.did));
+  // }
 
   void _handleCommentPressed() {
     final currentPost = _currentPost ?? widget.post;
     context.router.push(CommentsRoute(postUri: currentPost.uri.toString(), isSprk: currentPost.isSprk, post: currentPost));
   }
 
+  Future<void> _handleCurate() async {
+    // For now, this is a placeholder for curate functionality
+    // In the future, this could add the post to a custom feed or collection
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Post curated to feed!')),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        ProfileActionButton(profileImageUrl: widget.profileImageUrl, onPressed: _handleProfilePressed),
-        const SizedBox(height: 20),
+    return FutureBuilder<List<Feed>>(
+      future: GetIt.I<SettingsRepository>().getFeeds(),
+      builder: (context, snapshot) {
+        final feeds = snapshot.data ?? [];
+        final curateDestinations = feeds
+            .map(
+              (feed) => CurateDestination(
+                feed.name,
+                onSelected: () {
+                  // Handle adding post to this feed
+                  // For now, just show a message
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Post curated to ${feed.name}!')),
+                    );
+                  }
+                },
+              ),
+            )
+            .toList();
 
-        LikeActionButton(
-          count: (int.parse(widget.likeCount) + (_isLiked ? 1 : 0)).toString(),
+        final currentPost = _currentPost ?? widget.post;
+        final likeCount = (int.tryParse(widget.likeCount) ?? 0) + (_isLiked ? 1 : 0);
+        final commentCount = currentPost.replyCount ?? int.tryParse(widget.commentCount) ?? 0;
+        final repostCount = currentPost.repostCount ?? int.tryParse(widget.shareCount) ?? 0;
+        final isCurated = currentPost.viewer?.repost != null;
+
+        return SparkSideActionBar(
+          onLike: _handleLike,
+          onComment: _handleCommentPressed,
+          onCurate: _handleCurate,
+          onShare: widget.isImage ? null : _handleShare,
+          likeCount: likeCount.toString(),
+          commentCount: commentCount.toString(),
+          curateCount: repostCount.toString(),
+          shareCount: widget.shareCount,
           isLiked: _isLiked,
-          onPressed: _handleLike,
-        ),
-        const SizedBox(height: 20),
-
-        CommentActionButton(
-          count: (_currentPost?.replyCount ?? int.tryParse(widget.commentCount) ?? 0).toString(),
-          onPressed: _handleCommentPressed,
-        ),
-        const SizedBox(height: 20),
-
-        // Only show share button for videos, not for images
-        if (!widget.isImage) ...[
-          ShareActionButton(count: widget.shareCount, onPressed: _handleShare),
-          const SizedBox(height: 20),
-        ],
-
-        MenuActionButton(
-          onPressed: () => _handleReport(context),
-          onDeletePressed: () async {
-            await _handleDelete(context);
-            if (context.mounted) {
-              context.router.popUntilRoot();
-            }
-          },
-          isOnVideo: true,
-          authorDid: (_currentPost ?? widget.post).author.did,
-        ),
-        const SizedBox(height: 20),
-      ],
+          isCurated: isCurated,
+          curateDestinations: curateDestinations.isEmpty
+              ? const [
+                  CurateDestination('For You'),
+                  CurateDestination('Following'),
+                  CurateDestination('Latest'),
+                ]
+              : curateDestinations,
+        );
+      },
     );
   }
 }

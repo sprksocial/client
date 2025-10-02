@@ -149,81 +149,79 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                     ),
                 ],
               ),
-              body: SafeArea(
-                child: RefreshIndicator(
-                  onRefresh: notifier.refreshProfile,
-                  child: CustomScrollView(
-                    key: PageStorageKey<String>('profile_${widget.did}'), // Use the passed did
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: ProfileHeader(
-                          profile: profile,
-                          isCurrentUser: isCurrentUser,
-                          isEarlySupporter: state.isEarlySupporter,
-                          onEarlySupporterTap: () => _showEarlySupporterInfo(context),
-                          onEditTap: () {
-                            context.router.push(EditProfileRoute(profile: profile)).then((updated) {
-                              if (updated == true) {
-                                notifier.refreshProfile();
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(
-                                    context,
-                                  ).showSnackBar(const SnackBar(content: Text('Profile updated successfully')));
-                                }
-                              }
-                            });
-                          },
-                          onShareTap: () => _logger.i('Share profile tapped for ${profile.did}'),
-                          onFollowTap: () async {
-                            final initialFollowingStateForSnackbar = profile.viewer?.following; // Capture before action
-                            try {
-                              await notifier.toggleFollow();
-                              // Read the latest state AFTER the toggleFollow has completed and updated the state.
-                              final latestProfileState = ref.read(profileNotifierProvider(did: widget.did)).asData?.value;
-
-                              // Only show snackbar if an actual follow/unfollow action occurred
-                              // and auth prompt was not the primary outcome.
-                              if (latestProfileState != null &&
-                                  !latestProfileState.showAuthPrompt &&
-                                  latestProfileState.profile?.viewer?.following != initialFollowingStateForSnackbar) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        latestProfileState.profile?.viewer?.following != null
-                                            ? 'Followed successfully'
-                                            : 'Unfollowed successfully',
-                                      ),
-                                      backgroundColor: Colors.green,
-                                    ),
-                                  );
-                                }
-                              }
-                            } catch (e) {
+              body: RefreshIndicator(
+                onRefresh: notifier.refreshProfile,
+                child: CustomScrollView(
+                  key: PageStorageKey<String>('profile_${widget.did}'), // Use the passed did
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: ProfileHeader(
+                        profile: profile,
+                        isCurrentUser: isCurrentUser,
+                        isEarlySupporter: state.isEarlySupporter,
+                        onEarlySupporterTap: () => _showEarlySupporterInfo(context),
+                        onEditTap: () {
+                          context.router.push(EditProfileRoute(profile: profile)).then((updated) {
+                            if (updated == true) {
+                              notifier.refreshProfile();
                               if (context.mounted) {
                                 ScaffoldMessenger.of(
                                   context,
-                                ).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+                                ).showSnackBar(const SnackBar(content: Text('Profile updated successfully')));
                               }
                             }
-                          },
+                          });
+                        },
+                        onShareTap: () => _logger.i('Share profile tapped for ${profile.did}'),
+                        onFollowTap: () async {
+                          final initialFollowingStateForSnackbar = profile.viewer?.following; // Capture before action
+                          try {
+                            await notifier.toggleFollow();
+                            // Read the latest state AFTER the toggleFollow has completed and updated the state.
+                            final latestProfileState = ref.read(profileNotifierProvider(did: widget.did)).asData?.value;
+
+                            // Only show snackbar if an actual follow/unfollow action occurred
+                            // and auth prompt was not the primary outcome.
+                            if (latestProfileState != null &&
+                                !latestProfileState.showAuthPrompt &&
+                                latestProfileState.profile?.viewer?.following != initialFollowingStateForSnackbar) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      latestProfileState.profile?.viewer?.following != null
+                                          ? 'Followed successfully'
+                                          : 'Unfollowed successfully',
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              }
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red));
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                    SliverPersistentHeader(
+                      pinned: true,
+                      delegate: StickyTabBarDelegate(
+                        child: ProfileTabs(
+                          selectedIndex: tabsRouter.activeIndex,
+                          onTabSelected: tabsRouter.setActiveIndex,
+                          isAuthenticated: isCurrentUser,
                         ),
                       ),
-                      SliverPersistentHeader(
-                        pinned: true,
-                        delegate: StickyTabBarDelegate(
-                          child: ProfileTabs(
-                            selectedIndex: tabsRouter.activeIndex,
-                            onTabSelected: tabsRouter.setActiveIndex,
-                            isAuthenticated: isCurrentUser,
-                          ),
-                        ),
-                      ),
-                      SliverFillRemaining(
-                        child: child, // This will be the auto-routed tab content
-                      ),
-                    ],
-                  ),
+                    ),
+                    SliverFillRemaining(
+                      child: child, // This will be the auto-routed tab content
+                    ),
+                  ],
                 ),
               ),
             );
