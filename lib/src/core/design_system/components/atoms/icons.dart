@@ -67,7 +67,7 @@ class AppIcons {
   static Widget typo({double size = 24, Color? color}) => SvgPicture.asset('$_path/typo.svg', width: size, height: size, colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null, package: 'assets');
   static Widget verified({double size = 24, Color? color}) => SvgPicture.asset('$_path/verified.svg', width: size, height: size, colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null, package: 'assets');
   static Widget volume({double size = 24, Color? color}) => SvgPicture.asset('$_path/volume.svg', width: size, height: size, colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null, package: 'assets');
-  static Widget wand({double size = 24, Color? color}) => SvgPicture.asset('$_path/wand.svg', width: size, height: size, colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null, package: 'assets');
+  static Widget sprkMatch({double size = 24, Color? color}) => SvgPicture.asset('$_path/sprk_match.svg', width: size, height: size, colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null, package: 'assets');
   static Widget sideShare({double size = 24, Color? color}) => SvgPicture.asset('$_path/side_share.svg', width: size, height: size, colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null, package: 'assets');
   static Widget sideCurate({double size = 24, Color? color}) => SvgPicture.asset('$_path/side_curate.svg', width: size, height: size, colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null, package: 'assets');
 }

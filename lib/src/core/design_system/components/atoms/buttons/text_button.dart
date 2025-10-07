@@ -1,4 +1,5 @@
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
@@ -25,6 +26,8 @@ class TextButton extends StatelessWidget {
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
           child: Container(
+            width: double.infinity,
+            constraints: const BoxConstraints(minHeight: 36),
             padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 11),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkGreyButton : AppColors.lightGreyButton,
@@ -34,11 +37,7 @@ class TextButton extends StatelessWidget {
                 width: 1.25,
               ),
             ),
-            child: Text(
-              label,
-              textAlign: TextAlign.center,
-              style: AppTypography.textSmallMedium
-            ),
+            child: Text(label, textAlign: TextAlign.center, style: AppTypography.textSmallMedium),
           ),
         ),
       ),

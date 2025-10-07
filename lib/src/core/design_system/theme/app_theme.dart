@@ -96,11 +96,11 @@ class AppTheme {
       fontFamily: 'SN Pro',
       brightness: Brightness.dark,
       colorScheme: AppColorScheme.dark,
-      scaffoldBackgroundColor: AppColors.grey800,
+      scaffoldBackgroundColor: AppColors.greyBlack,
       appBarTheme: const AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 0,
-        backgroundColor: AppColors.grey800,
+        backgroundColor: AppColors.greyBlack,
         foregroundColor: AppColors.grey100,
         iconTheme: IconThemeData(color: AppColors.grey100),
         titleTextStyle: TextStyle(
