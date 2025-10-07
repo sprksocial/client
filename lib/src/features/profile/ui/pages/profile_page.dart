@@ -215,22 +215,38 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 });
               },
               onFollowTap: () async {
-                final initialFollowingStateForSnackbar = profile.viewer?.following;
                 try {
                   await notifier.toggleFollow();
                   final latestProfileState = ref.read(profileNotifierProvider(did: widget.did)).asData?.value;
 
-                  if (latestProfileState != null &&
-                      !latestProfileState.showAuthPrompt &&
-                      latestProfileState.profile?.viewer?.following != initialFollowingStateForSnackbar) {
+                  if (latestProfileState != null && !latestProfileState.showAuthPrompt) {
                     if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            latestProfileState.profile?.viewer?.following != null
-                                ? 'Followed successfully'
-                                : 'Unfollowed successfully',
-                          ),
+                        const SnackBar(
+                          content: Text('Followed successfully'),
+                          backgroundColor: Colors.green,
+                        ),
+                      );
+                    }
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                    );
+                  }
+                }
+              },
+              onUnfollowTap: () async {
+                try {
+                  await notifier.toggleFollow();
+                  final latestProfileState = ref.read(profileNotifierProvider(did: widget.did)).asData?.value;
+
+                  if (latestProfileState != null && !latestProfileState.showAuthPrompt) {
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Unfollowed successfully'),
                           backgroundColor: Colors.green,
                         ),
                       );

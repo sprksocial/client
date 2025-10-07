@@ -28,7 +28,6 @@ class GlassFollowButton extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
           child: Container(
             constraints: const BoxConstraints(maxWidth: 60),
-            height: 24,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
             decoration: BoxDecoration(
               color: Colors.white.withAlpha(51),

@@ -1,15 +1,12 @@
-import 'dart:ui';
-
 import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sparksocial/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 
@@ -73,12 +70,12 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
 
         return GridView.builder(
           controller: scrollController,
-          padding: const EdgeInsets.all(1),
+          padding: const EdgeInsets.all(5),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            crossAxisSpacing: 1,
-            mainAxisSpacing: 1,
-            childAspectRatio: 0.6,
+            crossAxisCount: 3,
+            crossAxisSpacing: 5,
+            mainAxisSpacing: 5,
+            childAspectRatio: 9 / 16,
           ),
           itemCount: state.loadedPosts.length + (state.isEndOfNetwork ? 0 : 1),
           itemBuilder: (context, index) {
@@ -182,57 +179,47 @@ class _ProfileGridTileState extends State<ProfileGridTile> {
   Widget build(BuildContext context) {
     final thumbnailUrl = widget.postView.thumbnailUrl;
 
-    final image = thumbnailUrl.isNotEmpty
-        ? CachedNetworkImage(
-            imageUrl: thumbnailUrl,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => const SizedBox.shrink(),
-            errorWidget: (context, url, error) => ColoredBox(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              child: const Center(child: Icon(FluentIcons.error_circle_24_regular, size: 20)),
-            ),
-          )
-        : ColoredBox(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 20)),
-          );
+    // Use like count as a proxy for views, or 0 if not available
+    final viewCount = widget.postView.likeCount ?? 0;
 
-    return GestureDetector(
-      onTap: widget.onTap,
-      child: ColoredBox(
-        color: AppColors.black,
-        child: thumbnailUrl.isNotEmpty
-            ? Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (_shouldBlur)
-                    ImageFiltered(
-                      imageFilter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                      child: image,
-                    )
-                  else
-                    image,
-                  if (widget.postSource != null)
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(color: Colors.black.withAlpha(150), borderRadius: BorderRadius.circular(4)),
-                        child: SvgPicture.asset(
-                          widget.postSource == 'bsky' ? 'assets/images/bsky.svg' : 'assets/images/sprk.svg',
-                          width: 12,
-                          height: 12,
-                        ),
-                      ),
-                    ),
-                ],
-              )
-            : ColoredBox(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 20)),
-              ),
-      ),
+    if (thumbnailUrl.isEmpty) {
+      return GestureDetector(
+        onTap: widget.onTap,
+        child: ColoredBox(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 20)),
+        ),
+      );
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        PostTile(
+          thumbnailUrl: thumbnailUrl,
+          views: viewCount,
+          seen: false,
+          nsfwBlur: _shouldBlur,
+          onTap: widget.onTap,
+        ),
+        // if (widget.postSource != null)
+        //   Positioned(
+        //     top: 8,
+        //     right: 8,
+        //     child: Container(
+        //       padding: const EdgeInsets.all(4),
+        //       decoration: BoxDecoration(
+        //         color: Colors.black.withAlpha(150),
+        //         borderRadius: BorderRadius.circular(4),
+        //       ),
+        //       child: SvgPicture.asset(
+        //         widget.postSource == 'bsky' ? 'assets/images/bsky.svg' : 'assets/images/sprk.svg',
+        //         width: 12,
+        //         height: 12,
+        //       ),
+        //     ),
+        //   ),
+      ],
     );
   }
 }

@@ -162,6 +162,7 @@ Widget buildProfilePageTemplateOtherUserNotFollowingUseCase(
     onFollowersTap: () => print('Followers tapped'),
     onFollowingTap: () => print('Following tapped'),
     onFollowTap: () => print('Follow tapped'),
+    onUnfollowTap: () => print('Unfollow tapped'),
     onShareTap: () => print('Share tapped'),
     onEarlySupporterTap: () => print('Early supporter badge tapped'),
     onMentionTap: (username) => print('Mention tapped: $username'),
@@ -217,7 +218,8 @@ Widget buildProfilePageTemplateOtherUserFollowingUseCase(BuildContext context) {
     onAvatarTap: () => print('Avatar tapped'),
     onFollowersTap: () => print('Followers tapped'),
     onFollowingTap: () => print('Following tapped'),
-    onFollowTap: () => print('Unfollow tapped'),
+    onFollowTap: () => print('Follow tapped'),
+    onUnfollowTap: () => print('Unfollow tapped'),
     onShareTap: () => print('Share tapped'),
     onEarlySupporterTap: () => print('Early supporter badge tapped'),
     onMentionTap: (username) => print('Mention tapped: $username'),
@@ -260,6 +262,7 @@ Widget buildProfilePageTemplateMinimalProfileUseCase(BuildContext context) {
     onFollowersTap: () => print('Followers tapped'),
     onFollowingTap: () => print('Following tapped'),
     onFollowTap: () => print('Follow tapped'),
+    onUnfollowTap: () => print('Unfollow tapped'),
     appBarActions: [
       IconButton(
         icon: const Icon(FluentIcons.more_vertical_24_regular),

@@ -30,6 +30,7 @@ class ProfilePageTemplate extends StatelessWidget {
     this.onFollowingTap,
     this.onEditTap,
     this.onFollowTap,
+    this.onUnfollowTap,
     this.onShareTap,
     this.onEarlySupporterTap,
     this.onMentionTap,
@@ -58,6 +59,7 @@ class ProfilePageTemplate extends StatelessWidget {
   final VoidCallback? onFollowingTap;
   final VoidCallback? onEditTap;
   final VoidCallback? onFollowTap;
+  final VoidCallback? onUnfollowTap;
   final VoidCallback? onShareTap;
   final VoidCallback? onEarlySupporterTap;
   final Function(String username)? onMentionTap;
@@ -116,6 +118,7 @@ class ProfilePageTemplate extends StatelessWidget {
                 onFollowingTap: onFollowingTap,
                 onEditTap: onEditTap,
                 onFollowTap: onFollowTap,
+                onUnfollowTap: onUnfollowTap,
                 onShareTap: onShareTap,
                 onEarlySupporterTap: onEarlySupporterTap,
                 onMentionTap: onMentionTap,
@@ -153,6 +156,7 @@ class _ProfileHeaderSection extends StatelessWidget {
     this.onFollowingTap,
     this.onEditTap,
     this.onFollowTap,
+    this.onUnfollowTap,
     this.onShareTap,
     this.onEarlySupporterTap,
     this.onMentionTap,
@@ -176,6 +180,7 @@ class _ProfileHeaderSection extends StatelessWidget {
   final VoidCallback? onFollowingTap;
   final VoidCallback? onEditTap;
   final VoidCallback? onFollowTap;
+  final VoidCallback? onUnfollowTap;
   final VoidCallback? onShareTap;
   final VoidCallback? onEarlySupporterTap;
   final Function(String username)? onMentionTap;
@@ -276,6 +281,7 @@ class _ProfileHeaderSection extends StatelessWidget {
             isFollowing: isFollowing,
             onEditTap: onEditTap,
             onFollowTap: onFollowTap,
+            onUnfollowTap: onUnfollowTap,
             onShareTap: onShareTap,
           ),
         ],

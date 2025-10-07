@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/buttons/text_button.dart' as ds;
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/toggles/glass_follow_button.dart';
 
 class ProfileActionButtons extends StatelessWidget {
   const ProfileActionButtons({
@@ -9,6 +9,7 @@ class ProfileActionButtons extends StatelessWidget {
     this.isFollowing = false,
     this.onEditTap,
     this.onFollowTap,
+    this.onUnfollowTap,
     this.onShareTap,
   });
 
@@ -16,12 +17,11 @@ class ProfileActionButtons extends StatelessWidget {
   final bool isFollowing;
   final VoidCallback? onEditTap;
   final VoidCallback? onFollowTap;
+  final VoidCallback? onUnfollowTap;
   final VoidCallback? onShareTap;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     if (isCurrentUser) {
       return Row(
         children: [
@@ -51,23 +51,12 @@ class ProfileActionButtons extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 36),
-            child: ElevatedButton(
-              onPressed: onFollowTap,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isFollowing ? theme.colorScheme.surfaceContainerHighest : AppColors.primary,
-                foregroundColor: isFollowing ? theme.colorScheme.onSurfaceVariant : AppColors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: isFollowing ? BorderSide(color: theme.colorScheme.outline) : BorderSide.none,
-                ),
-              ),
-              child: Text(
-                isFollowing ? 'Following' : 'Follow',
-                style: const TextStyle(fontWeight: FontWeight.w600),
-              ),
-            ),
+          child: GlassFollowButton(
+            isFollowing: isFollowing,
+            onFollow: onFollowTap ?? () {},
+            onUnfollow: onUnfollowTap ?? () {},
+            followText: 'Follow',
+            unfollowText: 'Following',
           ),
         ),
         const SizedBox(width: 8),
