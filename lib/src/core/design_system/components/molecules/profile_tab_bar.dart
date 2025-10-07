@@ -17,9 +17,8 @@ class ProfileTabBar extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: theme.scaffoldBackgroundColor,
         border: Border(
-          top: BorderSide(color: theme.dividerColor, width: 0.5),
           bottom: BorderSide(color: theme.dividerColor, width: 0.5),
         ),
       ),

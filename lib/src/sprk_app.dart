@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/design_system/theme/app_theme.dart';
 import 'package:sparksocial/src/core/l10n/app_localizations.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/theme/data/models/app_theme.dart';
 import 'package:sparksocial/src/core/ui/theme/providers/theme_provider.dart';
 
 class SprkApp extends ConsumerStatefulWidget {
@@ -26,14 +26,22 @@ class _SprkAppState extends ConsumerState<SprkApp> {
   @override
   Widget build(BuildContext context) {
     // Force dark status bar and navigation bar
-    SystemChrome.setSystemUIOverlayStyle(AppTheme.darkSystemUiStyle);
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.black,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
 
     final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: 'Spark',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
       supportedLocales: AppLocalizations.supportedLocales,

@@ -75,10 +75,8 @@ class ProfilePageTemplate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         centerTitle: true,
         title: appBarTitle != null
@@ -91,7 +89,6 @@ class ProfilePageTemplate extends StatelessWidget {
                 ),
               )
             : null,
-        backgroundColor: theme.brightness == Brightness.dark ? colorScheme.surfaceContainerHighest : colorScheme.surface,
         elevation: 0,
         actions: appBarActions,
       ),
