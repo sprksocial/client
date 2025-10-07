@@ -134,24 +134,22 @@ class _MainPageState extends ConsumerState<MainPage> {
           backgroundColor: Colors.black,
           extendBody: isFeedsPage ? false : true,
           body: child,
-          bottomNavigationBar: SafeArea(
-            child: SparkBottomNavBar(
-              currentIndex: tabsRouter.activeIndex,
-              userAvatar: avatarProvider,
-              onTap: (index) {
-                if (index == 2) {
-                  _showCreateMenu(context);
+          bottomNavigationBar: SparkBottomNavBar(
+            currentIndex: tabsRouter.activeIndex,
+            userAvatar: avatarProvider,
+            onTap: (index) {
+              if (index == 2) {
+                _showCreateMenu(context);
+              } else {
+                if (tabsRouter.activeIndex == index && index == 0) {
+                  final activeFeed = ref.read(settingsProvider).activeFeed;
+                  ref.read(feedRefreshTriggerProvider(activeFeed).notifier).trigger();
                 } else {
-                  if (tabsRouter.activeIndex == index && index == 0) {
-                    final activeFeed = ref.read(settingsProvider).activeFeed;
-                    ref.read(feedRefreshTriggerProvider(activeFeed).notifier).trigger();
-                  } else {
-                    tabsRouter.setActiveIndex(index);
-                    ref.read(navigationProvider.notifier).updateIndex(index);
-                  }
+                  tabsRouter.setActiveIndex(index);
+                  ref.read(navigationProvider.notifier).updateIndex(index);
                 }
-              },
-            ),
+              }
+            },
           ),
         );
       },
