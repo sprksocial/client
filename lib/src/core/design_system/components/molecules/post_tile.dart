@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
+import 'package:sparksocial/src/core/design_system/tokens/shapes.dart';
 import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
 
 class PostTile extends StatelessWidget {
@@ -30,17 +31,51 @@ class PostTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Squircle shape from design tokens
+    final BorderRadiusGeometry radius = BorderRadius.circular(AppShapes.squircleRadius);
+    final side = BorderSide(
+      width: AppShapes.squircleBorderWidth,
+      color: Colors.white.withAlpha(AppShapes.squircleBorderAlpha),
+    );
+    final ShapeBorder shape = RoundedSuperellipseBorder(side: side, borderRadius: radius);
+
     return GestureDetector(
       onTap: onTap,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(15),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (nsfwBlur)
-              ImageFiltered(
-                imageFilter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: CachedNetworkImage(
+      child: DecoratedBox(
+        decoration: ShapeDecoration(shape: shape),
+        child: Material(
+          color: Colors.transparent,
+          shape: RoundedSuperellipseBorder(borderRadius: radius),
+          clipBehavior: Clip.antiAlias,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              if (nsfwBlur)
+                ImageFiltered(
+                  imageFilter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                  child: CachedNetworkImage(
+                    imageUrl: thumbnailUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (context, url) => const ColoredBox(
+                      color: AppColors.grey800,
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary500),
+                        ),
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => const ColoredBox(
+                      color: AppColors.grey800,
+                      child: Icon(
+                        Icons.broken_image,
+                        color: AppColors.grey400,
+                      ),
+                    ),
+                  ),
+                )
+              else
+                CachedNetworkImage(
                   imageUrl: thumbnailUrl,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => const ColoredBox(
@@ -60,110 +95,47 @@ class PostTile extends StatelessWidget {
                     ),
                   ),
                 ),
-              )
-            else
-              CachedNetworkImage(
-                imageUrl: thumbnailUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => const ColoredBox(
-                  color: AppColors.grey800,
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary500),
-                    ),
-                  ),
-                ),
-                errorWidget: (context, url, error) => const ColoredBox(
-                  color: AppColors.grey800,
-                  child: Icon(
-                    Icons.broken_image,
-                    color: AppColors.grey400,
-                  ),
-                ),
-              ),
-            if (seen)
-              Container(
-                decoration: BoxDecoration(
+              if (seen)
+                Container(
                   color: Colors.black.withAlpha(180),
                 ),
-              ),
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: Colors.white.withAlpha(76),
-                  ),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Colors.white.withAlpha(38),
-                    ),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: Colors.white.withAlpha(25),
-                      ),
-                      borderRadius: BorderRadius.circular(13),
-                    ),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.white.withAlpha(76),
-                        ),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 6,
-                  vertical: 6,
-                ),
+              Positioned(
+                bottom: 0,
+                right: 0,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
-                    vertical: 4,
-                  ),
-                  child: seen
-                      ? Text(
-                          'seen',
-                          style: AppTypography.textExtraSmallMedium.copyWith(
-                            color: AppColors.greyWhite,
-                            fontSize: 12,
-                          ),
-                        )
-                      : Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              _formatViews(views),
-                              style: AppTypography.textExtraSmallMedium.copyWith(
-                                color: AppColors.greyWhite,
-                                fontSize: 12,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            AppIcons.eyeMin(
-                              size: 14,
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    child: seen
+                        ? Text(
+                            'seen',
+                            style: AppTypography.textExtraSmallMedium.copyWith(
                               color: AppColors.greyWhite,
+                              fontSize: 12,
                             ),
-                          ],
-                        ),
+                          )
+                        : Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _formatViews(views),
+                                style: AppTypography.textExtraSmallMedium.copyWith(
+                                  color: AppColors.greyWhite,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              AppIcons.eyeMin(
+                                size: 14,
+                                color: AppColors.greyWhite,
+                              ),
+                            ],
+                          ),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
