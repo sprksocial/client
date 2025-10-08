@@ -87,14 +87,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final isLoading = ref.watch(authProvider.select((state) => state.isLoading));
     final error = ref.watch(authProvider.select((state) => state.error));
 
-    final brightness = MediaQuery.of(context).platformBrightness;
-    final isDarkMode = brightness == Brightness.dark;
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Stack(
         children: [
-          Positioned.fill(child: Image.asset('assets/branding/gradient.webp', fit: BoxFit.cover)),
+          Positioned.fill(
+            child: Image.asset('branding/gradient.webp', fit: BoxFit.cover, package: 'assets'),
+          ),
           SafeArea(
             child: Center(
               child: SingleChildScrollView(
@@ -107,9 +106,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       SvgPicture.asset(
-                        isDarkMode ? 'assets/images/logo_dark_mode.svg' : 'assets/images/logo_dark_mode.svg',
+                        'images/logo_dark_mode.svg',
                         height: 140,
                         width: 140,
+                        package: 'assets',
                       ),
                       const SizedBox(height: 21),
                       const Text(
@@ -128,7 +128,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               'Login using your existing ',
                               style: TextStyle(color: AppColors.white, fontSize: 20, height: 1.7),
                             ),
-                            SvgPicture.asset('assets/images/ataccount.svg', height: 25, width: 100),
+                            SvgPicture.asset('images/ataccount.svg', height: 25, width: 100, package: 'assets'),
                             const SizedBox(width: 4),
                             const ATAccountInfoIcon(),
                           ],

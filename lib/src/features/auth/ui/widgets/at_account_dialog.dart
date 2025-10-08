@@ -43,7 +43,7 @@ class _ATAccountDialog extends StatelessWidget {
       contentPadding: const EdgeInsets.fromLTRB(24, 12, 24, 0),
       title: Column(
         children: [
-          SvgPicture.asset('assets/images/ataccount.svg', height: 40),
+          SvgPicture.asset('images/ataccount.svg', height: 40, package: 'assets'),
           const SizedBox(height: 18),
           const Text(
             'What is an AT Account?',

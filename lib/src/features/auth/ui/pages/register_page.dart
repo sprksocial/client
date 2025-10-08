@@ -88,7 +88,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       backgroundColor: colorScheme.surface,
       body: Stack(
         children: [
-          Positioned.fill(child: Image.asset('assets/branding/gradient.webp', fit: BoxFit.cover)),
+          Positioned.fill(
+            child: Image.asset('branding/gradient.webp', fit: BoxFit.cover, package: 'assets'),
+          ),
           SafeArea(
             child: GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
@@ -97,7 +99,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                 child: ListView(
                   children: [
                     const SizedBox(height: 24),
-                    Center(child: SvgPicture.asset('assets/images/logo_dark_mode.svg', height: 140, width: 140)),
+                    Center(child: SvgPicture.asset('images/logo_dark_mode.svg', height: 140, width: 140, package: 'assets')),
                     const SizedBox(height: 21),
                     const Center(
                       child: Text(
@@ -115,7 +117,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             const Text('Create your new ', style: TextStyle(color: AppColors.white, fontSize: 20, height: 1.7)),
-                            SvgPicture.asset('assets/images/ataccount.svg', height: 25, width: 100),
+                            SvgPicture.asset('images/ataccount.svg', height: 25, width: 100, package: 'assets'),
                             const SizedBox(width: 4),
                             const ATAccountInfoIcon(),
                           ],

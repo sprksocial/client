@@ -29,8 +29,8 @@ class PostSource extends StatelessWidget {
             ],
           ),
           child: isSprk
-              ? SvgPicture.asset('assets/images/sprk.svg', width: 14, height: 14)
-              : SvgPicture.asset('assets/images/bsky.svg', width: 14, height: 14),
+              ? SvgPicture.asset('images/sprk.svg', width: 14, height: 14, package: 'assets')
+              : SvgPicture.asset('images/bsky.svg', width: 14, height: 14, package: 'assets'),
         ),
       ],
     );

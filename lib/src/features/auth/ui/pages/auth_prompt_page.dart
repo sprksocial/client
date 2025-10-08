@@ -30,7 +30,9 @@ class AuthPromptPage extends StatelessWidget {
           : null,
       body: Stack(
         children: [
-          Positioned.fill(child: Image.asset('assets/branding/gradient.webp', fit: BoxFit.cover)),
+          Positioned.fill(
+            child: Image.asset('branding/gradient.webp', fit: BoxFit.cover, package: 'assets'),
+          ),
           SafeArea(
             child: Center(
               child: Padding(
