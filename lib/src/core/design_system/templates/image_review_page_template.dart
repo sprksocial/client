@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/buttons/long_button.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/toggles/toggle.dart';
@@ -73,16 +74,10 @@ class ImageReviewPageTemplate extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: backgroundColor ?? colorScheme.surface,
         elevation: 0,
-        leading: IconButton(
-          onPressed: onBack,
-          icon: AppIcons.chevronleft(color: theme.textTheme.titleLarge?.color),
-          tooltip: 'Back',
-        ),
+        leading: AppLeadingButton(color: theme.textTheme.titleLarge?.color, tooltip: 'Back'),
         title: Text(
           title,
-          style: AppTypography.textLargeBold.copyWith(
-            color: theme.textTheme.titleLarge?.color,
-          ),
+
         ),
         centerTitle: false,
       ),

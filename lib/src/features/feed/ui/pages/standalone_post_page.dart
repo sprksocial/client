@@ -3,6 +3,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
@@ -127,14 +128,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.router.pop(),
-        ),
-      ),
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0, leading: const AppLeadingButton()),
       body: SafeArea(
         child: _postFuture == null
             ? const Center(child: CircularProgressIndicator())

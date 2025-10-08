@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/theme/color_scheme.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
+import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
 
 class AppTheme {
   AppTheme._();
@@ -18,11 +19,7 @@ class AppTheme {
         backgroundColor: AppColors.greyWhite,
         foregroundColor: AppColors.grey800,
         iconTheme: IconThemeData(color: AppColors.grey800),
-        titleTextStyle: TextStyle(
-          color: AppColors.grey800,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
+        titleTextStyle: AppTypography.textLargeBold,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -103,11 +100,7 @@ class AppTheme {
         backgroundColor: AppColors.greyBlack,
         foregroundColor: AppColors.grey100,
         iconTheme: IconThemeData(color: AppColors.grey100),
-        titleTextStyle: TextStyle(
-          color: AppColors.grey100,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-        ),
+        titleTextStyle: AppTypography.textLargeBold,
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(

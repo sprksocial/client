@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/design_system/components/molecules/profile_action_buttons.dart';
 import 'package:sparksocial/src/core/design_system/components/molecules/profile_avatar.dart';
@@ -74,23 +75,17 @@ class ProfilePageTemplate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
         title: appBarTitle != null
             ? Text(
                 appBarTitle!,
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                  color: theme.textTheme.titleLarge?.color,
-                ),
               )
             : null,
         elevation: 0,
         actions: appBarActions,
+        leading: const AppLeadingButton(),
       ),
       body: RefreshIndicator(
         onRefresh: onRefresh ?? () async {},
