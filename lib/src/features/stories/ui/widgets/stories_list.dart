@@ -118,6 +118,12 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                 'Stories',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
               ),
+              const Spacer(),
+              IconButton(
+                icon: const Icon(Icons.manage_history_outlined, size: 20),
+                tooltip: 'Manage',
+                onPressed: () => context.router.push(const StoryManagerRoute()),
+              ),
             ],
           ),
         ),
