@@ -121,7 +121,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       _isPosting = true;
     });
     try {
-      final crosspostEnabled = ref.read(settingsProvider).postToBskyEnabled;
+      final crosspostEnabled = widget.storyMode ? false : ref.read(settingsProvider).postToBskyEnabled;
       final description = _descriptionController.text;
       StrongRef result;
       if (widget.storyMode) {
@@ -132,13 +132,14 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
         if (uploadedImage.isEmpty) {
           throw Exception('No images uploaded');
         }
-        result = ref
-            .read(
-              postStoryProvider(
-                Embed.image(images: uploadedImage),
-              ),
-            )
-            .value!;
+        final storyProvider = postStoryProvider(
+          Embed.image(images: uploadedImage),
+        );
+        final asyncResult = await ref.read(storyProvider.future);
+        if (asyncResult == null) {
+          throw Exception('Story post returned null StrongRef');
+        }
+        result = asyncResult;
       } else {
         // Post as a regular image post
         result = await _feedRepository.postImages(description, _imageFiles, _altTexts, crosspostToBsky: crosspostEnabled);
@@ -218,7 +219,11 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                                                 SizedBox(width: 4),
                                                 Text(
                                                   'Tap to edit',
-                                                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
+                                                  style: TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
                                                 ),
                                               ],
                                             ),
@@ -380,62 +385,62 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                         },
                       ),
                       const SizedBox(height: 20),
-                      // Bluesky Cross-posting Switch
-                      Consumer(
-                        builder: (context, ref, _) {
-                          final settings = ref.watch(settingsProvider);
-                          final showWarning = settings.postToBskyEnabled && _imageFiles.length > 4;
-                          return Column(
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surface,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: ListTile(
-                                  title: Text(
-                                    'Post to Bluesky',
-                                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                                  ),
-                                  trailing: Switch(
-                                    value: settings.postToBskyEnabled,
-                                    onChanged: (bool value) {
-                                      ref.read(settingsProvider.notifier).setPostToBsky(value);
-                                    },
-                                    activeColor: Theme.of(context).colorScheme.primary,
-                                  ),
-                                  onTap: () {
-                                    ref.read(settingsProvider.notifier).setPostToBsky(!settings.postToBskyEnabled);
-                                  },
-                                ),
-                              ),
-                              if (showWarning) ...[
-                                const SizedBox(height: 12),
+                      if (!widget.storyMode)
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final settings = ref.watch(settingsProvider);
+                            final showWarning = settings.postToBskyEnabled && _imageFiles.length > 4;
+                            return Column(
+                              children: [
                                 Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: Colors.orange.withAlpha(25),
+                                    color: Theme.of(context).colorScheme.surface,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  child: const Row(
-                                    children: [
-                                      Icon(Icons.info_outline, color: Colors.orange, size: 20),
-                                      SizedBox(width: 8),
-                                      Expanded(
-                                        child: Text(
-                                          'Bluesky supports a maximum of 4 images. Your Bluesky post will link to the full Spark post instead.',
-                                          style: TextStyle(color: Colors.orange, fontSize: 13, fontWeight: FontWeight.w500),
-                                        ),
-                                      ),
-                                    ],
+                                  child: ListTile(
+                                    title: Text(
+                                      'Post to Bluesky',
+                                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                                    ),
+                                    trailing: Switch(
+                                      value: settings.postToBskyEnabled,
+                                      onChanged: (bool value) {
+                                        ref.read(settingsProvider.notifier).setPostToBsky(value);
+                                      },
+                                      activeColor: Theme.of(context).colorScheme.primary,
+                                    ),
+                                    onTap: () {
+                                      ref.read(settingsProvider.notifier).setPostToBsky(!settings.postToBskyEnabled);
+                                    },
                                   ),
                                 ),
+                                if (showWarning) ...[
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: Colors.orange.withAlpha(25),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Row(
+                                      children: [
+                                        Icon(Icons.info_outline, color: Colors.orange, size: 20),
+                                        SizedBox(width: 8),
+                                        Expanded(
+                                          child: Text(
+                                            'Bluesky supports a maximum of 4 images. Your Bluesky post will link to the full Spark post instead.',
+                                            style: TextStyle(color: Colors.orange, fontSize: 13, fontWeight: FontWeight.w500),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
                               ],
-                            ],
-                          );
-                        },
-                      ),
+                            );
+                          },
+                        ),
                     ],
                   ),
                 ),
@@ -451,6 +456,11 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
                       : () async {
                           final postRef = await _uploadImagesAndPost();
                           if (context.mounted && postRef != null) {
+                            if (widget.storyMode) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Story posted successfully!')),
+                              );
+                            }
                             context.router.popUntilRoot();
                             final did = ref.read(sessionProvider)?.did;
                             if (did != null) {

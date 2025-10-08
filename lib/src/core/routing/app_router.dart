@@ -94,6 +94,9 @@ class AppRouter extends RootStackRouter {
       ],
     ),
 
+    // Story Manager
+    AutoRoute(page: StoryManagerRoute.page, path: '/story-manager'),
+
     // Alternate starting routes
     AutoRoute(page: EmptyRoute.page, path: '/empty'),
     AutoRoute(page: LoginRoute.page, path: '/login'),

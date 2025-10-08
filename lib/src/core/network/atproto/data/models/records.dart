@@ -30,7 +30,7 @@ class Record with _$Record {
     required Embed media,
     required DateTime createdAt,
     StrongRef? sound,
-    List<SelfLabel>? selfLabels,
+    List<SelfLabel>? labels,
     List<String>? tags,
   }) = StoryRecord;
 

@@ -16,14 +16,12 @@ Future<Blob?> processVideo(Ref ref, String videoPath) async {
   final feedRepository = GetIt.I<SprkRepository>().feed;
   final logger = GetIt.I<LogService>().getLogger('Processing Video');
   try {
-    logger.i('Starting video processing for: $videoPath');
-
+    logger.d('Processing video: $videoPath');
     final blob = await feedRepository.uploadVideo(videoPath);
-
-    logger.i('Video processed successfully');
+    logger.i('Video processed (size=${blob.size}, mime=${blob.mimeType})');
     return blob;
   } catch (error, stackTrace) {
-    logger.e('Error processing video', error: error, stackTrace: stackTrace);
+    logger.e('Error processing video ($videoPath)', error: error, stackTrace: stackTrace);
     return null;
   }
 }
@@ -40,42 +38,36 @@ Future<StrongRef?> postVideo(
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Posting Video');
   try {
+    logger.d('Posting video (size=${blob.size}, crosspost=$crosspostToBsky)');
     final authRepository = GetIt.I<AuthRepository>();
-
     final authAtProto = authRepository.atproto;
     if (authAtProto == null || authAtProto.session == null) {
       throw Exception('AtProto not initialized');
     }
 
-    final postText = description.isNotEmpty ? description : '';
-
-    // Create a properly formatted AT Protocol post record
     final postRecord = PostRecord(
-      text: postText,
+      text: description.isNotEmpty ? description : '',
       embed: EmbedVideo(video: blob, alt: altText),
       createdAt: DateTime.now().toUtc(),
     );
 
-    // Create the post record
     final recordRes = await authAtProto.repo.createRecord(
       collection: NSID.parse('so.sprk.feed.post'),
       record: postRecord.toJson(),
     );
 
     if (recordRes.status != HttpStatus.ok) {
-      throw Exception('Failed to post video: ${recordRes.status} ${recordRes.data}');
+      throw Exception('Failed to post video: ${recordRes.status}');
     }
 
-    // Crosspost to Bluesky if enabled
     if (crosspostToBsky) {
       try {
-        await _crosspostVideoToBlueSky(ref, postText, blob, altText, recordRes.data.uri.rkey);
-      } catch (e) {
-        logger.w('Failed to crosspost video to Bluesky: $e');
-        // Don't fail the entire operation if Bluesky crossposting fails
+        await _crosspostVideoToBlueSky(ref, description, blob, altText, recordRes.data.uri.rkey);
+      } catch (e, s) {
+        logger.w('Crosspost to Bluesky failed: $e', error: e, stackTrace: s);
       }
     }
-    logger.i('Video posted successfully');
+    logger.i('Video posted successfully: ${recordRes.data.uri}');
     return recordRes.data;
   } catch (error, stackTrace) {
     logger.e('Error posting video', error: error, stackTrace: stackTrace);
@@ -93,25 +85,31 @@ Future<StrongRef?> processAndPostVideo(
   bool crosspostToBsky = false,
   bool storyMode = false,
 }) async {
+  final logger = GetIt.I<LogService>().getLogger('Process/Post Video');
+  logger.d('Processing then posting video: $videoPath (storyMode=$storyMode)');
   final blob = await processVideo(ref, videoPath);
   if (blob == null) {
+    logger.e('Aborting: processing failed');
     throw Exception('Failed to process video');
   }
 
   if (storyMode) {
-    // Post as a story
-    return ref
-        .read(
-          postStoryProvider(
-            EmbedVideo(video: blob),
-            selfLabels: [],
-            tags: [],
-          ),
-        )
-        .value;
+    try {
+      final res = await ref.read(
+        postStoryProvider(
+          EmbedVideo(video: blob),
+          selfLabels: [],
+          tags: [],
+        ).future,
+      );
+      logger.i('Story posted: ${res?.uri}');
+      return res;
+    } catch (e, s) {
+      logger.e('Failed to post story', error: e, stackTrace: s);
+      rethrow;
+    }
   } else {
-    // Post as a regular video
-    return postVideo(
+    final res = await postVideo(
       ref,
       blob: blob,
       description: description,
@@ -119,35 +117,42 @@ Future<StrongRef?> processAndPostVideo(
       videoPath: videoPath,
       crosspostToBsky: crosspostToBsky,
     );
+    logger.i('Video flow complete (storyMode=false) success=${res != null}');
+    return res;
   }
 }
 
 /// Crosspost video to Bluesky using same blob but Bluesky models
 @riverpod
-Future<void> _crosspostVideoToBlueSky(Ref ref, String text, Blob blob, String altText, String rkey) async {
-  final logger = GetIt.I<LogService>().getLogger('Crossposting Video to Bluesky');
+Future<void> _crosspostVideoToBlueSky(
+  Ref ref,
+  String text,
+  Blob blob,
+  String altText,
+  String rkey,
+) async {
+  final logger = GetIt.I<LogService>().getLogger('Crosspost Video');
   final authRepository = GetIt.I<AuthRepository>();
   logger.d('Crossposting video to Bluesky');
-
   final session = authRepository.session;
   if (session == null) {
     throw Exception('No session available for Bluesky crosspost');
   }
-
-  // Create Bluesky video post record using direct JSON structure
   final bskyPostRecord = <String, dynamic>{
     r'$type': 'app.bsky.feed.post',
     'text': text,
     'embed': {r'$type': 'app.bsky.embed.video', 'video': blob.toJson(), 'alt': altText},
     'createdAt': DateTime.now().toUtc().toIso8601String(),
   };
-
-  final bskyAtProto = authRepository.atproto!;
-  final bskyResult = await bskyAtProto.repo.createRecord(
-    collection: NSID.parse('app.bsky.feed.post'),
-    record: bskyPostRecord,
-    rkey: rkey,
-  );
-
-  logger.i('Successfully crossposted video to Bluesky: ${bskyResult.data.uri}');
+  try {
+    final bskyAtProto = authRepository.atproto!;
+    final bskyResult = await bskyAtProto.repo.createRecord(
+      collection: NSID.parse('app.bsky.feed.post'),
+      record: bskyPostRecord,
+      rkey: rkey,
+    );
+    logger.i('Crossposted video to Bluesky: ${bskyResult.data.uri}');
+  } catch (e, s) {
+    logger.w('Failed to crosspost video: $e', error: e, stackTrace: s);
+  }
 }
