@@ -49,14 +49,19 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
       appBar: AppBar(backgroundColor: AppColors.black, leading: const AutoLeadingButton()),
       body: feedState.when(
         data: (state) {
-          if (state.loadedPosts.isEmpty) {
+          // Filter client-side
+          final filteredUris = widget.videosOnly
+              ? state.loadedPosts.where((u) => state.postTypes[u] ?? true).toList()
+              : state.loadedPosts.where((u) => state.postTypes[u] == false).toList();
+
+          if (filteredUris.isEmpty) {
             return const Center(
               child: Text('No posts available', style: TextStyle(color: AppColors.white)),
             );
           }
 
           // Ensure initial index is within bounds
-          final safeInitialIndex = widget.initialPostIndex.clamp(0, state.loadedPosts.length - 1);
+          final safeInitialIndex = widget.initialPostIndex.clamp(0, filteredUris.length - 1);
 
           // Update page controller if needed
           if (pageController.hasClients && pageController.page?.round() != safeInitialIndex) {
@@ -70,19 +75,19 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
           return CacheablePageView.builder(
             controller: pageController,
             scrollDirection: Axis.vertical,
-            itemCount: state.loadedPosts.length,
+            itemCount: filteredUris.length,
             onPageChanged: (index) {
               // Load more posts when approaching the end
-              if (index >= state.loadedPosts.length - 3 && !state.isEndOfNetwork) {
+              if (index >= filteredUris.length - 3 && !state.isEndOfNetwork) {
                 ref.read(profileFeedProvider(profileAtUri, widget.videosOnly).notifier).loadMore();
               }
             },
             itemBuilder: (context, index) {
-              if (index >= state.loadedPosts.length) {
+              if (index >= filteredUris.length) {
                 return const Center(child: CircularProgressIndicator(color: AppColors.white));
               }
 
-              final postUri = state.loadedPosts[index];
+              final postUri = filteredUris[index];
               final post = state.postViews[postUri];
               return ProfileFeedPostWidget(postUri: postUri, profileUri: profileAtUri, videosOnly: widget.videosOnly, post: post);
             },

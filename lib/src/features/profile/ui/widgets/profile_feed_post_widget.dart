@@ -30,10 +30,10 @@ class ProfileFeedPostWidget extends ConsumerStatefulWidget {
 
 class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
   bool _isAnimatingHeart = false;
-  final GlobalKey<SideActionBarState> _sideActionBarKey = GlobalKey<SideActionBarState>();
   bool _showWarningOverlay = false;
   bool _shouldBlurContent = false;
   List<String> _warningLabels = [];
+  bool? _overrideIsLiked;
 
   @override
   void initState() {
@@ -99,8 +99,12 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
       // Update cache with the modified post
       await GetIt.instance<SQLCacheInterface>().updatePost(updatedPost);
 
-      // Update SideActionBar state directly
-      _sideActionBarKey.currentState?.updateLikeState(updatedPost);
+      // Drive SideActionBar via props instead of GlobalKey/stateful method
+      if (mounted) {
+        setState(() {
+          _overrideIsLiked = true;
+        });
+      }
     } catch (e) {
       // Handle error silently for better UX
     }
@@ -195,12 +199,11 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                     bottom: 4,
                     right: 4,
                     child: SideActionBar(
-                      key: _sideActionBarKey,
                       post: post,
                       likeCount: '${post.likeCount ?? 0}',
                       commentCount: '${post.replyCount ?? 0}',
                       shareCount: '${post.repostCount ?? 0}',
-                      isLiked: post.viewer?.like != null,
+                      isLiked: _overrideIsLiked ?? (post.viewer?.like != null),
                       profileImageUrl: post.author.avatar.toString(),
                       isImage: post.embed is EmbedViewImage || post.embed is EmbedViewBskyImages,
                       onProfilePressed: () {

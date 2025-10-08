@@ -19,15 +19,16 @@ class ProfileTabItem extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Expanded(
-      child: TextButton(
-        style: TextButton.styleFrom(
+      child: IconButton(
+        style: IconButton.styleFrom(
           padding: EdgeInsets.zero,
           minimumSize: Size.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           shape: const RoundedRectangleBorder(),
+          splashFactory: NoSplash.splashFactory
         ),
         onPressed: onTap,
-        child: Container(
+        icon: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: BoxDecoration(
             border: Border(

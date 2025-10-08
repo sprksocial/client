@@ -34,11 +34,12 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
   String? _lastPostUri;
   int? _lastUpdateCount;
   final GlobalKey<PostVideoPlayerState> _videoPlayerKey = GlobalKey<PostVideoPlayerState>();
-  final GlobalKey<SideActionBarState> _sideActionBarKey = GlobalKey<SideActionBarState>();
   bool _isAnimatingHeart = false;
   bool _showWarningOverlay = false;
   bool _userDismissedWarning = false;
   List<String> _warningLabels = [];
+  // Local UI override for like state to avoid needing a GlobalKey
+  bool? _overrideIsLiked;
 
   @override
   void initState() {
@@ -55,6 +56,8 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
       // Create new future if URI changed or if we need to force refresh
       _lastPostUri = currentUri;
       _postFuture = GetIt.instance<SQLCacheInterface>().getPost(currentUri);
+      // Reset any UI overrides tied to the previous post
+      _overrideIsLiked = null;
     }
   }
 
@@ -90,9 +93,12 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
 
       // Update cache with the modified post
       await GetIt.instance<SQLCacheInterface>().updatePost(updatedPost);
-
-      // Update SideActionBar state directly
-      _sideActionBarKey.currentState?.updateLikeState(updatedPost);
+      // Drive SideActionBar via props instead of GlobalKey/stateful method
+      if (mounted) {
+        setState(() {
+          _overrideIsLiked = true;
+        });
+      }
     } catch (e) {
       // Handle error silently for better UX
     }
@@ -169,12 +175,11 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
         if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
           final postData = snapshot.data! as PostView;
           final sideActionBar = SideActionBar(
-            key: _sideActionBarKey,
             post: postData,
             likeCount: '${postData.likeCount ?? 0}',
             commentCount: '${postData.replyCount ?? 0}',
             shareCount: '${postData.repostCount ?? 0}',
-            isLiked: postData.viewer?.like != null,
+            isLiked: _overrideIsLiked ?? (postData.viewer?.like != null),
             profileImageUrl: postData.author.avatar.toString(),
             isImage: postData.embed is EmbedViewImage || postData.embed is EmbedViewBskyImages,
             onProfilePressed: () {

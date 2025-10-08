@@ -183,11 +183,16 @@ class _ProfileHeaderSection extends StatelessWidget {
   final Function(String username)? onMentionTap;
   final VoidCallback? onAddStoryTap;
 
-  Widget _buildHandleText(String handle) {
+  Widget _buildHandleText(BuildContext context, String handle) {
+    final theme = Theme.of(context);
+    final textColor = theme.textTheme.bodyMedium?.color ?? AppColors.greyWhite;
+
     final parts = handle.split('.');
     if (parts.length == 1) {
-      // No dot in handle, use default color
-      return Text('@$handle', style: AppTypography.textSmallThin);
+      return Text(
+        '@$handle',
+        style: AppTypography.textSmallThin.copyWith(color: textColor),
+      );
     }
 
     final firstPart = parts[0];
@@ -196,14 +201,14 @@ class _ProfileHeaderSection extends StatelessWidget {
     return RichText(
       text: TextSpan(
         style: AppTypography.textSmallThin.copyWith(
-          color: AppColors.greyWhite,
+          color: textColor,
         ),
         children: [
           TextSpan(text: '@$firstPart'),
           TextSpan(
             text: '.$remainingPart',
             style: AppTypography.textSmallThin.copyWith(
-              color: AppColors.greyWhite.withAlpha(128),
+              color: textColor.withAlpha(128),
             ),
           ),
         ],
@@ -248,7 +253,7 @@ class _ProfileHeaderSection extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    _buildHandleText(handle),
+                    _buildHandleText(context, handle),
                     const SizedBox(height: 10),
                     ProfileStats(
                       postsCount: postsCount,

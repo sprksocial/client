@@ -195,8 +195,9 @@ class _SplashPageState extends ConsumerState<SplashPage> {
         fit: StackFit.expand,
         children: [
           Image.asset(
-            'assets/branding/intro.webp',
+            'branding/intro.webp',
             fit: BoxFit.cover,
+            package: 'assets',
           ),
         ],
       ),

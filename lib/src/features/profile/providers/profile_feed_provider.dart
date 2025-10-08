@@ -22,7 +22,6 @@ class ProfileFeed extends _$ProfileFeed {
   final SettingsRepository _settingsRepository = GetIt.instance<SettingsRepository>();
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ProfileFeed');
   bool _isLoading = false;
-  
 
   @override
   Future<ProfileFeedState> build(AtUri profileUri, bool videosOnly) async {
@@ -119,17 +118,13 @@ class ProfileFeed extends _$ProfileFeed {
       }
     }
 
-    // Filter by video/non-video type first
-    final typeFilteredPosts = videosOnly
-        ? allPosts.where((uri) => postTypes[uri] ?? true).toList()
-        : allPosts.where((uri) => postTypes[uri] == false).toList();
-
-    // Then filter based on label preferences
-    final filteredPosts = await _filterHiddenPosts(typeFilteredPosts, postViews);
+    // Client-side components decide whether to show videos/images/all.
+    // Here we only apply label-based filtering and return all posts.
+    final filteredPosts = await _filterHiddenPosts(allPosts, postViews);
 
     final isEndOfNetwork =
         (sparkResult.cursor == null && bskyResult.cursor == null) ||
-        (currentState != null && currentState.loadedPosts.length == filteredPosts.length);
+        (currentState != null && currentState.allPosts.length == allPosts.length);
 
     return ProfileFeedState(
       loadedPosts: filteredPosts,
@@ -172,8 +167,6 @@ class ProfileFeed extends _$ProfileFeed {
       bskyExternal: (external) => false,
     );
   }
-
-  
 
   Future<void> loadMore() async {
     if (_isLoading || (state.value?.isEndOfNetwork ?? true)) return;

@@ -181,7 +181,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         return AutoTabsRouter(
           routes: [
             ProfileVideosRoute(did: widget.did),
-            ProfilePhotosRoute(did: widget.did),
           ],
           builder: (context, child) {
             final tabsRouter = AutoTabsRouter.of(context);
@@ -317,16 +316,16 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 tabs: [
                   ProfileTabItem(
                     icon: AppIcons.profileGrid(),
-                    filledIcon: AppIcons.profileGrid(),
+                    filledIcon: AppIcons.profileGridFilled(),
                     isSelected: tabsRouter.activeIndex == 0,
                     onTap: () => tabsRouter.setActiveIndex(0),
                   ),
-                  ProfileTabItem(
-                    icon: AppIcons.profileLiked(),
-                    filledIcon: AppIcons.likeFilled(),
-                    isSelected: tabsRouter.activeIndex == 1,
-                    onTap: () => tabsRouter.setActiveIndex(1),
-                  ),
+                  // ProfileTabItem(
+                  //   icon: AppIcons.profileLiked(),
+                  //   filledIcon: AppIcons.likeFilled(),
+                  //   isSelected: tabsRouter.activeIndex == 1,
+                  //   onTap: () => tabsRouter.setActiveIndex(1),
+                  // ),
                 ],
               ),
 

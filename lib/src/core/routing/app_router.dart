@@ -35,7 +35,6 @@ class AppRouter extends RootStackRouter {
           page: UserProfileRoute.page, // for the current user
           path: 'profile',
           children: [
-            AutoRoute(page: ProfilePhotosRoute.page, path: 'photos'),
             AutoRoute(page: ProfileVideosRoute.page, path: 'videos'),
           ],
         ),
@@ -74,7 +73,6 @@ class AppRouter extends RootStackRouter {
       path: '/profile/:did',
       children: [
         AutoRoute(page: ProfileVideosRoute.page, path: 'videos', initial: true),
-        AutoRoute(page: ProfilePhotosRoute.page, path: 'photos'),
       ],
     ),
     AutoRoute(page: UserListRoute.page, path: '/profile/:did/users'),
