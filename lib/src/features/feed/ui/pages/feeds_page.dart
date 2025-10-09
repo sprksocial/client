@@ -104,8 +104,6 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
     }
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: FeedsBar(pageController: _pageController!),
       backgroundColor: AppColors.black,
       body: Stack(
         children: [
@@ -134,6 +132,12 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
               }
               return const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
             },
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: FeedsBar(pageController: _pageController!),
           ),
         ],
       ),

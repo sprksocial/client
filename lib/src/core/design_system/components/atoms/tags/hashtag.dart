@@ -23,7 +23,7 @@ class GlassmorphicTag extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(13),
       child: Container(
-        height: 38,
+        // height: 38,
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
         decoration: BoxDecoration(
           color: isDark ? AppColors.darkGreyButton : AppColors.lightGreyButton,
