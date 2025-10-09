@@ -14,7 +14,6 @@ class FeedTag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     if (!selected) {
       return InteractivePressable(
         onTap: onTap,
@@ -33,10 +32,10 @@ class FeedTag extends StatelessWidget {
             height: 30,
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
             decoration: BoxDecoration(
-              color: isDark ? Colors.white.withAlpha(50) : Colors.black.withAlpha(50),
+              color: Colors.white.withAlpha(50),
               borderRadius: BorderRadius.circular(9),
               border: Border.all(
-                color: isDark ? Colors.white.withAlpha(37) : Colors.black.withAlpha(37),
+                color: Colors.white.withAlpha(37),
               ),
             ),
             child: Center(

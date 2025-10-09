@@ -20,6 +20,7 @@ class SparkBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -32,6 +33,7 @@ class SparkBottomNavBar extends StatelessWidget {
               top: 12,
               bottom: 12 + bottomPadding,
             ),
+            color: isDark ? const Color.fromARGB(51, 0, 0, 0) : const Color.fromARGB(178, 255, 255, 255),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
@@ -39,25 +41,33 @@ class SparkBottomNavBar extends StatelessWidget {
                 _NavIcon(
                   isSelected: currentIndex == 0,
                   onTap: () => onTap(0),
-                  builder: (c, selected) => selected ? AppIcons.navbarHomeFilled() : AppIcons.navbarHome(),
+                  builder: (c, selected) => selected
+                      ? AppIcons.navbarHomeFilled(color: isDark ? null : Colors.black)
+                      : AppIcons.navbarHome(color: isDark ? null : Colors.black),
                 ),
 
                 _NavIcon(
                   isSelected: currentIndex == 1,
                   onTap: () => onTap(1),
-                  builder: (c, selected) => selected ? AppIcons.navbarExploreFilled() : AppIcons.navbarExplore(),
+                  builder: (c, selected) => selected
+                      ? AppIcons.navbarExploreFilled(color: isDark ? null : Colors.black)
+                      : AppIcons.navbarExplore(color: isDark ? null : Colors.black),
                 ),
 
                 _NavIcon(
                   isSelected: currentIndex == 2,
                   onTap: () => onTap(2),
-                  builder: (c, selected) => selected ? AppIcons.navbarPostFilled() : AppIcons.navbarPost(),
+                  builder: (c, selected) => selected
+                      ? AppIcons.navbarPostFilled(color: isDark ? null : Colors.black)
+                      : AppIcons.navbarPost(color: isDark ? null : Colors.black),
                 ),
 
                 _NavIcon(
                   isSelected: currentIndex == 3,
                   onTap: () => onTap(3),
-                  builder: (c, selected) => selected ? AppIcons.navbarMessagesFilled() : AppIcons.navbarMessages(),
+                  builder: (c, selected) => selected
+                      ? AppIcons.navbarMessagesFilled(color: isDark ? null : Colors.black)
+                      : AppIcons.navbarMessages(color: isDark ? null : Colors.black),
                 ),
 
                 _ProfileAvatar(
