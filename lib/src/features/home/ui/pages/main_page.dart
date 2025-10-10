@@ -128,11 +128,9 @@ class _MainPageState extends ConsumerState<MainPage> {
             ? CachedNetworkImageProvider(userAvatar)
             : const AssetImage('assets/images/sprk.svg') as ImageProvider;
 
-        final isFeedsPage = tabsRouter.activeIndex == 0;
-
         return Scaffold(
           backgroundColor: Colors.black,
-          extendBody: isFeedsPage ? false : true,
+          extendBody: true,
           body: child,
           bottomNavigationBar: SparkBottomNavBar(
             currentIndex: tabsRouter.activeIndex,

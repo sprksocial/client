@@ -209,6 +209,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                 children: [
                   // Main content
                   Positioned.fill(
+                    bottom: 0 + MediaQuery.of(context).padding.bottom,
                     child: switch (postData.embed) {
                       EmbedViewVideo() => PostVideoPlayer(
                         key: _videoPlayerKey,
@@ -247,12 +248,15 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                     },
                   ),
 
-                  // Side action bar
-                  Positioned(bottom: 4, right: 4, child: sideActionBar),
+                  Positioned(
+                    bottom: 16 + MediaQuery.of(context).padding.bottom,
+                    right: 8,
+                    child: sideActionBar,
+                  ),
 
                   Positioned(
-                    bottom: 32,
-                    left: 4,
+                    bottom: 16 + MediaQuery.of(context).padding.bottom,
+                    left: 8,
                     right: 80,
                     child: Builder(
                       builder: (context) {

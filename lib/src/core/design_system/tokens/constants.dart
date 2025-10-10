@@ -40,5 +40,4 @@ class AppConstants {
   static const int blur5 = 52;
   static const int blur6 = 62;
   static const int blurGlass = 5;
-
 }

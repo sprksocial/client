@@ -37,7 +37,7 @@ class FeedsBarTemplate extends StatelessWidget {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Color.fromARGB(221, 0, 0, 0), Colors.transparent],
+                colors: [Color.fromARGB(110, 0, 0, 0), Colors.transparent],
               ),
             ),
           ),

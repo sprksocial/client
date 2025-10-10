@@ -26,6 +26,8 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
 
   @override
   Widget build(BuildContext context) {
+    final safeBottom = MediaQuery.of(context).padding.bottom;
+
     return Stack(
       children: [
         CarouselSlider.builder(

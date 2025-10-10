@@ -133,40 +133,37 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _ActionItem(
-            isActive: widget.isLiked,
-            label: widget.likeCount,
-            icon: widget.isLiked ? AppIcons.likeFilled(size: 32) : AppIcons.like(size: 32),
-            onTap: widget.onLike,
-          ),
-          const SizedBox(height: 20),
-          _ActionItem(
-            icon: AppIcons.comment(size: 32),
-            label: widget.commentCount,
-            onTap: widget.onComment,
-          ),
-          const SizedBox(height: 20),
-          _ActionItem(
-            key: _curateKey,
-            // Active if externally marked as curated OR while the popover is visible.
-            isActive: widget.isCurated || _showingPopover,
-            icon: AppIcons.sideCurate(size: 32),
-            label: widget.curateCount,
-            onTap: _togglePopover,
-          ),
-          const SizedBox(height: 20),
-          _ActionItem(
-            icon: AppIcons.sideShare(size: 80),
-            label: widget.shareCount,
-            onTap: widget.onShare,
-          ),
-        ],
-      ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _ActionItem(
+          isActive: widget.isLiked,
+          label: widget.likeCount,
+          icon: widget.isLiked ? AppIcons.likeFilled(size: 32) : AppIcons.like(size: 32),
+          onTap: widget.onLike,
+        ),
+        const SizedBox(height: 20),
+        _ActionItem(
+          icon: AppIcons.comment(size: 32),
+          label: widget.commentCount,
+          onTap: widget.onComment,
+        ),
+        const SizedBox(height: 20),
+        _ActionItem(
+          key: _curateKey,
+          // Active if externally marked as curated OR while the popover is visible.
+          isActive: widget.isCurated || _showingPopover,
+          icon: AppIcons.sideCurate(size: 32),
+          label: widget.curateCount,
+          onTap: _togglePopover,
+        ),
+        const SizedBox(height: 20),
+        _ActionItem(
+          icon: AppIcons.sideShare(size: 80),
+          label: widget.shareCount,
+          onTap: widget.onShare,
+        ),
+      ],
     );
   }
 }
