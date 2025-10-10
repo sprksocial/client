@@ -102,9 +102,7 @@ class _PostCardState extends State<PostCard> {
                   if (widget.post.record.text?.isNotEmpty ?? false)
                     Text(
                       widget.post.record.text!,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                      // style: theme.textTheme.bodySmall,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
 

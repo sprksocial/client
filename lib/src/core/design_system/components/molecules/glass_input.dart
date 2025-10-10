@@ -71,6 +71,7 @@ class GlassInput extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
       child: BackdropFilter(
@@ -78,10 +79,10 @@ class GlassInput extends StatelessWidget {
         child: Container(
           height: 38,
           decoration: BoxDecoration(
-            color: Colors.white.withAlpha(13),
+            color: isDark ? Colors.white.withAlpha(13) : Colors.black.withAlpha(13),
             borderRadius: BorderRadius.circular(borderRadius),
             border: Border.all(
-              color: Colors.white.withAlpha(37),
+              color: isDark ? Colors.white.withAlpha(37) : Colors.black.withAlpha(37),
             ),
           ),
           child: Padding(
@@ -98,9 +99,7 @@ class GlassInput extends StatelessWidget {
                     style: AppTypography.textExtraSmallThin,
                     decoration: InputDecoration(
                       hintText: hintText,
-                      hintStyle: AppTypography.textExtraSmallThin.copyWith(
-                        color: Colors.white.withAlpha(128),
-                      ),
+                      hintStyle: AppTypography.textExtraSmallThin,
                       border: InputBorder.none,
                       focusedBorder: InputBorder.none,
                       focusColor: Colors.transparent,

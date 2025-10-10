@@ -18,7 +18,7 @@ class FeedTag extends StatelessWidget {
       return InteractivePressable(
         onTap: onTap,
         borderRadius: BorderRadius.circular(9),
-        child: Text(text, style: AppTypography.textMediumThin),
+        child: Text(text, style: AppTypography.textMediumThin.copyWith(color: Colors.white70)),
       );
     }
     return InteractivePressable(

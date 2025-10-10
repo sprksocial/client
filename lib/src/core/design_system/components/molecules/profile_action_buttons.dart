@@ -26,22 +26,16 @@ class ProfileActionButtons extends StatelessWidget {
       return Row(
         children: [
           Expanded(
-            child: SizedBox(
-              height: 36,
-              child: ds.TextButton(
-                label: 'Edit',
-                onTap: onEditTap,
-              ),
+            child: ds.TextButton(
+              label: 'Edit',
+              onTap: onEditTap,
             ),
           ),
           const SizedBox(width: 8),
           Expanded(
-            child: SizedBox(
-              height: 36,
-              child: ds.TextButton(
-                label: 'Share Profile',
-                onTap: onShareTap,
-              ),
+            child: ds.TextButton(
+              label: 'Share Profile',
+              onTap: onShareTap,
             ),
           ),
         ],

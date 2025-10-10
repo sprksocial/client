@@ -3,6 +3,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sparksocial/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
@@ -235,23 +236,24 @@ class _ProfileGridTileState extends State<ProfileGridTile> {
           nsfwBlur: _shouldBlur,
           onTap: widget.onTap,
         ),
-        // if (widget.postSource != null)
-        //   Positioned(
-        //     top: 8,
-        //     right: 8,
-        //     child: Container(
-        //       padding: const EdgeInsets.all(4),
-        //       decoration: BoxDecoration(
-        //         color: Colors.black.withAlpha(150),
-        //         borderRadius: BorderRadius.circular(4),
-        //       ),
-        //       child: SvgPicture.asset(
-        //         widget.postSource == 'bsky' ? 'assets/images/bsky.svg' : 'assets/images/sprk.svg',
-        //         width: 12,
-        //         height: 12,
-        //       ),
-        //     ),
-        //   ),
+        if (widget.postSource != null)
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Container(
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.black.withAlpha(150),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: SvgPicture.asset(
+                widget.postSource == 'bsky' ? 'images/bsky.svg' : 'images/sprk.svg',
+                width: 12,
+                height: 12,
+                package: 'assets',
+              ),
+            ),
+          ),
       ],
     );
   }

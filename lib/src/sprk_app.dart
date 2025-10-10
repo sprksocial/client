@@ -36,7 +36,7 @@ class _SprkAppState extends ConsumerState<SprkApp> {
       ),
     );
 
-    const themeMode = ThemeMode.dark;
+    final themeMode = ref.watch(themeModeProvider);
 
     return MaterialApp.router(
       title: 'Spark',
