@@ -208,46 +208,6 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                 alignment: Alignment.center,
                 children: [
                   // Main content
-                  Positioned.fill(
-                    bottom: 0 + MediaQuery.of(context).padding.bottom,
-                    child: switch (postData.embed) {
-                      EmbedViewVideo() => PostVideoPlayer(
-                        key: _videoPlayerKey,
-                        videoUrl: postData.videoUrl,
-                        feed: widget.feed,
-                        index: widget.index,
-                        thumbnail: postData.thumbnailUrl,
-                      ),
-                      EmbedViewBskyVideo() => PostVideoPlayer(
-                        key: _videoPlayerKey,
-                        videoUrl: postData.videoUrl,
-                        feed: widget.feed,
-                        index: widget.index,
-                        thumbnail: postData.thumbnailUrl,
-                      ),
-                      EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
-                      EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
-                        EmbedViewVideo() => PostVideoPlayer(
-                          key: _videoPlayerKey,
-                          videoUrl: postData.videoUrl,
-                          feed: widget.feed,
-                          index: widget.index,
-                          thumbnail: postData.thumbnailUrl,
-                        ),
-                        EmbedViewBskyVideo() => PostVideoPlayer(
-                          key: _videoPlayerKey,
-                          videoUrl: postData.videoUrl,
-                          feed: widget.feed,
-                          index: widget.index,
-                          thumbnail: postData.thumbnailUrl,
-                        ),
-                        EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
-                        _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
-                      },
-                      _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
-                    },
-                  ),
-
                   Positioned(
                     bottom: 16 + MediaQuery.of(context).padding.bottom,
                     right: 8,
@@ -290,6 +250,45 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                         );
                       },
                     ),
+                  ),
+                  Positioned.fill(
+                    bottom: 0 + MediaQuery.of(context).padding.bottom,
+                    child: switch (postData.embed) {
+                      EmbedViewVideo() => PostVideoPlayer(
+                        key: _videoPlayerKey,
+                        videoUrl: postData.videoUrl,
+                        feed: widget.feed,
+                        index: widget.index,
+                        thumbnail: postData.thumbnailUrl,
+                      ),
+                      EmbedViewBskyVideo() => PostVideoPlayer(
+                        key: _videoPlayerKey,
+                        videoUrl: postData.videoUrl,
+                        feed: widget.feed,
+                        index: widget.index,
+                        thumbnail: postData.thumbnailUrl,
+                      ),
+                      EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                      EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
+                        EmbedViewVideo() => PostVideoPlayer(
+                          key: _videoPlayerKey,
+                          videoUrl: postData.videoUrl,
+                          feed: widget.feed,
+                          index: widget.index,
+                          thumbnail: postData.thumbnailUrl,
+                        ),
+                        EmbedViewBskyVideo() => PostVideoPlayer(
+                          key: _videoPlayerKey,
+                          videoUrl: postData.videoUrl,
+                          feed: widget.feed,
+                          index: widget.index,
+                          thumbnail: postData.thumbnailUrl,
+                        ),
+                        EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                        _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
+                      },
+                      _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
+                    },
                   ),
                 ],
               ),

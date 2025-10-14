@@ -171,9 +171,28 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                           _ => const SizedBox.shrink(),
                         },
 
+                        // Gradient overlay at the bottom to improve text readability
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 16,
+                          child: IgnorePointer(
+                            child: Container(
+                              height: 120, // covers the area behind the InfoBar
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: [Colors.black87.withAlpha(170), Colors.transparent],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
                         // Side action bar
                         Positioned(
-                          bottom: 4,
+                          bottom: 20,
                           right: 4,
                           child: SideActionBar(
                             post: postData,
@@ -190,27 +209,8 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                           ),
                         ),
 
-                        // Gradient overlay at the bottom to improve text readability
                         Positioned(
-                          left: 0,
-                          right: 0,
                           bottom: 20,
-                          child: IgnorePointer(
-                            child: Container(
-                              height: 120, // covers the area behind the InfoBar
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.topCenter,
-                                  colors: [Colors.black87.withAlpha(100), Colors.transparent],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        Positioned(
-                          bottom: 32,
                           left: 4,
                           right: 80,
                           child: FutureBuilder<List<String>>(

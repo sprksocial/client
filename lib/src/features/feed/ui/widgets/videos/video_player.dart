@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:better_player_plus/better_player_plus.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animated_progress_bar/flutter_animated_progress_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_progress_bar.dart';
 import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
 
 class PostVideoPlayer extends ConsumerStatefulWidget {
@@ -25,13 +25,11 @@ class PostVideoPlayer extends ConsumerStatefulWidget {
 
 class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerProviderStateMixin {
   BetterPlayerController? videoController;
-  late final ProgressBarController _progressController;
-  bool _userInteracted = false; // Track if user manually played/paused
+  bool _userInteracted = false;
 
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
 
-  // State tracking to prevent unnecessary play/pause cycles
   int? _lastNavigationIndex;
   int? _lastFeedIndex;
 
@@ -49,11 +47,6 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       begin: 1,
       end: 1.3,
     ).animate(CurvedAnimation(parent: _bounceController, curve: Curves.elasticOut));
-    _progressController = ProgressBarController(
-      vsync: this,
-      waitingDuration: const Duration(milliseconds: 100),
-      barAnimationDuration: const Duration(milliseconds: 200),
-    );
     initVideoPlayer();
     GetIt.I<LogService>().getLogger('PostVideoPlayer').i('Initialized PostVideoPlayer with video URL: ${widget.videoUrl}');
   }
@@ -62,7 +55,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
     if (videoController?.isPlaying() ?? false) {
       videoController?.pause();
       setState(() {
-        _userInteracted = true; // Mark as user interaction to prevent auto-resume
+        _userInteracted = true;
       });
     }
   }
@@ -71,7 +64,6 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
   void dispose() {
     _bounceController.dispose();
     videoController?.dispose();
-    _progressController.dispose();
     super.dispose();
   }
 
@@ -87,7 +79,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       final playing = event.betterPlayerEventType == BetterPlayerEventType.play;
       if (playing) {
         _bounceController.stop();
-        _bounceController.value = 1.0; // Reset bounce animation when playing
+        _bounceController.value = 1.0;
       }
     }
   }
@@ -156,14 +148,11 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       return const Center(child: CircularProgressIndicator());
     }
 
-    // Watch navigation state - handle changes only when they actually occur
     final navigationState = ref.watch(navigationProvider);
     final isOnFeedsTab = navigationState.currentIndex == 0;
 
-    // Watch feed state for auto-play logic - handle changes only when they actually occur
     final feedState = widget.feed != null ? ref.watch(feedNotifierProvider(widget.feed!)) : null;
 
-    // Handle navigation changes only when they actually change
     if (_lastNavigationIndex != navigationState.currentIndex) {
       _lastNavigationIndex = navigationState.currentIndex;
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -173,7 +162,6 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       });
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // Handle feed index changes only when they actually change
       if (feedState != null && _lastFeedIndex != feedState.index) {
         _lastFeedIndex = feedState.index;
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -189,7 +177,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
 
     return GestureDetector(
       onTap: () {
-        _userInteracted = true; // User manually interacted
+        _userInteracted = true;
         if (isPlaying) {
           videoController?.pause();
         } else {
@@ -215,49 +203,17 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
               },
             ),
           ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: IgnorePointer(
-              child: Container(
-                height: 120,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.bottomCenter,
-                    end: Alignment.topCenter,
-                    colors: [Colors.black87.withAlpha(100), Colors.transparent],
-                  ),
-                ),
+          if (videoController != null)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: FeedVideoProgressBar(
+                controller: videoController!,
+                onSeekStart: (_) => _userInteracted = true,
+                onSeekEnd: (d) => videoController?.videoPlayerController?.seekTo(d),
               ),
             ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: FutureBuilder(
-              future: videoController?.videoPlayerController?.position,
-              builder: (context, snapshot) {
-                final position = snapshot.data;
-                return ProgressBar(
-                  controller: _progressController,
-                  progress: position ?? Duration.zero,
-                  total: videoController?.videoPlayerController?.value.duration ?? Duration.zero,
-                  thumbGlowRadius: 0,
-                  collapsedThumbRadius: 0,
-                  collapsedProgressBarColor: AppColors.primary,
-                  expandedBarHeight: 16,
-
-                  onSeek: (duration) {
-                    if (videoController?.videoPlayerController != null) {
-                      videoController?.videoPlayerController?.seekTo(duration);
-                    }
-                  },
-                );
-              },
-            ),
-          ),
         ],
       ),
     );
