@@ -135,6 +135,7 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
+      spacing: 10,
       children: [
         _ActionItem(
           isActive: widget.isLiked,
@@ -142,22 +143,20 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
           icon: widget.isLiked ? AppIcons.likeFilled(size: 32) : AppIcons.like(size: 32),
           onTap: widget.onLike,
         ),
-        const SizedBox(height: 20),
         _ActionItem(
           icon: AppIcons.comment(size: 32),
           label: widget.commentCount,
           onTap: widget.onComment,
         ),
-        const SizedBox(height: 20),
-        _ActionItem(
-          key: _curateKey,
-          // Active if externally marked as curated OR while the popover is visible.
-          isActive: widget.isCurated || _showingPopover,
-          icon: AppIcons.sideCurate(size: 32),
-          label: widget.curateCount,
-          onTap: _togglePopover,
-        ),
-        const SizedBox(height: 20),
+        if (widget.onCurate != null) ...[
+          _ActionItem(
+            key: _curateKey,
+            isActive: widget.isCurated || _showingPopover,
+            icon: AppIcons.sideCurate(size: 32),
+            label: widget.curateCount,
+            onTap: _togglePopover,
+          ),
+        ],
         _ActionItem(
           icon: AppIcons.sideShare(size: 80),
           label: widget.shareCount,

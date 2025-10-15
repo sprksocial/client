@@ -8,7 +8,6 @@ import 'package:sparksocial/src/core/design_system/components/organisms/side_act
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
-import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 
 class SideActionBar extends ConsumerStatefulWidget {
@@ -29,9 +28,7 @@ class SideActionBar extends ConsumerStatefulWidget {
   final bool isLiked;
   final String? profileImageUrl;
   final PostView post;
-  // Add flag to identify image content
   final bool isImage;
-  // Add callback for profile navigation to allow pausing video
   final VoidCallback? onProfilePressed;
 
   @override
@@ -251,59 +248,38 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     context.router.push(CommentsRoute(postUri: currentPost.uri.toString(), isSprk: currentPost.isSprk, post: currentPost));
   }
 
-  Future<void> _handleCurate() async {
-    // For now, this is a placeholder for curate functionality
-    // In the future, this could add the post to a custom feed or collection
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Post curated to feed!')),
-      );
-    }
-  }
+  // Future<void> _handleCurate() async {
+  //   // For now, this is a placeholder for curate functionality
+  //   // In the future, this could add the post to a custom feed or collection
+  //   if (mounted) {
+  //     ScaffoldMessenger.of(context).showSnackBar(
+  //       const SnackBar(content: Text('Post curated to feed!')),
+  //     );
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Feed>>(
-      future: GetIt.I<SettingsRepository>().getFeeds(),
-      builder: (context, snapshot) {
-        final feeds = snapshot.data ?? [];
-        final curateDestinations = feeds
-            .map(
-              (feed) => CurateDestination(
-                feed.name,
-                onSelected: () {
-                  // Handle adding post to this feed
-                  // For now, just show a message
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Post curated to ${feed.name}!')),
-                    );
-                  }
-                },
-              ),
-            )
-            .toList();
+    // Curation disabled: do not build curate destinations from feeds
 
-        final currentPost = _currentPost ?? widget.post;
-        final likeCount = (int.tryParse(widget.likeCount) ?? 0) + (_isLiked ? 1 : 0);
-        final commentCount = currentPost.replyCount ?? int.tryParse(widget.commentCount) ?? 0;
-        final repostCount = currentPost.repostCount ?? int.tryParse(widget.shareCount) ?? 0;
-        final isCurated = currentPost.viewer?.repost != null;
+    final currentPost = _currentPost ?? widget.post;
+    final likeCount = (int.tryParse(widget.likeCount) ?? 0) + (_isLiked ? 1 : 0);
+    final commentCount = currentPost.replyCount ?? int.tryParse(widget.commentCount) ?? 0;
+    // final repostCount = currentPost.repostCount ?? int.tryParse(widget.shareCount) ?? 0; // Curation disabled
+    // final isCurated = currentPost.viewer?.repost != null; // Curation disabled
 
-        return SparkSideActionBar(
-          onLike: _handleLike,
-          onComment: _handleCommentPressed,
-          onCurate: _handleCurate,
-          onShare: widget.isImage ? null : _handleShare,
-          likeCount: likeCount.toString(),
-          commentCount: commentCount.toString(),
-          curateCount: repostCount.toString(),
-          shareCount: widget.shareCount,
-          isLiked: _isLiked,
-          isCurated: isCurated,
-          curateDestinations: curateDestinations,
-        );
-      },
+    return SparkSideActionBar(
+      onLike: _handleLike,
+      onComment: _handleCommentPressed,
+      // onCurate: _handleCurate, // Curation disabled
+      onShare: widget.isImage ? null : _handleShare,
+      likeCount: likeCount.toString(),
+      commentCount: commentCount.toString(),
+      // curateCount: repostCount.toString(), // Curation disabled
+      shareCount: widget.shareCount,
+      isLiked: _isLiked,
+      // isCurated: isCurated, // Curation disabled
+      // curateDestinations: curateDestinations, // Curation disabled
     );
   }
 }
