@@ -63,45 +63,27 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
             },
           ),
         ),
-        // Gradient overlay at the bottom to improve text readability
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: IgnorePointer(
-            child: Container(
-              height: 120,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [Colors.black87.withAlpha(100), Colors.transparent],
-                ),
-              ),
-            ),
-          ),
-        ),
-
-        Positioned(
-          bottom: 10,
-          left: 0,
-          right: 0,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ...List.generate(
-                widget.imageUrls.length,
-                (index) => Container(
-                  width: 8,
-                  height: 8,
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: currentIndex == index ? Colors.white : Colors.white.withAlpha(128),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Padding(
+            padding: EdgeInsets.only(bottom: safeBottom),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ...List.generate(
+                  widget.imageUrls.length,
+                  (index) => Container(
+                    width: 8,
+                    height: 8,
+                    margin: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: currentIndex == index ? Colors.white : Colors.white.withAlpha(128),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ],

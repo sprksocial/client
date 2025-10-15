@@ -178,7 +178,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                           bottom: 16,
                           child: IgnorePointer(
                             child: Container(
-                              height: 120, // covers the area behind the InfoBar
+                              height: 80, // covers the area behind the InfoBar
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
                                   begin: Alignment.bottomCenter,
