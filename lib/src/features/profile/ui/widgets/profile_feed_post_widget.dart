@@ -194,6 +194,25 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                     _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                   },
 
+                  // Gradient overlay at the bottom to improve text readability
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 16,
+                    child: IgnorePointer(
+                      child: Container(
+                        height: 80, // covers the area behind the InfoBar
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [Colors.black87.withAlpha(170), Colors.transparent],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
                   // Side action bar
                   Positioned(
                     bottom: 4,
@@ -222,6 +241,8 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                         final informLabels = snapshot.data ?? [];
                         return InfoBar(
                           username: post.author.handle,
+                          displayName: post.author.displayName ?? post.author.handle,
+                          avatarUrl: post.author.avatar?.toString(),
                           description: post.record.text ?? '',
                           hashtags: post.record.hashtags,
                           informLabels: informLabels,

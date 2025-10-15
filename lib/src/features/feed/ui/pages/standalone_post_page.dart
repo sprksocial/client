@@ -219,6 +219,8 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                               final informLabels = snapshot.data ?? [];
                               return InfoBar(
                                 username: postData.author.handle,
+                                displayName: postData.author.displayName ?? postData.author.handle,
+                                avatarUrl: postData.author.avatar?.toString(),
                                 description: postData.record.text ?? '',
                                 hashtags: postData.record.hashtags,
                                 informLabels: informLabels,

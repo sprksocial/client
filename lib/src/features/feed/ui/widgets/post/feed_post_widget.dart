@@ -248,6 +248,25 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                     },
                   ),
 
+                  // Gradient overlay at the bottom to improve text readability
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 16 + MediaQuery.of(context).padding.bottom,
+                    child: IgnorePointer(
+                      child: Container(
+                        height: 120, // covers the area behind the InfoBar
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [Colors.black87.withAlpha(170), Colors.transparent],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
                   Positioned(
                     bottom: 16 + MediaQuery.of(context).padding.bottom,
                     right: 8,
@@ -277,6 +296,8 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                             final informLabels = snapshot.data ?? [];
                             return InfoBar(
                               username: postData.author.handle,
+                              displayName: postData.author.displayName ?? postData.author.handle,
+                              avatarUrl: postData.author.avatar?.toString(),
                               description: postData.record.text ?? '',
                               hashtags: postData.record.hashtags,
                               informLabels: informLabels,

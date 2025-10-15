@@ -4,8 +4,8 @@ import 'package:better_player_plus/better_player_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_progress_bar.dart';
@@ -193,11 +193,11 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
               animation: _bounceAnimation,
               builder: (context, child) {
                 return Transform.scale(
-                  scale: isPlaying ? 1.0 : _bounceAnimation.value,
-                  child: Icon(
-                    isPlaying ? Icons.pause : Icons.play_arrow,
-                    size: 50,
-                    color: isPlaying ? Colors.transparent : AppColors.white,
+                  scale: isPlaying ? 0.0 : _bounceAnimation.value,
+                  child: SizedBox(
+                    width: 50,
+                    height: 50,
+                    child: AppIcons.play(),
                   ),
                 );
               },
