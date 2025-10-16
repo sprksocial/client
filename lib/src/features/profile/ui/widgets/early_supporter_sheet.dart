@@ -26,10 +26,11 @@ class EarlySupporterSheet extends StatelessWidget {
             decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2)),
           ),
           SvgPicture.asset(
-            'assets/images/match.svg',
+            'images/match.svg',
             height: 48,
             width: 48,
             colorFilter: const ColorFilter.mode(AppColors.primary, BlendMode.srcIn),
+            package: 'assets',
           ),
           const SizedBox(height: 16),
           const Text(
