@@ -17,6 +17,7 @@ dependencies:
     path: ../fonts
   assets:
     path: ../assets
+  flutter_riverpod: ^2.6.1
 
 dev_dependencies:
   flutter_test:
