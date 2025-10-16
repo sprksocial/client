@@ -27,4 +27,5 @@ export 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page
 export 'package:sparksocial/src/features/splash/ui/pages/splash_page.dart';
 export 'package:sparksocial/src/features/stories/ui/pages/all_stories_page.dart';
 export 'package:sparksocial/src/features/stories/ui/pages/author_stories_page.dart';
+export 'package:sparksocial/src/features/stories/ui/pages/story_manager_page.dart';
 export 'package:sparksocial/src/features/stories/ui/pages/story_page.dart';

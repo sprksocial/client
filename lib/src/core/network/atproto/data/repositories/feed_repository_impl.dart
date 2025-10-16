@@ -895,25 +895,31 @@ class FeedRepositoryImpl implements FeedRepository {
 
   @override
   Future<StrongRef> postStory(Embed embed, {List<SelfLabel>? selfLabels, List<String>? tags}) {
+    final startedAt = DateTime.now();
+    _logger.d('Posting story (embed=${embed.runtimeType}, tags=${tags?.length ?? 0})');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final record = StoryRecord(createdAt: DateTime.now(), media: embed, selfLabels: selfLabels, tags: tags);
+      final record = StoryRecord(createdAt: DateTime.now(), media: embed, tags: tags);
+      try {
+        final response = await _client.authRepository.atproto!.repo.createRecord(
+          collection: NSID.parse('so.sprk.feed.story'),
+          record: record.toJson(),
+        );
 
-      final response = await _client.authRepository.atproto!.repo.createRecord(
-        collection: NSID.parse('so.sprk.feed.story'),
-        record: record.toJson(),
-      );
-
-      if (response.status == HttpStatus.ok) {
-        _logger.i('Story posted successfully: ${response.data.uri}');
-        return response.data;
-      } else {
-        _logger.e('Failed to post story: ${response.status} ${response.data}');
-        throw Exception('Failed to post story: ${response.status} ${response.data}');
+        if (response.status == HttpStatus.ok) {
+          _logger.i('Story posted in ${DateTime.now().difference(startedAt).inMilliseconds}ms uri=${response.data.uri}');
+          return response.data;
+        } else {
+          _logger.e('Failed to post story: status=${response.status}');
+          throw Exception('Failed to post story: ${response.status} ${response.data}');
+        }
+      } catch (e, s) {
+        _logger.e('Exception posting story: $e', error: e, stackTrace: s);
+        rethrow;
       }
     });
   }

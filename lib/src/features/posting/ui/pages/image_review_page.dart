@@ -112,7 +112,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       _isPosting = true;
     });
     try {
-      final crosspostEnabled = ref.read(settingsProvider).postToBskyEnabled;
+      final crosspostEnabled = widget.storyMode ? false : ref.read(settingsProvider).postToBskyEnabled;
       final description = _descriptionController.text;
       StrongRef result;
       if (widget.storyMode) {
@@ -123,13 +123,14 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
         if (uploadedImage.isEmpty) {
           throw Exception('No images uploaded');
         }
-        result = ref
-            .read(
-              postStoryProvider(
-                Embed.image(images: uploadedImage),
-              ),
-            )
-            .value!;
+        final storyProvider = postStoryProvider(
+          Embed.image(images: uploadedImage),
+        );
+        final asyncResult = await ref.read(storyProvider.future);
+        if (asyncResult == null) {
+          throw Exception('Story post returned null StrongRef');
+        }
+        result = asyncResult;
       } else {
         // Post as a regular image post
         result = await _feedRepository.postImages(description, _imageFiles, _altTexts, crosspostToBsky: crosspostEnabled);

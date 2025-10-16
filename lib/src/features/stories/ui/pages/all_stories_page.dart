@@ -10,10 +10,12 @@ class AllStoriesPage extends StatefulWidget {
     required this.storiesByAuthor,
     super.key,
     this.initialAuthorIndex = 0,
+    this.initialStoryIndex,
   });
 
   final Map<ProfileViewBasic, List<StoryView>> storiesByAuthor;
   final int initialAuthorIndex;
+  final int? initialStoryIndex;
 
   @override
   State<AllStoriesPage> createState() => _AllStoriesPageState();
@@ -51,6 +53,7 @@ class _AllStoriesPageState extends State<AllStoriesPage> {
             return AuthorStoriesPage(
               author: entry.key,
               stories: entry.value,
+              initialStoryIndex: index == _currentAuthorIndex ? (widget.initialStoryIndex ?? 0) : 0,
               onPreviousAuthor: index > 0
                   ? () => _pageController.previousPage(
                       duration: const Duration(milliseconds: 250),

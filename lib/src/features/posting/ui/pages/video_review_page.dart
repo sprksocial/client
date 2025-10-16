@@ -70,7 +70,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
 
     try {
       final description = _descriptionController.text;
-      final crosspostEnabled = ref.read(settingsProvider).postToBskyEnabled;
+      final crosspostEnabled = widget.storyMode ? false : ref.read(settingsProvider).postToBskyEnabled;
 
       // Process and post the video with the video upload provider
       final postRef = await ref.read(
@@ -292,38 +292,38 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                         },
                       ),
                       const SizedBox(height: 20),
-                      // Bluesky Cross-posting Switch
-                      Consumer(
-                        builder: (context, ref, _) {
-                          final settings = ref.watch(settingsProvider);
-                          return Column(
-                            children: [
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surface,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: ListTile(
-                                  title: Text(
-                                    'Post to Bluesky',
-                                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                      if (!widget.storyMode)
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final settings = ref.watch(settingsProvider);
+                            return Column(
+                              children: [
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context).colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(8),
                                   ),
-                                  trailing: Switch(
-                                    value: settings.postToBskyEnabled,
-                                    onChanged: (bool value) {
-                                      ref.read(settingsProvider.notifier).setPostToBsky(value);
+                                  child: ListTile(
+                                    title: Text(
+                                      'Post to Bluesky',
+                                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                                    ),
+                                    trailing: Switch(
+                                      value: settings.postToBskyEnabled,
+                                      onChanged: (bool value) {
+                                        ref.read(settingsProvider.notifier).setPostToBsky(value);
+                                      },
+                                      activeColor: Theme.of(context).colorScheme.primary,
+                                    ),
+                                    onTap: () {
+                                      ref.read(settingsProvider.notifier).setPostToBsky(!settings.postToBskyEnabled);
                                     },
-                                    activeColor: Theme.of(context).colorScheme.primary,
                                   ),
-                                  onTap: () {
-                                    ref.read(settingsProvider.notifier).setPostToBsky(!settings.postToBskyEnabled);
-                                  },
                                 ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
+                              ],
+                            );
+                          },
+                        ),
                     ],
                   ),
                 ),

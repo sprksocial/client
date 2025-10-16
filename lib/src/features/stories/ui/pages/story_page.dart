@@ -125,10 +125,24 @@ class _StoryPageState extends ConsumerState<StoryPage> with TickerProviderStateM
 
     if (_isVideoStory(widget.story)) {
       if (_videoController != null && _isVideoInitialized) {
-        mediaContent = AspectRatio(
-          aspectRatio: _videoController!.value.aspectRatio,
-          child: VideoPlayer(_videoController!),
-        );
+        if (_videoController!.value.isInitialized) {
+          final size = _videoController!.value.size;
+          mediaContent = Container(
+            color: Colors.black,
+            alignment: Alignment.center,
+            child: FittedBox(
+              child: SizedBox(
+                width: (size.width > 0 ? size.width : 1280),
+                height: (size.height > 0 ? size.height : 720),
+                child: VideoPlayer(_videoController!),
+              ),
+            ),
+          );
+        } else {
+          mediaContent = const Center(
+            child: Icon(Icons.videocam_off, size: 48, color: Colors.white),
+          );
+        }
       } else {
         mediaContent = const Center(child: CircularProgressIndicator());
       }
