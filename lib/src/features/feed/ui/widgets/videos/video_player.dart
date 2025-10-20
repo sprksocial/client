@@ -175,20 +175,43 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
       }
     });
 
-    return GestureDetector(
-      onTap: () {
-        _userInteracted = true;
-        if (isPlaying) {
-          videoController?.pause();
-        } else {
-          videoController?.play();
-        }
-      },
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Positioned.fill(child: BetterPlayer(controller: videoController!)),
-          Center(
+    final videoAspectRatio = videoController?.videoPlayerController?.value.aspectRatio;
+    final videoSize = videoController?.videoPlayerController?.value.size;
+    
+    final shouldFillScreen = videoAspectRatio != null && videoAspectRatio > 0.5 && videoAspectRatio < 0.7;
+    final fitMode = shouldFillScreen ? BoxFit.cover : BoxFit.contain;
+
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        Positioned.fill(
+          child: videoSize != null && videoSize.width > 0 && videoSize.height > 0
+              ? FittedBox(
+                  fit: fitMode,
+                  child: SizedBox(
+                    width: videoSize.width,
+                    height: videoSize.height,
+                    child: BetterPlayer(controller: videoController!),
+                  ),
+                )
+              : BetterPlayer(controller: videoController!),
+        ),
+        Positioned.fill(
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              _userInteracted = true;
+              if (isPlaying) {
+                videoController?.pause();
+              } else {
+                videoController?.play();
+              }
+            },
+            child: Container(color: Colors.transparent),
+          ),
+        ),
+        Center(
+          child: IgnorePointer(
             child: AnimatedBuilder(
               animation: _bounceAnimation,
               builder: (context, child) {
@@ -203,19 +226,19 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
               },
             ),
           ),
-          if (videoController != null)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: FeedVideoProgressBar(
-                controller: videoController!,
-                onSeekStart: (_) => _userInteracted = true,
-                onSeekEnd: (d) => videoController?.videoPlayerController?.seekTo(d),
-              ),
+        ),
+        if (videoController != null)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: FeedVideoProgressBar(
+              controller: videoController!,
+              onSeekStart: (_) => _userInteracted = true,
+              onSeekEnd: (d) => videoController?.videoPlayerController?.seekTo(d),
             ),
-        ],
-      ),
+          ),
+      ],
     );
   }
 }

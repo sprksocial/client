@@ -252,10 +252,10 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                   Positioned(
                     left: 0,
                     right: 0,
-                    bottom: 16 + MediaQuery.of(context).padding.bottom,
+                    bottom: 0,
                     child: IgnorePointer(
                       child: Container(
-                        height: 120, // covers the area behind the InfoBar
+                        height: 200 + MediaQuery.of(context).padding.bottom,
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             begin: Alignment.bottomCenter,
