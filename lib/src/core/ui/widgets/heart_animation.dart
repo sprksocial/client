@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 
 class HeartAnimation extends StatefulWidget {
   const HeartAnimation({
@@ -7,11 +8,13 @@ class HeartAnimation extends StatefulWidget {
     super.key,
     this.duration = const Duration(milliseconds: 1000),
     this.onEnd,
+    this.bottomOffset = 0,
   });
   final bool isAnimating;
   final Duration duration;
   final VoidCallback? onEnd;
   final Widget child;
+  final double bottomOffset;
 
   @override
   State<HeartAnimation> createState() => _HeartAnimationState();
@@ -29,7 +32,7 @@ class _HeartAnimationState extends State<HeartAnimation> with TickerProviderStat
 
     _scaleAnimation = Tween<double>(begin: 0, end: 1.4).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
 
-    _opacityAnimation = Tween<double>(begin: 0.8, end: 0).animate(
+    _opacityAnimation = Tween<double>(begin: 1.0, end: 0).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.5, 1, curve: Curves.easeOut),
@@ -67,6 +70,7 @@ class _HeartAnimationState extends State<HeartAnimation> with TickerProviderStat
         widget.child,
         if (widget.isAnimating)
           Positioned.fill(
+            bottom: widget.bottomOffset,
             child: Center(
               child: AnimatedBuilder(
                 animation: _controller,
@@ -75,12 +79,7 @@ class _HeartAnimationState extends State<HeartAnimation> with TickerProviderStat
                     scale: _scaleAnimation.value,
                     child: Opacity(
                       opacity: _opacityAnimation.value,
-                      child: const Icon(
-                        Icons.favorite,
-                        color: Colors.red,
-                        size: 100,
-                        shadows: [Shadow(blurRadius: 10, color: Colors.red)],
-                      ),
+                      child: AppIcons.likeFilled(size: 100),
                     ),
                   );
                 },

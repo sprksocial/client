@@ -158,7 +158,7 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
           ),
         ],
         _ActionItem(
-          icon: AppIcons.sideShare(size: 80),
+          icon: AppIcons.share(size: 32),
           label: widget.shareCount,
           onTap: widget.onShare,
         ),

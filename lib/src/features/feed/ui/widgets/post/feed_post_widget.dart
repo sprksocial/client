@@ -197,6 +197,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
 
           final mainContent = HeartAnimation(
             isAnimating: _isAnimatingHeart,
+            bottomOffset: MediaQuery.of(context).padding.bottom,
             onEnd: () {
               setState(() {
                 _isAnimatingHeart = false;
