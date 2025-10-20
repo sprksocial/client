@@ -30,7 +30,7 @@ class FeedTag extends StatelessWidget {
           filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
           child: Container(
             height: 30,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
             decoration: BoxDecoration(
               color: Colors.white.withAlpha(50),
               borderRadius: BorderRadius.circular(9),
