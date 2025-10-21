@@ -32,7 +32,7 @@ class _HeartAnimationState extends State<HeartAnimation> with TickerProviderStat
 
     _scaleAnimation = Tween<double>(begin: 0, end: 1.4).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
 
-    _opacityAnimation = Tween<double>(begin: 1.0, end: 0).animate(
+    _opacityAnimation = Tween<double>(begin: 1, end: 0).animate(
       CurvedAnimation(
         parent: _controller,
         curve: const Interval(0.5, 1, curve: Curves.easeOut),

@@ -313,7 +313,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                                       onChanged: (bool value) {
                                         ref.read(settingsProvider.notifier).setPostToBsky(value);
                                       },
-                                      activeColor: Theme.of(context).colorScheme.primary,
+                                      activeTrackColor: Theme.of(context).colorScheme.primary,
                                     ),
                                     onTap: () {
                                       ref.read(settingsProvider.notifier).setPostToBsky(!settings.postToBskyEnabled);

@@ -100,19 +100,26 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (final reason in ModerationReasonType.values)
-              _ReasonTile(
-                reason: reason,
-                selectedReason: _selectedReason,
-                reasonDescription: _reasonDescriptions[reason] ?? {'name': reason.value, 'description': ''},
-                onChanged: (value) {
-                  if (value != null) {
-                    setState(() {
-                      _selectedReason = value;
-                    });
-                  }
-                },
+            RadioGroup<ModerationReasonType>(
+              groupValue: _selectedReason,
+              onChanged: (value) {
+                if (value != null) {
+                  setState(() {
+                    _selectedReason = value;
+                  });
+                }
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final reason in ModerationReasonType.values)
+                    _ReasonTile(
+                      reason: reason,
+                      reasonDescription: _reasonDescriptions[reason] ?? {'name': reason.value, 'description': ''},
+                    ),
+                ],
               ),
+            ),
 
             const SizedBox(height: 8),
             TextField(
@@ -168,14 +175,10 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
 class _ReasonTile extends StatelessWidget {
   const _ReasonTile({
     required this.reason,
-    required this.selectedReason,
     required this.reasonDescription,
-    required this.onChanged,
   });
   final ModerationReasonType reason;
-  final ModerationReasonType selectedReason;
   final Map<String, String> reasonDescription;
-  final ValueChanged<ModerationReasonType?> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -191,12 +194,15 @@ class _ReasonTile extends StatelessWidget {
       ),
       subtitle: Text(description, style: theme.textTheme.bodySmall?.copyWith(color: textColor.withAlpha(179), fontSize: 10)),
       value: reason,
-      groupValue: selectedReason,
-      activeColor: theme.colorScheme.primary,
+      fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+        if (states.contains(WidgetState.selected)) {
+          return theme.colorScheme.primary;
+        }
+        return theme.colorScheme.onSurface.withAlpha(150);
+      }),
       contentPadding: const EdgeInsets.symmetric(horizontal: 4),
       dense: true,
       visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
-      onChanged: onChanged,
     );
   }
 }
