@@ -191,6 +191,8 @@ class _ReasonTile extends StatelessWidget {
       ),
       subtitle: Text(description, style: theme.textTheme.bodySmall?.copyWith(color: textColor.withAlpha(179), fontSize: 10)),
       value: reason,
+      // ignore: deprecated_member_use
+      groupValue: selectedReason,
       fillColor: WidgetStateProperty.resolveWith<Color>((states) {
         if (states.contains(WidgetState.selected)) {
           return theme.colorScheme.primary;
@@ -200,6 +202,8 @@ class _ReasonTile extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(horizontal: 4),
       dense: true,
       visualDensity: const VisualDensity(horizontal: -4, vertical: -4),
+      // ignore: deprecated_member_use
+      onChanged: onChanged,
     );
   }
 }
