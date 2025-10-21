@@ -100,26 +100,19 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            RadioGroup<ModerationReasonType>(
-              groupValue: _selectedReason,
-              onChanged: (value) {
-                if (value != null) {
-                  setState(() {
-                    _selectedReason = value;
-                  });
-                }
-              },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (final reason in ModerationReasonType.values)
-                    _ReasonTile(
-                      reason: reason,
-                      reasonDescription: _reasonDescriptions[reason] ?? {'name': reason.value, 'description': ''},
-                    ),
-                ],
+            for (final reason in ModerationReasonType.values)
+              _ReasonTile(
+                reason: reason,
+                selectedReason: _selectedReason,
+                reasonDescription: _reasonDescriptions[reason] ?? {'name': reason.value, 'description': ''},
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() {
+                      _selectedReason = value;
+                    });
+                  }
+                },
               ),
-            ),
 
             const SizedBox(height: 8),
             TextField(
@@ -175,10 +168,14 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
 class _ReasonTile extends StatelessWidget {
   const _ReasonTile({
     required this.reason,
+    required this.selectedReason,
     required this.reasonDescription,
+    required this.onChanged,
   });
   final ModerationReasonType reason;
+  final ModerationReasonType selectedReason;
   final Map<String, String> reasonDescription;
+  final ValueChanged<ModerationReasonType?> onChanged;
 
   @override
   Widget build(BuildContext context) {
