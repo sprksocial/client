@@ -241,10 +241,12 @@ class _ProfileGridTileState extends State<ProfileGridTile> {
             top: 8,
             right: 8,
             child: Container(
+              height: 20,
+              width: 20,
               padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: Colors.black.withAlpha(150),
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(15),
               ),
               child: SvgPicture.asset(
                 widget.postSource == 'bsky' ? 'images/bsky.svg' : 'images/sprk.svg',
