@@ -3,8 +3,8 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
-import 'package:sparksocial/src/core/widgets/user_avatar.dart';
 
 class PostCard extends StatefulWidget {
   const PostCard({required this.post, super.key, this.onTap});
@@ -102,9 +102,7 @@ class _PostCardState extends State<PostCard> {
                   if (widget.post.record.text?.isNotEmpty ?? false)
                     Text(
                       widget.post.record.text!,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                      // style: theme.textTheme.bodySmall,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
 

@@ -7,8 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/core/widgets/user_avatar.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/messages/providers/conversation_provider.dart';
 import 'package:sparksocial/src/features/messages/providers/polling_timer.dart';
@@ -111,7 +111,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
           child: Row(
             children: [
               UserAvatar(
-                imageUrl: widget.otherUserAvatar,
+                imageUrl: widget.otherUserAvatar ?? '',
                 username: widget.otherUserHandle ?? 'User',
                 size: 36,
                 backgroundColor: getAvatarColor((widget.otherUserHandle ?? 'User').hashCode),

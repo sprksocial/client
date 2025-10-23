@@ -1,0 +1,17 @@
+name: assets
+description: >
+  Holds the assets for the app. The assets are included in a
+  separate package, to be able to share it with Widgetbook app.
+
+version: 0.0.0
+publish_to: none
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+resolution: workspace
+
+flutter:
+  assets:
+    - icons/
+    - images/
+    - branding/

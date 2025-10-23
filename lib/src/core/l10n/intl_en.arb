@@ -1,0 +1,39 @@
+{
+  "@@locale": "en",
+  "@@context": "General localization strings",
+  
+  "buttonCancel": "Cancel",
+  "@buttonCancel": {
+    "description": "Cancel button text"
+  },
+  
+  "buttonConfirm": "Confirm",
+  "@buttonConfirm": {
+    "description": "Confirm button text"
+  },
+  
+  "buttonSave": "Save",
+  "@buttonSave": {
+    "description": "Save button text"
+  },
+  
+  "inputErrorRequired": "This field is required",
+  "@inputErrorRequired": {
+    "description": "Error message for required fields"
+  },
+  
+  "inputErrorEmail": "Please enter a valid email address",
+  "@inputErrorEmail": {
+    "description": "Error message for invalid email"
+  },
+  
+  "loading": "Loading...",
+  "@loading": {
+    "description": "Loading state text"
+  },
+  
+  "searchPlaceholder": "Search...",
+  "@searchPlaceholder": {
+    "description": "Placeholder text for search inputs"
+  }
+}

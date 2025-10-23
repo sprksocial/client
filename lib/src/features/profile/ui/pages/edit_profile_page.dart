@@ -4,7 +4,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/widgets/custom_text_field.dart';
+import 'package:sparksocial/src/core/ui/widgets/custom_text_field.dart';
 import 'package:sparksocial/src/features/profile/providers/edit_profile_provider.dart';
 
 /// Edit profile page that allows users to update their profile information

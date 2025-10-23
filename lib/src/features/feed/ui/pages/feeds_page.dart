@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
 import 'package:sparksocial/src/features/feed/ui/pages/feed_page.dart';
@@ -104,8 +104,6 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
     }
 
     return Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: FeedsBar(pageController: _pageController!),
       backgroundColor: AppColors.black,
       body: Stack(
         children: [
@@ -134,6 +132,12 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
               }
               return const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
             },
+          ),
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: FeedsBar(pageController: _pageController!),
           ),
         ],
       ),

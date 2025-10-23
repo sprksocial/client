@@ -1,13 +1,52 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:imgly_editor/model/editor_result.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/pages.dart';
+import 'package:sparksocial/src/core/utils/logging/log_service.dart';
+import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/profile/ui/pages/user_list_page.dart';
 
 part 'app_router.gr.dart';
+
+class AuthGuard extends AutoRouteGuard {
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('AuthGuard');
+
+  @override
+  Future<void> onNavigation(NavigationResolver resolver, StackRouter router) async {
+    final authRepository = GetIt.instance<AuthRepository>();
+    final onboardingRepository = GetIt.instance<OnboardingRepository>();
+
+    try {
+      final hasSpark = await onboardingRepository.hasSparkProfile();
+
+      if (!hasSpark) {
+        _logger.d('No Spark profile found, redirecting to register');
+        resolver.redirectUntil(const RegisterRoute());
+        return;
+      }
+
+      final isSessionValid = await authRepository.validateSession();
+
+      if (!isSessionValid) {
+        _logger.d('Session invalid, redirecting to login');
+        resolver.redirectUntil(const LoginRoute());
+        return;
+      }
+
+      _logger.d('Authentication valid, continuing to route');
+      resolver.next();
+    } catch (e) {
+      _logger.e('Error during auth check', error: e);
+      resolver.redirectUntil(const RegisterRoute());
+    }
+  }
+}
 
 /// Router configuration for the application
 ///
@@ -19,23 +58,21 @@ class AppRouter extends RootStackRouter {
 
   @override
   List<AutoRoute> get routes => [
-    // Initial route
-    AutoRoute(page: SplashRoute.page, path: '/splash', initial: true),
-
-    // Main screens
+    // Main screens (protected by auth)
     AutoRoute(
       page: MainRoute.page,
-      path: '/main',
+      path: '/',
+      initial: true,
+      guards: [AuthGuard()],
       children: [
         AutoRoute(page: FeedsRoute.page, path: 'feeds'),
         AutoRoute(page: SearchRoute.page, path: 'search'),
         AutoRoute(page: EmptyRoute.page, path: 'create'),
         AutoRoute(page: MessagesRoute.page, path: 'messages'),
         AutoRoute(
-          page: UserProfileRoute.page, // for the current user
+          page: UserProfileRoute.page,
           path: 'profile',
           children: [
-            AutoRoute(page: ProfilePhotosRoute.page, path: 'photos'),
             AutoRoute(page: ProfileVideosRoute.page, path: 'videos'),
           ],
         ),
@@ -74,7 +111,6 @@ class AppRouter extends RootStackRouter {
       path: '/profile/:did',
       children: [
         AutoRoute(page: ProfileVideosRoute.page, path: 'videos', initial: true),
-        AutoRoute(page: ProfilePhotosRoute.page, path: 'photos'),
       ],
     ),
     AutoRoute(page: UserListRoute.page, path: '/profile/:did/users'),

@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:sparksocial/src/features/profile/providers/user_list_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/user_list_view.dart';
 
@@ -46,6 +47,7 @@ class _UserListPageState extends ConsumerState<UserListPage> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: const AppLeadingButton(tooltip: 'Back'),
         title: Text(title),
       ),
       body: RefreshIndicator(

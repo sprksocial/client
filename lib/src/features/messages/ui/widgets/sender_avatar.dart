@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/core/widgets/user_avatar.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/messages/ui/pages/chat_page.dart';
 
 class SenderAvatar extends StatelessWidget {
@@ -21,7 +21,7 @@ class SenderAvatar extends StatelessWidget {
     }
 
     return UserAvatar(
-      imageUrl: otherUserAvatar,
+      imageUrl: otherUserAvatar ?? '',
       username: otherUserHandle ?? 'User',
       size: 32,
       backgroundColor: getAvatarColor((otherUserHandle ?? 'User').hashCode),

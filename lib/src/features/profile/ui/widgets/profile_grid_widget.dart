@@ -1,21 +1,26 @@
-import 'dart:ui';
-
 import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sparksocial/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 
 class ProfileGridWidget extends ConsumerStatefulWidget {
-  const ProfileGridWidget({required this.profileUri, required this.videosOnly, super.key});
+  const ProfileGridWidget({
+    required this.profileUri,
+    required this.videosOnly,
+    this.both = false,
+    super.key,
+  });
   final AtUri profileUri;
+  // When true, ignore videosOnly and show both images and videos
+  final bool both;
+  // When false and both is false: images only; when true and both is false: videos only
   final bool videosOnly;
 
   @override
@@ -47,23 +52,36 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // Watch once and filter locally based on flags
     final feedState = ref.watch(profileFeedProvider(widget.profileUri, widget.videosOnly));
 
     return feedState.when(
       data: (state) {
-        if (state.loadedPosts.isEmpty) {
+        // Filter posts in client depending on configuration
+        final filteredUris = () {
+          if (widget.both) return state.loadedPosts;
+          if (widget.videosOnly) {
+            return state.loadedPosts.where((u) => state.postTypes[u] ?? true).toList();
+          }
+          // images only
+          return state.loadedPosts.where((u) => state.postTypes[u] == false).toList();
+        }();
+
+        if (filteredUris.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  widget.videosOnly ? FluentIcons.video_24_regular : FluentIcons.image_24_regular,
+                  widget.both
+                      ? FluentIcons.grid_24_regular
+                      : (widget.videosOnly ? FluentIcons.video_24_regular : FluentIcons.image_24_regular),
                   size: 48,
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  widget.videosOnly ? 'No videos yet' : 'No images yet',
+                  widget.both ? 'No posts yet' : (widget.videosOnly ? 'No videos yet' : 'No images yet'),
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
               ],
@@ -73,23 +91,23 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
 
         return GridView.builder(
           controller: scrollController,
-          padding: const EdgeInsets.all(1),
+          padding: const EdgeInsets.all(5),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 4,
-            crossAxisSpacing: 1,
-            mainAxisSpacing: 1,
-            childAspectRatio: 0.6,
+            crossAxisCount: 3,
+            crossAxisSpacing: 5,
+            mainAxisSpacing: 5,
+            childAspectRatio: 9 / 16,
           ),
-          itemCount: state.loadedPosts.length + (state.isEndOfNetwork ? 0 : 1),
+          itemCount: filteredUris.length + (state.isEndOfNetwork ? 0 : 1),
           itemBuilder: (context, index) {
-            if (index >= state.loadedPosts.length) {
+            if (index >= filteredUris.length) {
               return ColoredBox(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
                 child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
               );
             }
 
-            final postUri = state.loadedPosts[index];
+            final postUri = filteredUris[index];
             final postView = state.postViews[postUri];
             final postSource = state.postSources[postUri];
 
@@ -100,7 +118,7 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
             return ProfileGridTile(
               postView: postView,
               postSource: postSource,
-              onTap: () => _onPostTap(postUri),
+              onTap: () => _onPostTapDynamic(postUri),
             );
           },
         );
@@ -127,7 +145,11 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
   void _onPostTap(AtUri postUri) {
     final feedState = ref.read(profileFeedProvider(widget.profileUri, widget.videosOnly));
     feedState.whenData((state) {
-      final postIndex = state.loadedPosts.indexOf(postUri);
+      // Compute index based on the filtered list matching the standalone page behavior
+      final filteredUris = widget.videosOnly
+          ? state.loadedPosts.where((u) => state.postTypes[u] ?? true).toList()
+          : state.loadedPosts.where((u) => state.postTypes[u] == false).toList();
+      final postIndex = filteredUris.indexOf(postUri);
       if (postIndex != -1) {
         context.router.push(
           StandaloneProfileFeedRoute(
@@ -140,6 +162,15 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
         context.router.push(StandalonePostRoute(postUri: postUri.toString()));
       }
     });
+  }
+
+  void _onPostTapDynamic(AtUri postUri) {
+    if (widget.both) {
+      // Open standalone post directly for unified mode
+      context.router.push(StandalonePostRoute(postUri: postUri.toString()));
+      return;
+    }
+    _onPostTap(postUri);
   }
 }
 
@@ -182,57 +213,50 @@ class _ProfileGridTileState extends State<ProfileGridTile> {
   Widget build(BuildContext context) {
     final thumbnailUrl = widget.postView.thumbnailUrl;
 
-    final image = thumbnailUrl.isNotEmpty
-        ? CachedNetworkImage(
-            imageUrl: thumbnailUrl,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => const SizedBox.shrink(),
-            errorWidget: (context, url, error) => ColoredBox(
-              color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              child: const Center(child: Icon(FluentIcons.error_circle_24_regular, size: 20)),
-            ),
-          )
-        : ColoredBox(
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 20)),
-          );
+    // Use like count as a proxy for views, or 0 if not available
+    final viewCount = widget.postView.likeCount ?? 0;
 
-    return GestureDetector(
-      onTap: widget.onTap,
-      child: ColoredBox(
-        color: AppColors.black,
-        child: thumbnailUrl.isNotEmpty
-            ? Stack(
-                fit: StackFit.expand,
-                children: [
-                  if (_shouldBlur)
-                    ImageFiltered(
-                      imageFilter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                      child: image,
-                    )
-                  else
-                    image,
-                  if (widget.postSource != null)
-                    Positioned(
-                      top: 4,
-                      right: 4,
-                      child: Container(
-                        padding: const EdgeInsets.all(4),
-                        decoration: BoxDecoration(color: Colors.black.withAlpha(150), borderRadius: BorderRadius.circular(4)),
-                        child: SvgPicture.asset(
-                          widget.postSource == 'bsky' ? 'assets/images/bsky.svg' : 'assets/images/sprk.svg',
-                          width: 12,
-                          height: 12,
-                        ),
-                      ),
-                    ),
-                ],
-              )
-            : ColoredBox(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 20)),
+    if (thumbnailUrl.isEmpty) {
+      return GestureDetector(
+        onTap: widget.onTap,
+        child: ColoredBox(
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 20)),
+        ),
+      );
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        PostTile(
+          thumbnailUrl: thumbnailUrl,
+          views: viewCount,
+          seen: false,
+          nsfwBlur: _shouldBlur,
+          onTap: widget.onTap,
+        ),
+        if (widget.postSource != null)
+          Positioned(
+            top: 8,
+            right: 8,
+            child: Container(
+              height: 20,
+              width: 20,
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.black.withAlpha(150),
+                borderRadius: BorderRadius.circular(15),
               ),
-      ),
+              child: SvgPicture.asset(
+                widget.postSource == 'bsky' ? 'images/bsky.svg' : 'images/sprk.svg',
+                width: 12,
+                height: 12,
+                package: 'assets',
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

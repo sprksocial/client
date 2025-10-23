@@ -13,7 +13,8 @@ class ProfileVideosPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return ProfileGridWidget(
       profileUri: AtUri.parse('at://$did'),
-      videosOnly: true,
+      videosOnly: false,
+      both: true,
     );
   }
 }

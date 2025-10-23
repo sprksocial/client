@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
-import 'package:sparksocial/src/core/widgets/user_avatar.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
 
 class ConversationListItem extends StatelessWidget {
   const ConversationListItem({

@@ -3,12 +3,17 @@ description: "Spark mobile app"
 publish_to: "none"
 # The number after + should stay fixed, the android workflow will change it on every build
 version: 0.2.0+1
-
 environment:
   sdk: ^3.8.1
+workspace:
+  - widgetbook 
+  - fonts
+  - assets
 
 dependencies:
   flutter:
+    sdk: flutter
+  flutter_localizations:
     sdk: flutter
   flutter_dotenv: ^5.1.0
   cached_network_image: ^3.3.1
@@ -45,8 +50,13 @@ dependencies:
   web_socket_channel: ^3.0.3
   any_link_preview: ^3.0.3
   better_player_plus: ^1.0.8
-  flutter_animated_progress_bar: ^1.0.5
+  intl: ^0.20.2
   video_player: ^2.10.0
+  gradient_borders: ^1.0.1
+  fonts:
+    path: fonts
+  assets:
+    path: assets
 
 dev_dependencies:
   flutter_test:
@@ -78,7 +88,13 @@ flutter_native_splash:
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
-    - assets/images/
-    - assets/branding/
     - .env
+  fonts:
+    - family: Fraunces
+      fonts:
+        - asset: packages/fonts/Fraunces-Variable.ttf
+    - family: SN Pro
+      fonts:
+        - asset: packages/fonts/SNPro-Variable.ttf

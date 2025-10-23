@@ -53,3 +53,4 @@ app.*.map.json
 *.freezed.dart
 *.g.dart
 *.gr.dart
+assets/build

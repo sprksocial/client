@@ -4,8 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:fvp/fvp.dart' as fvp;
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository_impl.dart';
 import 'package:sparksocial/src/core/di/service_locator.dart';
-import 'package:sparksocial/src/core/theme/data/models/app_theme.dart';
+import 'package:sparksocial/src/core/ui/theme/data/models/app_theme.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/core/utils/logging/riverpod_logger.dart';
 import 'package:sparksocial/src/sprk_app.dart';
@@ -29,6 +31,9 @@ void main() async {
   // Setup logging for production/debug
   _setupLogging();
 
+  // Initialize auth repository
+  await _initializeAuth();
+
   // Create a ProviderContainer with the Riverpod logger
   final container = riverpod.ProviderContainer(observers: [SparkRiverpodLogger()]);
   runApp(riverpod.UncontrolledProviderScope(container: container, child: const SprkApp()));
@@ -45,5 +50,23 @@ void _setupLogging() {
   } else {
     logService.setGlobalLogLevel(LogLevel.info);
     logService.appLogger.i('Production logging enabled');
+  }
+}
+
+/// Initialize auth repository and wait for it to be ready
+Future<void> _initializeAuth() async {
+  final logService = sl<LogService>();
+  final logger = logService.getLogger('AppInitialization');
+  
+  try {
+    final authRepository = sl<AuthRepository>();
+    
+    if (authRepository is AuthRepositoryImpl) {
+      logger.d('Waiting for AuthRepository initialization...');
+      await authRepository.initializationComplete;
+      logger.d('AuthRepository initialized successfully');
+    }
+  } catch (e) {
+    logger.e('AuthRepository initialization failed', error: e);
   }
 }
