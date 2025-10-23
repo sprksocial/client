@@ -24,18 +24,18 @@ class AuthGuard extends AutoRouteGuard {
 
     try {
       final hasSpark = await onboardingRepository.hasSparkProfile();
-      
+
       if (!hasSpark) {
         _logger.d('No Spark profile found, redirecting to register');
-        resolver.redirect(const RegisterRoute());
+        resolver.redirectUntil(const RegisterRoute());
         return;
       }
 
       final isSessionValid = await authRepository.validateSession();
-      
+
       if (!isSessionValid) {
         _logger.d('Session invalid, redirecting to login');
-        resolver.redirect(const LoginRoute());
+        resolver.redirectUntil(const LoginRoute());
         return;
       }
 
@@ -43,11 +43,10 @@ class AuthGuard extends AutoRouteGuard {
       resolver.next();
     } catch (e) {
       _logger.e('Error during auth check', error: e);
-      resolver.redirect(const RegisterRoute());
+      resolver.redirectUntil(const RegisterRoute());
     }
   }
 }
-
 
 /// Router configuration for the application
 ///
