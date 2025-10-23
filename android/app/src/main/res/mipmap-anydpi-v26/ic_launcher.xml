@@ -3,7 +3,7 @@
   <background android:drawable="@color/ic_launcher_background"/>
   <foreground>
       <inset
-          android:drawable="@drawable/ic_launcher_foreground"
-          android:inset="16%" />
+          android:drawable="@drawable/sprk_icon"
+          android:inset="27%" />
   </foreground>
 </adaptive-icon>

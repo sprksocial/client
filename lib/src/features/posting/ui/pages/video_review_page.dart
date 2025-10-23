@@ -10,7 +10,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:imgly_editor/imgly_editor.dart';
 import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/widgets/alt_text_editor_dialog.dart';
+import 'package:sparksocial/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/posting/providers/video_upload_provider.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
@@ -313,7 +313,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                                       onChanged: (bool value) {
                                         ref.read(settingsProvider.notifier).setPostToBsky(value);
                                       },
-                                      activeColor: Theme.of(context).colorScheme.primary,
+                                      activeTrackColor: Theme.of(context).colorScheme.primary,
                                     ),
                                     onTap: () {
                                       ref.read(settingsProvider.notifier).setPostToBsky(!settings.postToBskyEnabled);

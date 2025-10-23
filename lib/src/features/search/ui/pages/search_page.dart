@@ -2,6 +2,8 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/design_system/components/molecules/glass_input.dart';
+import 'package:sparksocial/src/core/design_system/templates/explore_page_template.dart';
 import 'package:sparksocial/src/features/search/providers/post_search_provider.dart';
 import 'package:sparksocial/src/features/search/providers/search_provider.dart';
 import 'package:sparksocial/src/features/search/ui/pages/post_results.dart';
@@ -22,13 +24,20 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(_onSearchChanged);
+  }
+
+  @override
   void dispose() {
+    _searchController.removeListener(_onSearchChanged);
     _searchController.dispose();
     super.dispose();
   }
 
-  void _onSearchChanged(String query) {
-    final trimmedQuery = query.trim();
+  void _onSearchChanged() {
+    final trimmedQuery = _searchController.text.trim();
     ref.read(searchProvider.notifier).updateQuery(trimmedQuery);
     ref.read(postSearchProvider.notifier).updateQuery(trimmedQuery);
   }
@@ -36,88 +45,61 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   @override
   Widget build(BuildContext context) {
     final searchState = ref.watch(searchProvider);
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
 
     return DefaultTabController(
       length: 2,
-      child: Scaffold(
-        backgroundColor: colorScheme.surface,
-        body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: _onSearchChanged,
-                  decoration: InputDecoration(
-                    hintText: 'Search users, posts...',
-                    prefixIcon: Icon(FluentIcons.search_24_regular, color: theme.textTheme.bodyMedium?.color),
-                    filled: true,
-                    suffixIcon: _searchController.text.isNotEmpty
-                        ? IconButton(
-                            iconSize: 20,
-                            splashRadius: 20,
-                            onPressed: () {
-                              _searchController.clear();
-                              ref.read(searchProvider.notifier).updateQuery('');
-                              ref.read(postSearchProvider.notifier).updateQuery('');
-                            },
-                            icon: const Icon(FluentIcons.dismiss_24_regular),
-                          )
-                        : null,
-                    fillColor: colorScheme.surfaceContainerLow.withAlpha(50),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: colorScheme.outline),
+      child: ExplorePageTemplate(
+        searchWidget: GlassInput.search(
+          controller: _searchController,
+          hintText: 'Search users, posts...',
+          leadingWidgets: const [
+            Icon(
+              FluentIcons.search_24_regular,
+              size: 20,
+            ),
+          ],
+          actionWidgets: _searchController.text.isNotEmpty
+              ? [
+                  GestureDetector(
+                    onTap: () {
+                      _searchController.clear();
+                      ref.read(searchProvider.notifier).updateQuery('');
+                      ref.read(postSearchProvider.notifier).updateQuery('');
+                    },
+                    child: const Icon(
+                      FluentIcons.dismiss_24_regular,
+                      size: 20,
                     ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                      borderSide: BorderSide(color: colorScheme.outline),
-                    ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   ),
+                ]
+              : null,
+        ),
+        showTabs: searchState.query.isNotEmpty,
+        tabsWidget: const TabBar(
+          tabs: [
+            Tab(text: 'Posts'),
+            Tab(text: 'Users'),
+          ],
+        ),
+        contentWidget: const TabBarView(
+          children: [
+            PostResults(),
+            UserResults(),
+          ],
+        ),
+        emptyStateWidget: RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(storiesByAuthorProvider());
+          },
+          child: const CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(child: StoriesList()),
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Text('Discover new content'),
                 ),
               ),
-              // ==== Stories or Search Results ====
-              if (searchState.query.isEmpty)
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: () async {
-                      // Refresh the stories timeline
-                      ref.invalidate(storiesByAuthorProvider());
-                    },
-                    child: const CustomScrollView(
-                      slivers: [
-                        SliverToBoxAdapter(child: StoriesList()),
-                        SliverFillRemaining(
-                          hasScrollBody: false,
-                          child: Center(
-                            child: Text('Discover new content'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              else ...[
-                const TabBar(
-                  tabs: [
-                    Tab(text: 'Posts'),
-                    Tab(text: 'Users'),
-                  ],
-                ),
-                const Expanded(
-                  child: TabBarView(
-                    children: [
-                      PostResults(),
-                      UserResults(),
-                    ],
-                  ),
-                ),
-              ],
             ],
           ),
         ),

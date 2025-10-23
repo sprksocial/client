@@ -7,10 +7,10 @@ import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dar
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:sparksocial/src/core/ui/widgets/content_warning_overlay.dart';
+import 'package:sparksocial/src/core/ui/widgets/heart_animation.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
-import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
-import 'package:sparksocial/src/core/widgets/heart_animation.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
@@ -30,10 +30,10 @@ class ProfileFeedPostWidget extends ConsumerStatefulWidget {
 
 class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
   bool _isAnimatingHeart = false;
-  final GlobalKey<SideActionBarState> _sideActionBarKey = GlobalKey<SideActionBarState>();
   bool _showWarningOverlay = false;
   bool _shouldBlurContent = false;
   List<String> _warningLabels = [];
+  bool? _overrideIsLiked;
 
   @override
   void initState() {
@@ -99,8 +99,12 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
       // Update cache with the modified post
       await GetIt.instance<SQLCacheInterface>().updatePost(updatedPost);
 
-      // Update SideActionBar state directly
-      _sideActionBarKey.currentState?.updateLikeState(updatedPost);
+      // Drive SideActionBar via props instead of GlobalKey/stateful method
+      if (mounted) {
+        setState(() {
+          _overrideIsLiked = true;
+        });
+      }
     } catch (e) {
       // Handle error silently for better UX
     }
@@ -190,17 +194,35 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                     _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                   },
 
+                  // Gradient overlay at the bottom to improve text readability
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 16,
+                    child: IgnorePointer(
+                      child: Container(
+                        height: 80, // covers the area behind the InfoBar
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [Colors.black87.withAlpha(170), Colors.transparent],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
                   // Side action bar
                   Positioned(
                     bottom: 4,
                     right: 4,
                     child: SideActionBar(
-                      key: _sideActionBarKey,
                       post: post,
                       likeCount: '${post.likeCount ?? 0}',
                       commentCount: '${post.replyCount ?? 0}',
                       shareCount: '${post.repostCount ?? 0}',
-                      isLiked: post.viewer?.like != null,
+                      isLiked: _overrideIsLiked ?? (post.viewer?.like != null),
                       profileImageUrl: post.author.avatar.toString(),
                       isImage: post.embed is EmbedViewImage || post.embed is EmbedViewBskyImages,
                       onProfilePressed: () {
@@ -219,6 +241,8 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                         final informLabels = snapshot.data ?? [];
                         return InfoBar(
                           username: post.author.handle,
+                          displayName: post.author.displayName ?? post.author.handle,
+                          avatarUrl: post.author.avatar?.toString(),
                           description: post.record.text ?? '',
                           hashtags: post.record.hashtags,
                           informLabels: informLabels,

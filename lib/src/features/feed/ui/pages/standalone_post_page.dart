@@ -3,12 +3,13 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
+import 'package:sparksocial/src/core/ui/widgets/content_warning_overlay.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
-import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
 import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
@@ -127,14 +128,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () => context.router.pop(),
-        ),
-      ),
+      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0, leading: const AppLeadingButton()),
       body: SafeArea(
         child: _postFuture == null
             ? const Center(child: CircularProgressIndicator())
@@ -177,9 +171,28 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                           _ => const SizedBox.shrink(),
                         },
 
+                        // Gradient overlay at the bottom to improve text readability
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          bottom: 16,
+                          child: IgnorePointer(
+                            child: Container(
+                              height: 80, // covers the area behind the InfoBar
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.bottomCenter,
+                                  end: Alignment.topCenter,
+                                  colors: [Colors.black87.withAlpha(170), Colors.transparent],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+
                         // Side action bar
                         Positioned(
-                          bottom: 4,
+                          bottom: 20,
                           right: 4,
                           child: SideActionBar(
                             post: postData,
@@ -196,27 +209,8 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                           ),
                         ),
 
-                        // Gradient overlay at the bottom to improve text readability
                         Positioned(
-                          left: 0,
-                          right: 0,
                           bottom: 20,
-                          child: IgnorePointer(
-                            child: Container(
-                              height: 120, // covers the area behind the InfoBar
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.topCenter,
-                                  colors: [Colors.black87.withAlpha(100), Colors.transparent],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        Positioned(
-                          bottom: 32,
                           left: 4,
                           right: 80,
                           child: FutureBuilder<List<String>>(
@@ -225,6 +219,8 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                               final informLabels = snapshot.data ?? [];
                               return InfoBar(
                                 username: postData.author.handle,
+                                displayName: postData.author.displayName ?? postData.author.handle,
+                                avatarUrl: postData.author.avatar?.toString(),
                                 description: postData.record.text ?? '',
                                 hashtags: postData.record.hashtags,
                                 informLabels: informLabels,

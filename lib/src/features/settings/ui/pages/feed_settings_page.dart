@@ -1,6 +1,7 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:sparksocial/src/features/settings/ui/pages/feed_list_page.dart';
 import 'package:sparksocial/src/features/settings/ui/pages/label_settings_page.dart';
 
@@ -29,21 +30,13 @@ class _FeedSettingsPageState extends ConsumerState<FeedSettingsPage> with Single
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final backgroundColor = colorScheme.surface;
-    final textColor = colorScheme.onSurface;
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Feed Settings'),
         centerTitle: true,
-        leading: const AutoLeadingButton(),
-        backgroundColor: backgroundColor,
-        foregroundColor: textColor,
+        leading: const AppLeadingButton(),
         bottom: TabBar(
           controller: _tabController,
-          labelColor: textColor,
-          unselectedLabelColor: textColor.withAlpha(127),
           tabs: const [
             Tab(text: 'Your Feeds'),
             Tab(text: 'Content Labels'),

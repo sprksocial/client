@@ -6,9 +6,9 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
+import 'package:sparksocial/src/core/ui/widgets/image_content.dart';
+import 'package:sparksocial/src/core/ui/widgets/video_content.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/widgets/image_content.dart';
-import 'package:sparksocial/src/core/widgets/video_content.dart';
 import 'package:sparksocial/src/features/messages/ui/widgets/message_bubble.dart';
 import 'package:url_launcher/url_launcher.dart';
 

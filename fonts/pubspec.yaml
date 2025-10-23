@@ -1,0 +1,20 @@
+name: fonts
+description: >
+  Holds the fonts for the app. The fonts are included in a
+  separate package, to be able to share it with Widgetbook app.
+
+version: 0.0.0
+publish_to: none
+
+environment:
+  sdk: ">=3.6.0 <4.0.0"
+resolution: workspace
+
+flutter:
+  fonts:
+    - family: Fraunces
+      fonts:
+        - asset: packages/fonts/Fraunces-Variable.ttf
+    - family: SN Pro
+      fonts:
+        - asset: packages/fonts/SNPro-Variable.ttf

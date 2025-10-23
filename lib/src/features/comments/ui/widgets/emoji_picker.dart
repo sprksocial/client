@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 
 class EmojiPicker extends StatelessWidget {
   const EmojiPicker({required this.onEmojiSelected, required this.isDarkMode, super.key});

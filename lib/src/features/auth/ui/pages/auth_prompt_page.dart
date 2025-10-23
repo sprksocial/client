@@ -3,8 +3,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/theme/data/models/app_theme.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 
 @RoutePage()
 class AuthPromptPage extends StatelessWidget {
@@ -17,13 +16,13 @@ class AuthPromptPage extends StatelessWidget {
     final isDarkMode = brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(context),
+      backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: onClose != null
           ? AppBar(
               leading: IconButton(
                 padding: EdgeInsets.zero,
                 onPressed: onClose,
-                icon: Icon(FluentIcons.dismiss_24_regular, color: AppTheme.getTextColor(context)),
+                icon: Icon(FluentIcons.dismiss_24_regular, color: Theme.of(context).colorScheme.onSurface),
               ),
               backgroundColor: Colors.transparent,
               elevation: 0,
@@ -31,7 +30,9 @@ class AuthPromptPage extends StatelessWidget {
           : null,
       body: Stack(
         children: [
-          Positioned.fill(child: Image.asset('assets/branding/gradient.webp', fit: BoxFit.cover)),
+          Positioned.fill(
+            child: Image.asset('branding/gradient.webp', fit: BoxFit.cover, package: 'assets'),
+          ),
           SafeArea(
             child: Center(
               child: Padding(
@@ -109,7 +110,7 @@ class AuthPromptPage extends StatelessWidget {
                       const SizedBox(height: 24),
                       TextButton(
                         onPressed: onClose,
-                        child: Text('Continue browsing', style: TextStyle(color: AppTheme.getSecondaryTextColor(context))),
+                        child: Text('Continue browsing', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
                       ),
                     ],
                   ],

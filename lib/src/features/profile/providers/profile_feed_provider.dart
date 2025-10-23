@@ -118,17 +118,13 @@ class ProfileFeed extends _$ProfileFeed {
       }
     }
 
-    // Filter by video/non-video type first
-    final typeFilteredPosts = videosOnly
-        ? allPosts.where((uri) => postTypes[uri] ?? true).toList()
-        : allPosts.where((uri) => postTypes[uri] == false).toList();
-
-    // Then filter based on label preferences
-    final filteredPosts = await _filterHiddenPosts(typeFilteredPosts, postViews);
+    // Client-side components decide whether to show videos/images/all.
+    // Here we only apply label-based filtering and return all posts.
+    final filteredPosts = await _filterHiddenPosts(allPosts, postViews);
 
     final isEndOfNetwork =
         (sparkResult.cursor == null && bskyResult.cursor == null) ||
-        (currentState != null && currentState.loadedPosts.length == filteredPosts.length);
+        (currentState != null && currentState.allPosts.length == allPosts.length);
 
     return ProfileFeedState(
       loadedPosts: filteredPosts,

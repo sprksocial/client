@@ -4,8 +4,8 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart'; // Import image_picker
-import 'package:sparksocial/src/core/widgets/alt_text_editor_dialog.dart';
-import 'package:sparksocial/src/core/widgets/user_avatar.dart';
+import 'package:sparksocial/src/core/ui/widgets/alt_text_editor_dialog.dart';
+import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_input_provider.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_input_state.dart';
@@ -75,9 +75,9 @@ class _CommentInputState extends ConsumerState<CommentInputWidget> {
                   imageUrl: ref
                       .read(profileNotifierProvider(did: session?.did ?? ''))
                       .when(
-                        data: (profileData) => profileData.profile?.avatar?.toString(),
-                        error: (error, stackTrace) => null,
-                        loading: () => null,
+                        data: (profileData) => profileData.profile?.avatar?.toString() ?? '',
+                        error: (error, stackTrace) => '',
+                        loading: () => '',
                       ),
                   username: session?.handle ?? '',
                   size: 28,

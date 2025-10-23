@@ -6,10 +6,10 @@ import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:sparksocial/src/core/ui/widgets/content_warning_overlay.dart';
+import 'package:sparksocial/src/core/ui/widgets/heart_animation.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
-import 'package:sparksocial/src/core/widgets/content_warning_overlay.dart';
-import 'package:sparksocial/src/core/widgets/heart_animation.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
@@ -34,11 +34,12 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
   String? _lastPostUri;
   int? _lastUpdateCount;
   final GlobalKey<PostVideoPlayerState> _videoPlayerKey = GlobalKey<PostVideoPlayerState>();
-  final GlobalKey<SideActionBarState> _sideActionBarKey = GlobalKey<SideActionBarState>();
   bool _isAnimatingHeart = false;
   bool _showWarningOverlay = false;
   bool _userDismissedWarning = false;
   List<String> _warningLabels = [];
+  // Local UI override for like state to avoid needing a GlobalKey
+  bool? _overrideIsLiked;
 
   @override
   void initState() {
@@ -55,6 +56,8 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
       // Create new future if URI changed or if we need to force refresh
       _lastPostUri = currentUri;
       _postFuture = GetIt.instance<SQLCacheInterface>().getPost(currentUri);
+      // Reset any UI overrides tied to the previous post
+      _overrideIsLiked = null;
     }
   }
 
@@ -90,9 +93,12 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
 
       // Update cache with the modified post
       await GetIt.instance<SQLCacheInterface>().updatePost(updatedPost);
-
-      // Update SideActionBar state directly
-      _sideActionBarKey.currentState?.updateLikeState(updatedPost);
+      // Drive SideActionBar via props instead of GlobalKey/stateful method
+      if (mounted) {
+        setState(() {
+          _overrideIsLiked = true;
+        });
+      }
     } catch (e) {
       // Handle error silently for better UX
     }
@@ -169,12 +175,11 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
         if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
           final postData = snapshot.data! as PostView;
           final sideActionBar = SideActionBar(
-            key: _sideActionBarKey,
             post: postData,
             likeCount: '${postData.likeCount ?? 0}',
             commentCount: '${postData.replyCount ?? 0}',
             shareCount: '${postData.repostCount ?? 0}',
-            isLiked: postData.viewer?.like != null,
+            isLiked: _overrideIsLiked ?? (postData.viewer?.like != null),
             profileImageUrl: postData.author.avatar.toString(),
             isImage: postData.embed is EmbedViewImage || postData.embed is EmbedViewBskyImages,
             onProfilePressed: () {
@@ -192,6 +197,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
 
           final mainContent = HeartAnimation(
             isAnimating: _isAnimatingHeart,
+            bottomOffset: MediaQuery.of(context).padding.bottom,
             onEnd: () {
               setState(() {
                 _isAnimatingHeart = false;
@@ -204,6 +210,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                 children: [
                   // Main content
                   Positioned.fill(
+                    bottom: 0 + MediaQuery.of(context).padding.bottom,
                     child: switch (postData.embed) {
                       EmbedViewVideo() => PostVideoPlayer(
                         key: _videoPlayerKey,
@@ -242,12 +249,34 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                     },
                   ),
 
-                  // Side action bar
-                  Positioned(bottom: 4, right: 4, child: sideActionBar),
+                  // Gradient overlay at the bottom to improve text readability
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: IgnorePointer(
+                      child: Container(
+                        height: 200 + MediaQuery.of(context).padding.bottom,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [Colors.black87.withAlpha(170), Colors.transparent],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
 
                   Positioned(
-                    bottom: 32,
-                    left: 4,
+                    bottom: 16 + MediaQuery.of(context).padding.bottom,
+                    right: 8,
+                    child: sideActionBar,
+                  ),
+
+                  Positioned(
+                    bottom: 16 + MediaQuery.of(context).padding.bottom,
+                    left: 8,
                     right: 80,
                     child: Builder(
                       builder: (context) {
@@ -268,6 +297,8 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                             final informLabels = snapshot.data ?? [];
                             return InfoBar(
                               username: postData.author.handle,
+                              displayName: postData.author.displayName ?? postData.author.handle,
+                              avatarUrl: postData.author.avatar?.toString(),
                               description: postData.record.text ?? '',
                               hashtags: postData.record.hashtags,
                               informLabels: informLabels,

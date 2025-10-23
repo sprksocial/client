@@ -2,7 +2,7 @@ import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/theme/data/models/colors.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_feed_post_widget.dart';
@@ -49,14 +49,19 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
       appBar: AppBar(backgroundColor: AppColors.black, leading: const AutoLeadingButton()),
       body: feedState.when(
         data: (state) {
-          if (state.loadedPosts.isEmpty) {
+          // Filter client-side
+          final filteredUris = widget.videosOnly
+              ? state.loadedPosts.where((u) => state.postTypes[u] ?? true).toList()
+              : state.loadedPosts.where((u) => state.postTypes[u] == false).toList();
+
+          if (filteredUris.isEmpty) {
             return const Center(
               child: Text('No posts available', style: TextStyle(color: AppColors.white)),
             );
           }
 
           // Ensure initial index is within bounds
-          final safeInitialIndex = widget.initialPostIndex.clamp(0, state.loadedPosts.length - 1);
+          final safeInitialIndex = widget.initialPostIndex.clamp(0, filteredUris.length - 1);
 
           // Update page controller if needed
           if (pageController.hasClients && pageController.page?.round() != safeInitialIndex) {
@@ -70,19 +75,19 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
           return CacheablePageView.builder(
             controller: pageController,
             scrollDirection: Axis.vertical,
-            itemCount: state.loadedPosts.length,
+            itemCount: filteredUris.length,
             onPageChanged: (index) {
               // Load more posts when approaching the end
-              if (index >= state.loadedPosts.length - 3 && !state.isEndOfNetwork) {
+              if (index >= filteredUris.length - 3 && !state.isEndOfNetwork) {
                 ref.read(profileFeedProvider(profileAtUri, widget.videosOnly).notifier).loadMore();
               }
             },
             itemBuilder: (context, index) {
-              if (index >= state.loadedPosts.length) {
+              if (index >= filteredUris.length) {
                 return const Center(child: CircularProgressIndicator(color: AppColors.white));
               }
 
-              final postUri = state.loadedPosts[index];
+              final postUri = filteredUris[index];
               final post = state.postViews[postUri];
               return ProfileFeedPostWidget(postUri: postUri, profileUri: profileAtUri, videosOnly: widget.videosOnly, post: post);
             },
