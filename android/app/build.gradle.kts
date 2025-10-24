@@ -1,6 +1,7 @@
 import java.util.Properties
 import java.io.FileInputStream
 
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -50,9 +51,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-
-        manifestPlaceholders = [POSTHOG_API_KEY: "$System.env.POSTHOG_API_KEY"]
-    }
+        manifestPlaceholders["POSTHOG_API_KEY"] = System.getenv("POSTHOG_API_KEY") ?: ""
+			}
 
     signingConfigs {
         create("release") {
