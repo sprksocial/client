@@ -57,6 +57,7 @@ dependencies:
     path: fonts
   assets:
     path: assets
+  posthog_flutter: ^5.6.0
 
 dev_dependencies:
   flutter_test:
