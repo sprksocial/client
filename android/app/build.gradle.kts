@@ -51,7 +51,7 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
 
-				manifestPlaceholders = [POSTHOG_API_KEY: "$System.env.POSTHOG_API_KEY"]
+        manifestPlaceholders = [POSTHOG_API_KEY: "$System.env.POSTHOG_API_KEY"]
     }
 
     signingConfigs {
