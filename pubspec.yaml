@@ -6,7 +6,7 @@ version: 0.2.0+1
 environment:
   sdk: ^3.8.1
 workspace:
-  - widgetbook 
+  - widgetbook
   - fonts
   - assets
 
@@ -92,6 +92,7 @@ flutter:
   generate: true
   assets:
     - .env
+    - assets/images/sprk.svg
   fonts:
     - family: Fraunces
       fonts:

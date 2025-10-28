@@ -181,7 +181,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
             shareCount: '${postData.repostCount ?? 0}',
             isLiked: _overrideIsLiked ?? (postData.viewer?.like != null),
             profileImageUrl: postData.author.avatar.toString(),
-            isImage: postData.embed is EmbedViewImage || postData.embed is EmbedViewBskyImages,
+            isImage: postData.media is EmbedViewImage || postData.media is EmbedViewBskyImages || postData.media is EmbedViewMediaImages,
             onProfilePressed: () {
               // Pause video before navigating to profile
               _videoPlayerKey.currentState?.pauseVideo();
@@ -211,7 +211,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                   // Main content
                   Positioned.fill(
                     bottom: 0 + MediaQuery.of(context).padding.bottom,
-                    child: switch (postData.embed) {
+                    child: switch (postData.media) {
                       EmbedViewVideo() => PostVideoPlayer(
                         key: _videoPlayerKey,
                         videoUrl: postData.videoUrl,
@@ -226,7 +226,14 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                         index: widget.index,
                         thumbnail: postData.thumbnailUrl,
                       ),
-                      EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                      EmbedViewMediaVideo() => PostVideoPlayer(
+                        key: _videoPlayerKey,
+                        videoUrl: postData.videoUrl,
+                        feed: widget.feed,
+                        index: widget.index,
+                        thumbnail: postData.thumbnailUrl,
+                      ),
+                      EmbedViewImage() || EmbedViewBskyImages() || EmbedViewMediaImages() => ImageCarousel(imageUrls: postData.imageUrls),
                       EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
                         EmbedViewVideo() => PostVideoPlayer(
                           key: _videoPlayerKey,
@@ -242,7 +249,14 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                           index: widget.index,
                           thumbnail: postData.thumbnailUrl,
                         ),
-                        EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                        EmbedViewMediaVideo() => PostVideoPlayer(
+                          key: _videoPlayerKey,
+                          videoUrl: postData.videoUrl,
+                          feed: widget.feed,
+                          index: widget.index,
+                          thumbnail: postData.thumbnailUrl,
+                        ),
+                        EmbedViewImage() || EmbedViewBskyImages() || EmbedViewMediaImages() => ImageCarousel(imageUrls: postData.imageUrls),
                         _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                       },
                       _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
@@ -299,7 +313,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                               username: postData.author.handle,
                               displayName: postData.author.displayName ?? postData.author.handle,
                               avatarUrl: postData.author.avatar?.toString(),
-                              description: postData.record.text ?? '',
+                              description: postData.displayText,
                               hashtags: postData.record.hashtags,
                               informLabels: informLabels,
                               isSprk: postData.uri.toString().contains('so.sprk'),

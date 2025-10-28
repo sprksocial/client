@@ -25,7 +25,7 @@ const String _columnRepostCount = 'repostCount'; // INTEGER
 const String _columnQuoteCount = 'quoteCount'; // INTEGER
 const String _columnLabels = 'labels'; // TEXT (JSON string of List<Label>)
 const String _columnViewer = 'viewer'; // TEXT (JSON string of Viewer)
-const String _columnEmbed = 'embed'; // TEXT (JSON string of EmbedView)
+const String _columnMedia = 'media'; // TEXT (JSON string of MediaView)
 const String _columnLastAccessed = 'lastAccessed'; // INTEGER (timestamp for LRU)
 
 // --- Feed Definitions ---
@@ -58,9 +58,9 @@ class SQLCacheImpl implements SQLCacheInterface {
     final path = join(await getDatabasesPath(), 'sparksocial_sql_cache.db');
     return openDatabase(
       path,
-      version: 2, // Increment this if you change the schema
+      version: 3,
       onCreate: _onCreate,
-      onUpgrade: _onUpgrade, // Define this if you plan schema migrations
+      onUpgrade: _onUpgrade,
     );
   }
 
@@ -81,7 +81,7 @@ class SQLCacheImpl implements SQLCacheInterface {
         $_columnQuoteCount INTEGER,
         $_columnLabels TEXT,
         $_columnViewer TEXT,
-        $_columnEmbed TEXT,
+        $_columnMedia TEXT,
         $_columnLastAccessed INTEGER NOT NULL
       )
     ''');
@@ -115,8 +115,10 @@ class SQLCacheImpl implements SQLCacheInterface {
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      // Add the viewer column to existing posts table
       await db.execute('ALTER TABLE $_tablePosts ADD COLUMN $_columnViewer TEXT');
+    }
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE $_tablePosts ADD COLUMN $_columnMedia TEXT');
     }
   }
 
@@ -162,7 +164,7 @@ class SQLCacheImpl implements SQLCacheInterface {
       _columnQuoteCount: post.quoteCount,
       _columnLabels: post.labels != null ? jsonEncode(post.labels!.map((e) => e.toJson()).toList()) : null,
       _columnViewer: post.viewer != null ? jsonEncode(post.viewer!.toJson()) : null,
-      _columnEmbed: post.embed != null ? jsonEncode(post.embed!.toJson()) : null,
+      _columnMedia: post.media != null ? jsonEncode(post.media!.toJson()) : null,
     };
   }
 
@@ -249,8 +251,8 @@ class SQLCacheImpl implements SQLCacheInterface {
       viewer: map[_columnViewer] != null
           ? Viewer.fromJson(jsonDecode(map[_columnViewer] as String) as Map<String, dynamic>)
           : null,
-      embed: map[_columnEmbed] != null
-          ? EmbedView.fromJson(jsonDecode(map[_columnEmbed] as String) as Map<String, dynamic>)
+      media: map[_columnMedia] != null
+          ? EmbedView.fromJson(jsonDecode(map[_columnMedia] as String) as Map<String, dynamic>)
           : null,
     );
   }

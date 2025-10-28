@@ -25,6 +25,7 @@ class ProfileFeed extends _$ProfileFeed {
 
   @override
   Future<ProfileFeedState> build(AtUri profileUri, bool videosOnly) async {
+    _logger.i('Building ProfileFeed for $profileUri (videosOnly=$videosOnly)');
     try {
       final result = await _loadUnifiedFeed(
         profileUri: profileUri,
@@ -32,12 +33,12 @@ class ProfileFeed extends _$ProfileFeed {
         blueskyCursor: null,
         videosOnly: videosOnly,
       );
-      _logger.d(
+      _logger.i(
         'Loaded initial unified feed: ${result.allPosts.length} total posts, ${result.loadedPosts.length} filtered posts',
       );
       return result;
-    } catch (e) {
-      _logger.e('Error loading initial posts: $e');
+    } catch (e, stackTrace) {
+      _logger.e('Error loading initial posts: $e', error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -58,22 +59,34 @@ class ProfileFeed extends _$ProfileFeed {
 
     final newPosts = <PostView>[];
 
+    _logger.d('Fetching Sprk posts for $profileUri (cursor=$sparkCursor)');
     final sparkResult = await _fetchFromSource(
       (cursor) => _feedRepository.getAuthorFeed(profileUri, limit: ProfileFeedState.fetchLimit, cursor: cursor),
       sparkCursor,
       'Sprk',
     );
+    _logger.i('Received ${sparkResult.posts.length} Sprk posts from API (cursor=${sparkResult.cursor})');
 
     for (final feedViewPost in sparkResult.posts) {
-      final uri = feedViewPost.post.uri;
+      final uri = feedViewPost.uri;
+      _logger.d('Processing Sprk FeedViewPost: $uri');
       if (!postViews.containsKey(uri)) {
-        newPosts.add(feedViewPost.post);
-        postSources[uri] = 'sprk';
-        postTypes[uri] = feedViewPost.post.videoUrl.isNotEmpty;
-        postViews[uri] = feedViewPost.post;
-        sparkRkeys.add(uri.rkey);
+        final postView = feedViewPost.asPost;
+        if (postView != null) {
+          newPosts.add(postView);
+          postSources[uri] = 'sprk';
+          postTypes[uri] = postView.videoUrl.isNotEmpty;
+          postViews[uri] = postView;
+          sparkRkeys.add(uri.rkey);
+          _logger.d('Added Sprk post: $uri (isVideo=${postView.videoUrl.isNotEmpty})');
+        } else {
+          _logger.w('FeedViewPost.asPost returned null for $uri');
+        }
+      } else {
+        _logger.d('Skipping duplicate Sprk post: $uri');
       }
     }
+    _logger.i('Processed Sprk posts: ${newPosts.length} new posts added');
 
     final bskyResult = await _fetchFromSource(
       (cursor) => _feedRepository.getAuthorFeed(profileUri, limit: ProfileFeedState.fetchLimit, cursor: cursor, bluesky: true),
@@ -82,15 +95,18 @@ class ProfileFeed extends _$ProfileFeed {
     );
 
     for (final feedViewPost in bskyResult.posts) {
-      final uri = feedViewPost.post.uri;
+      final uri = feedViewPost.uri;
       if (sparkRkeys.contains(uri.rkey) || postViews.containsKey(uri)) {
         _logger.d('Skipping Bsky post with rkey ${uri.rkey} - already exists.');
         continue;
       }
-      newPosts.add(feedViewPost.post);
-      postSources[uri] = 'bsky';
-      postTypes[uri] = _isEmbedVideo(feedViewPost.post.embed);
-      postViews[uri] = feedViewPost.post;
+      final postView = feedViewPost.asPost;
+      if (postView != null) {
+        newPosts.add(postView);
+        postSources[uri] = 'bsky';
+        postTypes[uri] = _isEmbedVideo(postView.media);
+        postViews[uri] = postView;
+      }
     }
 
     newPosts.sort((a, b) => b.indexedAt.compareTo(a.indexedAt));
@@ -146,11 +162,12 @@ class ProfileFeed extends _$ProfileFeed {
     String sourceName,
   ) async {
     try {
+      _logger.d('Fetching from $sourceName with cursor=$cursor');
       final result = await fetcher(cursor);
-      _logger.d('Loaded ${result.posts.length} posts from $sourceName');
+      _logger.i('Loaded ${result.posts.length} posts from $sourceName (newCursor=${result.cursor})');
       return result;
-    } catch (e) {
-      _logger.w('Failed to load from $sourceName: $e');
+    } catch (e, stackTrace) {
+      _logger.e('Failed to load from $sourceName: $e', error: e, stackTrace: stackTrace);
       return (posts: <FeedViewPost>[], cursor: cursor);
     }
   }
@@ -159,9 +176,11 @@ class ProfileFeed extends _$ProfileFeed {
     if (embed == null) return false;
     return embed.when(
       video: (cid, playlist, thumbnail, alt) => true,
+      mediaVideo: (cid, playlist, thumbnail, alt) => true,
       bskyVideo: (cid, playlist, thumbnail, alt) => true,
       bskyRecordWithMedia: (record, media) => _isEmbedVideo(media),
       image: (images) => false,
+      mediaImages: (images) => false,
       bskyImages: (images) => false,
       bskyRecord: (record) => false,
       bskyExternal: (external) => false,

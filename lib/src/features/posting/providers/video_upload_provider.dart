@@ -46,8 +46,8 @@ Future<StrongRef?> postVideo(
     }
 
     final postRecord = PostRecord(
-      text: description.isNotEmpty ? description : '',
-      embed: EmbedVideo(video: blob, alt: altText),
+      caption: CaptionRef(text: description.isNotEmpty ? description : '', facets: []),
+      media: EmbedVideo(video: blob, alt: altText),
       createdAt: DateTime.now().toUtc(),
     );
 

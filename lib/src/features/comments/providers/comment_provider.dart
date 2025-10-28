@@ -40,10 +40,20 @@ class CommentNotifier extends _$CommentNotifier {
         final likeUri = state.thread.post.viewer!.like!;
 
         // Optimistically update UI for unlike
-        final updatedPost = state.thread.post.copyWith(
-          viewer: state.thread.post.viewer?.copyWith(like: null),
-          likeCount: currentLikeCount - 1,
-        );
+        final updatedPost = switch (state.thread.post) {
+          ThreadPostView(:final post) => ThreadPostView(
+            post: post.copyWith(
+              viewer: post.viewer?.copyWith(like: null),
+              likeCount: currentLikeCount - 1,
+            ),
+          ),
+          ThreadReplyView(:final reply) => ThreadReplyView(
+            reply: reply.copyWith(
+              viewer: reply.viewer?.copyWith(like: null),
+              likeCount: currentLikeCount - 1,
+            ),
+          ),
+        };
         state = state.copyWith(
           thread: state.thread.copyWith(post: updatedPost),
         );
@@ -57,10 +67,20 @@ class CommentNotifier extends _$CommentNotifier {
         // Optimistically update UI for like
         final response = await _feedRepository.likePost(state.thread.post.cid, state.thread.post.uri);
 
-        final updatedPost = state.thread.post.copyWith(
-          viewer: state.thread.post.viewer?.copyWith(like: response.uri) ?? Viewer(like: response.uri),
-          likeCount: currentLikeCount + 1,
-        );
+        final updatedPost = switch (state.thread.post) {
+          ThreadPostView(:final post) => ThreadPostView(
+            post: post.copyWith(
+              viewer: post.viewer?.copyWith(like: response.uri) ?? Viewer(like: response.uri),
+              likeCount: currentLikeCount + 1,
+            ),
+          ),
+          ThreadReplyView(:final reply) => ThreadReplyView(
+            reply: reply.copyWith(
+              viewer: reply.viewer?.copyWith(like: response.uri) ?? Viewer(like: response.uri),
+              likeCount: currentLikeCount + 1,
+            ),
+          ),
+        };
         state = state.copyWith(
           thread: state.thread.copyWith(post: updatedPost),
         );
@@ -70,12 +90,24 @@ class CommentNotifier extends _$CommentNotifier {
       }
     } catch (e) {
       // Revert optimistic update on error
-      final revertedPost = state.thread.post.copyWith(
-        viewer: wasLiked
-            ? state.thread.post.viewer?.copyWith(like: state.thread.post.viewer?.like)
-            : state.thread.post.viewer?.copyWith(like: null),
-        likeCount: currentLikeCount,
-      );
+      final revertedPost = switch (state.thread.post) {
+        ThreadPostView(:final post) => ThreadPostView(
+          post: post.copyWith(
+            viewer: wasLiked
+                ? post.viewer?.copyWith(like: post.viewer?.like)
+                : post.viewer?.copyWith(like: null),
+            likeCount: currentLikeCount,
+          ),
+        ),
+        ThreadReplyView(:final reply) => ThreadReplyView(
+          reply: reply.copyWith(
+            viewer: wasLiked
+                ? reply.viewer?.copyWith(like: reply.viewer?.like)
+                : reply.viewer?.copyWith(like: null),
+            likeCount: currentLikeCount,
+          ),
+        ),
+      };
       state = state.copyWith(
         thread: state.thread.copyWith(post: revertedPost),
       );

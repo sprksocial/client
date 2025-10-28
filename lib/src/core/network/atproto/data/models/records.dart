@@ -13,16 +13,25 @@ class Record with _$Record {
   @JsonSerializable(explicitToJson: true)
   @FreezedUnionValue('so.sprk.feed.post')
   const factory Record.post({
+    required CaptionRef caption,
     DateTime? createdAt,
-    @JsonKey(defaultValue: '') String? text,
-    @JsonKey(defaultValue: []) List<Facet>? facets,
     RecordReplyRef? reply,
     List<String>? langs,
     List<String>? tags,
     List<SelfLabel>? selfLabels,
-    Embed? embed, // blob
-    // threadgate
+    Embed? media,
   }) = PostRecord;
+
+  @JsonSerializable(explicitToJson: true)
+  @FreezedUnionValue('so.sprk.feed.reply')
+  const factory Record.reply({
+    required CaptionRef caption,
+    required RecordReplyRef reply,
+    DateTime? createdAt,
+    List<String>? langs,
+    List<SelfLabel>? labels,
+    Embed? media,
+  }) = ReplyRecord;
 
   @JsonSerializable(explicitToJson: true)
   @FreezedUnionValue('so.sprk.feed.story')
@@ -63,8 +72,10 @@ class Record with _$Record {
 
   List<String> get hashtags {
     switch (this) {
-      case PostRecord(:final tags, :final text):
-        return tags ?? _extractHashtags(text ?? '');
+      case PostRecord(:final tags, :final caption):
+        return tags ?? _extractHashtags(caption.text);
+      case ReplyRecord(:final caption):
+        return _extractHashtags(caption.text);
       case StoryRecord(:final tags):
         return tags ?? [];
       default:
@@ -92,7 +103,7 @@ class RecordReplyRef with _$RecordReplyRef {
 sealed class Embed with _$Embed {
   const Embed._();
 
-  // Spark embed types
+  // Spark embed types (old schema - kept for backwards compatibility)
   @FreezedUnionValue('so.sprk.embed.video')
   @JsonSerializable(explicitToJson: true)
   const factory Embed.video({
@@ -107,6 +118,18 @@ sealed class Embed with _$Embed {
   @FreezedUnionValue('so.sprk.embed.images')
   @JsonSerializable(explicitToJson: true)
   const factory Embed.image({required List<Image> images}) = EmbedImage;
+
+  // Spark media types (new schema)
+  @FreezedUnionValue('so.sprk.media.video')
+  @JsonSerializable(explicitToJson: true)
+  const factory Embed.mediaVideo({
+    required Blob video,
+    String? alt,
+  }) = EmbedMediaVideo;
+
+  @FreezedUnionValue('so.sprk.media.images')
+  @JsonSerializable(explicitToJson: true)
+  const factory Embed.mediaImages({required List<Image> images}) = EmbedMediaImages;
 
   // Bluesky embed types
   @FreezedUnionValue('app.bsky.embed.video')

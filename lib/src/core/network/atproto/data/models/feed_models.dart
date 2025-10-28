@@ -3,6 +3,7 @@ import 'package:atproto_core/atproto_core.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sparksocial/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/utils/uri_converter.dart';
 
@@ -109,18 +110,63 @@ sealed class HardcodedFeedExtraInfo with _$HardcodedFeedExtraInfo {
 }
 
 /// GetTimeline returns a FeedViewPost array
-@freezed
-class FeedViewPost with _$FeedViewPost {
-  @JsonSerializable(explicitToJson: true)
-  const factory FeedViewPost({
-    required PostView post,
-    ReplyRef? reply,
-    // "reason": { "type": "union", "refs": ["#reasonRepost", "#reasonPin"] } i think we don't have to use this value for now
-    // there's also a String feedContext "Context provided by feed generator that may be passed back alongside interactions."
-  }) = _FeedViewPostPost;
+@Freezed(unionKey: r'$type')
+sealed class FeedViewPost with _$FeedViewPost {
   const FeedViewPost._();
 
+  @FreezedUnionValue('so.sprk.feed.defs#feedPostView')
+  @JsonSerializable(explicitToJson: true)
+  const factory FeedViewPost.post({
+    required PostView post,
+    ReplyRef? reply,
+  }) = FeedViewPostPost;
+
+  @FreezedUnionValue('so.sprk.feed.defs#feedReplyView')
+  @JsonSerializable(explicitToJson: true)
+  const factory FeedViewPost.reply({
+    required ReplyView reply,
+    ReplyRef? replyRef,
+  }) = FeedViewPostReply;
+
   factory FeedViewPost.fromJson(Map<String, dynamic> json) => _$FeedViewPostFromJson(json);
+
+  PostView? get asPost => mapOrNull(post: (p) => p.post);
+  ReplyView? get asReply => mapOrNull(reply: (r) => r.reply);
+  
+  ProfileViewBasic get author => map(
+    post: (p) => p.post.author,
+    reply: (r) => r.reply.author,
+  );
+  
+  AtUri get uri => map(
+    post: (p) => p.post.uri,
+    reply: (r) => r.reply.uri,
+  );
+  
+  String get cid => map(
+    post: (p) => p.post.cid,
+    reply: (r) => r.reply.cid,
+  );
+  
+  EmbedView? get media => map(
+    post: (p) => p.post.displayMedia,
+    reply: (r) => r.reply.media,
+  );
+  
+  Viewer? get viewer => map(
+    post: (p) => p.post.viewer,
+    reply: (r) => r.reply.viewer,
+  );
+  
+  String get displayText => map(
+    post: (p) => p.post.displayText,
+    reply: (r) => r.reply.displayText,
+  );
+  
+  List<Facet> get displayFacets => map(
+    post: (p) => p.post.displayFacets,
+    reply: (r) => r.reply.displayFacets,
+  );
 }
 
 @freezed
@@ -147,6 +193,10 @@ sealed class ReplyRefPostReference with _$ReplyRefPostReference {
   @FreezedUnionValue('app.bsky.feed.defs#postView')
   @JsonSerializable(explicitToJson: true)
   const factory ReplyRefPostReference.bskyPost({required PostView post}) = ReplyRefPostReferenceBskyPost;
+
+  @FreezedUnionValue('so.sprk.feed.defs#replyView')
+  @JsonSerializable(explicitToJson: true)
+  const factory ReplyRefPostReference.reply({required ReplyView reply}) = ReplyRefPostReferenceReply;
 
   @FreezedUnionValue('so.sprk.feed.defs#notFoundPost')
   @JsonSerializable(explicitToJson: true)
@@ -215,8 +265,7 @@ class PostView with _$PostView {
     int? quoteCount,
     List<Label>? labels,
     Viewer? viewer,
-    //SoundView? sound,
-    EmbedView? embed, // aturi
+    EmbedView? media,
   }) = _PostView;
   const PostView._();
 
@@ -224,15 +273,24 @@ class PostView with _$PostView {
 
   bool get isSprk => RegExp(r'^at://[^/]+/so\.sprk\.feed\.post/[^/]+$').hasMatch(uri.toString());
 
+  EmbedView? get displayMedia => media;
+  
+  String get displayText => record.caption.text;
+  
+  List<Facet> get displayFacets => record.caption.facets;
+
   /// Returns true if this post has a video or image embed (content we want to show)
   bool get hasSupportedMedia {
-    if (embed == null) return false;
+    final mediaToCheck = displayMedia;
+    if (mediaToCheck == null) return false;
 
-    switch (embed) {
+    switch (mediaToCheck) {
       case EmbedViewVideo():
       case EmbedViewBskyVideo():
       case EmbedViewImage():
       case EmbedViewBskyImages():
+      case EmbedViewMediaVideo():
+      case EmbedViewMediaImages():
         return true;
       case EmbedViewBskyRecordWithMedia(:final media):
         // Check nested media in record with media
@@ -241,6 +299,8 @@ class PostView with _$PostView {
           case EmbedViewBskyVideo():
           case EmbedViewImage():
           case EmbedViewBskyImages():
+          case EmbedViewMediaVideo():
+          case EmbedViewMediaImages():
             return true;
           case _:
             return false;
@@ -284,8 +344,11 @@ class PostView with _$PostView {
   }
 
   String get videoUrl {
-    switch (embed) {
+    final mediaToCheck = displayMedia;
+    switch (mediaToCheck) {
       case EmbedViewVideo(:final playlist):
+        return playlist.toString();
+      case EmbedViewMediaVideo(:final playlist):
         return playlist.toString();
       case EmbedViewBskyVideo(:final playlist):
         // For Bluesky videos, return the AT URI as-is for blob API handling
@@ -294,6 +357,8 @@ class PostView with _$PostView {
         // Handle nested media in record with media
         switch (media) {
           case EmbedViewVideo(:final playlist):
+            return playlist.toString();
+          case EmbedViewMediaVideo(:final playlist):
             return playlist.toString();
           case EmbedViewBskyVideo(:final playlist):
             // For Bluesky videos, return the AT URI as-is for blob API handling
@@ -307,8 +372,11 @@ class PostView with _$PostView {
   }
 
   List<String> get imageUrls {
-    switch (embed) {
+    final mediaToCheck = displayMedia;
+    switch (mediaToCheck) {
       case EmbedViewImage(:final images):
+        return images.map((img) => img.fullsize.toString()).toList();
+      case EmbedViewMediaImages(:final images):
         return images.map((img) => img.fullsize.toString()).toList();
       case EmbedViewBskyImages(:final images):
         return images.map((img) => _resolveAtUriToHttpUrl(img.fullsize, isFullsize: true)).toList();
@@ -316,6 +384,8 @@ class PostView with _$PostView {
         // Handle nested media in record with media
         switch (media) {
           case EmbedViewImage(:final images):
+            return images.map((img) => img.fullsize.toString()).toList();
+          case EmbedViewMediaImages(:final images):
             return images.map((img) => img.fullsize.toString()).toList();
           case EmbedViewBskyImages(:final images):
             return images.map((img) => _resolveAtUriToHttpUrl(img.fullsize, isFullsize: true)).toList();
@@ -328,12 +398,17 @@ class PostView with _$PostView {
   }
 
   String get thumbnailUrl {
-    switch (embed) {
+    final mediaToCheck = displayMedia;
+    switch (mediaToCheck) {
       case EmbedViewVideo(:final thumbnail):
+        return thumbnail.toString();
+      case EmbedViewMediaVideo(:final thumbnail):
         return thumbnail.toString();
       case EmbedViewBskyVideo(:final thumbnail):
         return _resolveAtUriToHttpUrl(thumbnail);
       case EmbedViewImage(:final images):
+        return images.first.thumb.toString();
+      case EmbedViewMediaImages(:final images):
         return images.first.thumb.toString();
       case EmbedViewBskyImages(:final images):
         return _resolveAtUriToHttpUrl(images.first.thumb);
@@ -342,9 +417,13 @@ class PostView with _$PostView {
         switch (media) {
           case EmbedViewVideo(:final thumbnail):
             return thumbnail.toString();
+          case EmbedViewMediaVideo(:final thumbnail):
+            return thumbnail.toString();
           case EmbedViewBskyVideo(:final thumbnail):
             return _resolveAtUriToHttpUrl(thumbnail);
           case EmbedViewImage(:final images):
+            return images.first.thumb.toString();
+          case EmbedViewMediaImages(:final images):
             return images.first.thumb.toString();
           case EmbedViewBskyImages(:final images):
             return _resolveAtUriToHttpUrl(images.first.thumb);
@@ -361,7 +440,7 @@ class PostView with _$PostView {
 sealed class EmbedView with _$EmbedView {
   const EmbedView._();
 
-  // Spark embed types
+  // Spark embed types (old schema - kept for backwards compatibility)
   @FreezedUnionValue('so.sprk.embed.video#view')
   @JsonSerializable(explicitToJson: true)
   const factory EmbedView.video({
@@ -374,6 +453,20 @@ sealed class EmbedView with _$EmbedView {
   @FreezedUnionValue('so.sprk.embed.images#view')
   @JsonSerializable(explicitToJson: true)
   const factory EmbedView.image({required List<ViewImage> images}) = EmbedViewImage;
+
+  // Spark media types (new schema)
+  @FreezedUnionValue('so.sprk.media.video#view')
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedView.mediaVideo({
+    required String cid,
+    @AtUriConverter() required Uri playlist,
+    @AtUriConverter() required Uri thumbnail,
+    String? alt,
+  }) = EmbedViewMediaVideo;
+
+  @FreezedUnionValue('so.sprk.media.images#view')
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedView.mediaImages({required List<ViewImage> images}) = EmbedViewMediaImages;
 
   // Bluesky embed types
   @FreezedUnionValue('app.bsky.embed.video#view')
@@ -479,6 +572,18 @@ class ImageUploadResult with _$ImageUploadResult {
   factory ImageUploadResult.fromJson(Map<String, dynamic> json) => _$ImageUploadResultFromJson(json);
 }
 
+@freezed
+class CaptionRef with _$CaptionRef {
+  @JsonSerializable(explicitToJson: true)
+  const factory CaptionRef({
+    required String text,
+    @Default([]) List<Facet> facets,
+  }) = _CaptionRef;
+  const CaptionRef._();
+
+  factory CaptionRef.fromJson(Map<String, dynamic> json) => _$CaptionRefFromJson(json);
+}
+
 /// Represents the index range for a facet in the text
 @freezed
 class FacetIndex with _$FacetIndex {
@@ -569,13 +674,89 @@ class ViewImage with _$ViewImage {
 }
 
 @Freezed(unionKey: r'$type')
+sealed class ThreadPost with _$ThreadPost {
+  const ThreadPost._();
+
+  @FreezedUnionValue('so.sprk.feed.defs#postView')
+  @JsonSerializable(explicitToJson: true)
+  const factory ThreadPost.post({required PostView post}) = ThreadPostView;
+
+  @FreezedUnionValue('so.sprk.feed.defs#replyView')
+  @JsonSerializable(explicitToJson: true)
+  const factory ThreadPost.reply({required ReplyView reply}) = ThreadReplyView;
+
+  factory ThreadPost.fromJson(Map<String, dynamic> json) => _$ThreadPostFromJson(json);
+  
+  // Common getters for both PostView and ReplyView
+  AtUri get uri => switch (this) {
+    ThreadPostView(:final post) => post.uri,
+    ThreadReplyView(:final reply) => reply.uri,
+  };
+  
+  String get cid => switch (this) {
+    ThreadPostView(:final post) => post.cid,
+    ThreadReplyView(:final reply) => reply.cid,
+  };
+  
+  Viewer? get viewer => switch (this) {
+    ThreadPostView(:final post) => post.viewer,
+    ThreadReplyView(:final reply) => reply.viewer,
+  };
+  
+  int? get likeCount => switch (this) {
+    ThreadPostView(:final post) => post.likeCount,
+    ThreadReplyView(:final reply) => reply.likeCount,
+  };
+  
+  int? get replyCount => switch (this) {
+    ThreadPostView(:final post) => post.replyCount,
+    ThreadReplyView(:final reply) => reply.replyCount,
+  };
+  
+  List<String> get imageUrls => switch (this) {
+    ThreadPostView(:final post) => post.imageUrls,
+    ThreadReplyView() => [],
+  };
+  
+  bool get isSprk => switch (this) {
+    ThreadPostView(:final post) => post.isSprk,
+    ThreadReplyView() => false,
+  };
+  
+  ProfileViewBasic get author => switch (this) {
+    ThreadPostView(:final post) => post.author,
+    ThreadReplyView(:final reply) => reply.author,
+  };
+  
+  EmbedView? get media => switch (this) {
+    ThreadPostView(:final post) => post.media,
+    ThreadReplyView(:final reply) => reply.media,
+  };
+  
+  String get displayText => switch (this) {
+    ThreadPostView(:final post) => post.displayText,
+    ThreadReplyView() => '',
+  };
+  
+  DateTime get indexedAt => switch (this) {
+    ThreadPostView(:final post) => post.indexedAt,
+    ThreadReplyView(:final reply) => reply.indexedAt,
+  };
+  
+  String get videoUrl => switch (this) {
+    ThreadPostView(:final post) => post.videoUrl,
+    ThreadReplyView() => '',
+  };
+}
+
+@Freezed(unionKey: r'$type')
 class Thread with _$Thread {
   const Thread._();
 
   // NORMAL POST
   @FreezedUnionValue('so.sprk.feed.defs#threadViewPost')
   @JsonSerializable(explicitToJson: true)
-  const factory Thread.threadViewPost({required PostView post, Thread? parent, List<Thread>? replies, ThreadContext? context}) =
+  const factory Thread.threadViewPost({required ThreadPost post, Thread? parent, List<Thread>? replies, ThreadContext? context}) =
       ThreadViewPost;
 
   // NOT FOUND POST
@@ -741,7 +922,7 @@ class Thread with _$Thread {
           }
 
           final thread = Thread.threadViewPost(
-            post: PostView.fromJson(postViewJson),
+            post: ThreadPost.post(post: PostView.fromJson(postViewJson).toSparkPostView()),
             parent: data.parent != null ? Thread.fromBsky(thread: data.parent!, uri: uri) : null,
             replies: data.replies
                 ?.map((reply) {
@@ -785,6 +966,52 @@ class ThreadContext with _$ThreadContext {
   const ThreadContext._();
 
   factory ThreadContext.fromJson(Map<String, dynamic> json) => _$ThreadContextFromJson(json);
+}
+
+@freezed
+class ReplyView with _$ReplyView {
+  @JsonSerializable(explicitToJson: true)
+  const factory ReplyView({
+    @AtUriConverter() required AtUri uri,
+    required String cid,
+    required ProfileViewBasic author,
+    required dynamic record,
+    required DateTime indexedAt,
+    EmbedView? media,
+    int? replyCount,
+    int? likeCount,
+    List<Label>? labels,
+    Viewer? viewer,
+  }) = _ReplyView;
+  const ReplyView._();
+
+  factory ReplyView.fromJson(Map<String, dynamic> json) => _$ReplyViewFromJson(json);
+  
+  String get displayText {
+    final rec = record;
+    if (rec is Map<String, dynamic>) {
+      final caption = rec['caption'];
+      if (caption is Map<String, dynamic>) {
+        return caption['text'] as String? ?? '';
+      }
+      return rec['text'] as String? ?? '';
+    }
+    return '';
+  }
+  
+  List<Facet> get displayFacets {
+    final rec = record;
+    if (rec is Map<String, dynamic>) {
+      final caption = rec['caption'];
+      if (caption is Map<String, dynamic>) {
+        final facets = caption['facets'] as List?;
+        return facets?.map((f) => Facet.fromJson(f as Map<String, dynamic>)).toList() ?? [];
+      }
+      final facets = rec['facets'] as List?;
+      return facets?.map((f) => Facet.fromJson(f as Map<String, dynamic>)).toList() ?? [];
+    }
+    return [];
+  }
 }
 
 @freezed

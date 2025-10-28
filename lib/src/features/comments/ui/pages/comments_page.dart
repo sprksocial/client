@@ -139,7 +139,8 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
   @override
   Widget build(BuildContext context) {
     final asyncState = ref.watch(commentsPageProvider(postUri: _postAtUri));
-    final displayPost = _post ?? asyncState.value?.thread.post;
+    final threadPost = asyncState.value?.thread.post;
+    final displayPost = _post ?? (threadPost is ThreadPostView ? threadPost.post : null);
     final borderColor = Theme.of(context).colorScheme.outline;
     final textColor = Theme.of(context).colorScheme.onSurface;
 

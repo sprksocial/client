@@ -467,7 +467,7 @@ class FeedNotifier extends _$FeedNotifier {
         }
 
         // Ensure media files are cached; if missing, enqueue a download task.
-        if (post.embed is EmbedViewVideo) {
+        if (post.media is EmbedViewVideo) {
           _downloadManager.submitTask(
             DownloadTask(
               uri: post.uri,

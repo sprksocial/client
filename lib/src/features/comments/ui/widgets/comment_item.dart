@@ -106,8 +106,8 @@ class _CommentItemState extends ConsumerState<CommentItem> {
     const double thumbnailSize = 120;
 
     final borderRadius = BorderRadius.circular(8);
-    final hasImages = commentState.thread.post.embed is EmbedViewImage;
-    final hasVideo = commentState.thread.post.embed is EmbedViewVideo;
+    final hasImages = commentState.thread.post.media is EmbedViewImage;
+    final hasVideo = commentState.thread.post.media is EmbedViewVideo;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,9 +161,9 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                     ),
                     const SizedBox(height: 4),
 
-                    Text(commentState.thread.post.record.text ?? '', style: Theme.of(context).textTheme.bodyMedium),
+                    Text(commentState.thread.post.displayText, style: Theme.of(context).textTheme.bodyMedium),
 
-                    if (commentState.thread.post.embed != null) ...[
+                    if (commentState.thread.post.media != null) ...[
                       const SizedBox(height: 8),
                       if (hasImages)
                         ImageContent(

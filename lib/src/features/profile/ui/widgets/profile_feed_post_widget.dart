@@ -181,7 +181,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
               child: Stack(
                 children: [
                   // Main content
-                  switch (post.embed) {
+                  switch (post.media) {
                     EmbedViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
                     EmbedViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
                     EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
@@ -224,7 +224,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                       shareCount: '${post.repostCount ?? 0}',
                       isLiked: _overrideIsLiked ?? (post.viewer?.like != null),
                       profileImageUrl: post.author.avatar.toString(),
-                      isImage: post.embed is EmbedViewImage || post.embed is EmbedViewBskyImages,
+                      isImage: post.media is EmbedViewImage || post.media is EmbedViewBskyImages,
                       onProfilePressed: () {
                         // No special handling needed for profile navigation in standalone feed
                       },
@@ -243,7 +243,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                           username: post.author.handle,
                           displayName: post.author.displayName ?? post.author.handle,
                           avatarUrl: post.author.avatar?.toString(),
-                          description: post.record.text ?? '',
+                          description: post.displayText,
                           hashtags: post.record.hashtags,
                           informLabels: informLabels,
                           isSprk: post.uri.toString().contains('so.sprk'),
