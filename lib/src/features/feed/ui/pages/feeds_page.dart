@@ -74,17 +74,6 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
     }
 
     // Initialize feeds that haven't been loaded yet
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      for (final feed in feeds) {
-        final state = feedStates[feed]!;
-        final notifier = ref.read(feedNotifierProvider(feed).notifier);
-
-        // Only load if the feed is empty and not already loading and active
-        if (state.length == 0 && !state.loadingFirstLoad && !state.isEndOfNetworkFeed && feed == activeFeed) {
-          notifier.loadAndUpdateFirstLoad();
-        }
-      }
-    });
 
     // Check if we need to initialize or update the page controller
     final needsInitialization = !_isInitialized;

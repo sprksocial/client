@@ -131,7 +131,7 @@ class FeedRepositoryImpl implements FeedRepository {
       
       for (final rawPost in rawPosts) {
         final postData = rawPost as Map<String, dynamic>;
-        _convertBskyPostToSpark(postData);
+        BskyToSparkJsonAdapter.convertPostViewJson(postData);
         convertedJsonPosts.add(postData);
       }
       
@@ -287,25 +287,9 @@ class FeedRepositoryImpl implements FeedRepository {
             final postData = rawPost as Map<String, dynamic>;
 
             // Convert Bluesky post structure to Spark structure
-            if (postData.containsKey('post') && postData['post'] != null) {
-              final post = postData['post'] as Map<String, dynamic>;
-              _convertBskyPostToSpark(post);
-
-              // Check if this post also has a reply field (it's a reply with context)
-              if (postData.containsKey('reply') && postData['reply'] != null) {
-                final replyContext = postData['reply'] as Map<String, dynamic>;
-                _convertReplyRef(replyContext);
-              }
-
-              // Always use feedPostView when we have a post field
-              // The optional reply field provides context about what this post is replying to
-              postData[r'$type'] = 'so.sprk.feed.defs#feedPostView';
-            } else if (postData.containsKey('reply') && postData['reply'] != null) {
-              // Reply without a post field (shouldn't happen in practice)
-              final replyContext = postData['reply'] as Map<String, dynamic>;
-              _convertReplyRef(replyContext);
-              postData[r'$type'] = 'so.sprk.feed.defs#feedReplyView';
-            } else {
+            BskyToSparkJsonAdapter.convertFeedViewPostJson(postData);
+            
+            if (!postData.containsKey(r'$type')) {
               continue;
             }
 
@@ -324,136 +308,6 @@ class FeedRepositoryImpl implements FeedRepository {
         rethrow;
       }
     });
-  }
-
-  /// Recursively converts a Bluesky post JSON to Spark format
-  void _convertBskyPostToSpark(Map<String, dynamic> post, {bool isNestedReply = false}) {
-    // Convert the PostView's top-level embed field to media
-    if (post.containsKey('embed')) {
-      post['media'] = post['embed'];
-      post.remove('embed');
-    }
-
-    // Convert the record from Bluesky format to Spark format
-    if (post.containsKey('record') && post['record'] != null) {
-      final record = post['record'] as Map<String, dynamic>;
-      final recordType = record[r'$type'] as String?;
-
-      // Convert app.bsky.feed.post to so.sprk.feed.post format
-      if (recordType == 'app.bsky.feed.post') {
-        final text = record['text'] as String? ?? '';
-        final facets = record['facets'] as List<dynamic>? ?? [];
-
-        // Create caption object from text and facets
-        record['caption'] = {
-          'text': text,
-          'facets': facets,
-        };
-
-        // Change $type to Spark format
-        record[r'$type'] = 'so.sprk.feed.post';
-
-        // Move embed to media at record level
-        if (record.containsKey('embed')) {
-          record['media'] = record['embed'];
-          record.remove('embed');
-        }
-
-        // Remove text and facets as they're now in caption
-        record.remove('text');
-        record.remove('facets');
-
-        // Convert nested reply references if they exist
-        if (record.containsKey('reply') && record['reply'] != null) {
-          final reply = record['reply'] as Map<String, dynamic>;
-          _convertReplyRef(reply);
-        }
-      }
-    }
-
-    // Also check if this post has a reply field at the post level (not record level)
-    // But don't process if this is already a nested reply to avoid infinite recursion
-    if (!isNestedReply && post.containsKey('reply') && post['reply'] != null) {
-      final replyRef = post['reply'] as Map<String, dynamic>;
-      _convertReplyRef(replyRef);
-    }
-  }
-
-  /// Converts reply references (root and parent posts)
-  void _convertReplyRef(Map<String, dynamic> replyRef) {
-    // Convert root post if it exists
-    if (replyRef.containsKey('root') && replyRef['root'] != null) {
-      final root = replyRef['root'] as Map<String, dynamic>;
-      final rootType = root[r'$type'] as String?;
-
-      // Check if root is a StrongRef (just uri/cid) or a full PostView
-      if (rootType == 'com.atproto.repo.strongRef') {
-        // This is just a reference, not a full post - leave it as is
-        // The model will handle this at the record level
-      } else if (rootType == 'app.bsky.feed.defs#postView') {
-        // This is a full PostView that needs to be wrapped in a 'post' field
-        // Create a deep copy to avoid reference issues
-        final postViewData = jsonDecode(jsonEncode(root)) as Map<String, dynamic>;
-
-        // Remove the $type from the PostView data (it shouldn't be inside the post object)
-        postViewData.remove(r'$type');
-
-        // Convert the PostView data to Spark format (mark as nested to avoid infinite recursion)
-        _convertBskyPostToSpark(postViewData, isNestedReply: true);
-
-        // Remove all fields except $type from root
-        root.removeWhere((key, value) => key != r'$type');
-
-        // Add the post wrapper
-        root['post'] = postViewData;
-      } else if (rootType == 'app.bsky.feed.defs#notFoundPost' ||
-                 rootType == 'app.bsky.feed.defs#blockedPost') {
-        // Already in correct format for notFound/blocked posts
-      } else if (root.containsKey('post')) {
-        // Has a post field - convert it
-        final rootPost = root['post'];
-        if (rootPost is Map<String, dynamic>) {
-          _convertBskyPostToSpark(rootPost);
-        }
-      }
-    }
-
-    // Convert parent post if it exists
-    if (replyRef.containsKey('parent') && replyRef['parent'] != null) {
-      final parent = replyRef['parent'] as Map<String, dynamic>;
-      final parentType = parent[r'$type'] as String?;
-
-      // Check if parent is a StrongRef (just uri/cid) or a full PostView
-      if (parentType == 'com.atproto.repo.strongRef') {
-        // This is just a reference, not a full post - leave it as is
-        // The model will handle this at the record level
-      } else if (parentType == 'app.bsky.feed.defs#postView') {
-        // This is a full PostView that needs to be wrapped in a 'post' field
-        // Create a deep copy to avoid reference issues
-        final postViewData = jsonDecode(jsonEncode(parent)) as Map<String, dynamic>;
-
-        // Remove the $type from the PostView data (it shouldn't be inside the post object)
-        postViewData.remove(r'$type');
-
-        // Convert the PostView data to Spark format (mark as nested to avoid infinite recursion)
-        _convertBskyPostToSpark(postViewData, isNestedReply: true);
-
-        // Remove all fields except $type from parent
-        parent.removeWhere((key, value) => key != r'$type');
-
-        // Add the post wrapper
-        parent['post'] = postViewData;
-      } else if (parentType == 'app.bsky.feed.defs#notFoundPost' ||
-                 parentType == 'app.bsky.feed.defs#blockedPost') {
-        // Already in correct format for notFound/blocked posts
-      } else if (parent.containsKey('post')) {
-        // Has a post field - convert it
-        final parentPost = parent['post'];
-        if (parentPost is Map<String, dynamic>) {
-          _convertBskyPostToSpark(parentPost);
-        }
-      }
-    }
   }
 
   @override

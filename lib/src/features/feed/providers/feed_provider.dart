@@ -139,9 +139,12 @@ class FeedNotifier extends _$FeedNotifier {
       return;
     }
 
+    if (state.loadingFirstLoad) {
+      return;
+    }
+
     _isLoadingInProgress = true;
     try {
-      _logger.d('First load started');
       state = state.copyWith(loadingFirstLoad: true, error: false);
 
       // gets ONLY the first f cached posts from the database (not all)
@@ -151,7 +154,6 @@ class FeedNotifier extends _$FeedNotifier {
 
       // adds the initial uris to the list of initial uris so that they are not fetched again
       _initialUris.addAll(uris);
-      _logger.d('Initial uris loaded: ${uris.length}');
 
       if (uris.isNotEmpty) {
         // Get existing cached posts to preserve viewer information (like status)
@@ -194,7 +196,6 @@ class FeedNotifier extends _$FeedNotifier {
           }
         }
         await _sqlCache.cachePosts(mergedPosts);
-        _logger.d('Updated starting posts in database with preserved viewer info');
       }
 
       // Store the cursor from the initial fetch
@@ -263,7 +264,6 @@ class FeedNotifier extends _$FeedNotifier {
         loadingFirstLoad: loadingFirstLoad,
       );
       _isWaitingForFreshPostsAtEnd = state.length <= 1;
-      _logger.d('First load finished with ${filteredUris.length} posts (${uris.length - filteredUris.length} hidden)');
     } catch (e, stackTrace) {
       _logger.e('Error in loadAndUpdateFirstLoad: $e', stackTrace: stackTrace);
       state = state.copyWith(loadingFirstLoad: false, error: true);
@@ -273,14 +273,12 @@ class FeedNotifier extends _$FeedNotifier {
   }
 
   Future<(int, List<AtUri>, String?)> fetch() async {
-    _logger.d('Fetching started.');
     // gets the skeleton of the feed
     final skeleton = await _feedRepository.getFeedSkeleton(_feed, limit: FeedState.fetchLimit, cursor: state.cursor);
     final fetchedUris = skeleton.feed.map((e) => e.uri).toList();
 
     // remove fetched uris that were present when the feed was first loaded
     final filteredUris = fetchedUris.where((uri) => !_initialUris.contains(uri)).toList();
-    _logger.d('Fetched ${skeleton.feed.length} posts, filtered to ${filteredUris.length}');
     return (skeleton.feed.length, filteredUris, skeleton.cursor);
   }
 
@@ -289,7 +287,6 @@ class FeedNotifier extends _$FeedNotifier {
   }
 
   Future<void> store(List<AtUri> uris) async {
-    _logger.d('Store called with ${uris.length} URIs. Current freshPostCount: ${state.freshPostCount}');
     _isCaching = true; // Set caching flag immediately
     var updatedPostCount = 0;
     state = state.copyWith(error: false);
@@ -298,8 +295,6 @@ class FeedNotifier extends _$FeedNotifier {
       final existingUris = await _sqlCache.getExistingPostUris(uris);
       // cache hit
       if (existingUris.isNotEmpty) {
-        _logger.d('Found ${existingUris.length} existing posts in cache');
-
         // Get existing cached posts to preserve viewer information (like status)
         final cachedPosts = await _sqlCache.getPostsByUris(existingUris);
         final cachedPostsMap = {for (final post in cachedPosts) post.uri: post};
@@ -330,23 +325,16 @@ class FeedNotifier extends _$FeedNotifier {
         updatedPostCount = newExistingUris.length;
 
         if (updatedPostCount > 0) {
-          _logger.d(
-            'Updated $updatedPostCount posts in database (${existingUris.length - updatedPostCount} were already loaded)',
-          );
           state = state.copyWith(freshPostCount: state.freshPostCount + updatedPostCount);
-        } else {
-          _logger.d('All ${existingUris.length} existing posts were already loaded, not incrementing freshPostCount');
         }
       }
 
       // gets the posts that are not cached
       final nonExistingUris = uris.where((uri) => !existingUris.contains(uri)).toList();
       if (nonExistingUris.isEmpty) {
-        _logger.d('No new posts to download, setting isCaching to false');
         _isCaching = false;
         return;
       }
-      _logger.d('Downloading ${nonExistingUris.length} new posts');
       final nonExistingPosts = await _feedRepository.getPosts(nonExistingUris, bluesky: _shouldUseBlueskyAPI());
 
       // gets the subscribed labels for the new posts
@@ -388,9 +376,6 @@ class FeedNotifier extends _$FeedNotifier {
               // Only increment if the post is not already in loadedPosts
               if (!state.loadedPosts.contains(task.uri)) {
                 increaseFreshPostCount();
-                _logger.d('Downloaded new post ${task.uri}, freshPostCount now: ${state.freshPostCount + 1}');
-              } else {
-                _logger.d('Downloaded post ${task.uri} but it was already loaded, not incrementing freshPostCount');
               }
               newPostsCached++;
               // == to only trigger this once
@@ -428,10 +413,7 @@ class FeedNotifier extends _$FeedNotifier {
       // yeah this is O(n²). but i spent too much time trying to avoid repeated posts
       final uris = posts.map((e) => e.uri).toList().where((uri) => !state.loadedPosts.contains(uri)).toList();
 
-      _logger.d('Database returned ${posts.length} posts');
-
       if (uris.isEmpty) {
-        _logger.d('No new posts to load (all ${uris.length} were already loaded)');
         // Still need to decrement freshPostCount since those posts were "consumed"
         state = state.copyWith(freshPostCount: math.max(0, state.freshPostCount - amountToLoad));
         _isLoading = false;
@@ -439,7 +421,6 @@ class FeedNotifier extends _$FeedNotifier {
       }
 
       _isWaitingForFreshPostsAtEnd = amountToLoad <= 1; // edge case where only one post is loaded
-      _logger.d('Loaded ${uris.length} fresh posts from database. Already loaded: ${uris.length - uris.length}');
 
       // gets the subscribed labels for the posts
       final followedLabelers = await _settingsRepository.getFollowedLabelers();
@@ -528,12 +509,6 @@ class FeedNotifier extends _$FeedNotifier {
         extraInfo: extraInfo,
         loadingFirstLoad: false,
       );
-
-      _logger.d(
-        'Load complete. Total loaded posts: ${state.loadedPosts.length}, remaining fresh: ${state.freshPostCount} (${uris.length - filteredUris.length} hidden)',
-      );
-    } else {
-      _logger.d('No fresh posts available to load (freshPostCount: ${state.freshPostCount})');
     }
     _isLoading = false;
   }
@@ -552,13 +527,10 @@ class FeedNotifier extends _$FeedNotifier {
 
   Future<void> scrollDown() async {
     if (state.length - state.index < FeedState.loadLimit) {
-      // this will be called every time the user scrolls down with few posts left
       await load();
-      // this will be called only once with few posts left to minimize the number of fetches and posts downloaded at once
       if (!_isCaching) {
         final (int fetchedCount, List<AtUri> fetchedUris, String? cursor) = await fetch();
         if (fetchedCount == 0) {
-          // it's over. the user will have to open the app again to see new posts (if there are any)
           endOfNetworkFeed();
         } else {
           // Store the new cursor and then store the fetched posts
