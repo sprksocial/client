@@ -30,16 +30,16 @@ class FeedRepositoryImpl implements FeedRepository {
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger('FeedRepository');
 
   bool _postViewHasMedia(PostView post) => post.hasSupportedMedia;
-  
+
   bool _feedViewPostHasMedia(FeedViewPost feedViewPost) {
     return feedViewPost.map(
       post: (p) => p.post.hasSupportedMedia,
       reply: (r) => r.reply.media != null,
     );
   }
-  
+
   AtUri _getPostViewUri(PostView post) => post.uri;
-  
+
   AtUri _getFeedViewPostUri(FeedViewPost feedViewPost) => feedViewPost.uri;
 
   List<T> _parseAndFilterPosts<T>({
@@ -50,10 +50,14 @@ class FeedRepositoryImpl implements FeedRepository {
     required String source,
   }) {
     final posts = <T>[];
+    final isBskySource = source.contains('bsky');
+    var parseErrors = 0;
+    var noMediaCount = 0;
+
     for (final rawPost in rawPosts) {
       try {
         final postData = rawPost is Map<String, dynamic> ? rawPost : rawPost.toJson();
-        
+
         // Fix missing $type field for FeedViewPost union type
         if ((postData[r'$type'] as String?) == null) {
           if (postData.containsKey('post') == true) {
@@ -62,20 +66,18 @@ class FeedRepositoryImpl implements FeedRepository {
             postData[r'$type'] = 'so.sprk.feed.defs#feedReplyView';
           }
         }
-        
+
         final parsedPost = fromJson(postData as Map<String, dynamic>);
 
         if (hasMedia(parsedPost)) {
           posts.add(parsedPost);
-          _logger.d('Added $source post with media: ${getUri(parsedPost)}');
         } else {
-          _logger.d('Filtered out $source post with unsupported embed type: ${getUri(parsedPost)}');
         }
       } catch (e) {
         _logger.w('Failed to parse $source post, skipping: $e');
       }
     }
-    _logger.d('Returning ${posts.length} posts with media out of ${rawPosts.length} total $source posts');
+
     return posts;
   }
 
@@ -122,11 +124,21 @@ class FeedRepositoryImpl implements FeedRepository {
       _logger.d('Getting posts on bluesky API for: ${uris.length} URIs');
       final blueskyClient = bsky.Bluesky.fromSession(_client.authRepository.session!);
       final posts = await blueskyClient.feed.getPosts(uris: uris);
-      final parsedPosts = posts.data.posts.map((post) => PostView.fromJson(post.toJson())).toList();
-      final convertedPosts = parsedPosts.map((post) => post.toSparkPostView()).toList();
-      final filteredPosts = filter
-          ? convertedPosts.where(_postViewHasMedia).toList()
-          : convertedPosts;
+      
+      // Convert Bluesky posts to JSON and apply transformations
+      final rawPosts = posts.data.posts.map((post) => post.toJson()).toList();
+      final convertedJsonPosts = <Map<String, dynamic>>[];
+      
+      for (final rawPost in rawPosts) {
+        final postData = rawPost as Map<String, dynamic>;
+        _convertBskyPostToSpark(postData);
+        convertedJsonPosts.add(postData);
+      }
+      
+      // Parse the converted JSON
+      final parsedPosts = convertedJsonPosts.map((json) => PostView.fromJson(json)).toList();
+      final sparkPosts = parsedPosts.map((post) => post.toSparkPostView()).toList();
+      final filteredPosts = filter ? sparkPosts.where(_postViewHasMedia).toList() : sparkPosts;
       return filteredPosts;
     }
     return _client.executeWithRetry(() async {
@@ -259,24 +271,189 @@ class FeedRepositoryImpl implements FeedRepository {
           filter: videosOnly ? bsky.FeedFilter.postsWithVideo : bsky.FeedFilter.postsWithMedia,
         );
 
-        final rawFeed = resultBsky.data.feed.map((post) => post.toJson()).toList();
-        final feedPosts = _parseAndFilterPosts<FeedViewPost>(
-          rawPosts: rawFeed,
-          fromJson: FeedViewPost.fromJson,
-          hasMedia: _feedViewPostHasMedia,
-          getUri: _getFeedViewPostUri,
-          source: 'bsky author feed',
-        );
+        // Convert Bluesky FeedView objects to JSON
+        final rawFeed = resultBsky.data.feed.map((feedView) => feedView.toJson()).toList();
+
+        // Convert Bluesky JSON to Spark FeedViewPost by transforming the structure
+        final feedPosts = <FeedViewPost>[];
+        var parseErrorCount = 0;
+        for (var i = 0; i < rawFeed.length; i++) {
+          try {
+            final rawPost = rawFeed[i];
+            if (rawPost == null) {
+              continue;
+            }
+
+            final postData = rawPost as Map<String, dynamic>;
+
+            // Convert Bluesky post structure to Spark structure
+            if (postData.containsKey('post') && postData['post'] != null) {
+              final post = postData['post'] as Map<String, dynamic>;
+              _convertBskyPostToSpark(post);
+
+              // Check if this post also has a reply field (it's a reply with context)
+              if (postData.containsKey('reply') && postData['reply'] != null) {
+                final replyContext = postData['reply'] as Map<String, dynamic>;
+                _convertReplyRef(replyContext);
+              }
+
+              // Always use feedPostView when we have a post field
+              // The optional reply field provides context about what this post is replying to
+              postData[r'$type'] = 'so.sprk.feed.defs#feedPostView';
+            } else if (postData.containsKey('reply') && postData['reply'] != null) {
+              // Reply without a post field (shouldn't happen in practice)
+              final replyContext = postData['reply'] as Map<String, dynamic>;
+              _convertReplyRef(replyContext);
+              postData[r'$type'] = 'so.sprk.feed.defs#feedReplyView';
+            } else {
+              continue;
+            }
+
+            final parsedPost = FeedViewPost.fromJson(postData);
+            feedPosts.add(parsedPost);
+          } catch (e, stackTrace) {
+            parseErrorCount++;
+            _logger.e('Failed to parse bsky feed view #$i', error: e, stackTrace: stackTrace);
+          }
+        }
         final convertedPosts = feedPosts.map((post) => post.toSparkFeedViewPost()).toList();
         final filteredPosts = convertedPosts.where(_feedViewPostHasMedia).toList();
-
-        _logger.d('Author feed retrieved successfully from Bsky');
         return (posts: filteredPosts, cursor: resultBsky.data.cursor);
       } catch (e) {
         _logger.e('Error getting author feed from Bsky', error: e);
         rethrow;
       }
     });
+  }
+
+  /// Recursively converts a Bluesky post JSON to Spark format
+  void _convertBskyPostToSpark(Map<String, dynamic> post, {bool isNestedReply = false}) {
+    // Convert the PostView's top-level embed field to media
+    if (post.containsKey('embed')) {
+      post['media'] = post['embed'];
+      post.remove('embed');
+    }
+
+    // Convert the record from Bluesky format to Spark format
+    if (post.containsKey('record') && post['record'] != null) {
+      final record = post['record'] as Map<String, dynamic>;
+      final recordType = record[r'$type'] as String?;
+
+      // Convert app.bsky.feed.post to so.sprk.feed.post format
+      if (recordType == 'app.bsky.feed.post') {
+        final text = record['text'] as String? ?? '';
+        final facets = record['facets'] as List<dynamic>? ?? [];
+
+        // Create caption object from text and facets
+        record['caption'] = {
+          'text': text,
+          'facets': facets,
+        };
+
+        // Change $type to Spark format
+        record[r'$type'] = 'so.sprk.feed.post';
+
+        // Move embed to media at record level
+        if (record.containsKey('embed')) {
+          record['media'] = record['embed'];
+          record.remove('embed');
+        }
+
+        // Remove text and facets as they're now in caption
+        record.remove('text');
+        record.remove('facets');
+
+        // Convert nested reply references if they exist
+        if (record.containsKey('reply') && record['reply'] != null) {
+          final reply = record['reply'] as Map<String, dynamic>;
+          _convertReplyRef(reply);
+        }
+      }
+    }
+
+    // Also check if this post has a reply field at the post level (not record level)
+    // But don't process if this is already a nested reply to avoid infinite recursion
+    if (!isNestedReply && post.containsKey('reply') && post['reply'] != null) {
+      final replyRef = post['reply'] as Map<String, dynamic>;
+      _convertReplyRef(replyRef);
+    }
+  }
+
+  /// Converts reply references (root and parent posts)
+  void _convertReplyRef(Map<String, dynamic> replyRef) {
+    // Convert root post if it exists
+    if (replyRef.containsKey('root') && replyRef['root'] != null) {
+      final root = replyRef['root'] as Map<String, dynamic>;
+      final rootType = root[r'$type'] as String?;
+
+      // Check if root is a StrongRef (just uri/cid) or a full PostView
+      if (rootType == 'com.atproto.repo.strongRef') {
+        // This is just a reference, not a full post - leave it as is
+        // The model will handle this at the record level
+      } else if (rootType == 'app.bsky.feed.defs#postView') {
+        // This is a full PostView that needs to be wrapped in a 'post' field
+        // Create a deep copy to avoid reference issues
+        final postViewData = jsonDecode(jsonEncode(root)) as Map<String, dynamic>;
+
+        // Remove the $type from the PostView data (it shouldn't be inside the post object)
+        postViewData.remove(r'$type');
+
+        // Convert the PostView data to Spark format (mark as nested to avoid infinite recursion)
+        _convertBskyPostToSpark(postViewData, isNestedReply: true);
+
+        // Remove all fields except $type from root
+        root.removeWhere((key, value) => key != r'$type');
+
+        // Add the post wrapper
+        root['post'] = postViewData;
+      } else if (rootType == 'app.bsky.feed.defs#notFoundPost' ||
+                 rootType == 'app.bsky.feed.defs#blockedPost') {
+        // Already in correct format for notFound/blocked posts
+      } else if (root.containsKey('post')) {
+        // Has a post field - convert it
+        final rootPost = root['post'];
+        if (rootPost is Map<String, dynamic>) {
+          _convertBskyPostToSpark(rootPost);
+        }
+      }
+    }
+
+    // Convert parent post if it exists
+    if (replyRef.containsKey('parent') && replyRef['parent'] != null) {
+      final parent = replyRef['parent'] as Map<String, dynamic>;
+      final parentType = parent[r'$type'] as String?;
+
+      // Check if parent is a StrongRef (just uri/cid) or a full PostView
+      if (parentType == 'com.atproto.repo.strongRef') {
+        // This is just a reference, not a full post - leave it as is
+        // The model will handle this at the record level
+      } else if (parentType == 'app.bsky.feed.defs#postView') {
+        // This is a full PostView that needs to be wrapped in a 'post' field
+        // Create a deep copy to avoid reference issues
+        final postViewData = jsonDecode(jsonEncode(parent)) as Map<String, dynamic>;
+
+        // Remove the $type from the PostView data (it shouldn't be inside the post object)
+        postViewData.remove(r'$type');
+
+        // Convert the PostView data to Spark format (mark as nested to avoid infinite recursion)
+        _convertBskyPostToSpark(postViewData, isNestedReply: true);
+
+        // Remove all fields except $type from parent
+        parent.removeWhere((key, value) => key != r'$type');
+
+        // Add the post wrapper
+        parent['post'] = postViewData;
+      } else if (parentType == 'app.bsky.feed.defs#notFoundPost' ||
+                 parentType == 'app.bsky.feed.defs#blockedPost') {
+        // Already in correct format for notFound/blocked posts
+      } else if (parent.containsKey('post')) {
+        // Has a post field - convert it
+        final parentPost = parent['post'];
+        if (parentPost is Map<String, dynamic>) {
+          _convertBskyPostToSpark(parentPost);
+        }
+      }
+    }
   }
 
   @override

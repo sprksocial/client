@@ -97,7 +97,7 @@ class ProfileFeed extends _$ProfileFeed {
     for (final feedViewPost in bskyResult.posts) {
       final uri = feedViewPost.uri;
       if (sparkRkeys.contains(uri.rkey) || postViews.containsKey(uri)) {
-        _logger.d('Skipping Bsky post with rkey ${uri.rkey} - already exists.');
+
         continue;
       }
       final postView = feedViewPost.asPost;

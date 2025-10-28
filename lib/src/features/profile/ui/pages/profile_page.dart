@@ -20,6 +20,7 @@ import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/core/utils/text_formatter.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
+import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/pages/user_list_page.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/early_supporter_sheet.dart';
@@ -332,7 +333,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               selectedTabIndex: tabsRouter.activeIndex,
               onTabChanged: tabsRouter.setActiveIndex,
               contentWidget: child,
-              onRefresh: notifier.refreshProfile,
+              onRefresh: () async {
+                await notifier.refreshProfile();
+                ref.invalidate(profileFeedProvider);
+              },
             );
           },
         );
