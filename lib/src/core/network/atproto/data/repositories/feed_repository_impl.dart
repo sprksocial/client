@@ -903,7 +903,7 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       final response = await atproto.get(
-        NSID.parse('so.sprk.feed.getStoriesTimeline'),
+        NSID.parse('so.sprk.story.getStoriesTimeline'),
         parameters: {'limit': limit, 'cursor': cursor},
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) {
@@ -942,7 +942,7 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       final response = await atproto.get(
-        NSID.parse('so.sprk.feed.getStories'),
+        NSID.parse('so.sprk.story.getStories'),
         parameters: {'uris': storyUris},
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) =>
