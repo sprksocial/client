@@ -141,6 +141,7 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
     final asyncState = ref.watch(commentsPageProvider(postUri: _postAtUri));
     final threadPost = asyncState.value?.thread.post;
     final displayPost = _post ?? (threadPost is ThreadPostView ? threadPost.post : null);
+    final commentCount = asyncState.value?.thread.replies?.length ?? 0;
     final borderColor = Theme.of(context).colorScheme.outline;
     final textColor = Theme.of(context).colorScheme.onSurface;
 
@@ -169,7 +170,7 @@ class _CommentsListPageState extends ConsumerState<CommentsListPage> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '${displayPost.replyCount ?? 0} comments',
+                      '$commentCount comments',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: textColor),
                     ),
                     IconButton(

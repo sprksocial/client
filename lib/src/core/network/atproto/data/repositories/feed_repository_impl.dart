@@ -71,8 +71,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
         if (hasMedia(parsedPost)) {
           posts.add(parsedPost);
-        } else {
-        }
+        } else {}
       } catch (e) {
         _logger.w('Failed to parse $source post, skipping: $e');
       }
@@ -124,17 +123,17 @@ class FeedRepositoryImpl implements FeedRepository {
       _logger.d('Getting posts on bluesky API for: ${uris.length} URIs');
       final blueskyClient = bsky.Bluesky.fromSession(_client.authRepository.session!);
       final posts = await blueskyClient.feed.getPosts(uris: uris);
-      
+
       // Convert Bluesky posts to JSON and apply transformations
       final rawPosts = posts.data.posts.map((post) => post.toJson()).toList();
       final convertedJsonPosts = <Map<String, dynamic>>[];
-      
+
       for (final rawPost in rawPosts) {
         final postData = rawPost as Map<String, dynamic>;
         BskyToSparkJsonAdapter.convertPostViewJson(postData);
         convertedJsonPosts.add(postData);
       }
-      
+
       // Parse the converted JSON
       final parsedPosts = convertedJsonPosts.map((json) => PostView.fromJson(json)).toList();
       final sparkPosts = parsedPosts.map((post) => post.toSparkPostView()).toList();
@@ -159,6 +158,7 @@ class FeedRepositoryImpl implements FeedRepository {
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) {
           final posts = jsonMap['posts']! as List<dynamic>;
+          _logger.d('Raw API response for first post: ${posts.isNotEmpty ? posts[0] : "empty"}');
           return _parseAndFilterPosts<PostView>(
             rawPosts: posts,
             fromJson: PostView.fromJson,
@@ -169,7 +169,10 @@ class FeedRepositoryImpl implements FeedRepository {
         },
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
-      _logger.d('Posts retrieved successfully');
+      _logger.d('Posts retrieved successfully: ${result.data.length} posts');
+      if (result.data.isNotEmpty) {
+        _logger.d('First post replyCount: ${result.data.first.replyCount}, likeCount: ${result.data.first.likeCount}');
+      }
 
       return result.data;
     });
@@ -288,7 +291,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
             // Convert Bluesky post structure to Spark structure
             BskyToSparkJsonAdapter.convertFeedViewPostJson(postData);
-            
+
             if (!postData.containsKey(r'$type')) {
               continue;
             }
@@ -820,10 +823,11 @@ class FeedRepositoryImpl implements FeedRepository {
       const source = 'so.sprk.feed.getPostThread';
       final response = await atproto.get(
         NSID.parse(source),
-        parameters: {'uri': uri.toString(), 'depth': depth, 'parentHeight': parentHeight},
+        parameters: {'anchor': uri.toString(), 'depth': depth, 'parentHeight': parentHeight},
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) {
-          return Thread.fromJson(jsonMap['thread']! as Map<String, dynamic>);
+          final threadItems = jsonMap['thread']! as List<dynamic>;
+          return Thread.fromSparkFlatList(threadItems: threadItems, anchorUri: uri);
         },
       );
 

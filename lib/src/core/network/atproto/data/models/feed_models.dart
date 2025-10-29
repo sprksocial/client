@@ -715,12 +715,21 @@ sealed class ThreadPost with _$ThreadPost {
   
   List<String> get imageUrls => switch (this) {
     ThreadPostView(:final post) => post.imageUrls,
-    ThreadReplyView() => [],
+    ThreadReplyView(:final reply) => reply.media?.mapOrNull(
+      mediaImages: (images) => images.images.map((img) => img.fullsize.toString()).toList(),
+    ) ?? [],
   };
   
   bool get isSprk => switch (this) {
     ThreadPostView(:final post) => post.isSprk,
-    ThreadReplyView() => false,
+    ThreadReplyView(:final reply) => () {
+      final rec = reply.record;
+      if (rec is Map<String, dynamic>) {
+        final type = rec[r'$type'] as String?;
+        return type == 'so.sprk.feed.reply' || type == 'so.sprk.feed.post';
+      }
+      return false;
+    }(),
   };
   
   ProfileViewBasic get author => switch (this) {
@@ -735,7 +744,7 @@ sealed class ThreadPost with _$ThreadPost {
   
   String get displayText => switch (this) {
     ThreadPostView(:final post) => post.displayText,
-    ThreadReplyView() => '',
+    ThreadReplyView(:final reply) => reply.displayText,
   };
   
   DateTime get indexedAt => switch (this) {
@@ -745,7 +754,9 @@ sealed class ThreadPost with _$ThreadPost {
   
   String get videoUrl => switch (this) {
     ThreadPostView(:final post) => post.videoUrl,
-    ThreadReplyView() => '',
+    ThreadReplyView(:final reply) => reply.media?.mapOrNull(
+      mediaVideo: (video) => video.playlist.toString(),
+    ) ?? '',
   };
 }
 
@@ -921,8 +932,11 @@ class Thread with _$Thread {
             }
           }
 
+          // Convert from Bluesky format to Spark format
+          BskyToSparkJsonAdapter.convertPostViewJson(postViewJson);
+
           final thread = Thread.threadViewPost(
-            post: ThreadPost.post(post: PostView.fromJson(postViewJson).toSparkPostView()),
+            post: ThreadPost.post(post: PostView.fromJson(postViewJson)),
             parent: data.parent != null ? Thread.fromBsky(thread: data.parent!, uri: uri) : null,
             replies: data.replies
                 ?.map((reply) {
@@ -956,6 +970,183 @@ class Thread with _$Thread {
       default:
         throw Exception('Unsupported thread type: ${thread.runtimeType}');
     }
+  }
+
+  factory Thread.fromSparkFlatList({required List<dynamic> threadItems, required AtUri anchorUri}) {
+    if (threadItems.isEmpty) {
+      throw Exception('Thread items list is empty');
+    }
+
+    // Parse all thread items with their indices
+    final items = <({int index, int depth, String uri, Thread thread})>[];
+    for (var i = 0; i < threadItems.length; i++) {
+      try {
+        final itemMap = threadItems[i] as Map<String, dynamic>;
+        final depth = itemMap['depth'] as int;
+        final uri = itemMap['uri'] as String;
+        final value = itemMap['value'] as Map<String, dynamic>;
+        
+        // Ensure $type is set correctly for the thread
+        if (!value.containsKey(r'$type')) {
+          value[r'$type'] = 'so.sprk.feed.defs#threadViewPost';
+        }
+        
+        // If it's a threadViewPost, ensure the post field is properly structured
+        if (value[r'$type'] == 'so.sprk.feed.defs#threadViewPost' && value['post'] != null) {
+          final postMap = value['post'] as Map<String, dynamic>;
+          
+          // Determine the post/reply type based on the record type
+          var postViewType = 'so.sprk.feed.defs#postView';
+          if (postMap['record'] != null) {
+            final recordMap = postMap['record'] as Map<String, dynamic>;
+            final recordType = recordMap[r'$type'] as String?;
+            
+            // Convert legacy format: if record has 'text' field, convert it to 'caption'
+            if (recordMap.containsKey('text') && !recordMap.containsKey('caption')) {
+              final text = recordMap['text'] as String? ?? '';
+              final facets = recordMap['facets'] as List<dynamic>? ?? [];
+              recordMap['caption'] = {
+                'text': text,
+                'facets': facets,
+              };
+              recordMap.remove('text');
+              recordMap.remove('facets');
+            }
+            
+            // Handle media field in record - ensure nested refs are not null
+            if (recordMap.containsKey('media') && recordMap['media'] != null) {
+              final mediaMap = recordMap['media'] as Map<String, dynamic>?;
+              if (mediaMap != null && mediaMap['images'] != null) {
+                final images = mediaMap['images'] as List<dynamic>?;
+                if (images != null) {
+                  for (final img in images) {
+                    if (img is Map<String, dynamic> && img['image'] != null) {
+                      final imageBlob = img['image'] as Map<String, dynamic>?;
+                      if (imageBlob != null) {
+                        // Ensure ref is not null
+                        if (imageBlob['ref'] == null) {
+                          imageBlob['ref'] = {};
+                        }
+                        // Check original field
+                        if (imageBlob.containsKey('original') && imageBlob['original'] != null) {
+                          final original = imageBlob['original'] as Map<String, dynamic>?;
+                          if (original != null && original['ref'] == null) {
+                            original['ref'] = {};
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            
+            if (recordType == 'so.sprk.feed.reply') {
+              postViewType = 'so.sprk.feed.defs#replyView';
+            } else if (recordType == 'so.sprk.feed.post') {
+              postViewType = 'so.sprk.feed.defs#postView';
+            }
+          }
+          
+          // The API returns post/reply directly, but ThreadPost expects it wrapped
+          // ThreadPost is a union that wraps either PostView or ReplyView
+          // Set the correct $type and wrap accordingly
+          postMap[r'$type'] = postViewType;
+          
+          if (postViewType == 'so.sprk.feed.defs#replyView') {
+            // Wrap as ThreadReplyView
+            value['post'] = <String, dynamic>{
+              r'$type': 'so.sprk.feed.defs#replyView',
+              'reply': postMap,
+            };
+          } else {
+            // Wrap as ThreadPostView  
+            value['post'] = <String, dynamic>{
+              r'$type': 'so.sprk.feed.defs#postView',
+              'post': postMap,
+            };
+          }
+        }
+        
+        // Handle threadContext field - ensure it has data or remove it
+        if (value.containsKey('threadContext')) {
+          final contextValue = value['threadContext'];
+          if (contextValue == null || contextValue is! Map<String, dynamic>) {
+            value.remove('threadContext');
+          } else {
+            // If threadContext only has $type and no actual data, remove it
+            final contextMap = contextValue as Map<String, dynamic>;
+            if (contextMap.length == 1 && contextMap.containsKey(r'$type')) {
+              value.remove('threadContext');
+            }
+          }
+        }
+        
+        Thread thread;
+        try {
+          thread = Thread.fromJson(value);
+        } catch (e) {
+          // Try to identify which field is failing
+          throw Exception('Failed to parse Thread.fromJson: $e\nValue keys: ${value.keys.join(", ")}\nPost keys: ${(value['post'] as Map?)?.keys.join(", ")}\nRecord keys: ${((value['post'] as Map?)?['record'] as Map?)?.keys.join(", ")}');
+        }
+        items.add((index: i, depth: depth, uri: uri, thread: thread));
+      } catch (e, stackTrace) {
+        throw Exception('Error parsing thread item at index $i: $e\nItem: ${threadItems[i]}\nStackTrace: $stackTrace');
+      }
+    }
+
+    // Find the anchor (depth 0)
+    final anchorIndex = items.indexWhere((item) => item.depth == 0);
+    if (anchorIndex == -1) {
+      throw Exception('Anchor post not found in thread items');
+    }
+
+    // Build nested structure: for each item, find its direct children (next depth level)
+    Thread buildWithReplies(int startIndex) {
+      final currentItem = items[startIndex];
+      final currentDepth = currentItem.depth;
+      final replies = <Thread>[];
+
+      // Find all direct children (depth = currentDepth + 1) until we hit same or lower depth
+      var i = startIndex + 1;
+      while (i < items.length) {
+        final item = items[i];
+        
+        if (item.depth <= currentDepth) {
+          // We've moved to a sibling or back up the tree
+          break;
+        }
+        
+        if (item.depth == currentDepth + 1) {
+          // This is a direct child, recursively build it
+          replies.add(buildWithReplies(i));
+          // Skip past this subtree
+          i++;
+          while (i < items.length && items[i].depth > currentDepth + 1) {
+            i++;
+          }
+        } else {
+          i++;
+        }
+      }
+
+      if (replies.isEmpty) {
+        return currentItem.thread;
+      }
+
+      return currentItem.thread.map(
+        threadViewPost: (threadPost) => Thread.threadViewPost(
+          post: threadPost.post,
+          parent: threadPost.parent,
+          replies: replies,
+          context: threadPost.context,
+        ),
+        notFoundPost: (notFound) => notFound,
+        blockedPost: (blocked) => blocked,
+      );
+    }
+
+    return buildWithReplies(anchorIndex);
   }
 }
 

@@ -301,6 +301,11 @@ class FeedNotifier extends _$FeedNotifier {
 
         final posts = await _feedRepository.getPosts(existingUris, bluesky: _shouldUseBlueskyAPI());
 
+        _logger.d('getPosts returned ${posts.length} posts');
+        for (final post in posts) {
+          _logger.d('Post ${post.uri}: replyCount=${post.replyCount}, likeCount=${post.likeCount}');
+        }
+
         // Preserve viewer information from cached posts when updating with fresh data
         final mergedPosts = <PostView>[];
         for (final freshPost in posts) {

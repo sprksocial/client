@@ -191,7 +191,10 @@ extension BskyPostViewAdapter on PostView {
   PostView toSparkPostView() {
     return copyWith(
       record: record.toSparkRecord() as PostRecord,
-      media: media,
+      likeCount: likeCount,
+      replyCount: replyCount,
+      repostCount: repostCount,
+      quoteCount: quoteCount,
     );
   }
 }
@@ -201,6 +204,8 @@ extension BskyReplyViewAdapter on ReplyView {
     return copyWith(
       record: record.toSparkRecord(),
       media: media,
+      replyCount: replyCount,
+      likeCount: likeCount,
     );
   }
 }
