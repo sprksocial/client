@@ -5,7 +5,6 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
@@ -17,7 +16,15 @@ import 'package:sparksocial/src/features/messages/ui/widgets/messages_list.dart'
 
 @RoutePage()
 class ChatPage extends ConsumerStatefulWidget {
-  const ChatPage({required this.otherUserDid, super.key, this.otherUserHandle, this.otherUserDisplayName, this.otherUserAvatar});
+  const ChatPage({
+    @PathParam('conversationId') required this.conversationId,
+    required this.otherUserDid,
+    super.key,
+    this.otherUserHandle,
+    this.otherUserDisplayName,
+    this.otherUserAvatar,
+  });
+  final String conversationId;
   final String otherUserDid;
   final String? otherUserHandle;
   final String? otherUserDisplayName;
@@ -47,36 +54,15 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     return widget.otherUserDisplayName ?? widget.otherUserHandle ?? 'Chat';
   }
 
-  List<String> _extractLinks(String text) {
-    final urlRegex = RegExp(
-      r'https?://(?:www\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z]+)+\S*|www\.[a-zA-Z0-9-]+(?:\.[a-zA-Z]+)+\S*',
-      caseSensitive: false,
-    );
-    return urlRegex.allMatches(text).map((match) => match.group(0)!).toList();
-  }
-
   Future<void> _sendMessage() async {
-    var content = _messageController.text.trim();
-    final links = _extractLinks(content);
-
-    // remove links from content
-    for (final link in links) {
-      content = content.replaceAll(link, '');
-    }
-    content = content.trim(); // Remove extra whitespace after link removal
-
-    final linkEmbeds = <Embed>[];
-    for (final link in links) {
-      linkEmbeds.add(Embed(type: 'link', url: link, preview: link));
-    }
-
-    if (content.isEmpty && linkEmbeds.isEmpty) return;
+    final content = _messageController.text.trim();
+    if (content.isEmpty) return;
 
     _messageController.clear();
 
     try {
-      final chatService = ref.read(conversationProvider(widget.otherUserDid).notifier);
-      await chatService.sendMessage(widget.otherUserDid, content, embed: linkEmbeds.isNotEmpty ? linkEmbeds : null);
+      final chatService = ref.read(conversationProvider(widget.conversationId).notifier);
+      await chatService.sendMessage(widget.conversationId, content);
 
       // No need to manage local state since the provider handles it
       _scrollToBottom();
@@ -101,8 +87,8 @@ class _ChatPageState extends ConsumerState<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(conversationProvider(widget.otherUserDid));
-    ref.listen(pollingTriggerProvider(widget.otherUserDid), (previous, next) {});
+    final state = ref.watch(conversationProvider(widget.conversationId));
+    ref.listen(pollingTriggerProvider(widget.conversationId), (previous, next) {});
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: AppBar(
@@ -167,7 +153,7 @@ class _ChatPageState extends ConsumerState<ChatPage> {
                       Text('Failed to load messages', style: TextStyle(color: Theme.of(context).colorScheme.error)),
                       const SizedBox(height: 8),
                       ElevatedButton(
-                        onPressed: () => ref.invalidate(conversationProvider(widget.otherUserDid)),
+                        onPressed: () => ref.invalidate(conversationProvider(widget.conversationId)),
                         child: const Text('Retry'),
                       ),
                     ],

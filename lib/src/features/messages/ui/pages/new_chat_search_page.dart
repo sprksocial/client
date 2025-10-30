@@ -2,7 +2,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/search/providers/search_provider.dart';
 import 'package:sparksocial/src/features/search/ui/widgets/suggested_account_card.dart';
@@ -153,16 +155,19 @@ class _UserResultsState extends ConsumerState<_UserResults> {
 
   Future<void> _startChat(ProfileView actor) async {
     try {
-      if (mounted) {
-        context.router.push(
-          ChatRoute(
-            otherUserDid: actor.did,
-            otherUserHandle: actor.handle,
-            otherUserDisplayName: actor.displayName,
-            otherUserAvatar: actor.avatar?.toString(),
-          ),
-        );
-      }
+      // Get or create the conversation for these members, then navigate with convoId
+      final repo = GetIt.I<MessagesRepository>();
+      final convo = await repo.getConvoForMembers([actor.did]);
+      if (!mounted) return;
+      context.router.push(
+        ChatRoute(
+          conversationId: convo.id,
+          otherUserDid: actor.did,
+          otherUserHandle: actor.handle,
+          otherUserDisplayName: actor.displayName,
+          otherUserAvatar: actor.avatar?.toString(),
+        ),
+      );
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Unable to start chat: $e')));

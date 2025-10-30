@@ -19,6 +19,9 @@ class AppConfig {
   /// Base URL for the messages service (chat service).
   static String get messagesServiceUrl => _getStringValue('MESSAGES_SERVICE_URL', 'http://localhost:3000');
 
+  /// Service DID for the chat service (used for service auth).
+  static String get chatServiceDid => _getStringValue('CHAT_SERVICE_DID', 'did:example:chat-service');
+
   /// Whether new user registrations are disabled.
   static bool get signupsDisabled => _getBoolValue('SIGNUPS_DISABLED', false);
 

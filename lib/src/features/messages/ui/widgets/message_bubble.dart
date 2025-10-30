@@ -13,7 +13,7 @@ class MessageBubble extends StatelessWidget {
     super.key,
   });
 
-  final Message message;
+  final MessageView message;
   final bool isCurrentUser;
   final bool showAvatar;
   final String? otherUserAvatar;
@@ -50,7 +50,7 @@ class MessageBubble extends StatelessWidget {
           ],
           Flexible(
             child: () {
-              final cleanedMessage = _removeLinksFromText(message.message);
+              final cleanedMessage = _removeLinksFromText(message.text);
               // Only show the bubble if there's text content after removing links
               if (cleanedMessage.isEmpty) {
                 return const SizedBox.shrink();

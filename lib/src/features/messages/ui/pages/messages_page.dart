@@ -68,7 +68,7 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
                   Container(height: 0.5, width: double.infinity, color: theme.colorScheme.outline),
                   Expanded(
                     child: _selectedTabIndex == 0
-                        ? MessagesTab(onRefresh: () => {ref.invalidate(conversationsProvider)})
+                        ? MessagesTab(onRefresh: () => ref.refresh(conversationsProvider.future))
                         : const ActivitiesTab(),
                   ),
                 ],
@@ -164,7 +164,7 @@ class TabItem extends StatelessWidget {
 
 class MessagesTab extends ConsumerWidget {
   const MessagesTab({required this.onRefresh, super.key});
-  final VoidCallback onRefresh;
+  final Future<void> Function() onRefresh;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -172,10 +172,13 @@ class MessagesTab extends ConsumerWidget {
 
     return state.when(
       data: (data) {
-        return ListView.builder(
-          itemCount: data.conversations.length,
-          padding: EdgeInsets.zero,
-          itemBuilder: (context, index) {
+        return RefreshIndicator(
+          onRefresh: onRefresh,
+          child: ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            itemCount: data.conversations.length,
+            padding: EdgeInsets.zero,
+            itemBuilder: (context, index) {
             // final conversation = data.conversations[index];
 
             return ListTile(
@@ -202,6 +205,7 @@ class MessagesTab extends ConsumerWidget {
               onTap: () {
                 context.router.push(
                   ChatRoute(
+                    conversationId: data.conversations[index].$2.id,
                     otherUserDid: data.conversations[index].$1.did,
                     otherUserHandle: data.conversations[index].$1.handle,
                     otherUserDisplayName: data.conversations[index].$1.displayName,
@@ -211,6 +215,7 @@ class MessagesTab extends ConsumerWidget {
               },
             );
           },
+          ),
         );
       },
       loading: () => const Center(child: CircularProgressIndicator()),

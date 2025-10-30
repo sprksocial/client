@@ -22,7 +22,7 @@ class MessagesList extends StatelessWidget {
     super.key,
   });
 
-  final List<Message> messages;
+  final List<MessageView> messages;
   final ScrollController scrollController;
   final String? currentUserDid;
   final String? otherUserHandle;
@@ -101,98 +101,74 @@ class MessagesList extends StatelessWidget {
     return null;
   }
 
-  Future<List<Widget>?> validateAndCreateEmbeds(List<Embed>? embed) async {
+  Future<List<Widget>?> validateAndCreateEmbedsFromText(String text) async {
     List<Widget>? embeds;
 
-    if (embed?.isNotEmpty ?? false) {
-      final images = <String>[];
-      final videos = <String>[];
-      final links = <String>[];
-      final sprkPosts = <String>[];
-      for (final embed in embed!) {
-        if (embed.type == 'image') {
-          if (embed.url?.isNotEmpty ?? false) {
-            images.add(embed.url!);
-          }
-        } else if (embed.type == 'video') {
-          if (embed.url?.isNotEmpty ?? false) {
-            videos.add(embed.url!);
-          }
-        } else if (embed.type == 'link') {
-          if (embed.url?.isNotEmpty ?? false) {
-            // Check if this is a sprk.so watch URL
-            final sprkPostUri = extractSprkPostUri(embed.url!);
-            if (sprkPostUri != null) {
-              sprkPosts.add(sprkPostUri);
-            } else {
-              links.add(embed.url!);
-            }
-          }
-        } // eventually audios perhaps..
-      }
+    // Extract links from text
+    final urlRegex = RegExp(
+      r'https?://(?:www\.)?[a-zA-Z0-9-]+(?:\.[a-zA-Z]+)+\S*|www\.[a-zA-Z0-9-]+(?:\.[a-zA-Z]+)+\S*',
+      caseSensitive: false,
+    );
+    final links = urlRegex.allMatches(text).map((m) => m.group(0)!).toList();
+    if (links.isEmpty) return embeds;
 
-      // Check links for images/videos/sprk posts and reclassify them
-      final linksToRemove = <String>[];
-      for (final link in links) {
-        if (link.isEmpty) continue;
-        if (Uri.tryParse(link)?.hasScheme != true) continue; // Skip invalid links
+    final images = <String>[];
+    final videos = <String>[];
+    final sprkPosts = <String>[];
 
-        // Check if this is a sprk.so watch URL
-        final sprkPostUri = extractSprkPostUri(link);
-        if (sprkPostUri != null) {
-          sprkPosts.add(sprkPostUri);
-          linksToRemove.add(link);
-        } else if (await validateImage(link)) {
-          // If the link is a valid image, add it to images
-          images.add(link);
-          linksToRemove.add(link); // Mark for removal from links
-        } else if (await validateVideo(link)) {
-          // If the link is a valid video, add it to videos
-          videos.add(link);
-          linksToRemove.add(link); // Mark for removal from links
-        }
-      }
+    final linksToRemove = <String>[];
+    for (final link in links) {
+      if (link.isEmpty) continue;
+      if (Uri.tryParse(link)?.hasScheme != true) continue;
 
-      // Remove reclassified links
-      for (final linkToRemove in linksToRemove) {
-        links.remove(linkToRemove);
+      final sprkPostUri = extractSprkPostUri(link);
+      if (sprkPostUri != null) {
+        sprkPosts.add(sprkPostUri);
+        linksToRemove.add(link);
+      } else if (await validateImage(link)) {
+        images.add(link);
+        linksToRemove.add(link);
+      } else if (await validateVideo(link)) {
+        videos.add(link);
+        linksToRemove.add(link);
       }
+    }
+    // Remove reclassified links
+    final filteredLinks = links.where((l) => !linksToRemove.contains(l)).toList();
 
-      if (images.isNotEmpty) {
-        embeds ??= [];
-        embeds.add(ImageContent(imageUrls: images, borderRadius: BorderRadius.circular(12), thumbnailSize: 200));
+    if (images.isNotEmpty) {
+      embeds ??= [];
+      embeds.add(ImageContent(imageUrls: images, borderRadius: BorderRadius.circular(12), thumbnailSize: 200));
+    }
+    if (videos.isNotEmpty) {
+      embeds ??= [];
+      for (final videoUrl in videos) {
+        embeds.add(VideoContent(borderRadius: BorderRadius.circular(12), videoUrl: videoUrl));
       }
-      if (videos.isNotEmpty) {
-        embeds ??= [];
-        for (final videoUrl in videos) {
-          embeds.add(VideoContent(borderRadius: BorderRadius.circular(12), videoUrl: videoUrl));
-        }
+    }
+    if (sprkPosts.isNotEmpty) {
+      embeds ??= [];
+      for (final postUri in sprkPosts) {
+        embeds.add(_SprkPostThumbnail(postUri: postUri));
       }
-      if (sprkPosts.isNotEmpty) {
-        embeds ??= [];
-        for (final postUri in sprkPosts) {
-          embeds.add(_SprkPostThumbnail(postUri: postUri));
-        }
-      }
-      if (links.isNotEmpty) {
-        embeds ??= [];
-        GetIt.I<LogService>().getLogger('MessagesList').i('Links found in message: $links');
-        //logLinkMetadata(links);
-        embeds.add(
-          ListView.builder(
-            shrinkWrap: true,
-            cacheExtent: 50,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: links.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: _LinkPreview(url: links[index]),
-              );
-            },
-          ),
-        );
-      }
+    }
+    if (filteredLinks.isNotEmpty) {
+      embeds ??= [];
+      GetIt.I<LogService>().getLogger('MessagesList').i('Links found in message: $filteredLinks');
+      embeds.add(
+        ListView.builder(
+          shrinkWrap: true,
+          cacheExtent: 50,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: filteredLinks.length,
+          itemBuilder: (context, index) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 8),
+              child: _LinkPreview(url: filteredLinks[index]),
+            );
+          },
+        ),
+      );
     }
     return embeds;
   }
@@ -226,8 +202,9 @@ class MessagesList extends StatelessWidget {
       itemCount: messages.length,
       itemBuilder: (context, index) {
         final message = messages[index];
-        final isCurrentUser = message.senderDid == currentUserDid;
-        final showAvatar = !isCurrentUser && (index == messages.length - 1 || messages[index + 1].senderDid != message.senderDid);
+        final isCurrentUser = message.sender.did == currentUserDid;
+        final showAvatar =
+            !isCurrentUser && (index == messages.length - 1 || messages[index + 1].sender.did != message.sender.did);
 
         return Column(
           children: [
@@ -239,7 +216,7 @@ class MessagesList extends StatelessWidget {
               otherUserHandle: otherUserHandle,
             ),
             FutureBuilder<List<Widget>?>(
-              future: validateAndCreateEmbeds(message.embed),
+              future: validateAndCreateEmbedsFromText(message.text),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const SizedBox.shrink();
