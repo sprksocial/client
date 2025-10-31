@@ -1,9 +1,15 @@
+import 'dart:math' as math;
+
 import 'package:any_link_preview/any_link_preview.dart';
+import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:sparksocial/src/core/design_system/components/molecules/post_tile.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/ui/widgets/image_content.dart';
@@ -215,6 +221,16 @@ class MessagesList extends StatelessWidget {
               otherUserAvatar: otherUserAvatar,
               otherUserHandle: otherUserHandle,
             ),
+            if (message.embed != null && message.embed!.isNotEmpty) // Render hydrated post preview for embedded ATURI
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Row(
+                  mainAxisAlignment: isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+                  children: [
+                    Flexible(child: _PostEmbedPreview(atUri: message.embed!)),
+                  ],
+                ),
+              ),
             FutureBuilder<List<Widget>?>(
               future: validateAndCreateEmbedsFromText(message.text),
               builder: (context, snapshot) {
@@ -529,5 +545,102 @@ class _SprkPostThumbnail extends StatelessWidget {
     } catch (e) {
       GetIt.I<LogService>().getLogger('_SprkPostThumbnail').e('Failed to navigate to post $postUri: $e');
     }
+  }
+}
+
+class _PostEmbedPreview extends StatelessWidget {
+  const _PostEmbedPreview({required this.atUri});
+
+  final String atUri;
+
+  Future<PostView?> _hydrate() async {
+    try {
+      final repo = GetIt.I<SprkRepository>().feed;
+      final uri = AtUri.parse(atUri);
+      final isBluesky = uri.collection.toString().startsWith('app.bsky.feed.post');
+      final posts = await repo.getPosts([uri], bluesky: isBluesky, filter: false);
+      return posts.isNotEmpty ? posts.first : null;
+    } catch (e) {
+      GetIt.I<LogService>().getLogger('_PostEmbedPreview').e('Failed to hydrate $atUri: $e');
+      return null;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<PostView?>(
+      future: _hydrate(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return _embedSkeleton(context);
+        }
+        final post = snapshot.data;
+        if (post == null) return const SizedBox.shrink();
+
+        final (thumbUrl, isVideo) = _deriveThumb(post);
+
+        final screenWidth = MediaQuery.of(context).size.width;
+        final double targetWidth = math.min(screenWidth * 0.5, 170);
+        return SizedBox(
+          width: targetWidth,
+          child: AspectRatio(
+            aspectRatio: 9 / 16,
+            child: PostTile(
+              thumbnailUrl: thumbUrl ?? '',
+              views: post.likeCount ?? 0,
+              seen: false,
+              onTap: () => context.router.push(StandalonePostRoute(postUri: atUri)),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Pick a thumbnail and detect video vs image
+  (String?, bool) _deriveThumb(PostView post) {
+    switch (post.embed) {
+      case EmbedViewVideo():
+        return (post.thumbnailUrl, true);
+      case EmbedViewBskyVideo():
+        return (post.thumbnailUrl, true);
+      case EmbedViewImage():
+        return (post.imageUrls.isNotEmpty ? post.imageUrls.first : null, false);
+      case EmbedViewBskyImages():
+        return (post.imageUrls.isNotEmpty ? post.imageUrls.first : null, false);
+      case EmbedViewBskyRecordWithMedia(media: final media):
+        switch (media) {
+          case EmbedViewVideo():
+            return (post.thumbnailUrl, true);
+          case EmbedViewBskyVideo():
+            return (post.thumbnailUrl, true);
+          case EmbedViewImage():
+            return (post.imageUrls.isNotEmpty ? post.imageUrls.first : null, false);
+          case EmbedViewBskyImages():
+            return (post.imageUrls.isNotEmpty ? post.imageUrls.first : null, false);
+          default:
+            return (null, false);
+        }
+      default:
+        return (null, false);
+    }
+  }
+
+  Widget _embedSkeleton(BuildContext context) {
+    final theme = Theme.of(context);
+    final screenWidth = MediaQuery.of(context).size.width;
+    final double targetWidth = math.min(screenWidth * 0.5, 170);
+    return SizedBox(
+      width: targetWidth,
+      child: AspectRatio(
+        aspectRatio: 9 / 16,
+        child: Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(18),
+          ),
+        ),
+      ),
+    );
   }
 }

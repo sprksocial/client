@@ -1,7 +1,6 @@
 import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/design_system/components/organisms/side_action_bar.dart';
@@ -9,6 +8,7 @@ import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/share_panel.dart';
 
 class SideActionBar extends ConsumerStatefulWidget {
   const SideActionBar({
@@ -126,7 +126,8 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 
   void _handleShare() {
     final currentPost = _currentPost ?? widget.post;
-    var postUri = currentPost.uri.toString();
+    final originalAtUri = currentPost.uri.toString();
+    var postUri = originalAtUri;
     String shareUrl;
     var embedCode = '';
     var showEmbed = true;
@@ -176,7 +177,12 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (BuildContext context) {
-        return SharePanel(shareUrl: shareUrl, embedCode: embedCode, showEmbed: showEmbed);
+        return SharePanel(
+          shareUrl: shareUrl,
+          embedCode: embedCode,
+          atUri: originalAtUri,
+          showEmbed: showEmbed,
+        );
       },
     );
   }
@@ -272,7 +278,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       onLike: _handleLike,
       onComment: _handleCommentPressed,
       // onCurate: _handleCurate, // Curation disabled
-      onShare: widget.isImage ? null : _handleShare,
+      onShare: _handleShare,
       likeCount: likeCount.toString(),
       commentCount: commentCount.toString(),
       // curateCount: repostCount.toString(), // Curation disabled
@@ -280,143 +286,6 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       isLiked: _isLiked,
       // isCurated: isCurated, // Curation disabled
       // curateDestinations: curateDestinations, // Curation disabled
-    );
-  }
-}
-
-class SharePanel extends StatefulWidget {
-  const SharePanel({required this.shareUrl, required this.embedCode, super.key, this.showEmbed = true});
-  final String shareUrl;
-  final String embedCode;
-  final bool showEmbed;
-
-  @override
-  State<SharePanel> createState() => _SharePanelState();
-}
-
-class _SharePanelState extends State<SharePanel> {
-  bool _copiedLink = false;
-  bool _copiedEmbed = false;
-
-  void _copyToClipboard(String text, BuildContext context, bool isLink) {
-    Clipboard.setData(ClipboardData(text: text));
-
-    setState(() {
-      if (isLink) {
-        _copiedLink = true;
-      } else {
-        _copiedEmbed = true;
-      }
-    });
-
-    final theme = Theme.of(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            Icon(Icons.check_circle, color: theme.colorScheme.onPrimary),
-            const SizedBox(width: 12),
-            Text(isLink ? 'Video link copied!' : 'Embed code copied!'),
-          ],
-        ),
-        backgroundColor: theme.colorScheme.primary,
-        behavior: SnackBarBehavior.floating,
-        width: MediaQuery.of(context).size.width * 0.9,
-        duration: const Duration(seconds: 2),
-      ),
-    );
-
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() {
-          if (isLink) {
-            _copiedLink = false;
-          } else {
-            _copiedEmbed = false;
-          }
-        });
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final textColor = theme.colorScheme.onSurface;
-    final fieldBgColor = theme.colorScheme.surfaceContainerHighest;
-    final dividerColor = theme.colorScheme.outline.withValues(alpha: 0.2);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-        boxShadow: [BoxShadow(color: theme.colorScheme.shadow.withValues(alpha: 0.2), blurRadius: 10)],
-      ),
-      child: DraggableScrollableSheet(
-        initialChildSize: 0.4,
-        minChildSize: 0.3,
-        maxChildSize: 0.6,
-        expand: false,
-        builder: (context, scrollController) {
-          return Column(
-            children: [
-              Container(
-                width: 40,
-                height: 4,
-                margin: const EdgeInsets.only(top: 12, bottom: 16),
-                decoration: BoxDecoration(color: dividerColor, borderRadius: BorderRadius.circular(10)),
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: Text(
-                  'Share Video',
-                  style: TextStyle(color: textColor, fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-              ),
-              Divider(color: dividerColor, height: 30),
-              Expanded(
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                  children: [
-                    Text(
-                      'Video link',
-                      style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w500),
-                    ),
-                    const SizedBox(height: 8),
-                    CopyField(
-                      text: widget.shareUrl,
-                      context: context,
-                      bgColor: fieldBgColor,
-                      textColor: textColor,
-                      isLink: true,
-                      isCopied: _copiedLink,
-                      onCopy: _copyToClipboard,
-                    ),
-                    if (widget.showEmbed) ...[
-                      const SizedBox(height: 24),
-                      Text(
-                        'Video embed',
-                        style: TextStyle(color: textColor, fontSize: 15, fontWeight: FontWeight.w500),
-                      ),
-                      const SizedBox(height: 8),
-                      CopyField(
-                        text: widget.embedCode,
-                        context: context,
-                        bgColor: fieldBgColor,
-                        textColor: textColor,
-                        isLink: false,
-                        isCopied: _copiedEmbed,
-                        onCopy: _copyToClipboard,
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
-      ),
     );
   }
 }
