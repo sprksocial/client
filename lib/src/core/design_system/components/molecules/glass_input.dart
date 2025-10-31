@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
 
 class GlassInput extends StatelessWidget {
@@ -114,7 +115,18 @@ class GlassInput extends StatelessWidget {
                 if (actionWidgets != null && actionWidgets!.isNotEmpty) const SizedBox(width: 8),
 
                 if (actionWidgets != null) ...actionWidgets!,
-                // TODO: send and record features https://pub.dev/packages/waveform_flutter https://pub.dev/packages/record
+
+                if (onSendMessage != null) ...[
+                  const SizedBox(width: 6),
+                  IconButton(
+                    visualDensity: VisualDensity.compact,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    onPressed: onSendMessage,
+                    icon: AppIcons.send(size: 18, color: isDark ? Colors.white : Colors.black),
+                  ),
+                ],
+                // TODO: record features https://pub.dev/packages/waveform_flutter https://pub.dev/packages/record
               ],
             ),
           ),

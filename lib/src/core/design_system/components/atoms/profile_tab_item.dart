@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/tab_item.dart';
 
 class ProfileTabItem extends StatelessWidget {
   const ProfileTabItem({
@@ -17,30 +18,12 @@ class ProfileTabItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
-    return Expanded(
-      child: IconButton(
-        style: IconButton.styleFrom(
-          padding: EdgeInsets.zero,
-          minimumSize: Size.zero,
-          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          shape: const RoundedRectangleBorder(),
-          splashFactory: NoSplash.splashFactory
-        ),
-        onPressed: onTap,
-        icon: Container(
-          padding: const EdgeInsets.symmetric(vertical: 12),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: isSelected ? theme.colorScheme.primary : Colors.transparent,
-                width: 2,
-              ),
-            ),
-          ),
-          child: isSelected ? filledIcon : icon,
-        ),
-      ),
+    return AppTabItem(
+      activeChild: filledIcon,
+      inactiveChild: icon,
+      isSelected: isSelected,
+      onTap: onTap,
+      indicatorColor: theme.colorScheme.primary,
     );
   }
 }

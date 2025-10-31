@@ -4,14 +4,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
+import 'package:sparksocial/src/core/design_system/templates/chat_thread_page_template.dart';
 import 'package:sparksocial/src/core/ui/foundation/colors.dart';
-import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/messages/providers/conversation_provider.dart';
 import 'package:sparksocial/src/features/messages/providers/polling_timer.dart';
-import 'package:sparksocial/src/features/messages/ui/widgets/message_input.dart';
 import 'package:sparksocial/src/features/messages/ui/widgets/messages_list.dart';
 
 @RoutePage()
@@ -36,9 +33,9 @@ class ChatPage extends ConsumerStatefulWidget {
 
 class _ChatPageState extends ConsumerState<ChatPage> {
   final TextEditingController _messageController = TextEditingController();
-  final ImagePicker _imagePicker = ImagePicker();
   final ScrollController _scrollController = ScrollController();
   String? _currentUserDid;
+  bool _markedReadOnce = false;
 
   @override
   void initState() {
@@ -89,87 +86,48 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   Widget build(BuildContext context) {
     final state = ref.watch(conversationProvider(widget.conversationId));
     ref.listen(pollingTriggerProvider(widget.conversationId), (previous, next) {});
-    return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: AppBar(
-        title: GestureDetector(
-          onTap: () => context.router.push(ProfileRoute(did: widget.otherUserDid)),
-          child: Row(
-            children: [
-              UserAvatar(
-                imageUrl: widget.otherUserAvatar ?? '',
-                username: widget.otherUserHandle ?? 'User',
-                size: 36,
-                backgroundColor: getAvatarColor((widget.otherUserHandle ?? 'User').hashCode),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _getConversationTitle(),
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                    Text(
-                      '@${widget.otherUserHandle ?? 'user'}',
-                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withAlpha(178), fontSize: 12),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        // actions: [
-        //   IconButton(
-        //     onPressed: () {},
-        //     icon: Icon(FluentIcons.more_vertical_24_regular, color: Theme.of(context).colorScheme.onSurface),
-        //   ),
-        // ],
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        elevation: 0,
+    // When the conversation loads for the first time, notify backend as read
+    ref.listen(conversationProvider(widget.conversationId), (prev, next) {
+      final data = next.asData?.value;
+      if (!_markedReadOnce && data != null && data.messages.isNotEmpty) {
+        _markedReadOnce = true;
+        ref.read(conversationProvider(widget.conversationId).notifier).markReadUpToLatest();
+      }
+    });
+    // Always show the page shell (app bar + input). Only the messages area changes state.
+    final messagesWidget = state.when(
+      data: (data) => MessagesList(
+        messages: data.messages,
+        scrollController: _scrollController,
+        currentUserDid: _currentUserDid,
+        otherUserHandle: widget.otherUserHandle,
+        otherUserAvatar: widget.otherUserAvatar,
       ),
-      body: Column(
-        children: [
-          Container(height: 0.5, width: double.infinity, color: Theme.of(context).colorScheme.outline),
-          Expanded(
-            child: state.when(
-              data: (data) => MessagesList(
-                messages: data.messages,
-                scrollController: _scrollController,
-                currentUserDid: _currentUserDid,
-                otherUserHandle: widget.otherUserHandle,
-                otherUserAvatar: widget.otherUserAvatar,
-              ),
-              loading: () => const Center(child: CircularProgressIndicator()),
-              error: (error, stack) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(FluentIcons.error_circle_24_regular, size: 48, color: Theme.of(context).colorScheme.error),
-                      const SizedBox(height: 16),
-                      Text('Failed to load messages', style: TextStyle(color: Theme.of(context).colorScheme.error)),
-                      const SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: () => ref.invalidate(conversationProvider(widget.conversationId)),
-                        child: const Text('Retry'),
-                      ),
-                    ],
-                  ),
-                );
-              },
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (error, stack) => Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(FluentIcons.error_circle_24_regular, size: 48, color: Theme.of(context).colorScheme.error),
+            const SizedBox(height: 16),
+            Text('Failed to load messages', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: () => ref.invalidate(conversationProvider(widget.conversationId)),
+              child: const Text('Retry'),
             ),
-          ),
-          MessageInput(
-            controller: _messageController,
-            onSend: _sendMessage,
-            otherDid: widget.otherUserDid,
-            imagePicker: _imagePicker,
-          ),
-        ],
+          ],
+        ),
       ),
+    );
+
+    return ChatThreadPageTemplate(
+      displayName: _getConversationTitle(),
+      handle: widget.otherUserHandle ?? 'user',
+      avatarUrl: widget.otherUserAvatar,
+      messagesWidget: messagesWidget,
+      textController: _messageController,
+      onSend: _sendMessage,
     );
   }
 

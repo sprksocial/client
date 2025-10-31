@@ -56,5 +56,18 @@ class Conversation extends _$Conversation {
     }
   }
 
+  /// Marks the conversation as read up to the latest message currently loaded.
+  Future<void> markReadUpToLatest() async {
+    final current = state.value;
+    if (current == null || current.messages.isEmpty) return;
+    final repo = GetIt.I<MessagesRepository>();
+    final latestId = current.messages.last.id;
+    try {
+      await repo.updateRead(current.convo.id, latestId);
+    } catch (_) {
+      // Best-effort: ignore errors; backend read state will reconcile later.
+    }
+  }
+
   // TODO: load older messages using _oldestCursor if needed
 }
