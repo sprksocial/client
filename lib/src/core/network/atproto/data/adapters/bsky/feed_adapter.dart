@@ -1,5 +1,9 @@
 import 'dart:convert';
 
+import 'package:atproto_core/atproto_core.dart';
+import 'package:bluesky/bluesky.dart' as bsky;
+// ignore: implementation_imports
+import 'package:bluesky/src/services/entities/converter/embed_converter.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 
 class BskyToSparkJsonAdapter {
@@ -256,5 +260,118 @@ extension BskyFeedViewPostAdapter on FeedViewPost {
         replyRef: replyVariant.replyRef,
       ),
     );
+  }
+}
+
+/// Helper class to convert Spark models to Bluesky models for crossposting
+class SparkToBskyAdapter {
+  /// Convert Spark images to Bluesky images
+  /// Bluesky has a 4-image limit
+  static List<bsky.Image> convertImages(List<Image> sparkImages) {
+    const maxBskyImages = 4;
+    return sparkImages.take(maxBskyImages).map((sparkImage) {
+      return bsky.Image(
+        alt: sparkImage.alt ?? '',
+        image: sparkImage.image,
+      );
+    }).toList();
+  }
+
+  /// Create a Bluesky post record with optional link facet
+  static bsky.PostRecord createPostRecord({
+    required String text,
+    required DateTime createdAt,
+    required List<bsky.Image> images,
+    String? linkUrl,
+  }) {
+    final facets = <bsky.Facet>[];
+
+    // Add link facet if provided
+    if (linkUrl != null && linkUrl.isNotEmpty) {
+      if (text.isEmpty) {
+        // Text is just the link
+        facets.add(
+          bsky.Facet(
+            index: bsky.ByteSlice(byteStart: 0, byteEnd: linkUrl.length),
+            features: [bsky.FacetFeature.link(data: bsky.FacetLink(uri: linkUrl))],
+          ),
+        );
+      } else {
+        // Link is appended after text
+        final linkStart = text.length;
+        facets.add(
+          bsky.Facet(
+            index: bsky.ByteSlice(byteStart: linkStart, byteEnd: linkStart + linkUrl.length),
+            features: [bsky.FacetFeature.link(data: bsky.FacetLink(uri: linkUrl))],
+          ),
+        );
+      }
+    }
+
+    return bsky.PostRecord(
+      text: text,
+      createdAt: createdAt,
+      embed: images.isNotEmpty ? bsky.Embed.images(data: bsky.EmbedImages(images: images)) : null,
+      facets: facets.isNotEmpty ? facets : null,
+    );
+  }
+
+  /// Prepare text for Bluesky post, handling link addition and truncation
+  static String prepareTextWithLink({
+    required String originalText,
+    required String linkUrl,
+  }) {
+    if (originalText.isEmpty) {
+      return linkUrl;
+    }
+
+    final linkWithNewlines = '\n\n$linkUrl';
+    const maxTextLength = 300;
+    final availableTextLength = maxTextLength - linkWithNewlines.length;
+
+    if (originalText.length <= availableTextLength) {
+      return '$originalText$linkWithNewlines';
+    } else {
+      const ellipsis = '...';
+      final croppedTextLength = availableTextLength - ellipsis.length;
+      final croppedText = originalText.substring(0, croppedTextLength);
+      return '$croppedText$ellipsis$linkWithNewlines';
+    }
+  }
+
+  /// Create Bluesky comment/reply record
+  static bsky.PostRecord createCommentRecord({
+    required String text,
+    required DateTime createdAt,
+    required bsky.ReplyRef reply,
+    bsky.Embed? embed,
+  }) {
+    return bsky.PostRecord(
+      text: text,
+      createdAt: createdAt,
+      reply: reply,
+      embed: embed,
+    );
+  }
+
+  /// Convert Bluesky thread to Spark thread
+  /// This handles all Bluesky-specific model transformations
+  static Thread convertBskyThreadToSparkThread({
+    required bsky.PostThreadView thread,
+    required AtUri uri,
+  }) {
+    return Thread.fromBsky(thread: thread, uri: uri);
+  }
+
+  /// Convert media JSON to Bluesky embed
+  /// This uses Bluesky's internal embedConverter
+  static bsky.Embed? convertJsonToBskyEmbed(Map<String, dynamic> mediaJson) {
+    return embedConverter.fromJson(mediaJson);
+  }
+
+  /// Validate that embed is not a video (for replies)
+  /// Returns true if the embed is valid for a reply, false otherwise
+  static bool isValidReplyEmbed(bsky.Embed? embed) {
+    return embed == null || embed is! bsky.UEmbedVideo;
   }
 }

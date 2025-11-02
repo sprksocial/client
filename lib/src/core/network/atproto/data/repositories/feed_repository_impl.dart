@@ -5,8 +5,6 @@ import 'dart:typed_data';
 import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
-// ignore: implementation_imports
-import 'package:bluesky/src/services/entities/converter/embed_converter.dart';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
@@ -35,6 +33,13 @@ class FeedRepositoryImpl implements FeedRepository {
     return feedViewPost.map(
       post: (p) => p.post.hasSupportedMedia,
       reply: (r) => r.reply.media != null,
+    );
+  }
+
+  bool _feedViewPostIsReply(FeedViewPost feedViewPost) {
+    return feedViewPost.map(
+      post: (p) => p.reply != null, // If post has reply field, it's a reply
+      reply: (r) => true, // Reply variant is always a reply
     );
   }
 
@@ -121,17 +126,14 @@ class FeedRepositoryImpl implements FeedRepository {
       final blueskyClient = bsky.Bluesky.fromSession(_client.authRepository.session!);
       final posts = await blueskyClient.feed.getPosts(uris: uris);
 
-      // Convert Bluesky posts to JSON and apply transformations
+      // Convert Bluesky posts using adapter
       final rawPosts = posts.data.posts.map((post) => post.toJson()).toList();
-      final convertedJsonPosts = <Map<String, dynamic>>[];
 
       for (final rawPost in rawPosts) {
         BskyToSparkJsonAdapter.convertPostViewJson(rawPost);
-        convertedJsonPosts.add(rawPost);
       }
 
-      // Parse the converted JSON
-      final parsedPosts = convertedJsonPosts.map((json) => PostView.fromJson(json)).toList();
+      final parsedPosts = rawPosts.map((json) => PostView.fromJson(json)).toList();
       final sparkPosts = parsedPosts.map((post) => post.toSparkPostView()).toList();
       final filteredPosts = filter ? sparkPosts.where(_postViewHasMedia).toList() : sparkPosts;
       return filteredPosts;
@@ -268,16 +270,13 @@ class FeedRepositoryImpl implements FeedRepository {
           filter: videosOnly ? bsky.FeedFilter.postsWithVideo : bsky.FeedFilter.postsWithMedia,
         );
 
-        // Convert Bluesky FeedView objects to JSON
         final rawFeed = resultBsky.data.feed.map((feedView) => feedView.toJson()).toList();
 
-        // Convert Bluesky JSON to Spark FeedViewPost by transforming the structure
+        // Use adapter to convert Bluesky JSON to Spark structure
         final feedPosts = <FeedViewPost>[];
         for (var i = 0; i < rawFeed.length; i++) {
           try {
             final rawPost = rawFeed[i];
-
-            // Convert Bluesky post structure to Spark structure
             BskyToSparkJsonAdapter.convertFeedViewPostJson(rawPost);
 
             if (!rawPost.containsKey(r'$type')) {
@@ -291,7 +290,11 @@ class FeedRepositoryImpl implements FeedRepository {
           }
         }
         final convertedPosts = feedPosts.map((post) => post.toSparkFeedViewPost()).toList();
-        final filteredPosts = convertedPosts.where(_feedViewPostHasMedia).toList();
+        // Filter out replies for Bluesky feeds (Spark posts can't be replies)
+        final filteredPosts = convertedPosts
+            .where((post) => !_feedViewPostIsReply(post))
+            .where(_feedViewPostHasMedia)
+            .toList();
         return (posts: filteredPosts, cursor: resultBsky.data.cursor);
       } catch (e) {
         _logger.e('Error getting author feed from Bsky', error: e);
@@ -415,16 +418,16 @@ class FeedRepositoryImpl implements FeedRepository {
             recordJson = sprkRecord.toJson();
             collection = NSID.parse('so.sprk.feed.reply');
           } else {
-            // Bluesky comment
-            final bskyMedia = mediaJson != null ? embedConverter.fromJson(mediaJson) : null;
+            // Bluesky comment - use adapter to create Bluesky-specific models
+            final bskyMedia = mediaJson != null ? SparkToBskyAdapter.convertJsonToBskyEmbed(mediaJson) : null;
 
-            // Validate that videos are not allowed in replies
-            if (bskyMedia != null && bskyMedia is bsky.UEmbedVideo) {
+            // Validate that videos are not allowed in replies using adapter
+            if (!SparkToBskyAdapter.isValidReplyEmbed(bskyMedia)) {
               _logger.e('Videos are not allowed in replies');
               throw Exception('Videos are not allowed in replies');
             }
 
-            final bskyRecord = bsky.PostRecord(
+            final bskyRecord = SparkToBskyAdapter.createCommentRecord(
               text: text,
               createdAt: DateTime.now().toUtc(),
               reply: bsky.ReplyRef(
@@ -633,7 +636,7 @@ class FeedRepositoryImpl implements FeedRepository {
     });
   }
 
-  /// Crosspost images to Bluesky using same blobs but Bluesky models
+  /// Crosspost images to Bluesky using adapter to handle Bluesky-specific model logic
   Future<void> _crosspostToBlueSky(
     String text,
     List<Image> sparkImages,
@@ -642,75 +645,28 @@ class FeedRepositoryImpl implements FeedRepository {
   ) async {
     _logger.d('Crossposting to Bluesky with ${sparkImages.length} images');
 
-    // Convert Spark images to Bluesky images and handle 4-image limit
-    final bskyImages = <bsky.Image>[];
+    // Use adapter to convert Spark images to Bluesky images
+    final bskyImages = SparkToBskyAdapter.convertImages(sparkImages);
+
+    // Determine if we need to add a link to the Spark post
+    String? linkUrl;
     const maxBskyImages = 4;
-    final imagesToUse = sparkImages.take(maxBskyImages).toList();
-
-    for (final sparkImage in imagesToUse) {
-      bskyImages.add(
-        bsky.Image(
-          alt: sparkImage.alt ?? '',
-          image: sparkImage.image, // Use the same blob
-        ),
-      );
-    }
-
-    // Determine final text for Bluesky post
-    var finalText = text;
-    final facets = <bsky.Facet>[];
-
-    // If more than 4 images, add link to Spark post
     if (sparkImages.length > maxBskyImages) {
       final sparkRkey = sparkPostData.uri.rkey;
       final uriDid = sparkPostData.uri.hostname;
-      final sparkLink = 'https://watch.sprk.so/?uri=$uriDid/$sparkRkey';
-
-      if (text.isEmpty) {
-        finalText = sparkLink;
-        // Create facet for the entire text (which is just the link)
-        facets.add(
-          bsky.Facet(
-            index: bsky.ByteSlice(byteStart: 0, byteEnd: sparkLink.length),
-            features: [bsky.FacetFeature.link(data: bsky.FacetLink(uri: sparkLink))],
-          ),
-        );
-      } else {
-        final linkWithNewlines = '\n\n$sparkLink';
-        final availableTextLength = 300 - linkWithNewlines.length;
-
-        if (text.length <= availableTextLength) {
-          finalText = '$text$linkWithNewlines';
-          // Create facet for the link part
-          final linkStart = text.length + 2; // +2 for the \n\n
-          facets.add(
-            bsky.Facet(
-              index: bsky.ByteSlice(byteStart: linkStart, byteEnd: linkStart + sparkLink.length),
-              features: [bsky.FacetFeature.link(data: bsky.FacetLink(uri: sparkLink))],
-            ),
-          );
-        } else {
-          const ellipsis = '...';
-          final croppedTextLength = availableTextLength - ellipsis.length;
-          final croppedText = text.substring(0, croppedTextLength);
-          finalText = '$croppedText$ellipsis$linkWithNewlines';
-          // Create facet for the link part
-          final linkStart = croppedText.length + ellipsis.length + 2; // +2 for the \n\n
-          facets.add(
-            bsky.Facet(
-              index: bsky.ByteSlice(byteStart: linkStart, byteEnd: linkStart + sparkLink.length),
-              features: [bsky.FacetFeature.link(data: bsky.FacetLink(uri: sparkLink))],
-            ),
-          );
-        }
-      }
+      linkUrl = 'https://watch.sprk.so/?uri=$uriDid/$sparkRkey';
     }
 
-    final bskyPost = bsky.PostRecord(
+    // Use adapter to prepare text and create post record
+    final finalText = linkUrl != null 
+        ? SparkToBskyAdapter.prepareTextWithLink(originalText: text, linkUrl: linkUrl)
+        : text;
+
+    final bskyPost = SparkToBskyAdapter.createPostRecord(
       text: finalText,
       createdAt: DateTime.now().toUtc(),
-      embed: bsky.Embed.images(data: bsky.EmbedImages(images: bskyImages)),
-      facets: facets,
+      images: bskyImages,
+      linkUrl: linkUrl,
     );
 
     final bskyAtProto = _client.authRepository.atproto!;
@@ -819,7 +775,8 @@ class FeedRepositoryImpl implements FeedRepository {
       if (bluesky) {
         final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
         final response = await bluesky.feed.getPostThread(uri: uri, depth: depth, parentHeight: parentHeight);
-        return Thread.fromBsky(thread: response.data.thread, uri: uri);
+        // Use adapter to convert Bluesky thread to Spark thread
+        return SparkToBskyAdapter.convertBskyThreadToSparkThread(thread: response.data.thread, uri: uri);
       }
       const source = 'so.sprk.feed.getPostThread';
       final response = await atproto.get(
