@@ -125,7 +125,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
         }
         final firstImage = uploadedImage.first;
         final storyProvider = postStoryProvider(
-          Embed.mediaImage(image: firstImage.image, alt: firstImage.alt),
+          Media.image(image: firstImage.image, alt: firstImage.alt),
         );
         final asyncResult = await ref.read(storyProvider.future);
         if (asyncResult == null) {

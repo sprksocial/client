@@ -105,10 +105,10 @@ abstract class FeedRepository {
 
   /// Post a story to the user's feed
   ///
-  /// [embed] The embed of the story to post
+  /// [media] The media of the story to post
   /// [selfLabels] The self labels of the story
   /// [tags] The tags of the story
-  Future<StrongRef> postStory(Embed embed, {List<SelfLabel>? selfLabels, List<String>? tags});
+  Future<StrongRef> postStory(Media media, {List<SelfLabel>? selfLabels, List<String>? tags});
 
   /// Get the thread for a post
   ///

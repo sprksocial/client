@@ -19,7 +19,7 @@ class Record with _$Record {
     List<String>? langs,
     List<String>? tags,
     List<SelfLabel>? selfLabels,
-    Embed? media,
+    Media? media,
   }) = PostRecord;
 
   @JsonSerializable(explicitToJson: true)
@@ -30,13 +30,13 @@ class Record with _$Record {
     DateTime? createdAt,
     List<String>? langs,
     List<SelfLabel>? labels,
-    Embed? media,
+    Media? media,
   }) = ReplyRecord;
 
   @JsonSerializable(explicitToJson: true)
   @FreezedUnionValue('so.sprk.story.post')
   const factory Record.story({
-    required Embed media,
+    required Media media,
     required DateTime createdAt,
     StrongRef? sound,
     List<SelfLabel>? labels,
@@ -66,7 +66,7 @@ class Record with _$Record {
     List<String>? langs,
     List<String>? tags,
     List<SelfLabel>? selfLabels,
-    Embed? embed, // blob
+    Media? embed, // blob
     // threadgate
   }) = BskyPostRecord;
 
@@ -100,58 +100,58 @@ class RecordReplyRef with _$RecordReplyRef {
 }
 
 @Freezed(unionKey: r'$type')
-sealed class Embed with _$Embed {
-  const Embed._();
+sealed class Media with _$Media {
+  const Media._();
 
   // Spark media types (new schema)
   @FreezedUnionValue('so.sprk.media.video')
   @JsonSerializable(explicitToJson: true)
-  const factory Embed.mediaVideo({
+  const factory Media.video({
     required Blob video,
     String? alt,
-  }) = EmbedMediaVideo;
+  }) = MediaVideo;
 
   @FreezedUnionValue('so.sprk.media.image')
   @JsonSerializable(explicitToJson: true)
-  const factory Embed.mediaImage({
+  const factory Media.image({
     required Blob image,
     String? alt,
-  }) = EmbedMediaImage;
+  }) = MediaImage;
 
   @FreezedUnionValue('so.sprk.media.images')
   @JsonSerializable(explicitToJson: true)
-  const factory Embed.mediaImages({required List<Image> images}) = EmbedMediaImages;
+  const factory Media.images({required List<Image> images}) = MediaImages;
 
   // Bluesky embed types
   @FreezedUnionValue('app.bsky.embed.video')
   @JsonSerializable(explicitToJson: true)
-  const factory Embed.bskyVideo({
+  const factory Media.bskyVideo({
     required Blob video,
     String? alt,
-  }) = EmbedBskyVideo;
+  }) = MediaBskyVideo;
 
   @FreezedUnionValue('app.bsky.embed.images')
   @JsonSerializable(explicitToJson: true)
-  const factory Embed.bskyImages({required List<Image> images}) = EmbedBskyImages;
+  const factory Media.bskyImages({required List<Image> images}) = MediaBskyImages;
 
   @FreezedUnionValue('app.bsky.embed.record')
   @JsonSerializable(explicitToJson: true)
-  const factory Embed.bskyRecord({required StrongRef record}) = EmbedBskyRecord;
+  const factory Media.bskyRecord({required StrongRef record}) = MediaBskyRecord;
 
   @FreezedUnionValue('app.bsky.embed.recordWithMedia')
   @JsonSerializable(explicitToJson: true)
-  const factory Embed.bskyRecordWithMedia({
-    required EmbedBskyRecord record,
-    required Embed media,
-  }) = EmbedBskyRecordWithMedia;
+  const factory Media.bskyRecordWithMedia({
+    required MediaBskyRecord record,
+    required Media media,
+  }) = MediaBskyRecordWithMedia;
 
   @FreezedUnionValue('app.bsky.embed.external')
   @JsonSerializable(explicitToJson: true)
-  const factory Embed.bskyExternal({
+  const factory Media.bskyExternal({
     required EmbedExternal external,
-  }) = EmbedBskyExternal;
+  }) = MediaBskyExternal;
 
-  factory Embed.fromJson(Map<String, dynamic> json) => _$EmbedFromJson(json);
+  factory Media.fromJson(Map<String, dynamic> json) => _$MediaFromJson(json);
 }
 
 @freezed
