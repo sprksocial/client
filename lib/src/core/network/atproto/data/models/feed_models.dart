@@ -728,16 +728,7 @@ sealed class ThreadPost with _$ThreadPost {
   };
   
   List<String> get imageUrls => switch (this) {
-    ThreadPostView(:final post) => () {
-      // Check if this post is actually a comment (has reply field)
-      // Comments should only show a single image
-      final isComment = post.record.reply != null;
-      if (isComment) {
-        final urls = post.imageUrls;
-        return urls.isNotEmpty ? [urls.first] : <String>[];
-      }
-      return post.imageUrls;
-    }(),
+    ThreadPostView(:final post) => post.imageUrls,
     ThreadReplyView(:final reply) => switch (reply.hydratedMedia) {
       // Replies/comments only support a single image (EmbedViewMediaImage)
       EmbedViewMediaImage(:final image) => [image.fullsize.toString()],

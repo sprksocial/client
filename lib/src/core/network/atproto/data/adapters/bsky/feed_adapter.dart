@@ -3,12 +3,31 @@ import 'dart:convert';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 
 class BskyToSparkJsonAdapter {
+  /// Transforms Bluesky images (multiple) to Spark single image format
+  /// For comments/replies, only the first image should be used
+  static void _transformBskyImagesToSingleSparkImage(Map<String, dynamic> mediaJson) {
+    if (mediaJson[r'$type'] == 'app.bsky.embed.images#view') {
+      final images = mediaJson['images'] as List?;
+      if (images != null && images.isNotEmpty) {
+        final firstImage = images.first as Map<String, dynamic>;
+        // Transform to Spark single image format
+        mediaJson[r'$type'] = 'so.sprk.media.image#view';
+        mediaJson['image'] = firstImage;
+        mediaJson['alt'] = firstImage['alt'] ?? '';
+        mediaJson.remove('images');
+      }
+    }
+  }
+
   static void convertPostViewJson(Map<String, dynamic> post, {bool isNestedReply = false}) {
     if (post.containsKey('embed')) {
       post['media'] = post['embed'];
       post.remove('embed');
     }
 
+    // Check if this post is actually a reply/comment by examining the record
+    var isReply = false;
+    
     if (post.containsKey('record') && post['record'] != null) {
       final record = post['record'] as Map<String, dynamic>;
       final recordType = record[r'$type'] as String?;
@@ -32,11 +51,26 @@ class BskyToSparkJsonAdapter {
         record.remove('text');
         record.remove('facets');
 
-        if (record.containsKey('reply') && record['reply'] != null) {
+        // Check if this is a reply/comment
+        isReply = record.containsKey('reply') && record['reply'] != null;
+        
+        if (isReply) {
           final reply = record['reply'] as Map<String, dynamic>;
           convertReplyRefJson(reply);
+          
+          // Transform media for replies - only single image allowed
+          if (record.containsKey('media') && record['media'] != null) {
+            final mediaJson = record['media'] as Map<String, dynamic>;
+            _transformBskyImagesToSingleSparkImage(mediaJson);
+          }
         }
       }
+    }
+
+    // Also transform post-level media if this is a reply
+    if (isReply && post.containsKey('media') && post['media'] != null) {
+      final mediaJson = post['media'] as Map<String, dynamic>;
+      _transformBskyImagesToSingleSparkImage(mediaJson);
     }
 
     if (!isNestedReply && post.containsKey('reply') && post['reply'] != null) {

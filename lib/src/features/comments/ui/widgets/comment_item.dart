@@ -106,11 +106,9 @@ class _CommentItemState extends ConsumerState<CommentItem> {
 
     final borderRadius = BorderRadius.circular(8);
     
-    // Comments only support a single image
-    // Spark comments: EmbedViewMediaImage
-    // Bluesky comments: EmbedViewBskyImages (but only show first image)
-    final hasImages = commentState.thread.post.media is EmbedViewMediaImage ||
-                      commentState.thread.post.media is EmbedViewBskyImages;
+    // Comments only support a single image (EmbedViewMediaImage)
+    // The adapter transforms Bluesky comments to this format
+    final hasImages = commentState.thread.post.media is EmbedViewMediaImage;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
