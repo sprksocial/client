@@ -34,7 +34,7 @@ class Record with _$Record {
   }) = ReplyRecord;
 
   @JsonSerializable(explicitToJson: true)
-  @FreezedUnionValue('so.sprk.feed.story')
+  @FreezedUnionValue('so.sprk.story.post')
   const factory Record.story({
     required Embed media,
     required DateTime createdAt,
@@ -103,22 +103,6 @@ class RecordReplyRef with _$RecordReplyRef {
 sealed class Embed with _$Embed {
   const Embed._();
 
-  // Spark embed types (old schema - kept for backwards compatibility)
-  @FreezedUnionValue('so.sprk.embed.video')
-  @JsonSerializable(explicitToJson: true)
-  const factory Embed.video({
-    required Blob video,
-
-    // remaining fields that are in the json
-    // List<Caption> captions,
-    // AspectRatio aspectRatio, {width: int, height: int}
-    String? alt,
-  }) = EmbedVideo;
-
-  @FreezedUnionValue('so.sprk.embed.images')
-  @JsonSerializable(explicitToJson: true)
-  const factory Embed.image({required List<Image> images}) = EmbedImage;
-
   // Spark media types (new schema)
   @FreezedUnionValue('so.sprk.media.video')
   @JsonSerializable(explicitToJson: true)
@@ -126,6 +110,13 @@ sealed class Embed with _$Embed {
     required Blob video,
     String? alt,
   }) = EmbedMediaVideo;
+
+  @FreezedUnionValue('so.sprk.media.image')
+  @JsonSerializable(explicitToJson: true)
+  const factory Embed.mediaImage({
+    required Blob image,
+    String? alt,
+  }) = EmbedMediaImage;
 
   @FreezedUnionValue('so.sprk.media.images')
   @JsonSerializable(explicitToJson: true)

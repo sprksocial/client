@@ -49,7 +49,7 @@ class StoryManager extends _$StoryManager {
       if (atproto == null) {
         return StoryManagerState(stories: const [], error: 'AtProto not initialized');
       }
-      const collection = 'so.sprk.feed.story';
+      const collection = 'so.sprk.story.post';
       String? cursor;
       final uris = <AtUri>[];
       do {

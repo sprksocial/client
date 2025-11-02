@@ -54,7 +54,7 @@ Future<void> storyAutoDeleteExecutor(Ref ref) async {
   if (atproto == null || did == null) return;
 
   try {
-    const collection = 'so.sprk.feed.story';
+    const collection = 'so.sprk.story.post';
     String? cursor;
     final expiredUris = <AtUri>[];
     final now = DateTime.now().toUtc();

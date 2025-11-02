@@ -123,8 +123,9 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
         if (uploadedImage.isEmpty) {
           throw Exception('No images uploaded');
         }
+        final firstImage = uploadedImage.first;
         final storyProvider = postStoryProvider(
-          Embed.image(images: uploadedImage),
+          Embed.mediaImage(image: firstImage.image, alt: firstImage.alt),
         );
         final asyncResult = await ref.read(storyProvider.future);
         if (asyncResult == null) {

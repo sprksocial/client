@@ -290,6 +290,7 @@ class PostView with _$PostView {
       case EmbedViewImage():
       case EmbedViewBskyImages():
       case EmbedViewMediaVideo():
+      case EmbedViewMediaImage():
       case EmbedViewMediaImages():
         return true;
       case EmbedViewBskyRecordWithMedia(:final media):
@@ -300,6 +301,7 @@ class PostView with _$PostView {
           case EmbedViewImage():
           case EmbedViewBskyImages():
           case EmbedViewMediaVideo():
+          case EmbedViewMediaImage():
           case EmbedViewMediaImages():
             return true;
           case _:
@@ -376,6 +378,8 @@ class PostView with _$PostView {
     switch (mediaToCheck) {
       case EmbedViewImage(:final images):
         return images.map((img) => img.fullsize.toString()).toList();
+      case EmbedViewMediaImage(:final image):
+        return [image.fullsize.toString()];
       case EmbedViewMediaImages(:final images):
         return images.map((img) => img.fullsize.toString()).toList();
       case EmbedViewBskyImages(:final images):
@@ -385,6 +389,8 @@ class PostView with _$PostView {
         switch (media) {
           case EmbedViewImage(:final images):
             return images.map((img) => img.fullsize.toString()).toList();
+          case EmbedViewMediaImage(:final image):
+            return [image.fullsize.toString()];
           case EmbedViewMediaImages(:final images):
             return images.map((img) => img.fullsize.toString()).toList();
           case EmbedViewBskyImages(:final images):
@@ -408,6 +414,8 @@ class PostView with _$PostView {
         return _resolveAtUriToHttpUrl(thumbnail);
       case EmbedViewImage(:final images):
         return images.first.thumb.toString();
+      case EmbedViewMediaImage(:final image):
+        return image.thumb.toString();
       case EmbedViewMediaImages(:final images):
         return images.first.thumb.toString();
       case EmbedViewBskyImages(:final images):
@@ -423,6 +431,8 @@ class PostView with _$PostView {
             return _resolveAtUriToHttpUrl(thumbnail);
           case EmbedViewImage(:final images):
             return images.first.thumb.toString();
+          case EmbedViewMediaImage(:final image):
+            return image.thumb.toString();
           case EmbedViewMediaImages(:final images):
             return images.first.thumb.toString();
           case EmbedViewBskyImages(:final images):
@@ -463,6 +473,10 @@ sealed class EmbedView with _$EmbedView {
     @AtUriConverter() required Uri thumbnail,
     String? alt,
   }) = EmbedViewMediaVideo;
+
+  @FreezedUnionValue('so.sprk.media.image#view')
+  @JsonSerializable(explicitToJson: true)
+  const factory EmbedView.mediaImage({required ViewImage image}) = EmbedViewMediaImage;
 
   @FreezedUnionValue('so.sprk.media.images#view')
   @JsonSerializable(explicitToJson: true)
@@ -714,10 +728,25 @@ sealed class ThreadPost with _$ThreadPost {
   };
   
   List<String> get imageUrls => switch (this) {
-    ThreadPostView(:final post) => post.imageUrls,
-    ThreadReplyView(:final reply) => reply.media?.mapOrNull(
-      mediaImages: (images) => images.images.map((img) => img.fullsize.toString()).toList(),
-    ) ?? [],
+    ThreadPostView(:final post) => () {
+      // Check if this post is actually a comment (has reply field)
+      // Comments should only show a single image
+      final isComment = post.record.reply != null;
+      if (isComment) {
+        final urls = post.imageUrls;
+        return urls.isNotEmpty ? [urls.first] : <String>[];
+      }
+      return post.imageUrls;
+    }(),
+    ThreadReplyView(:final reply) => switch (reply.hydratedMedia) {
+      // Replies/comments only support a single image (EmbedViewMediaImage)
+      EmbedViewMediaImage(:final image) => [image.fullsize.toString()],
+      // These cases should not occur for replies, but kept for backward compatibility
+      EmbedViewImage(:final images) => images.map((img) => img.fullsize.toString()).toList(),
+      EmbedViewMediaImages(:final images) => images.map((img) => img.fullsize.toString()).toList(),
+      EmbedViewBskyImages(:final images) => images.map((img) => img.fullsize.toString()).toList(),
+      _ => <String>[],
+    },
   };
   
   bool get isSprk => switch (this) {
@@ -739,7 +768,7 @@ sealed class ThreadPost with _$ThreadPost {
   
   EmbedView? get media => switch (this) {
     ThreadPostView(:final post) => post.media,
-    ThreadReplyView(:final reply) => reply.media,
+    ThreadReplyView(:final reply) => reply.hydratedMedia,
   };
   
   String get displayText => switch (this) {
@@ -754,9 +783,7 @@ sealed class ThreadPost with _$ThreadPost {
   
   String get videoUrl => switch (this) {
     ThreadPostView(:final post) => post.videoUrl,
-    ThreadReplyView(:final reply) => reply.media?.mapOrNull(
-      mediaVideo: (video) => video.playlist.toString(),
-    ) ?? '',
+    ThreadReplyView() => '', // Replies cannot have videos
   };
 }
 
@@ -1202,6 +1229,62 @@ class ReplyView with _$ReplyView {
       return facets?.map((f) => Facet.fromJson(f as Map<String, dynamic>)).toList() ?? [];
     }
     return [];
+  }
+  
+  /// Hydrates media from the record into a view format
+  /// This is necessary because the API doesn't always return a media field at the post level
+  EmbedView? get hydratedMedia {
+    // If media is already present, use it
+    if (media != null) return media;
+    
+    // Otherwise, try to hydrate from record
+    final rec = record;
+    if (rec is! Map<String, dynamic>) return null;
+    
+    final mediaRecord = rec['media'];
+    if (mediaRecord is! Map<String, dynamic>) return null;
+    
+    final type = mediaRecord[r'$type'] as String?;
+    
+    try {
+      switch (type) {
+        case 'so.sprk.media.image':
+          // Single image - convert to view format
+          final imageData = mediaRecord['image'] as Map<String, dynamic>?;
+          if (imageData == null) return null;
+          
+          // Extract the blob ref (CID)
+          final ref = imageData['ref'] as Map<String, dynamic>?;
+          final cid = ref?[r'$link'] as String?;
+          if (cid == null) return null;
+          
+          final alt = mediaRecord['alt'] as String? ?? '';
+          final authorDid = author.did;
+          
+          // Construct URLs using the same pattern as the server
+          final baseUrl = 'https://media.sprk.so/img';
+          final thumbUrl = '$baseUrl/medium/$authorDid/$cid/webp';
+          final fullsizeUrl = '$baseUrl/full/$authorDid/$cid/webp';
+          
+          return EmbedView.mediaImage(
+            image: ViewImage(
+              thumb: Uri.parse(thumbUrl),
+              fullsize: Uri.parse(fullsizeUrl),
+              alt: alt,
+            ),
+          );
+          
+        // Comments don't support so.sprk.media.images - they only use so.sprk.media.image
+        // This case should never occur for replies, but kept for safety
+        case 'so.sprk.media.images':
+          return null;
+          
+        default:
+          return null;
+      }
+    } catch (e) {
+      return null;
+    }
   }
 }
 

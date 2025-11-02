@@ -97,14 +97,13 @@ class ProfileFeed extends _$ProfileFeed {
     for (final feedViewPost in bskyResult.posts) {
       final uri = feedViewPost.uri;
       if (sparkRkeys.contains(uri.rkey) || postViews.containsKey(uri)) {
-
         continue;
       }
       final postView = feedViewPost.asPost;
       if (postView != null) {
         newPosts.add(postView);
         postSources[uri] = 'bsky';
-        postTypes[uri] = _isEmbedVideo(postView.media);
+        postTypes[uri] = _isMediaVideo(postView.media);
         postViews[uri] = postView;
       }
     }
@@ -172,14 +171,15 @@ class ProfileFeed extends _$ProfileFeed {
     }
   }
 
-  bool _isEmbedVideo(EmbedView? embed) {
+  bool _isMediaVideo(EmbedView? embed) {
     if (embed == null) return false;
     return embed.when(
       video: (cid, playlist, thumbnail, alt) => true,
       mediaVideo: (cid, playlist, thumbnail, alt) => true,
       bskyVideo: (cid, playlist, thumbnail, alt) => true,
-      bskyRecordWithMedia: (record, media) => _isEmbedVideo(media),
+      bskyRecordWithMedia: (record, media) => _isMediaVideo(media),
       image: (images) => false,
+      mediaImage: (image) => false,
       mediaImages: (images) => false,
       bskyImages: (images) => false,
       bskyRecord: (record) => false,

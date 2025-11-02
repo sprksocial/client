@@ -218,8 +218,6 @@ class FeedRepositoryImpl implements FeedRepository {
 
       if (videosOnly) {
         parameters['filter'] = 'posts_with_video';
-      } else {
-        parameters['filter'] = 'posts_with_media';
       }
 
       if (cursor != null) {
@@ -390,12 +388,15 @@ class FeedRepositoryImpl implements FeedRepository {
           final effectiveRootCid = rootCid ?? parentCid;
           final effectiveRootUri = rootUri ?? parentUri;
 
-          // Upload images if provided
+          // Upload image if provided (replies only support single image)
           Map<String, dynamic>? embedJson;
           if (imageFiles case final List<XFile> files when files.isNotEmpty) {
-            _logger.d('Uploading ${files.length} images for comment');
-            final uploadedImageMaps = await uploadImages(imageFiles: files, altTexts: altTexts);
-            embedJson = EmbedImage(images: uploadedImageMaps).toJson();
+            if (files.length > 1) {
+              _logger.w('Replies only support single image, using first image only');
+            }
+            final uploadedImageMaps = await uploadImages(imageFiles: [files.first], altTexts: altTexts);
+            final firstImage = uploadedImageMaps.first;
+            embedJson = Embed.mediaImage(image: firstImage.image, alt: firstImage.alt).toJson();
           }
 
           // Create the correct record JSON depending on the target platform.
@@ -406,6 +407,13 @@ class FeedRepositoryImpl implements FeedRepository {
 
           if (isSprk) {
             // Sprk comment
+            final embed = embedJson != null ? Embed.fromJson(embedJson) : null;
+            
+            // Validate that videos are not allowed in replies
+            if (embed != null && (embed is EmbedMediaVideo || embed is EmbedBskyVideo)) {
+              throw Exception('Videos are not allowed in replies');
+            }
+            
             final sprkRecord = ReplyRecord(
               caption: CaptionRef(text: text, facets: []),
               reply: RecordReplyRef(
@@ -413,20 +421,28 @@ class FeedRepositoryImpl implements FeedRepository {
                 parent: StrongRef(uri: parentUri, cid: parentCid),
               ),
               createdAt: DateTime.now(),
-              media: embedJson != null ? Embed.fromJson(embedJson) : null,
+              media: embed,
             );
             recordJson = sprkRecord.toJson();
             collection = NSID.parse('so.sprk.feed.reply');
           } else {
             // Bluesky comment
+            final bskyEmbed = embedJson != null ? embedConverter.fromJson(embedJson) : null;
+            
+            // Validate that videos are not allowed in replies
+            if (bskyEmbed != null && bskyEmbed is bsky.UEmbedVideo) {
+              _logger.e('Videos are not allowed in replies');
+              throw Exception('Videos are not allowed in replies');
+            }
+            
             final bskyRecord = bsky.PostRecord(
               text: text,
-              createdAt: DateTime.now(),
+              createdAt: DateTime.now().toUtc(),
               reply: bsky.ReplyRef(
                 root: StrongRef(uri: effectiveRootUri, cid: effectiveRootCid),
                 parent: StrongRef(uri: parentUri, cid: parentCid),
               ),
-              embed: embedJson != null ? embedConverter.fromJson(embedJson) : null,
+              embed: bskyEmbed,
             );
             recordJson = bskyRecord.toJson();
             collection = NSID.parse('app.bsky.feed.post');
@@ -448,7 +464,6 @@ class FeedRepositoryImpl implements FeedRepository {
     Map<String, String> altTexts, {
     bool crosspostToBsky = false,
   }) async {
-    _logger.d('Creating image post with ${imageFiles.length} images, crosspost: $crosspostToBsky');
 
     switch (imageFiles) {
       case final List<XFile> files when files.isEmpty:
@@ -467,7 +482,7 @@ class FeedRepositoryImpl implements FeedRepository {
             // Create Sprk post first
             final record = PostRecord(
               caption: CaptionRef(text: text, facets: []),
-              media: EmbedImage(images: uploadedImageMaps),
+              media: Embed.mediaImages(images: uploadedImageMaps),
               createdAt: DateTime.now(),
             );
 
@@ -525,8 +540,6 @@ class FeedRepositoryImpl implements FeedRepository {
 
                 switch (response.status.code) {
                   case 200:
-                    _logger.d('Image uploaded successfully: ${imageFile.name}');
-
                     // Add the uploaded image to our result list
                     uploadedImageMaps.add(Image(alt: altTexts?[imageFile.path] ?? '', image: response.data.blob));
                   default:
@@ -775,7 +788,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
       final record = PostRecord(
         caption: CaptionRef(text: text, facets: []),
-        media: Embed.video(video: blob, alt: alt),
+        media: Embed.mediaVideo(video: blob, alt: alt),
         createdAt: DateTime.now(),
         langs: langs,
         selfLabels: selfLabels,
@@ -903,7 +916,7 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       final response = await atproto.get(
-        NSID.parse('so.sprk.story.getStoriesTimeline'),
+        NSID.parse('so.sprk.story.getTimeline'),
         parameters: {'limit': limit, 'cursor': cursor},
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) {
@@ -966,7 +979,7 @@ class FeedRepositoryImpl implements FeedRepository {
       final record = StoryRecord(createdAt: DateTime.now(), media: embed, tags: tags);
       try {
         final response = await _client.authRepository.atproto!.repo.createRecord(
-          collection: NSID.parse('so.sprk.feed.story'),
+          collection: NSID.parse('so.sprk.story.post'),
           record: record.toJson(),
         );
 
