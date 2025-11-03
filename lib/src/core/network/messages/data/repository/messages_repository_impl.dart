@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/core/config/app_config.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart' hide Embed;
+import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:sparksocial/src/core/utils/utils.dart';

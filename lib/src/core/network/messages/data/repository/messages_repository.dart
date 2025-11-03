@@ -1,4 +1,4 @@
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart' hide Embed;
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 
 /// Interface for Messages-related API endpoints

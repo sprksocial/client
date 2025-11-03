@@ -12,7 +12,10 @@ import 'package:sparksocial/src/core/network/atproto/data/repositories/labeler_r
 import 'package:sparksocial/src/core/network/atproto/data/repositories/labeler_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository_impl.dart';
+
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/story_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/story_repository_impl.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
@@ -77,6 +80,9 @@ class SprkRepositoryImpl implements SprkRepository {
 
   @override
   FeedRepository get feed => FeedRepositoryImpl(this);
+
+  @override
+  StoryRepository get story => StoryRepositoryImpl(this);
 
   @override
   LabelerRepository get labeler => LabelerRepositoryImpl(this);

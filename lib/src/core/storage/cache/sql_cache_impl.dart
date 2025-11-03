@@ -4,11 +4,9 @@ import 'dart:convert';
 import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:better_player_plus/better_player_plus.dart';
-import 'package:get_it/get_it.dart';
 import 'package:path/path.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
-import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sqflite/sqflite.dart';
 
 // --- Post Table ---
@@ -42,11 +40,8 @@ const String _columnPostUriFK = 'post_uri_fk'; // TEXT, Foreign Key to cached_po
 const String _columnAssociationOrder = 'association_order'; // INTEGER, for ordering posts within a feed
 
 class SQLCacheImpl implements SQLCacheInterface {
-  SQLCacheImpl() {
-    _logger = GetIt.instance<LogService>().getLogger('SQLCacheImpl');
-  }
+  SQLCacheImpl();
   static Database? _database;
-  late final SparkLogger _logger;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -84,7 +79,7 @@ class SQLCacheImpl implements SQLCacheInterface {
     );
     
     if (nullRecordPosts.isNotEmpty) {
-      final urisToDelete = nullRecordPosts.map((map) => map[_columnUri] as String).toList();
+      final urisToDelete = nullRecordPosts.map((map) => map[_columnUri]! as String).toList();
       final placeholders = List.generate(urisToDelete.length, (index) => '?').join(',');
       deletedCount = await db.delete(_tablePosts, where: '$_columnUri IN ($placeholders)', whereArgs: urisToDelete);
     }

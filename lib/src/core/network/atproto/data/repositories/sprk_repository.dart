@@ -3,6 +3,7 @@ import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repo
 import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/story_repository.dart';
 import 'package:sparksocial/src/features/auth/auth.dart';
 
 // All possible endpoints for the Sprk API should be in this contract
@@ -22,6 +23,7 @@ abstract class SprkRepository {
   ActorRepository get actor;
   RepoRepository get repo;
   FeedRepository get feed;
+  StoryRepository get story;
   GraphRepository get graph;
   LabelerRepository get labeler;
 }

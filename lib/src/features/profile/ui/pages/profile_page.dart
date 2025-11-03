@@ -11,8 +11,8 @@ import 'package:sparksocial/src/core/design_system/components/atoms/profile_tab_
 import 'package:sparksocial/src/core/design_system/components/molecules/profile_tab_bar.dart';
 import 'package:sparksocial/src/core/design_system/templates/profile_page_template.dart';
 import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart' as actor_models;
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/ui/widgets/menu_action_button.dart';
 import 'package:sparksocial/src/core/ui/widgets/report_dialog.dart';
@@ -362,8 +362,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       final storyUris = profile.stories!.map((strongRef) => strongRef.uri).toList();
       if (storyUris.isEmpty) return;
 
-      final sprkRepository = GetIt.instance<SprkRepository>();
-      final stories = await sprkRepository.feed.getStoryViews(storyUris);
+      final storyRepository = GetIt.instance<StoryRepository>();
+      final stories = await storyRepository.getStoryViews(storyUris);
       if (stories.isEmpty) {
         _logger.w('No stories found for profile ${profile.did}');
         return;

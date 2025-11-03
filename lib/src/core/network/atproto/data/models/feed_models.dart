@@ -951,7 +951,7 @@ class Thread with _$Thread {
           }
 
           // Convert from Bluesky format to Spark format
-          BskyToSparkJsonAdapter.convertPostViewJson(postViewJson);
+          bskyFeedAdapter.convertPostViewJson(postViewJson);
 
           final thread = Thread.threadViewPost(
             post: ThreadPost.post(post: PostView.fromJson(postViewJson)),
@@ -990,7 +990,7 @@ class Thread with _$Thread {
     }
   }
 
-  factory Thread.fromSparkFlatList({required List<dynamic> threadItems, required AtUri anchorUri}) {
+  factory Thread.fromSparkFlatList({required List<dynamic> threadItems}) {
     if (threadItems.isEmpty) {
       throw Exception('Thread items list is empty');
     }
@@ -1043,13 +1043,13 @@ class Thread with _$Thread {
                       if (imageBlob != null) {
                         // Ensure ref is not null
                         if (imageBlob['ref'] == null) {
-                          imageBlob['ref'] = {};
+                          imageBlob['ref'] = <String, dynamic>{};
                         }
                         // Check original field
                         if (imageBlob.containsKey('original') && imageBlob['original'] != null) {
                           final original = imageBlob['original'] as Map<String, dynamic>?;
                           if (original != null && original['ref'] == null) {
-                            original['ref'] = {};
+                            original['ref'] = <String, dynamic>{};
                           }
                         }
                       }
@@ -1093,8 +1093,7 @@ class Thread with _$Thread {
             value.remove('threadContext');
           } else {
             // If threadContext only has $type and no actual data, remove it
-            final contextMap = contextValue as Map<String, dynamic>;
-            if (contextMap.length == 1 && contextMap.containsKey(r'$type')) {
+            if (contextValue.length == 1 && contextValue.containsKey(r'$type')) {
               value.remove('threadContext');
             }
           }
@@ -1253,7 +1252,7 @@ class ReplyView with _$ReplyView {
           final authorDid = author.did;
           
           // Construct URLs using the same pattern as the server
-          final baseUrl = 'https://media.sprk.so/img';
+          const baseUrl = 'https://media.sprk.so/img';
           final thumbUrl = '$baseUrl/medium/$authorDid/$cid/webp';
           final fullsizeUrl = '$baseUrl/full/$authorDid/$cid/webp';
           

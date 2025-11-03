@@ -103,13 +103,6 @@ abstract class FeedRepository {
     List<SelfLabel>? selfLabels,
   });
 
-  /// Post a story to the user's feed
-  ///
-  /// [media] The media of the story to post
-  /// [selfLabels] The self labels of the story
-  /// [tags] The tags of the story
-  Future<StrongRef> postStory(Media media, {List<SelfLabel>? selfLabels, List<String>? tags});
-
   /// Get the thread for a post
   ///
   /// [uri] The URI of the post to get the thread for
@@ -125,20 +118,6 @@ abstract class FeedRepository {
   /// [limit] Optional limit on the number of labels to return.
   /// [cursor] Optional pagination cursor.
   Future<({List<Label> labels, String? cursor})> getLabels(List<AtUri> uris, {List<String>? sources, int? limit, String? cursor});
-
-  /// Get stories timeline
-  ///
-  /// [limit] The number of items to return (default 20)
-  /// [cursor] Pagination cursor for the next set of results
-  Future<({String? cursor, Map<ProfileViewBasic, List<StoryView>> storiesByAuthor})> getStoriesTimeline({
-    int limit = 30,
-    String? cursor,
-  });
-
-  /// Gets story views for a specified list of stories (by AT-URI). This is sometimes referred to as 'hydrating' a story reference list.
-  ///
-  /// [storyUris] List of story URIs to fetch
-  Future<List<StoryView>> getStoryViews(List<AtUri> storyUris);
 
   /// Search for posts
   /// [query] The search query string

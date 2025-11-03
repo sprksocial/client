@@ -1,8 +1,7 @@
 import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/stories/providers/story_auto_delete_provider.dart';
@@ -28,11 +27,13 @@ class StoryManagerState {
 @riverpod
 class StoryManager extends _$StoryManager {
   late final SprkRepository _sprk;
+  late final StoryRepository _storyRepo;
   late final SparkLogger _logger;
 
   @override
   Future<StoryManagerState> build() async {
     _sprk = GetIt.I<SprkRepository>();
+    _storyRepo = GetIt.I<StoryRepository>();
     _logger = GetIt.I<LogService>().getLogger('StoryManager');
     ref.read(storyAutoDeleteExecutorProvider.future).catchError((_) {});
     return _loadInitial();
@@ -67,7 +68,7 @@ class StoryManager extends _$StoryManager {
       if (uris.isEmpty) {
         return StoryManagerState(stories: const []);
       }
-      final storyViews = await _sprk.feed.getStoryViews(uris);
+      final storyViews = await _storyRepo.getStoryViews(uris);
 
       storyViews.sort((a, b) => b.indexedAt.compareTo(a.indexedAt));
 

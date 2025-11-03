@@ -8,6 +8,6 @@ part 'post_story.g.dart';
 
 @riverpod
 FutureOr<StrongRef?> postStory(Ref ref, Media media, {List<SelfLabel>? selfLabels, List<String>? tags}) async {
-  final feedRepository = GetIt.I<SprkRepository>().feed;
-  return await feedRepository.postStory(media, selfLabels: selfLabels, tags: tags);
+  final storyRepository = GetIt.I<StoryRepository>();
+  return await storyRepository.postStory(media, selfLabels: selfLabels, tags: tags);
 }
