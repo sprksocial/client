@@ -105,10 +105,10 @@ class _CommentItemState extends ConsumerState<CommentItem> {
     const double thumbnailSize = 120;
 
     final borderRadius = BorderRadius.circular(8);
-    
+
     // Comments only support a single image (EmbedViewMediaImage)
     // The adapter transforms Bluesky comments to this format
-    final hasImages = commentState.thread.post.media is EmbedViewMediaImage;
+    final hasImages = commentState.thread.post.media is MediaViewImage;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

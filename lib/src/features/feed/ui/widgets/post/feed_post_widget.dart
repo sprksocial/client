@@ -181,7 +181,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
             shareCount: '${postData.repostCount ?? 0}',
             isLiked: _overrideIsLiked ?? (postData.viewer?.like != null),
             profileImageUrl: postData.author.avatar.toString(),
-            isImage: postData.media is EmbedViewImage || postData.media is EmbedViewBskyImages || postData.media is EmbedViewMediaImages,
+            isImage: postData.media is MediaViewImages || postData.media is MediaViewBskyImages,
             onProfilePressed: () {
               // Pause video before navigating to profile
               _videoPlayerKey.currentState?.pauseVideo();
@@ -212,51 +212,37 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                   Positioned.fill(
                     bottom: 0 + MediaQuery.of(context).padding.bottom,
                     child: switch (postData.media) {
-                      EmbedViewVideo() => PostVideoPlayer(
+                      MediaViewVideo() => PostVideoPlayer(
                         key: _videoPlayerKey,
                         videoUrl: postData.videoUrl,
                         feed: widget.feed,
                         index: widget.index,
                         thumbnail: postData.thumbnailUrl,
                       ),
-                      EmbedViewBskyVideo() => PostVideoPlayer(
+                      MediaViewBskyVideo() => PostVideoPlayer(
                         key: _videoPlayerKey,
                         videoUrl: postData.videoUrl,
                         feed: widget.feed,
                         index: widget.index,
                         thumbnail: postData.thumbnailUrl,
                       ),
-                      EmbedViewMediaVideo() => PostVideoPlayer(
-                        key: _videoPlayerKey,
-                        videoUrl: postData.videoUrl,
-                        feed: widget.feed,
-                        index: widget.index,
-                        thumbnail: postData.thumbnailUrl,
-                      ),
-                      EmbedViewImage() || EmbedViewBskyImages() || EmbedViewMediaImages() => ImageCarousel(imageUrls: postData.imageUrls),
-                      EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
-                        EmbedViewVideo() => PostVideoPlayer(
+                      MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                      MediaViewBskyRecordWithMedia(:final media) => switch (media) {
+                        MediaViewVideo() => PostVideoPlayer(
                           key: _videoPlayerKey,
                           videoUrl: postData.videoUrl,
                           feed: widget.feed,
                           index: widget.index,
                           thumbnail: postData.thumbnailUrl,
                         ),
-                        EmbedViewBskyVideo() => PostVideoPlayer(
+                        MediaViewBskyVideo() => PostVideoPlayer(
                           key: _videoPlayerKey,
                           videoUrl: postData.videoUrl,
                           feed: widget.feed,
                           index: widget.index,
                           thumbnail: postData.thumbnailUrl,
                         ),
-                        EmbedViewMediaVideo() => PostVideoPlayer(
-                          key: _videoPlayerKey,
-                          videoUrl: postData.videoUrl,
-                          feed: widget.feed,
-                          index: widget.index,
-                          thumbnail: postData.thumbnailUrl,
-                        ),
-                        EmbedViewImage() || EmbedViewBskyImages() || EmbedViewMediaImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                        MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
                         _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                       },
                       _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),

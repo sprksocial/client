@@ -145,7 +145,7 @@ class DownloadManagerImpl implements DownloadManagerInterface {
       _logger.d('Caching media for post: ${task.uri}');
       // Actual caching work - start downloading the media
       switch (task.post.media) {
-        case EmbedViewVideo() || EmbedViewMediaVideo():
+        case MediaViewVideo():
           await DownloadManagerImpl.controller.preCache(
             BetterPlayerDataSource(
               BetterPlayerDataSourceType.network,
@@ -159,7 +159,7 @@ class DownloadManagerImpl implements DownloadManagerInterface {
             ),
           );
           _logger.d('Video file successfully cached: ${task.post.videoUrl}');
-        case EmbedViewImage() || EmbedViewMediaImages():
+        case MediaViewImage() || MediaViewVideo():
           for (final url in task.post.imageUrls) {
             // Download the image and verify it's cached
             final fileInfo = await CachedNetworkImageProvider.defaultCacheManager.downloadFile(url, key: url);
@@ -167,10 +167,10 @@ class DownloadManagerImpl implements DownloadManagerInterface {
               _logger.w('Image file was not properly cached after download: $url');
             }
           }
-        case EmbedViewBskyRecordWithMedia(:final media):
+        case MediaViewBskyRecordWithMedia(:final media):
           // Handle nested media in record with media embeds
           switch (media) {
-            case EmbedViewVideo() || EmbedViewMediaVideo() || EmbedViewBskyVideo():
+            case MediaViewVideo() || MediaViewBskyVideo():
               await DownloadManagerImpl.controller.preCache(
                 BetterPlayerDataSource(
                   BetterPlayerDataSourceType.network,
@@ -186,7 +186,7 @@ class DownloadManagerImpl implements DownloadManagerInterface {
                 ),
               );
               _logger.d('Video file successfully cached: ${task.post.videoUrl}');
-            case EmbedViewImage() || EmbedViewMediaImages() || EmbedViewBskyImages():
+            case MediaViewImage() || MediaViewImages() || MediaViewBskyImages():
               for (final url in task.post.imageUrls) {
                 // Download the image and verify it's cached
                 final fileInfo = await CachedNetworkImageProvider.defaultCacheManager.downloadFile(url, key: url);
@@ -197,7 +197,7 @@ class DownloadManagerImpl implements DownloadManagerInterface {
             default:
               throw Exception('Unsupported media type: ${media.runtimeType}');
           }
-        case EmbedViewBskyVideo(:final thumbnail):
+        case MediaViewBskyVideo(:final thumbnail):
           await DownloadManagerImpl.controller.preCache(
             BetterPlayerDataSource(
               BetterPlayerDataSourceType.network,

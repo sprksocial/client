@@ -57,33 +57,33 @@ class SQLCacheImpl implements SQLCacheInterface {
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
-    
+
     try {
       await _cleanupCorruptedPostsInternal(db);
     } catch (e) {
       // Silently handle cleanup errors
     }
-    
+
     return db;
   }
-  
+
   /// Internal cleanup method that accepts a database instance
   Future<int> _cleanupCorruptedPostsInternal(Database db) async {
     var deletedCount = 0;
-    
+
     // Find all posts with null record field
     final nullRecordPosts = await db.query(
       _tablePosts,
       where: '$_columnRecord IS NULL OR $_columnRecord = ?',
       whereArgs: ['null'],
     );
-    
+
     if (nullRecordPosts.isNotEmpty) {
       final urisToDelete = nullRecordPosts.map((map) => map[_columnUri]! as String).toList();
       final placeholders = List.generate(urisToDelete.length, (index) => '?').join(',');
       deletedCount = await db.delete(_tablePosts, where: '$_columnUri IN ($placeholders)', whereArgs: urisToDelete);
     }
-    
+
     return deletedCount;
   }
 
@@ -126,7 +126,7 @@ class SQLCacheImpl implements SQLCacheInterface {
         FOREIGN KEY ($_columnFeedIdentifierFK) REFERENCES $_tableFeeds($_columnFeedIdentifier) ON DELETE CASCADE,
         FOREIGN KEY ($_columnPostUriFK) REFERENCES $_tablePosts($_columnUri) ON DELETE CASCADE,
         UNIQUE ($_columnFeedIdentifierFK, $_columnPostUriFK),
-        UNIQUE ($_columnFeedIdentifierFK, $_columnAssociationOrder) 
+        UNIQUE ($_columnFeedIdentifierFK, $_columnAssociationOrder)
       )
     ''');
     // Index for faster lookups of posts for a feed
@@ -163,7 +163,7 @@ class SQLCacheImpl implements SQLCacheInterface {
     final db = await database;
     final batch = db.batch();
     var successCount = 0;
-    
+
     for (final post in posts) {
       try {
         final map = _postViewToMap(post);
@@ -174,7 +174,7 @@ class SQLCacheImpl implements SQLCacheInterface {
         // Skip posts that fail serialization
       }
     }
-    
+
     if (successCount > 0) {
       await batch.commit(noResult: true);
     }
@@ -188,7 +188,7 @@ class SQLCacheImpl implements SQLCacheInterface {
     if (recordJson == 'null' || recordJson.isEmpty) {
       throw Exception('Post has null/empty record: ${post.uri}');
     }
-    
+
     return {
       _columnUri: post.uri.toString(),
       _columnString: post.cid,
@@ -285,11 +285,11 @@ class SQLCacheImpl implements SQLCacheInterface {
   /// JSON strings are deserialized back to complex objects.
   PostView _mapToPostView(Map<String, dynamic> map) {
     final recordJson = map[_columnRecord] as String?;
-    
+
     if (recordJson == null) {
       throw Exception('Post has null record in cache: ${map[_columnUri]}');
     }
-    
+
     return PostView(
       uri: AtUri.parse(map[_columnUri] as String),
       cid: map[_columnString] as String,
@@ -310,7 +310,7 @@ class SQLCacheImpl implements SQLCacheInterface {
           ? Viewer.fromJson(jsonDecode(map[_columnViewer] as String) as Map<String, dynamic>)
           : null,
       media: map[_columnMedia] != null
-          ? EmbedView.fromJson(jsonDecode(map[_columnMedia] as String) as Map<String, dynamic>)
+          ? MediaView.fromJson(jsonDecode(map[_columnMedia] as String) as Map<String, dynamic>)
           : null,
     );
   }

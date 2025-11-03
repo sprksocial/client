@@ -142,40 +142,30 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                       children: [
                         // Main content
                         switch (postData.media) {
-                          EmbedViewVideo() => PostVideoPlayer(
+                          MediaViewVideo() => PostVideoPlayer(
                             key: _videoPlayerKey,
                             videoUrl: postData.videoUrl,
                             // For standalone, we don't need feed and index
                             thumbnail: postData.thumbnailUrl,
                           ),
-                          EmbedViewBskyVideo() => PostVideoPlayer(
+                          MediaViewBskyVideo() => PostVideoPlayer(
                             key: _videoPlayerKey,
                             videoUrl: postData.videoUrl,
                             thumbnail: postData.thumbnailUrl,
                           ),
-                          EmbedViewMediaVideo() => PostVideoPlayer(
-                            key: _videoPlayerKey,
-                            videoUrl: postData.videoUrl,
-                            thumbnail: postData.thumbnailUrl,
-                          ),
-                          EmbedViewImage() || EmbedViewBskyImages() || EmbedViewMediaImages() => ImageCarousel(imageUrls: postData.imageUrls),
-                          EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
-                            EmbedViewVideo() => PostVideoPlayer(
+                          MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                          MediaViewBskyRecordWithMedia(:final media) => switch (media) {
+                            MediaViewVideo() => PostVideoPlayer(
                               key: _videoPlayerKey,
                               videoUrl: postData.videoUrl,
                               thumbnail: postData.thumbnailUrl,
                             ),
-                            EmbedViewBskyVideo() => PostVideoPlayer(
+                            MediaViewBskyVideo() => PostVideoPlayer(
                               key: _videoPlayerKey,
                               videoUrl: postData.videoUrl,
                               thumbnail: postData.thumbnailUrl,
                             ),
-                            EmbedViewMediaVideo() => PostVideoPlayer(
-                              key: _videoPlayerKey,
-                              videoUrl: postData.videoUrl,
-                              thumbnail: postData.thumbnailUrl,
-                            ),
-                            EmbedViewImage() || EmbedViewBskyImages() || EmbedViewMediaImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                            MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
                             _ => const SizedBox.shrink(),
                           },
                           _ => const SizedBox.shrink(),
@@ -211,7 +201,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                             shareCount: '${postData.repostCount ?? 0}',
                             isLiked: postData.viewer?.like != null,
                             profileImageUrl: postData.author.avatar.toString(),
-                            isImage: postData.media is EmbedViewImage || postData.media is EmbedViewBskyImages || postData.media is EmbedViewMediaImages,
+                            isImage: postData.media is MediaViewImages || postData.media is MediaViewBskyImages,
                             onProfilePressed: () {
                               // Pause video before navigating to profile
                               _videoPlayerKey.currentState?.pauseVideo();

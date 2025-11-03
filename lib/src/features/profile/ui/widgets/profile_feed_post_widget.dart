@@ -182,13 +182,13 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                 children: [
                   // Main content
                   switch (post.media) {
-                    EmbedViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
-                    EmbedViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
-                    EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
-                    EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
-                      EmbedViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
-                      EmbedViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
-                      EmbedViewImage() || EmbedViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
+                    MediaViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
+                    MediaViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
+                    MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
+                    MediaViewBskyRecordWithMedia(:final media) => switch (media) {
+                      MediaViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
+                      MediaViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
+                      MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
                       _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                     },
                     _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
@@ -224,7 +224,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                       shareCount: '${post.repostCount ?? 0}',
                       isLiked: _overrideIsLiked ?? (post.viewer?.like != null),
                       profileImageUrl: post.author.avatar.toString(),
-                      isImage: post.media is EmbedViewImage || post.media is EmbedViewBskyImages,
+                      isImage: post.media is MediaViewImages || post.media is MediaViewBskyImages,
                       onProfilePressed: () {
                         // No special handling needed for profile navigation in standalone feed
                       },

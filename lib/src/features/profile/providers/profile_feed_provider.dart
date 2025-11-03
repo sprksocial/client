@@ -171,16 +171,14 @@ class ProfileFeed extends _$ProfileFeed {
     }
   }
 
-  bool _isMediaVideo(EmbedView? embed) {
+  bool _isMediaVideo(MediaView? embed) {
     if (embed == null) return false;
     return embed.when(
       video: (cid, playlist, thumbnail, alt) => true,
-      mediaVideo: (cid, playlist, thumbnail, alt) => true,
       bskyVideo: (cid, playlist, thumbnail, alt) => true,
       bskyRecordWithMedia: (record, media) => _isMediaVideo(media),
-      image: (images) => false,
-      mediaImage: (image) => false,
-      mediaImages: (images) => false,
+      image: (image) => false,
+      images: (images) => false,
       bskyImages: (images) => false,
       bskyRecord: (record) => false,
       bskyExternal: (external) => false,
