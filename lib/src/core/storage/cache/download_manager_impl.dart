@@ -159,7 +159,7 @@ class DownloadManagerImpl implements DownloadManagerInterface {
             ),
           );
           _logger.d('Video file successfully cached: ${task.post.videoUrl}');
-        case MediaViewImage() || MediaViewVideo():
+        case MediaViewImages():
           for (final url in task.post.imageUrls) {
             // Download the image and verify it's cached
             final fileInfo = await CachedNetworkImageProvider.defaultCacheManager.downloadFile(url, key: url);

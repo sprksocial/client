@@ -25,16 +25,12 @@ class ProfileFeed extends _$ProfileFeed {
 
   @override
   Future<ProfileFeedState> build(AtUri profileUri, bool videosOnly) async {
-    _logger.i('Building ProfileFeed for $profileUri (videosOnly=$videosOnly)');
     try {
       final result = await _loadUnifiedFeed(
         profileUri: profileUri,
         sparkCursor: null,
         blueskyCursor: null,
         videosOnly: videosOnly,
-      );
-      _logger.i(
-        'Loaded initial unified feed: ${result.allPosts.length} total posts, ${result.loadedPosts.length} filtered posts',
       );
       return result;
     } catch (e, stackTrace) {
@@ -59,17 +55,14 @@ class ProfileFeed extends _$ProfileFeed {
 
     final newPosts = <PostView>[];
 
-    _logger.d('Fetching Sprk posts for $profileUri (cursor=$sparkCursor)');
     final sparkResult = await _fetchFromSource(
       (cursor) => _feedRepository.getAuthorFeed(profileUri, limit: ProfileFeedState.fetchLimit, cursor: cursor),
       sparkCursor,
       'Sprk',
     );
-    _logger.i('Received ${sparkResult.posts.length} Sprk posts from API (cursor=${sparkResult.cursor})');
 
     for (final feedViewPost in sparkResult.posts) {
       final uri = feedViewPost.uri;
-      _logger.d('Processing Sprk FeedViewPost: $uri');
       if (!postViews.containsKey(uri)) {
         final postView = feedViewPost.asPost;
         if (postView != null) {
@@ -78,15 +71,9 @@ class ProfileFeed extends _$ProfileFeed {
           postTypes[uri] = postView.videoUrl.isNotEmpty;
           postViews[uri] = postView;
           sparkRkeys.add(uri.rkey);
-          _logger.d('Added Sprk post: $uri (isVideo=${postView.videoUrl.isNotEmpty})');
-        } else {
-          _logger.w('FeedViewPost.asPost returned null for $uri');
         }
-      } else {
-        _logger.d('Skipping duplicate Sprk post: $uri');
       }
     }
-    _logger.i('Processed Sprk posts: ${newPosts.length} new posts added');
 
     final bskyResult = await _fetchFromSource(
       (cursor) => _feedRepository.getAuthorFeed(profileUri, limit: ProfileFeedState.fetchLimit, cursor: cursor, bluesky: true),
@@ -119,7 +106,6 @@ class ProfileFeed extends _$ProfileFeed {
         final (cursor: _, labels: additionalLabels) = await _feedRepository.getLabels(newPostUris, sources: followedLabelers);
         // Add the additional labels to the posts
         for (final label in additionalLabels) {
-          _logger.d('Adding label ${label.value} to post ${label.uri}');
           final uri = AtUri.parse(label.uri);
           final post = postViews[uri];
           if (post != null) {
@@ -161,9 +147,7 @@ class ProfileFeed extends _$ProfileFeed {
     String sourceName,
   ) async {
     try {
-      _logger.d('Fetching from $sourceName with cursor=$cursor');
       final result = await fetcher(cursor);
-      _logger.i('Loaded ${result.posts.length} posts from $sourceName (newCursor=${result.cursor})');
       return result;
     } catch (e, stackTrace) {
       _logger.e('Failed to load from $sourceName: $e', error: e, stackTrace: stackTrace);
@@ -211,8 +195,6 @@ class ProfileFeed extends _$ProfileFeed {
         final postViewsToCache = newPostUris.map((uri) => result.postViews[uri]!).toList();
         await _sqlCache.cachePosts(postViewsToCache);
       }
-
-      _logger.d('Loaded more posts: ${result.allPosts.length - currentState.allPosts.length} new posts');
     } catch (e) {
       _logger.e('Error loading more posts: $e');
       state = AsyncValue.error(e, StackTrace.current);
@@ -243,7 +225,6 @@ class ProfileFeed extends _$ProfileFeed {
       try {
         final labelPreference = await _settingsRepository.getLabelPreference(label.value);
         if (labelPreference.setting == Setting.hide || (labelPreference.adultOnly && hideAdultContent)) {
-          _logger.d('Hiding post $uri due to label: ${label.value}');
           return true;
         }
       } catch (e) {
