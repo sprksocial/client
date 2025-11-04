@@ -20,7 +20,7 @@ class AppConfig {
   static String get messagesServiceUrl => _getStringValue('MESSAGES_SERVICE_URL', 'http://localhost:3000');
 
   /// Service DID for the chat service (used for service auth).
-  static String get chatServiceDid => _getStringValue('CHAT_SERVICE_DID', 'did:example:chat-service');
+  static String get chatServiceDid => _getStringValue('CHAT_SERVICE_DID', 'did:web:chat.sprk.so');
 
   /// Whether new user registrations are disabled.
   static bool get signupsDisabled => _getBoolValue('SIGNUPS_DISABLED', false);

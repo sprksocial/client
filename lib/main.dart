@@ -57,10 +57,10 @@ void _setupLogging() {
 Future<void> _initializeAuth() async {
   final logService = sl<LogService>();
   final logger = logService.getLogger('AppInitialization');
-  
+
   try {
     final authRepository = sl<AuthRepository>();
-    
+
     if (authRepository is AuthRepositoryImpl) {
       logger.d('Waiting for AuthRepository initialization...');
       await authRepository.initializationComplete;

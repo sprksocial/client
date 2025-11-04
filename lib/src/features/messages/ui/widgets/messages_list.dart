@@ -205,57 +205,35 @@ class MessagesList extends StatelessWidget {
     return ListView.builder(
       controller: scrollController,
       padding: const EdgeInsets.all(16),
+      cacheExtent: 9999,
+      reverse: true,
       itemCount: messages.length,
       itemBuilder: (context, index) {
-        final message = messages[index];
-        final isCurrentUser = message.sender.did == currentUserDid;
-        final showAvatar =
-            !isCurrentUser && (index == messages.length - 1 || messages[index + 1].sender.did != message.sender.did);
+        final reversedMessages = messages.reversed.toList();
+        final message = reversedMessages[index];
+        final isCurrentUser = currentUserDid != null && message.sender.did == currentUserDid;
+        final showAvatar = !isCurrentUser && (index == 0 || reversedMessages[index - 1].sender.did != message.sender.did);
 
         return Column(
           children: [
-            MessageBubble(
-              message: message,
-              isCurrentUser: isCurrentUser,
-              showAvatar: showAvatar,
-              otherUserAvatar: otherUserAvatar,
-              otherUserHandle: otherUserHandle,
-            ),
-            if (message.embed != null && message.embed!.isNotEmpty) // Render hydrated post preview for embedded ATURI
-              Padding(
-                padding: const EdgeInsets.only(top: 8),
-                child: Row(
-                  mainAxisAlignment: isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-                  children: [
-                    Flexible(child: _PostEmbedPreview(atUri: message.embed!)),
-                  ],
-                ),
-              ),
             FutureBuilder<List<Widget>?>(
               future: validateAndCreateEmbedsFromText(message.text),
               builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const SizedBox.shrink();
+                final combinedEmbeds = <Widget>[];
+                if (message.embed != null && message.embed!.isNotEmpty) {
+                  combinedEmbeds.add(_PostEmbedPreview(atUri: message.embed!));
                 }
-                if (snapshot.hasError) {
-                  GetIt.I<LogService>().getLogger('MessagesList').e('Error validating embeds: ${snapshot.error}');
-                  return const SizedBox.shrink(); // Show nothing on error
+                if (snapshot.hasData && (snapshot.data?.isNotEmpty ?? false)) {
+                  combinedEmbeds.addAll(snapshot.data!);
                 }
-                final embeds = snapshot.data;
-                if (embeds == null || embeds.isEmpty) return const SizedBox.shrink();
-                return Padding(
-                  padding: const EdgeInsets.only(top: 8),
-                  child: Column(
-                    crossAxisAlignment: isCurrentUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-                    children: embeds
-                        .map(
-                          (embed) => Row(
-                            mainAxisAlignment: isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
-                            children: [Flexible(child: embed)],
-                          ),
-                        )
-                        .toList(),
-                  ),
+
+                return MessageBubble(
+                  message: message,
+                  isCurrentUser: isCurrentUser,
+                  showAvatar: showAvatar,
+                  otherUserAvatar: otherUserAvatar,
+                  otherUserHandle: otherUserHandle,
+                  embeds: combinedEmbeds,
                 );
               },
             ),

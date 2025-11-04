@@ -60,9 +60,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     try {
       final chatService = ref.read(conversationProvider(widget.conversationId).notifier);
       await chatService.sendMessage(widget.conversationId, content);
-
-      // No need to manage local state since the provider handles it
-      _scrollToBottom();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send message: $e')));
@@ -70,17 +67,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     }
   }
 
-  void _scrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +80,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         ref.read(conversationProvider(widget.conversationId).notifier).markReadUpToLatest();
       }
     });
-    // Always show the page shell (app bar + input). Only the messages area changes state.
     final messagesWidget = state.when(
       data: (data) => MessagesList(
         messages: data.messages,

@@ -109,13 +109,13 @@ class _Tabs extends StatelessWidget {
           onTap: () => onChanged(0),
           indicatorColor: theme.colorScheme.onSurface,
         ),
-        AppTabItem(
-          activeChild: Text('Activity', style: AppTypography.textMediumBold.copyWith(color: theme.colorScheme.onSurface)),
-          inactiveChild: Text('Activity', style: AppTypography.textMediumBold.copyWith(color: inactive)),
-          isSelected: selectedIndex == 1,
-          onTap: () => onChanged(1),
-          indicatorColor: theme.colorScheme.onSurface,
-        ),
+        // AppTabItem(
+        //   activeChild: Text('Activity', style: AppTypography.textMediumBold.copyWith(color: theme.colorScheme.onSurface)),
+        //   inactiveChild: Text('Activity', style: AppTypography.textMediumBold.copyWith(color: inactive)),
+        //   isSelected: selectedIndex == 1,
+        //   onTap: () => onChanged(1),
+        //   indicatorColor: theme.colorScheme.onSurface,
+        // ),
       ],
     );
   }
