@@ -128,7 +128,7 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
     _overlayIcon?.remove();
     _overlay = null;
     _overlayIcon = null;
-    if (mounted) setState(() => _showingPopover = false);
+    _showingPopover = false;
   }
 
   @override
