@@ -15,14 +15,14 @@ import 'package:sparksocial/src/features/messages/ui/widgets/messages_list.dart'
 class ChatPage extends ConsumerStatefulWidget {
   const ChatPage({
     @PathParam('conversationId') required this.conversationId,
-    required this.otherUserDid,
+    this.otherUserDid,
     super.key,
     this.otherUserHandle,
     this.otherUserDisplayName,
     this.otherUserAvatar,
   });
   final String conversationId;
-  final String otherUserDid;
+  final String? otherUserDid;
   final String? otherUserHandle;
   final String? otherUserDisplayName;
   final String? otherUserAvatar;
