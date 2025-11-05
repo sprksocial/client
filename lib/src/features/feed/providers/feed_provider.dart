@@ -56,7 +56,6 @@ class FeedNotifier extends _$FeedNotifier {
     listenSelf((previous, next) {
       // If we were waiting at the end of the feed and new posts have arrived
       if (_isWaitingForFreshPostsAtEnd && next.freshPostCount > 0) {
-        _logger.d('New posts arrived! Loading...');
         Future.microtask(load); // Prevent synchronous execution during state change
       }
 
@@ -68,7 +67,6 @@ class FeedNotifier extends _$FeedNotifier {
 
     // If this notifier has been built before and we have preserved state, use it
     if (_hasBeenBuilt && _preservedState != null) {
-      _logger.d('Restoring preserved state for ${feed.identifier}: ${_preservedState!.length} posts');
       final restoredState = _preservedState!.copyWith(active: isActive);
       // Update preserved state with the new active status
       _preservedState = restoredState;
@@ -76,7 +74,6 @@ class FeedNotifier extends _$FeedNotifier {
     }
 
     _hasBeenBuilt = true;
-    _logger.d('Creating fresh state for ${feed.identifier}');
 
     // Only return fresh state on first initialization
     final freshState = FeedState(
@@ -199,7 +196,7 @@ class FeedNotifier extends _$FeedNotifier {
       }
 
       // Store the cursor from the initial fetch
-      String? newCursor = state.cursor;
+      var newCursor = state.cursor;
       var fetchedCount = 0;
       // starts fetching and storing new posts
       if (!state.isEndOfNetworkFeed) {
@@ -260,7 +257,7 @@ class FeedNotifier extends _$FeedNotifier {
       // Don't reset freshPostCount to 0 if we just fetched posts, as store() will have incremented it
       // and we need those posts to be loaded
       final freshPostCount = uris.isEmpty && fetchedCount > 0 ? state.freshPostCount : 0;
-      
+
       state = state.copyWith(
         loadedPosts: filteredUris,
         freshPostCount: freshPostCount, // Preserve freshPostCount if we just fetched posts
@@ -305,11 +302,6 @@ class FeedNotifier extends _$FeedNotifier {
         final cachedPostsMap = {for (final post in cachedPosts) post.uri: post};
 
         final posts = await _feedRepository.getPosts(existingUris, bluesky: _shouldUseBlueskyAPI());
-
-        _logger.d('getPosts returned ${posts.length} posts');
-        for (final post in posts) {
-          _logger.d('Post ${post.uri}: replyCount=${post.replyCount}, likeCount=${post.likeCount}');
-        }
 
         // Preserve viewer information from cached posts when updating with fresh data
         final mergedPosts = <PostView>[];
@@ -527,7 +519,6 @@ class FeedNotifier extends _$FeedNotifier {
     // the UI will be notified that the feed is at the end and also this will only be called once
     if (state.isEndOfNetworkFeed) return;
     // no isEndOfFeed because the UI warning is different
-    _logger.d('End of network feed');
     state = state.copyWith(isEndOfNetworkFeed: true);
   }
 
