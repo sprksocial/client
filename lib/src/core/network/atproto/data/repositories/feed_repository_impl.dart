@@ -291,10 +291,7 @@ class FeedRepositoryImpl implements FeedRepository {
         }
         final convertedPosts = feedPosts.map((post) => post.toSparkFeedViewPost()).toList();
         // Filter out replies for Bluesky feeds (Spark posts can't be replies)
-        final filteredPosts = convertedPosts
-            .where((post) => !_feedViewPostIsReply(post))
-            .where(_feedViewPostHasMedia)
-            .toList();
+        final filteredPosts = convertedPosts.where((post) => !_feedViewPostIsReply(post)).where(_feedViewPostHasMedia).toList();
         return (posts: filteredPosts, cursor: resultBsky.data.cursor);
       } catch (e) {
         _logger.e('Error getting author feed from Bsky', error: e);
@@ -652,7 +649,7 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Crossposting to Bluesky with ${sparkImages.length} images');
 
     const maxBskyImages = 4;
-    
+
     // Use adapter to convert Spark images to Bluesky images
     final allBskyImages = bskyFeedAdapter.convertImages(sparkImages);
     final bskyImages = allBskyImages.take(maxBskyImages).toList();
@@ -660,7 +657,7 @@ class FeedRepositoryImpl implements FeedRepository {
     // Determine if we need to add a link to the Spark post
     String? linkUrl;
     List<bsky.Facet>? facets;
-    
+
     if (sparkImages.length > maxBskyImages) {
       final sparkRkey = sparkPostData.uri.rkey;
       final uriDid = sparkPostData.uri.hostname;
@@ -669,7 +666,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
     // Prepare text and facets for Bluesky post
     final finalText = _prepareTextWithLink(text: text, linkUrl: linkUrl);
-    
+
     if (linkUrl != null) {
       final linkStart = text.isEmpty ? 0 : text.length;
       facets = [

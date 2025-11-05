@@ -115,8 +115,8 @@ class FeedNotifier extends _$FeedNotifier {
             // For You feed uses Bluesky generator (TheVids)
             return true;
           case HardCodedFeedEnum.following:
-            // Following feed uses Bluesky timeline
-            return true;
+            // Following feed now uses Spark API timeline
+            return false;
           case HardCodedFeedEnum.latestSprk:
             // Latest Sprk feed uses Spark API
             return false;
@@ -199,16 +199,17 @@ class FeedNotifier extends _$FeedNotifier {
       }
 
       // Store the cursor from the initial fetch
-      // String? newCursor = state.cursor;
+      String? newCursor = state.cursor;
       var fetchedCount = 0;
       // starts fetching and storing new posts
       if (!state.isEndOfNetworkFeed) {
         final (int count, List<AtUri> fetchedUris, String? cursor) = await fetch();
-        // newCursor = cursor;
-        fetchedCount = count;
-        if (count > 0) {
+        newCursor = cursor;
+        fetchedCount = fetchedUris.length; // Use filtered URI count, not raw skeleton count
+        if (fetchedUris.isNotEmpty) {
           await store(fetchedUris);
-        } else {
+        } else if (count == 0) {
+          // Only end if the skeleton itself is empty
           endOfNetworkFeed();
         }
       }
@@ -256,11 +257,15 @@ class FeedNotifier extends _$FeedNotifier {
       // Filter out posts that should be hidden based on label preferences
       final filteredUris = await _filterHiddenPosts(uris, extraInfo);
 
+      // Don't reset freshPostCount to 0 if we just fetched posts, as store() will have incremented it
+      // and we need those posts to be loaded
+      final freshPostCount = uris.isEmpty && fetchedCount > 0 ? state.freshPostCount : 0;
+      
       state = state.copyWith(
         loadedPosts: filteredUris,
-        freshPostCount: 0, // Set to 0 as per strategy
+        freshPostCount: freshPostCount, // Preserve freshPostCount if we just fetched posts
         extraInfo: extraInfo,
-        // cursor: newCursor, // Store the cursor from fetch
+        cursor: newCursor, // Store the cursor from fetch
         loadingFirstLoad: loadingFirstLoad,
       );
       _isWaitingForFreshPostsAtEnd = state.length <= 1;
@@ -535,12 +540,17 @@ class FeedNotifier extends _$FeedNotifier {
       await load();
       if (!_isCaching) {
         final (int fetchedCount, List<AtUri> fetchedUris, String? cursor) = await fetch();
-        if (fetchedCount == 0) {
+        if (fetchedUris.isEmpty && fetchedCount == 0) {
+          // Only end if the skeleton itself is empty
           endOfNetworkFeed();
-        } else {
+        } else if (fetchedUris.isNotEmpty) {
           // Store the new cursor and then store the fetched posts
           state = state.copyWith(cursor: cursor);
           store(fetchedUris);
+        }
+        // If fetchedUris is empty but fetchedCount > 0, just update cursor and continue
+        else {
+          state = state.copyWith(cursor: cursor);
         }
       }
     }
