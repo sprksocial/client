@@ -3,8 +3,6 @@ import 'dart:convert';
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:sparksocial/src/core/config/app_config.dart';
-// ignore: unused_import
-import 'package:sparksocial/src/core/network/atproto/atproto.dart' hide Embed;
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:sparksocial/src/core/network/xrpc/service_auth_helper.dart';
@@ -195,7 +193,6 @@ class MessagesRepositoryXrpc implements MessagesRepository {
 
     final data = await _callProcedure('so.sprk.chat.convo.sendMessage', body);
 
-    _logger.d('Message sent: $data');
     return MessageView.fromJson(data);
   }
 
@@ -213,7 +210,7 @@ class MessagesRepositoryXrpc implements MessagesRepository {
 
     final data = await _callProcedure('so.sprk.chat.convo.addReaction', body);
 
-    return MessageView.fromJson(data['message'] as Map<String, dynamic>);
+    return MessageView.fromJson(data);
   }
 
   @override
@@ -230,7 +227,7 @@ class MessagesRepositoryXrpc implements MessagesRepository {
 
     final data = await _callProcedure('so.sprk.chat.convo.removeReaction', body);
 
-    return MessageView.fromJson(data['message'] as Map<String, dynamic>);
+    return MessageView.fromJson(data);
   }
 
   @override

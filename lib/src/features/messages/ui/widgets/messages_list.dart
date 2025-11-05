@@ -205,14 +205,14 @@ class MessagesList extends StatelessWidget {
     return ListView.builder(
       controller: scrollController,
       padding: const EdgeInsets.all(16),
-      cacheExtent: 9999,
+      cacheExtent: 1000,
       reverse: true,
       itemCount: messages.length,
       itemBuilder: (context, index) {
-        final reversedMessages = messages.reversed.toList();
-        final message = reversedMessages[index];
+        final message = messages[messages.length - 1 - index];
         final isCurrentUser = currentUserDid != null && message.sender.did == currentUserDid;
-        final showAvatar = !isCurrentUser && (index == 0 || reversedMessages[index - 1].sender.did != message.sender.did);
+        final showAvatar =
+            !isCurrentUser && (index == 0 || messages[messages.length - 1 - index - 1].sender.did != message.sender.did);
 
         return Column(
           children: [
