@@ -111,19 +111,14 @@ class FeedNotifier extends _$FeedNotifier {
           case HardCodedFeedEnum.forYou:
             // For You feed uses Bluesky generator (TheVids)
             return true;
-          case HardCodedFeedEnum.following:
+          case HardCodedFeedEnum.timeline:
             // Following feed now uses Spark API timeline
             return false;
-          case HardCodedFeedEnum.latestSprk:
+          case HardCodedFeedEnum.latest:
             // Latest Sprk feed uses Spark API
             return false;
-          case HardCodedFeedEnum.mutuals:
-          case HardCodedFeedEnum.shared:
-            // These are not implemented yet (return empty feed)
-            // When implemented, determine based on their actual implementation
-            return false;
         }
-      case FeedCustom():
+      case FeedRecord():
         // Custom feeds are currently Spark-based
         return false;
     }
@@ -152,6 +147,48 @@ class FeedNotifier extends _$FeedNotifier {
       // adds the initial uris to the list of initial uris so that they are not fetched again
       _initialUris.addAll(uris);
 
+      // Store the cursor from the initial fetch
+      var newCursor = state.cursor;
+      var fetchedCount = 0;
+      Map<AtUri, PostView>? allFetchedPostsMap;
+
+      // For hardcoded feeds, fetch FeedView first to get PostViews for both cached and new posts
+      // This avoids calling getPosts() separately for cached URIs
+      if (_feed case FeedHardCoded(:final hardCodedFeed)) {
+        final feedViewFunction = HardCodedFeedAlgorithm.feedViewFromEnum(hardCodedFeed);
+        final feedView = await feedViewFunction(limit: FeedState.fetchLimit, cursor: state.cursor);
+
+        // Extract all PostViews from FeedView (both cached and new)
+        final allPosts = feedView.feed.map((feedPost) => feedPost.asPost).whereType<PostView>().toList();
+        allFetchedPostsMap = {for (final post in allPosts) post.uri: post};
+        newCursor = feedView.cursor;
+
+        // Filter to get only new posts (not in _initialUris)
+        final newPosts = allPosts.where((post) => !_initialUris.contains(post.uri)).toList();
+        final newUris = newPosts.map((post) => post.uri).toList();
+        fetchedCount = newUris.length;
+
+        if (newUris.isNotEmpty) {
+          await storePosts(newPosts);
+        } else if (allPosts.isEmpty) {
+          endOfNetworkFeed();
+        }
+      } else {
+        // Custom feeds: fetch skeleton and update cached posts separately
+        if (!state.isEndOfNetworkFeed) {
+          final (int count, List<AtUri> fetchedUris, String? cursor, List<PostView>? fetchedPosts) = await fetch();
+          newCursor = cursor;
+          fetchedCount = fetchedUris.length;
+
+          if (fetchedUris.isNotEmpty) {
+            await store(fetchedUris);
+          } else if (count == 0) {
+            endOfNetworkFeed();
+          }
+        }
+      }
+
+      // Update cached posts
       if (uris.isNotEmpty) {
         // Get existing cached posts to preserve viewer information (like status)
         final cachedPosts = await _sqlCache.getPostsByUris(uris);
@@ -161,8 +198,23 @@ class FeedNotifier extends _$FeedNotifier {
         final followedLabelers = await _settingsRepository.getFollowedLabelers();
         final (cursor: _, labels: labels) = await _feedRepository.getLabels(uris, sources: followedLabelers);
 
-        // updates the posts in the database with new information if they have been edited
-        final updatedPostViews = await _feedRepository.getPosts(uris, bluesky: _shouldUseBlueskyAPI());
+        // For hardcoded feeds, use PostViews from FeedView if available
+        // For custom feeds, fetch updated posts
+        List<PostView> updatedPostViews;
+        if (allFetchedPostsMap != null) {
+          // Use PostViews from FeedView for cached URIs
+          updatedPostViews = uris.map((uri) => allFetchedPostsMap![uri]).whereType<PostView>().toList();
+
+          // For URIs not in the fetched FeedView, we still need to fetch them
+          final missingUris = uris.where((uri) => !allFetchedPostsMap!.containsKey(uri)).toList();
+          if (missingUris.isNotEmpty) {
+            final missingPosts = await _feedRepository.getPosts(missingUris, bluesky: _shouldUseBlueskyAPI());
+            updatedPostViews.addAll(missingPosts);
+          }
+        } else {
+          // Custom feeds: fetch updated posts
+          updatedPostViews = await _feedRepository.getPosts(uris, bluesky: _shouldUseBlueskyAPI());
+        }
 
         // Preserve viewer information from cached posts when updating with fresh data
         final mergedPosts = <PostView>[];
@@ -193,22 +245,6 @@ class FeedNotifier extends _$FeedNotifier {
           }
         }
         await _sqlCache.cachePosts(mergedPosts);
-      }
-
-      // Store the cursor from the initial fetch
-      var newCursor = state.cursor;
-      var fetchedCount = 0;
-      // starts fetching and storing new posts
-      if (!state.isEndOfNetworkFeed) {
-        final (int count, List<AtUri> fetchedUris, String? cursor) = await fetch();
-        newCursor = cursor;
-        fetchedCount = fetchedUris.length; // Use filtered URI count, not raw skeleton count
-        if (fetchedUris.isNotEmpty) {
-          await store(fetchedUris);
-        } else if (count == 0) {
-          // Only end if the skeleton itself is empty
-          endOfNetworkFeed();
-        }
       }
 
       // gets all extra info for the posts (labels and hardcoded feed extra info)
@@ -274,18 +310,152 @@ class FeedNotifier extends _$FeedNotifier {
     }
   }
 
-  Future<(int, List<AtUri>, String?)> fetch() async {
-    // gets the skeleton of the feed
-    final skeleton = await _feedRepository.getFeedSkeleton(_feed, limit: FeedState.fetchLimit, cursor: state.cursor);
-    final fetchedUris = skeleton.feed.map((e) => e.uri).toList();
+  Future<(int, List<AtUri>, String?, List<PostView>?)> fetch() async {
+    // For hardcoded feeds, get FeedView directly (fully hydrated)
+    // For custom feeds, get skeleton and return null for posts
+    return switch (_feed) {
+      FeedHardCoded(:final hardCodedFeed) => () async {
+        final feedViewFunction = HardCodedFeedAlgorithm.feedViewFromEnum(hardCodedFeed);
+        final feedView = await feedViewFunction(limit: FeedState.fetchLimit, cursor: state.cursor);
 
-    // remove fetched uris that were present when the feed was first loaded
-    final filteredUris = fetchedUris.where((uri) => !_initialUris.contains(uri)).toList();
-    return (skeleton.feed.length, filteredUris, skeleton.cursor);
+        // Extract PostViews from FeedView
+        final postViews = feedView.feed.map((feedPost) => feedPost.asPost).whereType<PostView>().toList();
+
+        final fetchedUris = postViews.map((post) => post.uri).toList();
+        // remove fetched uris that were present when the feed was first loaded
+        final filteredUris = fetchedUris.where((uri) => !_initialUris.contains(uri)).toList();
+        final filteredPosts = postViews.where((post) => filteredUris.contains(post.uri)).toList();
+
+        return (postViews.length, filteredUris, feedView.cursor, filteredPosts);
+      }(),
+      FeedRecord() => () async {
+        // gets the skeleton of the feed
+        final skeleton = await _feedRepository.getFeed(_feed, limit: FeedState.fetchLimit, cursor: state.cursor);
+        final fetchedUris = skeleton.feed.map((e) => e.uri).toList();
+
+        // remove fetched uris that were present when the feed was first loaded
+        final filteredUris = fetchedUris.where((uri) => !_initialUris.contains(uri)).toList();
+        return (skeleton.feed.length, filteredUris, skeleton.cursor, null);
+      }(),
+      _ => throw ArgumentError('Invalid feed type: $_feed'),
+    };
   }
 
   Future<void> increaseFreshPostCount() async {
     state = state.copyWith(freshPostCount: state.freshPostCount + 1);
+  }
+
+  /// Store PostViews directly (for hardcoded feeds that already have hydrated posts)
+  Future<void> storePosts(List<PostView> posts) async {
+    _isCaching = true;
+    var updatedPostCount = 0;
+    state = state.copyWith(error: false);
+    try {
+      final uris = posts.map((post) => post.uri).toList();
+      // checks if the posts have already been cached
+      final existingUris = await _sqlCache.getExistingPostUris(uris);
+
+      // Handle existing posts - preserve viewer information
+      if (existingUris.isNotEmpty) {
+        final cachedPosts = await _sqlCache.getPostsByUris(existingUris);
+        final cachedPostsMap = {for (final post in cachedPosts) post.uri: post};
+
+        final mergedPosts = <PostView>[];
+        for (final freshPost in posts.where((p) => existingUris.contains(p.uri))) {
+          final cachedPost = cachedPostsMap[freshPost.uri];
+          PostView finalPost;
+
+          if (cachedPost != null && cachedPost.viewer != null) {
+            // Preserve viewer information from cache if it exists
+            finalPost = freshPost.copyWith(viewer: cachedPost.viewer);
+          } else {
+            finalPost = freshPost;
+          }
+
+          mergedPosts.add(finalPost);
+        }
+
+        await _sqlCache.cachePosts(mergedPosts);
+        await _sqlCache.appendPostsToFeed(_feed, existingUris.map((e) => e.toString()).toList());
+
+        final newExistingUris = existingUris.where((uri) => !state.loadedPosts.contains(uri)).toList();
+        updatedPostCount = newExistingUris.length;
+
+        if (updatedPostCount > 0) {
+          state = state.copyWith(freshPostCount: state.freshPostCount + updatedPostCount);
+        }
+      }
+
+      // Handle new posts
+      final newPosts = posts.where((post) => !existingUris.contains(post.uri)).toList();
+      if (newPosts.isEmpty) {
+        _isCaching = false;
+        return;
+      }
+
+      // Get labels for new posts
+      final newPostUris = newPosts.map((post) => post.uri).toList();
+      final followedLabelers = await _settingsRepository.getFollowedLabelers();
+      var newPostLabels = <Label>[];
+      try {
+        final (cursor: _, labels: fetchedLabels) = await _feedRepository.getLabels(newPostUris, sources: followedLabelers);
+        newPostLabels = fetchedLabels;
+      } catch (e) {
+        _logger.e('Error getting labels for new posts: $e');
+        newPostLabels = [];
+      }
+
+      final postsWithLabels = <PostView>[];
+      for (final post in newPosts) {
+        newPostLabels.addAll(post.labels ?? []);
+        if (post.record.selfLabels != null) {
+          final recordLabels = <Label>[];
+          for (final selfLabel in post.record.selfLabels!) {
+            recordLabels.add(
+              Label(uri: post.uri.toString(), value: selfLabel.value, src: post.uri.toString(), createdAt: post.indexedAt),
+            );
+          }
+          newPostLabels.addAll(recordLabels);
+        }
+        postsWithLabels.add(post.copyWith(labels: newPostLabels));
+      }
+
+      var newPostsCached = 0;
+      var errorCount = 0;
+      for (final post in postsWithLabels) {
+        _downloadManager.submitTask(
+          DownloadTask(
+            uri: post.uri,
+            post: post,
+            feed: _feed,
+            onComplete: (task) {
+              if (!state.loadedPosts.contains(task.uri)) {
+                increaseFreshPostCount();
+              }
+              newPostsCached++;
+              if (newPostsCached + errorCount == postsWithLabels.length) {
+                _isCaching = false;
+              }
+            },
+            onError: (task, error, stackTrace) {
+              errorCount++;
+              _logger.e('Error caching post ${task.uri}: $error', stackTrace: stackTrace);
+              if (newPostsCached + errorCount == postsWithLabels.length) {
+                _isCaching = false;
+              }
+            },
+          ),
+        );
+      }
+
+      if (postsWithLabels.isEmpty) {
+        _isCaching = false;
+      }
+    } catch (e, stackTrace) {
+      _logger.e('Error in storePosts: $e', stackTrace: stackTrace);
+      _isCaching = false;
+      rethrow;
+    }
   }
 
   Future<void> store(List<AtUri> uris) async {
@@ -530,14 +700,19 @@ class FeedNotifier extends _$FeedNotifier {
     if (state.length - state.index < FeedState.loadLimit) {
       await load();
       if (!_isCaching) {
-        final (int fetchedCount, List<AtUri> fetchedUris, String? cursor) = await fetch();
+        final (int fetchedCount, List<AtUri> fetchedUris, String? cursor, List<PostView>? fetchedPosts) = await fetch();
         if (fetchedUris.isEmpty && fetchedCount == 0) {
           // Only end if the skeleton itself is empty
           endOfNetworkFeed();
         } else if (fetchedUris.isNotEmpty) {
           // Store the new cursor and then store the fetched posts
           state = state.copyWith(cursor: cursor);
-          store(fetchedUris);
+          // For hardcoded feeds, we already have PostViews, so use them directly
+          if (fetchedPosts != null) {
+            storePosts(fetchedPosts);
+          } else {
+            store(fetchedUris);
+          }
         }
         // If fetchedUris is empty but fetchedCount > 0, just update cursor and continue
         else {

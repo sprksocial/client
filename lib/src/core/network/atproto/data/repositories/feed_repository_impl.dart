@@ -83,35 +83,19 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<FeedSkeleton> getFeedSkeleton(Feed feed, {int? limit, String? cursor}) async {
+  Future<FeedView> getFeed(Feed feed, {int limit = 20, String? cursor}) async {
     _logger.d('Getting feed skeleton for feed: $feed, limit: $limit, cursor: $cursor');
-    limit ??= 10;
     switch (feed) {
       case FeedHardCoded(:final hardCodedFeed):
-        final skeletonFunction = HardCodedFeedAlgorithm.skeletonFromEnum(hardCodedFeed);
-        return skeletonFunction(limit: limit, cursor: cursor);
-      case FeedCustom():
+        final feedViewFunction = HardCodedFeedAlgorithm.feedViewFromEnum(hardCodedFeed);
+        final feedView = await feedViewFunction(limit: limit, cursor: cursor);
+        // Convert FeedView to FeedSkeleton by extracting URIs
+        return feedView;
+      case FeedRecord():
         return _client.executeWithRetry(() async {
-          if (!_client.authRepository.isAuthenticated) {
-            _logger.w('Not authenticated');
-            throw Exception('Not authenticated');
-          }
-
-          final atproto = _client.authRepository.atproto;
-          if (atproto == null) {
-            _logger.e('AtProto not initialized');
-            throw Exception('AtProto not initialized');
-          }
-
-          final result = await atproto.get(
-            NSID.parse('so.sprk.feed.getFeedSkeleton'),
-            parameters: {'feed': feed, 'limit': limit, 'cursor': cursor},
-            service: 'feeds.sprk.so',
-            to: FeedSkeleton.fromJson,
-            adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
-          );
+          final result = await getFeedView(feed.uri, limit: limit, cursor: cursor);
           _logger.d('Feed skeleton retrieved successfully');
-          return result.data;
+          return result;
         });
       case _:
         throw ArgumentError('Invalid feed: $feed');
@@ -297,6 +281,180 @@ class FeedRepositoryImpl implements FeedRepository {
         _logger.e('Error getting author feed from Bsky', error: e);
         rethrow;
       }
+    });
+  }
+
+  @override
+  Future<FeedView> getTimeline({
+    int limit = 20,
+    String? cursor,
+  }) async {
+    _logger.d('Getting timeline feed, limit: $limit, cursor: $cursor');
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final parameters = <String, dynamic>{'limit': limit};
+      if (cursor != null) {
+        parameters['cursor'] = cursor;
+      }
+
+      final result = await atproto.get(
+        NSID.parse('so.sprk.feed.getTimeline'),
+        parameters: parameters,
+        headers: {'atproto-proxy': _client.sprkDid},
+        to: (jsonMap) {
+          if (!jsonMap.containsKey('feed')) {
+            return const FeedView(feed: []);
+          }
+
+          final feedData = jsonMap['feed'] as List<dynamic>?;
+          if (feedData == null) {
+            return const FeedView(feed: []);
+          }
+
+          final feedPosts = <FeedViewPost>[];
+          for (final item in feedData) {
+            try {
+              final itemMap = item as Map<String, dynamic>;
+
+              // The response has a 'post' object containing the fully hydrated post view
+              final postMap = itemMap['post'] as Map<String, dynamic>?;
+              if (postMap == null) {
+                continue;
+              }
+
+              // Parse the post view
+              final postView = PostView.fromJson(postMap);
+
+              // Create a FeedViewPost.post variant (not a reply)
+              final feedViewPost = FeedViewPost.post(post: postView);
+              feedPosts.add(feedViewPost);
+            } catch (e, stackTrace) {
+              _logger.w('Failed to parse timeline feed item, skipping: $e', stackTrace: stackTrace);
+            }
+          }
+
+          return FeedView(
+            feed: feedPosts,
+            cursor: jsonMap['cursor'] as String?,
+          );
+        },
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+      );
+
+      _logger.d('Timeline feed retrieved successfully: ${result.data.feed.length} posts');
+      return result.data;
+    });
+  }
+
+  @override
+  Future<FeedView> getFeedView(
+    AtUri feedUri, {
+    int limit = 20,
+    String? cursor,
+  }) async {
+    _logger.d('Getting feed for URI: $feedUri, limit: $limit, cursor: $cursor');
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final isBskyFeed = feedUri.collection == NSID.parse('app.bsky.feed.generator');
+
+      final parameters = <String, dynamic>{
+        'feed': feedUri.toString(),
+        'limit': limit,
+      };
+      if (cursor != null) {
+        parameters['cursor'] = cursor;
+      }
+
+      final result = await atproto.get(
+        isBskyFeed ? NSID.parse('app.bsky.feed.getFeed') : NSID.parse('so.sprk.feed.getFeed'),
+        parameters: parameters,
+        headers: {'atproto-proxy': isBskyFeed ? _client.bskyDid : _client.sprkDid},
+        to: (jsonMap) {
+          if (!jsonMap.containsKey('feed')) {
+            return const FeedView(feed: []);
+          }
+
+          final feedData = jsonMap['feed'] as List<dynamic>?;
+          if (feedData == null) {
+            return const FeedView(feed: []);
+          }
+
+          final feedPosts = <FeedViewPost>[];
+          for (final item in feedData) {
+            try {
+              final itemMap = item as Map<String, dynamic>;
+
+              // For Bluesky feeds, convert the JSON to Spark format using adapter
+              if (isBskyFeed) {
+                bskyFeedAdapter.convertFeedViewPostJson(itemMap);
+
+                // Ensure $type is set for FeedViewPost union type
+                if (!itemMap.containsKey(r'$type')) {
+                  if (itemMap.containsKey('post')) {
+                    itemMap[r'$type'] = 'so.sprk.feed.defs#feedPostView';
+                  } else if (itemMap.containsKey('reply')) {
+                    itemMap[r'$type'] = 'so.sprk.feed.defs#feedReplyView';
+                  }
+                }
+
+                // Parse the FeedViewPost
+                final feedViewPost = FeedViewPost.fromJson(itemMap);
+                final convertedPost = feedViewPost.toSparkFeedViewPost();
+                feedPosts.add(convertedPost);
+              } else {
+                // Spark feeds: The response has a 'post' object containing the fully hydrated post view
+                final postMap = itemMap['post'] as Map<String, dynamic>?;
+                if (postMap == null) {
+                  continue;
+                }
+
+                // Parse the post view
+                final postView = PostView.fromJson(postMap);
+
+                // Create a FeedViewPost.post variant (not a reply)
+                final feedViewPost = FeedViewPost.post(post: postView);
+                feedPosts.add(feedViewPost);
+              }
+            } catch (e, stackTrace) {
+              _logger.w('Failed to parse feed item, skipping: $e', stackTrace: stackTrace);
+            }
+          }
+
+          // Filter out replies for Bluesky feeds (Spark posts can't be replies)
+          final filteredPosts = isBskyFeed
+              ? feedPosts.where((post) => !_feedViewPostIsReply(post)).where(_feedViewPostHasMedia).toList()
+              : feedPosts;
+
+          return FeedView(
+            feed: filteredPosts,
+            cursor: jsonMap['cursor'] as String?,
+          );
+        },
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+      );
+
+      _logger.d('Feed retrieved successfully: ${result.data.feed.length} posts');
+      return result.data;
     });
   }
 

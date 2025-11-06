@@ -9,7 +9,7 @@ abstract class FeedRepository {
   ///
   /// [feed] The feed to get the skeleton for
   /// [limit] The number of items to return
-  Future<FeedSkeleton> getFeedSkeleton(Feed feed, {int? limit, String? cursor});
+  Future<FeedView> getFeed(Feed feed, {int limit = 20, String? cursor});
 
   /// Get posts by URIs (hydrates a skeleton)
   ///
@@ -29,6 +29,28 @@ abstract class FeedRepository {
     String? cursor,
     bool videosOnly = false,
     bool bluesky = false,
+  });
+
+  /// Get timeline feed
+  ///
+  /// Returns fully hydrated post views in a FeedView structure.
+  /// [limit] The number of items to return (default 20)
+  /// [cursor] Pagination cursor for the next set of results
+  Future<FeedView> getTimeline({
+    int limit = 20,
+    String? cursor,
+  });
+
+  /// Get feed by URI
+  ///
+  /// Returns fully hydrated post views in a FeedView structure.
+  /// [feedUri] The URI of the feed to get
+  /// [limit] The number of items to return (default 20)
+  /// [cursor] Pagination cursor for the next set of results
+  Future<FeedView> getFeedView(
+    AtUri feedUri, {
+    int limit = 20,
+    String? cursor,
   });
 
   /// Like a post

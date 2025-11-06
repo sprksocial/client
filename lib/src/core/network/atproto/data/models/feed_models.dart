@@ -13,11 +13,9 @@ part 'feed_models.g.dart';
 /// https://pub.dev/packages/freezed#union-types <= read this to know how to use pattern matching to know the type of the object
 
 enum HardCodedFeedEnum {
-  following('Following'), // posts from people you follow (bsky/sprk)
-  mutuals('Mutuals'), // posts from people you follow who follow each other (bsky/sprk)
+  timeline('Following'), // posts from people you follow (bsky/sprk)
   forYou('For You'), // hardcoded algorithm for trending posts (bsky/sprk). for now, it's just the TheVids feed (bsky)
-  latestSprk('Latest'), // latest sprk posts (sprk)
-  shared('Shared'); // posts sent by friends in the dms (bsky/sprk)
+  latest('Latest'); // latest sprk posts (sprk)
 
   const HardCodedFeedEnum(this.name);
   final String name;
@@ -72,18 +70,18 @@ class Feed with _$Feed {
   factory Feed.fromJson(Map<String, dynamic> json) => _$FeedFromJson(json);
   const Feed._();
   @JsonSerializable(explicitToJson: true)
-  const factory Feed.custom({required String name, @AtUriConverter() required AtUri uri}) = FeedCustom;
+  const factory Feed.record({required String name, @AtUriConverter() required AtUri uri}) = FeedRecord;
 
   /// HardCoded feeds can be "fake", so they don't have a uri
   @JsonSerializable(explicitToJson: true)
   const factory Feed.hardCoded({required HardCodedFeedEnum hardCodedFeed}) = FeedHardCoded;
 
   String get name {
-    return when(custom: (name, did) => name, hardCoded: (hardCodedFeed) => hardCodedFeed.name);
+    return when(record: (name, did) => name, hardCoded: (hardCodedFeed) => hardCodedFeed.name);
   }
 
   String get identifier =>
-      when(custom: (name, uri) => uri.toString(), hardCoded: (hardCodedFeed) => 'hardcoded:${hardCodedFeed.name}');
+      when(record: (name, uri) => uri.toString(), hardCoded: (hardCodedFeed) => 'hardcoded:${hardCodedFeed.name}');
 }
 
 /// Skeleton of a FeedView. Needs to be hydrated.
@@ -167,6 +165,18 @@ sealed class FeedViewPost with _$FeedViewPost {
     post: (p) => p.post.displayFacets,
     reply: (r) => r.reply.displayFacets,
   );
+}
+
+@freezed
+class FeedView with _$FeedView {
+  @JsonSerializable(explicitToJson: true)
+  const factory FeedView({
+    required List<FeedViewPost> feed,
+    String? cursor,
+  }) = _FeedView;
+  const FeedView._();
+
+  factory FeedView.fromJson(Map<String, dynamic> json) => _$FeedViewFromJson(json);
 }
 
 @freezed

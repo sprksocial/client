@@ -19,6 +19,7 @@ abstract class SprkRepository {
 
   /// Get the Sprk DID
   String get sprkDid;
+  String get bskyDid => 'did:web:api.bsky.app';
 
   ActorRepository get actor;
   RepoRepository get repo;

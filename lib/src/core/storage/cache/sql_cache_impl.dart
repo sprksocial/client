@@ -30,7 +30,7 @@ const String _columnLastAccessed = 'lastAccessed'; // INTEGER (timestamp for LRU
 const String _tableFeeds = 'feeds';
 const String _columnFeedIdentifier = 'feed_identifier'; // TEXT PRIMARY KEY
 const String _columnFeedName = 'feed_name'; // TEXT
-const String _columnFeedType = 'feed_type'; // TEXT ('custom' or 'hardCoded')
+const String _columnFeedType = 'feed_type'; // TEXT ('uri' or 'hardCoded')
 
 // --- Feed-Post Associations Table ---
 const String _tableFeedPostAssociations = 'feed_post_associations';
@@ -332,7 +332,7 @@ class SQLCacheImpl implements SQLCacheInterface {
       _columnFeedIdentifier: identifier,
       _columnFeedName: feed.name,
       _columnFeedType: switch (feed) {
-        FeedCustom() => 'custom',
+        FeedRecord() => 'record',
         FeedHardCoded() => 'hardCoded',
         _ => throw Exception('Unknown Feed type: ${feed.runtimeType}'),
       },
