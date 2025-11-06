@@ -10,7 +10,7 @@ typedef ExtraInfoFunction = Future<Map<AtUri, HardcodedFeedExtraInfo>> Function(
 class HardCodedFeedAlgorithm {
   // Map of feed URIs for feeds that use getFeed()
   static final Map<HardCodedFeedEnum, AtUri> _feedUris = {
-    HardCodedFeedEnum.latest: AtUri.parse('at://did:plc:6hbqm2oftpotwuw7gvvrui3i/so.sprk.feed.generator/latest'),
+    HardCodedFeedEnum.latest: AtUri.parse('at://did:plc:cveom2iroj3mt747sd4qqnr2/so.sprk.feed.generator/latest'),
     HardCodedFeedEnum.forYou: AtUri.parse('at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/thevids'),
     // mutuals and shared don't have URIs yet (return empty feeds)
   };
