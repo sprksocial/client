@@ -93,7 +93,7 @@ class StoryRepositoryImpl implements StoryRepository {
         throw Exception('Not authenticated');
       }
 
-      final record = StoryRecord(createdAt: DateTime.now(), media: media, tags: tags);
+      final record = StoryRecord(createdAt: DateTime.now().toUtc(), media: media, tags: tags);
       try {
         final response = await _client.authRepository.atproto!.repo.createRecord(
           collection: NSID.parse('so.sprk.story.post'),

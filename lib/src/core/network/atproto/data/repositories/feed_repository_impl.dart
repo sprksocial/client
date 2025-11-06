@@ -415,7 +415,7 @@ class FeedRepositoryImpl implements FeedRepository {
                 root: StrongRef(uri: effectiveRootUri, cid: effectiveRootCid),
                 parent: StrongRef(uri: parentUri, cid: parentCid),
               ),
-              createdAt: DateTime.now(),
+              createdAt: DateTime.now().toUtc(),
               media: media,
             );
             recordJson = sprkRecord.toJson();
@@ -477,7 +477,7 @@ class FeedRepositoryImpl implements FeedRepository {
             final record = PostRecord(
               caption: CaptionRef(text: text, facets: []),
               media: Media.images(images: uploadedImageMaps),
-              createdAt: DateTime.now(),
+              createdAt: DateTime.now().toUtc(),
             );
 
             final result = await atproto.repo.createRecord(collection: NSID.parse('so.sprk.feed.post'), record: record.toJson());
@@ -775,7 +775,7 @@ class FeedRepositoryImpl implements FeedRepository {
       final record = PostRecord(
         caption: CaptionRef(text: text, facets: []),
         media: Media.video(video: blob, alt: alt),
-        createdAt: DateTime.now(),
+        createdAt: DateTime.now().toUtc(),
         langs: langs,
         selfLabels: selfLabels,
         tags: tags,
