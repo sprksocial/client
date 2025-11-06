@@ -263,8 +263,8 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     // Curation disabled: do not build curate destinations from feeds
 
     final currentPost = _currentPost ?? widget.post;
-    final likeCount = (int.tryParse(widget.likeCount) ?? 0) + (_isLiked ? 1 : 0);
-    
+    final likeCount = int.tryParse(widget.likeCount) ?? 0;
+
     final commentCount = currentPost.replyCount ?? int.tryParse(widget.commentCount) ?? 0;
     // final repostCount = currentPost.repostCount ?? int.tryParse(widget.shareCount) ?? 0; // Curation disabled
     // final isCurated = currentPost.viewer?.repost != null; // Curation disabled
