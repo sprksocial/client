@@ -194,9 +194,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
     if (feedsJson == null) {
       _logger.d('No feeds found in storage, using defaults');
       final defaultFeeds = [
-        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
+        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.timeline),
         const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
-        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
+        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latest),
       ];
       await setFeeds(defaultFeeds);
       return defaultFeeds;
@@ -211,9 +211,9 @@ class SettingsRepositoryImpl implements SettingsRepository {
       _logger.e('Error deserializing feeds: $e');
       // If deserialization fails, return defaults
       final defaultFeeds = [
-        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
+        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.timeline),
         const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
-        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
+        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latest),
       ];
       await setFeeds(defaultFeeds);
       return defaultFeeds;
@@ -226,7 +226,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
     final activeFeedJson = await _storageManager.preferences.getObject<Map<String, dynamic>>(StorageKeys.activeFeedKey);
     if (activeFeedJson == null) {
       _logger.d('No active feed found in storage, using default (Latest)');
-      return const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk);
+      return const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latest);
     }
 
     try {
@@ -236,7 +236,7 @@ class SettingsRepositoryImpl implements SettingsRepository {
     } catch (e) {
       _logger.e('Error deserializing active feed: $e');
       // If deserialization fails, return default
-      return const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk);
+      return const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latest);
     }
   }
 

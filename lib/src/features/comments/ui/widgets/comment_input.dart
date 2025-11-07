@@ -212,7 +212,7 @@ class _AttachmentButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final canAddMoreImages = state.selectedImages.length < 4;
+    final canAddMoreImages = state.selectedImages.isEmpty;
     final enabled = !state.isPosting && canAddMoreImages;
 
     return IconButton(
@@ -220,7 +220,7 @@ class _AttachmentButton extends StatelessWidget {
       visualDensity: VisualDensity.compact,
       constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
       onPressed: enabled ? () => notifier.pickImages(context) : null,
-      tooltip: enabled ? 'Add images (up to 4)' : (state.isPosting ? 'Posting...' : 'Maximum images reached'),
+      tooltip: enabled ? 'Add image (1 max)' : (state.isPosting ? 'Posting...' : 'Maximum images reached'),
       icon: Icon(FluentIcons.image_24_regular, size: 24, color: Theme.of(context).colorScheme.primary),
     );
   }

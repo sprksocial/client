@@ -79,41 +79,21 @@ class _StoryPageState extends ConsumerState<StoryPage> with TickerProviderStateM
 
   bool _isVideoStory(StoryView story) {
     return switch (story.media) {
-      EmbedViewVideo() || EmbedViewBskyVideo() => true,
-      EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
-        EmbedViewVideo() || EmbedViewBskyVideo() => true,
-        _ => false,
-      },
+      MediaViewVideo() => true,
       _ => false,
     };
   }
 
   String _getVideoUrl(StoryView story) {
     return switch (story.media) {
-      EmbedViewVideo(:final playlist) => playlist.toString(),
-      EmbedViewBskyVideo(:final playlist) => playlist.toString(),
-      EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
-        EmbedViewVideo(:final playlist) => playlist.toString(),
-        EmbedViewBskyVideo(:final playlist) => playlist.toString(),
-        _ => '',
-      },
+      MediaViewVideo(:final playlist) => playlist.toString(),
       _ => '',
     };
   }
 
   String _getImageUrl(StoryView story) {
     return switch (story.media) {
-      EmbedViewVideo(:final thumbnail) => thumbnail.toString(),
-      EmbedViewBskyVideo(:final thumbnail) => thumbnail.toString(),
-      EmbedViewImage(:final images) when images.isNotEmpty => images.first.fullsize.toString(),
-      EmbedViewBskyImages(:final images) when images.isNotEmpty => images.first.fullsize.toString(),
-      EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
-        EmbedViewVideo(:final thumbnail) => thumbnail.toString(),
-        EmbedViewBskyVideo(:final thumbnail) => thumbnail.toString(),
-        EmbedViewImage(:final images) when images.isNotEmpty => images.first.fullsize.toString(),
-        EmbedViewBskyImages(:final images) when images.isNotEmpty => images.first.fullsize.toString(),
-        _ => widget.story.author.avatar.toString(),
-      },
+      MediaViewImage(:final image) => image.fullsize.toString(),
       _ => widget.story.author.avatar.toString(),
     };
   }

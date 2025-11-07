@@ -4,11 +4,9 @@ import 'dart:convert';
 import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:better_player_plus/better_player_plus.dart';
-import 'package:get_it/get_it.dart';
 import 'package:path/path.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
-import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sqflite/sqflite.dart';
 
 // --- Post Table ---
@@ -25,14 +23,14 @@ const String _columnRepostCount = 'repostCount'; // INTEGER
 const String _columnQuoteCount = 'quoteCount'; // INTEGER
 const String _columnLabels = 'labels'; // TEXT (JSON string of List<Label>)
 const String _columnViewer = 'viewer'; // TEXT (JSON string of Viewer)
-const String _columnEmbed = 'embed'; // TEXT (JSON string of EmbedView)
+const String _columnMedia = 'media'; // TEXT (JSON string of MediaView)
 const String _columnLastAccessed = 'lastAccessed'; // INTEGER (timestamp for LRU)
 
 // --- Feed Definitions ---
 const String _tableFeeds = 'feeds';
 const String _columnFeedIdentifier = 'feed_identifier'; // TEXT PRIMARY KEY
 const String _columnFeedName = 'feed_name'; // TEXT
-const String _columnFeedType = 'feed_type'; // TEXT ('custom' or 'hardCoded')
+const String _columnFeedType = 'feed_type'; // TEXT ('uri' or 'hardCoded')
 
 // --- Feed-Post Associations Table ---
 const String _tableFeedPostAssociations = 'feed_post_associations';
@@ -42,11 +40,8 @@ const String _columnPostUriFK = 'post_uri_fk'; // TEXT, Foreign Key to cached_po
 const String _columnAssociationOrder = 'association_order'; // INTEGER, for ordering posts within a feed
 
 class SQLCacheImpl implements SQLCacheInterface {
-  SQLCacheImpl() {
-    _logger = GetIt.instance<LogService>().getLogger('SQLCacheImpl');
-  }
+  SQLCacheImpl();
   static Database? _database;
-  late final SparkLogger _logger;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -56,12 +51,40 @@ class SQLCacheImpl implements SQLCacheInterface {
 
   Future<Database> _initDB() async {
     final path = join(await getDatabasesPath(), 'sparksocial_sql_cache.db');
-    return openDatabase(
+    final db = await openDatabase(
       path,
-      version: 2, // Increment this if you change the schema
+      version: 3,
       onCreate: _onCreate,
-      onUpgrade: _onUpgrade, // Define this if you plan schema migrations
+      onUpgrade: _onUpgrade,
     );
+
+    try {
+      await _cleanupCorruptedPostsInternal(db);
+    } catch (e) {
+      // Silently handle cleanup errors
+    }
+
+    return db;
+  }
+
+  /// Internal cleanup method that accepts a database instance
+  Future<int> _cleanupCorruptedPostsInternal(Database db) async {
+    var deletedCount = 0;
+
+    // Find all posts with null record field
+    final nullRecordPosts = await db.query(
+      _tablePosts,
+      where: '$_columnRecord IS NULL OR $_columnRecord = ?',
+      whereArgs: ['null'],
+    );
+
+    if (nullRecordPosts.isNotEmpty) {
+      final urisToDelete = nullRecordPosts.map((map) => map[_columnUri]! as String).toList();
+      final placeholders = List.generate(urisToDelete.length, (index) => '?').join(',');
+      deletedCount = await db.delete(_tablePosts, where: '$_columnUri IN ($placeholders)', whereArgs: urisToDelete);
+    }
+
+    return deletedCount;
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -81,7 +104,7 @@ class SQLCacheImpl implements SQLCacheInterface {
         $_columnQuoteCount INTEGER,
         $_columnLabels TEXT,
         $_columnViewer TEXT,
-        $_columnEmbed TEXT,
+        $_columnMedia TEXT,
         $_columnLastAccessed INTEGER NOT NULL
       )
     ''');
@@ -103,7 +126,7 @@ class SQLCacheImpl implements SQLCacheInterface {
         FOREIGN KEY ($_columnFeedIdentifierFK) REFERENCES $_tableFeeds($_columnFeedIdentifier) ON DELETE CASCADE,
         FOREIGN KEY ($_columnPostUriFK) REFERENCES $_tablePosts($_columnUri) ON DELETE CASCADE,
         UNIQUE ($_columnFeedIdentifierFK, $_columnPostUriFK),
-        UNIQUE ($_columnFeedIdentifierFK, $_columnAssociationOrder) 
+        UNIQUE ($_columnFeedIdentifierFK, $_columnAssociationOrder)
       )
     ''');
     // Index for faster lookups of posts for a feed
@@ -115,8 +138,10 @@ class SQLCacheImpl implements SQLCacheInterface {
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
-      // Add the viewer column to existing posts table
       await db.execute('ALTER TABLE $_tablePosts ADD COLUMN $_columnViewer TEXT');
+    }
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE $_tablePosts ADD COLUMN $_columnMedia TEXT');
     }
   }
 
@@ -137,23 +162,38 @@ class SQLCacheImpl implements SQLCacheInterface {
     if (posts.isEmpty) return;
     final db = await database;
     final batch = db.batch();
+    var successCount = 0;
+
     for (final post in posts) {
-      final map = _postViewToMap(post);
-      map[_columnLastAccessed] = DateTime.now().millisecondsSinceEpoch;
-      batch.insert(_tablePosts, map, conflictAlgorithm: ConflictAlgorithm.replace);
+      try {
+        final map = _postViewToMap(post);
+        map[_columnLastAccessed] = DateTime.now().millisecondsSinceEpoch;
+        batch.insert(_tablePosts, map, conflictAlgorithm: ConflictAlgorithm.replace);
+        successCount++;
+      } catch (e) {
+        // Skip posts that fail serialization
+      }
     }
-    await batch.commit(noResult: true);
+
+    if (successCount > 0) {
+      await batch.commit(noResult: true);
+    }
   }
 
   /// Converts a PostView to a Map suitable for SQLite storage.
   /// Complex nested objects are serialized as JSON strings.
   /// Sadly, we cannot use `toJson` directly because the nested objects don't become strings.
   Map<String, dynamic> _postViewToMap(PostView post) {
+    final recordJson = jsonEncode(post.record.toJson());
+    if (recordJson == 'null' || recordJson.isEmpty) {
+      throw Exception('Post has null/empty record: ${post.uri}');
+    }
+
     return {
       _columnUri: post.uri.toString(),
       _columnString: post.cid,
       _columnAuthor: jsonEncode(post.author.toJson()),
-      _columnRecord: jsonEncode(post.record.toJson()),
+      _columnRecord: recordJson,
       _columnIsRepost: post.isRepost ? 1 : 0,
       _columnIndexedAt: post.indexedAt.toIso8601String(),
       _columnLikeCount: post.likeCount,
@@ -162,7 +202,7 @@ class SQLCacheImpl implements SQLCacheInterface {
       _columnQuoteCount: post.quoteCount,
       _columnLabels: post.labels != null ? jsonEncode(post.labels!.map((e) => e.toJson()).toList()) : null,
       _columnViewer: post.viewer != null ? jsonEncode(post.viewer!.toJson()) : null,
-      _columnEmbed: post.embed != null ? jsonEncode(post.embed!.toJson()) : null,
+      _columnMedia: post.media != null ? jsonEncode(post.media!.toJson()) : null,
     };
   }
 
@@ -172,8 +212,6 @@ class SQLCacheImpl implements SQLCacheInterface {
   Future<PostView> getPost(String uriString) async {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(_tablePosts, where: '$_columnUri = ?', whereArgs: [uriString]);
-
-    _logger.i('Post found in cache: $uriString');
 
     if (maps.isNotEmpty) return _mapToPostView(maps.first);
 
@@ -192,7 +230,15 @@ class SQLCacheImpl implements SQLCacheInterface {
       whereArgs: uris.map((uri) => uri.toString()).toList(),
     );
 
-    return maps.map(_mapToPostView).toList();
+    final posts = <PostView>[];
+    for (final map in maps) {
+      try {
+        posts.add(_mapToPostView(map));
+      } catch (e) {
+        // Skip corrupted posts
+      }
+    }
+    return posts;
   }
 
   /// Given a list of AtUris, returns a sub-list containing only those URIs
@@ -224,17 +270,31 @@ class SQLCacheImpl implements SQLCacheInterface {
       limit: limit,
       offset: offset,
     );
-    return maps.map(_mapToPostView).toList();
+    final posts = <PostView>[];
+    for (final map in maps) {
+      try {
+        posts.add(_mapToPostView(map));
+      } catch (e) {
+        // Skip corrupted posts
+      }
+    }
+    return posts;
   }
 
   /// Converts a Map from SQLite back to a PostView.
   /// JSON strings are deserialized back to complex objects.
   PostView _mapToPostView(Map<String, dynamic> map) {
+    final recordJson = map[_columnRecord] as String?;
+
+    if (recordJson == null) {
+      throw Exception('Post has null record in cache: ${map[_columnUri]}');
+    }
+
     return PostView(
       uri: AtUri.parse(map[_columnUri] as String),
       cid: map[_columnString] as String,
       author: ProfileViewBasic.fromJson(jsonDecode(map[_columnAuthor] as String) as Map<String, dynamic>),
-      record: PostRecord.fromJson(jsonDecode(map[_columnRecord] as String) as Map<String, dynamic>),
+      record: PostRecord.fromJson(jsonDecode(recordJson) as Map<String, dynamic>),
       isRepost: (map[_columnIsRepost] as int) == 1,
       indexedAt: DateTime.parse(map[_columnIndexedAt] as String),
       likeCount: map[_columnLikeCount] as int?,
@@ -249,8 +309,8 @@ class SQLCacheImpl implements SQLCacheInterface {
       viewer: map[_columnViewer] != null
           ? Viewer.fromJson(jsonDecode(map[_columnViewer] as String) as Map<String, dynamic>)
           : null,
-      embed: map[_columnEmbed] != null
-          ? EmbedView.fromJson(jsonDecode(map[_columnEmbed] as String) as Map<String, dynamic>)
+      media: map[_columnMedia] != null
+          ? MediaView.fromJson(jsonDecode(map[_columnMedia] as String) as Map<String, dynamic>)
           : null,
     );
   }
@@ -272,7 +332,7 @@ class SQLCacheImpl implements SQLCacheInterface {
       _columnFeedIdentifier: identifier,
       _columnFeedName: feed.name,
       _columnFeedType: switch (feed) {
-        FeedCustom() => 'custom',
+        FeedRecord() => 'record',
         FeedHardCoded() => 'hardCoded',
         _ => throw Exception('Unknown Feed type: ${feed.runtimeType}'),
       },
@@ -371,7 +431,15 @@ class SQLCacheImpl implements SQLCacheInterface {
     ''';
 
     final List<Map<String, dynamic>> maps = await db.rawQuery(sql, arguments);
-    return maps.map(_mapToPostView).toList();
+    final posts = <PostView>[];
+    for (final map in maps) {
+      try {
+        posts.add(_mapToPostView(map));
+      } catch (e) {
+        // Skip corrupted posts
+      }
+    }
+    return posts;
   }
 
   /// Retrieves post URIs for a specific feed, ordered by their association order
@@ -516,6 +584,12 @@ class SQLCacheImpl implements SQLCacheInterface {
       await txn.delete(_tableFeeds);
     });
     await BetterPlayerController(const BetterPlayerConfiguration()).clearCache();
+  }
+
+  /// Removes posts with null or invalid records from the database.
+  Future<int> cleanupCorruptedPosts() async {
+    final db = await database;
+    return _cleanupCorruptedPostsInternal(db);
   }
 
   /// Closes the database. Not typically needed for a singleton service

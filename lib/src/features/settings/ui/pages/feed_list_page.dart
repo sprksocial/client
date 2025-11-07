@@ -242,19 +242,15 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
 
   IconData _getFeedIcon(Feed feed) {
     return feed.when(
-      custom: (name, uri) => FluentIcons.feed_24_regular,
+      record: (name, uri) => FluentIcons.feed_24_regular,
       hardCoded: (hardCodedFeed) {
         switch (hardCodedFeed) {
-          case HardCodedFeedEnum.following:
+          case HardCodedFeedEnum.timeline:
             return FluentIcons.people_24_regular;
-          case HardCodedFeedEnum.mutuals:
-            return FluentIcons.people_team_24_regular;
           case HardCodedFeedEnum.forYou:
             return FluentIcons.star_24_regular;
-          case HardCodedFeedEnum.latestSprk:
+          case HardCodedFeedEnum.latest:
             return FluentIcons.flash_24_regular;
-          case HardCodedFeedEnum.shared:
-            return FluentIcons.share_24_regular;
         }
       },
     );
@@ -262,19 +258,15 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
 
   String _getFeedDescription(Feed feed) {
     return feed.when(
-      custom: (name, uri) => 'Custom algorithmic feed',
+      record: (name, uri) => 'Custom algorithmic feed',
       hardCoded: (hardCodedFeed) {
         switch (hardCodedFeed) {
-          case HardCodedFeedEnum.following:
+          case HardCodedFeedEnum.timeline:
             return 'Posts from accounts you follow';
-          case HardCodedFeedEnum.mutuals:
-            return 'Posts from mutual connections';
           case HardCodedFeedEnum.forYou:
             return 'Personalized content recommendations';
-          case HardCodedFeedEnum.latestSprk:
+          case HardCodedFeedEnum.latest:
             return 'Latest posts from Spark community';
-          case HardCodedFeedEnum.shared:
-            return 'Posts shared by friends in messages';
         }
       },
     );

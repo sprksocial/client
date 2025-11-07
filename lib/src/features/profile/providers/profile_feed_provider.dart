@@ -32,12 +32,9 @@ class ProfileFeed extends _$ProfileFeed {
         blueskyCursor: null,
         videosOnly: videosOnly,
       );
-      _logger.d(
-        'Loaded initial unified feed: ${result.allPosts.length} total posts, ${result.loadedPosts.length} filtered posts',
-      );
       return result;
-    } catch (e) {
-      _logger.e('Error loading initial posts: $e');
+    } catch (e, stackTrace) {
+      _logger.e('Error loading initial posts: $e', error: e, stackTrace: stackTrace);
       rethrow;
     }
   }
@@ -65,13 +62,16 @@ class ProfileFeed extends _$ProfileFeed {
     );
 
     for (final feedViewPost in sparkResult.posts) {
-      final uri = feedViewPost.post.uri;
+      final uri = feedViewPost.uri;
       if (!postViews.containsKey(uri)) {
-        newPosts.add(feedViewPost.post);
-        postSources[uri] = 'sprk';
-        postTypes[uri] = feedViewPost.post.videoUrl.isNotEmpty;
-        postViews[uri] = feedViewPost.post;
-        sparkRkeys.add(uri.rkey);
+        final postView = feedViewPost.asPost;
+        if (postView != null) {
+          newPosts.add(postView);
+          postSources[uri] = 'sprk';
+          postTypes[uri] = postView.videoUrl.isNotEmpty;
+          postViews[uri] = postView;
+          sparkRkeys.add(uri.rkey);
+        }
       }
     }
 
@@ -82,15 +82,17 @@ class ProfileFeed extends _$ProfileFeed {
     );
 
     for (final feedViewPost in bskyResult.posts) {
-      final uri = feedViewPost.post.uri;
+      final uri = feedViewPost.uri;
       if (sparkRkeys.contains(uri.rkey) || postViews.containsKey(uri)) {
-        _logger.d('Skipping Bsky post with rkey ${uri.rkey} - already exists.');
         continue;
       }
-      newPosts.add(feedViewPost.post);
-      postSources[uri] = 'bsky';
-      postTypes[uri] = _isEmbedVideo(feedViewPost.post.embed);
-      postViews[uri] = feedViewPost.post;
+      final postView = feedViewPost.asPost;
+      if (postView != null) {
+        newPosts.add(postView);
+        postSources[uri] = 'bsky';
+        postTypes[uri] = _isMediaVideo(postView.media);
+        postViews[uri] = postView;
+      }
     }
 
     newPosts.sort((a, b) => b.indexedAt.compareTo(a.indexedAt));
@@ -104,7 +106,6 @@ class ProfileFeed extends _$ProfileFeed {
         final (cursor: _, labels: additionalLabels) = await _feedRepository.getLabels(newPostUris, sources: followedLabelers);
         // Add the additional labels to the posts
         for (final label in additionalLabels) {
-          _logger.d('Adding label ${label.value} to post ${label.uri}');
           final uri = AtUri.parse(label.uri);
           final post = postViews[uri];
           if (post != null) {
@@ -147,21 +148,21 @@ class ProfileFeed extends _$ProfileFeed {
   ) async {
     try {
       final result = await fetcher(cursor);
-      _logger.d('Loaded ${result.posts.length} posts from $sourceName');
       return result;
-    } catch (e) {
-      _logger.w('Failed to load from $sourceName: $e');
+    } catch (e, stackTrace) {
+      _logger.e('Failed to load from $sourceName: $e', error: e, stackTrace: stackTrace);
       return (posts: <FeedViewPost>[], cursor: cursor);
     }
   }
 
-  bool _isEmbedVideo(EmbedView? embed) {
+  bool _isMediaVideo(MediaView? embed) {
     if (embed == null) return false;
     return embed.when(
       video: (cid, playlist, thumbnail, alt) => true,
       bskyVideo: (cid, playlist, thumbnail, alt) => true,
-      bskyRecordWithMedia: (record, media) => _isEmbedVideo(media),
-      image: (images) => false,
+      bskyRecordWithMedia: (record, media) => _isMediaVideo(media),
+      image: (image) => false,
+      images: (images) => false,
       bskyImages: (images) => false,
       bskyRecord: (record) => false,
       bskyExternal: (external) => false,
@@ -194,8 +195,6 @@ class ProfileFeed extends _$ProfileFeed {
         final postViewsToCache = newPostUris.map((uri) => result.postViews[uri]!).toList();
         await _sqlCache.cachePosts(postViewsToCache);
       }
-
-      _logger.d('Loaded more posts: ${result.allPosts.length - currentState.allPosts.length} new posts');
     } catch (e) {
       _logger.e('Error loading more posts: $e');
       state = AsyncValue.error(e, StackTrace.current);
@@ -226,7 +225,6 @@ class ProfileFeed extends _$ProfileFeed {
       try {
         final labelPreference = await _settingsRepository.getLabelPreference(label.value);
         if (labelPreference.setting == Setting.hide || (labelPreference.adultOnly && hideAdultContent)) {
-          _logger.d('Hiding post $uri due to label: ${label.value}');
           return true;
         }
       } catch (e) {

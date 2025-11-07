@@ -1,6 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart' hide Embed;
+import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:sparksocial/src/features/messages/providers/conversation_state.dart';

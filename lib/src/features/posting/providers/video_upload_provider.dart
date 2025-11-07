@@ -46,8 +46,8 @@ Future<StrongRef?> postVideo(
     }
 
     final postRecord = PostRecord(
-      text: description.isNotEmpty ? description : '',
-      embed: EmbedVideo(video: blob, alt: altText),
+      caption: CaptionRef(text: description.isNotEmpty ? description : '', facets: []),
+      media: Media.video(video: blob, alt: altText),
       createdAt: DateTime.now().toUtc(),
     );
 
@@ -97,7 +97,7 @@ Future<StrongRef?> processAndPostVideo(
     try {
       final res = await ref.read(
         postStoryProvider(
-          EmbedVideo(video: blob),
+          Media.video(video: blob),
           selfLabels: [],
           tags: [],
         ).future,

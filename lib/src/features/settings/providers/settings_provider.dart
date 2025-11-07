@@ -32,7 +32,7 @@ class Settings extends _$Settings {
 
     // Return temporary default state that will be replaced by loadSettings()
     return const SettingsState(
-      activeFeed: Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
+      activeFeed: Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latest),
     );
   }
 

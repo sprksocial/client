@@ -11,9 +11,9 @@ class SettingsState with _$SettingsState {
     @Default(false) bool feedBlurEnabled,
     @Default(true) bool hideAdultContent,
     @Default([
-      Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.following),
+      Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.timeline),
       Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
-      Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latestSprk),
+      Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latest),
     ])
     List<Feed> feeds,
     @Default(false) bool postToBskyEnabled,
