@@ -1,19 +1,40 @@
 import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
-import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/story_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
 /// Implementation of Story-related API endpoints
 class StoryRepositoryImpl implements StoryRepository {
-  StoryRepositoryImpl(this._client) {
-    _logger.v('StoryRepository initialized');
-  }
+  StoryRepositoryImpl(this._client);
   final SprkRepository _client;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('StoryRepository');
+
+  /// Fixes the media structure in story JSON to match the expected model format
+  /// The API sometimes returns media fields directly instead of nested in an 'image' object
+  void _fixMediaStructure(Map<String, dynamic> storyJson) {
+    final media = storyJson['media'];
+    if (media is! Map<String, dynamic>) return;
+
+    final mediaType = media[r'$type'] as String?;
+
+    // Fix so.sprk.media.image#view - it should have an 'image' field with ViewImage structure
+    if (mediaType == 'so.sprk.media.image#view') {
+      // If media has thumb/fullsize directly but no 'image' field, wrap them
+      if (media.containsKey('thumb') && media.containsKey('fullsize') && !media.containsKey('image')) {
+        media['image'] = {
+          'thumb': media['thumb'],
+          'fullsize': media['fullsize'],
+          'alt': media['alt'],
+        };
+        // Remove the direct fields (optional, but cleaner)
+        media.remove('thumb');
+        media.remove('fullsize');
+        if (media['alt'] != null) {
+          media.remove('alt');
+        }
+      }
+    }
+  }
 
   @override
   Future<({String? cursor, Map<ProfileViewBasic, List<StoryView>> storiesByAuthor})> getStoriesTimeline({
@@ -22,31 +43,65 @@ class StoryRepositoryImpl implements StoryRepository {
   }) {
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
       final atproto = _client.authRepository.atproto;
       if (atproto == null) {
-        _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
+      }
+
+      final parameters = <String, dynamic>{'limit': limit};
+      if (cursor != null) {
+        parameters['cursor'] = cursor;
       }
 
       final response = await atproto.get(
         NSID.parse('so.sprk.story.getTimeline'),
-        parameters: {'limit': limit, 'cursor': cursor},
+        parameters: parameters,
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) {
           final storiesByAuthorMap = <ProfileViewBasic, List<StoryView>>{};
 
-          final storiesByAuthorArray = jsonMap['storiesByAuthor']! as List<dynamic>;
-          for (final item in storiesByAuthorArray) {
-            final itemMap = item as Map<String, dynamic>;
-            final author = ProfileViewBasic.fromJson(itemMap['author'] as Map<String, dynamic>);
-            final stories = (itemMap['stories'] as List<dynamic>)
-                .map((story) => StoryView.fromJson(story as Map<String, dynamic>))
-                .toList();
-            storiesByAuthorMap[author] = stories;
+          // Handle missing or null storiesByAuthor field
+          if (!jsonMap.containsKey('storiesByAuthor') || jsonMap['storiesByAuthor'] == null) {
+            return (storiesByAuthor: storiesByAuthorMap, cursor: jsonMap['cursor'] as String?);
+          }
+
+          final storiesByAuthorArray = jsonMap['storiesByAuthor'] as List<dynamic>;
+
+          for (var i = 0; i < storiesByAuthorArray.length; i++) {
+            final item = storiesByAuthorArray[i];
+            try {
+              final itemMap = item as Map<String, dynamic>;
+              final author = ProfileViewBasic.fromJson(itemMap['author'] as Map<String, dynamic>);
+
+              final storiesArray = itemMap['stories'] as List<dynamic>?;
+              if (storiesArray == null) {
+                continue;
+              }
+
+              final stories = <StoryView>[];
+              for (var j = 0; j < storiesArray.length; j++) {
+                final story = storiesArray[j];
+                try {
+                  // Fix the media structure if needed
+                  final storyMap = Map<String, dynamic>.from(story as Map<String, dynamic>);
+                  _fixMediaStructure(storyMap);
+
+                  final storyView = StoryView.fromJson(storyMap);
+                  stories.add(storyView);
+                } catch (e) {
+                  // Don't rethrow - continue with other stories
+                }
+              }
+
+              if (stories.isNotEmpty) {
+                storiesByAuthorMap[author] = stories;
+              }
+            } catch (e) {
+              // Skip this author if parsing fails
+            }
           }
 
           return (storiesByAuthor: storiesByAuthorMap, cursor: jsonMap['cursor'] as String?);
@@ -61,13 +116,11 @@ class StoryRepositoryImpl implements StoryRepository {
   Future<List<StoryView>> getStoryViews(List<AtUri> storyUris) {
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
       final atproto = _client.authRepository.atproto;
       if (atproto == null) {
-        _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       }
 
@@ -85,15 +138,13 @@ class StoryRepositoryImpl implements StoryRepository {
 
   @override
   Future<StrongRef> postStory(Media media, {List<SelfLabel>? selfLabels, List<String>? tags}) {
-    final startedAt = DateTime.now();
-    _logger.d('Posting story (media=${media.runtimeType}, tags=${tags?.length ?? 0})');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
 
-      final record = StoryRecord(createdAt: DateTime.now().toUtc(), media: media, tags: tags);
+      final record = StoryRecord(createdAt: DateTime.now().toUtc(), media: media, tags: tags, labels: selfLabels);
+
       try {
         final response = await _client.authRepository.atproto!.repo.createRecord(
           collection: NSID.parse('so.sprk.story.post'),
@@ -101,14 +152,11 @@ class StoryRepositoryImpl implements StoryRepository {
         );
 
         if (response.status.code == 200) {
-          _logger.i('Story posted in ${DateTime.now().difference(startedAt).inMilliseconds}ms uri=${response.data.uri}');
           return response.data;
         } else {
-          _logger.e('Failed to post story: status=${response.status}');
           throw Exception('Failed to post story: ${response.status} ${response.data}');
         }
-      } catch (e, s) {
-        _logger.e('Exception posting story: $e', error: e, stackTrace: s);
+      } catch (e) {
         rethrow;
       }
     });
