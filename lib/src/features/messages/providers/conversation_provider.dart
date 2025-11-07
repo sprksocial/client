@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
@@ -9,49 +10,64 @@ part 'conversation_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class Conversation extends _$Conversation {
-  String? cursor;
+  String? _oldestCursor;
 
   @override
-  FutureOr<ConversationState> build(String otherDid) async {
-    final other = await GetIt.I<SprkRepository>().actor.getProfile(otherDid);
-    final (cursor: newCursor, messages: messages) = await GetIt.I<MessagesRepository>().getConversation(otherDid);
-    cursor = newCursor;
-    return ConversationState(other, messages);
+  FutureOr<ConversationState> build(String convoId) async {
+    final repo = GetIt.I<MessagesRepository>();
+    final sprk = GetIt.I<SprkRepository>();
+
+    // Load conversation and initial messages
+    final convo = await repo.getConversation(convoId);
+    final meDid = GetIt.I<AuthRepository>().session?.did;
+    final otherDid = convo.members.firstWhere((d) => d != meDid, orElse: () => convo.members.first);
+    final other = await sprk.actor.getProfile(otherDid);
+
+    final result = await repo.getMessages(convoId, limit: 50);
+    _oldestCursor = result.cursor;
+
+    return ConversationState(convo: convo, other: other, messages: result.messages, cursor: _oldestCursor);
   }
 
-  Future<Message> sendMessage(String otherDid, String message, {List<Embed>? embed, String? currentUserDid}) async {
-    final other = state.value?.other ?? await GetIt.I<SprkRepository>().actor.getProfile(otherDid);
-    final messages = state.value?.messages ?? [];
+  Future<MessageView> sendMessage(String convoId, String text, {String? embed}) async {
+    final repo = GetIt.I<MessagesRepository>();
+    final current = state.value;
+    if (current == null) throw StateError('Conversation not loaded');
 
-    try {
-      // Send message to server and get the actual result
-      final sentMessage = await GetIt.I<MessagesRepository>().sendMessage(otherDid, message, embed: embed);
-
-      // Update state with the new message
-      state = AsyncValue.data(
-        ConversationState(other, [...messages, sentMessage]),
-      );
-
-      return sentMessage;
-    } catch (e) {
-      // If sending fails, keep the current state and rethrow
-      rethrow;
-    }
+    final sent = await repo.sendMessage(convoId, text: text, embed: embed);
+    state = AsyncValue.data(
+      current.copyWith(messages: [...current.messages, sent]),
+    );
+    return sent;
   }
 
   Future<void> checkForNewMessages() async {
-    if (state.value == null) return;
-    final otherDid = state.value!.other.did;
-    final (cursor: _, messages: newBatch) = await GetIt.I<MessagesRepository>().getConversation(otherDid, cursor: cursor);
-    final newestMessage = newBatch.isNotEmpty ? newBatch.last : null;
-    if (newestMessage != null &&
-        (state.value!.messages.isEmpty || newestMessage.timestamp.compareTo(state.value!.messages.last.timestamp) > 0)) {
-      // only new messages from the new batch
-      final newMessages = newBatch.where((msg) => !state.value!.messages.any((m) => m.id == msg.id)).toList();
-      final updatedMessages = [...state.value!.messages, ...newMessages];
-      state = AsyncValue.data(ConversationState(state.value!.other, updatedMessages));
+    final current = state.value;
+    if (current == null) return;
+    final repo = GetIt.I<MessagesRepository>();
+
+    // Fetch latest batch (no cursor -> newest)
+    final latest = await repo.getMessages(current.convo.id, limit: 50);
+    // Merge by id
+    final existingIds = {for (final m in current.messages) m.id};
+    final newOnes = latest.messages.where((m) => !existingIds.contains(m.id)).toList();
+    if (newOnes.isNotEmpty) {
+      state = AsyncValue.data(current.copyWith(messages: [...current.messages, ...newOnes]));
     }
   }
 
-  // TODO: loadmore
+  /// Marks the conversation as read up to the latest message currently loaded.
+  Future<void> markReadUpToLatest() async {
+    final current = state.value;
+    if (current == null || current.messages.isEmpty) return;
+    final repo = GetIt.I<MessagesRepository>();
+    final latestId = current.messages.last.id;
+    try {
+      await repo.updateRead(current.convo.id, latestId);
+    } catch (_) {
+      // Best-effort: ignore errors; backend read state will reconcile later.
+    }
+  }
+
+  // TODO: load older messages using _oldestCursor if needed
 }

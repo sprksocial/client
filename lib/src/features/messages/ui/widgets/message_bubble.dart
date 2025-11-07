@@ -10,14 +10,16 @@ class MessageBubble extends StatelessWidget {
     required this.showAvatar,
     required this.otherUserAvatar,
     required this.otherUserHandle,
+    this.embeds,
     super.key,
   });
 
-  final Message message;
+  final MessageView message;
   final bool isCurrentUser;
   final bool showAvatar;
   final String? otherUserAvatar;
   final String? otherUserHandle;
+  final List<Widget>? embeds;
   String _removeLinksFromText(String text) {
     // Regex pattern to match URLs
     final urlPattern = RegExp(
@@ -36,6 +38,14 @@ class MessageBubble extends StatelessWidget {
     final brightness = MediaQuery.of(context).platformBrightness;
     final isDarkMode = brightness == Brightness.dark;
 
+    final cleanedMessage = _removeLinksFromText(message.text);
+    final hasEmbeds = embeds != null && embeds!.isNotEmpty;
+    final hasText = cleanedMessage.isNotEmpty;
+
+    if (!hasText && !hasEmbeds) {
+      return const SizedBox.shrink();
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
@@ -49,36 +59,28 @@ class MessageBubble extends StatelessWidget {
             const SizedBox(width: 40),
           ],
           Flexible(
-            child: () {
-              final cleanedMessage = _removeLinksFromText(message.message);
-              // Only show the bubble if there's text content after removing links
-              if (cleanedMessage.isEmpty) {
-                return const SizedBox.shrink();
-              }
-
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: isCurrentUser
-                      ? AppColors.primary
-                      : isDarkMode
-                      ? Colors.grey.shade800
-                      : Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Text(
-                  cleanedMessage,
-                  style: TextStyle(
-                    color: isCurrentUser
-                        ? Colors.white
-                        : isDarkMode
-                        ? Colors.white
-                        : Colors.black,
-                    fontSize: 16,
-                  ),
-                ),
-              );
-            }(),
+            child: Container(
+              padding: hasEmbeds
+                  ? const EdgeInsets.symmetric(horizontal: 2, vertical: 2)
+                  : const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: isCurrentUser
+                    ? AppColors.primary
+                    : isDarkMode
+                    ? Colors.grey.shade800
+                    : Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (hasEmbeds) ...embeds!,
+                  if (hasEmbeds && hasText) const SizedBox(height: 2),
+                  if (hasText) Text(cleanedMessage),
+                ],
+              ),
+            ),
           ),
         ],
       ),
