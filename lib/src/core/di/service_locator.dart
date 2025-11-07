@@ -10,7 +10,8 @@ import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_rep
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/story_repository_impl.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
-import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository_impl.dart';
+import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository_xrpc.dart';
+import 'package:sparksocial/src/core/network/xrpc/service_auth_helper.dart';
 import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
@@ -54,8 +55,11 @@ Future<void> initServiceLocator() async {
   // Register AuthRepository
   sl.registerSingleton<AuthRepository>(AuthRepositoryImpl());
 
-  // Register Chat dependencies
-  sl.registerSingleton<MessagesRepository>(MessagesRepositoryImpl(sl<AuthRepository>()));
+  // Register service auth helper for XRPC
+  sl.registerSingleton<ServiceAuthHelper>(ServiceAuthHelper(sl<AuthRepository>()));
+
+  // Register Chat dependencies with XRPC implementation
+  sl.registerSingleton<MessagesRepository>(MessagesRepositoryXrpc(sl<ServiceAuthHelper>()));
 
   // Register SprkRepository with its interface
   sl.registerSingleton<SprkRepository>(SprkRepositoryImpl(sl<AuthRepository>()));
