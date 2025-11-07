@@ -42,47 +42,45 @@ class ImageContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () => _showImageCarousel(context),
-      child: Container(
-        width: thumbnailSize,
-        height: thumbnailSize,
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          borderRadius: borderRadius,
-          border: Border.all(color: Theme.of(context).colorScheme.onSurface, width: 0.5),
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        child: Container(
+          width: thumbnailSize,
+          height: thumbnailSize,
           color: Theme.of(context).colorScheme.surface,
-        ),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            CachedNetworkImage(
-              imageUrl: imageUrls.first,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                color: Colors.grey[850]?.withValues(alpha: 128),
-                child: const Center(
-                  child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54)),
-                ),
-              ),
-              errorWidget: (context, url, error) => ColoredBox(
-                color: AppColors.darkPurple.withValues(alpha: 26),
-                child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 24, color: Colors.white70)),
-              ),
-            ),
-
-            if (imageUrls.length > 1)
-              Positioned(
-                top: 4,
-                right: 4,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  decoration: BoxDecoration(color: Colors.black.withValues(alpha: 179), borderRadius: BorderRadius.circular(10)),
-                  child: Text(
-                    '+${imageUrls.length - 1}',
-                    style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              CachedNetworkImage(
+                imageUrl: imageUrls.first,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  color: Colors.grey[850]?.withValues(alpha: 128),
+                  child: const Center(
+                    child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54)),
                   ),
                 ),
+                errorWidget: (context, url, error) => ColoredBox(
+                  color: AppColors.darkPurple.withValues(alpha: 26),
+                  child: const Center(child: Icon(FluentIcons.image_off_24_regular, size: 24, color: Colors.white70)),
+                ),
               ),
-          ],
+
+              if (imageUrls.length > 1)
+                Positioned(
+                  top: 4,
+                  right: 4,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(color: Colors.black.withValues(alpha: 179), borderRadius: BorderRadius.circular(10)),
+                    child: Text(
+                      '+${imageUrls.length - 1}',
+                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
       ),
     );

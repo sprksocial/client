@@ -264,7 +264,6 @@ Widget buildSparkSideActionBarWithImageBackgroundUseCase(BuildContext context) {
   );
 
   final isLiked = context.knobs.boolean(label: 'isLiked', initialValue: true);
-
   final isCurated = context.knobs.boolean(
     label: 'isCurated',
     initialValue: false,

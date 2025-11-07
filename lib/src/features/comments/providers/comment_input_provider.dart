@@ -55,22 +55,22 @@ class CommentInput extends _$CommentInput {
   Future<void> pickImages(BuildContext context) async {
     if (state.isPosting) return;
 
-    const maxImages = 4;
+    const maxImages = 1;
     final currentImageCount = state.selectedImages.length;
     if (currentImageCount >= maxImages) {
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('You can select up to $maxImages images.')));
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Replies can only have 1 image.')));
       return;
     }
 
     try {
-      final pickedFiles = await state.imagePicker.pickMultiImage(limit: maxImages - currentImageCount);
-      if (pickedFiles.isNotEmpty) {
-        state = state.copyWith(selectedImages: [...state.selectedImages, ...pickedFiles]);
+      final pickedFile = await state.imagePicker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        state = state.copyWith(selectedImages: [pickedFile]);
         updateCanSubmit();
       }
     } catch (e) {
-      _logger.e('Error picking images: $e');
+      _logger.e('Error picking image: $e');
     }
   }
 

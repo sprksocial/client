@@ -9,7 +9,7 @@ abstract class FeedRepository {
   ///
   /// [feed] The feed to get the skeleton for
   /// [limit] The number of items to return
-  Future<FeedSkeleton> getFeedSkeleton(Feed feed, {int? limit, String? cursor});
+  Future<FeedView> getFeed(Feed feed, {int limit = 20, String? cursor});
 
   /// Get posts by URIs (hydrates a skeleton)
   ///
@@ -29,6 +29,28 @@ abstract class FeedRepository {
     String? cursor,
     bool videosOnly = false,
     bool bluesky = false,
+  });
+
+  /// Get timeline feed
+  ///
+  /// Returns fully hydrated post views in a FeedView structure.
+  /// [limit] The number of items to return (default 20)
+  /// [cursor] Pagination cursor for the next set of results
+  Future<FeedView> getTimeline({
+    int limit = 20,
+    String? cursor,
+  });
+
+  /// Get feed by URI
+  ///
+  /// Returns fully hydrated post views in a FeedView structure.
+  /// [feedUri] The URI of the feed to get
+  /// [limit] The number of items to return (default 20)
+  /// [cursor] Pagination cursor for the next set of results
+  Future<FeedView> getFeedView(
+    AtUri feedUri, {
+    int limit = 20,
+    String? cursor,
   });
 
   /// Like a post
@@ -103,13 +125,6 @@ abstract class FeedRepository {
     List<SelfLabel>? selfLabels,
   });
 
-  /// Post a story to the user's feed
-  ///
-  /// [embed] The embed of the story to post
-  /// [selfLabels] The self labels of the story
-  /// [tags] The tags of the story
-  Future<StrongRef> postStory(Embed embed, {List<SelfLabel>? selfLabels, List<String>? tags});
-
   /// Get the thread for a post
   ///
   /// [uri] The URI of the post to get the thread for
@@ -125,20 +140,6 @@ abstract class FeedRepository {
   /// [limit] Optional limit on the number of labels to return.
   /// [cursor] Optional pagination cursor.
   Future<({List<Label> labels, String? cursor})> getLabels(List<AtUri> uris, {List<String>? sources, int? limit, String? cursor});
-
-  /// Get stories timeline
-  ///
-  /// [limit] The number of items to return (default 20)
-  /// [cursor] Pagination cursor for the next set of results
-  Future<({String? cursor, Map<ProfileViewBasic, List<StoryView>> storiesByAuthor})> getStoriesTimeline({
-    int limit = 30,
-    String? cursor,
-  });
-
-  /// Gets story views for a specified list of stories (by AT-URI). This is sometimes referred to as 'hydrating' a story reference list.
-  ///
-  /// [storyUris] List of story URIs to fetch
-  Future<List<StoryView>> getStoryViews(List<AtUri> storyUris);
 
   /// Search for posts
   /// [query] The search query string
