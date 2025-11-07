@@ -128,8 +128,28 @@ class StoryRepositoryImpl implements StoryRepository {
         NSID.parse('so.sprk.story.getStories'),
         parameters: {'uris': storyUris},
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) =>
-            (jsonMap['stories']! as List<dynamic>).map((story) => StoryView.fromJson(story as Map<String, dynamic>)).toList(),
+        to: (jsonMap) {
+          final storiesArray = jsonMap['stories'] as List<dynamic>?;
+          if (storiesArray == null) {
+            return <StoryView>[];
+          }
+
+          final stories = <StoryView>[];
+          for (final story in storiesArray) {
+            try {
+              // Fix the media structure if needed
+              final storyMap = Map<String, dynamic>.from(story as Map<String, dynamic>);
+              _fixMediaStructure(storyMap);
+
+              final storyView = StoryView.fromJson(storyMap);
+              stories.add(storyView);
+            } catch (e) {
+              // Don't rethrow - continue with other stories
+            }
+          }
+
+          return stories;
+        },
       );
 
       return response.data;
