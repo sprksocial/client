@@ -67,7 +67,7 @@ class _PostCardState extends State<PostCard> {
                       Radius.circular(16),
                     ),
                   ),
-                  child: widget.post.embed != null
+                  child: widget.post.media != null
                       ? ClipRRect(
                           borderRadius: const BorderRadius.all(
                             Radius.circular(16),
@@ -99,15 +99,15 @@ class _PostCardState extends State<PostCard> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (widget.post.record.text?.isNotEmpty ?? false)
+                  if (widget.post.displayText.isNotEmpty)
                     Text(
-                      widget.post.record.text!,
+                      widget.post.displayText,
                       // style: theme.textTheme.bodySmall,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
 
                     ),
-                  if (widget.post.record.text?.isNotEmpty ?? false) const SizedBox(height: 8),
+                  if (widget.post.displayText.isNotEmpty) const SizedBox(height: 8),
                   Row(
                     children: [
                       UserAvatar(

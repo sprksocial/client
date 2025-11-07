@@ -1,45 +1,47 @@
 import 'package:atproto/core.dart';
-import 'package:sparksocial/src/core/feed_algorithms/feed_following.dart';
-import 'package:sparksocial/src/core/feed_algorithms/feed_for_you.dart';
-import 'package:sparksocial/src/core/feed_algorithms/feed_latest_sprk.dart';
-import 'package:sparksocial/src/core/feed_algorithms/feed_mutuals.dart';
-import 'package:sparksocial/src/core/feed_algorithms/feed_shared.dart';
+import 'package:atproto_core/atproto_core.dart';
+import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 
-typedef SkeletonFunction = Future<FeedSkeleton> Function({int? limit, String? cursor});
+typedef FeedViewFunction = Future<FeedView> Function({int? limit, String? cursor});
 typedef ExtraInfoFunction = Future<Map<AtUri, HardcodedFeedExtraInfo>> Function(List<AtUri> uris);
 
 class HardCodedFeedAlgorithm {
-  static SkeletonFunction get following => followingSkeletonFunction;
-  static SkeletonFunction get mutuals => mutualsSkeletonFunction;
-  static SkeletonFunction get forYou => forYouSkeletonFunction;
-  static SkeletonFunction get latestSprk => latestSprkSkeletonFunction;
-  static SkeletonFunction get shared => sharedSkeletonFunction;
-  static ExtraInfoFunction get sharedExtraInfo => sharedExtraInfoFunction;
+  // Map of feed URIs for feeds that use getFeed()
+  static final Map<HardCodedFeedEnum, AtUri> _feedUris = {
+    HardCodedFeedEnum.latest: AtUri.parse('at://did:plc:cveom2iroj3mt747sd4qqnr2/so.sprk.feed.generator/latest'),
+    HardCodedFeedEnum.forYou: AtUri.parse('at://did:plc:z72i7hdynmk6r22z27h6tvur/app.bsky.feed.generator/thevids'),
+    // mutuals and shared don't have URIs yet (return empty feeds)
+  };
 
-  static SkeletonFunction skeletonFromEnum(HardCodedFeedEnum feed) {
-    switch (feed) {
-      case HardCodedFeedEnum.following:
-        return following;
-      case HardCodedFeedEnum.mutuals:
-        return mutuals;
-      case HardCodedFeedEnum.forYou:
-        return forYou;
-      case HardCodedFeedEnum.latestSprk:
-        return latestSprk;
-      case HardCodedFeedEnum.shared:
-        return shared;
-    }
+  static FeedViewFunction feedViewFromEnum(HardCodedFeedEnum feed) {
+    return ({int? limit, String? cursor}) async {
+      limit ??= 10;
+      final sprkRepository = GetIt.instance<SprkRepository>();
+      final feedRepository = sprkRepository.feed;
+
+      // Timeline is a special case
+      if (feed == HardCodedFeedEnum.timeline) {
+        return feedRepository.getTimeline(limit: limit, cursor: cursor);
+      }
+
+      // Check if this feed has a URI
+      final feedUri = _feedUris[feed];
+      if (feedUri != null) {
+        return feedRepository.getFeedView(feedUri, limit: limit, cursor: cursor);
+      }
+
+      // Feeds without URIs return empty feed
+      return const FeedView(feed: []);
+    };
   }
 
   static ExtraInfoFunction? extraInfoFromEnum(HardCodedFeedEnum feed) {
     switch (feed) {
-      case HardCodedFeedEnum.shared:
-        return sharedExtraInfo;
-      case HardCodedFeedEnum.following:
-      case HardCodedFeedEnum.mutuals:
+      case HardCodedFeedEnum.timeline:
       case HardCodedFeedEnum.forYou:
-      case HardCodedFeedEnum.latestSprk:
+      case HardCodedFeedEnum.latest:
         return null;
     }
   }

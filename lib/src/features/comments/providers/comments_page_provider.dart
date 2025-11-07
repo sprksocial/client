@@ -91,9 +91,11 @@ class CommentsPage extends _$CommentsPage {
 
         // Update the cached post with the new reply count so it shows up in feeds
         try {
-          await sqlCache.updatePost(thread.post);
-          // Trigger feed UI update by incrementing the update counter
-          ref.read(postUpdateProvider(thread.post.uri.toString()).notifier).state++;
+          if (thread.post case ThreadPostView(:final post)) {
+            await sqlCache.updatePost(post);
+            // Trigger feed UI update by incrementing the update counter
+            ref.read(postUpdateProvider(post.uri.toString()).notifier).state++;
+          }
         } catch (e) {
           // Ignore cache update errors, the UI will still work
         }
@@ -129,9 +131,11 @@ class CommentsPage extends _$CommentsPage {
 
         // Update the cached post with the new reply count so it shows up in feeds
         try {
-          await sqlCache.updatePost(thread.post);
-          // Trigger feed UI update by incrementing the update counter
-          ref.read(postUpdateProvider(thread.post.uri.toString()).notifier).state++;
+          if (thread.post case ThreadPostView(:final post)) {
+            await sqlCache.updatePost(post);
+            // Trigger feed UI update by incrementing the update counter
+            ref.read(postUpdateProvider(post.uri.toString()).notifier).state++;
+          }
         } catch (e) {
           // Ignore cache update errors, the UI will still work
         }

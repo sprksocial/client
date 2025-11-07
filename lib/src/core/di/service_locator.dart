@@ -8,6 +8,7 @@ import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/story_repository_impl.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository_impl.dart';
 import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
@@ -70,6 +71,9 @@ Future<void> initServiceLocator() async {
 
   // Register GraphRepository
   sl.registerSingleton<GraphRepository>(GraphRepositoryImpl(sl.get<SprkRepository>()));
+
+  // Register StoryRepository
+  sl.registerSingleton<StoryRepository>(StoryRepositoryImpl(sl.get<SprkRepository>()));
 
   // Register SettingsRepository
   sl.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());

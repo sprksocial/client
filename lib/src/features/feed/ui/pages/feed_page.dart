@@ -54,12 +54,19 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
     });
 
     // Initialize feed when it becomes active for the first time
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_hasInitialized && !state.loadingFirstLoad && state.length == 0 && !state.isEndOfNetworkFeed && !_isRefreshing) {
-        _hasInitialized = true;
-        notifier.loadAndUpdateFirstLoad();
-      }
-    });
+    if (!_hasInitialized &&
+        !state.loadingFirstLoad &&
+        state.length == 0 &&
+        !state.isEndOfNetworkFeed &&
+        !_isRefreshing &&
+        shouldBeActive) {
+      _hasInitialized = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          notifier.loadAndUpdateFirstLoad();
+        }
+      });
+    }
 
     // Always set the correct active state
     WidgetsBinding.instance.addPostFrameCallback((_) {

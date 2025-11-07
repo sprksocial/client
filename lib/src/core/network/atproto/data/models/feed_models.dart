@@ -3,6 +3,7 @@ import 'package:atproto_core/atproto_core.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:sparksocial/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/utils/uri_converter.dart';
 
@@ -12,11 +13,9 @@ part 'feed_models.g.dart';
 /// https://pub.dev/packages/freezed#union-types <= read this to know how to use pattern matching to know the type of the object
 
 enum HardCodedFeedEnum {
-  following('Following'), // posts from people you follow (bsky/sprk)
-  mutuals('Mutuals'), // posts from people you follow who follow each other (bsky/sprk)
+  timeline('Following'), // posts from people you follow (bsky/sprk)
   forYou('For You'), // hardcoded algorithm for trending posts (bsky/sprk). for now, it's just the TheVids feed (bsky)
-  latestSprk('Latest'), // latest sprk posts (sprk)
-  shared('Shared'); // posts sent by friends in the dms (bsky/sprk)
+  latest('Latest'); // latest sprk posts (sprk)
 
   const HardCodedFeedEnum(this.name);
   final String name;
@@ -71,18 +70,18 @@ class Feed with _$Feed {
   factory Feed.fromJson(Map<String, dynamic> json) => _$FeedFromJson(json);
   const Feed._();
   @JsonSerializable(explicitToJson: true)
-  const factory Feed.custom({required String name, @AtUriConverter() required AtUri uri}) = FeedCustom;
+  const factory Feed.record({required String name, @AtUriConverter() required AtUri uri}) = FeedRecord;
 
   /// HardCoded feeds can be "fake", so they don't have a uri
   @JsonSerializable(explicitToJson: true)
   const factory Feed.hardCoded({required HardCodedFeedEnum hardCodedFeed}) = FeedHardCoded;
 
   String get name {
-    return when(custom: (name, did) => name, hardCoded: (hardCodedFeed) => hardCodedFeed.name);
+    return when(record: (name, did) => name, hardCoded: (hardCodedFeed) => hardCodedFeed.name);
   }
 
   String get identifier =>
-      when(custom: (name, uri) => uri.toString(), hardCoded: (hardCodedFeed) => 'hardcoded:${hardCodedFeed.name}');
+      when(record: (name, uri) => uri.toString(), hardCoded: (hardCodedFeed) => 'hardcoded:${hardCodedFeed.name}');
 }
 
 /// Skeleton of a FeedView. Needs to be hydrated.
@@ -109,18 +108,75 @@ sealed class HardcodedFeedExtraInfo with _$HardcodedFeedExtraInfo {
 }
 
 /// GetTimeline returns a FeedViewPost array
-@freezed
-class FeedViewPost with _$FeedViewPost {
-  @JsonSerializable(explicitToJson: true)
-  const factory FeedViewPost({
-    required PostView post,
-    ReplyRef? reply,
-    // "reason": { "type": "union", "refs": ["#reasonRepost", "#reasonPin"] } i think we don't have to use this value for now
-    // there's also a String feedContext "Context provided by feed generator that may be passed back alongside interactions."
-  }) = _FeedViewPostPost;
+@Freezed(unionKey: r'$type')
+sealed class FeedViewPost with _$FeedViewPost {
   const FeedViewPost._();
 
+  @FreezedUnionValue('so.sprk.feed.defs#feedPostView')
+  @JsonSerializable(explicitToJson: true)
+  const factory FeedViewPost.post({
+    required PostView post,
+    ReplyRef? reply,
+  }) = FeedViewPostPost;
+
+  @FreezedUnionValue('so.sprk.feed.defs#feedReplyView')
+  @JsonSerializable(explicitToJson: true)
+  const factory FeedViewPost.reply({
+    required ReplyView reply,
+    ReplyRef? replyRef,
+  }) = FeedViewPostReply;
+
   factory FeedViewPost.fromJson(Map<String, dynamic> json) => _$FeedViewPostFromJson(json);
+
+  PostView? get asPost => mapOrNull(post: (p) => p.post);
+  ReplyView? get asReply => mapOrNull(reply: (r) => r.reply);
+
+  ProfileViewBasic get author => map(
+    post: (p) => p.post.author,
+    reply: (r) => r.reply.author,
+  );
+
+  AtUri get uri => map(
+    post: (p) => p.post.uri,
+    reply: (r) => r.reply.uri,
+  );
+
+  String get cid => map(
+    post: (p) => p.post.cid,
+    reply: (r) => r.reply.cid,
+  );
+
+  MediaView? get media => map(
+    post: (p) => p.post.displayMedia,
+    reply: (r) => r.reply.media,
+  );
+
+  Viewer? get viewer => map(
+    post: (p) => p.post.viewer,
+    reply: (r) => r.reply.viewer,
+  );
+
+  String get displayText => map(
+    post: (p) => p.post.displayText,
+    reply: (r) => r.reply.displayText,
+  );
+
+  List<Facet> get displayFacets => map(
+    post: (p) => p.post.displayFacets,
+    reply: (r) => r.reply.displayFacets,
+  );
+}
+
+@freezed
+class FeedView with _$FeedView {
+  @JsonSerializable(explicitToJson: true)
+  const factory FeedView({
+    required List<FeedViewPost> feed,
+    String? cursor,
+  }) = _FeedView;
+  const FeedView._();
+
+  factory FeedView.fromJson(Map<String, dynamic> json) => _$FeedViewFromJson(json);
 }
 
 @freezed
@@ -147,6 +203,10 @@ sealed class ReplyRefPostReference with _$ReplyRefPostReference {
   @FreezedUnionValue('app.bsky.feed.defs#postView')
   @JsonSerializable(explicitToJson: true)
   const factory ReplyRefPostReference.bskyPost({required PostView post}) = ReplyRefPostReferenceBskyPost;
+
+  @FreezedUnionValue('so.sprk.feed.defs#replyView')
+  @JsonSerializable(explicitToJson: true)
+  const factory ReplyRefPostReference.reply({required ReplyView reply}) = ReplyRefPostReferenceReply;
 
   @FreezedUnionValue('so.sprk.feed.defs#notFoundPost')
   @JsonSerializable(explicitToJson: true)
@@ -215,8 +275,7 @@ class PostView with _$PostView {
     int? quoteCount,
     List<Label>? labels,
     Viewer? viewer,
-    //SoundView? sound,
-    EmbedView? embed, // aturi
+    MediaView? media,
   }) = _PostView;
   const PostView._();
 
@@ -224,23 +283,32 @@ class PostView with _$PostView {
 
   bool get isSprk => RegExp(r'^at://[^/]+/so\.sprk\.feed\.post/[^/]+$').hasMatch(uri.toString());
 
+  MediaView? get displayMedia => media;
+
+  String get displayText => record.caption.text;
+
+  List<Facet> get displayFacets => record.caption.facets;
+
   /// Returns true if this post has a video or image embed (content we want to show)
   bool get hasSupportedMedia {
-    if (embed == null) return false;
+    final mediaToCheck = displayMedia;
+    if (mediaToCheck == null) return false;
 
-    switch (embed) {
-      case EmbedViewVideo():
-      case EmbedViewBskyVideo():
-      case EmbedViewImage():
-      case EmbedViewBskyImages():
+    switch (mediaToCheck) {
+      case MediaViewVideo():
+      case MediaViewBskyVideo():
+      case MediaViewBskyImages():
+      case MediaViewImage():
+      case MediaViewImages():
         return true;
-      case EmbedViewBskyRecordWithMedia(:final media):
+      case MediaViewBskyRecordWithMedia(:final media):
         // Check nested media in record with media
         switch (media) {
-          case EmbedViewVideo():
-          case EmbedViewBskyVideo():
-          case EmbedViewImage():
-          case EmbedViewBskyImages():
+          case MediaViewVideo():
+          case MediaViewBskyVideo():
+          case MediaViewBskyImages():
+          case MediaViewImage():
+          case MediaViewImages():
             return true;
           case _:
             return false;
@@ -284,18 +352,19 @@ class PostView with _$PostView {
   }
 
   String get videoUrl {
-    switch (embed) {
-      case EmbedViewVideo(:final playlist):
+    final mediaToCheck = displayMedia;
+    switch (mediaToCheck) {
+      case MediaViewVideo(:final playlist):
         return playlist.toString();
-      case EmbedViewBskyVideo(:final playlist):
+      case MediaViewBskyVideo(:final playlist):
         // For Bluesky videos, return the AT URI as-is for blob API handling
         return playlist.toString();
-      case EmbedViewBskyRecordWithMedia(:final media):
+      case MediaViewBskyRecordWithMedia(:final media):
         // Handle nested media in record with media
         switch (media) {
-          case EmbedViewVideo(:final playlist):
+          case MediaViewVideo(:final playlist):
             return playlist.toString();
-          case EmbedViewBskyVideo(:final playlist):
+          case MediaViewBskyVideo(:final playlist):
             // For Bluesky videos, return the AT URI as-is for blob API handling
             return playlist.toString();
           case _:
@@ -307,17 +376,22 @@ class PostView with _$PostView {
   }
 
   List<String> get imageUrls {
-    switch (embed) {
-      case EmbedViewImage(:final images):
+    final mediaToCheck = displayMedia;
+    switch (mediaToCheck) {
+      case MediaViewImage(:final image):
+        return [image.fullsize.toString()];
+      case MediaViewImages(:final images):
         return images.map((img) => img.fullsize.toString()).toList();
-      case EmbedViewBskyImages(:final images):
+      case MediaViewBskyImages(:final images):
         return images.map((img) => _resolveAtUriToHttpUrl(img.fullsize, isFullsize: true)).toList();
-      case EmbedViewBskyRecordWithMedia(:final media):
+      case MediaViewBskyRecordWithMedia(:final media):
         // Handle nested media in record with media
         switch (media) {
-          case EmbedViewImage(:final images):
+          case MediaViewImage(:final image):
+            return [image.fullsize.toString()];
+          case MediaViewImages(:final images):
             return images.map((img) => img.fullsize.toString()).toList();
-          case EmbedViewBskyImages(:final images):
+          case MediaViewBskyImages(:final images):
             return images.map((img) => _resolveAtUriToHttpUrl(img.fullsize, isFullsize: true)).toList();
           case _:
             return [];
@@ -328,25 +402,30 @@ class PostView with _$PostView {
   }
 
   String get thumbnailUrl {
-    switch (embed) {
-      case EmbedViewVideo(:final thumbnail):
+    final mediaToCheck = displayMedia;
+    switch (mediaToCheck) {
+      case MediaViewVideo(:final thumbnail):
         return thumbnail.toString();
-      case EmbedViewBskyVideo(:final thumbnail):
+      case MediaViewBskyVideo(:final thumbnail):
         return _resolveAtUriToHttpUrl(thumbnail);
-      case EmbedViewImage(:final images):
+      case MediaViewImage(:final image):
+        return image.thumb.toString();
+      case MediaViewImages(:final images):
         return images.first.thumb.toString();
-      case EmbedViewBskyImages(:final images):
+      case MediaViewBskyImages(:final images):
         return _resolveAtUriToHttpUrl(images.first.thumb);
-      case EmbedViewBskyRecordWithMedia(:final media):
+      case MediaViewBskyRecordWithMedia(:final media):
         // Handle nested media in record with media
         switch (media) {
-          case EmbedViewVideo(:final thumbnail):
+          case MediaViewVideo(:final thumbnail):
             return thumbnail.toString();
-          case EmbedViewBskyVideo(:final thumbnail):
+          case MediaViewBskyVideo(:final thumbnail):
             return _resolveAtUriToHttpUrl(thumbnail);
-          case EmbedViewImage(:final images):
+          case MediaViewImage(:final image):
+            return image.thumb.toString();
+          case MediaViewImages(:final images):
             return images.first.thumb.toString();
-          case EmbedViewBskyImages(:final images):
+          case MediaViewBskyImages(:final images):
             return _resolveAtUriToHttpUrl(images.first.thumb);
           case _:
             return '';
@@ -358,51 +437,54 @@ class PostView with _$PostView {
 }
 
 @Freezed(unionKey: r'$type')
-sealed class EmbedView with _$EmbedView {
-  const EmbedView._();
+sealed class MediaView with _$MediaView {
+  const MediaView._();
 
-  // Spark embed types
-  @FreezedUnionValue('so.sprk.embed.video#view')
+  @FreezedUnionValue('so.sprk.media.video#view')
   @JsonSerializable(explicitToJson: true)
-  const factory EmbedView.video({
+  const factory MediaView.video({
     required String cid,
     @AtUriConverter() required Uri playlist,
     @AtUriConverter() required Uri thumbnail,
     String? alt,
-  }) = EmbedViewVideo;
+  }) = MediaViewVideo;
 
-  @FreezedUnionValue('so.sprk.embed.images#view')
+  @FreezedUnionValue('so.sprk.media.image#view')
   @JsonSerializable(explicitToJson: true)
-  const factory EmbedView.image({required List<ViewImage> images}) = EmbedViewImage;
+  const factory MediaView.image({required ViewImage image}) = MediaViewImage;
+
+  @FreezedUnionValue('so.sprk.media.images#view')
+  @JsonSerializable(explicitToJson: true)
+  const factory MediaView.images({required List<ViewImage> images}) = MediaViewImages;
 
   // Bluesky embed types
   @FreezedUnionValue('app.bsky.embed.video#view')
   @JsonSerializable(explicitToJson: true)
-  const factory EmbedView.bskyVideo({
+  const factory MediaView.bskyVideo({
     required String cid,
     @AtUriConverter() required Uri playlist,
     @AtUriConverter() required Uri thumbnail,
     String? alt,
-  }) = EmbedViewBskyVideo;
+  }) = MediaViewBskyVideo;
 
   @FreezedUnionValue('app.bsky.embed.images#view')
   @JsonSerializable(explicitToJson: true)
-  const factory EmbedView.bskyImages({required List<ViewImage> images}) = EmbedViewBskyImages;
+  const factory MediaView.bskyImages({required List<ViewImage> images}) = MediaViewBskyImages;
 
   @FreezedUnionValue('app.bsky.embed.record#view')
   @JsonSerializable(explicitToJson: true)
-  const factory EmbedView.bskyRecord({required EmbedViewRecord record}) = EmbedViewBskyRecord;
+  const factory MediaView.bskyRecord({required EmbedViewRecord record}) = MediaViewBskyRecord;
 
   @FreezedUnionValue('app.bsky.embed.recordWithMedia#view')
   @JsonSerializable(explicitToJson: true)
-  const factory EmbedView.bskyRecordWithMedia({required EmbedViewRecord record, required EmbedView media}) =
-      EmbedViewBskyRecordWithMedia;
+  const factory MediaView.bskyRecordWithMedia({required EmbedViewRecord record, required MediaView media}) =
+      MediaViewBskyRecordWithMedia;
 
   @FreezedUnionValue('app.bsky.embed.external#view')
   @JsonSerializable(explicitToJson: true)
-  const factory EmbedView.bskyExternal({required EmbedViewExternal external}) = EmbedViewBskyExternal;
+  const factory MediaView.bskyExternal({required EmbedViewExternal external}) = MediaViewBskyExternal;
 
-  factory EmbedView.fromJson(Map<String, dynamic> json) => _$EmbedViewFromJson(json);
+  factory MediaView.fromJson(Map<String, dynamic> json) => _$MediaViewFromJson(json);
 }
 
 @freezed
@@ -437,7 +519,7 @@ sealed class EmbedViewRecord with _$EmbedViewRecord {
     int? repostCount,
     int? likeCount,
     int? quoteCount,
-    @Default([]) List<EmbedView> embeds,
+    @Default([]) List<MediaView> embeds,
   }) = EmbedViewRecord_Record;
 
   /// A placeholder for a record that could not be found.
@@ -477,6 +559,18 @@ class ImageUploadResult with _$ImageUploadResult {
   const ImageUploadResult._();
 
   factory ImageUploadResult.fromJson(Map<String, dynamic> json) => _$ImageUploadResultFromJson(json);
+}
+
+@freezed
+class CaptionRef with _$CaptionRef {
+  @JsonSerializable(explicitToJson: true)
+  const factory CaptionRef({
+    required String text,
+    @Default([]) List<Facet> facets,
+  }) = _CaptionRef;
+  const CaptionRef._();
+
+  factory CaptionRef.fromJson(Map<String, dynamic> json) => _$CaptionRefFromJson(json);
 }
 
 /// Represents the index range for a facet in the text
@@ -569,13 +663,102 @@ class ViewImage with _$ViewImage {
 }
 
 @Freezed(unionKey: r'$type')
+sealed class ThreadPost with _$ThreadPost {
+  const ThreadPost._();
+
+  @FreezedUnionValue('so.sprk.feed.defs#postView')
+  @JsonSerializable(explicitToJson: true)
+  const factory ThreadPost.post({required PostView post}) = ThreadPostView;
+
+  @FreezedUnionValue('so.sprk.feed.defs#replyView')
+  @JsonSerializable(explicitToJson: true)
+  const factory ThreadPost.reply({required ReplyView reply}) = ThreadReplyView;
+
+  factory ThreadPost.fromJson(Map<String, dynamic> json) => _$ThreadPostFromJson(json);
+
+  // Common getters for both PostView and ReplyView
+  AtUri get uri => switch (this) {
+    ThreadPostView(:final post) => post.uri,
+    ThreadReplyView(:final reply) => reply.uri,
+  };
+
+  String get cid => switch (this) {
+    ThreadPostView(:final post) => post.cid,
+    ThreadReplyView(:final reply) => reply.cid,
+  };
+
+  Viewer? get viewer => switch (this) {
+    ThreadPostView(:final post) => post.viewer,
+    ThreadReplyView(:final reply) => reply.viewer,
+  };
+
+  int? get likeCount => switch (this) {
+    ThreadPostView(:final post) => post.likeCount,
+    ThreadReplyView(:final reply) => reply.likeCount,
+  };
+
+  int? get replyCount => switch (this) {
+    ThreadPostView(:final post) => post.replyCount,
+    ThreadReplyView(:final reply) => reply.replyCount,
+  };
+
+  List<String> get imageUrls => switch (this) {
+    ThreadPostView(:final post) => post.imageUrls,
+    ThreadReplyView(:final reply) => switch (reply.hydratedMedia) {
+      // Replies/comments only support a single image (EmbedViewMediaImage)
+      MediaViewImage(:final image) => [image.fullsize.toString()],
+      MediaViewImages(:final images) => images.map((img) => img.fullsize.toString()).toList(),
+      MediaViewBskyImages(:final images) => images.map((img) => img.fullsize.toString()).toList(),
+      _ => <String>[],
+    },
+  };
+
+  bool get isSprk => switch (this) {
+    ThreadPostView(:final post) => post.isSprk,
+    ThreadReplyView(:final reply) => () {
+      final rec = reply.record;
+      if (rec is Map<String, dynamic>) {
+        final type = rec[r'$type'] as String?;
+        return type == 'so.sprk.feed.reply' || type == 'so.sprk.feed.post';
+      }
+      return false;
+    }(),
+  };
+
+  ProfileViewBasic get author => switch (this) {
+    ThreadPostView(:final post) => post.author,
+    ThreadReplyView(:final reply) => reply.author,
+  };
+
+  MediaView? get media => switch (this) {
+    ThreadPostView(:final post) => post.media,
+    ThreadReplyView(:final reply) => reply.hydratedMedia,
+  };
+
+  String get displayText => switch (this) {
+    ThreadPostView(:final post) => post.displayText,
+    ThreadReplyView(:final reply) => reply.displayText,
+  };
+
+  DateTime get indexedAt => switch (this) {
+    ThreadPostView(:final post) => post.indexedAt,
+    ThreadReplyView(:final reply) => reply.indexedAt,
+  };
+
+  String get videoUrl => switch (this) {
+    ThreadPostView(:final post) => post.videoUrl,
+    ThreadReplyView() => '', // Replies cannot have videos
+  };
+}
+
+@Freezed(unionKey: r'$type')
 class Thread with _$Thread {
   const Thread._();
 
   // NORMAL POST
   @FreezedUnionValue('so.sprk.feed.defs#threadViewPost')
   @JsonSerializable(explicitToJson: true)
-  const factory Thread.threadViewPost({required PostView post, Thread? parent, List<Thread>? replies, ThreadContext? context}) =
+  const factory Thread.threadViewPost({required ThreadPost post, Thread? parent, List<Thread>? replies, ThreadContext? context}) =
       ThreadViewPost;
 
   // NOT FOUND POST
@@ -740,8 +923,11 @@ class Thread with _$Thread {
             }
           }
 
+          // Convert from Bluesky format to Spark format
+          bskyFeedAdapter.convertPostViewJson(postViewJson);
+
           final thread = Thread.threadViewPost(
-            post: PostView.fromJson(postViewJson),
+            post: ThreadPost.post(post: PostView.fromJson(postViewJson)),
             parent: data.parent != null ? Thread.fromBsky(thread: data.parent!, uri: uri) : null,
             replies: data.replies
                 ?.map((reply) {
@@ -776,6 +962,184 @@ class Thread with _$Thread {
         throw Exception('Unsupported thread type: ${thread.runtimeType}');
     }
   }
+
+  factory Thread.fromSparkFlatList({required List<dynamic> threadItems}) {
+    if (threadItems.isEmpty) {
+      throw Exception('Thread items list is empty');
+    }
+
+    // Parse all thread items with their indices
+    final items = <({int index, int depth, String uri, Thread thread})>[];
+    for (var i = 0; i < threadItems.length; i++) {
+      try {
+        final itemMap = threadItems[i] as Map<String, dynamic>;
+        final depth = itemMap['depth'] as int;
+        final uri = itemMap['uri'] as String;
+        final value = itemMap['value'] as Map<String, dynamic>;
+
+        // Ensure $type is set correctly for the thread
+        if (!value.containsKey(r'$type')) {
+          value[r'$type'] = 'so.sprk.feed.defs#threadViewPost';
+        }
+
+        // If it's a threadViewPost, ensure the post field is properly structured
+        if (value[r'$type'] == 'so.sprk.feed.defs#threadViewPost' && value['post'] != null) {
+          final postMap = value['post'] as Map<String, dynamic>;
+
+          // Determine the post/reply type based on the record type
+          var postViewType = 'so.sprk.feed.defs#postView';
+          if (postMap['record'] != null) {
+            final recordMap = postMap['record'] as Map<String, dynamic>;
+            final recordType = recordMap[r'$type'] as String?;
+
+            // Convert legacy format: if record has 'text' field, convert it to 'caption'
+            if (recordMap.containsKey('text') && !recordMap.containsKey('caption')) {
+              final text = recordMap['text'] as String? ?? '';
+              final facets = recordMap['facets'] as List<dynamic>? ?? [];
+              recordMap['caption'] = {
+                'text': text,
+                'facets': facets,
+              };
+              recordMap.remove('text');
+              recordMap.remove('facets');
+            }
+
+            // Handle media field in record - ensure nested refs are not null
+            if (recordMap.containsKey('media') && recordMap['media'] != null) {
+              final mediaMap = recordMap['media'] as Map<String, dynamic>?;
+              if (mediaMap != null && mediaMap['images'] != null) {
+                final images = mediaMap['images'] as List<dynamic>?;
+                if (images != null) {
+                  for (final img in images) {
+                    if (img is Map<String, dynamic> && img['image'] != null) {
+                      final imageBlob = img['image'] as Map<String, dynamic>?;
+                      if (imageBlob != null) {
+                        // Ensure ref is not null
+                        if (imageBlob['ref'] == null) {
+                          imageBlob['ref'] = <String, dynamic>{};
+                        }
+                        // Check original field
+                        if (imageBlob.containsKey('original') && imageBlob['original'] != null) {
+                          final original = imageBlob['original'] as Map<String, dynamic>?;
+                          if (original != null && original['ref'] == null) {
+                            original['ref'] = <String, dynamic>{};
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+
+            if (recordType == 'so.sprk.feed.reply') {
+              postViewType = 'so.sprk.feed.defs#replyView';
+            } else if (recordType == 'so.sprk.feed.post') {
+              postViewType = 'so.sprk.feed.defs#postView';
+            }
+          }
+
+          // The API returns post/reply directly, but ThreadPost expects it wrapped
+          // ThreadPost is a union that wraps either PostView or ReplyView
+          // Set the correct $type and wrap accordingly
+          postMap[r'$type'] = postViewType;
+
+          if (postViewType == 'so.sprk.feed.defs#replyView') {
+            // Wrap as ThreadReplyView
+            value['post'] = <String, dynamic>{
+              r'$type': 'so.sprk.feed.defs#replyView',
+              'reply': postMap,
+            };
+          } else {
+            // Wrap as ThreadPostView
+            value['post'] = <String, dynamic>{
+              r'$type': 'so.sprk.feed.defs#postView',
+              'post': postMap,
+            };
+          }
+        }
+
+        // Handle threadContext field - ensure it has data or remove it
+        if (value.containsKey('threadContext')) {
+          final contextValue = value['threadContext'];
+          if (contextValue == null || contextValue is! Map<String, dynamic>) {
+            value.remove('threadContext');
+          } else {
+            // If threadContext only has $type and no actual data, remove it
+            if (contextValue.length == 1 && contextValue.containsKey(r'$type')) {
+              value.remove('threadContext');
+            }
+          }
+        }
+
+        Thread thread;
+        try {
+          thread = Thread.fromJson(value);
+        } catch (e) {
+          // Try to identify which field is failing
+          throw Exception(
+            'Failed to parse Thread.fromJson: $e\nValue keys: ${value.keys.join(", ")}\nPost keys: ${(value['post'] as Map?)?.keys.join(", ")}\nRecord keys: ${((value['post'] as Map?)?['record'] as Map?)?.keys.join(", ")}',
+          );
+        }
+        items.add((index: i, depth: depth, uri: uri, thread: thread));
+      } catch (e, stackTrace) {
+        throw Exception('Error parsing thread item at index $i: $e\nItem: ${threadItems[i]}\nStackTrace: $stackTrace');
+      }
+    }
+
+    // Find the anchor (depth 0)
+    final anchorIndex = items.indexWhere((item) => item.depth == 0);
+    if (anchorIndex == -1) {
+      throw Exception('Anchor post not found in thread items');
+    }
+
+    // Build nested structure: for each item, find its direct children (next depth level)
+    Thread buildWithReplies(int startIndex) {
+      final currentItem = items[startIndex];
+      final currentDepth = currentItem.depth;
+      final replies = <Thread>[];
+
+      // Find all direct children (depth = currentDepth + 1) until we hit same or lower depth
+      var i = startIndex + 1;
+      while (i < items.length) {
+        final item = items[i];
+
+        if (item.depth <= currentDepth) {
+          // We've moved to a sibling or back up the tree
+          break;
+        }
+
+        if (item.depth == currentDepth + 1) {
+          // This is a direct child, recursively build it
+          replies.add(buildWithReplies(i));
+          // Skip past this subtree
+          i++;
+          while (i < items.length && items[i].depth > currentDepth + 1) {
+            i++;
+          }
+        } else {
+          i++;
+        }
+      }
+
+      if (replies.isEmpty) {
+        return currentItem.thread;
+      }
+
+      return currentItem.thread.map(
+        threadViewPost: (threadPost) => Thread.threadViewPost(
+          post: threadPost.post,
+          parent: threadPost.parent,
+          replies: replies,
+          context: threadPost.context,
+        ),
+        notFoundPost: (notFound) => notFound,
+        blockedPost: (blocked) => blocked,
+      );
+    }
+
+    return buildWithReplies(anchorIndex);
+  }
 }
 
 @freezed
@@ -788,6 +1152,108 @@ class ThreadContext with _$ThreadContext {
 }
 
 @freezed
+class ReplyView with _$ReplyView {
+  @JsonSerializable(explicitToJson: true)
+  const factory ReplyView({
+    @AtUriConverter() required AtUri uri,
+    required String cid,
+    required ProfileViewBasic author,
+    required dynamic record,
+    required DateTime indexedAt,
+    MediaView? media,
+    int? replyCount,
+    int? likeCount,
+    List<Label>? labels,
+    Viewer? viewer,
+  }) = _ReplyView;
+  const ReplyView._();
+
+  factory ReplyView.fromJson(Map<String, dynamic> json) => _$ReplyViewFromJson(json);
+
+  String get displayText {
+    final rec = record;
+    if (rec is Map<String, dynamic>) {
+      final caption = rec['caption'];
+      if (caption is Map<String, dynamic>) {
+        return caption['text'] as String? ?? '';
+      }
+      return rec['text'] as String? ?? '';
+    }
+    return '';
+  }
+
+  List<Facet> get displayFacets {
+    final rec = record;
+    if (rec is Map<String, dynamic>) {
+      final caption = rec['caption'];
+      if (caption is Map<String, dynamic>) {
+        final facets = caption['facets'] as List?;
+        return facets?.map((f) => Facet.fromJson(f as Map<String, dynamic>)).toList() ?? [];
+      }
+      final facets = rec['facets'] as List?;
+      return facets?.map((f) => Facet.fromJson(f as Map<String, dynamic>)).toList() ?? [];
+    }
+    return [];
+  }
+
+  /// Hydrates media from the record into a view format
+  /// This is necessary because the API doesn't always return a media field at the post level
+  MediaView? get hydratedMedia {
+    // If media is already present, use it
+    if (media != null) return media;
+
+    // Otherwise, try to hydrate from record
+    final rec = record;
+    if (rec is! Map<String, dynamic>) return null;
+
+    final mediaRecord = rec['media'];
+    if (mediaRecord is! Map<String, dynamic>) return null;
+
+    final type = mediaRecord[r'$type'] as String?;
+
+    try {
+      switch (type) {
+        case 'so.sprk.media.image':
+          // Single image - convert to view format
+          final imageData = mediaRecord['image'] as Map<String, dynamic>?;
+          if (imageData == null) return null;
+
+          // Extract the blob ref (CID)
+          final ref = imageData['ref'] as Map<String, dynamic>?;
+          final cid = ref?[r'$link'] as String?;
+          if (cid == null) return null;
+
+          final alt = mediaRecord['alt'] as String? ?? '';
+          final authorDid = author.did;
+
+          // Construct URLs using the same pattern as the server
+          const baseUrl = 'https://media.sprk.so/img';
+          final thumbUrl = '$baseUrl/medium/$authorDid/$cid/webp';
+          final fullsizeUrl = '$baseUrl/full/$authorDid/$cid/webp';
+
+          return MediaView.image(
+            image: ViewImage(
+              thumb: Uri.parse(thumbUrl),
+              fullsize: Uri.parse(fullsizeUrl),
+              alt: alt,
+            ),
+          );
+
+        // Comments don't support so.sprk.media.images - they only use so.sprk.media.image
+        // This case should never occur for replies, but kept for safety
+        case 'so.sprk.media.images':
+          return null;
+
+        default:
+          return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+}
+
+@freezed
 class StoryView with _$StoryView {
   @JsonSerializable(explicitToJson: true)
   const factory StoryView({
@@ -796,7 +1262,7 @@ class StoryView with _$StoryView {
     required ProfileViewBasic author,
     required StoryRecord record,
     required DateTime indexedAt,
-    EmbedView? media,
+    MediaView? media,
     // viewer eventually i think
   }) = _StoryView;
   const StoryView._();

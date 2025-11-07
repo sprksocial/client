@@ -12,7 +12,6 @@ import 'package:sparksocial/src/core/ui/widgets/image_content.dart';
 import 'package:sparksocial/src/core/ui/widgets/menu_action_button.dart';
 import 'package:sparksocial/src/core/ui/widgets/report_dialog.dart';
 import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
-import 'package:sparksocial/src/core/ui/widgets/video_content.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_provider.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_state.dart';
 import 'package:sparksocial/src/features/comments/providers/comments_page_provider.dart';
@@ -106,8 +105,10 @@ class _CommentItemState extends ConsumerState<CommentItem> {
     const double thumbnailSize = 120;
 
     final borderRadius = BorderRadius.circular(8);
-    final hasImages = commentState.thread.post.embed is EmbedViewImage;
-    final hasVideo = commentState.thread.post.embed is EmbedViewVideo;
+
+    // Comments only support a single image (EmbedViewMediaImage)
+    // The adapter transforms Bluesky comments to this format
+    final hasImages = commentState.thread.post.media is MediaViewImage;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,18 +162,16 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                     ),
                     const SizedBox(height: 4),
 
-                    Text(commentState.thread.post.record.text ?? '', style: Theme.of(context).textTheme.bodyMedium),
+                    if (commentState.thread.post.displayText.isNotEmpty)
+                      Text(commentState.thread.post.displayText, style: Theme.of(context).textTheme.bodyMedium),
 
-                    if (commentState.thread.post.embed != null) ...[
+                    if (commentState.thread.post.media != null && hasImages) ...[
                       const SizedBox(height: 8),
-                      if (hasImages)
-                        ImageContent(
-                          imageUrls: commentState.thread.post.imageUrls,
-                          borderRadius: borderRadius,
-                          thumbnailSize: thumbnailSize,
-                        )
-                      else if (hasVideo)
-                        VideoContent(borderRadius: borderRadius, videoUrl: commentState.thread.post.videoUrl),
+                      ImageContent(
+                        imageUrls: commentState.thread.post.imageUrls,
+                        borderRadius: borderRadius,
+                        thumbnailSize: thumbnailSize,
+                      ),
                     ],
 
                     const SizedBox(height: 8),

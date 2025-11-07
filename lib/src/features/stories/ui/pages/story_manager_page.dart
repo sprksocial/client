@@ -91,17 +91,8 @@ class StoryManagerPage extends ConsumerWidget {
                     ? '${age.inMinutes}m'
                     : 'now';
                 final thumbUrl = switch (story.media) {
-                  EmbedViewVideo(:final thumbnail) => thumbnail.toString(),
-                  EmbedViewBskyVideo(:final thumbnail) => thumbnail.toString(),
-                  EmbedViewImage(:final images) when images.isNotEmpty => images.first.thumb.toString(),
-                  EmbedViewBskyImages(:final images) when images.isNotEmpty => images.first.thumb.toString(),
-                  EmbedViewBskyRecordWithMedia(:final media) => switch (media) {
-                    EmbedViewVideo(:final thumbnail) => thumbnail.toString(),
-                    EmbedViewBskyVideo(:final thumbnail) => thumbnail.toString(),
-                    EmbedViewImage(:final images) when images.isNotEmpty => images.first.thumb.toString(),
-                    EmbedViewBskyImages(:final images) when images.isNotEmpty => images.first.thumb.toString(),
-                    _ => story.author.avatar.toString(),
-                  },
+                  MediaViewVideo(:final thumbnail) => thumbnail.toString(),
+                  MediaViewImage(:final image) => image.thumb.toString(),
                   _ => story.author.avatar.toString(),
                 };
                 return Material(
