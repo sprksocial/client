@@ -68,7 +68,7 @@ class StoryRepositoryImpl implements StoryRepository {
             return (storiesByAuthor: storiesByAuthorMap, cursor: jsonMap['cursor'] as String?);
           }
 
-          final storiesByAuthorArray = jsonMap['storiesByAuthor'] as List<dynamic>;
+          final storiesByAuthorArray = (jsonMap['storiesByAuthor'] as List<dynamic>?) ?? <dynamic>[];
 
           for (var i = 0; i < storiesByAuthorArray.length; i++) {
             final item = storiesByAuthorArray[i];

@@ -179,7 +179,7 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                           context.router.push(
                             AllStoriesRoute(
                               storiesByAuthor: data.storiesByAuthor,
-                              initialAuthorIndex: 0, // User is first in the combined list
+                              // User is first in the combined list
                             ),
                           );
                         },
@@ -207,7 +207,7 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                                     decoration: BoxDecoration(
                                       shape: BoxShape.circle,
                                       gradient: AppGradients.accent,
-                                      border: Border.all(width: 2, color: Colors.black),
+                                      border: Border.all(),
                                     ),
                                     child: AppIcons.add(size: 16, color: Colors.white),
                                   ),
