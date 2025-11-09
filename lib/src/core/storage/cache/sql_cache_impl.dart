@@ -106,7 +106,8 @@ class SQLCacheImpl implements SQLCacheInterface {
         const batchSize = 50; // Process in batches to avoid memory issues
 
         for (var i = 0; i < postsToCheck.length; i += batchSize) {
-          final batch = postsToCheck.skip(i).take(batchSize);
+          final end = (i + batchSize < postsToCheck.length) ? i + batchSize : postsToCheck.length;
+          final batch = postsToCheck.sublist(i, end);
 
           for (final post in batch) {
             final uri = post[_columnUri] as String?;
