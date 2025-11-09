@@ -3,13 +3,12 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/buttons/long_button.dart';
+import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/core/utils/uppercase_text_formatter.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/auth/providers/onboarding_providers.dart';
-import 'package:sparksocial/src/features/auth/ui/widgets/at_account_dialog.dart';
 
 @RoutePage()
 class LoginPage extends ConsumerStatefulWidget {
@@ -86,190 +85,199 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Widget build(BuildContext context) {
     final isLoading = ref.watch(authProvider.select((state) => state.isLoading));
     final error = ref.watch(authProvider.select((state) => state.error));
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Image.asset('branding/gradient.webp', fit: BoxFit.cover, package: 'assets'),
-          ),
-          SafeArea(
-            child: Center(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Form(
-                  key: _formKey,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SvgPicture.asset(
-                        'images/logo_dark_mode.svg',
-                        height: 140,
-                        width: 140,
-                        package: 'assets',
-                      ),
-                      const SizedBox(height: 21),
-                      const Text(
-                        'Login to your account',
-                        style: TextStyle(color: AppColors.white, fontSize: 26, fontWeight: FontWeight.bold),
+      backgroundColor: colorScheme.surface,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Form(
+              key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    'Sign In',
+                    style: AppTypography.displaySmallBold.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+
+                  AutofillGroup(
+                    child: Column(
+                      children: [
+                        TextFormField(
+                          controller: _handleController,
+                          focusNode: _handleFocusNode,
+                          decoration: InputDecoration(
+                            hintText: 'Handle',
+                            prefixIcon: Icon(FluentIcons.person_24_regular, color: colorScheme.primary),
+                            filled: true,
+                            fillColor: colorScheme.surface,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: colorScheme.outline),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: colorScheme.primary),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: colorScheme.error),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: colorScheme.error),
+                            ),
+                          ),
+                          style: AppTypography.textMediumMedium.copyWith(color: colorScheme.onSurface),
+                          textInputAction: TextInputAction.next,
+                          keyboardType: TextInputType.emailAddress,
+                          autofillHints: const [AutofillHints.username, AutofillHints.email],
+                          onEditingComplete: _passwordFocusNode.requestFocus,
+                        ),
+                        const SizedBox(height: 16),
+
+                        TextFormField(
+                          controller: _passwordController,
+                          focusNode: _passwordFocusNode,
+                          decoration: InputDecoration(
+                            hintText: 'Password',
+                            prefixIcon: Icon(FluentIcons.lock_closed_24_regular, color: colorScheme.primary),
+                            suffixIcon: IconButton(
+                              onPressed: () {
+                                setState(() {
+                                  _obscurePassword = !_obscurePassword;
+                                });
+                              },
+                              icon: Icon(
+                                _obscurePassword ? FluentIcons.eye_24_regular : FluentIcons.eye_off_24_regular,
+                                color: colorScheme.primary,
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: colorScheme.surface,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: colorScheme.outline),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: colorScheme.primary),
+                            ),
+                            errorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: colorScheme.error),
+                            ),
+                            focusedErrorBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                              borderSide: BorderSide(color: colorScheme.error),
+                            ),
+                          ),
+                          style: AppTypography.textMediumMedium.copyWith(color: colorScheme.onSurface),
+                          obscureText: _obscurePassword,
+                          textInputAction: TextInputAction.done,
+                          keyboardType: TextInputType.visiblePassword,
+                          autofillHints: const [AutofillHints.password],
+                          onEditingComplete: () {
+                            if (_showAuthCodeField) {
+                              _authCodeFocusNode.requestFocus();
+                            } else {
+                              TextInput.finishAutofillContext();
+                              _login();
+                            }
+                          },
+                        ),
+
+                        if (_showAuthCodeField) ...[
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _authCodeController,
+                            focusNode: _authCodeFocusNode,
+                            decoration: InputDecoration(
+                              hintText: 'Enter code (e.g., ABCD1-ZXC45)',
+                              helperText: 'Enter the code from your email',
+                              prefixIcon: Icon(FluentIcons.key_24_regular, color: colorScheme.primary),
+                              filled: true,
+                              fillColor: colorScheme.surface,
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(color: colorScheme.outline),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(color: colorScheme.primary),
+                              ),
+                              errorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(color: colorScheme.error),
+                              ),
+                              focusedErrorBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(color: colorScheme.error),
+                              ),
+                            ),
+                            style: AppTypography.textMediumMedium.copyWith(color: colorScheme.onSurface),
+                            textInputAction: TextInputAction.done,
+                            keyboardType: TextInputType.text,
+                            textCapitalization: TextCapitalization.characters,
+                            inputFormatters: [
+                              FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\-]')),
+                              const UpperCaseTextFormatter(),
+                            ],
+                            onEditingComplete: () {
+                              TextInput.finishAutofillContext();
+                              _login();
+                            },
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  if (error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child: Text(
+                        switch (error) {
+                          final String e when e.contains('must be a valid handle') => 'Invalid handle',
+                          final String e when e.contains('identifier or password') => 'Invalid handle or password',
+                          _ => error,
+                        },
+                        style: AppTypography.textSmallMedium.copyWith(color: colorScheme.error),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 5),
-                      SizedBox(
-                        width: 340,
-                        child: Wrap(
-                          alignment: WrapAlignment.center,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            const Text(
-                              'Login using your existing ',
-                              style: TextStyle(color: AppColors.white, fontSize: 20, height: 1.7),
-                            ),
-                            SvgPicture.asset('images/ataccount.svg', height: 25, width: 100, package: 'assets'),
-                            const SizedBox(width: 4),
-                            const ATAccountInfoIcon(),
-                          ],
-                        ),
+                    ),
+
+                  if (isLoading)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: CircularProgressIndicator(),
                       ),
-                      const SizedBox(height: 30),
-
-                      AutofillGroup(
-                        child: Column(
-                          children: [
-                            TextField(
-                              controller: _handleController,
-                              focusNode: _handleFocusNode,
-                              decoration: InputDecoration(
-                                hintText: 'Handle',
-                                hintStyle: const TextStyle(color: AppColors.hintText),
-                                prefixIcon: const Icon(FluentIcons.person_24_regular, color: AppColors.primary),
-                                filled: true,
-                                fillColor: AppColors.white.withAlpha(255),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                                contentPadding: const EdgeInsets.all(16),
-                              ),
-                              style: const TextStyle(color: Colors.black),
-                              textInputAction: TextInputAction.next,
-                              keyboardType: TextInputType.emailAddress,
-                              autofillHints: const [AutofillHints.username, AutofillHints.email],
-                              onEditingComplete: _passwordFocusNode.requestFocus,
-                            ),
-                            const SizedBox(height: 16),
-
-                            TextField(
-                              controller: _passwordController,
-                              focusNode: _passwordFocusNode,
-                              decoration: InputDecoration(
-                                hintText: 'Password',
-                                hintStyle: const TextStyle(color: AppColors.hintText),
-                                prefixIcon: const Icon(FluentIcons.lock_closed_24_regular, color: AppColors.primary),
-                                suffixIcon: IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      _obscurePassword = !_obscurePassword;
-                                    });
-                                  },
-                                  icon: Icon(
-                                    _obscurePassword ? FluentIcons.eye_24_regular : FluentIcons.eye_off_24_regular,
-                                    color: AppColors.primary,
-                                  ),
-                                ),
-                                filled: true,
-                                fillColor: AppColors.white.withAlpha(255),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                                contentPadding: const EdgeInsets.all(16),
-                              ),
-                              style: const TextStyle(color: Colors.black),
-                              obscureText: _obscurePassword,
-                              textInputAction: TextInputAction.done,
-                              keyboardType: TextInputType.visiblePassword,
-                              autofillHints: const [AutofillHints.password],
-                              onEditingComplete: () {
-                                if (_showAuthCodeField) {
-                                  _authCodeFocusNode.requestFocus();
-                                } else {
-                                  TextInput.finishAutofillContext();
-                                  _login();
-                                }
-                              },
-                            ),
-
-                            if (_showAuthCodeField) ...[
-                              const SizedBox(height: 16),
-                              TextField(
-                                controller: _authCodeController,
-                                focusNode: _authCodeFocusNode,
-                                decoration: InputDecoration(
-                                  hintText: 'Enter code (e.g., ABCD1-ZXC45)',
-                                  helperText: 'Enter the code from your email',
-                                  prefixIcon: const Icon(FluentIcons.key_24_regular, color: AppColors.white),
-                                  filled: true,
-                                  fillColor: AppColors.white.withAlpha(100),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                  contentPadding: const EdgeInsets.all(16),
-                                ),
-                                style: const TextStyle(color: Colors.black),
-                                textInputAction: TextInputAction.done,
-                                keyboardType: TextInputType.text,
-                                textCapitalization: TextCapitalization.characters,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9\-]')),
-                                  const UpperCaseTextFormatter(),
-                                ],
-                                onEditingComplete: () {
-                                  TextInput.finishAutofillContext();
-                                  _login();
-                                },
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      if (error != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: Text(
-                            switch (error) {
-                              final String e when e.contains('must be a valid handle') => 'Invalid handle',
-                              final String e when e.contains('identifier or password') => 'Invalid handle or password',
-                              _ => error,
-                            },
-                            style: const TextStyle(color: AppColors.error, fontSize: 14),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-
-                      ElevatedButton(
-                        onPressed: isLoading ? null : _login,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          minimumSize: const Size(320, 60),
-                          disabledBackgroundColor: AppColors.primary.withAlpha(128),
-                        ),
-                        child: isLoading
-                            ? const CircularProgressIndicator(color: AppColors.white)
-                            : Text(
-                                _showAuthCodeField ? 'Verify Code' : 'Login',
-                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.normal, color: AppColors.white),
-                              ),
-                      ),
-                    ],
-                  ),
-                ),
+                    )
+                  else
+                    LongButton(
+                      label: _showAuthCodeField ? 'Verify Code' : 'Login',
+                      onPressed: _login,
+                    ),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
