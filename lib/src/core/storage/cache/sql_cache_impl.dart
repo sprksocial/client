@@ -76,7 +76,7 @@ class SQLCacheImpl implements SQLCacheInterface {
         _tablePosts,
         columns: [_columnUri],
         where: '$_columnRecord IS NULL OR $_columnRecord = ? OR $_columnRecord = ? OR TRIM($_columnRecord) = ?',
-        whereArgs: ['null', '', 'null'],
+        whereArgs: ['null', '', ''],
       );
 
       if (nullRecordPosts.isNotEmpty) {
@@ -216,7 +216,7 @@ class SQLCacheImpl implements SQLCacheInterface {
     try {
       await db.execute('CREATE INDEX IF NOT EXISTS idx_last_accessed ON $_tablePosts ($_columnLastAccessed)');
     } catch (e) {
-      // Index might already exist, ignore
+      // Ignore any database errors during index creation
     }
   }
 
@@ -295,7 +295,7 @@ class SQLCacheImpl implements SQLCacheInterface {
         // If the post is corrupted, delete it and re-throw the original exception
         // so calling code can handle it appropriately (e.g., fall back to network)
         await db.delete(_tablePosts, where: '$_columnUri = ?', whereArgs: [uriString]);
-        // Re-throw the original exception so calling code can handle it
+
         rethrow;
       }
     }
