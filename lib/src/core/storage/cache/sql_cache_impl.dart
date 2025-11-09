@@ -58,30 +58,95 @@ class SQLCacheImpl implements SQLCacheInterface {
       onUpgrade: _onUpgrade,
     );
 
-    try {
-      await _cleanupCorruptedPostsInternal(db);
-    } catch (e) {
-      // Silently handle cleanup errors
-    }
+    // Run cleanup in background to avoid blocking startup
+    // Only do quick cleanup (null checks), full validation happens lazily
+    unawaited(_cleanupCorruptedPostsInternal(db, quickOnly: true));
 
     return db;
   }
 
   /// Internal cleanup method that accepts a database instance
-  Future<int> _cleanupCorruptedPostsInternal(Database db) async {
+  /// [quickOnly] if true, only does fast null checks without deserialization
+  Future<int> _cleanupCorruptedPostsInternal(Database db, {bool quickOnly = false}) async {
     var deletedCount = 0;
 
-    // Find all posts with null record field
-    final nullRecordPosts = await db.query(
-      _tablePosts,
-      where: '$_columnRecord IS NULL OR $_columnRecord = ?',
-      whereArgs: ['null'],
-    );
+    try {
+      // Find all posts with null, empty, or 'null' record field (fast check)
+      final nullRecordPosts = await db.query(
+        _tablePosts,
+        columns: [_columnUri],
+        where: '$_columnRecord IS NULL OR $_columnRecord = ? OR $_columnRecord = ? OR TRIM($_columnRecord) = ?',
+        whereArgs: ['null', '', 'null'],
+      );
 
-    if (nullRecordPosts.isNotEmpty) {
-      final urisToDelete = nullRecordPosts.map((map) => map[_columnUri]! as String).toList();
-      final placeholders = List.generate(urisToDelete.length, (index) => '?').join(',');
-      deletedCount = await db.delete(_tablePosts, where: '$_columnUri IN ($placeholders)', whereArgs: urisToDelete);
+      if (nullRecordPosts.isNotEmpty) {
+        final urisToDelete = nullRecordPosts.map((map) => map[_columnUri] as String?).whereType<String>().toList();
+        if (urisToDelete.isNotEmpty) {
+          final placeholders = List.generate(urisToDelete.length, (index) => '?').join(',');
+          deletedCount = await db.delete(_tablePosts, where: '$_columnUri IN ($placeholders)', whereArgs: urisToDelete);
+        }
+      }
+
+      // Full validation is expensive - only do it if not in quick mode
+      // and limit to a reasonable batch size to avoid blocking
+      if (!quickOnly) {
+        // Only check recently accessed posts (most likely to be used)
+        // Limit to 1000 posts to avoid long delays
+        const maxPostsToCheck = 1000;
+        final postsToCheck = await db.query(
+          _tablePosts,
+          columns: [_columnUri, _columnRecord],
+          orderBy: '$_columnLastAccessed DESC',
+          limit: maxPostsToCheck,
+        );
+
+        if (postsToCheck.isEmpty) return deletedCount;
+
+        final corruptedUris = <String>[];
+        const batchSize = 50; // Process in batches to avoid memory issues
+
+        for (var i = 0; i < postsToCheck.length; i += batchSize) {
+          final batch = postsToCheck.skip(i).take(batchSize);
+
+          for (final post in batch) {
+            final uri = post[_columnUri] as String?;
+            if (uri == null) continue;
+
+            final recordJson = post[_columnRecord] as String?;
+            if (recordJson == null || recordJson.isEmpty || recordJson == 'null') {
+              continue; // Already handled by null check above
+            }
+
+            try {
+              final decoded = jsonDecode(recordJson);
+              if (decoded == null || decoded is! Map<String, dynamic>) {
+                corruptedUris.add(uri);
+                continue;
+              }
+              // Try to deserialize to catch nested null issues
+              PostRecord.fromJson(decoded);
+            } catch (e) {
+              // Invalid JSON or deserialization failed
+              corruptedUris.add(uri);
+            }
+          }
+
+          // Delete corrupted posts in batches to avoid large transactions
+          if (corruptedUris.length >= batchSize || i + batchSize >= postsToCheck.length) {
+            if (corruptedUris.isNotEmpty) {
+              final placeholders = List.generate(corruptedUris.length, (index) => '?').join(',');
+              deletedCount += await db.delete(
+                _tablePosts,
+                where: '$_columnUri IN ($placeholders)',
+                whereArgs: corruptedUris,
+              );
+              corruptedUris.clear();
+            }
+          }
+        }
+      }
+    } catch (e) {
+      // Silently handle errors during cleanup
     }
 
     return deletedCount;
@@ -133,6 +198,10 @@ class SQLCacheImpl implements SQLCacheInterface {
     batch.execute('''
       CREATE INDEX idx_feed_posts ON $_tableFeedPostAssociations ($_columnFeedIdentifierFK, $_columnAssociationOrder)
     ''');
+    // Index for faster LRU eviction and ordering queries
+    batch.execute('''
+      CREATE INDEX idx_last_accessed ON $_tablePosts ($_columnLastAccessed)
+    ''');
     await batch.commit(noResult: true);
   }
 
@@ -142,6 +211,12 @@ class SQLCacheImpl implements SQLCacheInterface {
     }
     if (oldVersion < 3) {
       await db.execute('ALTER TABLE $_tablePosts ADD COLUMN $_columnMedia TEXT');
+    }
+    // Add index for performance (idempotent - will fail silently if exists)
+    try {
+      await db.execute('CREATE INDEX IF NOT EXISTS idx_last_accessed ON $_tablePosts ($_columnLastAccessed)');
+    } catch (e) {
+      // Index might already exist, ignore
     }
   }
 
@@ -213,7 +288,17 @@ class SQLCacheImpl implements SQLCacheInterface {
     final db = await database;
     final List<Map<String, dynamic>> maps = await db.query(_tablePosts, where: '$_columnUri = ?', whereArgs: [uriString]);
 
-    if (maps.isNotEmpty) return _mapToPostView(maps.first);
+    if (maps.isNotEmpty) {
+      try {
+        return _mapToPostView(maps.first);
+      } catch (e) {
+        // If the post is corrupted, delete it and re-throw the original exception
+        // so calling code can handle it appropriately (e.g., fall back to network)
+        await db.delete(_tablePosts, where: '$_columnUri = ?', whereArgs: [uriString]);
+        // Re-throw the original exception so calling code can handle it
+        rethrow;
+      }
+    }
 
     throw Exception('Post not found in cache');
   }
@@ -286,31 +371,73 @@ class SQLCacheImpl implements SQLCacheInterface {
   PostView _mapToPostView(Map<String, dynamic> map) {
     final recordJson = map[_columnRecord] as String?;
 
-    if (recordJson == null) {
-      throw Exception('Post has null record in cache: ${map[_columnUri]}');
+    if (recordJson == null || recordJson.isEmpty || recordJson == 'null') {
+      throw Exception('Post has null or invalid record in cache: ${map[_columnUri]}');
+    }
+
+    // Decode and validate record JSON
+    final recordDecoded = jsonDecode(recordJson);
+    if (recordDecoded == null || recordDecoded is! Map<String, dynamic>) {
+      throw Exception('Post record is not a valid Map in cache: ${map[_columnUri]}');
+    }
+
+    // Decode and validate author JSON
+    final authorJson = map[_columnAuthor] as String?;
+    if (authorJson == null || authorJson.isEmpty || authorJson == 'null') {
+      throw Exception('Post has null or invalid author in cache: ${map[_columnUri]}');
+    }
+    final authorDecoded = jsonDecode(authorJson);
+    if (authorDecoded == null || authorDecoded is! Map<String, dynamic>) {
+      throw Exception('Post author is not a valid Map in cache: ${map[_columnUri]}');
+    }
+
+    // Try to deserialize the record, catching type cast errors from nested null values
+    PostRecord postRecord;
+    try {
+      postRecord = PostRecord.fromJson(recordDecoded);
+    } catch (e) {
+      throw Exception(
+        'Post record has invalid nested structure in cache (likely null required fields): ${map[_columnUri]}. Error: $e',
+      );
     }
 
     return PostView(
       uri: AtUri.parse(map[_columnUri] as String),
       cid: map[_columnString] as String,
-      author: ProfileViewBasic.fromJson(jsonDecode(map[_columnAuthor] as String) as Map<String, dynamic>),
-      record: PostRecord.fromJson(jsonDecode(recordJson) as Map<String, dynamic>),
+      author: ProfileViewBasic.fromJson(authorDecoded),
+      record: postRecord,
       isRepost: (map[_columnIsRepost] as int) == 1,
       indexedAt: DateTime.parse(map[_columnIndexedAt] as String),
       likeCount: map[_columnLikeCount] as int?,
       replyCount: map[_columnReplyCount] as int?,
       repostCount: map[_columnRepostCount] as int?,
       quoteCount: map[_columnQuoteCount] as int?,
-      labels: map[_columnLabels] != null
-          ? (jsonDecode(map[_columnLabels] as String) as List<dynamic>)
-                .map((e) => Label.fromJson(e as Map<String, dynamic>))
-                .toList()
+      labels: map[_columnLabels] != null && map[_columnLabels] != 'null'
+          ? () {
+              final labelsDecoded = jsonDecode(map[_columnLabels] as String);
+              if (labelsDecoded == null || labelsDecoded is! List) {
+                return null;
+              }
+              return labelsDecoded.map((e) => e is Map<String, dynamic> ? Label.fromJson(e) : null).whereType<Label>().toList();
+            }()
           : null,
-      viewer: map[_columnViewer] != null
-          ? Viewer.fromJson(jsonDecode(map[_columnViewer] as String) as Map<String, dynamic>)
+      viewer: map[_columnViewer] != null && map[_columnViewer] != 'null'
+          ? () {
+              final viewerDecoded = jsonDecode(map[_columnViewer] as String);
+              if (viewerDecoded == null || viewerDecoded is! Map<String, dynamic>) {
+                return null;
+              }
+              return Viewer.fromJson(viewerDecoded);
+            }()
           : null,
-      media: map[_columnMedia] != null
-          ? MediaView.fromJson(jsonDecode(map[_columnMedia] as String) as Map<String, dynamic>)
+      media: map[_columnMedia] != null && map[_columnMedia] != 'null'
+          ? () {
+              final mediaDecoded = jsonDecode(map[_columnMedia] as String);
+              if (mediaDecoded == null || mediaDecoded is! Map<String, dynamic>) {
+                return null;
+              }
+              return MediaView.fromJson(mediaDecoded);
+            }()
           : null,
     );
   }
