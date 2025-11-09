@@ -2,13 +2,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sparksocial/src/core/config/app_config.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/buttons/long_button.dart';
+import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/auth/providers/onboarding_providers.dart';
-import 'package:sparksocial/src/features/auth/ui/widgets/at_account_dialog.dart';
 
 @RoutePage()
 class RegisterPage extends ConsumerStatefulWidget {
@@ -23,6 +22,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
   final TextEditingController _handleController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _inviteCodeController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   bool _isPasswordVisible = false;
   bool _isRegistering = false;
@@ -82,214 +82,229 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
 
     return Scaffold(
       backgroundColor: colorScheme.surface,
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: Image.asset('branding/gradient.webp', fit: BoxFit.cover, package: 'assets'),
-          ),
-          SafeArea(
-            child: GestureDetector(
-              onTap: () => FocusScope.of(context).unfocus(),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: ListView(
-                  children: [
-                    const SizedBox(height: 24),
-                    Center(child: SvgPicture.asset('images/logo_dark_mode.svg', height: 140, width: 140, package: 'assets')),
-                    const SizedBox(height: 21),
-                    const Center(
-                      child: Text(
-                        'Create Account',
-                        style: TextStyle(color: AppColors.white, fontSize: 26, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
+      body: SafeArea(
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Form(
+              key: _formKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Column(
+                children: [
+                  const SizedBox(height: 24),
+                  Text(
+                    'Create Account',
+                    style: AppTypography.displaySmallBold.copyWith(color: colorScheme.onSurface),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 32),
+                  if (AppConfig.signupsDisabled) ...[
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: colorScheme.errorContainer,
+                        borderRadius: BorderRadius.circular(12),
                       ),
-                    ),
-                    const SizedBox(height: 5),
-                    Center(
-                      child: SizedBox(
-                        width: 340,
-                        child: Wrap(
-                          alignment: WrapAlignment.center,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            const Text('Create your new ', style: TextStyle(color: AppColors.white, fontSize: 20, height: 1.7)),
-                            SvgPicture.asset('images/ataccount.svg', height: 25, width: 100, package: 'assets'),
-                            const SizedBox(width: 4),
-                            const ATAccountInfoIcon(),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 30),
-
-                    if (AppConfig.signupsDisabled) ...[
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: AppColors.error.withAlpha(26), borderRadius: BorderRadius.circular(12)),
-                        child: const Row(
-                          children: [
-                            Icon(FluentIcons.warning_24_regular, color: AppColors.error),
-                            SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                'New account registration is currently disabled while we correct issues in our system. We will try to re-enable it as soon as possible.',
-                                style: TextStyle(color: AppColors.error),
-                              ),
+                      child: Row(
+                        children: [
+                          Icon(FluentIcons.warning_24_regular, color: colorScheme.error),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'New account registration is currently disabled while we correct issues in our system. We will try to re-enable it as soon as possible.',
+                              style: AppTypography.textSmallMedium.copyWith(color: colorScheme.error),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 24),
-                    ],
-                    const Text(
-                      'Email',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.white),
                     ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _emailController,
-                      keyboardType: TextInputType.emailAddress,
-                      decoration: InputDecoration(
-                        hintText: 'Your email address',
-                        hintStyle: const TextStyle(color: AppColors.hintText),
-                        filled: true,
-                        fillColor: AppColors.white.withAlpha(255),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                        prefixIcon: const Icon(FluentIcons.mail_24_regular, color: AppColors.primary),
-                        contentPadding: const EdgeInsets.all(16),
-                      ),
-                      style: const TextStyle(color: Colors.black),
-                      onChanged: (_) => setState(() {}),
-                    ),
-
                     const SizedBox(height: 24),
-                    const Text(
-                      'Username',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.white),
+                  ],
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: InputDecoration(
+                      hintText: 'Your email address',
+                      prefixIcon: Icon(FluentIcons.mail_24_regular, color: colorScheme.primary),
+                      filled: true,
+                      fillColor: colorScheme.surface,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: colorScheme.outline),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: colorScheme.primary),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: colorScheme.error),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: colorScheme.error),
+                      ),
                     ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _handleController,
-                      decoration: InputDecoration(
-                        hintText: 'username',
-                        hintStyle: const TextStyle(color: AppColors.hintText),
-                        filled: true,
-                        fillColor: AppColors.white.withAlpha(255),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                        prefixIcon: const Icon(FluentIcons.mention_24_regular, color: AppColors.primary),
-                        suffixIcon: Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: Center(
-                            widthFactor: 1,
-                            child: Text('.sprk.so', style: TextStyle(fontSize: 16, color: colorScheme.primary)),
+                    style: AppTypography.textMediumMedium.copyWith(color: colorScheme.onSurface),
+                    onChanged: (_) => setState(() {}),
+                  ),
+
+                  const SizedBox(height: 32),
+                  TextFormField(
+                    controller: _handleController,
+                    decoration: InputDecoration(
+                      hintText: 'username',
+                      prefixIcon: Icon(FluentIcons.mention_24_regular, color: colorScheme.primary),
+                      suffixIcon: Padding(
+                        padding: const EdgeInsets.only(right: 16),
+                        child: Center(
+                          widthFactor: 1,
+                          child: Text(
+                            '.sprk.so',
+                            style: AppTypography.textMediumMedium.copyWith(color: colorScheme.primary),
                           ),
                         ),
-                        contentPadding: const EdgeInsets.all(16),
                       ),
-                      style: const TextStyle(color: Colors.black),
-                      onChanged: (_) => setState(() {}),
+                      filled: true,
+                      fillColor: colorScheme.surface,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: colorScheme.outline),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: colorScheme.primary),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: colorScheme.error),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: colorScheme.error),
+                      ),
                     ),
+                    style: AppTypography.textMediumMedium.copyWith(color: colorScheme.onSurface),
+                    onChanged: (_) => setState(() {}),
+                  ),
 
-                    const SizedBox(height: 24),
-
-                    const Text(
-                      'Password',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: AppColors.white),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _passwordController,
-                      obscureText: !_isPasswordVisible,
-                      decoration: InputDecoration(
-                        hintText: 'Your password',
-                        hintStyle: const TextStyle(color: AppColors.hintText),
-                        filled: true,
-                        fillColor: AppColors.white.withAlpha(255),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-                        prefixIcon: const Icon(FluentIcons.key_24_regular, color: AppColors.primary),
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _isPasswordVisible = !_isPasswordVisible;
-                            });
-                          },
-                          icon: Icon(
-                            _isPasswordVisible ? FluentIcons.eye_off_24_regular : FluentIcons.eye_24_regular,
-                            color: AppColors.primary,
-                          ),
+                  const SizedBox(height: 24),
+                  const SizedBox(height: 8),
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: !_isPasswordVisible,
+                    decoration: InputDecoration(
+                      hintText: 'Your password',
+                      prefixIcon: Icon(FluentIcons.key_24_regular, color: colorScheme.primary),
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          setState(() {
+                            _isPasswordVisible = !_isPasswordVisible;
+                          });
+                        },
+                        icon: Icon(
+                          _isPasswordVisible ? FluentIcons.eye_off_24_regular : FluentIcons.eye_24_regular,
+                          color: colorScheme.primary,
                         ),
-                        contentPadding: const EdgeInsets.all(16),
                       ),
-                      style: const TextStyle(color: Colors.black),
-                      onChanged: (_) => setState(() {}),
+                      filled: true,
+                      fillColor: colorScheme.surface,
+                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: colorScheme.outline),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: colorScheme.primary),
+                      ),
+                      errorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: colorScheme.error),
+                      ),
+                      focusedErrorBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                        borderSide: BorderSide(color: colorScheme.error),
+                      ),
                     ),
+                    style: AppTypography.textMediumMedium.copyWith(color: colorScheme.onSurface),
+                    onChanged: (_) => setState(() {}),
+                  ),
 
-                    const SizedBox(height: 14),
+                  const SizedBox(height: 14),
 
-                    if (_errorMessage != null) ...[
-                      const SizedBox(height: 24),
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: AppColors.error.withAlpha(26), borderRadius: BorderRadius.circular(12)),
-                        child: Row(
-                          children: [
-                            const Icon(FluentIcons.warning_24_regular, color: AppColors.error),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(_errorMessage!, style: const TextStyle(color: AppColors.error)),
+                  if (_errorMessage != null) ...[
+                    const SizedBox(height: 24),
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: colorScheme.errorContainer,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(FluentIcons.warning_24_regular, color: colorScheme.error),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: AppTypography.textSmallMedium.copyWith(color: colorScheme.error),
                             ),
-                          ],
-                        ),
-                      ),
-                    ],
-
-                    const SizedBox(height: 40),
-
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                          minimumSize: const Size(0, 60),
-                        ),
-                        onPressed: _isFormValid() && !_isRegistering ? _register : null,
-                        child: _isRegistering
-                            ? const CircularProgressIndicator(color: AppColors.white)
-                            : const Text(
-                                'Create Account',
-                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.normal, color: AppColors.white),
-                              ),
-                      ),
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('Already have an account?', style: TextStyle(color: AppColors.white)),
-                        TextButton(
-                          onPressed: () => context.router.push(const LoginRoute()),
-                          child: const Text(
-                            'Sign in',
-                            style: TextStyle(color: AppColors.white, fontWeight: FontWeight.bold),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ],
-                ),
+
+                  const SizedBox(height: 40),
+
+                  if (_isRegistering)
+                    const Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: CircularProgressIndicator(),
+                      ),
+                    )
+                  else
+                    LongButton(
+                      label: 'Create Account',
+                      onPressed: _isFormValid() ? _register : null,
+                    ),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Already have an account?',
+                        style: AppTypography.textMediumMedium.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      TextButton(
+                        onPressed: () => context.router.push(const LoginRoute()),
+                        child: Text(
+                          'Sign in',
+                          style: AppTypography.textMediumBold.copyWith(
+                            color: colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
