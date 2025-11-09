@@ -156,8 +156,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     onChanged: (_) => setState(() {}),
                   ),
 
-                  const SizedBox(height: 24),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 32),
                   TextFormField(
                     controller: _handleController,
                     decoration: InputDecoration(
