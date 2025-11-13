@@ -869,22 +869,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1+1"
-  imgly_camera:
-    dependency: "direct main"
-    description:
-      name: imgly_camera
-      sha256: "8615ee58667550dce32c36196bf6917f54ba57d75f0c864ced937f22f16dce56"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.53.0"
-  imgly_editor:
-    dependency: "direct main"
-    description:
-      name: imgly_editor
-      sha256: "73f3685371e533e785ae27d873c4865b4ec13d610ff055091f4effe91d1a9cf9"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.53.0"
   inspector:
     dependency: transitive
     description:
@@ -1216,9 +1200,11 @@ packages:
   pro_video_editor:
     dependency: "direct main"
     description:
-      path: "../pro_video_editor"
-      relative: true
-    source: path
+      path: "."
+      ref: dev
+      resolved-ref: "31a99dc262dad07756e206dc6299d7b7c4981436"
+      url: "https://github.com/sprksocial/pro_video_editor.git"
+    source: git
     version: "0.3.0"
   pub_semver:
     dependency: transitive

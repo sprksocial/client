@@ -45,8 +45,6 @@ dependencies:
   pool: ^1.5.0
   collection: ^1.19.1
   carousel_slider: ^5.0.0
-  imgly_editor: ^1.53.0
-  imgly_camera: ^1.53.0
   web_socket_channel: ^3.0.3
   any_link_preview: ^3.0.3
   better_player_plus: ^1.0.8
@@ -63,8 +61,9 @@ dependencies:
   flutter_colorpicker: ^1.1.0
 
   pro_video_editor:
-    path: "../pro_video_editor"
-
+    git:
+      url: https://github.com/sprksocial/pro_video_editor.git
+      ref: dev
 
 dev_dependencies:
   flutter_test:

@@ -256,7 +256,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     final directory = await getTemporaryDirectory();
     final now = DateTime.now().millisecondsSinceEpoch;
     _outputPath = await ProVideoEditor.instance.renderVideoToFile(
-      '${directory.path}/my_video_$now.mp4',
+      '${directory.path}/spark_edited_$now.mp4',
       exportModel,
     );
   }
@@ -270,14 +270,11 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       return;
     }
     if (_outputPath != null && mounted) {
-      final timestamp = DateTime.now().millisecondsSinceEpoch;
-      final filename = 'spark_edited_$timestamp.mp4';
       Navigator.pop(
         context,
         XFile(
           _outputPath!,
           mimeType: 'video/mp4',
-          name: filename,
         ),
       );
       _outputPath = null;

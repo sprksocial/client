@@ -35,7 +35,6 @@ class ProfilePage extends ConsumerStatefulWidget {
 class _ProfilePageState extends ConsumerState<ProfilePage> {
   late final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ProfilePage');
   late final IdentityRepository _identityRepository = GetIt.instance<IdentityRepository>();
-  // TODO: replace with pro_video_editor camera/editor integration
 
   @override
   void dispose() {

@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 
 /// A dialog that displays real-time export progress for video generation.
@@ -17,8 +15,8 @@ class VideoProgressAlert extends StatelessWidget {
   Widget build(BuildContext context) {
     return Stack(
       children: [
-        ModalBarrier(
-          onDismiss: kDebugMode ? LoadingDialog.instance.hide : null,
+        const ModalBarrier(
+          dismissible: false,
           color: Colors.black54,
         ),
         Center(
