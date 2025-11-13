@@ -50,7 +50,9 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.file(File(widget.imageFile), width: 220, height: 220, fit: BoxFit.cover),
+                child: widget.imageFile.isEmpty
+                    ? const SizedBox.shrink()
+                    : Image.file(File(widget.imageFile), width: 220, height: 220, fit: BoxFit.cover),
               ),
               const SizedBox(height: 20),
               Container(
