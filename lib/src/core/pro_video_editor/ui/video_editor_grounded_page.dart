@@ -7,21 +7,23 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/preview_video.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_editor_configs_builder.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_initializing_widget.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_player_widget.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:video_player/video_player.dart';
 
 @RoutePage()
 class VideoEditorGroundedPage extends StatefulWidget {
   const VideoEditorGroundedPage({
     required this.video,
+    this.storyMode = false,
     super.key,
   });
 
   /// Input video to be edited.
   final EditorVideo video;
+  final bool storyMode;
 
   @override
   State<VideoEditorGroundedPage> createState() => _VideoEditorGroundedPageState();
@@ -70,8 +72,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
 
   String? _outputPath;
 
-  /// The duration it took to generate the exported video.
-  Duration _videoGenerationTime = Duration.zero;
   late VideoPlayerController _videoController;
 
   final _taskId = DateTime.now().microsecondsSinceEpoch.toString();
@@ -229,8 +229,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   /// Applies blur, color filters, cropping, rotation, flipping, and trimming
   /// before exporting using FFmpeg. Measures and stores the generation time.
   Future<void> generateVideo(CompleteParameters parameters) async {
-    final stopwatch = Stopwatch()..start();
-
     unawaited(_videoController.pause());
 
     final exportModel = RenderVideoModel(
@@ -263,33 +261,22 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       '${directory.path}/my_video_$now.mp4',
       exportModel,
     );
-    _videoGenerationTime = stopwatch.elapsed;
   }
 
-  /// Closes the video editor and opens a preview screen if a video was
-  /// exported.
+  /// Closes the video editor and opens the review screen if a video was exported.
   ///
-  /// If [_outputPath] is available, it navigates to [PreviewVideo].
-  /// Afterwards, it pops the current editor page.
+  /// If [_outputPath] is available, navigate to [VideoReviewRoute]. After returning
+  /// from review, pop this editor page.
   Future<void> onCloseEditor(EditorMode editorMode) async {
     if (editorMode != EditorMode.main) return Navigator.pop(context);
     if (_outputPath != null) {
-      await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => PreviewVideo(
-            filePath: _outputPath!,
-            generationTime: _videoGenerationTime,
-          ),
-        ),
-      );
+      await context.router.push(VideoReviewRoute(videoPath: _outputPath!, storyMode: widget.storyMode));
       _outputPath = null;
+      if (mounted) Navigator.pop(context);
     } else {
       return Navigator.pop(context);
     }
   }
-
-  // Emoji picker columns are handled by default style; no custom calculation needed after refactor.
 
   @override
   Widget build(BuildContext context) {

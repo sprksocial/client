@@ -5,21 +5,26 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:imgly_editor/imgly_editor.dart';
-import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/posting/providers/video_upload_provider.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:video_player/video_player.dart';
 
 @RoutePage()
 class VideoReviewPage extends ConsumerStatefulWidget {
-  const VideoReviewPage({required this.editorResult, required this.storyMode, super.key});
-  final EditorResult editorResult;
+  const VideoReviewPage({
+    required this.videoPath,
+    required this.storyMode,
+    super.key,
+  });
+
+  /// Local path to a rendered video (pro_video_editor flow)
+  final String videoPath;
+
   final bool storyMode;
 
   @override
@@ -30,20 +35,31 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
   final TextEditingController _descriptionController = TextEditingController();
   bool _isPosting = false;
   String _videoAltText = '';
-  late EditorResult _editorResult;
   late XFile _video;
+  VideoPlayerController? _player;
 
   @override
   void initState() {
     super.initState();
-    _editorResult = widget.editorResult;
-    _video = XFile(Uri.parse(widget.editorResult.artifact!).toFilePath(windows: false));
+    _video = XFile(widget.videoPath);
+    _initPlayer();
   }
 
   @override
   void dispose() {
     _descriptionController.dispose();
+    _player?.dispose();
     super.dispose();
+  }
+
+  Future<void> _initPlayer() async {
+    final c = VideoPlayerController.file(File(_video.path));
+    await c.initialize();
+    await c.setLooping(true);
+    await c.setVolume(1);
+    if (!mounted) return;
+    setState(() => _player = c);
+    c.play();
   }
 
   Future<void> _editAltText() async {
@@ -51,7 +67,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
     final result = await showDialog<String>(
       context: context,
       builder: (context) => AltTextEditorDialog(
-        imageFile: Uri.parse(_editorResult.artifact!).toFilePath(windows: false),
+        imageFile: '',
         initialAltText: initialText,
       ),
     );
@@ -151,56 +167,8 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(12),
                             child: AspectRatio(
-                              aspectRatio: 1,
-                              child: GestureDetector(
-                                onTap: () async {
-                                  final imgly = GetIt.I<IMGLYRepository>();
-                                  final handle = ref.read(sessionProvider)?.handle;
-                                  final newResult = await imgly.openVideoEditor(
-                                    userID: handle,
-                                    source: Source.fromScene(_editorResult.scene!),
-                                  );
-                                  if (newResult != null) {
-                                    setState(() {
-                                      _editorResult = newResult;
-                                      _video = XFile(Uri.parse(newResult.artifact!).toFilePath(windows: false));
-                                    });
-                                  }
-                                },
-                                child: Container(
-                                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(8),
-                                    image: DecorationImage(
-                                      image: FileImage(
-                                        File(Uri.tryParse(_editorResult.thumbnail ?? '')?.toFilePath(windows: false) ?? ''),
-                                      ),
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 8,
-                            left: 8,
-                            child: Container(
-                              padding: const EdgeInsets.all(4),
-                              decoration: BoxDecoration(
-                                color: Colors.black.withAlpha(150),
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                              child: const Row(
-                                children: [
-                                  Icon(Icons.edit, color: Colors.white, size: 16),
-                                  SizedBox(width: 4),
-                                  Text(
-                                    'Tap to edit',
-                                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),
-                                  ),
-                                ],
-                              ),
+                              aspectRatio: _player?.value.aspectRatio == 0 || _player == null ? 1 : _player!.value.aspectRatio,
+                              child: _player == null ? const Center(child: CircularProgressIndicator()) : VideoPlayer(_player!),
                             ),
                           ),
                           // ALT button overlay (bottom right)
