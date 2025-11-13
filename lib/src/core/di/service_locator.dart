@@ -2,8 +2,6 @@ import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository_impl.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository_impl.dart';
-import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
-import 'package:sparksocial/src/core/imgly/imgly_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
@@ -12,6 +10,8 @@ import 'package:sparksocial/src/core/network/atproto/data/repositories/story_rep
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository_xrpc.dart';
 import 'package:sparksocial/src/core/network/xrpc/service_auth_helper.dart';
+import 'package:sparksocial/src/core/pro_video_editor/pro_video_editor_repository.dart';
+import 'package:sparksocial/src/core/pro_video_editor/pro_video_editor_repository_impl.dart';
 import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
@@ -33,8 +33,6 @@ final GetIt sl = GetIt.instance;
 Future<void> initServiceLocator() async {
   // Register LogService
   sl.registerSingleton<LogService>(LogService());
-
-  sl.registerLazySingleton<IMGLYRepository>(IMGLYRepositoryImpl.new);
 
   // Register storage dependencies
   // Initialize storage manager
@@ -87,4 +85,7 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton<OnboardingRepository>(
     () => OnboardingRepositoryImpl(repoRepository: sl<SprkRepository>().repo, authRepository: sl<AuthRepository>()),
   );
+
+  // Register ProVideoEditorRepository (image/video editing abstraction)
+  sl.registerSingleton<ProVideoEditorRepository>(const ProVideoEditorRepositoryImpl());
 }

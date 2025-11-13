@@ -2,9 +2,10 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/video_editor_grounded_page.dart';
+import 'package:sparksocial/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 
 /// Centralized factories for the create media actions used across the app.
@@ -35,14 +36,15 @@ class CreateMediaActions {
       );
       if (pickedVideo != null && context.mounted) {
         final editorVideo = EditorVideo.file(File(pickedVideo.path));
-        await Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => VideoEditorGroundedPage(
-              video: editorVideo,
+        final editedVideo = await GetIt.I<ProVideoEditorRepository>().openVideoEditor(context, editorVideo);
+        if (editedVideo != null && context.mounted) {
+          await context.router.push(
+            VideoReviewRoute(
+              videoPath: editedVideo.path,
               storyMode: storyMode,
             ),
-          ),
-        );
+          );
+        }
       }
     };
   }

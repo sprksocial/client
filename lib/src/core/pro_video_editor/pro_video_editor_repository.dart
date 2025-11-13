@@ -1,5 +1,7 @@
 import 'dart:typed_data';
 
+import 'package:flutter/widgets.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 
 /// Abstraction over the pro_video_editor plugin.
@@ -27,4 +29,16 @@ abstract class ProVideoEditorRepository {
   /// The caller is responsible to pass the same [RenderVideoModel.id] or
   /// [ThumbnailConfigs.id]/[KeyFramesConfigs.id].
   Stream<ProgressModel> progressStream();
+
+  /// Opens the ProImageEditor UI to edit the given [source] image and returns
+  /// an edited image file when the editor is closed.
+  ///
+  /// Returns `null` if the user cancels without completing an edit.
+  Future<XFile?> openImageEditor(BuildContext context, XFile source);
+
+  /// Opens the ProVideoEditor UI to edit the given [video] and returns
+  /// an edited video file when the editor is closed.
+  ///
+  /// Returns `null` if the user cancels without completing an edit.
+  Future<XFile?> openVideoEditor(BuildContext context, EditorVideo video);
 }

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
@@ -10,20 +11,17 @@ import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_editor_configs_builder.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_initializing_widget.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_player_widget.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:video_player/video_player.dart';
 
 @RoutePage()
 class VideoEditorGroundedPage extends StatefulWidget {
   const VideoEditorGroundedPage({
     required this.video,
-    this.storyMode = false,
     super.key,
   });
 
   /// Input video to be edited.
   final EditorVideo video;
-  final bool storyMode;
 
   @override
   State<VideoEditorGroundedPage> createState() => _VideoEditorGroundedPageState();
@@ -263,18 +261,28 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     );
   }
 
-  /// Closes the video editor and opens the review screen if a video was exported.
+  /// Closes the video editor and returns the edited video file if one was exported.
   ///
-  /// If [_outputPath] is available, navigate to [VideoReviewRoute]. After returning
-  /// from review, pop this editor page.
+  /// Returns `XFile` if [_outputPath] is available, otherwise returns `null`.
   Future<void> onCloseEditor(EditorMode editorMode) async {
-    if (editorMode != EditorMode.main) return Navigator.pop(context);
-    if (_outputPath != null) {
-      await context.router.push(VideoReviewRoute(videoPath: _outputPath!, storyMode: widget.storyMode));
+    if (editorMode != EditorMode.main) {
+      Navigator.pop(context);
+      return;
+    }
+    if (_outputPath != null && mounted) {
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final filename = 'spark_edited_$timestamp.mp4';
+      Navigator.pop(
+        context,
+        XFile(
+          _outputPath!,
+          mimeType: 'video/mp4',
+          name: filename,
+        ),
+      );
       _outputPath = null;
-      if (mounted) Navigator.pop(context);
     } else {
-      return Navigator.pop(context);
+      Navigator.pop(context);
     }
   }
 
