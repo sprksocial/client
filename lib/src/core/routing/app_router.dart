@@ -117,6 +117,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: VideoReviewRoute.page, path: '/video-review'),
     AutoRoute(page: ImageReviewRoute.page, path: '/image-review'),
     AutoRoute(page: VideoEditorGroundedRoute.page, path: '/video-editor-grounded'),
+    AutoRoute(page: RecordingRoute.page, path: '/recording'),
 
     // Stories pages
     AutoRoute(

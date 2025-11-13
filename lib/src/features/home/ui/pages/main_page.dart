@@ -29,7 +29,7 @@ class _MainPageState extends ConsumerState<MainPage> {
   void _showCreateMenu(BuildContext context) {
     showCreateMediaSheet(
       context,
-      // onRecord: CreateMediaActions.onRecord(context, storyMode: false),
+      onRecord: CreateMediaActions.onRecord(context, storyMode: false),
       onUploadVideo: CreateMediaActions.onUploadVideo(context, storyMode: false),
       onUploadImages: CreateMediaActions.onUploadImages(context, storyMode: false),
     );

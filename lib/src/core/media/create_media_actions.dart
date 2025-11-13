@@ -16,14 +16,10 @@ class CreateMediaActions {
   const CreateMediaActions._();
 
   /// Record flow: camera capture -> editor -> review.
-  /// Currently a placeholder until camera integration is implemented.
   static VoidCallback onRecord(BuildContext context, {required bool storyMode}) {
     return () async {
-      // TODO: Implement camera capture integrated with pro_video_editor
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Recording coming soon')),
-      );
+      await context.router.push(RecordingRoute(storyMode: storyMode));
     };
   }
 
