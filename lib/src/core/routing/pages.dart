@@ -1,3 +1,4 @@
+export 'package:sparksocial/src/core/pro_video_editor/ui/video_editor_grounded_page.dart';
 export 'package:sparksocial/src/features/auth/ui/pages/auth_prompt_page.dart';
 export 'package:sparksocial/src/features/auth/ui/pages/login_page.dart';
 export 'package:sparksocial/src/features/auth/ui/pages/onboarding_page.dart';

@@ -58,6 +58,13 @@ dependencies:
   assets:
     path: assets
   posthog_flutter: ^5.6.0
+  pro_image_editor: ^12.0.0-beta.4
+  google_fonts: ^6.3.2
+  flutter_colorpicker: ^1.1.0
+
+  pro_video_editor:
+    path: "../pro_video_editor"
+
 
 dev_dependencies:
   flutter_test:

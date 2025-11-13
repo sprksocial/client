@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:imgly_editor/imgly_editor.dart';
+import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:sparksocial/src/core/design_system/components/organisms/bottom_nav_bar.dart';
 import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
@@ -70,18 +73,15 @@ class _MainPageState extends ConsumerState<MainPage> {
                   leading: Icon(Icons.videocam, color: colorScheme.onSurface),
                   title: Text('Upload Video', style: TextStyle(color: colorScheme.onSurface)),
                   onTap: () async {
-                    // pick video -> open editor -> video review page -> post page
+                    // pick video -> open pro_video_editor page
                     final pickedVideo = await ImagePicker().pickVideo(
                       source: ImageSource.gallery,
                       maxDuration: const Duration(seconds: 180),
                     );
                     if (pickedVideo != null && context.mounted) {
-                      final video = await imglyRepository.openVideoEditor(
-                        source: Source.fromVideo('file://${pickedVideo.path}'),
-                      );
-                      if (video != null && context.mounted) {
-                        context.router.push(VideoReviewRoute(editorResult: video, storyMode: false));
-                      }
+                      Navigator.of(context).pop();
+                      final editorVideo = EditorVideo.file(File(pickedVideo.path));
+                      context.router.push(VideoEditorGroundedRoute(video: editorVideo));
                     }
                   },
                 ),
