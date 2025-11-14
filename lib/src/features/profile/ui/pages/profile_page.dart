@@ -71,7 +71,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   Future<void> _handleAddStory(BuildContext context) async {
-    await showCreateMediaSheet(
+    showCreateMediaSheet(
       context,
       onRecord: CreateMediaActions.onRecord(context, storyMode: true),
       onUploadVideo: CreateMediaActions.onUploadVideo(context, storyMode: true),

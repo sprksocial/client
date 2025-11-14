@@ -66,10 +66,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
     final initialText = _videoAltText;
     final result = await showDialog<String>(
       context: context,
-      builder: (context) => AltTextEditorDialog(
-        imageFile: '',
-        initialAltText: initialText,
-      ),
+      builder: (context) => AltTextEditorDialog(initialAltText: initialText),
     );
     if (result == null) return;
     setState(() {
@@ -142,7 +139,8 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
   @override
   Widget build(BuildContext context) {
     final crosspostEnabled = widget.storyMode ? false : ref.watch(settingsProvider).postToBskyEnabled;
-    final ar = _player?.value.aspectRatio == 0 || _player == null ? 1.0 : _player!.value.aspectRatio;
+    final rawAspectRatio = _player?.value.aspectRatio;
+    final ar = rawAspectRatio != null && rawAspectRatio > 0 ? rawAspectRatio : 1.0;
 
     return VideoReviewPageTemplate(
       title: 'Review Video',

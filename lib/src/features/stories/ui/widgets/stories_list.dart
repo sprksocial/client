@@ -23,7 +23,6 @@ class _StoriesListState extends ConsumerState<StoriesList> {
   String? _cursor;
 
   void _showCreateMenu(BuildContext context) {
-    // final handle = ref.read(sessionProvider)?.handle;
     showCreateMediaSheet(
       context,
       onRecord: CreateMediaActions.onRecord(context, storyMode: true),

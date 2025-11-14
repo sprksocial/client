@@ -68,16 +68,6 @@ class _TopOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Align(
-      // decoration: BoxDecoration(
-      //   gradient: LinearGradient(
-      //     begin: Alignment.topCenter,
-      //     end: Alignment.bottomCenter,
-      //     colors: [
-      //       Colors.black.withAlpha(180),
-      //       Colors.transparent,
-      //     ],
-      //   ),
-      // ),
       alignment: Alignment.topCenter,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),

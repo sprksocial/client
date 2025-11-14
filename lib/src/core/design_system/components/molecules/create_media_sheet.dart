@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 
 /// Shows a standardized bottom sheet for creating media: Record, Upload Video, Upload Images.
 /// Only renders the actions whose callbacks are provided (non-null).
-Future<T?> showCreateMediaSheet<T>(
+Future showCreateMediaSheet(
   BuildContext context, {
   VoidCallback? onRecord,
   VoidCallback? onUploadVideo,
   VoidCallback? onUploadImages,
 }) {
   final colorScheme = Theme.of(context).colorScheme;
-  return showModalBottomSheet<T>(
+  return showModalBottomSheet(
     context: context,
     backgroundColor: Colors.transparent,
     builder: (BuildContext context) {

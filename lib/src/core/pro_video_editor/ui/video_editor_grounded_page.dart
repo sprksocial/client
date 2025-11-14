@@ -162,7 +162,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     await Future.wait([
       _videoController.initialize(),
       _videoController.setLooping(false),
-      _videoController.setVolume(_configs.videoEditor.initialMuted ? 0 : 100),
+      _videoController.setVolume(_configs.videoEditor.initialMuted ? 0.0 : 1.0),
       if (_configs.videoEditor.initialPlay) _videoController.play() else _videoController.pause(),
     ]);
     if (!mounted) return;
@@ -304,7 +304,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
               onPause: _videoController.pause,
               onPlay: _videoController.play,
               onMuteToggle: (isMuted) {
-                _videoController.setVolume(isMuted ? 0 : 100);
+                _videoController.setVolume(isMuted ? 0.0 : 1.0);
               },
               onTrimSpanUpdate: (durationSpan) {
                 if (_videoController.value.isPlaying) {
