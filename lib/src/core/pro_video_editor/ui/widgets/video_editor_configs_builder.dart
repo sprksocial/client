@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/build_stickers.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_progress_alert.dart';
 
 class VideoEditorConfigsBuilder {
@@ -251,6 +252,12 @@ class VideoEditorConfigsBuilder {
             fontSize: useMaterialDesign ? 48 : 30,
           ),
           bottomActionBarConfig: const BottomActionBarConfig(enabled: false),
+        ),
+      ),
+      stickerEditor: StickerEditorConfigs(
+        builder: (setLayer, scrollController) => DemoBuildStickers(
+          setLayer: setLayer,
+          scrollController: scrollController,
         ),
       ),
       i18n: const I18n(
