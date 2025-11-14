@@ -42,7 +42,7 @@ class _SprkAppState extends ConsumerState<SprkApp> {
       if (!mounted) return;
 
       final activeFeed = ref.read(settingsProvider).activeFeed;
-      _logger.d('Active feed: ${activeFeed.name}');
+      _logger.d('Active feed: ${activeFeed.config.value}');
 
       final feedNotifier = ref.read(feedNotifierProvider(activeFeed).notifier);
       feedNotifier.loadAndUpdateFirstLoad();

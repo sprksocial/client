@@ -29,8 +29,9 @@ const String _columnLastAccessed = 'lastAccessed'; // INTEGER (timestamp for LRU
 // --- Feed Definitions ---
 const String _tableFeeds = 'feeds';
 const String _columnFeedIdentifier = 'feed_identifier'; // TEXT PRIMARY KEY
-const String _columnFeedName = 'feed_name'; // TEXT
-const String _columnFeedType = 'feed_type'; // TEXT ('uri' or 'hardCoded')
+const String _columnFeedType = 'feed_type'; // TEXT ('timeline' or 'feed')
+const String _columnFeedConfig = 'feed_config'; // TEXT (JSON string of SavedFeed)
+const String _columnFeedView = 'feed_view'; // TEXT (JSON string of GeneratorView)
 
 // --- Feed-Post Associations Table ---
 const String _tableFeedPostAssociations = 'feed_post_associations';
@@ -178,8 +179,9 @@ class SQLCacheImpl implements SQLCacheInterface {
     batch.execute('''
       CREATE TABLE $_tableFeeds (
         $_columnFeedIdentifier TEXT PRIMARY KEY,
-        $_columnFeedName TEXT NOT NULL,
-        $_columnFeedType TEXT NOT NULL
+        $_columnFeedType TEXT NOT NULL,
+        $_columnFeedConfig TEXT NOT NULL,
+        $_columnFeedView TEXT NOT NULL,
       )
     ''');
     // Feed-Post Associations Table
@@ -455,24 +457,20 @@ class SQLCacheImpl implements SQLCacheInterface {
   @override
   Future<void> cacheFeed(Feed feed) async {
     final db = await database;
-    final identifier = feed.identifier;
     await db.insert(_tableFeeds, {
-      _columnFeedIdentifier: identifier,
-      _columnFeedName: feed.name,
-      _columnFeedType: switch (feed) {
-        FeedRecord() => 'record',
-        FeedHardCoded() => 'hardCoded',
-        _ => throw Exception('Unknown Feed type: ${feed.runtimeType}'),
-      },
+      _columnFeedIdentifier: feed.config.id,
+      _columnFeedType: feed.type,
+      _columnFeedConfig: feed.config.toString(),
+      _columnFeedView: feed.view.toString(),
     }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   /// Deletes a feed and all its associations (due to ON DELETE CASCADE).
   @override
   Future<void> deleteFeed(Feed feed) async {
-    final feedIdentifier = feed.identifier;
+    final feedId = feed.config.id;
     final db = await database;
-    await db.delete(_tableFeeds, where: '$_columnFeedIdentifier = ?', whereArgs: [feedIdentifier]);
+    await db.delete(_tableFeeds, where: '$_columnFeedIdentifier = ?', whereArgs: [feedId]);
   }
 
   // --- Feed-Post Association Management ---
@@ -482,11 +480,11 @@ class SQLCacheImpl implements SQLCacheInterface {
   /// Ensures that the PostViews themselves are cached before calling this.
   @override
   Future<void> setPostsForFeed(Feed feed, List<String> postUris) async {
-    final feedIdentifier = feed.identifier;
+    final feedId = feed.config.id;
     final db = await database;
     await db.transaction((txn) async {
       // 1. Clear existing associations for this feed
-      await txn.delete(_tableFeedPostAssociations, where: '$_columnFeedIdentifierFK = ?', whereArgs: [feedIdentifier]);
+      await txn.delete(_tableFeedPostAssociations, where: '$_columnFeedIdentifierFK = ?', whereArgs: [feedId]);
 
       // 2. Add new associations in order
       final batch = txn.batch();
@@ -494,7 +492,7 @@ class SQLCacheImpl implements SQLCacheInterface {
         batch.insert(
           _tableFeedPostAssociations,
           {
-            _columnFeedIdentifierFK: feedIdentifier,
+            _columnFeedIdentifierFK: feedId,
             _columnPostUriFK: postUris[i],
             _columnAssociationOrder: i, // 0-indexed order
           },
@@ -507,12 +505,12 @@ class SQLCacheImpl implements SQLCacheInterface {
 
   @override
   Future<int> getPostCountForFeed(Feed feed) async {
-    final feedIdentifier = feed.identifier;
+    final feedId = feed.config.id;
     final db = await database;
     final countResult = await db.query(
       _tableFeedPostAssociations,
       where: '$_columnFeedIdentifierFK = ?',
-      whereArgs: [feedIdentifier],
+      whereArgs: [feedId],
       columns: ['COUNT(*) as count'],
     );
     return Sqflite.firstIntValue(countResult) ?? 0;
@@ -528,9 +526,9 @@ class SQLCacheImpl implements SQLCacheInterface {
   /// - [offset]: The number of posts to skip before starting to retrieve. Requires [limit] to be set.
   @override
   Future<List<PostView>> getPostsForFeed(Feed feed, {int? limit, int? offset}) async {
-    final feedIdentifier = feed.identifier;
+    final feedId = feed.config.id;
     final db = await database;
-    final arguments = <dynamic>[feedIdentifier];
+    final arguments = <dynamic>[feedId];
     var limitClause = '';
 
     if (limit != null) {
@@ -580,9 +578,9 @@ class SQLCacheImpl implements SQLCacheInterface {
   /// - [offset]: The number of URIs to skip before starting to retrieve. Requires [limit] to be set.
   @override
   Future<List<String>> getUrisForFeed(Feed feed, {int? limit, int? offset}) async {
-    final feedIdentifier = feed.identifier;
+    final feedId = feed.config.id;
     final db = await database;
-    final arguments = <dynamic>[feedIdentifier];
+    final arguments = <dynamic>[feedId];
     var limitClause = '';
 
     if (limit != null) {
@@ -616,7 +614,7 @@ class SQLCacheImpl implements SQLCacheInterface {
   @override
   Future<void> appendPostsToFeed(Feed feed, List<String> postUris) async {
     if (postUris.isEmpty) return;
-    final feedIdentifier = feed.identifier;
+    final feedId = feed.config.id;
     final db = await database;
 
     await db.transaction((txn) async {
@@ -625,7 +623,7 @@ class SQLCacheImpl implements SQLCacheInterface {
         _tableFeedPostAssociations,
         columns: ['MAX($_columnAssociationOrder) as max_order'],
         where: '$_columnFeedIdentifierFK = ?',
-        whereArgs: [feedIdentifier],
+        whereArgs: [feedId],
       );
 
       var currentMaxOrder = -1; // Start before 0 if feed is empty
@@ -637,7 +635,7 @@ class SQLCacheImpl implements SQLCacheInterface {
       final batch = txn.batch();
       for (var i = 0; i < postUris.length; i++) {
         batch.insert(_tableFeedPostAssociations, {
-          _columnFeedIdentifierFK: feedIdentifier,
+          _columnFeedIdentifierFK: feedId,
           _columnPostUriFK: postUris[i],
           _columnAssociationOrder: currentMaxOrder + 1 + i,
         }, conflictAlgorithm: ConflictAlgorithm.replace);
@@ -658,9 +656,9 @@ class SQLCacheImpl implements SQLCacheInterface {
   /// Clears all posts associated with a specific feed.
   @override
   Future<void> clearPostsFromFeed(Feed feed) async {
-    final feedIdentifier = feed.identifier;
+    final feedId = feed.config.id;
     final db = await database;
-    await db.delete(_tableFeedPostAssociations, where: '$_columnFeedIdentifierFK = ?', whereArgs: [feedIdentifier]);
+    await db.delete(_tableFeedPostAssociations, where: '$_columnFeedIdentifierFK = ?', whereArgs: [feedId]);
   }
 
   // --- Cache Eviction ---

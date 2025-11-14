@@ -11,7 +11,6 @@ import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
 import 'package:sparksocial/src/core/config/app_config.dart';
-import 'package:sparksocial/src/core/feed_algorithms/hardcoded_feed_algorithm.dart';
 import 'package:sparksocial/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
@@ -85,21 +84,17 @@ class FeedRepositoryImpl implements FeedRepository {
   @override
   Future<FeedView> getFeed(Feed feed, {int limit = 20, String? cursor}) async {
     _logger.d('Getting feed skeleton for feed: $feed, limit: $limit, cursor: $cursor');
-    switch (feed) {
-      case FeedHardCoded(:final hardCodedFeed):
-        final feedViewFunction = HardCodedFeedAlgorithm.feedViewFromEnum(hardCodedFeed);
-        final feedView = await feedViewFunction(limit: limit, cursor: cursor);
-        // Convert FeedView to FeedSkeleton by extracting URIs
-        return feedView;
-      case FeedRecord():
-        return _client.executeWithRetry(() async {
-          final result = await getFeedView(feed.uri, limit: limit, cursor: cursor);
-          _logger.d('Feed skeleton retrieved successfully');
-          return result;
-        });
-      case _:
-        throw ArgumentError('Invalid feed: $feed');
+    if (feed.view == null) {
+      if (feed.type == 'timeline') {
+        return getTimeline(limit: limit, cursor: cursor);
+      }
+      throw ArgumentError('Invalid feed: $feed');
     }
+    return _client.executeWithRetry(() async {
+      final result = await getFeedView(feed.view!.uri, limit: limit, cursor: cursor);
+      _logger.d('Feed skeleton retrieved successfully');
+      return result;
+    });
   }
 
   @override
@@ -455,6 +450,57 @@ class FeedRepositoryImpl implements FeedRepository {
 
       _logger.d('Feed retrieved successfully: ${result.data.feed.length} posts');
       return result.data;
+    });
+  }
+
+  @override
+  Future<GeneratorView> getFeedGenerator(AtUri feed) async {
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final response = await atproto.get(
+        const NSID('so.sprk.feed.getFeedGenerator'),
+        parameters: {'feed': feed.toString()},
+        headers: {'atproto_proxy': _client.sprkDid},
+        to: GeneratorView.fromJson,
+      );
+      return response.data;
+    });
+  }
+
+  @override
+  Future<Feed> getFeedFromSavedFeed(SavedFeed savedFeed) async {
+    return _client.executeWithRetry(() async {
+      if (savedFeed.type == 'timeline') {
+        return Feed(type: 'timeline', config: savedFeed);
+      }
+      final feedUri = AtUri(savedFeed.value);
+      final view = await getFeedGenerator(feedUri);
+      return Feed(type: 'feed', config: savedFeed, view: view);
+    });
+  }
+
+  @override
+  Future<List<Feed>> getFeedsFromSavedFeeds(List<SavedFeed> savedFeeds) async {
+    return _client.executeWithRetry(() async {
+      if (savedFeeds.isEmpty) {
+        return [];
+      }
+      final feeds = <Feed>[];
+      for (final savedFeed in savedFeeds) {
+        final feed = await getFeedFromSavedFeed(savedFeed);
+        feeds.add(feed);
+      }
+      return feeds;
     });
   }
 

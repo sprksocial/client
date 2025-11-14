@@ -126,7 +126,7 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
               if (index >= 0 && index < feeds.length) {
                 // Use feed identifier as key to preserve state across reordering
                 return KeyedSubtree(
-                  key: ValueKey(feeds[index].identifier),
+                  key: ValueKey(feeds[index].config.id),
                   child: FeedPage(feed: feeds[index]),
                 );
               }

@@ -24,14 +24,16 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
 
-    final tags = settings.feeds.map((feed) => (id: feed.identifier, text: feed.name)).toList();
+    final tags = settings.feeds
+        .map((feed) => (id: feed.config.id, text: feed.view != null ? feed.view!.displayName : 'Following'))
+        .toList();
 
     return FeedsBarTemplate(
       tags: tags,
-      selectedTagId: settings.activeFeed.identifier,
+      selectedTagId: settings.activeFeed.config.id,
       onTagTap: (tagId) {
         final feed = settings.feeds.firstWhere(
-          (f) => f.identifier == tagId,
+          (f) => f.config.id == tagId,
         );
 
         if (settings.activeFeed == feed) {

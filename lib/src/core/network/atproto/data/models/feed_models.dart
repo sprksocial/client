@@ -11,77 +11,52 @@ part 'feed_models.freezed.dart';
 part 'feed_models.g.dart';
 
 /// https://pub.dev/packages/freezed#union-types <= read this to know how to use pattern matching to know the type of the object
+@freezed
+class GeneratorViewerState with _$GeneratorViewerState {
+  @JsonSerializable(explicitToJson: true)
+  const factory GeneratorViewerState({
+    @AtUriConverter() AtUri? like,
+  }) = _GeneratorViewerState;
+  const GeneratorViewerState._();
 
-enum HardCodedFeedEnum {
-  timeline('Following'), // posts from people you follow (bsky/sprk)
-  forYou('For You'), // hardcoded algorithm for trending posts (bsky/sprk). for now, it's just the TheVids feed (bsky)
-  latest('Latest'); // latest sprk posts (sprk)
-
-  const HardCodedFeedEnum(this.name);
-  final String name;
+  factory GeneratorViewerState.fromJson(Map<String, dynamic> json) => _$GeneratorViewerStateFromJson(json);
 }
 
-/// This model will be used in:
-/// - Creating a custom feed
-/// - Editing a custom feed
-///
-/// The CustomFeedCreatorPage will create a CustomFeed and send it to the API.
-///
-/// The CustomFeedPage will need a CustomFeed and will display it.
-///
-/// The CustomFeedEditorPage will edit a CustomFeed and send the changes to the API.
-///
-/// TODO: make this the same as the lexicon (not implemented yet)
 @freezed
-class CustomFeed with _$CustomFeed {
+class GeneratorView with _$GeneratorView {
   @JsonSerializable(explicitToJson: true)
-  const factory CustomFeed({
-    required ProfileViewBasic? creator,
-    @Default('Custom Feed') String name,
-    @Default('Your custom feed') String description,
+  const factory GeneratorView({
+    @AtUriConverter() required AtUri uri,
+    required String cid,
+    required String did,
+    required ProfileViewBasic creator,
+    required String displayName,
+    required DateTime indexedAt,
+    String? description,
     @Default([]) List<Facet> descriptionFacets,
-    @Default([]) List<Label> labels,
+    @UriConverter() Uri? avatar,
     @Default(0) int likeCount,
-    @Default('') String imageUrl,
-    @Default(true) bool isDraft,
-    @Default(false) bool videosOnly,
-    String? did,
-    @AtUriConverter() AtUri? uri,
-    String? cid,
+    @Default(true) bool acceptsInteractions,
+    @Default([]) List<Label> labels,
+    GeneratorViewerState? viewer,
+  }) = _GeneratorView;
+  const GeneratorView._();
 
-    @Default({})
-    Map<String, bool> hashtagPreferences, // hashtag: only show posts with this hashtag || never show posts with this hashtag
-
-    @Default({})
-    Map<String, Map<String, bool>>
-    labelPreferences, // labeler: {label: only show posts with this label || never show posts with this label}
-  }) = _CustomFeed;
-
-  factory CustomFeed.fromJson(Map<String, dynamic> json) => _$CustomFeedFromJson(json);
+  factory GeneratorView.fromJson(Map<String, dynamic> json) => _$GeneratorViewFromJson(json);
 }
 
 /// The feeds that are actually used in the app
-///
-/// Custom Feeds just need a uri, the rest is fetched from the API (if the custom feed is finished, it will be saved in the backend)
-///
-/// HardCoded feeds are "fake" and completely generated in the frontend
 @freezed
 class Feed with _$Feed {
-  factory Feed.fromJson(Map<String, dynamic> json) => _$FeedFromJson(json);
+  @JsonSerializable(explicitToJson: true)
+  factory Feed({
+    required String type,
+    required SavedFeed config,
+    GeneratorView? view,
+  }) = _Feed;
   const Feed._();
-  @JsonSerializable(explicitToJson: true)
-  const factory Feed.record({required String name, @AtUriConverter() required AtUri uri}) = FeedRecord;
 
-  /// HardCoded feeds can be "fake", so they don't have a uri
-  @JsonSerializable(explicitToJson: true)
-  const factory Feed.hardCoded({required HardCodedFeedEnum hardCodedFeed}) = FeedHardCoded;
-
-  String get name {
-    return when(record: (name, did) => name, hardCoded: (hardCodedFeed) => hardCodedFeed.name);
-  }
-
-  String get identifier =>
-      when(record: (name, uri) => uri.toString(), hardCoded: (hardCodedFeed) => 'hardcoded:${hardCodedFeed.name}');
+  factory Feed.fromJson(Map<String, dynamic> json) => _$FeedFromJson(json);
 }
 
 /// Skeleton of a FeedView. Needs to be hydrated.
@@ -248,7 +223,6 @@ class Viewer with _$Viewer {
   const factory Viewer({
     @AtUriConverter() AtUri? repost,
     @AtUriConverter() AtUri? like,
-    @AtUriConverter() AtUri? look,
     bool? threadMuted,
     bool? replyDisabled,
     bool? embeddingDisabled,

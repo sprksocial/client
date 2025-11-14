@@ -1,8 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
+import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_state.dart';
@@ -19,11 +20,13 @@ SettingsRepository settingsRepository(Ref ref) {
 @Riverpod(keepAlive: true)
 class Settings extends _$Settings {
   late final SettingsRepository _repository;
+  late final StorageManager _storageManager;
   late final SparkLogger _logger;
 
   @override
   SettingsState build() {
     _repository = ref.watch(settingsRepositoryProvider);
+    _storageManager = GetIt.instance<StorageManager>();
     _logger = GetIt.instance<LogService>().getLogger('Settings');
 
     // Load settings asynchronously but return a temporary state immediately
@@ -31,8 +34,11 @@ class Settings extends _$Settings {
     Future.microtask(loadSettings);
 
     // Return temporary default state that will be replaced by loadSettings()
-    return const SettingsState(
-      activeFeed: Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latest),
+    return SettingsState(
+      activeFeed: Feed(
+        type: 'timeline',
+        config: SavedFeed(type: 'timeline', value: 'timeline', pinned: true),
+      ),
     );
   }
 
@@ -41,20 +47,33 @@ class Settings extends _$Settings {
     try {
       _logger.d('Loading settings from storage...');
 
-      final feedBlurEnabled = await _repository.getFeedBlurEnabled();
-      final hideAdultContent = await _repository.getHideAdultContent();
-      final feeds = await _repository.getFeeds();
-      final activeFeed = await _repository.getActiveFeed();
-      final postToBskyEnabled = await _repository.getPostToBskyEnabled();
+      // Sync preferences from server (this also saves to local storage)
+      await _repository.getPreferences();
+
+      // Read from local storage
+      final postToBskyEnabled = await _storageManager.preferences.getBool(StorageKeys.postToBskyKey) ?? false;
+
+      // Read feeds from storage
+      final feedsJson = await _storageManager.preferences.getObject<List<Map<String, dynamic>>>(StorageKeys.feedsKey);
+      final feeds = feedsJson?.map(Feed.fromJson).toList() ?? [];
+
+      // Read active feed from storage
+      final activeFeedJson = await _storageManager.preferences.getObject<Map<String, dynamic>>(StorageKeys.activeFeedKey);
+      final activeFeed = activeFeedJson != null
+          ? Feed.fromJson(activeFeedJson)
+          : (feeds.isNotEmpty
+                ? feeds.first
+                : Feed(
+                    type: 'timeline',
+                    config: SavedFeed(type: 'timeline', value: 'timeline', pinned: true),
+                  ));
 
       _logger.d(
-        'Settings loaded - activeFeed: ${activeFeed.name}, feeds: ${feeds.map((f) => f.name).join(', ')}',
+        'Settings loaded - activeFeed: ${activeFeed.config.value}, feeds: ${feeds.map((f) => f.config.value).join(', ')}',
       );
 
       state = SettingsState(
         activeFeed: activeFeed,
-        feedBlurEnabled: feedBlurEnabled,
-        hideAdultContent: hideAdultContent,
         feeds: feeds,
         postToBskyEnabled: postToBskyEnabled,
       );
@@ -66,21 +85,9 @@ class Settings extends _$Settings {
     }
   }
 
-  /// Sets feed blur setting
-  Future<void> setFeedBlur(bool value) async {
-    await _repository.setFeedBlurEnabled(value);
-    state = state.copyWith(feedBlurEnabled: value);
-  }
-
-  /// Sets adult content visibility setting
-  Future<void> setHideAdultContent(bool value) async {
-    await _repository.setHideAdultContent(value);
-    state = state.copyWith(hideAdultContent: value);
-  }
-
   /// Sets Post to Bluesky setting
   Future<void> setPostToBsky(bool value) async {
-    await _repository.setPostToBskyEnabled(value);
+    await _storageManager.preferences.setBool(StorageKeys.postToBskyKey, value);
     state = state.copyWith(postToBskyEnabled: value);
   }
 
@@ -99,18 +106,64 @@ class Settings extends _$Settings {
     }
   }
 
+  /// Converts a Feed to a SavedFeed
+  SavedFeed _feedToSavedFeed(Feed feed) {
+    return feed.config;
+  }
+
+  /// Updates preferences with new feeds list
+  Future<void> _updateFeedsInPreferences(List<Feed> feeds) async {
+    try {
+      // Get current preferences
+      final preferences = await _repository.getPreferences();
+
+      // Convert feeds to SavedFeeds
+      final savedFeeds = feeds.map(_feedToSavedFeed).toList();
+
+      // Find existing savedFeedsPref or create new one
+      final existingPrefs = preferences.preferences;
+      final updatedPrefs = <Preference>[];
+
+      var foundSavedFeedsPref = false;
+      for (final pref in existingPrefs) {
+        if (pref.mapOrNull(savedFeedsPref: (_) => true) ?? false) {
+          updatedPrefs.add(Preference.savedFeedsPref(items: savedFeeds));
+          foundSavedFeedsPref = true;
+        } else {
+          updatedPrefs.add(pref);
+        }
+      }
+
+      if (!foundSavedFeedsPref) {
+        updatedPrefs.add(Preference.savedFeedsPref(items: savedFeeds));
+      }
+
+      // Update preferences
+      await _repository.putPreferences(Preferences(preferences: updatedPrefs));
+
+      // Update local storage
+      final feedsJson = feeds.map((feed) => feed.toJson()).toList();
+      await _storageManager.preferences.setObject<List<Map<String, dynamic>>>(StorageKeys.feedsKey, feedsJson);
+    } catch (e) {
+      _logger.e('Error updating feeds in preferences: $e');
+      rethrow;
+    }
+  }
+
   /// Adds a feed to feeds list
   Future<void> addFeed(Feed feed) async {
-    if (!state.feeds.contains(feed)) {
-      await _repository.addFeed(feed);
-      state = state.copyWith(feeds: [...state.feeds, feed]);
+    if (!state.feeds.any((f) => f.config.id == feed.config.id)) {
+      final updatedFeeds = [...state.feeds, feed];
+      await _updateFeedsInPreferences(updatedFeeds);
+      state = state.copyWith(feeds: updatedFeeds);
     }
   }
 
   /// Removes a feed from feeds list
   Future<void> removeFeed(Feed feed) async {
-    await _repository.removeFeed(feed);
-    state = state.copyWith(feeds: state.feeds.where((f) => f != feed).toList());
+    final updatedFeeds = state.feeds.where((f) => f.config.id != feed.config.id).toList();
+    await _updateFeedsInPreferences(updatedFeeds);
+    state = state.copyWith(feeds: updatedFeeds);
   }
 
   /// Reorders a feed in feeds list
@@ -122,13 +175,13 @@ class Settings extends _$Settings {
     final updatedList = [...state.feeds];
     final feed = updatedList.removeAt(oldIndex);
     updatedList.insert(actualNewIndex, feed);
-    await _repository.setFeeds(updatedList);
+    await _updateFeedsInPreferences(updatedList);
     state = state.copyWith(feeds: updatedList);
   }
 
   /// Sets selected feed index
   Future<void> setActiveFeed(Feed feed) async {
-    await _repository.setActiveFeed(feed);
+    await _storageManager.preferences.setObject<Map<String, dynamic>>(StorageKeys.activeFeedKey, feed.toJson());
     state = state.copyWith(activeFeed: feed);
   }
 

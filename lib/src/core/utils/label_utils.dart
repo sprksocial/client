@@ -29,10 +29,6 @@ class LabelUtils {
 
     final settingsRepository = GetIt.instance<SettingsRepository>();
 
-
-    final masterBlur = await settingsRepository.getFeedBlurEnabled();
-    if (!masterBlur) return false; // If blur setting is not enabled, blur nothing
-
     for (final label in labels) {
       try {
         final preference = await settingsRepository.getLabelPreference(label.value);
@@ -94,12 +90,11 @@ class LabelUtils {
     if (labels.isEmpty) return false;
 
     final settingsRepository = GetIt.instance<SettingsRepository>();
-    final hideAdultContent = await settingsRepository.getHideAdultContent();
 
     for (final label in labels) {
       try {
         final preference = await settingsRepository.getLabelPreference(label.value);
-        if (preference.setting == Setting.hide || (preference.adultOnly && hideAdultContent)) {
+        if (preference.setting == Setting.hide || preference.adultOnly) {
           return true;
         }
       } catch (e) {

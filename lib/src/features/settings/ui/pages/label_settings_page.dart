@@ -5,7 +5,6 @@ import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
 class LabelSettingsPage extends ConsumerStatefulWidget {
@@ -34,7 +33,7 @@ class _LabelSettingsPageState extends ConsumerState<LabelSettingsPage> {
     try {
       setState(() => _isLoading = true);
 
-      final followedLabelers = await _settingsRepository.getFollowedLabelers();
+      final followedLabelers = await _settingsRepository.getLabelers();
       final preferences = <String, LabelPreference>{};
 
       _logger.d('Loading preferences for ${defaultLabels.length} default labels');
@@ -189,7 +188,6 @@ class _LabelSettingsPageState extends ConsumerState<LabelSettingsPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
-    final settingsState = ref.watch(settingsProvider);
 
     if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
@@ -265,14 +263,6 @@ class _LabelSettingsPageState extends ConsumerState<LabelSettingsPage> {
                     'Label Settings',
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: colorScheme.onSurface),
                   ),
-                  if (settingsState.hideAdultContent)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        'Adult content labels are hidden. Disable "Hide Adult Content" in the Your Feeds tab to show them.',
-                        style: TextStyle(fontSize: 12, color: colorScheme.onSurface.withAlpha(140), fontStyle: FontStyle.italic),
-                      ),
-                    ),
                 ],
               ),
             ),
@@ -318,14 +308,11 @@ class _LabelSettingsPageState extends ConsumerState<LabelSettingsPage> {
                 ),
               )
             else
-              // Filter out labels starting with "!" and optionally adult content
+              // Filter out labels starting with "!"
               ..._labelPreferences.entries
                   .where((entry) {
                     // Always filter out system labels starting with "!"
                     if (entry.key.startsWith('!')) return false;
-
-                    // If hide adult content is enabled, filter out adult-only labels
-                    if (settingsState.hideAdultContent && entry.value.adultOnly) return false;
 
                     return true;
                   })

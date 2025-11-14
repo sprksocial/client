@@ -9,13 +9,7 @@ class SettingsState with _$SettingsState {
   const factory SettingsState({
     required Feed activeFeed,
     @Default(false) bool feedBlurEnabled,
-    @Default(true) bool hideAdultContent,
-    @Default([
-      Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.timeline),
-      Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
-      Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latest),
-    ])
-    List<Feed> feeds,
+    @Default([]) List<Feed> feeds,
     @Default(false) bool postToBskyEnabled,
   }) = _SettingsState;
 }

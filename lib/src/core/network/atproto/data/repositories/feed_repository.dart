@@ -53,6 +53,11 @@ abstract class FeedRepository {
     String? cursor,
   });
 
+  Future<GeneratorView> getFeedGenerator(AtUri feed);
+
+  Future<Feed> getFeedFromSavedFeed(SavedFeed savedFeed);
+  Future<List<Feed>> getFeedsFromSavedFeeds(List<SavedFeed> savedFeeds);
+
   /// Like a post
   ///
   /// [postCid] The String of the post to like

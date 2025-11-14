@@ -5,7 +5,6 @@ import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/feed_algorithms/hardcoded_feed_algorithm.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
@@ -43,9 +42,9 @@ class FeedNotifier extends _$FeedNotifier {
       _feedRepository = GetIt.instance<SprkRepository>().feed;
       _settingsRepository = GetIt.instance<SettingsRepository>();
       _downloadManager = GetIt.instance<DownloadManagerInterface>();
-      _logger = GetIt.instance<LogService>().getLogger('FeedNotifier ${feed.identifier}');
+      _logger = GetIt.instance<LogService>().getLogger('FeedNotifier ${feed.config.id}');
     } else {
-      _logger.d('Build called again for ${feed.identifier}, hasBeenBuilt: $_hasBeenBuilt');
+      _logger.d('Build called again for ${feed.config.id}, hasBeenBuilt: $_hasBeenBuilt');
     }
 
     listenSelf((previous, next) {
@@ -95,21 +94,14 @@ class FeedNotifier extends _$FeedNotifier {
   bool _shouldUseBlueskyAPI() {
     // Determine if this feed should use Bluesky API for post hydration
     switch (_feed) {
-      case FeedHardCoded(:final hardCodedFeed):
-        switch (hardCodedFeed) {
-          case HardCodedFeedEnum.forYou:
-            // For You feed uses Bluesky generator (TheVids)
-            return true;
-          case HardCodedFeedEnum.timeline:
-            // Following feed now uses Spark API timeline
-            return false;
-          case HardCodedFeedEnum.latest:
-            // Latest Sprk feed uses Spark API
-            return false;
-        }
-      case FeedRecord():
-        // Custom feeds are currently Spark-based
+      case Feed(type: 'timeline'):
         return false;
+      case Feed(type: 'feed'):
+        if (_feed.view != null) {
+          return _feed.view!.uri.collection.toString() == 'app.bsky.feed.generator';
+        }
+      case _:
+        throw ArgumentError('Invalid feed type: $_feed');
     }
     return false;
   }
@@ -158,7 +150,7 @@ class FeedNotifier extends _$FeedNotifier {
 
     try {
       final uris = posts.map((post) => post.uri).toList();
-      final followedLabelers = await _settingsRepository.getFollowedLabelers();
+      final followedLabelers = await _settingsRepository.getLabelers();
       List<Label> fetchedLabels;
       try {
         final (cursor: _, labels: labelsFromApi) = await _feedRepository.getLabels(uris, sources: followedLabelers);
@@ -189,37 +181,43 @@ class FeedNotifier extends _$FeedNotifier {
         postsWithMergedLabels.add(post.copyWith(labels: postLabels));
       }
 
-      final extraInfo = LinkedHashMap<AtUri, ({List<Label> postLabels, HardcodedFeedExtraInfo? hardcodedFeedExtraInfo})>.from(
+      final extraInfo = LinkedHashMap<AtUri, ({List<Label> postLabels})>.from(
         state.extraInfo,
       );
 
       for (final newLabel in allLabels) {
         final uri = AtUri.parse(newLabel.uri);
-        extraInfo.update(uri, (value) {
-          final existingLabels = value.postLabels;
+        extraInfo.update(
+          uri,
+          (value) {
+            final existingLabels = value.postLabels;
 
-          if (existingLabels.any((label) => label.value == newLabel.value)) {
-            final existingLabel = existingLabels.firstWhere((label) => label.value == newLabel.value);
+            // if the new label is already in the existing labels, check if it should replace the existing one
+            if (existingLabels.any((label) => label.value == newLabel.value)) {
+              final existingLabel = existingLabels.firstWhere((label) => label.value == newLabel.value);
 
-            if (((newLabel.ver ?? 0) > (existingLabel.ver ?? 0) && newLabel.isNegate) ||
-                existingLabel.exp != null && existingLabel.exp!.isBefore(DateTime.now())) {
-              existingLabels.remove(existingLabel);
-              return (postLabels: [...existingLabels, newLabel], hardcodedFeedExtraInfo: value.hardcodedFeedExtraInfo);
+              // if the new label says that the existing one is negated or expired, replace the existing one
+              if (((newLabel.ver ?? 0) > (existingLabel.ver ?? 0) && newLabel.isNegate) ||
+                  existingLabel.exp != null && existingLabel.exp!.isBefore(DateTime.now())) {
+                existingLabels.remove(existingLabel);
+                return (
+                  postLabels: [...existingLabels, newLabel],
+                );
+              } else {
+                // if the new label is the same as the existing one, do nothing
+                return value;
+              }
             } else {
-              return value;
+              // if the new label is not in the existing labels, add it
+              return (
+                postLabels: [...existingLabels, newLabel],
+              );
             }
-          } else {
-            return (postLabels: [...existingLabels, newLabel], hardcodedFeedExtraInfo: value.hardcodedFeedExtraInfo);
-          }
-        }, ifAbsent: () => (postLabels: [newLabel], hardcodedFeedExtraInfo: null));
-      }
-
-      if (_feed case FeedHardCoded(:final hardCodedFeed)) {
-        final extraInfoGetter = HardCodedFeedAlgorithm.extraInfoFromEnum(hardCodedFeed);
-        if (extraInfoGetter != null) {
-          final newExtraInfos = await extraInfoGetter(uris);
-          extraInfo.updateAll((key, value) => (postLabels: value.postLabels, hardcodedFeedExtraInfo: newExtraInfos[key]));
-        }
+          },
+          ifAbsent: () => (
+            postLabels: [newLabel],
+          ),
+        );
       }
 
       final filteredPosts = await _filterHiddenPosts(postsWithMergedLabels, extraInfo);
@@ -256,26 +254,14 @@ class FeedNotifier extends _$FeedNotifier {
 
   Future<({int count, List<PostView> posts, String? cursor})> fetch({int? limit}) async {
     final pageLimit = limit ?? FeedState.fetchLimit;
-    return switch (_feed) {
-      FeedHardCoded(:final hardCodedFeed) => () async {
-        final feedViewFunction = HardCodedFeedAlgorithm.feedViewFromEnum(hardCodedFeed);
-        final feedView = await feedViewFunction(limit: pageLimit, cursor: state.cursor);
-        final postViews = feedView.feed.map((feedPost) => feedPost.asPost).whereType<PostView>().toList();
-        final filteredPosts = postViews.where((post) => !_seenUris.contains(post.uri)).toList(growable: false);
-        return (count: postViews.length, posts: filteredPosts, cursor: feedView.cursor);
-      }(),
-      FeedRecord() => () async {
-        final skeleton = await _feedRepository.getFeed(_feed, limit: pageLimit, cursor: state.cursor);
-        final fetchedUris = skeleton.feed.map((e) => e.uri).toList();
-        final filteredUris = fetchedUris.where((uri) => !_seenUris.contains(uri)).toList();
-        if (filteredUris.isEmpty) {
-          return (count: skeleton.feed.length, posts: const <PostView>[], cursor: skeleton.cursor);
-        }
-        final posts = await _feedRepository.getPosts(filteredUris, bluesky: _shouldUseBlueskyAPI());
-        return (count: skeleton.feed.length, posts: posts, cursor: skeleton.cursor);
-      }(),
-      _ => throw ArgumentError('Invalid feed type: $_feed'),
-    };
+    final skeleton = await _feedRepository.getFeed(_feed, limit: pageLimit, cursor: state.cursor);
+    final fetchedUris = skeleton.feed.map((e) => e.uri).toList();
+    final filteredUris = fetchedUris.where((uri) => !_seenUris.contains(uri)).toList();
+    if (filteredUris.isEmpty) {
+      return (count: skeleton.feed.length, posts: const <PostView>[], cursor: skeleton.cursor);
+    }
+    final posts = await _feedRepository.getPosts(filteredUris, bluesky: _shouldUseBlueskyAPI());
+    return (count: skeleton.feed.length, posts: posts, cursor: skeleton.cursor);
   }
 
   Future<void> _maybeFetchNextBatch({int? limit, bool replaceExisting = false}) async {
@@ -371,11 +357,10 @@ class FeedNotifier extends _$FeedNotifier {
 
   /// Checks if a post should be hidden based on its labels and user preferences
   Future<bool> _shouldHidePost(AtUri uri, List<Label> postLabels) async {
-    final hideAdultContent = await _settingsRepository.getHideAdultContent();
     for (final label in postLabels) {
       try {
         final labelPreference = await _settingsRepository.getLabelPreference(label.value);
-        if (labelPreference.setting == Setting.hide || (labelPreference.adultOnly && hideAdultContent)) {
+        if (labelPreference.setting == Setting.hide || labelPreference.adultOnly) {
           _logger.d('Hiding post $uri due to label: ${label.value}');
           return true;
         }
@@ -390,7 +375,7 @@ class FeedNotifier extends _$FeedNotifier {
   /// Filters posts based on label preferences, removing posts that should be hidden
   Future<List<PostView>> _filterHiddenPosts(
     List<PostView> posts,
-    LinkedHashMap<AtUri, ({List<Label> postLabels, HardcodedFeedExtraInfo? hardcodedFeedExtraInfo})> extraInfo,
+    LinkedHashMap<AtUri, ({List<Label> postLabels})> extraInfo,
   ) async {
     final filteredPosts = <PostView>[];
 

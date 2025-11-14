@@ -34,7 +34,7 @@ class DownloadManagerImpl implements DownloadManagerInterface {
 
   @override
   void setActiveFeed(Feed feed) {
-    _logger.d('Setting active feed to: ${feed.name}');
+    _logger.d('Setting active feed to: ${feed.config.id}');
     _activeFeed = feed;
     _updateTaskPriorities();
     _processQueue(); // Re-evaluate queue processing if active feed changed
@@ -128,7 +128,7 @@ class DownloadManagerImpl implements DownloadManagerInterface {
   }
 
   Future<void> _executeTask(DownloadTask task) async {
-    _logger.d('Executing task: ${task.uri} for feed ${task.feed.identifier} with priority ${task.priority}');
+    _logger.d('Executing task: ${task.uri} for feed ${task.feed.config.id} with priority ${task.priority}');
     if (_activeFeed != task.feed && task.priority > activeFeedPriority && _areTherePendingActiveFeedTasks()) {
       _logger.d('Task ${task.uri} is for an inactive feed, but there are still pending active feed tasks. Skipping.');
       return;

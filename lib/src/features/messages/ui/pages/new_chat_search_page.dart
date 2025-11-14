@@ -7,7 +7,7 @@ import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.da
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/search/providers/search_provider.dart';
-import 'package:sparksocial/src/features/search/ui/widgets/suggested_account_card.dart';
+import 'package:sparksocial/src/features/search/ui/widgets/profile_card.dart';
 
 @RoutePage()
 class NewChatSearchPage extends ConsumerStatefulWidget {
@@ -209,7 +209,7 @@ class _UserResultsState extends ConsumerState<_UserResults> {
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
-          child: SuggestedAccountCard(
+          child: ProfileCard(
             username: actor.displayName ?? actor.handle,
             handle: '@${actor.handle}',
             avatarUrl: actor.avatar?.toString() ?? '',

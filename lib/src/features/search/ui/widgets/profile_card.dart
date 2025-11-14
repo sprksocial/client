@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/molecules/suggested_profile.dart';
 
-class SuggestedAccountCard extends StatelessWidget {
-  const SuggestedAccountCard({
+class ProfileCard extends StatelessWidget {
+  const ProfileCard({
     required this.username,
     required this.handle,
     required this.avatarUrl,

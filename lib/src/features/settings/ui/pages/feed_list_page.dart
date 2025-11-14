@@ -52,31 +52,8 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                       style: TextStyle(color: colorScheme.onSurface.withAlpha(178), fontSize: 12),
                     ),
                     value: settingsState.feedBlurEnabled,
-                    onChanged: (value) {
-                      ref.read(settingsProvider.notifier).setFeedBlur(value);
-                    },
+                    onChanged: (value) {},
                     secondary: Icon(FluentIcons.eye_off_24_regular, color: colorScheme.primary),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // Hide Adult Content Toggle
-                Card(
-                  child: SwitchListTile(
-                    title: Text(
-                      'Hide Adult Content',
-                      style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
-                    ),
-                    subtitle: Text(
-                      'Hide content marked as adult/mature',
-                      style: TextStyle(color: colorScheme.onSurface.withAlpha(178), fontSize: 12),
-                    ),
-                    value: settingsState.hideAdultContent,
-                    onChanged: (value) {
-                      ref.read(settingsProvider.notifier).setHideAdultContent(value);
-                    },
-                    secondary: Icon(FluentIcons.shield_24_regular, color: colorScheme.primary),
                   ),
                 ),
 
@@ -183,14 +160,14 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                       final isActive = settingsState.activeFeed == feed;
 
                       return Card(
-                        key: ValueKey(feed.identifier),
+                        key: ValueKey(feed.config.id),
                         margin: const EdgeInsets.symmetric(vertical: 4),
                         elevation: _isReordering ? 0 : 1,
                         child: ListTile(
                           enabled: !_isReordering,
                           leading: Icon(_getFeedIcon(feed), color: isActive ? colorScheme.primary : colorScheme.onSurface),
                           title: Text(
-                            feed.name,
+                            feed.view != null ? feed.view!.displayName : 'Following',
                             style: TextStyle(
                               fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
                               color: isActive ? colorScheme.primary : colorScheme.onSurface,
@@ -241,34 +218,10 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
   }
 
   IconData _getFeedIcon(Feed feed) {
-    return feed.when(
-      record: (name, uri) => FluentIcons.feed_24_regular,
-      hardCoded: (hardCodedFeed) {
-        switch (hardCodedFeed) {
-          case HardCodedFeedEnum.timeline:
-            return FluentIcons.people_24_regular;
-          case HardCodedFeedEnum.forYou:
-            return FluentIcons.star_24_regular;
-          case HardCodedFeedEnum.latest:
-            return FluentIcons.flash_24_regular;
-        }
-      },
-    );
+    return FluentIcons.feed_24_regular;
   }
 
   String _getFeedDescription(Feed feed) {
-    return feed.when(
-      record: (name, uri) => 'Custom algorithmic feed',
-      hardCoded: (hardCodedFeed) {
-        switch (hardCodedFeed) {
-          case HardCodedFeedEnum.timeline:
-            return 'Posts from accounts you follow';
-          case HardCodedFeedEnum.forYou:
-            return 'Personalized content recommendations';
-          case HardCodedFeedEnum.latest:
-            return 'Latest posts from Spark community';
-        }
-      },
-    );
+    return 'Custom algorithmic feed';
   }
 }

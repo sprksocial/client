@@ -1,13 +1,8 @@
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/pref_models.dart';
 
 abstract class SettingsRepository {
-  Future<bool> getFeedBlurEnabled();
-  Future<void> setFeedBlurEnabled(bool value);
-
-  Future<bool> getHideAdultContent();
-  Future<void> setHideAdultContent(bool value);
-
   Future<List<Feed>> getFeeds();
   Future<void> setFeeds(List<Feed> feeds);
   Future<void> addFeed(Feed feed);
@@ -16,12 +11,15 @@ abstract class SettingsRepository {
   Future<Feed> getActiveFeed();
   Future<void> setActiveFeed(Feed feed);
 
-  Future<List<String>> getFollowedLabelers();
-  Future<void> setFollowedLabelers(List<String> labelers, List<LabelPreference> labelPreferences);
+  Future<List<String>> getLabelers();
+  Future<void> setLabelers(List<String> labelers, List<LabelPreference> labelPreferences);
 
   Future<LabelPreference> getLabelPreference(String value);
   Future<void> setLabelPreference(String value, Blurs blurs, Severity severity, bool adultOnly, Setting setting);
 
   Future<bool> getPostToBskyEnabled();
   Future<void> setPostToBskyEnabled(bool value);
+
+  Future<Preferences> getPreferences();
+  Future<void> putPreferences(Preferences preferences);
 }

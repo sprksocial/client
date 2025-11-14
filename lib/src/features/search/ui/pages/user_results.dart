@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/search/providers/search_provider.dart';
-import 'package:sparksocial/src/features/search/ui/widgets/suggested_account_card.dart';
+import 'package:sparksocial/src/features/search/ui/widgets/profile_card.dart';
 
 class UserResults extends ConsumerStatefulWidget {
   const UserResults({super.key});
@@ -173,7 +173,7 @@ class _UserResultsState extends ConsumerState<UserResults> with AutomaticKeepAli
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
-          child: SuggestedAccountCard(
+          child: ProfileCard(
             username: actor.displayName ?? actor.handle,
             handle: '@${actor.handle}',
             avatarUrl: actor.avatar?.toString() ?? '',

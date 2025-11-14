@@ -1,6 +1,8 @@
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/pref_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/pref_repository.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
@@ -12,11 +14,18 @@ class SettingsRepositoryImpl implements SettingsRepository {
     _sqlCache = GetIt.instance<SQLCacheInterface>();
     _storageManager = GetIt.instance<StorageManager>();
     _logger = GetIt.instance<LogService>().getLogger('SettingsRepository');
+    _prefRepository = GetIt.instance<PrefRepository>();
+    _defaultFeed = Feed(
+      type: 'timeline',
+      config: SavedFeed(type: 'timeline', value: 'following', pinned: true),
+    );
     _setupDefaultLabelPreferences();
   }
   late final SQLCacheInterface _sqlCache;
   late final StorageManager _storageManager;
   late final SparkLogger _logger;
+  late final PrefRepository _prefRepository;
+  late final Feed _defaultFeed;
 
   Future<void> _setupDefaultLabelPreferences() async {
     if (await _storageManager.preferences.getObject<bool>(StorageKeys.defaultLabelsAreSetupKey) ?? false) {
@@ -159,215 +168,451 @@ class SettingsRepositoryImpl implements SettingsRepository {
   }
 
   @override
-  Future<bool> getFeedBlurEnabled() async {
-    return await _storageManager.preferences.getBool(StorageKeys.feedBlurKey) ?? false;
-  }
-
-  @override
-  Future<void> setFeedBlurEnabled(bool value) async {
-    await _storageManager.preferences.setBool(StorageKeys.feedBlurKey, value);
-  }
-
-  @override
-  Future<bool> getHideAdultContent() async {
-    return await _storageManager.preferences.getBool(StorageKeys.hideAdultContentKey) ?? true;
-  }
-
-  @override
-  Future<void> setHideAdultContent(bool value) async {
-    await _storageManager.preferences.setBool(StorageKeys.hideAdultContentKey, value);
-  }
-
-  @override
   Future<void> setFeeds(List<Feed> feeds) async {
-    _logger.d('Saving feeds: ${feeds.map((f) => f.name).join(', ')}');
-    // Manually serialize feeds to JSON
-    final feedsJson = feeds.map((feed) => feed.toJson()).toList();
-    await _storageManager.preferences.setObject<List<Map<String, dynamic>>>(StorageKeys.feedsKey, feedsJson);
-    _logger.d('Feeds saved successfully');
+    _logger.d('Saving feeds: ${feeds.map((f) => f.config.id).join(', ')}');
+    
+    try {
+      final preferences = await getPreferences();
+      
+      // Remove existing saved feeds preference
+      final updatedPreferences = preferences.preferences
+          .where((pref) => !pref.isSavedFeedsPref(pref))
+          .toList();
+      
+      // Add new saved feeds preference
+      updatedPreferences.add(Preference.savedFeedsPref(items: feeds.map((feed) => feed.config).toList()));
+      
+      final newPreferences = Preferences(preferences: updatedPreferences);
+      await putPreferences(newPreferences);
+      
+      _logger.d('Feeds saved successfully');
+    } catch (e) {
+      _logger.e('Error saving feeds: $e');
+      rethrow;
+    }
   }
 
   @override
   Future<List<Feed>> getFeeds() async {
-    _logger.d('Loading feeds from storage...');
-    final feedsJson = await _storageManager.preferences.getObject<List<dynamic>>(StorageKeys.feedsKey);
-    if (feedsJson == null) {
-      _logger.d('No feeds found in storage, using defaults');
-      final defaultFeeds = [
-        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.timeline),
-        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
-        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latest),
-      ];
-      await setFeeds(defaultFeeds);
-      return defaultFeeds;
-    }
-
+    _logger.d('Loading feeds from preferences...');
+    
     try {
-      // Convert the JSON objects back to Feed objects
-      final feeds = feedsJson.map((json) => Feed.fromJson(json as Map<String, dynamic>)).toList();
-      _logger.d('Loaded feeds from storage: ${feeds.map((f) => f.name).join(', ')}');
+      final preferences = await getPreferences();
+      final savedFeedPref = preferences.savedFeeds;
+      
+      if (savedFeedPref == null || savedFeedPref.isEmpty) {
+        _logger.d('No feeds found in preferences');
+        return [];
+      }
+      
+      final feeds = savedFeedPref.map((savedFeed) => Feed(
+        type: savedFeed.type,
+        config: savedFeed,
+      )).toList();
+      
+      _logger.d('Loaded feeds from preferences: ${feeds.map((f) => f.config.id).join(', ')}');
       return feeds;
     } catch (e) {
-      _logger.e('Error deserializing feeds: $e');
-      // If deserialization fails, return defaults
-      final defaultFeeds = [
-        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.timeline),
-        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.forYou),
-        const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latest),
-      ];
-      await setFeeds(defaultFeeds);
-      return defaultFeeds;
+      _logger.e('Error loading feeds: $e');
+      return [];
     }
   }
 
   @override
   Future<Feed> getActiveFeed() async {
-    _logger.d('Loading active feed from storage...');
-    final activeFeedJson = await _storageManager.preferences.getObject<Map<String, dynamic>>(StorageKeys.activeFeedKey);
-    if (activeFeedJson == null) {
-      _logger.d('No active feed found in storage, using default (Latest)');
-      return const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latest);
-    }
-
+    _logger.d('Loading active feed from preferences...');
+    
     try {
-      final activeFeed = Feed.fromJson(activeFeedJson);
-      _logger.d('Loaded active feed from storage: ${activeFeed.name}');
+      final preferences = await getPreferences();
+      final feeds = preferences.savedFeeds ?? [];
+      
+      // Find the first pinned feed, or the first feed if none are pinned
+      SavedFeed? activeSavedFeed;
+      try {
+        activeSavedFeed = feeds.firstWhere((feed) => feed.pinned);
+      } catch (e) {
+        if (feeds.isNotEmpty) {
+          activeSavedFeed = feeds.first;
+        }
+      }
+      
+      if (activeSavedFeed == null) {
+        _logger.d('No active feed found in preferences, using default (Latest)');
+        return _defaultFeed;
+      }
+
+      final activeFeed = Feed(
+        type: activeSavedFeed.type,
+        config: activeSavedFeed,
+      );
+      
+      _logger.d('Loaded active feed from preferences: ${activeFeed.config.id}');
       return activeFeed;
     } catch (e) {
-      _logger.e('Error deserializing active feed: $e');
-      // If deserialization fails, return default
-      return const Feed.hardCoded(hardCodedFeed: HardCodedFeedEnum.latest);
+      _logger.e('Error loading active feed: $e');
+      return _defaultFeed;
     }
   }
 
   @override
   Future<void> setActiveFeed(Feed feed) async {
-    _logger.d('Saving active feed: ${feed.name}');
-    // Manually serialize feed to JSON
-    await _storageManager.preferences.setObject<Map<String, dynamic>>(StorageKeys.activeFeedKey, feed.toJson());
-    _logger.d('Active feed saved successfully');
+    _logger.d('Setting active feed: ${feed.config.id}');
+    
+    try {
+      final preferences = await getPreferences();
+      final currentFeeds = preferences.savedFeeds ?? [];
+      
+      // Update the pinned status - unpin all feeds, then pin the selected one
+      final updatedFeeds = currentFeeds.map((f) => 
+        f.copyWith(pinned: f.id == feed.config.id)
+      ).toList();
+      
+      // If the feed doesn't exist, add it as pinned
+      if (!updatedFeeds.any((f) => f.id == feed.config.id)) {
+        updatedFeeds.add(feed.config.copyWith(pinned: true));
+      }
+      
+      // Remove existing saved feeds preference and add new one
+      final updatedPreferences = preferences.preferences
+          .where((pref) => !pref.isSavedFeedsPref(pref))
+          .toList();
+      
+      updatedPreferences.add(Preference.savedFeedsPref(items: updatedFeeds));
+      
+      final newPreferences = Preferences(preferences: updatedPreferences);
+      await putPreferences(newPreferences);
+      
+      _logger.d('Active feed set successfully');
+    } catch (e) {
+      _logger.e('Error setting active feed: $e');
+      rethrow;
+    }
   }
 
   @override
   Future<void> addFeed(Feed feed) async {
-    final feeds = await getFeeds();
-    await setFeeds([...feeds, feed]);
-    await _sqlCache.cacheFeed(feed);
+    _logger.d('Adding feed: ${feed.config.id}');
+    
+    try {
+      final feeds = await getFeeds();
+      await setFeeds([...feeds, feed]);
+      await _sqlCache.cacheFeed(feed);
+      _logger.d('Feed added successfully');
+    } catch (e) {
+      _logger.e('Error adding feed: $e');
+      rethrow;
+    }
   }
 
   @override
   Future<void> removeFeed(Feed feed) async {
-    final feeds = await getFeeds();
-    await setFeeds(feeds.where((f) => f.identifier != feed.identifier).toList());
-    await _sqlCache.deleteFeed(feed);
+    _logger.d('Removing feed: ${feed.config.id}');
+    
+    try {
+      final feeds = await getFeeds();
+      await setFeeds(feeds.where((f) => f.config.id != feed.config.id).toList());
+      await _sqlCache.deleteFeed(feed);
+      _logger.d('Feed removed successfully');
+    } catch (e) {
+      _logger.e('Error removing feed: $e');
+      rethrow;
+    }
   }
 
   @override
-  Future<List<String>> getFollowedLabelers() async {
-    final labelers = await _storageManager.preferences.getObject<List<String>>(StorageKeys.followedLabelers) ?? [];
-    if (!labelers.contains('did:plc:pbgyr67hftvpoqtvaurpsctc')) {
-      // mod.sprk.team
-      labelers.add('did:plc:pbgyr67hftvpoqtvaurpsctc');
+  Future<List<String>> getLabelers() async {
+    _logger.d('Loading labelers from preferences...');
+    
+    try {
+      final preferences = await getPreferences();
+      final labelers = preferences.labelers?.map((labeler) => labeler.did).toList() ?? [];
+      
+      // Ensure mod.sprk.team is always included
+      if (!labelers.contains('did:plc:pbgyr67hftvpoqtvaurpsctc')) {
+        labelers.add('did:plc:pbgyr67hftvpoqtvaurpsctc');
+      }
+      
+      _logger.d('Loaded labelers: ${labelers.join(', ')}');
+      return labelers;
+    } catch (e) {
+      _logger.e('Error loading labelers: $e');
+      // Return default labeler on error
+      return ['did:plc:pbgyr67hftvpoqtvaurpsctc'];
     }
-    return labelers;
   }
 
   @override
-  Future<void> setFollowedLabelers(List<String> labelers, List<LabelPreference> labelPreferences) async {
-    if (!labelers.contains('did:plc:pbgyr67hftvpoqtvaurpsctc')) {
-      // mod.sprk.team
-      labelers.add('did:plc:pbgyr67hftvpoqtvaurpsctc');
-    }
-    await _storageManager.preferences.setObject<List<String>>(StorageKeys.followedLabelers, labelers);
-    for (final labelPreference in labelPreferences) {
-      await _storageManager.preferences.setObject<Map<String, dynamic>>(
-        '${StorageKeys.labelPreferenceKey}_${labelPreference.value}',
-        labelPreference.toJson(),
-      );
+  Future<void> setLabelers(List<String> labelers, List<LabelPreference> labelPreferences) async {
+    _logger.d('Saving labelers: ${labelers.join(', ')}');
+    
+    try {
+      final preferences = await getPreferences();
+      
+      // Ensure mod.sprk.team is always included
+      if (!labelers.contains('did:plc:pbgyr67hftvpoqtvaurpsctc')) {
+        labelers.add('did:plc:pbgyr67hftvpoqtvaurpsctc');
+      }
+      
+      // Remove existing labelers and content label preferences
+      final updatedPreferences = preferences.preferences
+          .where((pref) => !pref.isLabelersPref(pref) && !pref.isContentLabelPref(pref))
+          .toList();
+      
+      // Add new labelers preference
+      updatedPreferences.add(Preference.labelersPref(
+        labelers: labelers.map((did) => LabelerPrefItem(did: did)).toList(),
+      ));
+      
+      // Add content label preferences
+      for (final labelPreference in labelPreferences) {
+        updatedPreferences.add(Preference.contentLabelPref(
+          labelerDid: 'did:plc:pbgyr67hftvpoqtvaurpsctc', // Default to mod.sprk.team
+          label: labelPreference.value,
+          visibility: _settingToVisibility(labelPreference.setting),
+        ));
+      }
+      
+      final newPreferences = Preferences(preferences: updatedPreferences);
+      await putPreferences(newPreferences);
+      
+      _logger.d('Labelers saved successfully');
+    } catch (e) {
+      _logger.e('Error saving labelers: $e');
+      rethrow;
     }
   }
 
   @override
   Future<LabelPreference> getLabelPreference(String value) async {
-    final rawJson = await _storageManager.preferences.getObject<Map<String, dynamic>>(
-      '${StorageKeys.labelPreferenceKey}_$value',
-    );
-    if (rawJson == null) {
-      throw Exception('Label preference not found');
-    }
-
+    _logger.d('Loading label preference: $value');
+    
     try {
-      return LabelPreference.fromJson(rawJson);
+      final preferences = await getPreferences();
+      final contentLabelPrefs = preferences.contentLabelPrefs ?? [];
+      final contentLabelPref = contentLabelPrefs.firstWhere(
+        (pref) => pref.label == value,
+        orElse: () => throw Exception('Label preference not found'),
+      );
+      
+      return LabelPreference(
+        value: contentLabelPref.label,
+        blurs: _visibilityToBlurs(contentLabelPref.visibility),
+        severity: _visibilityToSeverity(contentLabelPref.visibility),
+        defaultSetting: _visibilityToSetting(contentLabelPref.visibility),
+        setting: _visibilityToSetting(contentLabelPref.visibility),
+        adultOnly: _isAdultOnlyLabel(value),
+      );
     } catch (e) {
-      _logger.e('Error deserializing label preference for $value: $e');
-      throw Exception('Failed to deserialize label preference');
+      _logger.e('Error loading label preference for $value: $e');
+      throw Exception('Failed to load label preference');
     }
   }
 
   @override
   Future<void> setLabelPreference(String value, Blurs blurs, Severity severity, bool adultOnly, Setting setting) async {
-    // Check if a preference already exists
-    final existingRawJson = await _storageManager.preferences.getObject<Map<String, dynamic>>(
-      '${StorageKeys.labelPreferenceKey}_$value',
-    );
-
-    if (existingRawJson != null) {
-      try {
-        // Update existing preference
-        final existingPreference = LabelPreference.fromJson(existingRawJson);
-        final newLabelPreference = existingPreference.copyWith(
-          blurs: blurs,
-          severity: severity,
-          adultOnly: adultOnly,
-          setting: setting,
-        );
-        await _storageManager.preferences.setObject<Map<String, dynamic>>(
-          '${StorageKeys.labelPreferenceKey}_$value',
-          newLabelPreference.toJson(),
-        );
-        _logger.d('Label preference updated: $value');
-      } catch (e) {
-        _logger.e('Error updating existing label preference for $value: $e');
-        // If we can't deserialize existing, create new
-        final newLabelPreference = LabelPreference(
-          value: value,
-          blurs: blurs,
-          severity: severity,
-          defaultSetting: setting,
-          setting: setting,
-          adultOnly: adultOnly,
-        );
-        await _storageManager.preferences.setObject<Map<String, dynamic>>(
-          '${StorageKeys.labelPreferenceKey}_$value',
-          newLabelPreference.toJson(),
-        );
-        _logger.d('Label preference created (after error): $value');
+    _logger.d('Saving label preference: $value');
+    
+    try {
+      final preferences = await getPreferences();
+      
+      // Remove existing content label preferences
+      final updatedPreferences = preferences.preferences
+          .where((pref) => !pref.isContentLabelPref(pref))
+          .toList();
+      
+      // Add all content label preferences (including the updated one)
+      final existingContentPrefs = preferences.contentLabelPrefs ?? [];
+      for (final pref in existingContentPrefs) {
+        if (pref.label == value) {
+          // Update the specific preference
+          updatedPreferences.add(Preference.contentLabelPref(
+            labelerDid: pref.labelerDid,
+            label: value,
+            visibility: _settingToVisibility(setting),
+          ));
+        } else {
+          // Keep other preferences as-is
+          updatedPreferences.add(Preference.contentLabelPref(
+            labelerDid: pref.labelerDid,
+            label: pref.label,
+            visibility: pref.visibility,
+          ));
+        }
       }
-    } else {
-      // Create new preference
-      final newLabelPreference = LabelPreference(
-        value: value,
-        blurs: blurs,
-        severity: severity,
-        defaultSetting: setting,
-        setting: setting,
-        adultOnly: adultOnly,
-      );
-      await _storageManager.preferences.setObject<Map<String, dynamic>>(
-        '${StorageKeys.labelPreferenceKey}_$value',
-        newLabelPreference.toJson(),
-      );
-      _logger.d('Label preference created: $value');
+      
+      // If the preference didn't exist before, add it
+      if (!existingContentPrefs.any((pref) => pref.label == value)) {
+        updatedPreferences.add(Preference.contentLabelPref(
+          labelerDid: 'did:plc:pbgyr67hftvpoqtvaurpsctc', // Default to mod.sprk.team
+          label: value,
+          visibility: _settingToVisibility(setting),
+        ));
+      }
+      
+      final newPreferences = Preferences(preferences: updatedPreferences);
+      await putPreferences(newPreferences);
+      
+      _logger.d('Label preference saved successfully: $value');
+    } catch (e) {
+      _logger.e('Error saving label preference for $value: $e');
+      rethrow;
     }
   }
 
   @override
   Future<bool> getPostToBskyEnabled() async {
-    return await _storageManager.preferences.getBool(StorageKeys.postToBskyKey) ?? false;
+    _logger.d('Loading post to Bluesky enabled status');
+    
+    try {
+      final preferences = await getPreferences();
+      final postInteractionPref = preferences.preferences.firstWhere(
+        (pref) => pref.isPostInteractionSettingsPref(pref),
+        orElse: () => const Preference.postInteractionSettingsPref(enabled: false),
+      );
+      
+      final enabled = postInteractionPref.mapOrNull(
+        postInteractionSettingsPref: (pref) => pref.enabled,
+      ) ?? false;
+      
+      _logger.d('Post to Bluesky enabled: $enabled');
+      return enabled;
+    } catch (e) {
+      _logger.e('Error loading post to Bluesky enabled status: $e');
+      return false;
+    }
   }
 
   @override
   Future<void> setPostToBskyEnabled(bool value) async {
-    await _storageManager.preferences.setBool(StorageKeys.postToBskyKey, value);
+    _logger.d('Setting post to Bluesky enabled: $value');
+    
+    try {
+      final preferences = await getPreferences();
+      
+      // Remove existing post interaction settings preference
+      final updatedPreferences = preferences.preferences
+          .where((pref) => !pref.isPostInteractionSettingsPref(pref))
+          .toList();
+      
+      // Add new post interaction settings preference
+      updatedPreferences.add(Preference.postInteractionSettingsPref(enabled: value));
+      
+      final newPreferences = Preferences(preferences: updatedPreferences);
+      await putPreferences(newPreferences);
+      
+      _logger.d('Post to Bluesky enabled status saved successfully');
+    } catch (e) {
+      _logger.e('Error saving post to Bluesky enabled status: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Preferences> getPreferences() async {
+    _logger.d('Getting preferences from server...');
+    try {
+      final preferences = await _prefRepository.getPreferences();
+
+      await _storageManager.preferences.setObject<Map<String, dynamic>>(
+        StorageKeys.preferencesKey,
+        preferences.toJson(),
+      );
+
+      _logger.d('Preferences fetched from server and saved to memory');
+      return preferences;
+    } catch (e) {
+      _logger.e('Error fetching preferences from server: $e');
+
+      final cachedPreferencesJson = await _storageManager.preferences.getObject<Map<String, dynamic>>(
+        StorageKeys.preferencesKey,
+      );
+
+      if (cachedPreferencesJson != null) {
+        _logger.d('Returning cached preferences from memory');
+        return Preferences.fromJson(cachedPreferencesJson);
+      }
+
+      _logger.e('No cached preferences found, returning empty preferences');
+      return Preferences(preferences: []);
+    }
+  }
+
+  @override
+  Future<void> putPreferences(Preferences preferences) async {
+    _logger.d('Putting preferences to server...');
+    try {
+      await _prefRepository.putPreferences(preferences);
+
+      await _storageManager.preferences.setObject<Map<String, dynamic>>(
+        StorageKeys.preferencesKey,
+        preferences.toJson(),
+      );
+
+      _logger.d('Preferences saved to server and memory');
+    } catch (e) {
+      _logger.e('Error saving preferences to server: $e');
+      rethrow;
+    }
+  }
+
+  // Helper methods for converting between preference models
+  
+  String _settingToVisibility(Setting setting) {
+    switch (setting) {
+      case Setting.ignore:
+        return 'ignore';
+      case Setting.warn:
+        return 'warn';
+      case Setting.hide:
+        return 'hide';
+    }
+  }
+
+  Setting _visibilityToSetting(String visibility) {
+    switch (visibility) {
+      case 'ignore':
+        return Setting.ignore;
+      case 'warn':
+        return Setting.warn;
+      case 'hide':
+        return Setting.hide;
+      default:
+        return Setting.ignore;
+    }
+  }
+
+  Blurs _visibilityToBlurs(String visibility) {
+    switch (visibility) {
+      case 'ignore':
+        return Blurs.none;
+      case 'warn':
+        return Blurs.media;
+      case 'hide':
+        return Blurs.content;
+      default:
+        return Blurs.none;
+    }
+  }
+
+  Severity _visibilityToSeverity(String visibility) {
+    switch (visibility) {
+      case 'ignore':
+        return Severity.none;
+      case 'warn':
+        return Severity.alert;
+      case 'hide':
+        return Severity.alert;
+      default:
+        return Severity.none;
+    }
+  }
+
+  bool _isAdultOnlyLabel(String label) {
+    const adultOnlyLabels = {
+      'porn',
+      'sexual',
+      'nsfl',
+    };
+    return adultOnlyLabels.contains(label);
   }
 }

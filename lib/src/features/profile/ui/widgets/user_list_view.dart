@@ -5,7 +5,7 @@ import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.da
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/profile/providers/user_list_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/pages/user_list_page.dart';
-import 'package:sparksocial/src/features/search/ui/widgets/suggested_account_card.dart';
+import 'package:sparksocial/src/features/search/ui/widgets/profile_card.dart';
 
 class UserListView extends ConsumerWidget {
   final List<ProfileView> users;
@@ -46,7 +46,7 @@ class UserListView extends ConsumerWidget {
         final user = users[index];
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: SuggestedAccountCard(
+          child: ProfileCard(
             username: user.displayName ?? user.handle,
             handle: '@${user.handle}',
             avatarUrl: user.avatar.toString(),

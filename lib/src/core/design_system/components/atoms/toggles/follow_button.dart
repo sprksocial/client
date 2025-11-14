@@ -45,8 +45,7 @@ class FollowButton extends StatelessWidget {
                   ),
                 ),
               ),
-        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 9),
-        child: Center(
+        child: Align(
           child: Text(
             // The text depends on the current state.
             isFollowing ? unfollowText : followText,

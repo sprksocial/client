@@ -126,7 +126,6 @@ class GlassInput extends StatelessWidget {
                     icon: AppIcons.send(size: 18, color: isDark ? Colors.white : Colors.black),
                   ),
                 ],
-                // TODO: record features https://pub.dev/packages/waveform_flutter https://pub.dev/packages/record
               ],
             ),
           ),
