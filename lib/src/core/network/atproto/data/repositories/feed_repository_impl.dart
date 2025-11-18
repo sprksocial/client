@@ -748,6 +748,7 @@ class FeedRepositoryImpl implements FeedRepository {
       final serviceTokenRes = await authAtProto.server.getServiceAuth(
         aud: 'did:web:$pdsService',
         lxm: NSID.parse('com.atproto.repo.uploadBlob'),
+        exp: DateTime.now().toUtc().add(const Duration(minutes: 5)).millisecondsSinceEpoch ~/ 1000,
       );
 
       final serviceToken = serviceTokenRes.data.token;
@@ -764,9 +765,20 @@ class FeedRepositoryImpl implements FeedRepository {
       // Parse the response
       dynamic responseData = jsonDecode(response.body);
       _logger.d('Video upload response: $responseData');
-      while (responseData['jobStatus']?['state'] == 'JOB_STATE_PROCESSING') {
-        _logger.d('Video upload in progress, status: ${responseData['jobStatus']?['state']}');
+
+      // Poll job status until it finishes (handles both QUEUED and PROCESSING)
+      var jobState = responseData['jobStatus']?['state'] as String?;
+      var attempts = 0;
+      const maxAttempts = 120; // ~4 minutes at 2s interval
+      while (jobState == 'JOB_STATE_QUEUED' || jobState == 'JOB_STATE_PROCESSING') {
+        _logger.d('Video upload in progress, status: $jobState');
+        // Small backoff to avoid hammering the service
         await Future.delayed(const Duration(seconds: 2));
+        attempts++;
+        if (attempts > maxAttempts) {
+          throw Exception('Timed out waiting for video processing to finish');
+        }
+
         response = await http.get(
           Uri.parse('${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.getJobStatus').replace(
             queryParameters: {
@@ -777,11 +789,12 @@ class FeedRepositoryImpl implements FeedRepository {
         );
         if (response.statusCode != 200) {
           throw Exception('Failed to check video upload status: ${response.statusCode} ${response.body}');
-        } else {
-          responseData = jsonDecode(response.body);
-          _logger.d('Video upload status response: $responseData');
         }
+        responseData = jsonDecode(response.body);
+        _logger.d('Video upload status response: $responseData');
+        jobState = responseData['jobStatus']?['state'] as String?;
       }
+
       if (responseData['jobStatus']?['state'] == 'JOB_STATE_FAILED') {
         throw Exception('Video upload failed: ${responseData['jobStatus']?['status']}');
       }

@@ -5,10 +5,9 @@ import 'package:flutter/material.dart' hide Image;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:imgly_editor/imgly_editor.dart';
 import 'package:sparksocial/src/core/design_system/templates/image_review_page_template.dart';
-import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
+import 'package:sparksocial/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
@@ -35,25 +34,20 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   final ImagePicker _picker = ImagePicker();
   final Map<String, String> _altTexts = {};
   late final FeedRepository _feedRepository;
-  final Map<String, String?> _sceneMap = {};
 
   Future<void> showImageEditor(BuildContext context, XFile imageFile) async {
-    final handle = ref.read(sessionProvider)?.handle;
-    // if there's a scene use it, or else create a new one from the image
-    final source = _sceneMap[imageFile.path] != null
-        ? Source.fromScene(_sceneMap[imageFile.path]!)
-        : Source.fromImage('file://${imageFile.path}');
-
-    final newImage = await GetIt.I<IMGLYRepository>().openImageEditor(userID: handle, source: source);
+    final newImage = await GetIt.I<ProVideoEditorRepository>().openImageEditor(context, imageFile);
     // If the user edited the image, replace the original file in the list
     if (newImage != null) {
-      if (newImage.artifact != null) {
-        final uri = Uri.parse(newImage.artifact!).toFilePath(windows: false);
-        setState(() {
-          _imageFiles[_currentPage] = XFile(uri);
-          _sceneMap[uri] = newImage.scene;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        final oldPath = _imageFiles[_currentPage].path;
+        final existingAlt = _altTexts.remove(oldPath);
+        _imageFiles[_currentPage] = newImage;
+        if (existingAlt != null) {
+          _altTexts[newImage.path] = existingAlt;
+        }
+      });
     }
   }
 

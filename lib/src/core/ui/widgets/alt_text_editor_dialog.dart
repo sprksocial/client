@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 
 class AltTextEditorDialog extends StatefulWidget {
-  const AltTextEditorDialog({required this.initialAltText, required this.imageFile, super.key});
-  final String imageFile;
+  const AltTextEditorDialog({required this.initialAltText, this.imageFile, super.key});
+  final String? imageFile;
   final String initialAltText;
 
   @override
@@ -50,7 +50,9 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
-                child: Image.file(File(widget.imageFile), width: 220, height: 220, fit: BoxFit.cover),
+                child: widget.imageFile == null
+                    ? const SizedBox.shrink()
+                    : Image.file(File(widget.imageFile!), width: 220, height: 220, fit: BoxFit.cover),
               ),
               const SizedBox(height: 20),
               Container(
