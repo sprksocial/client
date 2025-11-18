@@ -1,13 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:imgly_editor/model/source.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
+import 'package:sparksocial/src/core/design_system/components/molecules/create_media_sheet.dart';
 import 'package:sparksocial/src/core/design_system/components/molecules/story_circle.dart';
 import 'package:sparksocial/src/core/design_system/tokens/gradients.dart';
-import 'package:sparksocial/src/core/imgly/imgly_repository.dart';
+import 'package:sparksocial/src/core/media/create_media_actions.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
@@ -25,83 +23,11 @@ class _StoriesListState extends ConsumerState<StoriesList> {
   String? _cursor;
 
   void _showCreateMenu(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final imglyRepository = GetIt.I<IMGLYRepository>();
-    final handle = ref.read(sessionProvider)?.handle;
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (BuildContext context) {
-        return Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: colorScheme.surface,
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(20),
-              topRight: Radius.circular(20),
-            ),
-          ),
-          child: SafeArea(
-            child: Wrap(
-              children: <Widget>[
-                ListTile(
-                  leading: Icon(Icons.camera_alt, color: colorScheme.onSurface),
-                  title: Text('Record', style: TextStyle(color: colorScheme.onSurface)),
-                  onTap: () async {
-                    // camera -> open editor -> video review page -> post page
-                    final cameraResult = await imglyRepository.openCamera(userID: handle);
-                    if (cameraResult != null && cameraResult.recording != null && cameraResult.recording!.recordings.isNotEmpty) {
-                      if (context.mounted) {
-                        final video = await imglyRepository.openVideoEditor(
-                          source: Source.fromVideo(cameraResult.recording!.recordings.first.videos.first.uri),
-                        );
-                        if (video != null && context.mounted) {
-                          context.router.push(VideoReviewRoute(editorResult: video, storyMode: true));
-                        }
-                      }
-                    }
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.videocam, color: colorScheme.onSurface),
-                  title: Text('Upload Video', style: TextStyle(color: colorScheme.onSurface)),
-                  onTap: () async {
-                    // pick video -> open editor -> video review page -> post page
-                    final pickedVideo = await ImagePicker().pickVideo(
-                      source: ImageSource.gallery,
-                      maxDuration: const Duration(seconds: 180),
-                    );
-                    if (pickedVideo != null && context.mounted) {
-                      final video = await imglyRepository.openVideoEditor(
-                        source: Source.fromVideo('file://${pickedVideo.path}'),
-                      );
-                      if (video != null && context.mounted) {
-                        context.router.push(VideoReviewRoute(editorResult: video, storyMode: true));
-                      }
-                    }
-                  },
-                ),
-                ListTile(
-                  leading: Icon(Icons.photo_library, color: colorScheme.onSurface),
-                  title: Text('Upload Images', style: TextStyle(color: colorScheme.onSurface)),
-                  onTap: () async {
-                    // pick images -> images review page (image editor when image is selected) -> post page
-                    final pickedImages = await ImagePicker().pickMultiImage(limit: 12);
-                    if (context.mounted && pickedImages.isNotEmpty) {
-                      context.router.push(
-                        ImageReviewRoute(
-                          imageFiles: pickedImages,
-                          storyMode: true,
-                        ),
-                      );
-                    }
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
+    showCreateMediaSheet(
+      context,
+      onRecord: CreateMediaActions.onRecord(context, storyMode: true),
+      onUploadVideo: CreateMediaActions.onUploadVideo(context, storyMode: true),
+      onUploadImages: CreateMediaActions.onUploadImages(context, storyMode: true),
     );
   }
 
