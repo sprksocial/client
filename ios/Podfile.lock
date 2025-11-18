@@ -23,64 +23,6 @@ PODS:
     - PINCache (>= 3.0.1-beta.3)
   - image_picker_ios (0.0.1):
     - Flutter
-  - imgly_camera (1.53.0):
-    - Flutter
-    - IMGLYCamera (= 1.53.0)
-  - imgly_editor (1.53.0):
-    - Flutter
-    - IMGLYUI (= 1.53.0)
-  - IMGLYApparelEditor (1.53.0):
-    - IMGLYEditor (= 1.53.0)
-  - IMGLYCamera (1.53.0):
-    - IMGLYCoreUI (= 1.53.0)
-  - IMGLYCore (1.53.0):
-    - IMGLYEngine (= 1.53.0)
-  - IMGLYCoreUI (1.53.0):
-    - IMGLYCore (= 1.53.0)
-    - Kingfisher (~> 7.10.0)
-    - SwiftUIIntrospect (~> 1.1.2)
-  - IMGLYDesignEditor (1.53.0):
-    - IMGLYEditor (= 1.53.0)
-  - IMGLYEditor (1.53.0):
-    - IMGLYCamera (= 1.53.0)
-  - IMGLYEngine (1.53.0)
-  - IMGLYPhotoEditor (1.53.0):
-    - IMGLYEditor (= 1.53.0)
-  - IMGLYPostcardEditor (1.53.0):
-    - IMGLYEditor (= 1.53.0)
-  - IMGLYUI (1.53.0):
-    - IMGLYUI/All (= 1.53.0)
-  - IMGLYUI/All (1.53.0):
-    - IMGLYUI/ApparelEditor
-    - IMGLYUI/Camera
-    - IMGLYUI/Core
-    - IMGLYUI/CoreUI
-    - IMGLYUI/DesignEditor
-    - IMGLYUI/Editor
-    - IMGLYUI/PhotoEditor
-    - IMGLYUI/PostcardEditor
-    - IMGLYUI/VideoEditor
-  - IMGLYUI/ApparelEditor (1.53.0):
-    - IMGLYApparelEditor (= 1.53.0)
-  - IMGLYUI/Camera (1.53.0):
-    - IMGLYCamera (= 1.53.0)
-  - IMGLYUI/Core (1.53.0):
-    - IMGLYCore (= 1.53.0)
-  - IMGLYUI/CoreUI (1.53.0):
-    - IMGLYCoreUI (= 1.53.0)
-  - IMGLYUI/DesignEditor (1.53.0):
-    - IMGLYDesignEditor (= 1.53.0)
-  - IMGLYUI/Editor (1.53.0):
-    - IMGLYEditor (= 1.53.0)
-  - IMGLYUI/PhotoEditor (1.53.0):
-    - IMGLYPhotoEditor (= 1.53.0)
-  - IMGLYUI/PostcardEditor (1.53.0):
-    - IMGLYPostcardEditor (= 1.53.0)
-  - IMGLYUI/VideoEditor (1.53.0):
-    - IMGLYVideoEditor (= 1.53.0)
-  - IMGLYVideoEditor (1.53.0):
-    - IMGLYEditor (= 1.53.0)
-  - Kingfisher (7.10.2)
   - mdk (0.33.1)
   - package_info_plus (0.4.5):
     - Flutter
@@ -100,13 +42,14 @@ PODS:
     - Flutter
     - FlutterMacOS
     - PostHog (< 4.0.0, >= 3.32.0)
+  - pro_video_editor (0.0.1):
+    - Flutter
   - shared_preferences_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
   - sqflite_darwin (0.0.4):
     - Flutter
     - FlutterMacOS
-  - SwiftUIIntrospect (1.1.4)
   - url_launcher_ios (0.0.1):
     - Flutter
   - video_player_avfoundation (0.0.1):
@@ -122,11 +65,10 @@ DEPENDENCIES:
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - fvp (from `.symlinks/plugins/fvp/darwin`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
-  - imgly_camera (from `.symlinks/plugins/imgly_camera/ios`)
-  - imgly_editor (from `.symlinks/plugins/imgly_editor/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - posthog_flutter (from `.symlinks/plugins/posthog_flutter/ios`)
+  - pro_video_editor (from `.symlinks/plugins/pro_video_editor/ios`)
   - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
   - url_launcher_ios (from `.symlinks/plugins/url_launcher_ios/ios`)
@@ -138,23 +80,10 @@ SPEC REPOS:
     - Cache
     - GCDWebServer
     - HLSCachingReverseProxyServer
-    - IMGLYApparelEditor
-    - IMGLYCamera
-    - IMGLYCore
-    - IMGLYCoreUI
-    - IMGLYDesignEditor
-    - IMGLYEditor
-    - IMGLYEngine
-    - IMGLYPhotoEditor
-    - IMGLYPostcardEditor
-    - IMGLYUI
-    - IMGLYVideoEditor
-    - Kingfisher
     - mdk
     - PINCache
     - PINOperation
     - PostHog
-    - SwiftUIIntrospect
 
 EXTERNAL SOURCES:
   better_player_plus:
@@ -169,16 +98,14 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/fvp/darwin"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
-  imgly_camera:
-    :path: ".symlinks/plugins/imgly_camera/ios"
-  imgly_editor:
-    :path: ".symlinks/plugins/imgly_editor/ios"
   package_info_plus:
     :path: ".symlinks/plugins/package_info_plus/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   posthog_flutter:
     :path: ".symlinks/plugins/posthog_flutter/ios"
+  pro_video_editor:
+    :path: ".symlinks/plugins/pro_video_editor/ios"
   shared_preferences_foundation:
     :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   sqflite_darwin:
@@ -200,20 +127,6 @@ SPEC CHECKSUMS:
   GCDWebServer: 2c156a56c8226e2d5c0c3f208a3621ccffbe3ce4
   HLSCachingReverseProxyServer: 59935e1e0244ad7f3375d75b5ef46e8eb26ab181
   image_picker_ios: 7fe1ff8e34c1790d6fff70a32484959f563a928a
-  imgly_camera: a54c0c9f3d33d8c21cce402637a7079ef07f402f
-  imgly_editor: 449432a405a670b291c81b67f40d10ecf4eb1f09
-  IMGLYApparelEditor: 6d93c322111befb15c2c0be471f1fd99edc545be
-  IMGLYCamera: 95d42b3e0dd2b424c672478207c5fc8709f3b484
-  IMGLYCore: 32e5ae667be0527bc2b88e3a270cec38bd7c424a
-  IMGLYCoreUI: 6cb4ededdfb7e2915d229e118ad581b72c2b3a7e
-  IMGLYDesignEditor: 3d35961aed7f079ffe8b15e585968a76ec6a3aa8
-  IMGLYEditor: 90b00a023ad144ec40e244c8388346b0ce27dd3b
-  IMGLYEngine: 8ea9b3aa5432a84cf96bbe717c2b8fb21c9933d7
-  IMGLYPhotoEditor: 699bee0e8d4ae49a3c25f2bd717ebb85fd0b109d
-  IMGLYPostcardEditor: bf83afac61446a856fa09255eca6807bef9bfd6b
-  IMGLYUI: 9a8eeb062e13c1a805db0472283d657200d67df3
-  IMGLYVideoEditor: 74d46a79a162ac7706fb8457e3f967ec269fe84a
-  Kingfisher: 99edc495d3b7607e6425f0d6f6847b2abd6d716d
   mdk: 622e3452cea55a982c0712ec9ce931d8ec718b22
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
@@ -221,9 +134,9 @@ SPEC CHECKSUMS:
   PINOperation: fb563bcc9c32c26d6c78aaff967d405aa2ee74a7
   PostHog: bbb7eaecb2f5a286d9da3c833cbb18ae08799655
   posthog_flutter: 9535ac2d4ab65ccb9ace3886dcc0b3105198bad5
+  pro_video_editor: 44ef9a6d48dbd757ed428cf35396dd05f35c7830
   shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
-  SwiftUIIntrospect: 434b406dc6f5e30744bb6e180f90343f6a8eba8c
   url_launcher_ios: 694010445543906933d732453a59da0a173ae33d
   video_player_avfoundation: 2cef49524dd1f16c5300b9cd6efd9611ce03639b
   wakelock_plus: e29112ab3ef0b318e58cfa5c32326458be66b556

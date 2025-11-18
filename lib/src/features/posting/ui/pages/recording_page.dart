@@ -209,9 +209,11 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
         }
 
         final canFlipCamera = cameraState.cameras.length > 1 && !recordingState.isRecording;
+        final aspectRatio = cameraState.controller!.value.aspectRatio;
 
         return RecordingPageTemplate(
           cameraPreview: CameraPreview(cameraState.controller!),
+          aspectRatio: aspectRatio,
           isRecording: recordingState.isRecording,
           elapsedDuration: recordingState.elapsedDuration,
           maxDuration: recordingState.maxDuration,

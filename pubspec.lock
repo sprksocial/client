@@ -1202,7 +1202,7 @@ packages:
     description:
       path: "."
       ref: dev
-      resolved-ref: "31a99dc262dad07756e206dc6299d7b7c4981436"
+      resolved-ref: c7ad41b13b160e4a8b7a5b9a24efa83a0972fe69
       url: "https://github.com/sprksocial/pro_video_editor.git"
     source: git
     version: "0.3.0"

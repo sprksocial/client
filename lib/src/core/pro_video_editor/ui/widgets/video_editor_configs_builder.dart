@@ -224,6 +224,7 @@ class VideoEditorConfigsBuilder {
         ),
       ),
       blurEditor: BlurEditorConfigs(
+        maxBlur: 25,
         style: const BlurEditorStyle(
           background: Color(0xFF000000),
         ),
