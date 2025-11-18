@@ -109,8 +109,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
       final oldPosts = <({AtUri uri, String? cid, Map<String, dynamic> convertedValue})>[];
 
       for (final record in topLevelRecords) {
-        // ignore: unnecessary_cast
-        final value = record.value as Map<String, dynamic>;
+        final value = record.value;
 
         // Check if this is an old post (has "text" at root or "embed" field, but not "caption" or "media")
         final isOldPost =
