@@ -25,7 +25,7 @@ dependencies:
   http: ^1.2.0
   url_launcher: ^6.2.5
   shared_preferences: ^2.5.3
-  fvp: ^0.32.1
+  fvp: ^0.35.0
   fluentui_system_icons: ^1.1.273
   image_picker: ^1.0.7
   path: ^1.9.1
@@ -47,7 +47,7 @@ dependencies:
   carousel_slider: ^5.0.0
   web_socket_channel: ^3.0.3
   any_link_preview: ^3.0.3
-  better_player_plus: ^1.0.8
+  better_player_plus: ^1.1.5
   intl: ^0.20.2
   video_player: ^2.10.0
   gradient_borders: ^1.0.1

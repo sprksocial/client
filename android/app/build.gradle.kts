@@ -21,7 +21,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "so.sprk.app"
-    compileSdk = 35
+    compileSdk = 36
     buildToolsVersion = "34.0.0"
     ndkVersion = "27.0.12077973"
 
