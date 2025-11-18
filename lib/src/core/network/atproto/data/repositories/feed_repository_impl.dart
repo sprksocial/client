@@ -748,6 +748,7 @@ class FeedRepositoryImpl implements FeedRepository {
       final serviceTokenRes = await authAtProto.server.getServiceAuth(
         aud: 'did:web:$pdsService',
         lxm: NSID.parse('com.atproto.repo.uploadBlob'),
+        exp: DateTime.now().toUtc().add(const Duration(minutes: 5)).millisecondsSinceEpoch ~/ 1000,
       );
 
       final serviceToken = serviceTokenRes.data.token;
