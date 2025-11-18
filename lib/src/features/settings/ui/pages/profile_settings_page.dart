@@ -91,7 +91,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
       final result = await atproto.repo.listRecords(
         repo: did,
         collection: collection,
-        limit: 100, // Limit cant be more than 100
+        limit: 100, // Limit can't be more than 100
       );
 
       final allRecords = result.data.records;
@@ -99,8 +99,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
 
       // Filter out posts with a reply field (only keep top-level posts)
       final topLevelRecords = allRecords.where((record) {
-        // ignore: unnecessary_cast
-        final value = record.value as Map<String, dynamic>;
+        final value = record.value;
         return !value.containsKey('reply');
       }).toList();
 
@@ -167,6 +166,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
             final result = await atproto.repo.putRecord(
               uri: post.uri,
               record: post.convertedValue,
+              swapRecord: post.cid,
             );
 
             successCount++;
