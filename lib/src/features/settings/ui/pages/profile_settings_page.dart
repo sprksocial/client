@@ -165,7 +165,6 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
             final result = await atproto.repo.putRecord(
               uri: post.uri,
               record: post.convertedValue,
-              swapRecord: post.cid,
             );
 
             successCount++;
