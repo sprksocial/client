@@ -369,7 +369,6 @@ class FeedNotifier extends _$FeedNotifier {
     state = state.copyWith(loadedPosts: updatedPosts);
   }
 
-
   /// Checks if a post should be hidden based on its labels and user preferences
   Future<bool> _shouldHidePost(AtUri uri, List<Label> postLabels) async {
     final hideAdultContent = await _settingsRepository.getHideAdultContent();
