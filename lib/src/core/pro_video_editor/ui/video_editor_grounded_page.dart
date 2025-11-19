@@ -37,7 +37,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
 
   /// Video editor configuration settings.
   final VideoEditorConfigs _videoConfigs = const VideoEditorConfigs(
-    initialMuted: true,
     enablePlayButton: true,
     playTimeSmoothingDuration: Duration(milliseconds: 600),
   );
