@@ -11,9 +11,8 @@ part 'feed_state.freezed.dart';
 abstract class FeedState with _$FeedState {
   const factory FeedState({
     required bool active,
-    required List<AtUri> loadedPosts,
+    required List<PostView> loadedPosts,
     required int index,
-    required int freshPostCount,
     required bool isEndOfNetworkFeed,
     required String? cursor,
     required bool loadingFirstLoad,
@@ -25,7 +24,7 @@ abstract class FeedState with _$FeedState {
   int get length => loadedPosts.length;
 
   static const int fetchLimit = 10; // number of posts to fetch at a time
-  static const int loadLimit = 10; // number of posts to load from the database at a time
+  static const int loadLimit = 10; // number of posts to keep ahead in memory
   static const int firstLoadLimit = 10; // number of posts to load in the first load
   static const int poolSize = fetchLimit + (fetchLimit >> 1); // number of post embeds to cache at a time
 }
