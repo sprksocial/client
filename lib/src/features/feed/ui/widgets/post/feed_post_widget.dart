@@ -1,11 +1,10 @@
 import 'package:atproto/atproto.dart';
+import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/core/ui/widgets/content_warning_overlay.dart';
 import 'package:sparksocial/src/core/ui/widgets/heart_animation.dart';
@@ -30,7 +29,7 @@ class FeedPostWidget extends ConsumerStatefulWidget {
 }
 
 class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
-  Future<dynamic>? _postFuture;
+  Future<PostView>? _postFuture;
   String? _lastPostUri;
   int? _lastUpdateCount;
   final GlobalKey<PostVideoPlayerState> _videoPlayerKey = GlobalKey<PostVideoPlayerState>();
@@ -50,13 +49,11 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
   void _loadPost() {
     final feedState = ref.read(feedNotifierProvider(widget.feed));
     if (widget.index < feedState.loadedPosts.length) {
-      final postUri = feedState.loadedPosts[widget.index];
-      final currentUri = postUri.toString();
+      final post = feedState.loadedPosts[widget.index];
+      final currentUri = post.uri.toString();
 
-      // Create new future if URI changed or if we need to force refresh
       _lastPostUri = currentUri;
-      _postFuture = GetIt.instance<SQLCacheInterface>().getPost(currentUri);
-      // Reset any UI overrides tied to the previous post
+      _postFuture = Future.value(post);
       _overrideIsLiked = null;
     }
   }
@@ -91,9 +88,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
         viewer: postData.viewer?.copyWith(like: newLike.uri) ?? Viewer(like: newLike.uri, repost: postData.viewer?.repost),
       );
 
-      // Update cache with the modified post
-      await GetIt.instance<SQLCacheInterface>().updatePost(updatedPost);
-      // Drive SideActionBar via props instead of GlobalKey/stateful method
+      ref.read(feedNotifierProvider(widget.feed).notifier).replacePost(updatedPost);
       if (mounted) {
         setState(() {
           _overrideIsLiked = true;
@@ -107,8 +102,11 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
   Future<void> _checkContentWarning(String postUri) async {
     final feedState = ref.read(feedNotifierProvider(widget.feed));
     if (widget.index < feedState.loadedPosts.length) {
-      final uri = feedState.loadedPosts[widget.index];
-      final extraInfo = feedState.extraInfo[uri];
+      final post = feedState.loadedPosts[widget.index];
+      if (post.uri.toString() != postUri) {
+        return;
+      }
+      final extraInfo = feedState.extraInfo[post.uri];
 
       if (extraInfo != null && extraInfo.postLabels.isNotEmpty && !_userDismissedWarning) {
         final shouldShowWarning = await LabelUtils.shouldShowWarning(extraInfo.postLabels);
@@ -143,8 +141,8 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
     final isOnFeedsTab = navigationState.currentIndex == 0;
 
     if (widget.index < feedState.loadedPosts.length) {
-      final postUri = feedState.loadedPosts[widget.index];
-      final currentUri = postUri.toString();
+      final post = feedState.loadedPosts[widget.index];
+      final currentUri = post.uri.toString();
 
       // Watch for post updates to trigger reload
       final updateCount = ref.watch(postUpdateProvider(currentUri));
@@ -153,6 +151,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
         _lastUpdateCount = updateCount;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
+            ref.read(feedNotifierProvider(widget.feed).notifier).refreshPost(AtUri.parse(currentUri));
             setState(_loadPost);
             _checkContentWarning(currentUri);
           }
@@ -169,13 +168,14 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
       return const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
     }
 
-    return FutureBuilder(
+    return FutureBuilder<PostView>(
       future: _postFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
-          final postData = snapshot.data! as PostView;
+          final postData = snapshot.data!;
           final sideActionBar = SideActionBar(
             post: postData,
+            feed: widget.feed,
             likeCount: '${postData.likeCount ?? 0}',
             commentCount: '${postData.replyCount ?? 0}',
             shareCount: '${postData.repostCount ?? 0}',
@@ -183,7 +183,6 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
             profileImageUrl: postData.author.avatar.toString(),
             isImage: postData.media is MediaViewImages || postData.media is MediaViewBskyImages,
             onProfilePressed: () {
-              // Pause video before navigating to profile
               _videoPlayerKey.currentState?.pauseVideo();
             },
           );
@@ -284,8 +283,8 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                         var labels = <Label>[];
 
                         if (widget.index < feedState.loadedPosts.length) {
-                          final uri = feedState.loadedPosts[widget.index];
-                          final extraInfo = feedState.extraInfo[uri];
+                          final post = feedState.loadedPosts[widget.index];
+                          final extraInfo = feedState.extraInfo[post.uri];
                           if (extraInfo != null) {
                             labels = extraInfo.postLabels;
                           }

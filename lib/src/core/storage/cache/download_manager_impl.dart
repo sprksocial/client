@@ -5,14 +5,12 @@ import 'package:get_it/get_it.dart';
 import 'package:pool/pool.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
-import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
 
 class DownloadManagerImpl implements DownloadManagerInterface {
   DownloadManagerImpl() : _pool = Pool(FeedState.poolSize) {
-    _sqlCache = GetIt.instance<SQLCacheInterface>();
     _logger = GetIt.instance<LogService>().getLogger('DownloadManager');
   }
 
@@ -23,7 +21,6 @@ class DownloadManagerImpl implements DownloadManagerInterface {
   @override
   bool get poolFull => _tasks.length >= FeedState.poolSize;
 
-  late final SQLCacheInterface _sqlCache;
   late final SparkLogger _logger;
   late final Pool _pool;
   final PriorityQueue<DownloadTask> _tasks = PriorityQueue<DownloadTask>((a, b) => a.priority.compareTo(b.priority));
@@ -216,11 +213,6 @@ class DownloadManagerImpl implements DownloadManagerInterface {
         default:
           throw Exception('Unsupported media type: ${task.post.media.runtimeType}');
       }
-
-      // Always store the post data in the database (regardless of whether media was cached)
-      await _sqlCache.cachePost(task.post);
-      await _sqlCache.cacheFeed(task.feed);
-      await _sqlCache.appendPostsToFeed(task.feed, [task.post.uri.toString()]);
 
       task.status = DownloadTaskStatus.completed;
       _logger.d('Task ${task.uri} completed successfully.');

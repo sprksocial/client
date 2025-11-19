@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/feed/snappy_page_scroll_physics.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_feed_post_widget.dart';
 
@@ -75,6 +76,7 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
           return CacheablePageView.builder(
             controller: pageController,
             scrollDirection: Axis.vertical,
+            physics: const SnappyPageScrollPhysics(),
             itemCount: filteredUris.length,
             onPageChanged: (index) {
               // Load more posts when approaching the end
