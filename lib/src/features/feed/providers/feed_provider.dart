@@ -127,7 +127,13 @@ class FeedNotifier extends _$FeedNotifier {
     _isLoadingInProgress = true;
     try {
       _seenUris.clear();
-      state = state.copyWith(loadingFirstLoad: true, error: false, loadedPosts: const <PostView>[]);
+      state = state.copyWith(
+        loadingFirstLoad: true,
+        error: false,
+        loadedPosts: const <PostView>[],
+        cursor: null, // Reset cursor to start from beginning
+        isEndOfNetworkFeed: false,
+      );
       await _maybeFetchNextBatch(limit: FeedState.firstLoadLimit, replaceExisting: true);
     } catch (e, stackTrace) {
       _logger.e('Error in loadAndUpdateFirstLoad: $e', stackTrace: stackTrace);
