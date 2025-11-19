@@ -5,6 +5,7 @@ import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_refresh_trigger_provider.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/feed/snappy_page_scroll_physics.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/feed_post_widget.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/no_more_posts.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
@@ -117,7 +118,7 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
               itemCount: state.length + (state.isEndOfNetworkFeed ? 1 : 0),
               scrollDirection: Axis.vertical,
               restorationId: widget.feed.identifier,
-              physics: shouldBeActive ? const PageScrollPhysics() : const NeverScrollableScrollPhysics(),
+              physics: shouldBeActive ? const SnappyPageScrollPhysics() : const NeverScrollableScrollPhysics(),
               allowImplicitScrolling: true,
               onPageChanged: (index) {
                 // Only handle page changes when active
