@@ -26,6 +26,16 @@ class _FeedTagListState extends State<FeedTagList> {
     _selectedTagId = widget.selectedTagId;
   }
 
+  @override
+  void didUpdateWidget(FeedTagList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedTagId != oldWidget.selectedTagId) {
+      setState(() {
+        _selectedTagId = widget.selectedTagId;
+      });
+    }
+  }
+
   void _handleTagTap(String tagId) {
     setState(() {
       _selectedTagId = tagId;
