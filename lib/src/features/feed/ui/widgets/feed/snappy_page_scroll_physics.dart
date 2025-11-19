@@ -31,19 +31,6 @@ class SnappyPageScrollPhysics extends PageScrollPhysics {
   );
 
   @override
-  double carriedMomentum(double existingVelocity) {
-    // Allow new gestures to fully override existing animations
-    // Return 0 so new swipes during animation start fresh instead of interrupting
-    return 0;
-  }
-
-  @override
-  double applyPhysicsToUserOffset(ScrollMetrics position, double offset) {
-    // Allow user to take full control during animations
-    return offset;
-  }
-
-  @override
   Simulation? createBallisticSimulation(
     ScrollMetrics position,
     double velocity,
