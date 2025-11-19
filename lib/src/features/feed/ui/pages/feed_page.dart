@@ -84,6 +84,11 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
       });
 
       try {
+        // Jump to top immediately without animation
+        if (pageController.hasClients) {
+          pageController.jumpToPage(0);
+        }
+        
         // Only reset initialization flag, don't invalidate the entire provider
         _hasInitialized = false;
         await notifier.loadAndUpdateFirstLoad();

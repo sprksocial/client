@@ -7,7 +7,6 @@ import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/ui/widgets/content_warning_overlay.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
 import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
@@ -50,39 +49,21 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
   }
 
   Future<PostView> _loadPostWithFallback() async {
-    final sqlCache = GetIt.instance<SQLCacheInterface>();
-
-    try {
-      // Try to get from cache first
-      return await sqlCache.getPost(widget.postUri);
-    } catch (e) {
-      // If cache fails, fetch from network
-      final feedRepository = GetIt.instance<SprkRepository>().feed;
-      final uri = AtUri.parse(widget.postUri);
-      var isBlueskyPost = false;
-      // try {
-      isBlueskyPost = uri.collection.toString().startsWith('app.bsky.feed.post');
-      // } catch (e) {
-      // what
-      // }
-      const maxRetries = 3;
-      const delay = Duration(seconds: 2);
-      for (final i = 0; i < maxRetries; i) {
-        final networkPost = await feedRepository.getPosts([uri], bluesky: isBlueskyPost);
-
-        if (networkPost.isNotEmpty) {
-          // Cache the post for future use
-          await sqlCache.cachePost(networkPost.first);
-          return networkPost.first;
-        }
-
-        // If post not found, wait and retry
-        if (i < maxRetries - 1) {
-          await Future.delayed(delay);
-        }
+    final feedRepository = GetIt.instance<SprkRepository>().feed;
+    final uri = AtUri.parse(widget.postUri);
+    final isBlueskyPost = uri.collection.toString().startsWith('app.bsky.feed.post');
+    const maxRetries = 3;
+    const delay = Duration(seconds: 2);
+    for (var i = 0; i < maxRetries; i++) {
+      final networkPost = await feedRepository.getPosts([uri], bluesky: isBlueskyPost);
+      if (networkPost.isNotEmpty) {
+        return networkPost.first;
       }
-      throw Exception('Failed to load post after $maxRetries attempts');
+      if (i < maxRetries - 1) {
+        await Future.delayed(delay);
+      }
     }
+    throw Exception('Failed to load post after $maxRetries attempts');
   }
 
   Future<void> _checkContentWarning(PostView postData) async {

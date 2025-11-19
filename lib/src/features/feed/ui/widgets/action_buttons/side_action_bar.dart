@@ -2,11 +2,10 @@ import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/design_system/components/organisms/side_action_bar.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/share_panel.dart';
 
@@ -14,6 +13,7 @@ class SideActionBar extends ConsumerStatefulWidget {
   const SideActionBar({
     required this.post,
     super.key,
+    this.feed,
     this.likeCount = '0',
     this.commentCount = '0',
     this.shareCount = '0',
@@ -22,6 +22,7 @@ class SideActionBar extends ConsumerStatefulWidget {
     this.isImage = false,
     this.onProfilePressed,
   });
+  final Feed? feed;
   final String likeCount;
   final String commentCount;
   final String shareCount;
@@ -82,16 +83,15 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         final currentPost = _currentPost ?? widget.post;
         final newLike = await ref.read(likePostProvider(currentPost.cid, currentPost.uri).future);
 
-        // Update the post's viewer field with the new like reference
         final updatedPost = currentPost.copyWith(
           viewer:
               currentPost.viewer?.copyWith(like: newLike.uri) ?? Viewer(like: newLike.uri, repost: currentPost.viewer?.repost),
         );
 
-        // Update cache with the modified post
-        await GetIt.instance<SQLCacheInterface>().updatePost(updatedPost);
+        if (widget.feed != null) {
+          ref.read(feedNotifierProvider(widget.feed!).notifier).replacePost(updatedPost);
+        }
 
-        // Update the local post reference
         _currentPost = updatedPost;
       } else {
         // Unlike the post
@@ -99,15 +99,14 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         if (currentPost.viewer?.like != null) {
           await ref.read(unlikePostProvider(AtUri.parse(currentPost.viewer!.like!.toString())).future);
 
-          // Update the post's viewer field to remove the like reference
           final updatedPost = currentPost.copyWith(
             viewer: currentPost.viewer?.copyWith(like: null) ?? Viewer(repost: currentPost.viewer?.repost),
           );
 
-          // Update cache with the modified post
-          await GetIt.instance<SQLCacheInterface>().updatePost(updatedPost);
+          if (widget.feed != null) {
+            ref.read(feedNotifierProvider(widget.feed!).notifier).replacePost(updatedPost);
+          }
 
-          // Update the local post reference
           _currentPost = updatedPost;
         }
       }
@@ -186,68 +185,6 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       },
     );
   }
-
-  // TODO: These handlers were part of the old design with profile and menu buttons.
-  // They may need to be reintegrated if those UI elements are added back.
-  // For now, they're kept for reference but not actively used.
-
-  // void _handleReport(BuildContext context) {
-  //   final currentPost = _currentPost ?? widget.post;
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) => ReportDialog(postUri: currentPost.uri.toString(), postCid: currentPost.cid),
-  //   );
-  // }
-
-  // Future<void> _handleDelete(BuildContext context) async {
-  //   final messenger = ScaffoldMessenger.of(context);
-  //   final shouldDelete =
-  //       await showDialog<bool>(
-  //         context: context,
-  //         builder: (context) => AlertDialog(
-  //           title: const Text('Delete Post'),
-  //           content: const Text('Are you sure you want to delete this post? This action cannot be undone.'),
-  //           actions: [
-  //             TextButton(onPressed: () => context.router.maybePop(false), child: const Text('Cancel')),
-  //             TextButton(
-  //               style: TextButton.styleFrom(foregroundColor: Colors.red),
-  //               onPressed: () => context.router.maybePop(true),
-  //               child: const Text('Delete'),
-  //             ),
-  //           ],
-  //         ),
-  //       ) ??
-  //       false;
-  //   if (!shouldDelete || !mounted) return;
-  //   try {
-  //     final currentPost = _currentPost ?? widget.post;
-  //     await GetIt.I<SQLCacheInterface>().deletePost(currentPost.uri);
-  //     await GetIt.I<SprkRepository>().repo.deleteRecord(uri: currentPost.uri);
-  //     final feeds = await GetIt.I<SettingsRepository>().getFeeds();
-  //     for (final feed in feeds) {
-  //       ref.invalidate(feedNotifierProvider(feed));
-  //     }
-  //     final did = currentPost.author.did;
-  //     ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), true));
-  //     ref.invalidate(profileFeedProvider(AtUri.parse('at://$did'), false));
-  //     messenger.showSnackBar(const SnackBar(content: Text('Post deleted successfully!')));
-  //     if (context.mounted) {
-  //       context.router.popUntilRoot();
-  //     }
-  //   } catch (e) {
-  //     if (mounted) {
-  //       messenger.showSnackBar(SnackBar(content: Text('Error deleting post: $e')));
-  //     }
-  //   }
-  // }
-
-  // void _handleProfilePressed() {
-  //   if (widget.onProfilePressed != null) {
-  //     widget.onProfilePressed!();
-  //   }
-  //   final currentPost = _currentPost ?? widget.post;
-  //   context.router.push(ProfileRoute(did: currentPost.author.did));
-  // }
 
   void _handleCommentPressed() {
     final currentPost = _currentPost ?? widget.post;
