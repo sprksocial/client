@@ -247,6 +247,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                           hashtags: post.record.hashtags,
                           informLabels: informLabels,
                           isSprk: post.uri.toString().contains('so.sprk'),
+                          audio: post.sound,
                           onUsernameTap: () {
                             context.router.push(ProfileRoute(did: post.author.did));
                           },

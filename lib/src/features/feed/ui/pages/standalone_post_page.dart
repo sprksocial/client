@@ -156,7 +156,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                         Positioned(
                           left: 0,
                           right: 0,
-                          bottom: 16,
+                          bottom: 0,
                           child: IgnorePointer(
                             child: Container(
                               height: 80, // covers the area behind the InfoBar
@@ -205,6 +205,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                                 description: postData.displayText,
                                 hashtags: postData.record.hashtags,
                                 informLabels: informLabels,
+                                audio: postData.sound,
                                 isSprk: postData.uri.toString().contains('so.sprk'),
                                 onUsernameTap: () {
                                   // Pause video before navigating to profile

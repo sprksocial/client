@@ -29,7 +29,7 @@ class AudioView with _$AudioView {
     required String title,
     @UriConverter() required Uri coverArt,
     required DateTime indexedAt,
-    @UriConverter() required Uri audio,
+    @UriConverter() Uri? audio,
     @Default(0) int useCount,
     AudioDetails? details,
     @Default([]) List<Label> labels,
