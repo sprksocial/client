@@ -304,6 +304,14 @@ extension BskyRecordAdapter on Record {
             pinnedPost: pinnedPost,
             createdAt: createdAt,
           ),
+      audio: (sound, title, createdAt, origin, details, labels) => AudioRecord(
+        sound: sound,
+        title: title,
+        createdAt: createdAt,
+        origin: origin,
+        details: details,
+        labels: labels,
+      ),
       bskyPost: (createdAt, text, facets, reply, langs, tags, selfLabels, embed) => BskyPostRecord(
         createdAt: createdAt,
         text: text,

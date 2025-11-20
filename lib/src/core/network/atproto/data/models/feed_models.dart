@@ -276,6 +276,7 @@ class PostView with _$PostView {
     List<Label>? labels,
     Viewer? viewer,
     MediaView? media,
+    AudioView? sound,
   }) = _PostView;
   const PostView._();
 

@@ -4,6 +4,7 @@ import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/design_system/components/molecules/profile_avatar.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 
 class InfoBarTemplate extends StatefulWidget {
   const InfoBarTemplate({
@@ -12,7 +13,7 @@ class InfoBarTemplate extends StatefulWidget {
     super.key,
     this.description,
     this.descriptionMaxLines = 2,
-    this.music,
+    this.audio,
     this.informLabels = const [],
     this.showFollowButton = false,
     this.onFollow,
@@ -35,8 +36,8 @@ class InfoBarTemplate extends StatefulWidget {
   final String? description;
   final int descriptionMaxLines;
 
-  /// Optional music string. Example: `The Weeknd - Blinding Lights`.
-  final String? music;
+  /// Optional audio view for rich music display.
+  final AudioView? audio;
 
   /// Informational labels (content notices, etc.).
   final List<String> informLabels;
@@ -108,7 +109,7 @@ class _InfoBarTemplateState extends State<InfoBarTemplate> with SingleTickerProv
 
     final hasDescription = widget.description?.isNotEmpty ?? false;
     final hasInform = widget.informLabels.isNotEmpty;
-    final hasMusic = widget.music != null && widget.music!.isNotEmpty;
+    final hasMusic = widget.audio != null;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,7 +168,7 @@ class _InfoBarTemplateState extends State<InfoBarTemplate> with SingleTickerProv
           GestureDetector(
             onTap: _toggleDescription,
             child: Padding(
-              padding: const EdgeInsets.only(left:8),
+              padding: const EdgeInsets.only(left: 8),
               child: Text(
                 widget.description!,
                 style: AppTypography.textSmallMedium.copyWith(color: textColor),
@@ -178,21 +179,7 @@ class _InfoBarTemplateState extends State<InfoBarTemplate> with SingleTickerProv
           ),
 
         if (hasMusic) const SizedBox(height: 8),
-        if (hasMusic)
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AppIcons.music(size: 16, color: textColor.withAlpha(220)),
-              const SizedBox(width: 6),
-              Flexible(
-                child: Text(
-                  widget.music!,
-                  style: AppTypography.textSmallThin.copyWith(color: textColor),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-            ],
-          ),
+        if (hasMusic) _AudioCard(audio: widget.audio!),
 
         if (hasInform) const SizedBox(height: 8),
         if (hasInform)
@@ -204,6 +191,54 @@ class _InfoBarTemplateState extends State<InfoBarTemplate> with SingleTickerProv
             ],
           ),
       ],
+    );
+  }
+}
+
+class _AudioCard extends StatelessWidget {
+  const _AudioCard({required this.audio});
+
+  final AudioView audio;
+
+  @override
+  Widget build(BuildContext context) {
+    const textColor = AppColors.greyWhite;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Cover Art
+          Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(4),
+              image: DecorationImage(
+                image: NetworkImage(audio.coverArt.toString()),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          // Music Icon
+          AppIcons.music(size: 14, color: textColor.withOpacity(0.8)),
+          const SizedBox(width: 6),
+          // Title
+          Flexible(
+            child: Text(
+              audio.title,
+              style: AppTypography.textSmallMedium.copyWith(color: textColor),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

@@ -12,7 +12,8 @@ import 'package:sparksocial/src/core/network/atproto/data/repositories/labeler_r
 import 'package:sparksocial/src/core/network/atproto/data/repositories/labeler_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository_impl.dart';
-
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/story_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/story_repository_impl.dart';
@@ -89,4 +90,7 @@ class SprkRepositoryImpl implements SprkRepository {
 
   @override
   LabelerRepository get labeler => LabelerRepositoryImpl(this);
+
+  @override
+  SoundRepository get sound => SoundRepositoryImpl(this);
 }

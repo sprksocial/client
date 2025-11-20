@@ -57,6 +57,17 @@ class Record with _$Record {
   }) = ProfileRecord;
 
   @JsonSerializable(explicitToJson: true)
+  @FreezedUnionValue('so.sprk.sound.audio')
+  const factory Record.audio({
+    required Blob sound,
+    required String title,
+    required DateTime createdAt,
+    StrongRef? origin,
+    AudioDetails? details,
+    List<SelfLabel>? labels,
+  }) = AudioRecord;
+
+  @JsonSerializable(explicitToJson: true)
   @FreezedUnionValue('app.bsky.feed.post')
   const factory Record.bskyPost({
     DateTime? createdAt,

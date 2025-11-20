@@ -302,6 +302,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                               hashtags: postData.record.hashtags,
                               informLabels: informLabels,
                               isSprk: postData.uri.toString().contains('so.sprk'),
+                              audio: postData.sound,
                               onUsernameTap: () {
                                 _videoPlayerKey.currentState?.pauseVideo();
                                 context.router.push(ProfileRoute(did: postData.author.did));

@@ -14,7 +14,6 @@ Widget buildInfoBarTemplateUseCase(BuildContext context) {
           handle: 'katiemiddow.sprk.so',
           avatarUrl: 'https://picsum.photos/100',
           description: "This is my last creation, I'm happy to introduce...",
-          music: 'The Weeknd - Blinding Lights',
           informLabels: const ['Sensitive content'],
           showFollowButton: true,
           onFollow: () {},
