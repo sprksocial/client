@@ -2,8 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/pref_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
+import 'package:sparksocial/src/core/storage/preferences/default_preferences.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_state.dart';
@@ -20,6 +23,7 @@ PrefRepository prefRepository(Ref ref) {
 @Riverpod(keepAlive: true)
 class Settings extends _$Settings {
   late final PrefRepository _prefRepository;
+  late final FeedRepository _feedRepository;
   late final SQLCacheInterface _sqlCache;
   late final SparkLogger _logger;
   late final Feed _defaultFeed;
@@ -27,6 +31,7 @@ class Settings extends _$Settings {
   @override
   SettingsState build() {
     _prefRepository = ref.watch(prefRepositoryProvider);
+    _feedRepository = GetIt.instance<SprkRepository>().feed;
     _sqlCache = GetIt.instance<SQLCacheInterface>();
     _logger = GetIt.instance<LogService>().getLogger('Settings');
     _defaultFeed = Feed(
@@ -48,10 +53,37 @@ class Settings extends _$Settings {
   Future<void> loadSettings() async {
     try {
       _logger.d('Loading settings from server...');
-
       final preferences = await _prefRepository.getPreferences();
-      final feeds = _getFeedsFromPreferences(preferences);
-      final activeFeed = _getActiveFeedFromPreferences(preferences);
+      final savedFeeds = _getSavedFeedsFromPreferences(preferences);
+
+      // If there are no feeds, set default preferences
+      if (savedFeeds.isEmpty) {
+        try {
+          final defaultPrefs = DefaultPreferences.defaultPreferences;
+          await _prefRepository.putPreferences(defaultPrefs);
+
+          // Reload preferences after setting defaults
+          final updatedPreferences = await _prefRepository.getPreferences();
+          final updatedSavedFeeds = _getSavedFeedsFromPreferences(updatedPreferences);
+          final updatedFeeds = await _feedRepository.getFeedsFromSavedFeeds(updatedSavedFeeds);
+          final updatedActiveFeed = _getActiveFeedFromFeeds(updatedFeeds, updatedSavedFeeds);
+          final updatedPostToBskyEnabled = _getPostToBskyEnabledFromPreferences(updatedPreferences);
+
+          state = SettingsState(
+            activeFeed: updatedActiveFeed,
+            feeds: updatedFeeds,
+            postToBskyEnabled: updatedPostToBskyEnabled,
+          );
+          return;
+        } catch (e) {
+          _logger.e('Error setting default preferences: $e');
+          // Continue with default feed if setting defaults fails
+        }
+      }
+
+      // Hydrate feeds with generator views using getFeedGenerators
+      final feeds = await _feedRepository.getFeedsFromSavedFeeds(savedFeeds);
+      final activeFeed = _getActiveFeedFromFeeds(feeds, savedFeeds);
       final postToBskyEnabled = _getPostToBskyEnabledFromPreferences(preferences);
 
       _logger.d(
@@ -150,38 +182,41 @@ class Settings extends _$Settings {
 
   // Helper methods for working with Preferences
 
-  List<Feed> _getFeedsFromPreferences(Preferences preferences) {
-    final savedFeedPref = preferences.savedFeeds;
-    if (savedFeedPref == null || savedFeedPref.isEmpty) {
-      return [];
+  List<SavedFeed> _getSavedFeedsFromPreferences(Preferences preferences) {
+    // Extract feeds from the preferences list (fromJson doesn't populate savedFeeds)
+    final savedFeeds = <SavedFeed>[];
+    for (final pref in preferences.preferences) {
+      pref.mapOrNull(
+        savedFeedsPref: (savedFeedsPref) {
+          savedFeeds.addAll(savedFeedsPref.items);
+        },
+      );
     }
-    return savedFeedPref
-        .map(
-          (savedFeed) => Feed(
-            type: savedFeed.type,
-            config: savedFeed,
-          ),
-        )
-        .toList();
+    return savedFeeds;
   }
 
-  Feed _getActiveFeedFromPreferences(Preferences preferences) {
-    final feeds = preferences.savedFeeds ?? [];
+  Feed _getActiveFeedFromFeeds(List<Feed> feeds, List<SavedFeed> savedFeeds) {
     SavedFeed? activeSavedFeed;
     try {
-      activeSavedFeed = feeds.firstWhere((feed) => feed.pinned);
+      activeSavedFeed = savedFeeds.firstWhere((feed) => feed.pinned);
     } catch (e) {
-      if (feeds.isNotEmpty) {
-        activeSavedFeed = feeds.first;
+      if (savedFeeds.isNotEmpty) {
+        activeSavedFeed = savedFeeds.first;
       }
     }
     if (activeSavedFeed == null) {
       return _defaultFeed;
     }
-    return Feed(
-      type: activeSavedFeed.type,
-      config: activeSavedFeed,
-    );
+    // Find the corresponding hydrated feed
+    try {
+      return feeds.firstWhere((feed) => feed.config.id == activeSavedFeed!.id);
+    } catch (e) {
+      // Fallback to creating feed without view if not found
+      return Feed(
+        type: activeSavedFeed.type,
+        config: activeSavedFeed,
+      );
+    }
   }
 
   bool _getPostToBskyEnabledFromPreferences(Preferences preferences) {
@@ -204,7 +239,16 @@ class Settings extends _$Settings {
 
   Future<void> _setActiveFeedInPreferences(Feed feed) async {
     final preferences = await _prefRepository.getPreferences();
-    final currentFeeds = preferences.savedFeeds ?? [];
+    // Extract feeds from the preferences list (fromJson doesn't populate savedFeeds)
+    final currentFeeds = <SavedFeed>[];
+    for (final pref in preferences.preferences) {
+      pref.mapOrNull(
+        savedFeedsPref: (savedFeedsPref) {
+          currentFeeds.addAll(savedFeedsPref.items);
+        },
+      );
+    }
+
     final updatedFeeds = currentFeeds.map((f) => f.copyWith(pinned: f.id == feed.config.id)).toList();
     if (!updatedFeeds.any((f) => f.id == feed.config.id)) {
       updatedFeeds.add(feed.config.copyWith(pinned: true));
@@ -279,7 +323,9 @@ class Settings extends _$Settings {
 
   Future<Feed> getActiveFeed() async {
     final preferences = await _prefRepository.getPreferences();
-    return _getActiveFeedFromPreferences(preferences);
+    final savedFeeds = _getSavedFeedsFromPreferences(preferences);
+    final feeds = await _feedRepository.getFeedsFromSavedFeeds(savedFeeds);
+    return _getActiveFeedFromFeeds(feeds, savedFeeds);
   }
 
   // Helper conversion methods

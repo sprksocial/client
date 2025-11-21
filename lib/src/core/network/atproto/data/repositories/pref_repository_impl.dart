@@ -41,8 +41,7 @@ class PrefRepositoryImpl implements PrefRepository {
         throw Exception('Failed to retrieve preferences');
       }
 
-      final preferences = Preferences.fromJson(result.data as Map<String, dynamic>);
-      return preferences;
+      return Preferences.fromJson(result.data as Map<String, dynamic>);
     });
   }
 
@@ -60,18 +59,15 @@ class PrefRepositoryImpl implements PrefRepository {
         throw Exception('AtProto not initialized');
       }
 
-      // @TODO: Implement putPreferences for feeds not followMode
-
       final result = await atproto.post(
         NSID.parse('so.sprk.actor.putPreferences'),
         body: preferences.toJson(),
         headers: {'atproto-proxy': _client.sprkDid},
-        to: (jsonMap) => jsonMap,
       );
 
       if (result.status != HttpStatus.ok) {
         _logger.e('Failed to update preferences');
-        throw Exception('Failed to update preferences');
+        throw Exception('Failed to update preferences: ${result.status}');
       }
 
       _logger.d('Preferences updated successfully');

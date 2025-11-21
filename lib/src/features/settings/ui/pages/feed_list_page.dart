@@ -218,10 +218,16 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
   }
 
   IconData _getFeedIcon(Feed feed) {
+    if (feed.type == 'timeline') {
+      return FluentIcons.people_24_regular;
+    }
     return FluentIcons.feed_24_regular;
   }
 
   String _getFeedDescription(Feed feed) {
+    if (feed.type == 'timeline') {
+      return 'Posts from people you follow';
+    }
     return 'Custom algorithmic feed';
   }
 }

@@ -19,7 +19,6 @@ part 'feed_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class FeedNotifier extends _$FeedNotifier {
-  final _seenUris = <AtUri>{};
   bool _isLoadingInProgress = false;
   bool _isFetching = false;
   late Feed _feed;
@@ -115,7 +114,6 @@ class FeedNotifier extends _$FeedNotifier {
 
     _isLoadingInProgress = true;
     try {
-      _seenUris.clear();
       state = state.copyWith(
         loadingFirstLoad: true,
         error: false,
@@ -148,7 +146,15 @@ class FeedNotifier extends _$FeedNotifier {
     try {
       final uris = posts.map((post) => post.uri).toList();
       final settings = ref.read(settingsProvider.notifier);
-      final followedLabelers = await settings.getLabelers();
+      List<String> followedLabelers;
+      try {
+        followedLabelers = await settings.getLabelers().timeout(
+          const Duration(seconds: 5),
+          onTimeout: () => ['did:plc:pbgyr67hftvpoqtvaurpsctc'], // Default labeler
+        );
+      } catch (e) {
+        followedLabelers = ['did:plc:pbgyr67hftvpoqtvaurpsctc']; // Default labeler
+      }
       List<Label> fetchedLabels;
       try {
         final (cursor: _, labels: labelsFromApi) = await _feedRepository.getLabels(uris, sources: followedLabelers);
@@ -247,19 +253,25 @@ class FeedNotifier extends _$FeedNotifier {
       }
     } catch (e, stackTrace) {
       _logger.e('Error while processing fetched posts: $e', stackTrace: stackTrace);
+      // Ensure loadingFirstLoad is set to false even on error
+      state = state.copyWith(loadingFirstLoad: false, error: true);
     }
   }
 
   Future<({int count, List<PostView> posts, String? cursor})> fetch({int? limit}) async {
     final pageLimit = limit ?? FeedState.fetchLimit;
-    final skeleton = await _feedRepository.getFeed(_feed, limit: pageLimit, cursor: state.cursor);
-    final fetchedUris = skeleton.feed.map((e) => e.uri).toList();
-    final filteredUris = fetchedUris.where((uri) => !_seenUris.contains(uri)).toList();
-    if (filteredUris.isEmpty) {
-      return (count: skeleton.feed.length, posts: const <PostView>[], cursor: skeleton.cursor);
+    final feedView = await _feedRepository.getFeed(_feed, limit: pageLimit, cursor: state.cursor);
+
+    // Extract PostView from FeedViewPost items (they're already hydrated)
+    final posts = <PostView>[];
+    for (final feedPost in feedView.feed) {
+      final postView = feedPost.asPost;
+      if (postView != null) {
+        posts.add(postView);
+      }
     }
-    final posts = await _feedRepository.getPosts(filteredUris, bluesky: _shouldUseBlueskyAPI());
-    return (count: skeleton.feed.length, posts: posts, cursor: skeleton.cursor);
+
+    return (count: feedView.feed.length, posts: posts, cursor: feedView.cursor);
   }
 
   Future<void> _maybeFetchNextBatch({int? limit, bool replaceExisting = false}) async {
@@ -270,7 +282,9 @@ class FeedNotifier extends _$FeedNotifier {
     _isFetching = true;
     try {
       var attempts = 0;
+      var consecutiveEmptyResults = 0;
       const maxAttempts = 5;
+      const maxConsecutiveEmpty = 3;
       while (attempts < maxAttempts && !state.isEndOfNetworkFeed) {
         attempts++;
         final (:count, :posts, :cursor) = await fetch(limit: limit);
@@ -279,25 +293,31 @@ class FeedNotifier extends _$FeedNotifier {
         if (fetchedPosts.isEmpty) {
           if (fetchedCount == 0 || cursor == null) {
             await endOfNetworkFeed();
+            state = state.copyWith(loadingFirstLoad: false, isEndOfNetworkFeed: true);
             break;
           }
-          state = state.copyWith(cursor: cursor);
+          if (fetchedCount > 0) {
+            consecutiveEmptyResults++;
+            if (consecutiveEmptyResults >= maxConsecutiveEmpty) {
+              await endOfNetworkFeed();
+              state = state.copyWith(loadingFirstLoad: false, isEndOfNetworkFeed: true);
+              break;
+            }
+          }
+          state = state.copyWith(cursor: cursor, loadingFirstLoad: false);
           continue;
         }
 
-        final newPosts = <PostView>[];
-        for (final post in fetchedPosts) {
-          if (_seenUris.add(post.uri)) {
-            newPosts.add(post);
-          }
-        }
+        consecutiveEmptyResults = 0;
+        final newPosts = fetchedPosts;
 
         if (newPosts.isEmpty) {
-          state = state.copyWith(cursor: cursor);
-          if (cursor == null) {
+          if (fetchedCount == 0 || cursor == null) {
             await endOfNetworkFeed();
+            state = state.copyWith(loadingFirstLoad: false, isEndOfNetworkFeed: true);
             break;
           }
+          state = state.copyWith(cursor: cursor, loadingFirstLoad: false);
           continue;
         }
 

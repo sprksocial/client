@@ -55,6 +55,12 @@ abstract class FeedRepository {
 
   Future<GeneratorView> getFeedGenerator(AtUri feed);
 
+  /// Get multiple feed generators
+  ///
+  /// [feeds] List of feed URIs to fetch
+  /// [bluesky] Whether to fetch from Bluesky API instead of Spark
+  Future<List<GeneratorView>> getFeedGenerators(List<AtUri> feeds, {bool bluesky = false});
+
   Future<Feed> getFeedFromSavedFeed(SavedFeed savedFeed);
   Future<List<Feed>> getFeedsFromSavedFeeds(List<SavedFeed> savedFeeds);
 

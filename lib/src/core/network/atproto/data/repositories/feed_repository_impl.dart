@@ -88,7 +88,16 @@ class FeedRepositoryImpl implements FeedRepository {
       if (feed.type == 'timeline') {
         return getTimeline(limit: limit, cursor: cursor);
       }
-      throw ArgumentError('Invalid feed: $feed');
+      // For custom feeds, fetch the feed generator view first
+      final feedUri = AtUri(feed.config.value);
+      final view = await getFeedGenerator(feedUri);
+      // Update the feed with the view and continue
+      final feedWithView = Feed(type: feed.type, config: feed.config, view: view);
+      return _client.executeWithRetry(() async {
+        final result = await getFeedView(feedWithView.view!.uri, limit: limit, cursor: cursor);
+        _logger.d('Feed skeleton retrieved successfully');
+        return result;
+      });
     }
     return _client.executeWithRetry(() async {
       final result = await getFeedView(feed.view!.uri, limit: limit, cursor: cursor);
@@ -460,6 +469,7 @@ class FeedRepositoryImpl implements FeedRepository {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
+      final isBskyFeed = feed.collection == NSID.parse('app.bsky.feed.generator');
 
       final atproto = _client.authRepository.atproto;
       if (atproto == null) {
@@ -467,12 +477,61 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
+      final headers = isBskyFeed ? {'atproto-proxy': _client.bskyDid} : {'atproto-proxy': _client.sprkDid};
       final response = await atproto.get(
-        const NSID('so.sprk.feed.getFeedGenerator'),
+        isBskyFeed ? NSID.parse('app.bsky.feed.getFeedGenerator') : NSID.parse('so.sprk.feed.getFeedGenerator'),
         parameters: {'feed': feed.toString()},
-        headers: {'atproto_proxy': _client.sprkDid},
-        to: GeneratorView.fromJson,
+        headers: headers,
+        to: (jsonMap) {
+          // Both Bluesky and Spark APIs return the generator view nested in a 'view' key
+          final generatorData = jsonMap.containsKey('view') ? jsonMap['view']! as Map<String, dynamic> : jsonMap;
+          return GeneratorView.fromJson(generatorData);
+        },
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
+      return response.data;
+    });
+  }
+
+  @override
+  Future<List<GeneratorView>> getFeedGenerators(List<AtUri> feeds, {bool bluesky = false}) async {
+    _logger.d('Getting feed generators for ${feeds.length} feeds, bluesky: $bluesky');
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final headers = bluesky ? {'atproto-proxy': _client.bskyDid} : {'atproto-proxy': _client.sprkDid};
+      final feedStrings = feeds.map((feed) => feed.toString()).toList();
+      final response = await atproto.get(
+        bluesky ? NSID.parse('app.bsky.feed.getFeedGenerators') : NSID.parse('so.sprk.feed.getFeedGenerators'),
+        parameters: {'feeds': feedStrings},
+        headers: headers,
+        to: (jsonMap) {
+          final feedsData = jsonMap['feeds']! as List<dynamic>;
+          return feedsData
+              .map((feedData) {
+                try {
+                  final feedMap = feedData as Map<String, dynamic>;
+                  return GeneratorView.fromJson(feedMap);
+                } catch (e) {
+                  _logger.w('Failed to parse feed generator, skipping: $e');
+                  return null;
+                }
+              })
+              .whereType<GeneratorView>()
+              .toList();
+        },
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+      );
+      _logger.d('Feed generators retrieved successfully: ${response.data.length} generators');
       return response.data;
     });
   }
@@ -495,11 +554,78 @@ class FeedRepositoryImpl implements FeedRepository {
       if (savedFeeds.isEmpty) {
         return [];
       }
-      final feeds = <Feed>[];
+
+      // Separate timeline feeds from custom feeds
+      final timelineFeeds = <SavedFeed>[];
+      final customFeeds = <SavedFeed>[];
       for (final savedFeed in savedFeeds) {
-        final feed = await getFeedFromSavedFeed(savedFeed);
-        feeds.add(feed);
+        if (savedFeed.type == 'timeline') {
+          timelineFeeds.add(savedFeed);
+        } else {
+          customFeeds.add(savedFeed);
+        }
       }
+
+      final feeds = <Feed>[];
+
+      // Add timeline feeds directly (they don't need generator views)
+      for (final savedFeed in timelineFeeds) {
+        feeds.add(Feed(type: 'timeline', config: savedFeed));
+      }
+
+      if (customFeeds.isEmpty) {
+        return feeds;
+      }
+
+      // Group custom feeds by type (Bluesky vs Spark)
+      final bskyFeeds = <SavedFeed>[];
+      final sprkFeeds = <SavedFeed>[];
+      for (final savedFeed in customFeeds) {
+        final feedUri = AtUri(savedFeed.value);
+        final isBskyFeed = feedUri.collection == NSID.parse('app.bsky.feed.generator');
+        if (isBskyFeed) {
+          bskyFeeds.add(savedFeed);
+        } else {
+          sprkFeeds.add(savedFeed);
+        }
+      }
+
+      // Fetch all Bluesky feed generators at once
+      if (bskyFeeds.isNotEmpty) {
+        final bskyUris = bskyFeeds.map((savedFeed) => AtUri(savedFeed.value)).toList();
+        final bskyViews = await getFeedGenerators(bskyUris, bluesky: true);
+        final viewMap = {for (var view in bskyViews) view.uri: view};
+        for (final savedFeed in bskyFeeds) {
+          final feedUri = AtUri(savedFeed.value);
+          final view = viewMap[feedUri];
+          if (view != null) {
+            feeds.add(Feed(type: 'feed', config: savedFeed, view: view));
+          } else {
+            _logger.w('Feed generator view not found for Bluesky feed: $feedUri');
+            // Fallback: create feed without view
+            feeds.add(Feed(type: 'feed', config: savedFeed));
+          }
+        }
+      }
+
+      // Fetch all Spark feed generators at once
+      if (sprkFeeds.isNotEmpty) {
+        final sprkUris = sprkFeeds.map((savedFeed) => AtUri(savedFeed.value)).toList();
+        final sprkViews = await getFeedGenerators(sprkUris, bluesky: false);
+        final viewMap = {for (var view in sprkViews) view.uri: view};
+        for (final savedFeed in sprkFeeds) {
+          final feedUri = AtUri(savedFeed.value);
+          final view = viewMap[feedUri];
+          if (view != null) {
+            feeds.add(Feed(type: 'feed', config: savedFeed, view: view));
+          } else {
+            _logger.w('Feed generator view not found for Spark feed: $feedUri');
+            // Fallback: create feed without view
+            feeds.add(Feed(type: 'feed', config: savedFeed));
+          }
+        }
+      }
+
       return feeds;
     });
   }
