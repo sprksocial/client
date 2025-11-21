@@ -15,29 +15,53 @@ class Preferences with _$Preferences {
     final labelers = <LabelerPrefItem>[];
     final hiddenPosts = <AtUri>[];
     final mutedWords = <MutedWord>[];
-    
+    final feedViewPrefs = <Preference>[];
+    Preference? personalDetails;
+    Preference? threadViewPref;
+    Preference? interests;
+    Preference? postInteractionSettings;
+
     for (final preference in preferences) {
-      if (preference.mapOrNull(contentLabelPref: (pref) => pref) != null) {
-        contentLabelPrefs.add(ContentLabelPref(
-          labelerDid: preference.mapOrNull(contentLabelPref: (pref) => pref)!.labelerDid,
-          label: preference.mapOrNull(contentLabelPref: (pref) => pref)!.label,
-          visibility: preference.mapOrNull(contentLabelPref: (pref) => pref)!.visibility,
-        ));
-      }
-      if (preference.mapOrNull(savedFeedsPref: (pref) => pref) != null) {
-        savedFeeds.addAll(preference.mapOrNull(savedFeedsPref: (pref) => pref)!.items);
-      }
-      if (preference.mapOrNull(labelersPref: (pref) => pref) != null) {
-        labelers.addAll(preference.mapOrNull(labelersPref: (pref) => pref)!.labelers);
-      }
-      if (preference.mapOrNull(hiddenPostsPref: (pref) => pref) != null) {
-        hiddenPosts.addAll(preference.mapOrNull(hiddenPostsPref: (pref) => pref)!.posts);
-      }
-      if (preference.mapOrNull(mutedWordsPref: (pref) => pref) != null) {
-        mutedWords.addAll(preference.mapOrNull(mutedWordsPref: (pref) => pref)!.words);
-      }
+      preference.mapOrNull(
+        contentLabelPref: (pref) {
+          contentLabelPrefs.add(
+            ContentLabelPref(
+              labelerDid: pref.labelerDid,
+              label: pref.label,
+              visibility: pref.visibility,
+            ),
+          );
+        },
+        savedFeedsPref: (pref) {
+          savedFeeds.addAll(pref.items);
+        },
+        labelersPref: (pref) {
+          labelers.addAll(pref.labelers);
+        },
+        hiddenPostsPref: (pref) {
+          hiddenPosts.addAll(pref.posts);
+        },
+        mutedWordsPref: (pref) {
+          mutedWords.addAll(pref.words);
+        },
+        personalDetailsPref: (pref) {
+          personalDetails = preference;
+        },
+        feedViewPref: (pref) {
+          feedViewPrefs.add(preference);
+        },
+        threadViewPref: (pref) {
+          threadViewPref = preference;
+        },
+        interestsPref: (pref) {
+          interests = preference;
+        },
+        postInteractionSettingsPref: (pref) {
+          postInteractionSettings = preference;
+        },
+      );
     }
-    
+
     return Preferences.internal(
       preferences: preferences,
       contentLabelPrefs: contentLabelPrefs,
@@ -45,6 +69,11 @@ class Preferences with _$Preferences {
       labelers: labelers,
       hiddenPosts: hiddenPosts,
       mutedWords: mutedWords,
+      feedViewPrefs: feedViewPrefs,
+      personalDetails: personalDetails,
+      threadViewPref: threadViewPref,
+      interests: interests,
+      postInteractionSettings: postInteractionSettings,
     );
   }
 
@@ -55,6 +84,11 @@ class Preferences with _$Preferences {
     List<LabelerPrefItem>? labelers,
     @AtUriConverter() List<AtUri>? hiddenPosts,
     List<MutedWord>? mutedWords,
+    List<Preference>? feedViewPrefs,
+    Preference? personalDetails,
+    Preference? threadViewPref,
+    Preference? interests,
+    Preference? postInteractionSettings,
   }) = _Preferences;
   const Preferences._();
 
@@ -141,7 +175,8 @@ class Preference with _$Preference {
   const factory Preference.postInteractionSettingsPref({
     required bool enabled,
   }) = _PostInteractionSettingsPref;
-  bool isPostInteractionSettingsPref(Preference preference) => preference.mapOrNull(postInteractionSettingsPref: (pref) => pref) != null;
+  bool isPostInteractionSettingsPref(Preference preference) =>
+      preference.mapOrNull(postInteractionSettingsPref: (pref) => pref) != null;
 
   factory Preference.fromJson(Map<String, dynamic> json) => _$PreferenceFromJson(json);
 }

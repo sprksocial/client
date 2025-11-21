@@ -41,8 +41,8 @@ class PrefRepositoryImpl implements PrefRepository {
         throw Exception('Failed to retrieve preferences');
       }
 
-      _logger.d('Preferences retrieved successfully');
-      return Preferences.fromJson(result.data as Map<String, dynamic>);
+      final preferences = Preferences.fromJson(result.data as Map<String, dynamic>);
+      return preferences;
     });
   }
 

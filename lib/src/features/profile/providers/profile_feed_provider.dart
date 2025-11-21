@@ -8,10 +8,10 @@ import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
-import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_state.dart';
+import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 
 part 'profile_feed_provider.g.dart';
 
@@ -19,7 +19,6 @@ part 'profile_feed_provider.g.dart';
 class ProfileFeed extends _$ProfileFeed {
   final FeedRepository _feedRepository = GetIt.instance<SprkRepository>().feed;
   final SQLCacheInterface _sqlCache = GetIt.instance<SQLCacheInterface>();
-  final SettingsRepository _settingsRepository = GetIt.instance<SettingsRepository>();
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ProfileFeed');
   bool _isLoading = false;
 
@@ -101,7 +100,8 @@ class ProfileFeed extends _$ProfileFeed {
     // Get additional labels from followed labelers for new posts
     if (newPosts.isNotEmpty) {
       try {
-        final followedLabelers = await _settingsRepository.getLabelers();
+        final settings = ref.read(settingsProvider.notifier);
+        final followedLabelers = await settings.getLabelers();
         final newPostUris = newPosts.map((post) => post.uri).toList();
         final (cursor: _, labels: additionalLabels) = await _feedRepository.getLabels(newPostUris, sources: followedLabelers);
         // Add the additional labels to the posts
@@ -220,9 +220,10 @@ class ProfileFeed extends _$ProfileFeed {
 
   /// Checks if a post should be hidden based on its labels and user preferences
   Future<bool> _shouldHidePost(AtUri uri, List<Label> postLabels) async {
+    final settings = ref.read(settingsProvider.notifier);
     for (final label in postLabels) {
       try {
-        final labelPreference = await _settingsRepository.getLabelPreference(label.value);
+        final labelPreference = await settings.getLabelPreference(label.value);
         if (labelPreference.setting == Setting.hide || labelPreference.adultOnly) {
           return true;
         }

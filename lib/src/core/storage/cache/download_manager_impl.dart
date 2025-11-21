@@ -3,9 +3,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pool/pool.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/pref_repository.dart';
 import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
-import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
 
@@ -15,7 +15,37 @@ class DownloadManagerImpl implements DownloadManagerInterface {
   }
 
   Future<void> init() async {
-    _activeFeed = await GetIt.instance<SettingsRepository>().getActiveFeed();
+    try {
+      final prefRepository = GetIt.instance<PrefRepository>();
+      final preferences = await prefRepository.getPreferences();
+      final feeds = preferences.savedFeeds ?? [];
+      SavedFeed? activeSavedFeed;
+      try {
+        activeSavedFeed = feeds.firstWhere((feed) => feed.pinned);
+      } catch (e) {
+        if (feeds.isNotEmpty) {
+          activeSavedFeed = feeds.first;
+        }
+      }
+      if (activeSavedFeed == null) {
+        _activeFeed = Feed(
+          type: 'timeline',
+          config: SavedFeed(type: 'timeline', value: 'following', pinned: true),
+        );
+      } else {
+        _activeFeed = Feed(
+          type: activeSavedFeed.type,
+          config: activeSavedFeed,
+        );
+      }
+    } catch (e) {
+      // If not authenticated yet or preferences can't be loaded, use default feed
+      _logger.w('Could not load preferences during init (user may not be authenticated yet): $e');
+      _activeFeed = Feed(
+        type: 'timeline',
+        config: SavedFeed(type: 'timeline', value: 'following', pinned: true),
+      );
+    }
   }
 
   @override

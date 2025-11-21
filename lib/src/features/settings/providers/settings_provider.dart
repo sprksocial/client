@@ -2,32 +2,37 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
-import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
-import 'package:sparksocial/src/core/storage/storage.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/pref_repository.dart';
+import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_state.dart';
 
 part 'settings_provider.g.dart';
 
-/// Provider for the SettingsRepository instance
+/// Provider for the PrefRepository instance
 @riverpod
-SettingsRepository settingsRepository(Ref ref) {
-  return GetIt.instance<SettingsRepository>();
+PrefRepository prefRepository(Ref ref) {
+  return GetIt.instance<PrefRepository>();
 }
 
 /// StateNotifier for managing settings state
 @Riverpod(keepAlive: true)
 class Settings extends _$Settings {
-  late final SettingsRepository _repository;
-  late final StorageManager _storageManager;
+  late final PrefRepository _prefRepository;
+  late final SQLCacheInterface _sqlCache;
   late final SparkLogger _logger;
+  late final Feed _defaultFeed;
 
   @override
   SettingsState build() {
-    _repository = ref.watch(settingsRepositoryProvider);
-    _storageManager = GetIt.instance<StorageManager>();
+    _prefRepository = ref.watch(prefRepositoryProvider);
+    _sqlCache = GetIt.instance<SQLCacheInterface>();
     _logger = GetIt.instance<LogService>().getLogger('Settings');
+    _defaultFeed = Feed(
+      type: 'timeline',
+      config: SavedFeed(type: 'timeline', value: 'following', pinned: true),
+    );
 
     // Load settings asynchronously but return a temporary state immediately
     // This prevents blocking the UI while loading
@@ -35,38 +40,19 @@ class Settings extends _$Settings {
 
     // Return temporary default state that will be replaced by loadSettings()
     return SettingsState(
-      activeFeed: Feed(
-        type: 'timeline',
-        config: SavedFeed(type: 'timeline', value: 'timeline', pinned: true),
-      ),
+      activeFeed: _defaultFeed,
     );
   }
 
-  /// Loads all settings from persistent storage
+  /// Loads all settings from server preferences
   Future<void> loadSettings() async {
     try {
-      _logger.d('Loading settings from storage...');
+      _logger.d('Loading settings from server...');
 
-      // Sync preferences from server (this also saves to local storage)
-      await _repository.getPreferences();
-
-      // Read from local storage
-      final postToBskyEnabled = await _storageManager.preferences.getBool(StorageKeys.postToBskyKey) ?? false;
-
-      // Read feeds from storage
-      final feedsJson = await _storageManager.preferences.getObject<List<Map<String, dynamic>>>(StorageKeys.feedsKey);
-      final feeds = feedsJson?.map(Feed.fromJson).toList() ?? [];
-
-      // Read active feed from storage
-      final activeFeedJson = await _storageManager.preferences.getObject<Map<String, dynamic>>(StorageKeys.activeFeedKey);
-      final activeFeed = activeFeedJson != null
-          ? Feed.fromJson(activeFeedJson)
-          : (feeds.isNotEmpty
-                ? feeds.first
-                : Feed(
-                    type: 'timeline',
-                    config: SavedFeed(type: 'timeline', value: 'timeline', pinned: true),
-                  ));
+      final preferences = await _prefRepository.getPreferences();
+      final feeds = _getFeedsFromPreferences(preferences);
+      final activeFeed = _getActiveFeedFromPreferences(preferences);
+      final postToBskyEnabled = _getPostToBskyEnabledFromPreferences(preferences);
 
       _logger.d(
         'Settings loaded - activeFeed: ${activeFeed.config.value}, feeds: ${feeds.map((f) => f.config.value).join(', ')}',
@@ -87,7 +73,7 @@ class Settings extends _$Settings {
 
   /// Sets Post to Bluesky setting
   Future<void> setPostToBsky(bool value) async {
-    await _storageManager.preferences.setBool(StorageKeys.postToBskyKey, value);
+    await _setPostToBskyEnabled(value);
     state = state.copyWith(postToBskyEnabled: value);
   }
 
@@ -106,44 +92,13 @@ class Settings extends _$Settings {
     }
   }
 
-  /// Converts a Feed to a SavedFeed
-  SavedFeed _feedToSavedFeed(Feed feed) {
-    return feed.config;
-  }
-
   /// Updates preferences with new feeds list
   Future<void> _updateFeedsInPreferences(List<Feed> feeds) async {
     try {
-      // Get current preferences
-      final preferences = await _repository.getPreferences();
-
-      // Convert feeds to SavedFeeds
-      final savedFeeds = feeds.map(_feedToSavedFeed).toList();
-
-      // Find existing savedFeedsPref or create new one
-      final existingPrefs = preferences.preferences;
-      final updatedPrefs = <Preference>[];
-
-      var foundSavedFeedsPref = false;
-      for (final pref in existingPrefs) {
-        if (pref.mapOrNull(savedFeedsPref: (_) => true) ?? false) {
-          updatedPrefs.add(Preference.savedFeedsPref(items: savedFeeds));
-          foundSavedFeedsPref = true;
-        } else {
-          updatedPrefs.add(pref);
-        }
-      }
-
-      if (!foundSavedFeedsPref) {
-        updatedPrefs.add(Preference.savedFeedsPref(items: savedFeeds));
-      }
-
-      // Update preferences
-      await _repository.putPreferences(Preferences(preferences: updatedPrefs));
-
-      // Update local storage
-      final feedsJson = feeds.map((feed) => feed.toJson()).toList();
-      await _storageManager.preferences.setObject<List<Map<String, dynamic>>>(StorageKeys.feedsKey, feedsJson);
+      final preferences = await _prefRepository.getPreferences();
+      final updatedPreferences = preferences.preferences.where((pref) => !pref.isSavedFeedsPref(pref)).toList();
+      updatedPreferences.add(Preference.savedFeedsPref(items: feeds.map((feed) => feed.config).toList()));
+      await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
     } catch (e) {
       _logger.e('Error updating feeds in preferences: $e');
       rethrow;
@@ -155,6 +110,7 @@ class Settings extends _$Settings {
     if (!state.feeds.any((f) => f.config.id == feed.config.id)) {
       final updatedFeeds = [...state.feeds, feed];
       await _updateFeedsInPreferences(updatedFeeds);
+      await _sqlCache.cacheFeed(feed);
       state = state.copyWith(feeds: updatedFeeds);
     }
   }
@@ -163,6 +119,7 @@ class Settings extends _$Settings {
   Future<void> removeFeed(Feed feed) async {
     final updatedFeeds = state.feeds.where((f) => f.config.id != feed.config.id).toList();
     await _updateFeedsInPreferences(updatedFeeds);
+    await _sqlCache.deleteFeed(feed);
     state = state.copyWith(feeds: updatedFeeds);
   }
 
@@ -181,7 +138,7 @@ class Settings extends _$Settings {
 
   /// Sets selected feed index
   Future<void> setActiveFeed(Feed feed) async {
-    await _storageManager.preferences.setObject<Map<String, dynamic>>(StorageKeys.activeFeedKey, feed.toJson());
+    await _setActiveFeedInPreferences(feed);
     state = state.copyWith(activeFeed: feed);
   }
 
@@ -189,5 +146,200 @@ class Settings extends _$Settings {
   Future<void> reloadSettingsForTesting() async {
     _logger.d('Manually reloading settings for testing...');
     await loadSettings();
+  }
+
+  // Helper methods for working with Preferences
+
+  List<Feed> _getFeedsFromPreferences(Preferences preferences) {
+    final savedFeedPref = preferences.savedFeeds;
+    if (savedFeedPref == null || savedFeedPref.isEmpty) {
+      return [];
+    }
+    return savedFeedPref
+        .map(
+          (savedFeed) => Feed(
+            type: savedFeed.type,
+            config: savedFeed,
+          ),
+        )
+        .toList();
+  }
+
+  Feed _getActiveFeedFromPreferences(Preferences preferences) {
+    final feeds = preferences.savedFeeds ?? [];
+    SavedFeed? activeSavedFeed;
+    try {
+      activeSavedFeed = feeds.firstWhere((feed) => feed.pinned);
+    } catch (e) {
+      if (feeds.isNotEmpty) {
+        activeSavedFeed = feeds.first;
+      }
+    }
+    if (activeSavedFeed == null) {
+      return _defaultFeed;
+    }
+    return Feed(
+      type: activeSavedFeed.type,
+      config: activeSavedFeed,
+    );
+  }
+
+  bool _getPostToBskyEnabledFromPreferences(Preferences preferences) {
+    final postInteractionPref = preferences.preferences.firstWhere(
+      (pref) => pref.isPostInteractionSettingsPref(pref),
+      orElse: () => const Preference.postInteractionSettingsPref(enabled: false),
+    );
+    return postInteractionPref.mapOrNull(
+          postInteractionSettingsPref: (pref) => pref.enabled,
+        ) ??
+        false;
+  }
+
+  Future<void> _setPostToBskyEnabled(bool value) async {
+    final preferences = await _prefRepository.getPreferences();
+    final updatedPreferences = preferences.preferences.where((pref) => !pref.isPostInteractionSettingsPref(pref)).toList();
+    updatedPreferences.add(Preference.postInteractionSettingsPref(enabled: value));
+    await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+  }
+
+  Future<void> _setActiveFeedInPreferences(Feed feed) async {
+    final preferences = await _prefRepository.getPreferences();
+    final currentFeeds = preferences.savedFeeds ?? [];
+    final updatedFeeds = currentFeeds.map((f) => f.copyWith(pinned: f.id == feed.config.id)).toList();
+    if (!updatedFeeds.any((f) => f.id == feed.config.id)) {
+      updatedFeeds.add(feed.config.copyWith(pinned: true));
+    }
+    final updatedPreferences = preferences.preferences.where((pref) => !pref.isSavedFeedsPref(pref)).toList();
+    updatedPreferences.add(Preference.savedFeedsPref(items: updatedFeeds));
+    await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+  }
+
+  // Public methods for other providers to use
+
+  Future<List<String>> getLabelers() async {
+    final preferences = await _prefRepository.getPreferences();
+    final labelers = preferences.labelers?.map((labeler) => labeler.did).toList() ?? [];
+    if (!labelers.contains('did:plc:pbgyr67hftvpoqtvaurpsctc')) {
+      labelers.add('did:plc:pbgyr67hftvpoqtvaurpsctc');
+    }
+    return labelers;
+  }
+
+  Future<LabelPreference> getLabelPreference(String value) async {
+    final preferences = await _prefRepository.getPreferences();
+    final contentLabelPrefs = preferences.contentLabelPrefs ?? [];
+    final contentLabelPref = contentLabelPrefs.firstWhere(
+      (pref) => pref.label == value,
+      orElse: () => throw Exception('Label preference not found'),
+    );
+    return LabelPreference(
+      value: contentLabelPref.label,
+      blurs: _visibilityToBlurs(contentLabelPref.visibility),
+      severity: _visibilityToSeverity(contentLabelPref.visibility),
+      defaultSetting: _visibilityToSetting(contentLabelPref.visibility),
+      setting: _visibilityToSetting(contentLabelPref.visibility),
+      adultOnly: _isAdultOnlyLabel(value),
+    );
+  }
+
+  Future<void> setLabelPreference(String value, Blurs blurs, Severity severity, bool adultOnly, Setting setting) async {
+    final preferences = await _prefRepository.getPreferences();
+    final updatedPreferences = preferences.preferences.where((pref) => !pref.isContentLabelPref(pref)).toList();
+    final existingContentPrefs = preferences.contentLabelPrefs ?? [];
+    for (final pref in existingContentPrefs) {
+      if (pref.label == value) {
+        updatedPreferences.add(
+          Preference.contentLabelPref(
+            labelerDid: pref.labelerDid,
+            label: value,
+            visibility: _settingToVisibility(setting),
+          ),
+        );
+      } else {
+        updatedPreferences.add(
+          Preference.contentLabelPref(
+            labelerDid: pref.labelerDid,
+            label: pref.label,
+            visibility: pref.visibility,
+          ),
+        );
+      }
+    }
+    if (!existingContentPrefs.any((pref) => pref.label == value)) {
+      updatedPreferences.add(
+        Preference.contentLabelPref(
+          labelerDid: 'did:plc:pbgyr67hftvpoqtvaurpsctc',
+          label: value,
+          visibility: _settingToVisibility(setting),
+        ),
+      );
+    }
+    await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+  }
+
+  Future<Feed> getActiveFeed() async {
+    final preferences = await _prefRepository.getPreferences();
+    return _getActiveFeedFromPreferences(preferences);
+  }
+
+  // Helper conversion methods
+
+  String _settingToVisibility(Setting setting) {
+    switch (setting) {
+      case Setting.ignore:
+        return 'ignore';
+      case Setting.warn:
+        return 'warn';
+      case Setting.hide:
+        return 'hide';
+    }
+  }
+
+  Setting _visibilityToSetting(String visibility) {
+    switch (visibility) {
+      case 'ignore':
+        return Setting.ignore;
+      case 'warn':
+        return Setting.warn;
+      case 'hide':
+        return Setting.hide;
+      default:
+        return Setting.ignore;
+    }
+  }
+
+  Blurs _visibilityToBlurs(String visibility) {
+    switch (visibility) {
+      case 'ignore':
+        return Blurs.none;
+      case 'warn':
+        return Blurs.media;
+      case 'hide':
+        return Blurs.content;
+      default:
+        return Blurs.none;
+    }
+  }
+
+  Severity _visibilityToSeverity(String visibility) {
+    switch (visibility) {
+      case 'ignore':
+        return Severity.none;
+      case 'warn':
+        return Severity.alert;
+      case 'hide':
+        return Severity.alert;
+      default:
+        return Severity.none;
+    }
+  }
+
+  bool _isAdultOnlyLabel(String label) {
+    const adultOnlyLabels = {
+      'porn',
+      'sexual',
+      'nsfl',
+    };
+    return adultOnlyLabels.contains(label);
   }
 }

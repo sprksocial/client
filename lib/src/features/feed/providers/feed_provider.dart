@@ -10,7 +10,6 @@ import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
-import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
@@ -27,7 +26,6 @@ class FeedNotifier extends _$FeedNotifier {
   late final FeedRepository _feedRepository;
   late final SparkLogger _logger;
   late final DownloadManagerInterface _downloadManager;
-  late final SettingsRepository _settingsRepository;
 
   // Add a flag to track if this notifier has been built before
   bool _hasBeenBuilt = false;
@@ -40,7 +38,6 @@ class FeedNotifier extends _$FeedNotifier {
     // Initialize logger first for debugging
     if (!_isInitialized()) {
       _feedRepository = GetIt.instance<SprkRepository>().feed;
-      _settingsRepository = GetIt.instance<SettingsRepository>();
       _downloadManager = GetIt.instance<DownloadManagerInterface>();
       _logger = GetIt.instance<LogService>().getLogger('FeedNotifier ${feed.config.id}');
     } else {
@@ -150,7 +147,8 @@ class FeedNotifier extends _$FeedNotifier {
 
     try {
       final uris = posts.map((post) => post.uri).toList();
-      final followedLabelers = await _settingsRepository.getLabelers();
+      final settings = ref.read(settingsProvider.notifier);
+      final followedLabelers = await settings.getLabelers();
       List<Label> fetchedLabels;
       try {
         final (cursor: _, labels: labelsFromApi) = await _feedRepository.getLabels(uris, sources: followedLabelers);
@@ -357,9 +355,10 @@ class FeedNotifier extends _$FeedNotifier {
 
   /// Checks if a post should be hidden based on its labels and user preferences
   Future<bool> _shouldHidePost(AtUri uri, List<Label> postLabels) async {
+    final settings = ref.read(settingsProvider.notifier);
     for (final label in postLabels) {
       try {
-        final labelPreference = await _settingsRepository.getLabelPreference(label.value);
+        final labelPreference = await settings.getLabelPreference(label.value);
         if (labelPreference.setting == Setting.hide || labelPreference.adultOnly) {
           _logger.d('Hiding post $uri due to label: ${label.value}');
           return true;
