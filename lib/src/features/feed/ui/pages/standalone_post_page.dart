@@ -10,10 +10,8 @@ import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/ui/widgets/content_warning_overlay.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
 import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/post/post_sound_bar.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/post/post_overlay.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
 
 @RoutePage()
@@ -123,23 +121,12 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                     final mainContent = Stack(
                       children: [
                         // Main content
-                        switch (postData.media) {
-                          MediaViewVideo() => PostVideoPlayer(
-                            key: _videoPlayerKey,
-                            videoUrl: postData.videoUrl,
-                            // For standalone, we don't need feed and index
-                            thumbnail: postData.thumbnailUrl,
-                          ),
-                          MediaViewBskyVideo() => PostVideoPlayer(
-                            key: _videoPlayerKey,
-                            videoUrl: postData.videoUrl,
-                            thumbnail: postData.thumbnailUrl,
-                          ),
-                          MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
-                          MediaViewBskyRecordWithMedia(:final media) => switch (media) {
+                        Positioned.fill(
+                          child: switch (postData.media) {
                             MediaViewVideo() => PostVideoPlayer(
                               key: _videoPlayerKey,
                               videoUrl: postData.videoUrl,
+                              // For standalone, we don't need feed and index
                               thumbnail: postData.thumbnailUrl,
                             ),
                             MediaViewBskyVideo() => PostVideoPlayer(
@@ -148,83 +135,41 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                               thumbnail: postData.thumbnailUrl,
                             ),
                             MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                            MediaViewBskyRecordWithMedia(:final media) => switch (media) {
+                              MediaViewVideo() => PostVideoPlayer(
+                                key: _videoPlayerKey,
+                                videoUrl: postData.videoUrl,
+                                thumbnail: postData.thumbnailUrl,
+                              ),
+                              MediaViewBskyVideo() => PostVideoPlayer(
+                                key: _videoPlayerKey,
+                                videoUrl: postData.videoUrl,
+                                thumbnail: postData.thumbnailUrl,
+                              ),
+                              MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
+                              _ => const SizedBox.shrink(),
+                            },
                             _ => const SizedBox.shrink(),
                           },
-                          _ => const SizedBox.shrink(),
-                        },
-
-                        // Gradient overlay at the bottom to improve text readability
-                        Positioned(
-                          left: 0,
-                          right: 0,
-                          bottom: 0,
-                          child: IgnorePointer(
-                            child: Container(
-                              height: 80, // covers the area behind the InfoBar
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.bottomCenter,
-                                  end: Alignment.topCenter,
-                                  colors: [Colors.black87.withAlpha(170), Colors.transparent],
-                                ),
-                              ),
-                            ),
-                          ),
                         ),
 
-                        // Side action bar
-                        Positioned(
-                          bottom: 20 + (postData.sound != null ? 48.0 : 0),
-                          right: 4,
-                          child: SideActionBar(
+                        // Overlay controls
+                        Positioned.fill(
+                          child: PostOverlay(
                             post: postData,
-                            likeCount: '${postData.likeCount ?? 0}',
-                            commentCount: '${postData.replyCount ?? 0}',
-                            shareCount: '${postData.repostCount ?? 0}',
                             isLiked: postData.viewer?.like != null,
-                            profileImageUrl: postData.author.avatar.toString(),
-                            isImage: postData.media is MediaViewImages || postData.media is MediaViewBskyImages,
+                            labels: postData.labels ?? [],
                             onProfilePressed: () {
                               // Pause video before navigating to profile
                               _videoPlayerKey.currentState?.pauseVideo();
                             },
-                          ),
-                        ),
-
-                        Positioned(
-                          bottom: 20 + (postData.sound != null ? 48.0 : 0),
-                          left: 4,
-                          right: 80,
-                          child: FutureBuilder<List<String>>(
-                            future: LabelUtils.getInformLabels(postData.labels ?? []),
-                            builder: (context, snapshot) {
-                              final informLabels = snapshot.data ?? [];
-                              return InfoBar(
-                                username: postData.author.handle,
-                                displayName: postData.author.displayName ?? postData.author.handle,
-                                avatarUrl: postData.author.avatar?.toString(),
-                                description: postData.displayText,
-                                hashtags: postData.record.hashtags,
-                                informLabels: informLabels,
-                                audio: postData.sound,
-                                isSprk: postData.uri.toString().contains('so.sprk'),
-                                onUsernameTap: () {
-                                  // Pause video before navigating to profile
-                                  _videoPlayerKey.currentState?.pauseVideo();
-                                  context.router.push(ProfileRoute(did: postData.author.did));
-                                },
-                              );
+                            onUsernameTap: () {
+                              // Pause video before navigating to profile
+                              _videoPlayerKey.currentState?.pauseVideo();
+                              context.router.push(ProfileRoute(did: postData.author.did));
                             },
                           ),
                         ),
-
-                        if (postData.sound != null)
-                          Positioned(
-                            bottom: 12,
-                            left: 0,
-                            right: 0,
-                            child: PostSoundBar(audio: postData.sound!),
-                          ),
                       ],
                     );
 

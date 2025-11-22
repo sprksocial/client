@@ -12,10 +12,8 @@ import 'package:sparksocial/src/core/ui/widgets/content_warning_overlay.dart';
 import 'package:sparksocial/src/core/ui/widgets/heart_animation.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/post/post_sound_bar.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/post/post_overlay.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
 
 class ProfileFeedPostWidget extends ConsumerStatefulWidget {
@@ -182,88 +180,35 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
               child: Stack(
                 children: [
                   // Main content
-                  switch (post.media) {
-                    MediaViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
-                    MediaViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
-                    MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
-                    MediaViewBskyRecordWithMedia(:final media) => switch (media) {
+                  Positioned.fill(
+                    child: switch (post.media) {
                       MediaViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
                       MediaViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
                       MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
+                      MediaViewBskyRecordWithMedia(:final media) => switch (media) {
+                        MediaViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
+                        MediaViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
+                        MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
+                        _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
+                      },
                       _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                     },
-                    _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
-                  },
-
-                  // Gradient overlay at the bottom to improve text readability
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 16,
-                    child: IgnorePointer(
-                      child: Container(
-                        height: 80, // covers the area behind the InfoBar
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [Colors.black87.withAlpha(170), Colors.transparent],
-                          ),
-                        ),
-                      ),
-                    ),
                   ),
 
-                  // Side action bar
-                  Positioned(
-                    bottom: 4 + (post.sound != null ? 48.0 : 0),
-                    right: 4,
-                    child: SideActionBar(
+                  // Overlay controls
+                  Positioned.fill(
+                    child: PostOverlay(
                       post: post,
-                      likeCount: '${post.likeCount ?? 0}',
-                      commentCount: '${post.replyCount ?? 0}',
-                      shareCount: '${post.repostCount ?? 0}',
                       isLiked: _overrideIsLiked ?? (post.viewer?.like != null),
-                      profileImageUrl: post.author.avatar.toString(),
-                      isImage: post.media is MediaViewImages || post.media is MediaViewBskyImages,
+                      labels: post.labels ?? [],
                       onProfilePressed: () {
                         // No special handling needed for profile navigation in standalone feed
                       },
-                    ),
-                  ),
-
-                  Positioned(
-                    bottom: 32 + (post.sound != null ? 48.0 : 0),
-                    left: 4,
-                    right: 80,
-                    child: FutureBuilder<List<String>>(
-                      future: LabelUtils.getInformLabels(post.labels ?? []),
-                      builder: (context, snapshot) {
-                        final informLabels = snapshot.data ?? [];
-                        return InfoBar(
-                          username: post.author.handle,
-                          displayName: post.author.displayName ?? post.author.handle,
-                          avatarUrl: post.author.avatar?.toString(),
-                          description: post.displayText,
-                          hashtags: post.record.hashtags,
-                          informLabels: informLabels,
-                          isSprk: post.uri.toString().contains('so.sprk'),
-                          audio: post.sound,
-                          onUsernameTap: () {
-                            context.router.push(ProfileRoute(did: post.author.did));
-                          },
-                        );
+                      onUsernameTap: () {
+                        context.router.push(ProfileRoute(did: post.author.did));
                       },
                     ),
                   ),
-
-                  if (post.sound != null)
-                    Positioned(
-                      bottom: 12,
-                      left: 0,
-                      right: 0,
-                      child: PostSoundBar(audio: post.sound!),
-                    ),
                 ],
               ),
             ),
