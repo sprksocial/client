@@ -5,7 +5,7 @@ import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 
 const _demoImage = 'https://picsum.photos/200/200';
 
-@UseCase(name: 'suggested_follow_card', type: ProfileCard)
+@UseCase(name: 'follow_card', type: ProfileCard)
 Widget buildProfileCardFollowCardUseCase(BuildContext context) {
   final isFollowing = context.knobs.boolean(
     label: 'is_following',

@@ -164,8 +164,8 @@ class Settings extends _$Settings {
     final updatedList = [...state.feeds];
     final feed = updatedList.removeAt(oldIndex);
     updatedList.insert(actualNewIndex, feed);
-    await _updateFeedsInPreferences(updatedList);
     state = state.copyWith(feeds: updatedList);
+    await _updateFeedsInPreferences(updatedList);
   }
 
   /// Sets selected feed index

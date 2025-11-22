@@ -2,9 +2,9 @@ import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/design_system/components/molecules/profile_card.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/search/providers/search_provider.dart';
-import 'package:sparksocial/src/features/search/ui/widgets/profile_card.dart';
 
 class UserResults extends ConsumerStatefulWidget {
   const UserResults({super.key});
@@ -174,20 +174,20 @@ class _UserResultsState extends ConsumerState<UserResults> with AutomaticKeepAli
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: ProfileCard(
-            username: actor.displayName ?? actor.handle,
-            handle: '@${actor.handle}',
-            avatarUrl: actor.avatar?.toString() ?? '',
+            imageUrl: actor.avatar?.toString() ?? '',
+            userName: actor.displayName ?? actor.handle,
+            userHandle: '@${actor.handle}',
             description: actor.description ?? '',
+            isFollowing: isFollowing,
+            onFollow: () => ref.read(searchProvider.notifier).followUser(actor.did),
+            onUnfollow: () =>
+                ref.read(searchProvider.notifier).unfollowUser(actor.did, actor.viewer?.following ?? AtUri.parse('')),
+            showFollowButton: !ref.read(searchProvider.notifier).isCurrentUser(actor.did),
             onTap: () {
               if (actor.did.isNotEmpty) {
                 context.router.push(ProfileRoute(did: actor.did));
               }
             },
-            showFollowButton: !ref.read(searchProvider.notifier).isCurrentUser(actor.did),
-            isFollowing: isFollowing,
-            onFollowTap: () => ref.read(searchProvider.notifier).followUser(actor.did),
-            onUnfollowTap: () =>
-                ref.read(searchProvider.notifier).unfollowUser(actor.did, actor.viewer?.following ?? AtUri.parse('')),
           ),
         );
       },

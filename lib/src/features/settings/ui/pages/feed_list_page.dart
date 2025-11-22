@@ -1,5 +1,6 @@
 import 'dart:ui' show lerpDouble;
 
+import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -49,7 +50,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                     ),
                     subtitle: Text(
                       'Blur potentially sensitive content in feeds',
-                      style: TextStyle(color: colorScheme.onSurface.withAlpha(178), fontSize: 12),
+                      style: TextStyle(color: colorScheme.onSurface, fontSize: 12),
                     ),
                     value: settingsState.feedBlurEnabled,
                     onChanged: (value) {},
@@ -68,7 +69,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                     ),
                     subtitle: Text(
                       'Automatically post to Bluesky when posting to Spark',
-                      style: TextStyle(color: colorScheme.onSurface.withAlpha(178), fontSize: 12),
+                      style: TextStyle(color: colorScheme.onSurface, fontSize: 12),
                     ),
                     value: settingsState.postToBskyEnabled,
                     onChanged: (value) {
@@ -98,6 +99,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                   child: ReorderableListView.builder(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: settingsState.feeds.length,
+                    buildDefaultDragHandles: false,
                     onReorderStart: (index) {
                       setState(() {
                         _isReordering = true;
@@ -109,27 +111,16 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                       });
                     },
                     onReorder: (oldIndex, newIndex) async {
-                      if (_isReordering) return;
-
-                      setState(() => _isReordering = true);
+                      // Adjust newIndex if moving down the list
+                      if (newIndex > oldIndex) newIndex -= 1;
 
                       try {
-                        // Adjust newIndex if moving down the list
-                        if (newIndex > oldIndex) newIndex -= 1;
-
                         await ref.read(settingsProvider.notifier).reorderFeed(oldIndex, newIndex);
-
-                        // Small delay to allow state to settle
-                        await Future.delayed(const Duration(milliseconds: 50));
                       } catch (e) {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(content: Text('Failed to reorder feeds: $e')),
                           );
-                        }
-                      } finally {
-                        if (context.mounted) {
-                          setState(() => _isReordering = false);
                         }
                       }
                     },
@@ -147,6 +138,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                               elevation: elevation,
                               borderRadius: BorderRadius.circular(12),
                               shadowColor: colorScheme.shadow.withAlpha(100),
+                              surfaceTintColor: Colors.transparent,
                               color: Colors.transparent,
                               child: child,
                             ),
@@ -164,18 +156,17 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                         margin: const EdgeInsets.symmetric(vertical: 4),
                         elevation: _isReordering ? 0 : 1,
                         child: ListTile(
-                          enabled: !_isReordering,
                           leading: Icon(_getFeedIcon(feed), color: isActive ? colorScheme.primary : colorScheme.onSurface),
                           title: Text(
                             feed.view != null ? feed.view!.displayName : 'Following',
                             style: TextStyle(
-                              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
+                              fontWeight: FontWeight.bold,
                               color: isActive ? colorScheme.primary : colorScheme.onSurface,
                             ),
                           ),
                           subtitle: Text(
                             _getFeedDescription(feed),
-                            style: TextStyle(color: colorScheme.onSurface.withAlpha(178), fontSize: 12),
+                            style: TextStyle(color: colorScheme.onSurface, fontSize: 12),
                           ),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -193,9 +184,12 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                                   ),
                                 ),
                               const SizedBox(width: 8),
-                              Icon(
-                                FluentIcons.re_order_dots_vertical_24_regular,
-                                color: _isReordering ? colorScheme.primary.withAlpha(128) : colorScheme.onSurface.withAlpha(178),
+                              ReorderableDragStartListener(
+                                index: index,
+                                child: Icon(
+                                  FluentIcons.re_order_dots_vertical_24_regular,
+                                  color: colorScheme.onSurface.withAlpha(178),
+                                ),
                               ),
                             ],
                           ),
@@ -228,6 +222,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
     if (feed.type == 'timeline') {
       return 'Posts from people you follow';
     }
-    return 'Custom algorithmic feed';
+    final isBsky = feed.view?.uri.collection == NSID.parse('app.bsky.feed.generator');
+    return '${isBsky ? 'Bluesky feed' : 'Feed'} by @${feed.view?.creator.handle}';
   }
 }

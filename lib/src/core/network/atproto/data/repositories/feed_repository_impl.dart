@@ -594,7 +594,7 @@ class FeedRepositoryImpl implements FeedRepository {
       if (bskyFeeds.isNotEmpty) {
         final bskyUris = bskyFeeds.map((savedFeed) => AtUri(savedFeed.value)).toList();
         final bskyViews = await getFeedGenerators(bskyUris, bluesky: true);
-        final viewMap = {for (var view in bskyViews) view.uri: view};
+        final viewMap = {for (final view in bskyViews) view.uri: view};
         for (final savedFeed in bskyFeeds) {
           final feedUri = AtUri(savedFeed.value);
           final view = viewMap[feedUri];
@@ -611,8 +611,8 @@ class FeedRepositoryImpl implements FeedRepository {
       // Fetch all Spark feed generators at once
       if (sprkFeeds.isNotEmpty) {
         final sprkUris = sprkFeeds.map((savedFeed) => AtUri(savedFeed.value)).toList();
-        final sprkViews = await getFeedGenerators(sprkUris, bluesky: false);
-        final viewMap = {for (var view in sprkViews) view.uri: view};
+        final sprkViews = await getFeedGenerators(sprkUris);
+        final viewMap = {for (final view in sprkViews) view.uri: view};
         for (final savedFeed in sprkFeeds) {
           final feedUri = AtUri(savedFeed.value);
           final view = viewMap[feedUri];

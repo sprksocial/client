@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/gradients.dart';
 import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
 
 class FollowButton extends StatelessWidget {
@@ -12,6 +11,7 @@ class FollowButton extends StatelessWidget {
     super.key,
     this.followText = 'Follow',
     this.unfollowText = 'Unfollow',
+    this.width,
   });
 
   final bool isFollowing;
@@ -19,6 +19,7 @@ class FollowButton extends StatelessWidget {
   final VoidCallback onUnfollow;
   final String followText;
   final String unfollowText;
+  final double? width;
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +29,10 @@ class FollowButton extends StatelessWidget {
       onTap: isFollowing ? onUnfollow : onFollow,
       borderRadius: const BorderRadius.all(Radius.circular(8)),
       child: Container(
-        width: 109.47,
+        width: width ?? 109.47,
         height: 36,
         decoration: isFollowing
-            ? const BoxDecoration(
-                borderRadius: BorderRadius.all(Radius.circular(8)),
-                gradient: AppGradients.accent,
-              )
-            : BoxDecoration(
+            ? BoxDecoration(
                 color: isDark ? AppColors.darkGreyButton : AppColors.lightGreyButton,
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
                 border: const Border.fromBorderSide(
@@ -44,6 +41,10 @@ class FollowButton extends StatelessWidget {
                     width: 1.14667,
                   ),
                 ),
+              )
+            : const BoxDecoration(
+                borderRadius: BorderRadius.all(Radius.circular(8)),
+                color: AppColors.primary500,
               ),
         child: Align(
           child: Text(

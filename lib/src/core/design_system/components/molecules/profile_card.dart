@@ -5,8 +5,8 @@ import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 import 'package:sparksocial/src/core/design_system/tokens/shapes.dart';
 import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
 
-class SuggestedProfile extends StatelessWidget {
-  const SuggestedProfile({
+class ProfileCard extends StatelessWidget {
+  const ProfileCard({
     required this.imageUrl,
     required this.userName,
     required this.userHandle,
@@ -15,11 +15,12 @@ class SuggestedProfile extends StatelessWidget {
     required this.onUnfollow,
     this.showFollowButton = true,
     this.description,
+    this.onTap,
     super.key,
   });
 
   // Convenience constructor to surface description explicitly
-  const SuggestedProfile.withDescription({
+  const ProfileCard.withDescription({
     required String imageUrl,
     required String userName,
     required String userHandle,
@@ -28,6 +29,7 @@ class SuggestedProfile extends StatelessWidget {
     required VoidCallback onUnfollow,
     required String description,
     bool showFollowButton = true,
+    VoidCallback? onTap,
     Key? key,
   }) : this(
          imageUrl: imageUrl,
@@ -38,6 +40,7 @@ class SuggestedProfile extends StatelessWidget {
          onUnfollow: onUnfollow,
          showFollowButton: showFollowButton,
          description: description,
+         onTap: onTap,
          key: key,
        );
 
@@ -49,6 +52,7 @@ class SuggestedProfile extends StatelessWidget {
   final VoidCallback onUnfollow;
   final bool showFollowButton;
   final String? description;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +60,7 @@ class SuggestedProfile extends StatelessWidget {
     final radius = BorderRadius.circular(AppShapes.squircleRadius);
     final borderColor = isDark ? AppColors.grey800 : AppColors.grey200;
 
-    return ConstrainedBox(
+    final Widget content = ConstrainedBox(
       constraints: const BoxConstraints(minHeight: 60),
       child: Material(
         color: isDark ? AppColors.grey700 : AppColors.grey100,
@@ -73,53 +77,66 @@ class SuggestedProfile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 8),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(7),
-                      child: CachedNetworkImage(
-                        imageUrl: imageUrl,
-                        width: 36,
-                        height: 36,
-                        fit: BoxFit.cover,
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(100),
+                        child: CachedNetworkImage(
+                          imageUrl: imageUrl,
+                          width: 36,
+                          height: 36,
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 10),
-                    Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(userName, style: AppTypography.textMediumBold),
-                        const SizedBox(height: 3),
-                        Text(userHandle, style: AppTypography.textExtraSmallThin),
-                        if (description?.isNotEmpty ?? false) ...[
-                          const SizedBox(height: 3),
-                          SizedBox(
-                            width: 180,
-                            child: Text(
-                              description!,
-                              style: AppTypography.textExtraSmallThin,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ],
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(userName, style: AppTypography.textSmallBold),
+                            Text(userHandle, style: AppTypography.textSmallThin),
+                            if (description?.isNotEmpty ?? false) ...[
+                              const SizedBox(height: 3),
+                              Text(
+                                description!,
+                                style: AppTypography.textExtraSmallThin,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                if (showFollowButton)
+                if (showFollowButton) ...[
+                  const SizedBox(width: 8),
                   FollowButton(
                     isFollowing: isFollowing,
                     onFollow: onFollow,
                     onUnfollow: onUnfollow,
                   ),
+                ],
               ],
             ),
           ),
         ),
       ),
     );
+
+    if (onTap != null) {
+      return GestureDetector(
+        onTap: onTap,
+        child: content,
+      );
+    }
+
+    return content;
   }
 }
