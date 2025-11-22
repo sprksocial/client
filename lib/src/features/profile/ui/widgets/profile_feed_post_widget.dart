@@ -15,6 +15,7 @@ import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/post/post_sound_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
 
 class ProfileFeedPostWidget extends ConsumerStatefulWidget {
@@ -215,7 +216,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
 
                   // Side action bar
                   Positioned(
-                    bottom: 4,
+                    bottom: 4 + (post.sound != null ? 48.0 : 0),
                     right: 4,
                     child: SideActionBar(
                       post: post,
@@ -232,7 +233,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                   ),
 
                   Positioned(
-                    bottom: 32,
+                    bottom: 32 + (post.sound != null ? 48.0 : 0),
                     left: 4,
                     right: 80,
                     child: FutureBuilder<List<String>>(
@@ -255,6 +256,14 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                       },
                     ),
                   ),
+
+                  if (post.sound != null)
+                    Positioned(
+                      bottom: 12,
+                      left: 0,
+                      right: 0,
+                      child: PostSoundBar(audio: post.sound!),
+                    ),
                 ],
               ),
             ),

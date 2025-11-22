@@ -15,6 +15,7 @@ import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/post/post_sound_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
 import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
 
@@ -268,13 +269,13 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                   ),
 
                   Positioned(
-                    bottom: 16 + MediaQuery.of(context).padding.bottom,
+                    bottom: 16 + MediaQuery.of(context).padding.bottom + (postData.sound != null ? 48.0 : 0),
                     right: 8,
                     child: sideActionBar,
                   ),
 
                   Positioned(
-                    bottom: 16 + MediaQuery.of(context).padding.bottom,
+                    bottom: 16 + MediaQuery.of(context).padding.bottom + (postData.sound != null ? 48.0 : 0),
                     left: 8,
                     right: 80,
                     child: Builder(
@@ -313,6 +314,14 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                       },
                     ),
                   ),
+
+                  if (postData.sound != null)
+                    Positioned(
+                      bottom: 12 + MediaQuery.of(context).padding.bottom,
+                      left: 0,
+                      right: 0,
+                      child: PostSoundBar(audio: postData.sound!),
+                    ),
                 ],
               ),
             ),

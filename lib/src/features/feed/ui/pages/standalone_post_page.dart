@@ -13,6 +13,7 @@ import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/post/post_sound_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
 
 @RoutePage()
@@ -173,7 +174,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
 
                         // Side action bar
                         Positioned(
-                          bottom: 20,
+                          bottom: 20 + (postData.sound != null ? 48.0 : 0),
                           right: 4,
                           child: SideActionBar(
                             post: postData,
@@ -191,7 +192,7 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                         ),
 
                         Positioned(
-                          bottom: 20,
+                          bottom: 20 + (postData.sound != null ? 48.0 : 0),
                           left: 4,
                           right: 80,
                           child: FutureBuilder<List<String>>(
@@ -216,6 +217,14 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                             },
                           ),
                         ),
+
+                        if (postData.sound != null)
+                          Positioned(
+                            bottom: 12,
+                            left: 0,
+                            right: 0,
+                            child: PostSoundBar(audio: postData.sound!),
+                          ),
                       ],
                     );
 
