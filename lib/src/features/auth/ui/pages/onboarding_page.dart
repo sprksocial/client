@@ -6,6 +6,7 @@ import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/ui/widgets/custom_text_field.dart'; // Corrected path
 import 'package:sparksocial/src/features/auth/providers/onboarding_notifier.dart';
 import 'package:sparksocial/src/features/auth/providers/onboarding_providers.dart';
+import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
 class OnboardingPage extends ConsumerStatefulWidget {
@@ -80,6 +81,12 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         description: _descriptionController.text.trim(),
         avatar: avatarToUse,
       );
+
+      if (!mounted) return;
+
+      // Sync preferences from server before navigating to main
+      // This ensures feeds are loaded properly after onboarding
+      await ref.read(settingsProvider.notifier).syncPreferencesFromServer();
 
       if (!mounted) return;
 
