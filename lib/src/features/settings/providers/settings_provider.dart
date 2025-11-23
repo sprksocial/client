@@ -140,9 +140,15 @@ class Settings extends _$Settings {
   /// Adds a feed to feeds list
   Future<void> addFeed(Feed feed) async {
     if (!state.feeds.any((f) => f.config.id == feed.config.id)) {
-      final updatedFeeds = [...state.feeds, feed];
+      // Make all feeds pinned by default
+      final pinnedFeed = Feed(
+        type: feed.type,
+        config: feed.config.copyWith(pinned: true),
+        view: feed.view,
+      );
+      final updatedFeeds = [...state.feeds, pinnedFeed];
       await _updateFeedsInPreferences(updatedFeeds);
-      await _sqlCache.cacheFeed(feed);
+      await _sqlCache.cacheFeed(pinnedFeed);
       state = state.copyWith(feeds: updatedFeeds);
     }
   }
@@ -170,7 +176,6 @@ class Settings extends _$Settings {
 
   /// Sets selected feed index
   Future<void> setActiveFeed(Feed feed) async {
-    await _setActiveFeedInPreferences(feed);
     state = state.copyWith(activeFeed: feed);
   }
 
@@ -234,27 +239,6 @@ class Settings extends _$Settings {
     final preferences = await _prefRepository.getPreferences();
     final updatedPreferences = preferences.preferences.where((pref) => !pref.isPostInteractionSettingsPref(pref)).toList();
     updatedPreferences.add(Preference.postInteractionSettingsPref(enabled: value));
-    await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
-  }
-
-  Future<void> _setActiveFeedInPreferences(Feed feed) async {
-    final preferences = await _prefRepository.getPreferences();
-    // Extract feeds from the preferences list (fromJson doesn't populate savedFeeds)
-    final currentFeeds = <SavedFeed>[];
-    for (final pref in preferences.preferences) {
-      pref.mapOrNull(
-        savedFeedsPref: (savedFeedsPref) {
-          currentFeeds.addAll(savedFeedsPref.items);
-        },
-      );
-    }
-
-    final updatedFeeds = currentFeeds.map((f) => f.copyWith(pinned: f.id == feed.config.id)).toList();
-    if (!updatedFeeds.any((f) => f.id == feed.config.id)) {
-      updatedFeeds.add(feed.config.copyWith(pinned: true));
-    }
-    final updatedPreferences = preferences.preferences.where((pref) => !pref.isSavedFeedsPref(pref)).toList();
-    updatedPreferences.add(Preference.savedFeedsPref(items: updatedFeeds));
     await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
   }
 

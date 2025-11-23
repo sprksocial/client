@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
@@ -55,7 +56,7 @@ class FeedCard extends StatelessWidget {
     if (generator?.avatar != null) {
       return generator!.avatar.toString();
     }
-    return generator?.creator.avatar?.toString() ?? '';
+    return '';
   }
 
   bool get _isPrimaryAction => !isAdded || !isPinned;
@@ -156,8 +157,7 @@ class FeedCard extends StatelessWidget {
 
   Widget _buildMetaRow(BuildContext context) {
     final likeCount = generator?.likeCount ?? 0;
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -173,30 +173,18 @@ class FeedCard extends StatelessWidget {
           style: AppTypography.textExtraSmallThin,
         ),
         const SizedBox(width: 8),
-        if (isPinned)
-          _StatusBadge(
-            label: 'Pinned',
-            backgroundColor: AppColors.primary50,
-            textColor: AppColors.primary700,
-          )
-        else if (isAdded)
-          _StatusBadge(
-            label: 'Added',
-            backgroundColor: isDark ? AppColors.grey600 : AppColors.grey200,
-            textColor: isDark ? AppColors.grey100 : AppColors.grey900,
-          ),
       ],
     );
   }
 
   Widget _buildActionButton(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bool isPrimary = _isPrimaryAction;
-    final Color backgroundColor = isPrimary
+    final isPrimary = _isPrimaryAction;
+    final backgroundColor = isPrimary
         ? AppColors.primary500
         : isDark
-            ? AppColors.darkGreyButton
-            : AppColors.lightGreyButton;
+        ? AppColors.darkGreyButton
+        : AppColors.lightGreyButton;
 
     final textStyle = AppTypography.textSmallMedium.copyWith(
       color: isPrimary ? Colors.white : (isDark ? AppColors.grey100 : AppColors.grey900),
@@ -214,7 +202,7 @@ class FeedCard extends StatelessWidget {
           border: isPrimary
               ? null
               : Border.all(
-                  color: isDark ? Colors.white.withOpacity(0.15) : AppColors.grey200,
+                  color: isDark ? Colors.white.withValues(alpha: 0.15) : AppColors.grey200,
                   width: 1.1,
                 ),
         ),
@@ -269,8 +257,8 @@ class _FallbackAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color background = isDark ? AppColors.grey800 : AppColors.grey200;
-    final Color iconColor = isDark ? AppColors.grey200 : AppColors.grey500;
+    const background = AppColors.primary600;
+    const iconColor = AppColors.greyWhite;
 
     return Container(
       width: 36,
@@ -290,38 +278,11 @@ class _FallbackAvatar extends StatelessWidget {
                 ),
               ),
             )
-          : Icon(
-              Icons.rss_feed,
+          : const Icon(
+              FluentIcons.feed_24_regular,
               color: iconColor,
               size: 18,
             ),
-    );
-  }
-}
-
-class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({
-    required this.label,
-    required this.backgroundColor,
-    required this.textColor,
-  });
-
-  final String label;
-  final Color backgroundColor;
-  final Color textColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        label,
-        style: AppTypography.textExtraSmallMedium.copyWith(color: textColor),
-      ),
     );
   }
 }

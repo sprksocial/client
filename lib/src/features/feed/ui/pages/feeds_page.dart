@@ -63,7 +63,8 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
-    final feeds = settings.feeds;
+    // Only show pinned feeds in the home view
+    final feeds = settings.feeds.where((feed) => feed.config.pinned).toList();
     final activeFeed = settings.activeFeed;
 
     // Feed providers are watched at MainPage level, but we still need to watch them here
