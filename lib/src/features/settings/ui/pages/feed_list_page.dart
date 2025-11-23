@@ -1,12 +1,12 @@
 import 'dart:ui' show lerpDouble;
 
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/design_system/components/molecules/settings_feed_card.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:sparksocial/src/features/settings/providers/settings_state.dart';
 
 @RoutePage()
 class FeedListPage extends ConsumerStatefulWidget {
@@ -30,59 +30,6 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
       backgroundColor: colorScheme.surface,
       body: Column(
         children: [
-          // Settings toggles
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Feed Options',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
-                ),
-                const SizedBox(height: 16),
-
-                // Feed Blur Toggle
-                Card(
-                  child: SwitchListTile(
-                    title: Text(
-                      'Blur Feed Content',
-                      style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
-                    ),
-                    subtitle: Text(
-                      'Blur potentially sensitive content in feeds',
-                      style: TextStyle(color: colorScheme.onSurface, fontSize: 12),
-                    ),
-                    value: settingsState.feedBlurEnabled,
-                    onChanged: (value) {},
-                    secondary: Icon(FluentIcons.eye_off_24_regular, color: colorScheme.primary),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // Post to Bluesky Toggle
-                Card(
-                  child: SwitchListTile(
-                    title: Text(
-                      'Cross-post to Bluesky',
-                      style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
-                    ),
-                    subtitle: Text(
-                      'Automatically post to Bluesky when posting to Spark',
-                      style: TextStyle(color: colorScheme.onSurface, fontSize: 12),
-                    ),
-                    value: settingsState.postToBskyEnabled,
-                    onChanged: (value) {
-                      ref.read(settingsProvider.notifier).setPostToBsky(value);
-                    },
-                    secondary: Icon(FluentIcons.share_24_regular, color: colorScheme.primary),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
           // Feeds List Header with Edit Toggle
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -114,7 +61,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
           Expanded(
             child: ReorderableListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: settingsState.feeds.length,
+              itemCount: _getFilteredFeeds(settingsState).length,
               buildDefaultDragHandles: false,
               onReorderStart: (index) {
                 setState(() {
@@ -131,7 +78,14 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                 if (newIndex > oldIndex) newIndex -= 1;
 
                 try {
-                  await ref.read(settingsProvider.notifier).reorderFeed(oldIndex, newIndex);
+                  // Get the actual indices in the full feeds list
+                  final filteredFeeds = _getFilteredFeeds(settingsState);
+                  final actualOldIndex = settingsState.feeds.indexOf(filteredFeeds[oldIndex]);
+                  final actualNewIndex = newIndex < filteredFeeds.length
+                      ? settingsState.feeds.indexOf(filteredFeeds[newIndex])
+                      : settingsState.feeds.length - 1;
+
+                  await ref.read(settingsProvider.notifier).reorderFeed(actualOldIndex, actualNewIndex);
                 } catch (e) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -164,7 +118,8 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                 );
               },
               itemBuilder: (context, index) {
-                final feed = settingsState.feeds[index];
+                final filteredFeeds = _getFilteredFeeds(settingsState);
+                final feed = filteredFeeds[index];
                 final isActive = settingsState.activeFeed == feed;
 
                 return Padding(
@@ -227,6 +182,42 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                             }
                           }
                         : null,
+                    onLike: feed.view != null
+                        ? () async {
+                            try {
+                              await ref.read(settingsProvider.notifier).likeFeed(feed);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Feed liked')),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Failed to like feed: $e')),
+                                );
+                              }
+                            }
+                          }
+                        : null,
+                    onUnlike: feed.view?.viewer?.like != null
+                        ? () async {
+                            try {
+                              await ref.read(settingsProvider.notifier).unlikeFeed(feed);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Feed unliked')),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Failed to unlike feed: $e')),
+                                );
+                              }
+                            }
+                          }
+                        : null,
                   ),
                 );
               },
@@ -235,5 +226,9 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
         ],
       ),
     );
+  }
+
+  List<Feed> _getFilteredFeeds(SettingsState settingsState) {
+    return settingsState.feeds;
   }
 }

@@ -8,8 +8,7 @@ part 'settings_state.freezed.dart';
 class SettingsState with _$SettingsState {
   const factory SettingsState({
     required Feed activeFeed,
-    @Default(false) bool feedBlurEnabled,
     @Default([]) List<Feed> feeds,
-    @Default(false) bool postToBskyEnabled,
+    @Default([]) List<Feed> likedFeeds,
   }) = _SettingsState;
 }

@@ -21,6 +21,8 @@ class SettingsFeedCard extends StatelessWidget {
     this.onDelete,
     this.onPin,
     this.onUnpin,
+    this.onLike,
+    this.onUnlike,
     super.key,
   });
 
@@ -32,10 +34,14 @@ class SettingsFeedCard extends StatelessWidget {
   final VoidCallback? onDelete;
   final VoidCallback? onPin;
   final VoidCallback? onUnpin;
+  final VoidCallback? onLike;
+  final VoidCallback? onUnlike;
 
   GeneratorView? get generator => feed.view;
 
   bool get _isTimeline => feed.type == 'timeline';
+
+  bool get _isLiked => feed.view?.viewer?.like != null;
 
   String get _title {
     if (generator != null) {
@@ -94,6 +100,8 @@ class SettingsFeedCard extends StatelessWidget {
               _buildAvatar(),
               const SizedBox(width: 12),
               Expanded(child: _buildTextContent()),
+              const SizedBox(width: 8),
+              _buildLikeButton(),
             ],
           ),
         ),
@@ -201,6 +209,30 @@ class SettingsFeedCard extends StatelessWidget {
         Icons.drag_indicator,
         size: 20,
         color: Colors.grey.withAlpha(178),
+      ),
+    );
+  }
+
+  Widget _buildLikeButton() {
+    if (_isTimeline) return const SizedBox.shrink(); // Don't show like button for timeline
+    
+    return InteractivePressable(
+      onTap: _isLiked ? onUnlike : onLike,
+      borderRadius: BorderRadius.circular(6),
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: _isLiked ? AppColors.red500 : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(
+            color: _isLiked ? AppColors.red500 : (Colors.grey.withAlpha(100)),
+          ),
+        ),
+        child: Icon(
+          Icons.favorite,
+          size: 16,
+          color: _isLiked ? Colors.white : Colors.grey,
+        ),
       ),
     );
   }

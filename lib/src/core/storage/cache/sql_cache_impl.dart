@@ -181,7 +181,7 @@ class SQLCacheImpl implements SQLCacheInterface {
         $_columnFeedIdentifier TEXT PRIMARY KEY,
         $_columnFeedType TEXT NOT NULL,
         $_columnFeedConfig TEXT NOT NULL,
-        $_columnFeedView TEXT NOT NULL,
+        $_columnFeedView TEXT NOT NULL
       )
     ''');
     // Feed-Post Associations Table
