@@ -537,6 +537,47 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
+  Future<List<GeneratorView>> getSuggestedFeeds({bool bluesky = false}) async {
+    _logger.d('Getting suggested feeds, bluesky: $bluesky');
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final headers = bluesky ? {'atproto-proxy': _client.bskyDid} : {'atproto-proxy': _client.sprkDid};
+      final response = await atproto.get(
+        bluesky ? NSID.parse('app.bsky.feed.getSuggestedFeeds') : NSID.parse('so.sprk.feed.getSuggestedFeeds'),
+        headers: headers,
+        to: (jsonMap) {
+          final feedsData = (jsonMap['feeds'] as List<dynamic>?) ?? [];
+          return feedsData
+              .map((feedData) {
+                try {
+                  final feedMap = feedData as Map<String, dynamic>;
+                  return GeneratorView.fromJson(feedMap);
+                } catch (e) {
+                  _logger.w('Failed to parse suggested feed generator, skipping: $e');
+                  return null;
+                }
+              })
+              .whereType<GeneratorView>()
+              .toList();
+        },
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+      );
+      _logger.d('Suggested feeds retrieved successfully: ${response.data.length} generators');
+      return response.data;
+    });
+  }
+
+  @override
   Future<Feed> getFeedFromSavedFeed(SavedFeed savedFeed) async {
     return _client.executeWithRetry(() async {
       if (savedFeed.type == 'timeline') {

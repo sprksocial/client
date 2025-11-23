@@ -85,12 +85,23 @@ class ProfileCard extends StatelessWidget {
                     children: [
                       ClipRRect(
                         borderRadius: BorderRadius.circular(100),
-                        child: CachedNetworkImage(
-                          imageUrl: imageUrl,
-                          width: 36,
-                          height: 36,
-                          fit: BoxFit.cover,
-                        ),
+                        child: imageUrl.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: imageUrl,
+                                width: 36,
+                                height: 36,
+                                fit: BoxFit.cover,
+                              )
+                            : Container(
+                                width: 36,
+                                height: 36,
+                                color: isDark ? AppColors.grey600 : AppColors.grey300,
+                                child: Icon(
+                                  Icons.person,
+                                  size: 20,
+                                  color: isDark ? AppColors.grey400 : AppColors.grey600,
+                                ),
+                              ),
                       ),
                       const SizedBox(width: 10),
                       Expanded(
