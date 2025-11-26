@@ -50,3 +50,14 @@ class AudioPostsResponse with _$AudioPostsResponse {
 
   factory AudioPostsResponse.fromJson(Map<String, dynamic> json) => _$AudioPostsResponseFromJson(json);
 }
+
+@freezed
+class TrendingAudiosResponse with _$TrendingAudiosResponse {
+  @JsonSerializable(explicitToJson: true)
+  const factory TrendingAudiosResponse({
+    required List<AudioView> audios,
+    String? cursor,
+  }) = _TrendingAudiosResponse;
+
+  factory TrendingAudiosResponse.fromJson(Map<String, dynamic> json) => _$TrendingAudiosResponseFromJson(json);
+}

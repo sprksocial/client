@@ -5,6 +5,8 @@ import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repositor
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/story_repository_impl.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
@@ -76,6 +78,9 @@ Future<void> initServiceLocator() async {
 
   // Register StoryRepository
   sl.registerSingleton<StoryRepository>(StoryRepositoryImpl(sl.get<SprkRepository>()));
+
+  // Register SoundRepository
+  sl.registerSingleton<SoundRepository>(SoundRepositoryImpl(sl.get<SprkRepository>()));
 
   // Register SettingsRepository
   sl.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());

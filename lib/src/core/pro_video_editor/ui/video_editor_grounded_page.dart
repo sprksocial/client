@@ -3,11 +3,14 @@ import 'dart:async';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository.dart';
+import 'package:sparksocial/src/core/pro_video_editor/services/audio_helper_service.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_editor_configs_builder.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_initializing_widget.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_player_widget.dart';
@@ -71,22 +74,16 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
 
   late VideoPlayerController _videoController;
 
+  late final _audioService = AudioHelperService(
+    videoController: _videoController,
+  );
+
   final _taskId = DateTime.now().microsecondsSinceEpoch.toString();
 
   final _updateClipsNotifier = ValueNotifier(false);
   final _proVideoEditor = ProVideoEditor.instance;
 
-  late final ProImageEditorConfigs _configs = VideoEditorConfigsBuilder.build(
-    video: widget.video,
-    taskId: _taskId,
-    useMaterialDesign: _useMaterialDesign,
-    mainBarKey: _mainEditorBarKey,
-    videoPlayerBuilder: () => VideoPlayerWidget(
-      controller: _videoController,
-      isLoadingListenable: _updateClipsNotifier,
-    ),
-    videoEditorConfigs: _videoConfigs,
-  );
+  late ProImageEditorConfigs _configs;
 
   @override
   void initState() {
@@ -97,6 +94,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
 
   @override
   void dispose() {
+    _audioService.dispose();
     _videoController.dispose();
     super.dispose();
   }
@@ -145,7 +143,28 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   }
 
   Future<void> _initializePlayer() async {
-    await _setMetadata();
+    // Start parallel initialization
+    final metadataFuture = _setMetadata();
+    final trendingAudiosFuture = _fetchTrendingAudioTracks();
+    final controllerFuture = createVideoPlayerControllerFromEditorVideo(_video);
+
+    // Wait for completion
+    await metadataFuture;
+    final audioTracks = await trendingAudiosFuture;
+    _videoController = await controllerFuture;
+
+    _configs = VideoEditorConfigsBuilder.build(
+      video: widget.video,
+      taskId: _taskId,
+      useMaterialDesign: _useMaterialDesign,
+      mainBarKey: _mainEditorBarKey,
+      videoPlayerBuilder: () => VideoPlayerWidget(
+        controller: _videoController,
+        isLoadingListenable: _updateClipsNotifier,
+      ),
+      videoEditorConfigs: _videoConfigs,
+      audioTracks: audioTracks,
+    );
 
     // Update clip duration and thumbnails after first frame
     _configs.clipsEditor.clips.first = _configs.clipsEditor.clips.first.copyWith(
@@ -154,9 +173,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _generateThumbnails();
     });
-
-    // Create controller from provided EditorVideo source
-    _videoController = await createVideoPlayerControllerFromEditorVideo(_video);
 
     await Future.wait([
       _videoController.initialize(),
@@ -179,7 +195,36 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
 
     _videoController.addListener(_onDurationChange);
 
+    await _audioService.initialize();
+
     setState(() {});
+  }
+
+  Future<List<AudioTrack>> _fetchTrendingAudioTracks() async {
+    final audioTracks = <AudioTrack>[];
+    try {
+      final soundRepository = GetIt.instance<SoundRepository>();
+      final trendingAudios = await soundRepository.getTrendingAudios();
+      audioTracks.addAll(
+        trendingAudios.audios.map(
+          (audio) => AudioTrack(
+            id: audio.uri.toString(),
+            title: audio.title,
+            subtitle: audio.author.handle,
+            duration: const Duration(seconds: 9),
+            image: EditorImage(
+              networkUrl: audio.coverArt.toString(),
+            ),
+            audio: EditorAudio(
+              networkUrl: audio.audio?.toString(),
+            ),
+          ),
+        ),
+      );
+    } catch (e) {
+      debugPrint('Failed to fetch trending audios: $e');
+    }
+    return audioTracks;
   }
 
   void _onDurationChange() {
@@ -303,7 +348,12 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
               onPause: _videoController.pause,
               onPlay: _videoController.play,
               onMuteToggle: (isMuted) {
-                _videoController.setVolume(isMuted ? 0.0 : 1.0);
+                if (isMuted) {
+                  _audioService.setVolume(0);
+                  _videoController.setVolume(0);
+                } else {
+                  _audioService.balanceAudio();
+                }
               },
               onTrimSpanUpdate: (durationSpan) {
                 if (_videoController.value.isPlaying) {
@@ -311,6 +361,21 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
                 }
               },
               onTrimSpanEnd: _seekToPosition,
+            ),
+            audioEditorCallbacks: AudioEditorCallbacks(
+              onBalanceChange: (value) async {
+                await _audioService.balanceAudio(value);
+              },
+              onStartTimeChange: (startTime) async {
+                await Future.value([
+                  _audioService.seek(startTime),
+                  _videoController.seekTo(Duration.zero),
+                ]);
+              },
+              onPlay: (audio) async {
+                await _audioService.play(audio);
+              },
+              onStop: (audio) => _audioService.pause(),
             ),
             mainEditorCallbacks: MainEditorCallbacks(
               onStartCloseSubEditor: (value) {

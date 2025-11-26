@@ -64,6 +64,7 @@ dependencies:
     git:
       url: https://github.com/sprksocial/pro_video_editor.git
       ref: dev
+  audioplayers: ^6.5.1
 
 dev_dependencies:
   flutter_test:

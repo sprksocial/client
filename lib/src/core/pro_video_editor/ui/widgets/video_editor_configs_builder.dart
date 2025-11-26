@@ -16,9 +16,11 @@ class VideoEditorConfigsBuilder {
     required bool useMaterialDesign,
     required GlobalKey<GroundedMainBarState> mainBarKey,
     required Widget Function() videoPlayerBuilder,
+    List<AudioTrack> audioTracks = const [],
     VideoEditorConfigs videoEditorConfigs = const VideoEditorConfigs(
       initialMuted: true,
       enablePlayButton: true,
+      
       playTimeSmoothingDuration: Duration(milliseconds: 600),
     ),
   }) {
@@ -39,7 +41,7 @@ class VideoEditorConfigsBuilder {
       mainEditor: MainEditorConfigs(
         tools: const [
           // SubEditorMode.videoClips,
-          // SubEditorMode.audio,
+          SubEditorMode.audio,
           SubEditorMode.paint,
           SubEditorMode.text,
           SubEditorMode.cropRotate,
@@ -106,6 +108,7 @@ class VideoEditorConfigsBuilder {
           },
         ),
       ),
+
       textEditor: TextEditorConfigs(
         customTextStyles: [
           GoogleFonts.roboto(),
@@ -290,6 +293,9 @@ class VideoEditorConfigsBuilder {
             );
           },
         ),
+        audioTracks: [
+          ...audioTracks,
+        ],
       ),
       clipsEditor: ClipsEditorConfigs(
         style: const ClipsEditorStyle(

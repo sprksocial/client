@@ -12,4 +12,13 @@ abstract class SoundRepository {
     int limit = 50,
     String? cursor,
   });
+
+  /// Get a list of trending audios.
+  ///
+  /// [limit] The number of items to return (default 50, max 100).
+  /// [cursor] Pagination cursor for the next set of results.
+  Future<TrendingAudiosResponse> getTrendingAudios({
+    int limit = 50,
+    String? cursor,
+  });
 }

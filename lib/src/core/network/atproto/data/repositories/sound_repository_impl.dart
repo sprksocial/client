@@ -56,4 +56,43 @@ class SoundRepositoryImpl implements SoundRepository {
       return result.data;
     });
   }
+
+  @override
+  Future<TrendingAudiosResponse> getTrendingAudios({
+    int limit = 50,
+    String? cursor,
+  }) async {
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final parameters = <String, dynamic>{
+        'limit': limit,
+      };
+      if (cursor != null) {
+        parameters['cursor'] = cursor;
+      }
+
+      final result = await atproto.get(
+        NSID.parse('so.sprk.sound.getTrendingAudios'),
+        parameters: parameters,
+        headers: {'atproto-proxy': _client.sprkDid},
+        to: (jsonMap) {
+          return TrendingAudiosResponse.fromJson(jsonMap);
+        },
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+      );
+
+      _logger.d('Trending audios retrieved successfully: ${result.data.audios.length} audios');
+      return result.data;
+    });
+  }
 }
