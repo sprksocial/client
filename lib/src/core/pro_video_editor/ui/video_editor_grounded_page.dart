@@ -272,6 +272,18 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   /// before exporting using FFmpeg. Measures and stores the generation time.
   Future<void> generateVideo(CompleteParameters parameters) async {
     unawaited(_videoController.pause());
+    unawaited(_audioService.pause());
+    final directory = await getTemporaryDirectory();
+
+    final customAudioTrack = parameters.customAudioTrack;
+    final volumeBalance = customAudioTrack?.volumeBalance ?? 0;
+    double overlayVolume = 1;
+    double originalVolume = 1;
+    if (volumeBalance < 0) {
+      overlayVolume += volumeBalance;
+    } else {
+      originalVolume -= volumeBalance;
+    }
 
     final exportModel = RenderVideoModel(
       id: _taskId,
@@ -294,10 +306,12 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
               flipY: parameters.flipY,
             )
           : null,
+      customAudioPath: await _audioService.safeCustomAudioPath(customAudioTrack),
+      originalAudioVolume: originalVolume,
+      customAudioVolume: overlayVolume,
       // bitrate: _videoMetadata.bitrate,
     );
 
-    final directory = await getTemporaryDirectory();
     final now = DateTime.now().millisecondsSinceEpoch;
     _outputPath = await ProVideoEditor.instance.renderVideoToFile(
       '${directory.path}/spark_edited_$now.mp4',
