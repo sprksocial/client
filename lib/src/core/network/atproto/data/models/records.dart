@@ -20,6 +20,7 @@ class Record with _$Record {
     List<String>? tags,
     List<SelfLabel>? selfLabels,
     Media? media,
+    StrongRef? sound,
   }) = PostRecord;
 
   @JsonSerializable(explicitToJson: true)

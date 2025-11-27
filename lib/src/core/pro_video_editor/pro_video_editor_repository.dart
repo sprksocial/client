@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/widgets.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:sparksocial/src/core/pro_video_editor/models/video_editor_result.dart';
 
 /// Abstraction over the pro_video_editor plugin.
 ///
@@ -37,8 +38,8 @@ abstract class ProVideoEditorRepository {
   Future<XFile?> openImageEditor(BuildContext context, XFile source);
 
   /// Opens the ProVideoEditor UI to edit the given [video] and returns
-  /// an edited video file when the editor is closed.
+  /// the edited video with optional audio metadata when the editor is closed.
   ///
   /// Returns `null` if the user cancels without completing an edit.
-  Future<XFile?> openVideoEditor(BuildContext context, EditorVideo video);
+  Future<VideoEditorResult?> openVideoEditor(BuildContext context, EditorVideo video);
 }

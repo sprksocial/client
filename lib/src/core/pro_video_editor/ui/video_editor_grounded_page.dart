@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:atproto/atproto.dart';
+import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +13,7 @@ import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository.dart';
+import 'package:sparksocial/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:sparksocial/src/core/pro_video_editor/services/audio_helper_service.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_editor_configs_builder.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_initializing_widget.dart';
@@ -71,6 +75,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   late EditorVideo _video;
 
   String? _outputPath;
+  StrongRef? _selectedSoundRef;
 
   late VideoPlayerController _videoController;
 
@@ -208,7 +213,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       audioTracks.addAll(
         trendingAudios.audios.map(
           (audio) => AudioTrack(
-            id: audio.uri.toString(),
+            id: _encodeStrongRef(audio.uri.toString(), audio.cid),
             title: audio.title,
             subtitle: audio.author.handle,
             duration: const Duration(seconds: 9),
@@ -225,6 +230,18 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       debugPrint('Failed to fetch trending audios: $e');
     }
     return audioTracks;
+  }
+
+  String _encodeStrongRef(String uri, String cid) => jsonEncode({'uri': uri, 'cid': cid});
+
+  StrongRef? _decodeStrongRef(String? encoded) {
+    if (encoded == null) return null;
+    try {
+      final map = jsonDecode(encoded) as Map<String, dynamic>;
+      return StrongRef(uri: AtUri.parse(map['uri'] as String), cid: map['cid'] as String);
+    } catch (_) {
+      return null;
+    }
   }
 
   void _onDurationChange() {
@@ -276,6 +293,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     final directory = await getTemporaryDirectory();
 
     final customAudioTrack = parameters.customAudioTrack;
+    _selectedSoundRef = _decodeStrongRef(customAudioTrack?.id);
     final volumeBalance = customAudioTrack?.volumeBalance ?? 0;
     double overlayVolume = 1;
     double originalVolume = 1;
@@ -319,9 +337,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     );
   }
 
-  /// Closes the video editor and returns the edited video file if one was exported.
+  /// Closes the video editor and returns the edited video with audio metadata.
   ///
-  /// Returns `XFile` if [_outputPath] is available, otherwise returns `null`.
+  /// Returns [VideoEditorResult] if [_outputPath] is available, otherwise returns `null`.
   Future<void> onCloseEditor(EditorMode editorMode) async {
     if (editorMode != EditorMode.main) {
       Navigator.pop(context);
@@ -330,12 +348,13 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     if (_outputPath != null && mounted) {
       Navigator.pop(
         context,
-        XFile(
-          _outputPath!,
-          mimeType: 'video/mp4',
+        VideoEditorResult(
+          video: XFile(_outputPath!, mimeType: 'video/mp4'),
+          soundRef: _selectedSoundRef,
         ),
       );
       _outputPath = null;
+      _selectedSoundRef = null;
     } else {
       Navigator.pop(context);
     }

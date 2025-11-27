@@ -105,14 +105,14 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       _logger.d('Processing recorded video: ${videoFile.path}');
 
       final editorVideo = EditorVideo.file(File(videoFile.path));
-      final editedVideo = await GetIt.I<ProVideoEditorRepository>().openVideoEditor(
+      final result = await GetIt.I<ProVideoEditorRepository>().openVideoEditor(
         context,
         editorVideo,
       );
 
       if (!mounted) return;
 
-      if (editedVideo == null) {
+      if (result == null) {
         setState(() {
           _isProcessing = false;
         });
@@ -122,8 +122,9 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
 
       await context.router.push(
         VideoReviewRoute(
-          videoPath: editedVideo.path,
+          videoPath: result.video.path,
           storyMode: widget.storyMode,
+          soundRef: result.soundRef,
         ),
       );
 

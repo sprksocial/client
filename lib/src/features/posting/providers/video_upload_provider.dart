@@ -35,10 +35,11 @@ Future<StrongRef?> postVideo(
   String altText = '',
   String? videoPath,
   bool crosspostToBsky = false,
+  StrongRef? soundRef,
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Posting Video');
   try {
-    logger.d('Posting video (size=${blob.size}, crosspost=$crosspostToBsky)');
+    logger.d('Posting video (size=${blob.size}, crosspost=$crosspostToBsky, sound=${soundRef?.uri})');
     final authRepository = GetIt.I<AuthRepository>();
     final authAtProto = authRepository.atproto;
     if (authAtProto == null || authAtProto.session == null) {
@@ -49,6 +50,7 @@ Future<StrongRef?> postVideo(
       caption: CaptionRef(text: description.isNotEmpty ? description : '', facets: []),
       media: Media.video(video: blob, alt: altText),
       createdAt: DateTime.now().toUtc(),
+      sound: soundRef,
     );
 
     final recordRes = await authAtProto.repo.createRecord(
@@ -84,9 +86,10 @@ Future<StrongRef?> processAndPostVideo(
   String altText = '',
   bool crosspostToBsky = false,
   bool storyMode = false,
+  StrongRef? soundRef,
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Process/Post Video');
-  logger.d('Processing then posting video: $videoPath (storyMode=$storyMode)');
+  logger.d('Processing then posting video: $videoPath (storyMode=$storyMode, sound=${soundRef?.uri})');
   final blob = await processVideo(ref, videoPath);
   if (blob == null) {
     logger.e('Aborting: processing failed');
@@ -116,6 +119,7 @@ Future<StrongRef?> processAndPostVideo(
       altText: altText,
       videoPath: videoPath,
       crosspostToBsky: crosspostToBsky,
+      soundRef: soundRef,
     );
     logger.i('Video flow complete (storyMode=false) success=${res != null}');
     return res;
