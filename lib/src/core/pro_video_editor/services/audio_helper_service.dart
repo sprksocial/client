@@ -18,8 +18,11 @@ class AudioHelperService {
   /// The controller managing video playback.
   final VideoPlayerController videoController;
 
-  /// Stores the last applied audio balance between video and overlay.
-  double _lastVolumeBalance = 0;
+  /// Whether custom audio is currently active (vs original video audio).
+  bool _useCustomAudio = false;
+
+  /// Returns whether custom audio is currently active.
+  bool get useCustomAudio => _useCustomAudio;
 
   /// Initializes the audio player with platform-specific audio context
   /// settings.
@@ -67,7 +70,7 @@ class AudioHelperService {
     return _audioPlayer.pause();
   }
 
-  /// Sets the playback volume.
+  /// Sets the playback volume for custom audio.
   ///
   /// The [volume] should be a value between `0.0` (muted) and `1.0` (maximum).
   Future<void> setVolume(double volume) {
@@ -79,25 +82,39 @@ class AudioHelperService {
     return _audioPlayer.seek(startTime);
   }
 
-  /// Adjusts the balance between video and overlay audio.
+  /// Sets the audio mode to either original or custom.
   ///
-  /// A negative [volumeBalance] lowers the overlay volume,
-  /// while a positive value lowers the video volume.
-  Future<void> balanceAudio([double? volumeBalance]) async {
-    volumeBalance ??= _lastVolumeBalance;
+  /// When [useCustom] is true, original video audio is muted and custom
+  /// audio plays at full volume.
+  /// When [useCustom] is false, custom audio is muted and original
+  /// video audio plays at full volume.
+  Future<void> setAudioMode({required bool useCustom}) async {
+    _useCustomAudio = useCustom;
 
-    double overlayVolume = 1;
-    double originalVolume = 1;
-    if (volumeBalance < 0) {
-      overlayVolume += volumeBalance;
+    if (useCustom) {
+      await Future.wait([
+        setVolume(1),
+        videoController.setVolume(0),
+      ]);
     } else {
-      originalVolume -= volumeBalance;
+      await Future.wait([
+        setVolume(0),
+        videoController.setVolume(1),
+      ]);
     }
+  }
+
+  /// Mutes all audio (both original and custom).
+  Future<void> muteAll() async {
     await Future.wait([
-      setVolume(overlayVolume),
-      videoController.setVolume(originalVolume),
+      setVolume(0),
+      videoController.setVolume(0),
     ]);
-    _lastVolumeBalance = volumeBalance;
+  }
+
+  /// Restores audio based on current mode.
+  Future<void> unmute() async {
+    await setAudioMode(useCustom: _useCustomAudio);
   }
 
   /// Returns a local file path for the given [track]'s audio source.

@@ -4,7 +4,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/audio_timeline_state.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/build_stickers.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_editor_main_bar_wrapper.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_progress_alert.dart';
 
 class VideoEditorConfigsBuilder {
@@ -16,11 +18,11 @@ class VideoEditorConfigsBuilder {
     required bool useMaterialDesign,
     required GlobalKey<GroundedMainBarState> mainBarKey,
     required Widget Function() videoPlayerBuilder,
+    required AudioTimelineState audioTimelineState,
     List<AudioTrack> audioTracks = const [],
     VideoEditorConfigs videoEditorConfigs = const VideoEditorConfigs(
       initialMuted: true,
       enablePlayButton: true,
-      
       playTimeSmoothingDuration: Duration(milliseconds: 600),
     ),
   }) {
@@ -68,11 +70,12 @@ class VideoEditorConfigsBuilder {
           bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
             key: key,
             builder: (context) {
-              return GroundedMainBar(
-                key: mainBarKey,
+              return VideoEditorMainBarWrapper(
+                mainBarKey: mainBarKey,
                 editor: editor,
                 configs: editor.configs,
                 callbacks: editor.callbacks,
+                audioTimelineState: audioTimelineState,
               );
             },
             stream: rebuildStream,

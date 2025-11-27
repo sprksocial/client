@@ -15,6 +15,8 @@ import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository.dart';
 import 'package:sparksocial/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:sparksocial/src/core/pro_video_editor/services/audio_helper_service.dart';
+import 'package:sparksocial/src/core/pro_video_editor/services/audio_waveform_extractor.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/audio_timeline_state.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_editor_configs_builder.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_initializing_widget.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_player_widget.dart';
@@ -87,8 +89,10 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
 
   final _updateClipsNotifier = ValueNotifier(false);
   final _proVideoEditor = ProVideoEditor.instance;
+  final _waveformExtractor = AudioWaveformExtractor.instance;
 
   late ProImageEditorConfigs _configs;
+  late AudioTimelineState _audioTimelineState;
 
   @override
   void initState() {
@@ -101,6 +105,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   void dispose() {
     _audioService.dispose();
     _videoController.dispose();
+    _audioTimelineState.dispose();
     super.dispose();
   }
 
@@ -158,6 +163,11 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     final audioTracks = await trendingAudiosFuture;
     _videoController = await controllerFuture;
 
+    // Initialize audio timeline state
+    _audioTimelineState = AudioTimelineState(
+      videoDuration: _videoMetadata.duration,
+    );
+
     _configs = VideoEditorConfigsBuilder.build(
       video: widget.video,
       taskId: _taskId,
@@ -169,6 +179,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       ),
       videoEditorConfigs: _videoConfigs,
       audioTracks: audioTracks,
+      audioTimelineState: _audioTimelineState,
     );
 
     // Update clip duration and thumbnails after first frame
@@ -177,6 +188,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _generateThumbnails();
+      _extractVideoWaveform();
     });
 
     await Future.wait([
@@ -205,6 +217,27 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     setState(() {});
   }
 
+  /// Extracts waveform data from the video's audio track.
+  Future<void> _extractVideoWaveform() async {
+    final waveformData = await _waveformExtractor.extractFromVideo(_video);
+    if (mounted) {
+      _audioTimelineState.setVideoWaveform(waveformData);
+    }
+  }
+
+  /// Extracts waveform data from a custom audio track.
+  Future<void> _extractCustomAudioWaveform(AudioTrack track) async {
+    final waveformData = await _waveformExtractor.extractFromAudio(track.audio);
+    final authorAvatar = _decodeAuthorAvatar(track.id);
+    if (mounted) {
+      _audioTimelineState.setCustomAudio(
+        track,
+        waveformData,
+        authorAvatarUrl: authorAvatar,
+      );
+    }
+  }
+
   Future<List<AudioTrack>> _fetchTrendingAudioTracks() async {
     final audioTracks = <AudioTrack>[];
     try {
@@ -213,7 +246,11 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       audioTracks.addAll(
         trendingAudios.audios.map(
           (audio) => AudioTrack(
-            id: _encodeStrongRef(audio.uri.toString(), audio.cid),
+            id: _encodeTrackId(
+              audio.uri.toString(),
+              audio.cid,
+              authorAvatar: audio.author.avatar?.toString(),
+            ),
             title: audio.title,
             subtitle: audio.author.handle,
             duration: const Duration(seconds: 9),
@@ -232,13 +269,27 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     return audioTracks;
   }
 
-  String _encodeStrongRef(String uri, String cid) => jsonEncode({'uri': uri, 'cid': cid});
+  String _encodeTrackId(String uri, String cid, {String? authorAvatar}) =>
+      jsonEncode({'uri': uri, 'cid': cid, 'authorAvatar': authorAvatar});
 
   StrongRef? _decodeStrongRef(String? encoded) {
     if (encoded == null) return null;
     try {
       final map = jsonDecode(encoded) as Map<String, dynamic>;
-      return StrongRef(uri: AtUri.parse(map['uri'] as String), cid: map['cid'] as String);
+      return StrongRef(
+        uri: AtUri.parse(map['uri'] as String),
+        cid: map['cid'] as String,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  String? _decodeAuthorAvatar(String? encoded) {
+    if (encoded == null) return null;
+    try {
+      final map = jsonDecode(encoded) as Map<String, dynamic>;
+      return map['authorAvatar'] as String?;
     } catch (_) {
       return null;
     }
@@ -248,6 +299,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     final totalVideoDuration = _videoMetadata.duration;
     final duration = _videoController.value.position;
     _proVideoController!.setPlayTime(duration);
+
+    // Update audio timeline progress
+    _audioTimelineState.setProgressFromDuration(duration);
 
     if (_durationSpan != null && duration >= _durationSpan!.end) {
       _seekToPosition(_durationSpan!);
@@ -294,14 +348,10 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
 
     final customAudioTrack = parameters.customAudioTrack;
     _selectedSoundRef = _decodeStrongRef(customAudioTrack?.id);
-    final volumeBalance = customAudioTrack?.volumeBalance ?? 0;
-    double overlayVolume = 1;
-    double originalVolume = 1;
-    if (volumeBalance < 0) {
-      overlayVolume += volumeBalance;
-    } else {
-      originalVolume -= volumeBalance;
-    }
+
+    final hasCustomAudio = customAudioTrack != null;
+    final customAudioVolume = hasCustomAudio ? 1.0 : 0.0;
+    final originalAudioVolume = hasCustomAudio ? 0.0 : 1.0;
 
     final exportModel = RenderVideoModel(
       id: _taskId,
@@ -325,9 +375,8 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
             )
           : null,
       customAudioPath: await _audioService.safeCustomAudioPath(customAudioTrack),
-      originalAudioVolume: originalVolume,
-      customAudioVolume: overlayVolume,
-      // bitrate: _videoMetadata.bitrate,
+      originalAudioVolume: originalAudioVolume,
+      customAudioVolume: customAudioVolume,
     );
 
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -380,12 +429,11 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
             videoEditorCallbacks: VideoEditorCallbacks(
               onPause: _videoController.pause,
               onPlay: _videoController.play,
-              onMuteToggle: (isMuted) {
+              onMuteToggle: (isMuted) async {
                 if (isMuted) {
-                  _audioService.setVolume(0);
-                  _videoController.setVolume(0);
+                  await _audioService.muteAll();
                 } else {
-                  _audioService.balanceAudio();
+                  await _audioService.unmute();
                 }
               },
               onTrimSpanUpdate: (durationSpan) {
@@ -396,9 +444,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
               onTrimSpanEnd: _seekToPosition,
             ),
             audioEditorCallbacks: AudioEditorCallbacks(
-              onBalanceChange: (value) async {
-                await _audioService.balanceAudio(value);
-              },
               onStartTimeChange: (startTime) async {
                 await Future.value([
                   _audioService.seek(startTime),
@@ -407,8 +452,14 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
               },
               onPlay: (audio) async {
                 await _audioService.play(audio);
+                await _audioService.setAudioMode(useCustom: true);
+                // Set custom audio in timeline state (persists after pause)
+                unawaited(_extractCustomAudioWaveform(audio));
               },
-              onStop: (audio) => _audioService.pause(),
+              onStop: (audio) async {
+                // Only pause playback, don't clear the audio selection
+                await _audioService.pause();
+              },
             ),
             mainEditorCallbacks: MainEditorCallbacks(
               onStartCloseSubEditor: (value) {
