@@ -61,3 +61,16 @@ class TrendingAudiosResponse with _$TrendingAudiosResponse {
 
   factory TrendingAudiosResponse.fromJson(Map<String, dynamic> json) => _$TrendingAudiosResponseFromJson(json);
 }
+
+/// Result from video upload containing the processed video blob and optional extracted audio
+class VideoUploadResult {
+  VideoUploadResult({
+    required this.videoBlob,
+    this.audioBlob,
+    this.audioDetails,
+  });
+
+  final Blob videoBlob;
+  final Blob? audioBlob;
+  final AudioDetails? audioDetails;
+}

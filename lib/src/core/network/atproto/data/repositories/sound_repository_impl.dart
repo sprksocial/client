@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
@@ -14,6 +15,42 @@ class SoundRepositoryImpl implements SoundRepository {
   }
   final SprkRepository _client;
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger('SoundRepository');
+
+  @override
+  Future<StrongRef> createSound({
+    required Blob sound,
+    required String title,
+    AudioDetails? details,
+  }) async {
+    _logger.d('Creating sound record with title: $title');
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final audioRecord = AudioRecord(
+        sound: sound,
+        title: title,
+        createdAt: DateTime.now().toUtc(),
+        details: details,
+      );
+
+      final result = await atproto.repo.createRecord(
+        collection: NSID.parse('so.sprk.sound.audio'),
+        record: audioRecord.toJson(),
+      );
+
+      _logger.i('Sound record created successfully: ${result.data.uri}');
+      return result.data;
+    });
+  }
 
   @override
   Future<AudioPostsResponse> getAudioPosts(
