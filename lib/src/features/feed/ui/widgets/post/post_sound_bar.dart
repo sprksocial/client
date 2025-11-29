@@ -7,68 +7,74 @@ import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 class PostSoundBar extends StatelessWidget {
   const PostSoundBar({
     required this.audio,
+    this.onTap,
     super.key,
   });
 
   final AudioView audio;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     const textColor = AppColors.greyWhite;
     const albumSize = 44.0;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.end,
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        // Music Info
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.only(bottom: 12, left: 8, right: 16),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          // Music Info
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 12, left: 8, right: 16),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AppIcons.music(size: 14, color: textColor),
+                  const SizedBox(width: 6),
+                  Flexible(
+                    child: Text(
+                      audio.title,
+                      style: AppTypography.textSmallMedium.copyWith(color: textColor),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
+          // Album Art
+          Container(
+            width: albumSize,
+            height: albumSize,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.black,
+            ),
+            child: Stack(
+              alignment: Alignment.center,
               children: [
-                AppIcons.music(size: 14, color: textColor),
-                const SizedBox(width: 6),
-                Flexible(
-                  child: Text(
-                    audio.title,
-                    style: AppTypography.textSmallMedium.copyWith(color: textColor),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
+                Container(
+                  width: albumSize * 0.6,
+                  height: albumSize * 0.6,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    image: DecorationImage(
+                      image: NetworkImage(audio.coverArt.toString()),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-        ),
-
-        // Album Art
-        Container(
-          width: albumSize,
-          height: albumSize,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.black,
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Container(
-                width: albumSize * 0.6,
-                height: albumSize * 0.6,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  image: DecorationImage(
-                    image: NetworkImage(audio.coverArt.toString()),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

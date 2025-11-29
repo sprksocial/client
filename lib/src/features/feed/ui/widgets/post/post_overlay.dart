@@ -1,6 +1,8 @@
 import 'package:atproto/atproto.dart';
+import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
@@ -107,7 +109,12 @@ class PostOverlay extends StatelessWidget {
               if (post.sound != null)
                 Padding(
                   padding: const EdgeInsets.all(8),
-                  child: PostSoundBar(audio: post.sound!),
+                  child: PostSoundBar(
+                    audio: post.sound!,
+                    onTap: () => context.router.push(
+                      SoundRoute(audioUri: post.sound!.uri.toString()),
+                    ),
+                  ),
                 )
               else
                 SizedBox(height: 16 + bottomPadding),
