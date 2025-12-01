@@ -15,4 +15,3 @@ abstract class SoundPageState with _$SoundPageState {
 
   static const int fetchLimit = 30;
 }
-
