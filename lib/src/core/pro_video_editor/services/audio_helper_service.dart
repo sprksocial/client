@@ -24,6 +24,9 @@ class AudioHelperService {
   /// Returns whether custom audio is currently active.
   bool get useCustomAudio => _useCustomAudio;
 
+  /// Stores the last applied audio balance between video and overlay.
+  double _lastVolumeBalance = 0;
+
   /// Initializes the audio player with platform-specific audio context
   /// settings.
   Future<void> initialize() {
@@ -84,24 +87,40 @@ class AudioHelperService {
 
   /// Sets the audio mode to either original or custom.
   ///
-  /// When [useCustom] is true, original video audio is muted and custom
-  /// audio plays at full volume.
+  /// When [useCustom] is true, enables custom audio playback with blending.
   /// When [useCustom] is false, custom audio is muted and original
   /// video audio plays at full volume.
   Future<void> setAudioMode({required bool useCustom}) async {
     _useCustomAudio = useCustom;
 
-    if (useCustom) {
-      await Future.wait([
-        setVolume(1),
-        videoController.setVolume(0),
-      ]);
-    } else {
-      await Future.wait([
-        setVolume(0),
-        videoController.setVolume(1),
-      ]);
+    if (!useCustom) {
+      _lastVolumeBalance = -1;
+    } else if (_lastVolumeBalance < 0) {
+      // Reset to neutral balance when enabling custom audio
+      _lastVolumeBalance = 0;
     }
+    await balanceAudio();
+  }
+
+  /// Adjusts the balance between video and overlay audio.
+  ///
+  /// A negative [volumeBalance] lowers the overlay volume,
+  /// while a positive value lowers the video volume.
+  Future<void> balanceAudio([double? volumeBalance]) async {
+    volumeBalance ??= _lastVolumeBalance;
+
+    double overlayVolume = 1;
+    double originalVolume = 1;
+    if (volumeBalance < 0) {
+      overlayVolume += volumeBalance;
+    } else {
+      originalVolume -= volumeBalance;
+    }
+    await Future.wait([
+      setVolume(overlayVolume),
+      videoController.setVolume(originalVolume),
+    ]);
+    _lastVolumeBalance = volumeBalance;
   }
 
   /// Mutes all audio (both original and custom).
@@ -112,9 +131,9 @@ class AudioHelperService {
     ]);
   }
 
-  /// Restores audio based on current mode.
+  /// Restores audio based on current balance.
   Future<void> unmute() async {
-    await setAudioMode(useCustom: _useCustomAudio);
+    await balanceAudio();
   }
 
   /// Returns a local file path for the given [track]'s audio source.

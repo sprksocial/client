@@ -349,9 +349,18 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     final customAudioTrack = parameters.customAudioTrack;
     _selectedSoundRef = _decodeStrongRef(customAudioTrack?.id);
 
-    final hasCustomAudio = customAudioTrack != null;
-    final customAudioVolume = hasCustomAudio ? 1.0 : 0.0;
-    final originalAudioVolume = hasCustomAudio ? 0.0 : 1.0;
+    double overlayVolume = 0;
+    double originalVolume = 1;
+    if (customAudioTrack != null) {
+      final volumeBalance = customAudioTrack.volumeBalance;
+      overlayVolume = 1;
+      originalVolume = 1;
+      if (volumeBalance < 0) {
+        overlayVolume += volumeBalance;
+      } else {
+        originalVolume -= volumeBalance;
+      }
+    }
 
     final exportModel = RenderVideoModel(
       id: _taskId,
@@ -375,8 +384,8 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
             )
           : null,
       customAudioPath: await _audioService.safeCustomAudioPath(customAudioTrack),
-      originalAudioVolume: originalAudioVolume,
-      customAudioVolume: customAudioVolume,
+      originalAudioVolume: originalVolume,
+      customAudioVolume: overlayVolume,
     );
 
     final now = DateTime.now().millisecondsSinceEpoch;
@@ -444,6 +453,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
               onTrimSpanEnd: _seekToPosition,
             ),
             audioEditorCallbacks: AudioEditorCallbacks(
+              onBalanceChange: (value) async {
+                await _audioService.balanceAudio(value);
+              },
               onStartTimeChange: (startTime) async {
                 await Future.value([
                   _audioService.seek(startTime),
@@ -451,10 +463,15 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
                 ]);
               },
               onPlay: (audio) async {
+                final isNewTrack = !_audioService.useCustomAudio;
                 await _audioService.play(audio);
-                await _audioService.setAudioMode(useCustom: true);
-                // Set custom audio in timeline state (persists after pause)
-                unawaited(_extractCustomAudioWaveform(audio));
+                if (isNewTrack) {
+                  await _audioService.setAudioMode(useCustom: true);
+                  unawaited(_extractCustomAudioWaveform(audio));
+                } else {
+                  // Resume with current balance
+                  await _audioService.balanceAudio();
+                }
               },
               onStop: (audio) async {
                 // Only pause playback, don't clear the audio selection
