@@ -214,10 +214,21 @@ class Settings extends _$Settings {
         config: feed.config.copyWith(pinned: true),
         view: feed.view,
       );
-      final updatedFeeds = [...state.feeds, pinnedFeed];
-      await _updateFeedsInPreferences(updatedFeeds);
-      await _sqlCache.cacheFeed(pinnedFeed);
+      final previousFeeds = state.feeds;
+      final updatedFeeds = [...previousFeeds, pinnedFeed];
+
+      // Update state optimistically first to prevent race conditions
       state = state.copyWith(feeds: updatedFeeds);
+
+      try {
+        await _updateFeedsInPreferences(updatedFeeds);
+        await _sqlCache.cacheFeed(pinnedFeed);
+      } catch (e) {
+        // Rollback state on error
+        _logger.e('Error adding feed, rolling back state: $e');
+        state = state.copyWith(feeds: previousFeeds);
+        rethrow;
+      }
     }
   }
 
