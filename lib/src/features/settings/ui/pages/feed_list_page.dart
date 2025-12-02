@@ -122,6 +122,9 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                 final feed = filteredFeeds[index];
                 final isActive = settingsState.activeFeed == feed;
 
+                // Determine if this feed can be deleted (Following feed cannot be deleted)
+                final canDelete = !(feed.type == 'timeline' && feed.config.value == 'following');
+
                 return Padding(
                   key: ValueKey(feed.config.id),
                   padding: const EdgeInsets.symmetric(vertical: 4),
@@ -135,7 +138,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
                         : () {
                             ref.read(settingsProvider.notifier).setActiveFeed(feed);
                           },
-                    onDelete: _isEditMode
+                    onDelete: _isEditMode && canDelete
                         ? () async {
                             // Handle delete action
                             try {

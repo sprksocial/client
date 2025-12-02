@@ -223,6 +223,12 @@ class Settings extends _$Settings {
 
   /// Removes a feed from feeds list
   Future<void> removeFeed(Feed feed) async {
+    // Prevent deletion of the Following feed
+    if (feed.type == 'timeline' && feed.config.value == 'following') {
+      _logger.w('Attempted to delete the Following feed, which is not allowed');
+      throw Exception('Cannot delete the Following feed');
+    }
+
     final updatedFeeds = state.feeds.where((f) => f.config.id != feed.config.id).toList();
     await _updateFeedsInPreferences(updatedFeeds);
     await _sqlCache.deleteFeed(feed);

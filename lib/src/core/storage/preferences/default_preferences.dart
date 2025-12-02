@@ -20,7 +20,7 @@ class DefaultPreferences {
       ),
       SavedFeed(
         type: 'feed',
-        value: 'at://did:plc:cveom2iroj3mt747sd4qqnr2/so.sprk.feed.generator/latest',
+        value: 'at://did:plc:cveom2iroj3mt747sd4qqnr2/so.sprk.feed.generator/discover',
         pinned: true,
       ),
     ];

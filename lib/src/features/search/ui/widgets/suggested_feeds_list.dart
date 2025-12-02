@@ -89,12 +89,19 @@ class SuggestedFeedsList extends ConsumerWidget {
                   (f) => f.config.value == savedFeed.value,
                 );
 
-                // Create a Feed object with the correct pinned status
-                final feed = isAdded ? existingFeed : Feed(
-                  type: 'feed',
-                  config: savedFeed,
-                  view: generatorView,
-                );
+                // Create a Feed object: use fresh generatorView (with correct likeCount)
+                // but preserve the existing feed's config (with correct pinned status)
+                final feed = isAdded
+                    ? Feed(
+                        type: existingFeed.type,
+                        config: existingFeed.config, // Keep existing config (pinned status, etc.)
+                        view: generatorView, // Use fresh view with correct likeCount
+                      )
+                    : Feed(
+                        type: 'feed',
+                        config: savedFeed,
+                        view: generatorView,
+                      );
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 12),
