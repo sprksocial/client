@@ -54,7 +54,7 @@ class SQLCacheImpl implements SQLCacheInterface {
     final path = join(await getDatabasesPath(), 'sparksocial_sql_cache.db');
     final db = await openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -214,6 +214,10 @@ class SQLCacheImpl implements SQLCacheInterface {
     }
     if (oldVersion < 3) {
       await db.execute('ALTER TABLE $_tablePosts ADD COLUMN $_columnMedia TEXT');
+    }
+    if (oldVersion < 4) {
+      await db.execute('ALTER TABLE $_tableFeeds ADD COLUMN $_columnFeedConfig TEXT');
+      await db.execute('ALTER TABLE $_tableFeeds ADD COLUMN $_columnFeedView TEXT');
     }
     // Add index for performance (idempotent - will fail silently if exists)
     try {
