@@ -139,6 +139,7 @@ class _ProfileAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final avatar = Container(
       width: 34,
       height: 34,
@@ -147,8 +148,20 @@ class _ProfileAvatar extends StatelessWidget {
         border: Border.all(
           color: Colors.white,
         ),
-        image: DecorationImage(image: image, fit: BoxFit.cover),
+        image: image is AssetImage 
+            ? null 
+            : DecorationImage(image: image, fit: BoxFit.cover),
+        color: image is AssetImage 
+            ? (isDark ? const Color(0xFF424242) : const Color(0xFFE0E0E0))
+            : null,
       ),
+      child: image is AssetImage 
+          ? Icon(
+              Icons.person,
+              size: 18,
+              color: isDark ? const Color(0xFF9E9E9E) : const Color(0xFF757575),
+            )
+          : null,
     );
     return GestureDetector(
       onTap: onTap,

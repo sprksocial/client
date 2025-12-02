@@ -1,11 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/design_system/components/molecules/profile_card.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/profile/providers/user_list_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/pages/user_list_page.dart';
-import 'package:sparksocial/src/features/search/ui/widgets/suggested_account_card.dart';
 
 class UserListView extends ConsumerWidget {
   final List<ProfileView> users;
@@ -46,20 +46,20 @@ class UserListView extends ConsumerWidget {
         final user = users[index];
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-          child: SuggestedAccountCard(
-            username: user.displayName ?? user.handle,
-            handle: '@${user.handle}',
-            avatarUrl: user.avatar.toString(),
+          child: ProfileCard(
+            imageUrl: user.avatar.toString(),
+            userName: user.displayName ?? user.handle,
+            userHandle: '@${user.handle}',
             description: user.description,
             isFollowing: user.viewer?.following != null,
-            showFollowButton: !ref.read(userListProvider(did: did, type: type).notifier).isCurrentUser(user.did),
-            onTap: () => context.router.push(ProfileRoute(did: user.did)),
-            onFollowTap: () {
+            onFollow: () {
               ref.read(userListProvider(did: did, type: type).notifier).followUser(user.did);
             },
-            onUnfollowTap: () {
+            onUnfollow: () {
               ref.read(userListProvider(did: did, type: type).notifier).unfollowUser(user.did);
             },
+            showFollowButton: !ref.read(userListProvider(did: did, type: type).notifier).isCurrentUser(user.did),
+            onTap: () => context.router.push(ProfileRoute(did: user.did)),
           ),
         );
       },

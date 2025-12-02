@@ -63,7 +63,8 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
   @override
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
-    final feeds = settings.feeds;
+    // Only show pinned feeds in the home view
+    final feeds = settings.feeds.where((feed) => feed.config.pinned).toList();
     final activeFeed = settings.activeFeed;
 
     // Feed providers are watched at MainPage level, but we still need to watch them here
@@ -126,7 +127,7 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
               if (index >= 0 && index < feeds.length) {
                 // Use feed identifier as key to preserve state across reordering
                 return KeyedSubtree(
-                  key: ValueKey(feeds[index].identifier),
+                  key: ValueKey(feeds[index].config.id),
                   child: FeedPage(feed: feeds[index]),
                 );
               }

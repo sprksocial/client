@@ -88,7 +88,7 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
         if (pageController.hasClients) {
           pageController.jumpToPage(0);
         }
-        
+
         // Only reset initialization flag, don't invalidate the entire provider
         _hasInitialized = false;
         await notifier.loadAndUpdateFirstLoad();
@@ -119,10 +119,10 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
           : CacheablePageView.builder(
               cachePageExtent: 1,
               controller: pageController,
-              key: PageStorageKey(widget.feed.identifier),
+              key: PageStorageKey(widget.feed.config.id),
               itemCount: state.length + (state.isEndOfNetworkFeed ? 1 : 0),
               scrollDirection: Axis.vertical,
-              restorationId: widget.feed.identifier,
+              restorationId: widget.feed.config.id,
               physics: shouldBeActive ? const SnappyPageScrollPhysics() : const NeverScrollableScrollPhysics(),
               allowImplicitScrolling: true,
               onPageChanged: (index) {
