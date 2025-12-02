@@ -127,10 +127,3 @@ class ProfileViewDetailed with _$ProfileViewDetailed {
 
   factory ProfileViewDetailed.fromJson(Map<String, dynamic> json) => _$ProfileViewDetailedFromJson(json);
 }
-
-@freezed
-class UserPreferences with _$UserPreferences {
-  const factory UserPreferences({required String followMode}) = _UserPreferences;
-
-  factory UserPreferences.fromJson(Map<String, dynamic> json) => _$UserPreferencesFromJson(json);
-}

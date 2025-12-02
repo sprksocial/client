@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/buttons/text_button.dart' as ds;
-import 'package:sparksocial/src/core/design_system/components/atoms/toggles/glass_follow_button.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/toggles/follow_button.dart';
 
 class ProfileActionButtons extends StatelessWidget {
   const ProfileActionButtons({
@@ -45,12 +45,12 @@ class ProfileActionButtons extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: GlassFollowButton(
+          child: FollowButton(
             isFollowing: isFollowing,
             onFollow: onFollowTap ?? () {},
             onUnfollow: onUnfollowTap ?? () {},
-            followText: 'Follow',
             unfollowText: 'Following',
+            width: double.infinity, // Stretch across available space like before
           ),
         ),
         const SizedBox(width: 8),

@@ -3,7 +3,6 @@ import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/features/comments/providers/comments_page_state.dart';
 import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
 
@@ -58,7 +57,6 @@ class CommentsPage extends _$CommentsPage {
     Map<String, String>? altTexts,
   }) async {
     final feedRepository = GetIt.instance<SprkRepository>().feed;
-    final sqlCache = GetIt.instance<SQLCacheInterface>();
 
     // We need the current state to determine if the post is a sprk or bsky post.
     // If the state is not loaded, we cannot proceed.
@@ -92,7 +90,6 @@ class CommentsPage extends _$CommentsPage {
         // Update the cached post with the new reply count so it shows up in feeds
         try {
           if (thread.post case ThreadPostView(:final post)) {
-            await sqlCache.updatePost(post);
             // Trigger feed UI update by incrementing the update counter
             ref.read(postUpdateProvider(post.uri.toString()).notifier).state++;
           }
@@ -107,8 +104,6 @@ class CommentsPage extends _$CommentsPage {
   }
 
   Future<void> deleteComment(String commentUri) async {
-    final sqlCache = GetIt.instance<SQLCacheInterface>();
-
     // Capture current state before making async calls
     final currentState = state.value;
     if (currentState == null) {
@@ -132,7 +127,6 @@ class CommentsPage extends _$CommentsPage {
         // Update the cached post with the new reply count so it shows up in feeds
         try {
           if (thread.post case ThreadPostView(:final post)) {
-            await sqlCache.updatePost(post);
             // Trigger feed UI update by incrementing the update counter
             ref.read(postUpdateProvider(post.uri.toString()).notifier).state++;
           }

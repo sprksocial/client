@@ -24,21 +24,26 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
   Widget build(BuildContext context) {
     final settings = ref.watch(settingsProvider);
 
-    final tags = settings.feeds.map((feed) => (id: feed.identifier, text: feed.name)).toList();
+    // Only show pinned feeds in the home view
+    final pinnedFeeds = settings.feeds.where((feed) => feed.config.pinned).toList();
+
+    final tags = pinnedFeeds
+        .map((feed) => (id: feed.config.id, text: feed.view != null ? feed.view!.displayName : 'Following'))
+        .toList();
 
     return FeedsBarTemplate(
       tags: tags,
-      selectedTagId: settings.activeFeed.identifier,
+      selectedTagId: settings.activeFeed.config.id,
       onTagTap: (tagId) {
-        final feed = settings.feeds.firstWhere(
-          (f) => f.identifier == tagId,
+        final feed = pinnedFeeds.firstWhere(
+          (f) => f.config.id == tagId,
         );
 
         if (settings.activeFeed == feed) {
           ref.read(feedRefreshTriggerProvider(feed).notifier).trigger();
         } else {
           ref.read(settingsProvider.notifier).setActiveFeed(feed);
-          final feedIndex = settings.feeds.indexOf(feed);
+          final feedIndex = pinnedFeeds.indexOf(feed);
           if (feedIndex != -1 && widget.pageController.hasClients) {
             widget.pageController.jumpToPage(feedIndex);
           }

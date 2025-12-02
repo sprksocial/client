@@ -1,9 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
+import 'package:sparksocial/src/core/utils/label_utils.dart';
 import 'package:sparksocial/src/features/search/providers/post_search_provider.dart';
-import 'package:sparksocial/src/features/search/ui/widgets/post_card.dart';
 
 class PostResults extends ConsumerStatefulWidget {
   const PostResults({super.key});
@@ -169,10 +170,24 @@ class _PostResultsState extends ConsumerState<PostResults> with AutomaticKeepAli
                 }
 
                 final post = state.searchResults[index];
-                return PostCard(
-                  post: post,
-                  onTap: () {
-                    context.router.push(StandalonePostRoute(postUri: post.uri.toString()));
+                
+                return FutureBuilder<bool>(
+                  future: () async {
+                    final labels = post.labels ?? [];
+                    return labels.isNotEmpty ? await LabelUtils.shouldBlurContent(labels) : false;
+                  }(),
+                  builder: (context, snapshot) {
+                    final shouldBlur = snapshot.data ?? false;
+                    
+                    return PostTile(
+                      thumbnailUrl: post.thumbnailUrl,
+                      views: post.likeCount ?? 0,
+                      seen: false,
+                      nsfwBlur: shouldBlur,
+                      onTap: () {
+                        context.router.push(StandalonePostRoute(postUri: post.uri.toString()));
+                      },
+                    );
                   },
                 );
               },

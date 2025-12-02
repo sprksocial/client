@@ -93,6 +93,9 @@ class AppTheme {
       fontFamily: 'SN Pro',
       brightness: Brightness.dark,
       colorScheme: AppColorScheme.dark,
+      highlightColor: Colors.transparent,
+      splashColor: Colors.transparent,
+      focusColor: Colors.transparent,
       scaffoldBackgroundColor: AppColors.greyBlack,
       appBarTheme: const AppBarTheme(
         elevation: 0,
