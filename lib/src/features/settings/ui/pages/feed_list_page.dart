@@ -1,11 +1,12 @@
 import 'dart:ui' show lerpDouble;
 
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/design_system/components/molecules/settings_feed_card.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:sparksocial/src/features/settings/providers/settings_state.dart';
 
 @RoutePage()
 class FeedListPage extends ConsumerStatefulWidget {
@@ -17,6 +18,7 @@ class FeedListPage extends ConsumerStatefulWidget {
 
 class _FeedListPageState extends ConsumerState<FeedListPage> {
   bool _isReordering = false;
+  bool _isEditMode = false;
 
   @override
   Widget build(BuildContext context) {
@@ -28,211 +30,200 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
       backgroundColor: colorScheme.surface,
       body: Column(
         children: [
-          // Settings toggles
+          // Feeds List Header with Edit Toggle
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
               children: [
                 Text(
-                  'Feed Options',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                  'Your Feeds',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
                 ),
-                const SizedBox(height: 16),
-
-                // Feed Blur Toggle
-                Card(
-                  child: SwitchListTile(
-                    title: Text(
-                      'Blur Feed Content',
-                      style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
-                    ),
-                    subtitle: Text(
-                      'Blur potentially sensitive content in feeds',
-                      style: TextStyle(color: colorScheme.onSurface.withAlpha(178), fontSize: 12),
-                    ),
-                    value: settingsState.feedBlurEnabled,
-                    onChanged: (value) {
-                      ref.read(settingsProvider.notifier).setFeedBlur(value);
-                    },
-                    secondary: Icon(FluentIcons.eye_off_24_regular, color: colorScheme.primary),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // Hide Adult Content Toggle
-                Card(
-                  child: SwitchListTile(
-                    title: Text(
-                      'Hide Adult Content',
-                      style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
-                    ),
-                    subtitle: Text(
-                      'Hide content marked as adult/mature',
-                      style: TextStyle(color: colorScheme.onSurface.withAlpha(178), fontSize: 12),
-                    ),
-                    value: settingsState.hideAdultContent,
-                    onChanged: (value) {
-                      ref.read(settingsProvider.notifier).setHideAdultContent(value);
-                    },
-                    secondary: Icon(FluentIcons.shield_24_regular, color: colorScheme.primary),
-                  ),
-                ),
-
-                const SizedBox(height: 8),
-
-                // Post to Bluesky Toggle
-                Card(
-                  child: SwitchListTile(
-                    title: Text(
-                      'Cross-post to Bluesky',
-                      style: TextStyle(fontWeight: FontWeight.w600, color: colorScheme.onSurface),
-                    ),
-                    subtitle: Text(
-                      'Automatically post to Bluesky when posting to Spark',
-                      style: TextStyle(color: colorScheme.onSurface.withAlpha(178), fontSize: 12),
-                    ),
-                    value: settingsState.postToBskyEnabled,
-                    onChanged: (value) {
-                      ref.read(settingsProvider.notifier).setPostToBsky(value);
-                    },
-                    secondary: Icon(FluentIcons.share_24_regular, color: colorScheme.primary),
+                const Spacer(),
+                TextButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _isEditMode = !_isEditMode;
+                    });
+                  },
+                  icon: Icon(_isEditMode ? Icons.check : Icons.edit, size: 18),
+                  label: Text(_isEditMode ? 'Done' : 'Edit', style: const TextStyle(fontSize: 14)),
+                  style: TextButton.styleFrom(
+                    foregroundColor: colorScheme.primary,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   ),
                 ),
               ],
             ),
           ),
-
+          const SizedBox(height: 8),
           // Feeds List
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Text(
-                    'Your Feeds',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Expanded(
-                  child: ReorderableListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    itemCount: settingsState.feeds.length,
-                    onReorderStart: (index) {
-                      setState(() {
-                        _isReordering = true;
-                      });
-                    },
-                    onReorderEnd: (index) {
-                      setState(() {
-                        _isReordering = false;
-                      });
-                    },
-                    onReorder: (oldIndex, newIndex) async {
-                      if (_isReordering) return;
+            child: ReorderableListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: _getFilteredFeeds(settingsState).length,
+              buildDefaultDragHandles: false,
+              onReorderStart: (index) {
+                setState(() {
+                  _isReordering = true;
+                });
+              },
+              onReorderEnd: (index) {
+                setState(() {
+                  _isReordering = false;
+                });
+              },
+              onReorder: (oldIndex, newIndex) async {
+                // Adjust newIndex if moving down the list
+                if (newIndex > oldIndex) newIndex -= 1;
 
-                      setState(() => _isReordering = true);
+                try {
+                  // Get the actual indices in the full feeds list
+                  final filteredFeeds = _getFilteredFeeds(settingsState);
+                  final actualOldIndex = settingsState.feeds.indexOf(filteredFeeds[oldIndex]);
+                  final actualNewIndex = newIndex < filteredFeeds.length
+                      ? settingsState.feeds.indexOf(filteredFeeds[newIndex])
+                      : settingsState.feeds.length - 1;
 
-                      try {
-                        // Adjust newIndex if moving down the list
-                        if (newIndex > oldIndex) newIndex -= 1;
+                  await ref.read(settingsProvider.notifier).reorderFeed(actualOldIndex, actualNewIndex);
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to reorder feeds: $e')),
+                    );
+                  }
+                }
+              },
+              proxyDecorator: (child, index, animation) {
+                return AnimatedBuilder(
+                  animation: animation,
+                  builder: (context, child) {
+                    final animValue = Curves.easeInOutCubic.transform(animation.value);
+                    final elevation = lerpDouble(2, 8, animValue)!;
+                    final scale = lerpDouble(1, 1.05, animValue)!;
 
-                        await ref.read(settingsProvider.notifier).reorderFeed(oldIndex, newIndex);
-
-                        // Small delay to allow state to settle
-                        await Future.delayed(const Duration(milliseconds: 50));
-                      } catch (e) {
-                        if (context.mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to reorder feeds: $e')),
-                          );
-                        }
-                      } finally {
-                        if (context.mounted) {
-                          setState(() => _isReordering = false);
-                        }
-                      }
-                    },
-                    proxyDecorator: (child, index, animation) {
-                      return AnimatedBuilder(
-                        animation: animation,
-                        builder: (context, child) {
-                          final animValue = Curves.easeInOutCubic.transform(animation.value);
-                          final elevation = lerpDouble(2, 8, animValue)!;
-                          final scale = lerpDouble(1, 1.05, animValue)!;
-
-                          return Transform.scale(
-                            scale: scale,
-                            child: Material(
-                              elevation: elevation,
-                              borderRadius: BorderRadius.circular(12),
-                              shadowColor: colorScheme.shadow.withAlpha(100),
-                              color: Colors.transparent,
-                              child: child,
-                            ),
-                          );
-                        },
+                    return Transform.scale(
+                      scale: scale,
+                      child: Material(
+                        elevation: elevation,
+                        borderRadius: BorderRadius.circular(12),
+                        shadowColor: colorScheme.shadow.withAlpha(100),
+                        surfaceTintColor: Colors.transparent,
+                        color: Colors.transparent,
                         child: child,
-                      );
-                    },
-                    itemBuilder: (context, index) {
-                      final feed = settingsState.feeds[index];
-                      final isActive = settingsState.activeFeed == feed;
+                      ),
+                    );
+                  },
+                  child: child,
+                );
+              },
+              itemBuilder: (context, index) {
+                final filteredFeeds = _getFilteredFeeds(settingsState);
+                final feed = filteredFeeds[index];
+                final isActive = settingsState.activeFeed == feed;
 
-                      return Card(
-                        key: ValueKey(feed.identifier),
-                        margin: const EdgeInsets.symmetric(vertical: 4),
-                        elevation: _isReordering ? 0 : 1,
-                        child: ListTile(
-                          enabled: !_isReordering,
-                          leading: Icon(_getFeedIcon(feed), color: isActive ? colorScheme.primary : colorScheme.onSurface),
-                          title: Text(
-                            feed.name,
-                            style: TextStyle(
-                              fontWeight: isActive ? FontWeight.bold : FontWeight.w500,
-                              color: isActive ? colorScheme.primary : colorScheme.onSurface,
-                            ),
-                          ),
-                          subtitle: Text(
-                            _getFeedDescription(feed),
-                            style: TextStyle(color: colorScheme.onSurface.withAlpha(178), fontSize: 12),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (isActive)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: colorScheme.primary.withAlpha(51),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    'Active',
-                                    style: TextStyle(fontSize: 10, color: colorScheme.primary, fontWeight: FontWeight.w600),
-                                  ),
-                                ),
-                              const SizedBox(width: 8),
-                              Icon(
-                                FluentIcons.re_order_dots_vertical_24_regular,
-                                color: _isReordering ? colorScheme.primary.withAlpha(128) : colorScheme.onSurface.withAlpha(178),
-                              ),
-                            ],
-                          ),
-                          onTap: _isReordering
-                              ? null
-                              : () {
-                                  ref.read(settingsProvider.notifier).setActiveFeed(feed);
-                                },
-                        ),
-                      );
-                    },
+                // Determine if this feed can be deleted (Following feed cannot be deleted)
+                final canDelete = !(feed.type == 'timeline' && feed.config.value == 'following');
+
+                return Padding(
+                  key: ValueKey(feed.config.id),
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: SettingsFeedCard(
+                    feed: feed,
+                    mode: _isEditMode ? SettingsFeedCardMode.edit : SettingsFeedCardMode.display,
+                    isActive: isActive,
+                    index: index,
+                    onTap: _isEditMode || _isReordering
+                        ? null
+                        : () {
+                            ref.read(settingsProvider.notifier).setActiveFeed(feed);
+                          },
+                    onDelete: _isEditMode && canDelete
+                        ? () async {
+                            // Handle delete action
+                            try {
+                              await ref.read(settingsProvider.notifier).removeFeed(feed);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Feed removed')),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Failed to remove feed: $e')),
+                                );
+                              }
+                            }
+                          }
+                        : null,
+                    onPin: _isEditMode
+                        ? () async {
+                            // Handle pin action
+                            if (!feed.config.pinned) {
+                              final updatedFeed = Feed(
+                                type: feed.type,
+                                config: feed.config.copyWith(pinned: true),
+                                view: feed.view,
+                              );
+                              await ref.read(settingsProvider.notifier).removeFeed(feed);
+                              await ref.read(settingsProvider.notifier).addFeed(updatedFeed);
+                            }
+                          }
+                        : null,
+                    onUnpin: _isEditMode
+                        ? () async {
+                            // Handle unpin action
+                            if (feed.config.pinned) {
+                              final updatedFeed = Feed(
+                                type: feed.type,
+                                config: feed.config.copyWith(pinned: false),
+                                view: feed.view,
+                              );
+                              await ref.read(settingsProvider.notifier).removeFeed(feed);
+                              await ref.read(settingsProvider.notifier).addFeed(updatedFeed);
+                            }
+                          }
+                        : null,
+                    onLike: feed.view != null
+                        ? () async {
+                            try {
+                              await ref.read(settingsProvider.notifier).likeFeed(feed);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Feed liked')),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Failed to like feed: $e')),
+                                );
+                              }
+                            }
+                          }
+                        : null,
+                    onUnlike: feed.view?.viewer?.like != null
+                        ? () async {
+                            try {
+                              await ref.read(settingsProvider.notifier).unlikeFeed(feed);
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Feed unliked')),
+                                );
+                              }
+                            } catch (e) {
+                              if (context.mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Failed to unlike feed: $e')),
+                                );
+                              }
+                            }
+                          }
+                        : null,
                   ),
-                ),
-              ],
+                );
+              },
             ),
           ),
         ],
@@ -240,35 +231,7 @@ class _FeedListPageState extends ConsumerState<FeedListPage> {
     );
   }
 
-  IconData _getFeedIcon(Feed feed) {
-    return feed.when(
-      record: (name, uri) => FluentIcons.feed_24_regular,
-      hardCoded: (hardCodedFeed) {
-        switch (hardCodedFeed) {
-          case HardCodedFeedEnum.timeline:
-            return FluentIcons.people_24_regular;
-          case HardCodedFeedEnum.forYou:
-            return FluentIcons.star_24_regular;
-          case HardCodedFeedEnum.latest:
-            return FluentIcons.flash_24_regular;
-        }
-      },
-    );
-  }
-
-  String _getFeedDescription(Feed feed) {
-    return feed.when(
-      record: (name, uri) => 'Custom algorithmic feed',
-      hardCoded: (hardCodedFeed) {
-        switch (hardCodedFeed) {
-          case HardCodedFeedEnum.timeline:
-            return 'Posts from accounts you follow';
-          case HardCodedFeedEnum.forYou:
-            return 'Personalized content recommendations';
-          case HardCodedFeedEnum.latest:
-            return 'Latest posts from Spark community';
-        }
-      },
-    );
+  List<Feed> _getFilteredFeeds(SettingsState settingsState) {
+    return settingsState.feeds;
   }
 }

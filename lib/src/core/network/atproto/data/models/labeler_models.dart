@@ -93,7 +93,6 @@ abstract class LabelerView with _$LabelerView {
     required ProfileView creator,
     required DateTime indexedAt,
     int? likeCount,
-    int? lookCount,
     LabelerViewerState? labelerViewer,
     List<Label>? labels,
   }) = _LabelerView;
@@ -111,7 +110,6 @@ abstract class LabelerViewDetailed with _$LabelerViewDetailed {
     required ProfileView creator,
     required DateTime indexedAt,
     int? likeCount,
-    int? lookCount,
     LabelerViewerState? labelerViewer,
     LabelerPolicies? policies,
     List<Label>? labels,
@@ -124,8 +122,7 @@ abstract class LabelerViewDetailed with _$LabelerViewDetailed {
 @freezed
 abstract class LabelerViewerState with _$LabelerViewerState {
   @JsonSerializable(explicitToJson: true)
-  factory LabelerViewerState({@AtUriConverter() required AtUri like, @AtUriConverter() required AtUri look}) =
-      _LabelerViewerState;
+  factory LabelerViewerState({@AtUriConverter() required AtUri like}) = _LabelerViewerState;
   const LabelerViewerState._();
 
   factory LabelerViewerState.fromJson(Map<String, dynamic> json) => _$LabelerViewerStateFromJson(json);

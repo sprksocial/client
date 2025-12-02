@@ -8,6 +8,7 @@ import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/auth/providers/onboarding_providers.dart';
+import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
 class RegisterPage extends ConsumerStatefulWidget {
@@ -62,6 +63,12 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
       if (!mounted) return;
 
       if (hasProfile) {
+        // Sync preferences from server before navigating to feed
+        // This ensures feeds are loaded properly after registration
+        await ref.read(settingsProvider.notifier).syncPreferencesFromServer();
+
+        if (!mounted) return;
+
         context.router.replace(const FeedsRoute());
       } else {
         context.router.replace(const OnboardingRoute());

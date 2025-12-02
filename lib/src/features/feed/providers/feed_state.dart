@@ -1,7 +1,7 @@
 import 'dart:collection';
 
 import 'package:atproto/atproto.dart';
-import 'package:atproto_core/atproto_core.dart';
+import 'package:atproto/core.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 
@@ -17,7 +17,7 @@ abstract class FeedState with _$FeedState {
     required String? cursor,
     required bool loadingFirstLoad,
     required bool error,
-    required LinkedHashMap<AtUri, ({List<Label> postLabels, HardcodedFeedExtraInfo? hardcodedFeedExtraInfo})> extraInfo,
+    required LinkedHashMap<AtUri, ({List<Label> postLabels})> extraInfo,
   }) = _FeedState;
   const FeedState._();
 

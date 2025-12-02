@@ -6,8 +6,10 @@ import 'package:sparksocial/src/core/design_system/components/molecules/glass_in
 import 'package:sparksocial/src/core/design_system/templates/explore_page_template.dart';
 import 'package:sparksocial/src/features/search/providers/post_search_provider.dart';
 import 'package:sparksocial/src/features/search/providers/search_provider.dart';
+import 'package:sparksocial/src/features/search/providers/suggested_feeds_provider.dart';
 import 'package:sparksocial/src/features/search/ui/pages/post_results.dart';
 import 'package:sparksocial/src/features/search/ui/pages/user_results.dart';
+import 'package:sparksocial/src/features/search/ui/widgets/suggested_feeds_list.dart';
 import 'package:sparksocial/src/features/stories/providers/stories_by_author.dart';
 import 'package:sparksocial/src/features/stories/ui/widgets/stories_list.dart';
 
@@ -90,10 +92,12 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         emptyStateWidget: RefreshIndicator(
           onRefresh: () async {
             ref.invalidate(storiesByAuthorProvider());
+            ref.invalidate(suggestedFeedsProvider);
           },
           child: const CustomScrollView(
             slivers: [
               SliverToBoxAdapter(child: StoriesList()),
+              SliverToBoxAdapter(child: SuggestedFeedsList()),
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: Center(

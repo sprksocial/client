@@ -3,11 +3,11 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/design_system/components/molecules/profile_card.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/search/providers/search_provider.dart';
-import 'package:sparksocial/src/features/search/ui/widgets/suggested_account_card.dart';
 
 @RoutePage()
 class NewChatSearchPage extends ConsumerStatefulWidget {
@@ -209,11 +209,14 @@ class _UserResultsState extends ConsumerState<_UserResults> {
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 8),
-          child: SuggestedAccountCard(
-            username: actor.displayName ?? actor.handle,
-            handle: '@${actor.handle}',
-            avatarUrl: actor.avatar?.toString() ?? '',
+          child: ProfileCard(
+            imageUrl: actor.avatar?.toString() ?? '',
+            userName: actor.displayName ?? actor.handle,
+            userHandle: '@${actor.handle}',
             description: actor.description ?? '',
+            isFollowing: false,
+            onFollow: () {},
+            onUnfollow: () {},
             showFollowButton: false, // Not relevant when starting a chat
             onTap: () => _startChat(actor),
           ),

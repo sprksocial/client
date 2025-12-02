@@ -9,6 +9,7 @@ import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/utils/uppercase_text_formatter.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/auth/providers/onboarding_providers.dart';
+import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
 class LoginPage extends ConsumerStatefulWidget {
@@ -68,6 +69,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         if (!mounted) return;
 
         if (hasSparkProfile) {
+          // Sync preferences from server before navigating to feed
+          // This ensures feeds are loaded properly after login
+          await ref.read(settingsProvider.notifier).syncPreferencesFromServer();
+
+          if (!mounted) return;
+
           context.router.replaceAll([const FeedsRoute()]);
         } else {
           context.router.replaceAll([const OnboardingRoute()]);

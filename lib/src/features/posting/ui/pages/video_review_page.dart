@@ -12,7 +12,6 @@ import 'package:sparksocial/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/posting/providers/video_upload_provider.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 import 'package:video_player/video_player.dart';
 
 @RoutePage()
@@ -40,6 +39,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
   final TextEditingController _descriptionController = TextEditingController();
   bool _isPosting = false;
   String _videoAltText = '';
+  bool _crosspostToBsky = false;
   late XFile _video;
   VideoPlayerController? _player;
 
@@ -88,7 +88,6 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
 
     try {
       final description = _descriptionController.text;
-      final crosspostEnabled = widget.storyMode ? false : ref.read(settingsProvider).postToBskyEnabled;
 
       // Process and post the video with the video upload provider
       final postRef = await ref.read(
@@ -96,9 +95,9 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
           videoPath: _video.path,
           description: description,
           altText: _videoAltText,
-          crosspostToBsky: crosspostEnabled,
           storyMode: widget.storyMode,
           soundRef: widget.soundRef,
+          crosspostToBsky: widget.storyMode ? false : _crosspostToBsky,
         ).future,
       );
 
@@ -144,7 +143,6 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    final crosspostEnabled = widget.storyMode ? false : ref.watch(settingsProvider).postToBskyEnabled;
     final rawAspectRatio = _player?.value.aspectRatio;
     final ar = rawAspectRatio != null && rawAspectRatio > 0 ? rawAspectRatio : 1.0;
 
@@ -157,8 +155,8 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
       descriptionController: _descriptionController,
       descriptionMaxChars: 300,
       showCrossPost: !widget.storyMode,
-      crossPostValue: crosspostEnabled,
-      onCrossPostChanged: (v) => ref.read(settingsProvider.notifier).setPostToBsky(v),
+      crossPostValue: _crosspostToBsky,
+      onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),
       postLabel: 'Post',
       isPosting: _isPosting,
       onPost: _isPosting

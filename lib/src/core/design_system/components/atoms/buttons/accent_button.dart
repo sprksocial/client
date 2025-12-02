@@ -21,9 +21,9 @@ class AccentButton extends StatelessWidget {
       onTap: onPressed,
       borderRadius: BorderRadius.circular(500),
       child: Container(
-        constraints: BoxConstraints.tightFor(height: 30, width: label.length * 8 + 16),
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 8),
+        constraints: BoxConstraints.tightFor(height: 30, width: label.length * 10 + 20),
+        height: 30,
+        padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(
           gradient: AppGradients.accent,
           borderRadius: BorderRadius.circular(500), // pill shape
@@ -32,11 +32,13 @@ class AccentButton extends StatelessWidget {
             width: 2,
           ),
         ),
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: AppTypography.textSmallBold.copyWith(
-            color: AppColors.greyWhite,
+        child: Align(
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: AppTypography.textSmallBold.copyWith(
+              color: AppColors.greyWhite,
+            ),
           ),
         ),
       ),

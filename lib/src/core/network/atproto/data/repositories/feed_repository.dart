@@ -53,6 +53,22 @@ abstract class FeedRepository {
     String? cursor,
   });
 
+  Future<GeneratorView> getFeedGenerator(AtUri feed);
+
+  /// Get multiple feed generators
+  ///
+  /// [feeds] List of feed URIs to fetch
+  /// [bluesky] Whether to fetch from Bluesky API instead of Spark
+  Future<List<GeneratorView>> getFeedGenerators(List<AtUri> feeds, {bool bluesky = false});
+
+  /// Get suggested feed generators
+  ///
+  /// [bluesky] Whether to fetch from Bluesky API instead of Spark
+  Future<List<GeneratorView>> getSuggestedFeeds({bool bluesky = false});
+
+  Future<Feed> getFeedFromSavedFeed(SavedFeed savedFeed);
+  Future<List<Feed>> getFeedsFromSavedFeeds(List<SavedFeed> savedFeeds);
+
   /// Like a post
   ///
   /// [postCid] The String of the post to like

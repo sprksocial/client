@@ -13,7 +13,6 @@ import 'package:sparksocial/src/core/ui/widgets/alt_text_editor_dialog.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/posting/providers/post_story.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
 class ImageReviewPage extends ConsumerStatefulWidget {
@@ -33,6 +32,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   static const int _maxImages = 12;
   final ImagePicker _picker = ImagePicker();
   final Map<String, String> _altTexts = {};
+  bool _crosspostToBsky = false;
   late final FeedRepository _feedRepository;
 
   Future<void> showImageEditor(BuildContext context, XFile imageFile) async {
@@ -106,7 +106,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       _isPosting = true;
     });
     try {
-      final crosspostEnabled = widget.storyMode ? false : ref.read(settingsProvider).postToBskyEnabled;
+      final crosspostEnabled = widget.storyMode ? false : _crosspostToBsky;
       final description = _descriptionController.text;
       StrongRef result;
       if (widget.storyMode) {
@@ -146,9 +146,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
   @override
   Widget build(BuildContext context) {
     final canPickMore = _imageFiles.length < _maxImages;
-    final settings = ref.watch(settingsProvider);
-    final crossPostEnabled = settings.postToBskyEnabled;
-    final showCrossPostWarning = crossPostEnabled && _imageFiles.length > 4;
+    final showCrossPostWarning = _crosspostToBsky && _imageFiles.length > 4;
 
     return ImageReviewPageTemplate(
       title: 'Review Image Post',
@@ -174,8 +172,8 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
       onAddMore: _pickMoreImages,
       descriptionController: _descriptionController,
       descriptionMaxChars: 300,
-      crossPostValue: crossPostEnabled,
-      onCrossPostChanged: (v) => ref.read(settingsProvider.notifier).setPostToBsky(v),
+      crossPostValue: _crosspostToBsky,
+      onCrossPostChanged: (v) => setState(() => _crosspostToBsky = v),
       showCrossPostWarning: showCrossPostWarning,
       postLabel: 'Post',
       isPosting: _isPosting,

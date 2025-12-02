@@ -5,6 +5,8 @@ import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repositor
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository_impl.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/pref_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/pref_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository_impl.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
@@ -15,9 +17,6 @@ import 'package:sparksocial/src/core/network/xrpc/service_auth_helper.dart';
 import 'package:sparksocial/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:sparksocial/src/core/pro_video_editor/pro_video_editor_repository_impl.dart';
 import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
-import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
-import 'package:sparksocial/src/core/storage/preferences/settings_repository.dart';
-import 'package:sparksocial/src/core/storage/preferences/settings_repository_impl.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/ui/theme/data/repositories/theme_repository.dart';
 import 'package:sparksocial/src/core/ui/theme/data/repositories/theme_repository_impl.dart';
@@ -41,10 +40,6 @@ Future<void> initServiceLocator() async {
   final storageManager = StorageManager.instance;
   await storageManager.init();
 
-  final sqlCache = SQLCacheImpl();
-  await sqlCache.database;
-  sl.registerSingleton<SQLCacheInterface>(sqlCache);
-
   final downloadManager = DownloadManagerImpl();
   sl.registerSingleton<DownloadManagerInterface>(downloadManager);
 
@@ -64,6 +59,9 @@ Future<void> initServiceLocator() async {
   // Register SprkRepository with its interface
   sl.registerSingleton<SprkRepository>(SprkRepositoryImpl(sl<AuthRepository>()));
 
+  // Register PrefRepository
+  sl.registerSingleton<PrefRepository>(PrefRepositoryImpl(sl<SprkRepository>()));
+
   // Register identity repository
   sl.registerSingleton<IdentityRepository>(IdentityRepositoryImpl(sl<StorageManager>()));
 
@@ -82,8 +80,6 @@ Future<void> initServiceLocator() async {
   // Register SoundRepository
   sl.registerSingleton<SoundRepository>(SoundRepositoryImpl(sl.get<SprkRepository>()));
 
-  // Register SettingsRepository
-  sl.registerSingleton<SettingsRepository>(SettingsRepositoryImpl());
   await downloadManager.init();
 
   // Register OnboardingRepository

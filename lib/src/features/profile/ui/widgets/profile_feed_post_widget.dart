@@ -6,12 +6,10 @@ import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/core/ui/widgets/content_warning_overlay.dart';
 import 'package:sparksocial/src/core/ui/widgets/heart_animation.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
-import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/post_overlay.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
@@ -48,14 +46,6 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
     if (widget.post != null) {
       return widget.post;
     }
-    final sqlCache = GetIt.instance<SQLCacheInterface>();
-
-    try {
-      // Try to get from cache first
-      return await sqlCache.getPost(widget.postUri.toString());
-    } catch (e) {
-      // Cache lookup failed, continue to network fetch
-    }
 
     // If cache is null or fails, fetch from network
     final feedRepository = GetIt.instance<SprkRepository>().feed;
@@ -67,9 +57,6 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
     if (networkPost.isEmpty) {
       return null;
     }
-
-    // Cache the post for future use
-    await sqlCache.cachePost(networkPost.first);
 
     return networkPost.first;
   }
@@ -87,17 +74,6 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
     });
 
     try {
-      // Like the post using the same logic as SideActionBar
-      final newLike = await ref.read(likePostProvider(postData.cid, postData.uri).future);
-
-      // Update the post's viewer field with the new like reference
-      final updatedPost = postData.copyWith(
-        viewer: postData.viewer?.copyWith(like: newLike.uri) ?? Viewer(like: newLike.uri, repost: postData.viewer?.repost),
-      );
-
-      // Update cache with the modified post
-      await GetIt.instance<SQLCacheInterface>().updatePost(updatedPost);
-
       // Drive SideActionBar via props instead of GlobalKey/stateful method
       if (mounted) {
         setState(() {
