@@ -15,7 +15,6 @@ import 'package:sparksocial/src/core/network/xrpc/service_auth_helper.dart';
 import 'package:sparksocial/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:sparksocial/src/core/pro_video_editor/pro_video_editor_repository_impl.dart';
 import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
-import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/storage.dart';
 import 'package:sparksocial/src/core/ui/theme/data/repositories/theme_repository.dart';
 import 'package:sparksocial/src/core/ui/theme/data/repositories/theme_repository_impl.dart';
@@ -38,10 +37,6 @@ Future<void> initServiceLocator() async {
   // Initialize storage manager
   final storageManager = StorageManager.instance;
   await storageManager.init();
-
-  final sqlCache = SQLCacheImpl();
-  await sqlCache.database;
-  sl.registerSingleton<SQLCacheInterface>(sqlCache);
 
   final downloadManager = DownloadManagerImpl();
   sl.registerSingleton<DownloadManagerInterface>(downloadManager);

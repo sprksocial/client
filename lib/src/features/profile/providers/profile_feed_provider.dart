@@ -7,7 +7,6 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_state.dart';
@@ -18,7 +17,6 @@ part 'profile_feed_provider.g.dart';
 @riverpod
 class ProfileFeed extends _$ProfileFeed {
   final FeedRepository _feedRepository = GetIt.instance<SprkRepository>().feed;
-  final SQLCacheInterface _sqlCache = GetIt.instance<SQLCacheInterface>();
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ProfileFeed');
   bool _isLoading = false;
 
@@ -189,12 +187,6 @@ class ProfileFeed extends _$ProfileFeed {
       );
 
       state = AsyncValue.data(result);
-
-      final newPostUris = result.allPosts.where((uri) => !currentState.allPosts.contains(uri)).toList();
-      if (newPostUris.isNotEmpty) {
-        final postViewsToCache = newPostUris.map((uri) => result.postViews[uri]!).toList();
-        await _sqlCache.cachePosts(postViewsToCache);
-      }
     } catch (e) {
       _logger.e('Error loading more posts: $e');
       state = AsyncValue.error(e, StackTrace.current);
@@ -282,7 +274,6 @@ class ProfileFeed extends _$ProfileFeed {
 
   Future<void> deletePost(AtUri postUri) async {
     try {
-      await GetIt.I<SQLCacheInterface>().deletePost(postUri);
       await GetIt.I<SprkRepository>().repo.deleteRecord(uri: postUri);
       ref.invalidateSelf();
     } catch (e) {

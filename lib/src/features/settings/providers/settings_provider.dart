@@ -5,7 +5,6 @@ import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/pref_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/storage/cache/sql_cache_interface.dart';
 import 'package:sparksocial/src/core/storage/preferences/default_preferences.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
@@ -24,7 +23,6 @@ PrefRepository prefRepository(Ref ref) {
 class Settings extends _$Settings {
   late final PrefRepository _prefRepository;
   late final FeedRepository _feedRepository;
-  late final SQLCacheInterface _sqlCache;
   late final SparkLogger _logger;
   late final Feed _defaultFeed;
 
@@ -32,7 +30,6 @@ class Settings extends _$Settings {
   SettingsState build() {
     _prefRepository = ref.watch(prefRepositoryProvider);
     _feedRepository = GetIt.instance<SprkRepository>().feed;
-    _sqlCache = GetIt.instance<SQLCacheInterface>();
     _logger = GetIt.instance<LogService>().getLogger('Settings');
     _defaultFeed = Feed(
       type: 'timeline',
@@ -222,7 +219,6 @@ class Settings extends _$Settings {
 
       try {
         await _updateFeedsInPreferences(updatedFeeds);
-        await _sqlCache.cacheFeed(pinnedFeed);
       } catch (e) {
         // Rollback state on error
         _logger.e('Error adding feed, rolling back state: $e');
@@ -242,7 +238,6 @@ class Settings extends _$Settings {
 
     final updatedFeeds = state.feeds.where((f) => f.config.id != feed.config.id).toList();
     await _updateFeedsInPreferences(updatedFeeds);
-    await _sqlCache.deleteFeed(feed);
     state = state.copyWith(feeds: updatedFeeds);
   }
 
