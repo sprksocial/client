@@ -16,6 +16,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_dotenv: ^5.1.0
+  cupertino_icons: ^1.0.8
   cached_network_image: ^3.3.1
   camera: ^0.11.1
   path_provider: ^2.1.2
