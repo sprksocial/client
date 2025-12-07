@@ -1,5 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/config/app_config.dart';
@@ -9,6 +10,7 @@ import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 import 'package:sparksocial/src/features/auth/providers/onboarding_providers.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 @RoutePage()
 class RegisterPage extends ConsumerStatefulWidget {
@@ -27,6 +29,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
 
   bool _isPasswordVisible = false;
   bool _isRegistering = false;
+  bool _agreedToTerms = false;
   String? _errorMessage;
 
   @override
@@ -84,7 +87,21 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     return !AppConfig.signupsDisabled &&
         _emailController.text.isNotEmpty &&
         _handleController.text.isNotEmpty &&
-        _passwordController.text.isNotEmpty;
+        _passwordController.text.isNotEmpty &&
+        _agreedToTerms;
+  }
+
+  Future<void> _launchUrl(String url) async {
+    try {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        await launchUrl(uri);
+      }
+    } catch (e) {
+      // Silently handle URL launch errors
+    }
   }
 
   @override
@@ -271,7 +288,57 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     ),
                   ],
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 24),
+
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Checkbox(
+                        value: _agreedToTerms,
+                        onChanged: (value) {
+                          setState(() {
+                            _agreedToTerms = value ?? false;
+                          });
+                        },
+                        activeColor: colorScheme.primary,
+                      ),
+                      Expanded(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: RichText(
+                            text: TextSpan(
+                              style: AppTypography.textSmallMedium.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                              children: [
+                                const TextSpan(text: 'I agree to the '),
+                                TextSpan(
+                                  text: 'Terms of Service',
+                                  style: AppTypography.textSmallMedium.copyWith(
+                                    color: colorScheme.primary,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                  recognizer: TapGestureRecognizer()..onTap = () => _launchUrl('https://sprk.so/terms'),
+                                ),
+                                const TextSpan(text: ' and '),
+                                TextSpan(
+                                  text: 'Privacy Policy',
+                                  style: AppTypography.textSmallMedium.copyWith(
+                                    color: colorScheme.primary,
+                                    decoration: TextDecoration.underline,
+                                  ),
+                                  recognizer: TapGestureRecognizer()..onTap = () => _launchUrl('https://sprk.so/privacy'),
+                                ),
+                                const TextSpan(text: '.'),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 24),
 
                   if (_isRegistering)
                     const Center(
