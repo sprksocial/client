@@ -20,7 +20,8 @@ class SparkBottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Always use dark mode when on home tab (index 0)
+    final isDark = currentIndex == 0 || Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -74,6 +75,7 @@ class SparkBottomNavBar extends StatelessWidget {
                   isSelected: currentIndex == 4,
                   image: userAvatar,
                   onTap: () => onTap(4),
+                  currentIndex: currentIndex,
                 ),
               ],
             ),
@@ -132,14 +134,21 @@ class _NavIcon extends StatelessWidget {
 }
 
 class _ProfileAvatar extends StatelessWidget {
-  const _ProfileAvatar({required this.isSelected, required this.image, required this.onTap});
+  const _ProfileAvatar({
+    required this.isSelected,
+    required this.image,
+    required this.onTap,
+    required this.currentIndex,
+  });
   final bool isSelected;
   final ImageProvider image;
   final VoidCallback onTap;
+  final int currentIndex;
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    // Always use dark mode when on home tab (index 0)
+    final isDark = currentIndex == 0 || Theme.of(context).brightness == Brightness.dark;
     final avatar = Container(
       width: 34,
       height: 34,
@@ -148,14 +157,10 @@ class _ProfileAvatar extends StatelessWidget {
         border: Border.all(
           color: Colors.white,
         ),
-        image: image is AssetImage 
-            ? null 
-            : DecorationImage(image: image, fit: BoxFit.cover),
-        color: image is AssetImage 
-            ? (isDark ? const Color(0xFF424242) : const Color(0xFFE0E0E0))
-            : null,
+        image: image is AssetImage ? null : DecorationImage(image: image, fit: BoxFit.cover),
+        color: image is AssetImage ? (isDark ? const Color(0xFF424242) : const Color(0xFFE0E0E0)) : null,
       ),
-      child: image is AssetImage 
+      child: image is AssetImage
           ? Icon(
               Icons.person,
               size: 18,

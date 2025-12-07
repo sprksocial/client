@@ -71,8 +71,7 @@ class _InfoBarTemplateState extends State<InfoBarTemplate> with SingleTickerProv
   }
 
   Widget _buildHandleText(BuildContext context, String handle) {
-    final theme = Theme.of(context);
-    final color = theme.textTheme.bodyMedium?.color ?? AppColors.greyWhite;
+    const color = AppColors.greyWhite;
 
     final parts = handle.split('.');
     if (parts.length == 1) {
@@ -103,8 +102,7 @@ class _InfoBarTemplateState extends State<InfoBarTemplate> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final textColor = theme.textTheme.bodyMedium?.color ?? AppColors.greyWhite;
+    const textColor = AppColors.greyWhite;
 
     final hasDescription = widget.description?.isNotEmpty ?? false;
     final hasInform = widget.informLabels.isNotEmpty;
@@ -224,7 +222,7 @@ class _InformChip extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bg = isDark ? AppColors.blue700 : AppColors.blue50;
     final border = isDark ? AppColors.blue600 : AppColors.blue200;
-    final text = isDark ? AppColors.greyWhite : AppColors.blue600;
+    const text = AppColors.greyWhite;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
