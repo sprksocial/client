@@ -191,6 +191,13 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     context.router.push(CommentsRoute(postUri: currentPost.uri.toString(), isSprk: currentPost.isSprk, post: currentPost));
   }
 
+  void _handleSoundTap() {
+    final currentPost = _currentPost ?? widget.post;
+    if (currentPost.sound != null) {
+      context.router.push(SoundRoute(audioUri: currentPost.sound!.uri.toString()));
+    }
+  }
+
   // Future<void> _handleCurate() async {
   //   // For now, this is a placeholder for curate functionality
   //   // In the future, this could add the post to a custom feed or collection
@@ -217,11 +224,13 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       onComment: _handleCommentPressed,
       // onCurate: _handleCurate, // Curation disabled
       onShare: _handleShare,
+      onSoundTap: currentPost.sound != null ? _handleSoundTap : null,
       likeCount: likeCount.toString(),
       commentCount: commentCount.toString(),
       // curateCount: repostCount.toString(), // Curation disabled
       shareCount: widget.shareCount,
       isLiked: _isLiked,
+      soundCover: currentPost.sound?.coverArt.toString(),
       // isCurated: isCurated, // Curation disabled
       // curateDestinations: curateDestinations, // Curation disabled
     );
