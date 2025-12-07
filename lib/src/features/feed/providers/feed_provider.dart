@@ -21,6 +21,8 @@ part 'feed_provider.g.dart';
 class FeedNotifier extends _$FeedNotifier {
   bool _isLoadingInProgress = false;
   bool _isFetching = false;
+  DateTime? _lastErrorTime;
+  static const _errorCooldown = Duration(seconds: 10);
   late Feed _feed;
   late final FeedRepository _feedRepository;
   late final SparkLogger _logger;
@@ -103,12 +105,13 @@ class FeedNotifier extends _$FeedNotifier {
   }
 
   Future<void> loadAndUpdateFirstLoad() async {
-    if (_isLoadingInProgress) {
+    if (_isLoadingInProgress || state.loadingFirstLoad) {
       _logger.w('Load already in progress, skipping duplicate call');
       return;
     }
 
-    if (state.loadingFirstLoad) {
+    if (_lastErrorTime != null && DateTime.now().difference(_lastErrorTime!) < _errorCooldown) {
+      _logger.w('In error cooldown, skipping load');
       return;
     }
 
@@ -118,12 +121,13 @@ class FeedNotifier extends _$FeedNotifier {
         loadingFirstLoad: true,
         error: false,
         loadedPosts: const <PostView>[],
-        cursor: null, // Reset cursor to start from beginning
+        cursor: null,
         isEndOfNetworkFeed: false,
       );
       await _maybeFetchNextBatch(limit: FeedState.firstLoadLimit, replaceExisting: true);
     } catch (e, stackTrace) {
       _logger.e('Error in loadAndUpdateFirstLoad: $e', stackTrace: stackTrace);
+      _lastErrorTime = DateTime.now();
       state = state.copyWith(loadingFirstLoad: false, error: true);
     } finally {
       _isLoadingInProgress = false;
@@ -326,6 +330,9 @@ class FeedNotifier extends _$FeedNotifier {
       }
     } catch (e, stackTrace) {
       _logger.e('Error prefetching feed: $e', stackTrace: stackTrace);
+      _lastErrorTime = DateTime.now();
+      state = state.copyWith(error: true, loadingFirstLoad: false);
+      rethrow;
     } finally {
       _isFetching = false;
     }
@@ -341,8 +348,14 @@ class FeedNotifier extends _$FeedNotifier {
   }
 
   Future<void> scrollDown() async {
+    if (state.error) return;
+    if (_lastErrorTime != null && DateTime.now().difference(_lastErrorTime!) < _errorCooldown) return;
     if (state.length - state.index < FeedState.loadLimit && !state.isEndOfNetworkFeed) {
-      await _maybeFetchNextBatch();
+      try {
+        await _maybeFetchNextBatch();
+      } catch (_) {
+        // Error already handled in _maybeFetchNextBatch
+      }
     }
   }
 

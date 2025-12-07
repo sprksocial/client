@@ -3,6 +3,7 @@ import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repo
 import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/labeler_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
+import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/story_repository.dart';
 import 'package:sparksocial/src/features/auth/auth.dart';
 
@@ -27,4 +28,5 @@ abstract class SprkRepository {
   StoryRepository get story;
   GraphRepository get graph;
   LabelerRepository get labeler;
+  SoundRepository get sound;
 }

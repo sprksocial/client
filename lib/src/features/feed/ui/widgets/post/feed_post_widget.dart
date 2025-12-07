@@ -12,9 +12,8 @@ import 'package:sparksocial/src/core/utils/label_utils.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
+import 'package:sparksocial/src/features/feed/ui/widgets/post/post_overlay.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
 import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
 
@@ -173,19 +172,6 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
           final postData = snapshot.data!;
-          final sideActionBar = SideActionBar(
-            post: postData,
-            feed: widget.feed,
-            likeCount: '${postData.likeCount ?? 0}',
-            commentCount: '${postData.replyCount ?? 0}',
-            shareCount: '${postData.repostCount ?? 0}',
-            isLiked: _overrideIsLiked ?? (postData.viewer?.like != null),
-            profileImageUrl: postData.author.avatar.toString(),
-            isImage: postData.media is MediaViewImages || postData.media is MediaViewBskyImages,
-            onProfilePressed: () {
-              _videoPlayerKey.currentState?.pauseVideo();
-            },
-          );
 
           // Check for content warning on post load
           WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -193,6 +179,17 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
               _checkContentWarning(postData.uri.toString());
             }
           });
+
+          // Get labels for the overlay
+          var labels = <Label>[];
+          final feedState = ref.read(feedNotifierProvider(widget.feed));
+          if (widget.index < feedState.loadedPosts.length) {
+            final post = feedState.loadedPosts[widget.index];
+            final extraInfo = feedState.extraInfo[post.uri];
+            if (extraInfo != null) {
+              labels = extraInfo.postLabels;
+            }
+          }
 
           final mainContent = HeartAnimation(
             isAnimating: _isAnimatingHeart,
@@ -248,67 +245,19 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                     },
                   ),
 
-                  // Gradient overlay at the bottom to improve text readability
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: IgnorePointer(
-                      child: Container(
-                        height: 200 + MediaQuery.of(context).padding.bottom,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [Colors.black87.withAlpha(170), Colors.transparent],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  Positioned(
-                    bottom: 16 + MediaQuery.of(context).padding.bottom,
-                    right: 8,
-                    child: sideActionBar,
-                  ),
-
-                  Positioned(
-                    bottom: 16 + MediaQuery.of(context).padding.bottom,
-                    left: 8,
-                    right: 80,
-                    child: Builder(
-                      builder: (context) {
-                        final feedState = ref.read(feedNotifierProvider(widget.feed));
-                        var labels = <Label>[];
-
-                        if (widget.index < feedState.loadedPosts.length) {
-                          final post = feedState.loadedPosts[widget.index];
-                          final extraInfo = feedState.extraInfo[post.uri];
-                          if (extraInfo != null) {
-                            labels = extraInfo.postLabels;
-                          }
-                        }
-
-                        return FutureBuilder<List<String>>(
-                          future: LabelUtils.getInformLabels(labels),
-                          builder: (context, snapshot) {
-                            final informLabels = snapshot.data ?? [];
-                            return InfoBar(
-                              username: postData.author.handle,
-                              displayName: postData.author.displayName ?? postData.author.handle,
-                              avatarUrl: postData.author.avatar?.toString(),
-                              description: postData.displayText,
-                              hashtags: postData.record.hashtags,
-                              informLabels: informLabels,
-                              isSprk: postData.uri.toString().contains('so.sprk'),
-                              onUsernameTap: () {
-                                _videoPlayerKey.currentState?.pauseVideo();
-                                context.router.push(ProfileRoute(did: postData.author.did));
-                              },
-                            );
-                          },
-                        );
+                  // Overlay controls
+                  Positioned.fill(
+                    child: PostOverlay(
+                      post: postData,
+                      feed: widget.feed,
+                      isLiked: _overrideIsLiked ?? (postData.viewer?.like != null),
+                      labels: labels,
+                      onProfilePressed: () {
+                        _videoPlayerKey.currentState?.pauseVideo();
+                      },
+                      onUsernameTap: () {
+                        _videoPlayerKey.currentState?.pauseVideo();
+                        context.router.push(ProfileRoute(did: postData.author.did));
                       },
                     ),
                   ),

@@ -269,7 +269,7 @@ extension BskyPostRecordAdapter on BskyPostRecord {
 extension BskyRecordAdapter on Record {
   Record toSparkRecord() {
     return when(
-      post: (caption, createdAt, reply, langs, tags, selfLabels, media) => PostRecord(
+      post: (caption, createdAt, reply, langs, tags, selfLabels, media, sound) => PostRecord(
         caption: caption,
         createdAt: createdAt,
         reply: reply,
@@ -277,6 +277,7 @@ extension BskyRecordAdapter on Record {
         tags: tags,
         selfLabels: selfLabels,
         media: media,
+        sound: sound,
       ),
       reply: (caption, reply, createdAt, langs, labels, media) => ReplyRecord(
         caption: caption,
@@ -304,6 +305,14 @@ extension BskyRecordAdapter on Record {
             pinnedPost: pinnedPost,
             createdAt: createdAt,
           ),
+      audio: (sound, title, createdAt, origin, details, labels) => AudioRecord(
+        sound: sound,
+        title: title,
+        createdAt: createdAt,
+        origin: origin,
+        details: details,
+        labels: labels,
+      ),
       bskyPost: (createdAt, text, facets, reply, langs, tags, selfLabels, embed) => BskyPostRecord(
         createdAt: createdAt,
         text: text,

@@ -32,12 +32,13 @@ class CreateMediaActions {
       );
       if (pickedVideo != null && context.mounted) {
         final editorVideo = EditorVideo.file(File(pickedVideo.path));
-        final editedVideo = await GetIt.I<ProVideoEditorRepository>().openVideoEditor(context, editorVideo);
-        if (editedVideo != null && context.mounted) {
+        final result = await GetIt.I<ProVideoEditorRepository>().openVideoEditor(context, editorVideo);
+        if (result != null && context.mounted) {
           await context.router.push(
             VideoReviewRoute(
-              videoPath: editedVideo.path,
+              videoPath: result.video.path,
               storyMode: storyMode,
+              soundRef: result.soundRef,
             ),
           );
         }

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
+import 'package:sparksocial/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:sparksocial/src/core/pro_video_editor/pro_video_editor_repository.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/video_editor_grounded_page.dart';
 
@@ -73,8 +74,8 @@ class ProVideoEditorRepositoryImpl implements ProVideoEditorRepository {
   }
 
   @override
-  Future<XFile?> openVideoEditor(BuildContext context, EditorVideo video) async {
-    return Navigator.of(context).push<XFile?>(
+  Future<VideoEditorResult?> openVideoEditor(BuildContext context, EditorVideo video) async {
+    return Navigator.of(context).push<VideoEditorResult?>(
       MaterialPageRoute(
         builder: (_) => VideoEditorGroundedPage(video: video),
       ),
