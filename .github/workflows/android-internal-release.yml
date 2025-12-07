@@ -35,12 +35,12 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: 3.35.7
+          flutter-version: 3.38.4
           cache: true
 
       - name: Generated code setup
         run: |
-          flutter pub get
+          flutter pub get --enforce-lockfile
           dart run build_runner build --delete-conflicting-outputs
 
       - name: Setup keys
@@ -67,11 +67,15 @@ jobs:
 
       - name: Configure Keystore
         run: |
-          echo "storeFile=/home/runner/work/_temp/keystore/upload_key.jks" >> key.properties
+          echo "storeFile=../keystore/upload_key.jks" >> key.properties
           echo "storePassword=${{ secrets.SIGNING_STORE_PASSWORD }}" >> key.properties
           echo "keyAlias=${{ secrets.SIGNING_KEY_ALIAS }}" >> key.properties
           echo "keyPassword=${{ secrets.SIGNING_KEY_PASSWORD }}" >> key.properties
         working-directory: android
+
+      - name: Stop Gradle daemons
+        run: |
+          cd android && ./gradlew --stop || true
 
       - name: Build PlayStore AAB
         env:
