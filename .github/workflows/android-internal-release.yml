@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: blacksmith-4vcpu-ubuntu-2404
 
     steps:
       - name: Checkout code
@@ -46,7 +46,7 @@ jobs:
       - name: Setup keys
         uses: timheuer/base64-to-file@v1
         with:
-          fileName: "keystore/upload_key.jks"
+          fileName: "android/keystore/upload_key.jks"
           encodedString: ${{ secrets.SIGNING_KEY_BASE64 }}
 
       - name: Setup env
@@ -67,7 +67,7 @@ jobs:
 
       - name: Configure Keystore
         run: |
-          echo "storeFile=../keystore/upload_key.jks" >> key.properties
+          echo "storeFile=keystore/upload_key.jks" >> key.properties
           echo "storePassword=${{ secrets.SIGNING_STORE_PASSWORD }}" >> key.properties
           echo "keyAlias=${{ secrets.SIGNING_KEY_ALIAS }}" >> key.properties
           echo "keyPassword=${{ secrets.SIGNING_KEY_PASSWORD }}" >> key.properties
