@@ -18,12 +18,14 @@ class SparkSideActionBar extends StatefulWidget {
     this.onComment,
     this.onCurate,
     this.onShare,
+    this.onSoundTap,
     this.likeCount,
     this.commentCount,
     this.curateCount,
     this.shareCount,
     this.isLiked = false,
     this.isCurated = false,
+    this.soundCover,
     this.curateDestinations = const <CurateDestination>[
       CurateDestination('Feed 1'),
       CurateDestination('Feed 2'),
@@ -35,6 +37,7 @@ class SparkSideActionBar extends StatefulWidget {
   final VoidCallback? onComment;
   final VoidCallback? onCurate; // called after a feed selection (or when opening?)
   final VoidCallback? onShare;
+  final VoidCallback? onSoundTap;
 
   final String? likeCount;
   final String? commentCount;
@@ -43,6 +46,7 @@ class SparkSideActionBar extends StatefulWidget {
 
   final bool isLiked;
   final bool isCurated;
+  final String? soundCover;
   final List<CurateDestination> curateDestinations;
 
   @override
@@ -135,7 +139,7 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      spacing: 10,
+      spacing: 13,
       children: [
         _ActionItem(
           isActive: widget.isLiked,
@@ -162,6 +166,12 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
           label: widget.shareCount,
           onTap: widget.onShare,
         ),
+        if (widget.soundCover != null) ...[
+          _SoundItem(
+            cover: widget.soundCover!,
+            onTap: widget.onSoundTap,
+          ),
+        ],
       ],
     );
   }
@@ -194,19 +204,47 @@ class _ActionItem extends StatelessWidget {
             child: SizedBox(width: 40, height: 40, child: Center(child: icon)),
           ),
           if (label != null && label!.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                label!,
-                style: const TextStyle(
-                  fontSize: 12,
-                  height: 1.1,
-                  color: Colors.white,
-                  fontWeight: FontWeight.w600,
-                ),
+            Text(
+              label!,
+              style: const TextStyle(
+                fontSize: 12,
+                height: 1.1,
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+class _SoundItem extends StatelessWidget {
+  const _SoundItem({
+    required this.cover,
+    this.onTap,
+  });
+
+  final String cover;
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    const albumSize = 35.0;
+
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onTap,
+      child: Container(
+        width: albumSize,
+        height: albumSize,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          image: DecorationImage(
+            image: NetworkImage(cover),
+            fit: BoxFit.cover,
+          ),
+        ),
       ),
     );
   }
@@ -277,7 +315,7 @@ class _ConnectorPopover extends StatelessWidget {
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: Container(
               // Increased vertical padding + larger right padding to account for bigger connector circle
-              padding: const EdgeInsets.fromLTRB(20, 18, 20 + 40, 18),
+              padding: const EdgeInsets.fromLTRB(20, 18, 60, 18),
               decoration: const BoxDecoration(),
               child: child,
             ),

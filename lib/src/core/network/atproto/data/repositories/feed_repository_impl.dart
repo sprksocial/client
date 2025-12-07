@@ -924,7 +924,7 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<Blob> uploadVideo(String videoPath) async {
+  Future<VideoUploadResult> uploadVideo(String videoPath) async {
     _logger.d('Uploading video from path: $videoPath');
 
     return _client.executeWithRetry(() async {
@@ -1011,15 +1011,37 @@ class FeedRepositoryImpl implements FeedRepository {
       if (responseData['jobStatus']?['state'] == 'JOB_STATE_FAILED') {
         throw Exception('Video upload failed: ${responseData['jobStatus']?['status']}');
       }
-      Map<String, dynamic> blob;
+
+      // Parse video blob
+      Map<String, dynamic> videoBlobData;
       if (responseData case {'jobStatus': {'blob': final blobData}}) {
-        blob = blobData as Map<String, dynamic>;
+        videoBlobData = blobData as Map<String, dynamic>;
       } else if (responseData case {'blobRef': final blobRef}) {
-        blob = blobRef as Map<String, dynamic>;
+        videoBlobData = blobRef as Map<String, dynamic>;
       } else {
         throw Exception('Unexpected response format: $responseData');
       }
-      return Blob.fromJson(blob);
+      final videoBlob = Blob.fromJson(videoBlobData);
+
+      // Parse audio blob if present
+      Blob? audioBlob;
+      AudioDetails? audioDetails;
+      if (responseData case {'jobStatus': {'audio': final audioData}}) {
+        final audio = audioData as Map<String, dynamic>;
+        if (audio['blob'] != null) {
+          audioBlob = Blob.fromJson(audio['blob'] as Map<String, dynamic>);
+          _logger.d('Extracted audio blob: ${audioBlob.size} bytes');
+        }
+        if (audio['details'] != null) {
+          audioDetails = AudioDetails.fromJson(audio['details'] as Map<String, dynamic>);
+        }
+      }
+
+      return VideoUploadResult(
+        videoBlob: videoBlob,
+        audioBlob: audioBlob,
+        audioDetails: audioDetails,
+      );
     });
   }
 

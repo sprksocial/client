@@ -20,6 +20,7 @@ class Record with _$Record {
     List<String>? tags,
     List<SelfLabel>? selfLabels,
     Media? media,
+    StrongRef? sound,
   }) = PostRecord;
 
   @JsonSerializable(explicitToJson: true)
@@ -55,6 +56,17 @@ class Record with _$Record {
     StrongRef? pinnedPost,
     DateTime? createdAt,
   }) = ProfileRecord;
+
+  @JsonSerializable(explicitToJson: true)
+  @FreezedUnionValue('so.sprk.sound.audio')
+  const factory Record.audio({
+    required Blob sound,
+    required String title,
+    required DateTime createdAt,
+    StrongRef? origin,
+    AudioDetails? details,
+    List<SelfLabel>? labels,
+  }) = AudioRecord;
 
   @JsonSerializable(explicitToJson: true)
   @FreezedUnionValue('app.bsky.feed.post')

@@ -25,7 +25,7 @@ dependencies:
   http: ^1.2.0
   url_launcher: ^6.2.5
   shared_preferences: ^2.5.3
-  fvp: ^0.35.0
+  fvp: ^0.35.1
   fluentui_system_icons: ^1.1.273
   image_picker: ^1.0.7
   path: ^1.9.1
@@ -64,6 +64,8 @@ dependencies:
     git:
       url: https://github.com/sprksocial/pro_video_editor.git
       ref: dev
+  audioplayers: ^6.5.1
+  audio_waveforms: ^2.0.0
 
 dev_dependencies:
   flutter_test:

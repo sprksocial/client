@@ -1,3 +1,4 @@
+import 'package:atproto/atproto.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -134,6 +135,9 @@ class AppRouter extends RootStackRouter {
 
     // Story Manager
     AutoRoute(page: StoryManagerRoute.page, path: '/story-manager'),
+
+    // Sound page
+    AutoRoute(page: SoundRoute.page, path: '/sound/:audioUri'),
 
     // Alternate starting routes
     AutoRoute(page: EmptyRoute.page, path: '/empty'),

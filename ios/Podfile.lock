@@ -1,4 +1,9 @@
 PODS:
+  - audio_waveforms (0.0.1):
+    - Flutter
+  - audioplayers_darwin (0.0.1):
+    - Flutter
+    - FlutterMacOS
   - better_player_plus (1.1.2):
     - Cache (~> 6.0.0)
     - Flutter
@@ -11,7 +16,7 @@ PODS:
   - Flutter (1.0.0)
   - flutter_secure_storage (6.0.0):
     - Flutter
-  - fvp (0.35.0):
+  - fvp (0.35.1):
     - Flutter
     - FlutterMacOS
     - mdk (~> 0.35.0)
@@ -59,6 +64,8 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - audio_waveforms (from `.symlinks/plugins/audio_waveforms/ios`)
+  - audioplayers_darwin (from `.symlinks/plugins/audioplayers_darwin/darwin`)
   - better_player_plus (from `.symlinks/plugins/better_player_plus/ios`)
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - Flutter (from `Flutter`)
@@ -86,6 +93,10 @@ SPEC REPOS:
     - PostHog
 
 EXTERNAL SOURCES:
+  audio_waveforms:
+    :path: ".symlinks/plugins/audio_waveforms/ios"
+  audioplayers_darwin:
+    :path: ".symlinks/plugins/audioplayers_darwin/darwin"
   better_player_plus:
     :path: ".symlinks/plugins/better_player_plus/ios"
   camera_avfoundation:
@@ -118,12 +129,14 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/wakelock_plus/ios"
 
 SPEC CHECKSUMS:
+  audio_waveforms: a6dde7fe7c0ea05f06ffbdb0f7c1b2b2ba6cedcf
+  audioplayers_darwin: 4f9ca89d92d3d21cec7ec580e78ca888e5fb68bd
   better_player_plus: 3d40145c650bb83dde08f0d593b21a144196769f
   Cache: 4ca7e00363fca5455f26534e5607634c820ffc2d
   camera_avfoundation: 5675ca25298b6f81fa0a325188e7df62cc217741
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
-  fvp: ecee65308dd86ae46e3c6d5d42cd2aad48095ef5
+  fvp: 5a47a325ffa8d63e70a276a6436416ae703206a5
   GCDWebServer: 2c156a56c8226e2d5c0c3f208a3621ccffbe3ce4
   HLSCachingReverseProxyServer: 59935e1e0244ad7f3375d75b5ef46e8eb26ab181
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326

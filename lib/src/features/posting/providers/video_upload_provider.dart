@@ -12,14 +12,16 @@ part 'video_upload_provider.g.dart';
 
 /// Process a video file and upload it to the video service
 @riverpod
-Future<Blob?> processVideo(Ref ref, String videoPath) async {
+Future<VideoUploadResult?> processVideo(Ref ref, String videoPath) async {
   final feedRepository = GetIt.I<SprkRepository>().feed;
   final logger = GetIt.I<LogService>().getLogger('Processing Video');
   try {
     logger.d('Processing video: $videoPath');
-    final blob = await feedRepository.uploadVideo(videoPath);
-    logger.i('Video processed (size=${blob.size}, mime=${blob.mimeType})');
-    return blob;
+    final result = await feedRepository.uploadVideo(videoPath);
+    logger.i(
+      'Video processed (size=${result.videoBlob.size}, mime=${result.videoBlob.mimeType}, hasAudio=${result.audioBlob != null})',
+    );
+    return result;
   } catch (error, stackTrace) {
     logger.e('Error processing video ($videoPath)', error: error, stackTrace: stackTrace);
     return null;
@@ -35,10 +37,11 @@ Future<StrongRef?> postVideo(
   String altText = '',
   String? videoPath,
   bool crosspostToBsky = false,
+  StrongRef? soundRef,
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Posting Video');
   try {
-    logger.d('Posting video (size=${blob.size}, crosspost=$crosspostToBsky)');
+    logger.d('Posting video (size=${blob.size}, crosspost=$crosspostToBsky, sound=${soundRef?.uri})');
     final authRepository = GetIt.I<AuthRepository>();
     final authAtProto = authRepository.atproto;
     if (authAtProto == null || authAtProto.session == null) {
@@ -49,6 +52,7 @@ Future<StrongRef?> postVideo(
       caption: CaptionRef(text: description.isNotEmpty ? description : '', facets: []),
       media: Media.video(video: blob, alt: altText),
       createdAt: DateTime.now().toUtc(),
+      sound: soundRef,
     );
 
     final recordRes = await authAtProto.repo.createRecord(
@@ -84,20 +88,40 @@ Future<StrongRef?> processAndPostVideo(
   String altText = '',
   bool crosspostToBsky = false,
   bool storyMode = false,
+  StrongRef? soundRef,
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Process/Post Video');
-  logger.d('Processing then posting video: $videoPath (storyMode=$storyMode)');
-  final blob = await processVideo(ref, videoPath);
-  if (blob == null) {
+  logger.d('Processing then posting video: $videoPath (storyMode=$storyMode, sound=${soundRef?.uri})');
+  final uploadResult = await processVideo(ref, videoPath);
+  if (uploadResult == null) {
     logger.e('Aborting: processing failed');
     throw Exception('Failed to process video');
+  }
+
+  final videoBlob = uploadResult.videoBlob;
+
+  // If no sound was pre-selected and the video has extracted audio, create a new sound record
+  var effectiveSoundRef = soundRef;
+  if (soundRef == null && uploadResult.audioBlob != null) {
+    logger.d('Creating new sound record from extracted audio');
+    try {
+      final soundRepository = GetIt.I<SprkRepository>().sound;
+      effectiveSoundRef = await soundRepository.createSound(
+        sound: uploadResult.audioBlob!,
+        title: 'Original Sound',
+        details: uploadResult.audioDetails,
+      );
+      logger.i('Sound record created: ${effectiveSoundRef.uri}');
+    } catch (e, s) {
+      logger.w('Failed to create sound record, proceeding without sound', error: e, stackTrace: s);
+    }
   }
 
   if (storyMode) {
     try {
       final res = await ref.read(
         postStoryProvider(
-          Media.video(video: blob),
+          Media.video(video: videoBlob),
           selfLabels: [],
           tags: [],
         ).future,
@@ -111,11 +135,12 @@ Future<StrongRef?> processAndPostVideo(
   } else {
     final res = await postVideo(
       ref,
-      blob: blob,
+      blob: videoBlob,
       description: description,
       altText: altText,
       videoPath: videoPath,
       crosspostToBsky: crosspostToBsky,
+      soundRef: effectiveSoundRef,
     );
     logger.i('Video flow complete (storyMode=false) success=${res != null}');
     return res;

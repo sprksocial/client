@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/templates/info_bar_template.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/alt_text_dialog.dart';
 
 /// Adapter widget to keep feature layer API stable while migrating to
@@ -19,6 +20,7 @@ class InfoBar extends StatelessWidget {
     this.onAvatarTap,
     this.onHashtagTap,
     this.onDescriptionExpandToggle,
+    this.audio,
   });
   final String username;
   final String displayName;
@@ -32,6 +34,7 @@ class InfoBar extends StatelessWidget {
   final VoidCallback? onAvatarTap;
   final Function(String)? onHashtagTap;
   final Function(bool isExpanded)? onDescriptionExpandToggle;
+  final AudioView? audio;
 
   @override
   Widget build(BuildContext context) {
@@ -41,6 +44,7 @@ class InfoBar extends StatelessWidget {
       description: description,
       informLabels: informLabels,
       avatarUrl: avatarUrl,
+      audio: audio,
       onTitleTap: onUsernameTap,
       onHandleTap: onUsernameTap,
       onAvatarTap: onAvatarTap ?? onUsernameTap,

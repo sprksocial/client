@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:atproto_core/atproto_core.dart';
+import 'package:atproto/atproto.dart';
+import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +19,7 @@ class VideoReviewPage extends ConsumerStatefulWidget {
   const VideoReviewPage({
     required this.videoPath,
     required this.storyMode,
+    this.soundRef,
     super.key,
   });
 
@@ -25,6 +27,9 @@ class VideoReviewPage extends ConsumerStatefulWidget {
   final String videoPath;
 
   final bool storyMode;
+
+  /// Reference to the audio track used in the video, if any.
+  final StrongRef? soundRef;
 
   @override
   ConsumerState<VideoReviewPage> createState() => _VideoReviewPageState();
@@ -91,6 +96,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
           description: description,
           altText: _videoAltText,
           storyMode: widget.storyMode,
+          soundRef: widget.soundRef,
           crosspostToBsky: widget.storyMode ? false : _crosspostToBsky,
         ).future,
       );
