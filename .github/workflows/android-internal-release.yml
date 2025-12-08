@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: blacksmith-4vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
@@ -46,7 +46,7 @@ jobs:
       - name: Setup keys
         uses: timheuer/base64-to-file@v1
         with:
-          fileName: "android/keystore/upload_key.jks"
+          fileName: "keystore/upload_key.jks"
           encodedString: ${{ secrets.SIGNING_KEY_BASE64 }}
 
       - name: Setup env
@@ -67,15 +67,11 @@ jobs:
 
       - name: Configure Keystore
         run: |
-          echo "storeFile=keystore/upload_key.jks" >> key.properties
+          echo "storeFile=/home/runner/work/_temp/keystore/upload_key.jks" >> key.properties
           echo "storePassword=${{ secrets.SIGNING_STORE_PASSWORD }}" >> key.properties
           echo "keyAlias=${{ secrets.SIGNING_KEY_ALIAS }}" >> key.properties
           echo "keyPassword=${{ secrets.SIGNING_KEY_PASSWORD }}" >> key.properties
         working-directory: android
-
-      - name: Stop Gradle daemons
-        run: |
-          cd android && ./gradlew --stop || true
 
       - name: Build PlayStore AAB
         env:
