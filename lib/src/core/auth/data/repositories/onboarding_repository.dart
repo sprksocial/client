@@ -1,4 +1,4 @@
-import 'package:bluesky/bluesky.dart';
+import 'package:bluesky/app_bsky_actor_profile.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
 
 abstract class OnboardingRepository {
@@ -6,7 +6,7 @@ abstract class OnboardingRepository {
   Future<bool> hasSparkProfile();
 
   /// Retrieves the Bluesky profile for import
-  Future<ProfileRecord?> getBskyProfile();
+  Future<ActorProfileRecord?> getBskyProfile();
 
   /// Creates a Spark actor profile with custom values
   Future<void> createSparkProfile({required String displayName, required String description, dynamic avatar});

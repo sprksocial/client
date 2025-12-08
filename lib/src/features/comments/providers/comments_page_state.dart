@@ -4,7 +4,7 @@ import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dar
 part 'comments_page_state.freezed.dart';
 
 @freezed
-class CommentsPageState with _$CommentsPageState {
+abstract class CommentsPageState with _$CommentsPageState {
   const factory CommentsPageState({
     required ThreadViewPost thread,
   }) = _CommentsPageState;

@@ -1,4 +1,4 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 
 class FeedRefreshTrigger extends StateNotifier<int> {

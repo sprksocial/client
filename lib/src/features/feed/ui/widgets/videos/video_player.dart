@@ -151,7 +151,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
     final navigationState = ref.watch(navigationProvider);
     final isOnFeedsTab = navigationState.currentIndex == 0;
 
-    final feedState = widget.feed != null ? ref.watch(feedNotifierProvider(widget.feed!)) : null;
+    final feedState = widget.feed != null ? ref.watch(feedProvider(widget.feed!)) : null;
 
     if (_lastNavigationIndex != navigationState.currentIndex) {
       _lastNavigationIndex = navigationState.currentIndex;
@@ -177,7 +177,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
 
     final videoAspectRatio = videoController?.videoPlayerController?.value.aspectRatio;
     final videoSize = videoController?.videoPlayerController?.value.size;
-    
+
     final shouldFillScreen = videoAspectRatio != null && videoAspectRatio > 0.5 && videoAspectRatio < 0.7;
     final fitMode = shouldFillScreen ? BoxFit.cover : BoxFit.contain;
 

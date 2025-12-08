@@ -1,5 +1,4 @@
 import 'package:atproto_core/atproto_core.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -61,7 +60,7 @@ Future<void> storyAutoDeleteExecutor(Ref ref) async {
     do {
       final page = await atproto.repo.listRecords(
         repo: did,
-        collection: NSID.parse(collection),
+        collection: collection,
         cursor: cursor,
         limit: 100,
       );

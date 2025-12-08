@@ -1,5 +1,5 @@
-import 'package:atproto/atproto.dart';
 import 'package:atproto_core/atproto_core.dart';
+import 'package:bluesky/com_atproto_repo_strongref.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
@@ -23,8 +23,6 @@ class CommentNotifier extends _$CommentNotifier {
         throw Exception('Post not found');
       case BlockedPost():
         throw Exception('Post is blocked');
-      default:
-        throw Exception('Unknown thread type');
     }
   }
 
@@ -62,7 +60,7 @@ class CommentNotifier extends _$CommentNotifier {
         await _feedRepository.unlikePost(likeUri);
 
         // Trigger UI updates
-        ref.read(postUpdateProvider(state.thread.post.uri.toString()).notifier).state++;
+        ref.read(postUpdateProvider(state.thread.post.uri.toString()) as ProviderListenable<dynamic>).state++;
       } else {
         // Optimistically update UI for like
         final response = await _feedRepository.likePost(state.thread.post.cid, state.thread.post.uri);
@@ -86,24 +84,20 @@ class CommentNotifier extends _$CommentNotifier {
         );
 
         // Trigger UI updates
-        ref.read(postUpdateProvider(state.thread.post.uri.toString()).notifier).state++;
+        ref.read(postUpdateProvider(state.thread.post.uri.toString()) as ProviderListenable<dynamic>).state++;
       }
     } catch (e) {
       // Revert optimistic update on error
       final revertedPost = switch (state.thread.post) {
         ThreadPostView(:final post) => ThreadPostView(
           post: post.copyWith(
-            viewer: wasLiked
-                ? post.viewer?.copyWith(like: post.viewer?.like)
-                : post.viewer?.copyWith(like: null),
+            viewer: wasLiked ? post.viewer?.copyWith(like: post.viewer?.like) : post.viewer?.copyWith(like: null),
             likeCount: currentLikeCount,
           ),
         ),
         ThreadReplyView(:final reply) => ThreadReplyView(
           reply: reply.copyWith(
-            viewer: wasLiked
-                ? reply.viewer?.copyWith(like: reply.viewer?.like)
-                : reply.viewer?.copyWith(like: null),
+            viewer: wasLiked ? reply.viewer?.copyWith(like: reply.viewer?.like) : reply.viewer?.copyWith(like: null),
             likeCount: currentLikeCount,
           ),
         ),
@@ -123,7 +117,7 @@ class CommentNotifier extends _$CommentNotifier {
   }
 }
 
-Future<StrongRef> postComment(
+Future<RepoStrongRef> postComment(
   String text,
   String parentCid,
   String parentUri, {

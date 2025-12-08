@@ -18,7 +18,7 @@ dependencies:
     path: ../fonts
   assets:
     path: ../assets
-  flutter_riverpod: ^2.6.1
+  flutter_riverpod: ^3.0.3
   fluentui_system_icons: ^1.1.273
 
 dev_dependencies:

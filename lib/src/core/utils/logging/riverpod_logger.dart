@@ -4,7 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 
 /// A ProviderObserver that logs provider changes
-class SparkRiverpodLogger extends ProviderObserver {
+final class SparkRiverpodLogger extends ProviderObserver {
   /// Constructor
   SparkRiverpodLogger({LogService? logService}) : _logService = logService ?? GetIt.instance<LogService>() {
     _logger = _logService.getLogger('Riverpod');
@@ -13,17 +13,17 @@ class SparkRiverpodLogger extends ProviderObserver {
   late final SparkLogger _logger;
 
   @override
-  void didAddProvider(ProviderBase<Object?> provider, Object? value, ProviderContainer container) {
-    _logger.d('${provider.name ?? provider.runtimeType} added: ${_truncateIfNeeded(value.toString())}');
+  void didAddProvider(ProviderObserverContext context, Object? value) {
+    _logger.d('${context.provider.name ?? context.provider.runtimeType} added: ${_truncateIfNeeded(value.toString())}');
   }
 
   @override
-  void didDisposeProvider(ProviderBase<Object?> provider, ProviderContainer container) {
-    _logger.d('${provider.name ?? provider.runtimeType} was disposed.');
+  void didDisposeProvider(ProviderObserverContext context) {
+    _logger.d('${context.provider.name ?? context.provider.runtimeType} was disposed.');
   }
 
   @override
-  void didUpdateProvider(ProviderBase<Object?> provider, Object? previousValue, Object? newValue, ProviderContainer container) {
+  void didUpdateProvider(ProviderObserverContext context, Object? previousValue, Object? newValue) {
     // Skip logging if previous and new values are identical
     if (previousValue == newValue) return;
 
@@ -32,7 +32,7 @@ class SparkRiverpodLogger extends ProviderObserver {
 
     final diff = _generateDiff(previousValue, newValue);
     if (diff.isNotEmpty && diff != 'No changes') {
-      _logger.d('${provider.name ?? provider.runtimeType} changed: $diff');
+      _logger.d('${context.provider.name ?? context.provider.runtimeType} changed: $diff');
     }
   }
 

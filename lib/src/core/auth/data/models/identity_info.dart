@@ -5,7 +5,7 @@ part 'identity_info.g.dart';
 
 /// Represents identity information in the AT Protocol
 @freezed
-class IdentityInfo with _$IdentityInfo {
+abstract class IdentityInfo with _$IdentityInfo {
   const factory IdentityInfo({
     /// Decentralized Identifier (DID)
     required String did,

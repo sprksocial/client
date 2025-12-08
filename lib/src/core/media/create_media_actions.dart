@@ -38,7 +38,7 @@ class CreateMediaActions {
             VideoReviewRoute(
               videoPath: result.video.path,
               storyMode: storyMode,
-              soundRef: result.soundRef,
+              soundRef: result.soundRef.toString(),
             ),
           );
         }

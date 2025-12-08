@@ -1,6 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +30,8 @@ class VideoReviewPage extends ConsumerStatefulWidget {
   final bool storyMode;
 
   /// Reference to the audio track used in the video, if any.
-  final StrongRef? soundRef;
+  /// Stored as JSON string for route serialization.
+  final String? soundRef;
 
   @override
   ConsumerState<VideoReviewPage> createState() => _VideoReviewPageState();
@@ -55,6 +57,19 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
     _descriptionController.dispose();
     _player?.dispose();
     super.dispose();
+  }
+
+  RepoStrongRef? _parseSoundRef(String? soundRefJson) {
+    if (soundRefJson == null) return null;
+    try {
+      final map = jsonDecode(soundRefJson) as Map<String, dynamic>;
+      return RepoStrongRef(
+        uri: AtUri.parse(map['uri'] as String),
+        cid: map['cid'] as String,
+      );
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _initPlayer() async {
@@ -96,7 +111,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
           description: description,
           altText: _videoAltText,
           storyMode: widget.storyMode,
-          soundRef: widget.soundRef,
+          soundRef: _parseSoundRef(widget.soundRef),
           crosspostToBsky: widget.storyMode ? false : _crosspostToBsky,
         ).future,
       );

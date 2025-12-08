@@ -4,7 +4,7 @@ import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dar
 part 'comment_state.freezed.dart';
 
 @freezed
-class CommentState with _$CommentState {
+abstract class CommentState with _$CommentState {
   const factory CommentState({
     required ThreadViewPost thread,
     @Default(false) bool isVideoInitialized,

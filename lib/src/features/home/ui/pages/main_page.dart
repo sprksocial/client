@@ -78,7 +78,7 @@ class _MainPageState extends ConsumerState<MainPage> {
           }
         });
 
-        final profileAsync = userDid != null ? ref.watch(profileNotifierProvider(did: userDid)) : null;
+        final profileAsync = userDid != null ? ref.watch(profileProvider(did: userDid)) : null;
         final userAvatar = profileAsync?.asData?.value.profile?.avatar?.toString();
 
         final avatarProvider = userAvatar != null && userAvatar.isNotEmpty

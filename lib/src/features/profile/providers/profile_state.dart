@@ -4,7 +4,7 @@ import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.da
 part 'profile_state.freezed.dart';
 
 @freezed
-class ProfileState with _$ProfileState {
+abstract class ProfileState with _$ProfileState {
   const factory ProfileState({
     ProfileViewDetailed? profile,
     @Default(false) bool isEarlySupporter,

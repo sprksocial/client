@@ -1,4 +1,4 @@
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/pref_repository.dart';
@@ -75,7 +75,7 @@ class LabelUtils {
 
     for (final label in labels) {
       try {
-        final preference = await _getLabelPreference(label.value);
+        final preference = await _getLabelPreference(label.val);
         if (preference.severity == Severity.alert && preference.setting == Setting.warn) {
           return true;
         }
@@ -93,7 +93,7 @@ class LabelUtils {
 
     for (final label in labels) {
       try {
-        final preference = await _getLabelPreference(label.value);
+        final preference = await _getLabelPreference(label.val);
         if (preference.blurs == Blurs.content || preference.blurs == Blurs.media && preference.setting == Setting.warn) {
           return true;
         }
@@ -113,9 +113,9 @@ class LabelUtils {
 
     for (final label in labels) {
       try {
-        final preference = await _getLabelPreference(label.value);
+        final preference = await _getLabelPreference(label.val);
         if (preference.severity == Severity.alert && preference.setting == Setting.warn) {
-          warningLabels.add(label.value);
+          warningLabels.add(label.val);
         }
       } catch (e) {
         // If no preference found, continue checking other labels
@@ -133,9 +133,9 @@ class LabelUtils {
 
     for (final label in labels) {
       try {
-        final preference = await _getLabelPreference(label.value);
+        final preference = await _getLabelPreference(label.val);
         if (preference.severity == Severity.inform && preference.setting == Setting.warn) {
-          informLabels.add(label.value);
+          informLabels.add(label.val);
         }
       } catch (e) {
         // If no preference found, continue checking other labels
@@ -151,7 +151,7 @@ class LabelUtils {
 
     for (final label in labels) {
       try {
-        final preference = await _getLabelPreference(label.value);
+        final preference = await _getLabelPreference(label.val);
         if (preference.setting == Setting.hide || preference.adultOnly) {
           return true;
         }

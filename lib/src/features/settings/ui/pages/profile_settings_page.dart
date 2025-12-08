@@ -31,7 +31,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
       );
 
       // Get the profile notifier and call logout
-      final profileNotifier = ref.read(profileNotifierProvider().notifier);
+      final profileNotifier = ref.read(profileProvider().notifier);
       await profileNotifier.logout();
 
       // Close loading dialog
@@ -85,7 +85,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
       logger.i('Fetching Spark posts for DID: $did');
 
       // Fetch Spark posts directly from atproto to get raw records with URIs
-      final collection = NSID.parse('so.sprk.feed.post');
+      const collection = 'so.sprk.feed.post';
       logger.d('Fetching records from collection: $collection');
 
       final result = await atproto.repo.listRecords(
@@ -163,7 +163,9 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
           try {
             // Update the record in the PDS with the converted value
             final result = await atproto.repo.putRecord(
-              uri: post.uri,
+              repo: did,
+              collection: collection,
+              rkey: post.uri.rkey,
               record: post.convertedValue,
             );
 

@@ -27,7 +27,6 @@ class CommentsPage extends _$CommentsPage {
         case BlockedPost():
           throw Exception('Post is blocked');
       }
-      throw Exception('Post not found');
     } catch (e) {
       final networkPost = await feedRepository.getPosts([postUri], bluesky: isBlueskyPost, filter: false);
       if (networkPost.isEmpty) {
@@ -43,7 +42,6 @@ class CommentsPage extends _$CommentsPage {
         case BlockedPost():
           throw Exception('Post is blocked');
       }
-      throw Exception('Post not found');
     }
   }
 
@@ -91,7 +89,7 @@ class CommentsPage extends _$CommentsPage {
         try {
           if (thread.post case ThreadPostView(:final post)) {
             // Trigger feed UI update by incrementing the update counter
-            ref.read(postUpdateProvider(post.uri.toString()).notifier).state++;
+            ref.read(postUpdateProvider(post.uri.toString()) as ProviderListenable<dynamic>).state++;
           }
         } catch (e) {
           // Ignore cache update errors, the UI will still work
@@ -128,7 +126,7 @@ class CommentsPage extends _$CommentsPage {
         try {
           if (thread.post case ThreadPostView(:final post)) {
             // Trigger feed UI update by incrementing the update counter
-            ref.read(postUpdateProvider(post.uri.toString()).notifier).state++;
+            ref.read(postUpdateProvider(post.uri.toString()) as ProviderListenable<dynamic>).state++;
           }
         } catch (e) {
           // Ignore cache update errors, the UI will still work

@@ -5,7 +5,7 @@ part 'settings_state.freezed.dart';
 
 // Settings currently loaded
 @freezed
-class SettingsState with _$SettingsState {
+abstract class SettingsState with _$SettingsState {
   const factory SettingsState({
     required Feed activeFeed,
     @Default([]) List<Feed> feeds,

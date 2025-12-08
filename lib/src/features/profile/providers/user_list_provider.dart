@@ -72,24 +72,24 @@ class UserList extends _$UserList {
       final session = _authRepository.session;
       if (session != null) {
         final bskyClient = bsky.Bluesky.fromSession(session);
-        final fetchedProfiles = <bsky.ActorProfile>[];
+        final fetchedProfiles = <dynamic>[];
 
         for (var i = 0; i < didsToFetch.length; i += 25) {
           final batch = didsToFetch.sublist(i, i + 25 > didsToFetch.length ? didsToFetch.length : i + 25);
           final profilesResponse = await bskyClient.actor.getProfiles(actors: batch);
           fetchedProfiles.addAll(profilesResponse.data.profiles);
         }
-        final profilesMap = {for (final p in fetchedProfiles) p.did: p};
+        final profilesMap = <String, dynamic>{for (final p in fetchedProfiles) p.did as String: p};
 
         for (var i = 0; i < profiles.length; i++) {
           final profile = profiles[i];
           if (profilesMap.containsKey(profile.did)) {
             final fetchedProfile = profilesMap[profile.did]!;
             profiles[i] = profile.copyWith(
-              displayName: fetchedProfile.displayName,
-              description: fetchedProfile.description,
-              handle: fetchedProfile.handle,
-              avatar: fetchedProfile.avatar != null ? Uri.parse(fetchedProfile.avatar!) : null,
+              displayName: fetchedProfile.displayName as String?,
+              description: fetchedProfile.description as String?,
+              handle: fetchedProfile.handle as String,
+              avatar: fetchedProfile.avatar != null ? Uri.parse(fetchedProfile.avatar as String) : null,
             );
           }
         }

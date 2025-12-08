@@ -89,7 +89,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         );
 
         if (widget.feed != null) {
-          ref.read(feedNotifierProvider(widget.feed!).notifier).replacePost(updatedPost);
+          ref.read(feedProvider(widget.feed!).notifier).replacePost(updatedPost);
         }
 
         _currentPost = updatedPost;
@@ -104,7 +104,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
           );
 
           if (widget.feed != null) {
-            ref.read(feedNotifierProvider(widget.feed!).notifier).replacePost(updatedPost);
+            ref.read(feedProvider(widget.feed!).notifier).replacePost(updatedPost);
           }
 
           _currentPost = updatedPost;

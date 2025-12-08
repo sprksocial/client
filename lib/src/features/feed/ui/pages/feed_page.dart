@@ -44,8 +44,8 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
 
-    final state = ref.watch(feedNotifierProvider(widget.feed));
-    final notifier = ref.read(feedNotifierProvider(widget.feed).notifier);
+    final state = ref.watch(feedProvider(widget.feed));
+    final notifier = ref.read(feedProvider(widget.feed).notifier);
     final shouldBeActive = ref.watch(settingsProvider.select((settings) => settings.activeFeed == widget.feed));
 
     ref.listen(feedRefreshTriggerProvider(widget.feed), (previous, next) {

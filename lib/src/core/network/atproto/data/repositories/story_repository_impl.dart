@@ -1,4 +1,5 @@
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_label_defs.dart';
+import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -157,7 +158,7 @@ class StoryRepositoryImpl implements StoryRepository {
   }
 
   @override
-  Future<StrongRef> postStory(Media media, {List<SelfLabel>? selfLabels, List<String>? tags}) {
+  Future<RepoStrongRef> postStory(Media media, {List<SelfLabel>? selfLabels, List<String>? tags}) {
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         throw Exception('Not authenticated');
@@ -167,15 +168,12 @@ class StoryRepositoryImpl implements StoryRepository {
 
       try {
         final response = await _client.authRepository.atproto!.repo.createRecord(
-          collection: NSID.parse('so.sprk.story.post'),
+          repo: _client.sprkDid,
+          collection: 'so.sprk.story.post',
           record: record.toJson(),
         );
 
-        if (response.status.code == 200) {
-          return response.data;
-        } else {
-          throw Exception('Failed to post story: ${response.status} ${response.data}');
-        }
+        return response.data as RepoStrongRef;
       } catch (e) {
         rethrow;
       }

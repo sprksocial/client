@@ -1,6 +1,9 @@
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_moderation_createreport.dart';
+import 'package:atproto/com_atproto_moderation_defs.dart';
+import 'package:atproto/com_atproto_services.dart';
 import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
+import 'package:bluesky/com_atproto_repo_strongref.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -12,7 +15,8 @@ class ReportDialog extends ConsumerStatefulWidget {
   const ReportDialog({required this.postUri, required this.postCid, super.key, this.onSubmit});
   final String postUri;
   final String postCid;
-  final Function(ReportSubject subject, ModerationReasonType reasonType, String? reason, ModerationService? service)? onSubmit;
+  final Function(UModerationCreateReportSubject subject, KnownReasonType reasonType, String? reason, ModerationService? service)?
+  onSubmit;
 
   @override
   ConsumerState<ReportDialog> createState() => _ReportDialogState();
@@ -20,19 +24,28 @@ class ReportDialog extends ConsumerStatefulWidget {
 
 class _ReportDialogState extends ConsumerState<ReportDialog> {
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ReportDialog');
-  ModerationReasonType _selectedReason = ModerationReasonType.spam;
+  KnownReasonType _selectedReason = KnownReasonType.comAtprotoModerationDefsReasonSpam;
   final TextEditingController _additionalInfoController = TextEditingController();
   bool _isSubmitting = false;
   String? _errorMessage;
 
   // Map of user-friendly names and descriptions for each reason type
-  final Map<ModerationReasonType, Map<String, String>> _reasonDescriptions = {
-    ModerationReasonType.spam: {'name': 'Spam', 'description': 'Unwanted or repetitive content'},
-    ModerationReasonType.violation: {'name': 'Terms Violation', 'description': 'Violates platform terms'},
-    ModerationReasonType.misleading: {'name': 'Misleading Info', 'description': 'False or deceptive content'},
-    ModerationReasonType.sexual: {'name': 'Sexual Content', 'description': 'Inappropriate explicit material'},
-    ModerationReasonType.rude: {'name': 'Harassment', 'description': 'Abusive or threatening behavior'},
-    ModerationReasonType.other: {'name': 'Other', 'description': 'Other issues not listed above'},
+  final Map<KnownReasonType, Map<String, String>> _reasonDescriptions = {
+    KnownReasonType.comAtprotoModerationDefsReasonSpam: {'name': 'Spam', 'description': 'Unwanted or repetitive content'},
+    KnownReasonType.comAtprotoModerationDefsReasonViolation: {
+      'name': 'Terms Violation',
+      'description': 'Violates platform terms',
+    },
+    KnownReasonType.comAtprotoModerationDefsReasonMisleading: {
+      'name': 'Misleading Info',
+      'description': 'False or deceptive content',
+    },
+    KnownReasonType.comAtprotoModerationDefsReasonSexual: {
+      'name': 'Sexual Content',
+      'description': 'Inappropriate explicit material',
+    },
+    KnownReasonType.comAtprotoModerationDefsReasonRude: {'name': 'Harassment', 'description': 'Abusive or threatening behavior'},
+    KnownReasonType.comAtprotoModerationDefsReasonOther: {'name': 'Other', 'description': 'Other issues not listed above'},
   };
 
   @override
@@ -42,8 +55,8 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
   }
 
   Future<void> _submitReport() async {
-    final subject = ReportSubject.strongRef(
-      data: StrongRef(cid: widget.postCid, uri: AtUri.parse(widget.postUri)),
+    final subject = UModerationCreateReportSubject.repoStrongRef(
+      data: RepoStrongRef(cid: widget.postCid, uri: AtUri.parse(widget.postUri)),
     );
     final reason = _additionalInfoController.text.isNotEmpty ? _additionalInfoController.text : null;
 
@@ -64,7 +77,13 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
         final repoRepository = GetIt.instance<SprkRepository>().repo;
         _logger.d('Creating report with reason: ${_selectedReason.value}');
 
-        final success = await repoRepository.createReport(subject: subject, reasonType: _selectedReason, reason: reason);
+        final success = await repoRepository.createReport(
+          input: ModerationCreateReportInput(
+            subject: subject,
+            reasonType: ReasonType.knownValue(data: _selectedReason),
+            reason: reason,
+          ),
+        );
 
         if (success && mounted) {
           context.router.maybePop();
@@ -100,7 +119,7 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (final reason in ModerationReasonType.values)
+            for (final reason in KnownReasonType.values)
               _ReasonTile(
                 reason: reason,
                 selectedReason: _selectedReason,
@@ -172,10 +191,10 @@ class _ReasonTile extends StatelessWidget {
     required this.reasonDescription,
     required this.onChanged,
   });
-  final ModerationReasonType reason;
-  final ModerationReasonType selectedReason;
+  final KnownReasonType reason;
+  final KnownReasonType selectedReason;
   final Map<String, String> reasonDescription;
-  final ValueChanged<ModerationReasonType?> onChanged;
+  final ValueChanged<KnownReasonType?> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -184,7 +203,7 @@ class _ReasonTile extends StatelessWidget {
     final friendlyName = reasonDescription['name'] ?? reason.value;
     final description = reasonDescription['description'] ?? '';
 
-    return RadioListTile<ModerationReasonType>(
+    return RadioListTile<KnownReasonType>(
       title: Text(
         friendlyName,
         style: theme.textTheme.bodyMedium?.copyWith(color: textColor, fontWeight: FontWeight.w500, fontSize: 13),
