@@ -214,7 +214,7 @@ class _ProfileGridTileState extends State<ProfileGridTile> {
     final thumbnailUrl = widget.postView.thumbnailUrl;
 
     // Use like count as a proxy for views, or 0 if not available
-    final viewCount = widget.postView.likeCount ?? 0;
+    final likeCount = widget.postView.likeCount ?? 0;
 
     if (thumbnailUrl.isEmpty) {
       return GestureDetector(
@@ -231,7 +231,7 @@ class _ProfileGridTileState extends State<ProfileGridTile> {
       children: [
         PostTile(
           thumbnailUrl: thumbnailUrl,
-          views: viewCount,
+          likes: likeCount,
           seen: false,
           nsfwBlur: _shouldBlur,
           onTap: widget.onTap,

@@ -170,7 +170,7 @@ class _PostResultsState extends ConsumerState<PostResults> with AutomaticKeepAli
                 }
 
                 final post = state.searchResults[index];
-                
+
                 return FutureBuilder<bool>(
                   future: () async {
                     final labels = post.labels ?? [];
@@ -178,10 +178,10 @@ class _PostResultsState extends ConsumerState<PostResults> with AutomaticKeepAli
                   }(),
                   builder: (context, snapshot) {
                     final shouldBlur = snapshot.data ?? false;
-                    
+
                     return PostTile(
                       thumbnailUrl: post.thumbnailUrl,
-                      views: post.likeCount ?? 0,
+                      likes: post.likeCount ?? 0,
                       seen: false,
                       nsfwBlur: shouldBlur,
                       onTap: () {

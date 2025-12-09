@@ -167,7 +167,7 @@ class _SoundPostTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final thumbnailUrl = post.thumbnailUrl;
-    final viewCount = post.likeCount ?? 0;
+    final likeCount = post.likeCount ?? 0;
 
     if (thumbnailUrl.isEmpty) {
       return GestureDetector(
@@ -181,7 +181,7 @@ class _SoundPostTile extends StatelessWidget {
 
     return PostTile(
       thumbnailUrl: thumbnailUrl,
-      views: viewCount,
+      likes: likeCount,
       seen: false,
       onTap: onTap,
     );

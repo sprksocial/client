@@ -1,6 +1,7 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 import 'package:sparksocial/src/core/design_system/tokens/shapes.dart';
 import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
@@ -215,24 +216,28 @@ class SettingsFeedCard extends StatelessWidget {
 
   Widget _buildLikeButton() {
     if (_isTimeline) return const SizedBox.shrink(); // Don't show like button for timeline
-    
+
     return InteractivePressable(
       onTap: _isLiked ? onUnlike : onLike,
       borderRadius: BorderRadius.circular(6),
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: _isLiked ? AppColors.red500 : Colors.transparent,
+          color: _isLiked ? AppColors.primary600 : Colors.transparent,
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: _isLiked ? AppColors.red500 : (Colors.grey.withAlpha(100)),
+            color: _isLiked ? AppColors.primary600 : (Colors.grey.withAlpha(100)),
           ),
         ),
-        child: Icon(
-          Icons.favorite,
-          size: 16,
-          color: _isLiked ? Colors.white : Colors.grey,
-        ),
+        child: _isLiked
+            ? AppIcons.likeFilled(
+                size: 16,
+                color: Colors.white,
+              )
+            : AppIcons.like(
+                size: 16,
+                color: Colors.grey,
+              ),
       ),
     );
   }

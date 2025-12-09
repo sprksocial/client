@@ -44,7 +44,7 @@ class FollowButton extends StatelessWidget {
               )
             : const BoxDecoration(
                 borderRadius: BorderRadius.all(Radius.circular(8)),
-                color: AppColors.primary500,
+                color: AppColors.primary600,
               ),
         child: Align(
           child: Text(

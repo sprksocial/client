@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 import 'package:sparksocial/src/core/design_system/tokens/shapes.dart';
 import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
@@ -158,15 +159,21 @@ class FeedCard extends StatelessWidget {
   Widget _buildMetaRow(BuildContext context) {
     final likeCount = generator?.likeCount ?? 0;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isLiked = generator?.viewer?.like != null;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(
-          Icons.favorite,
-          size: 14,
-          color: generator?.viewer?.like != null ? AppColors.red500 : (isDark ? AppColors.grey200 : AppColors.grey400),
-        ),
+        if (isLiked)
+          AppIcons.likeFilled(
+            size: 14,
+            color: AppColors.primary600,
+          )
+        else
+          AppIcons.like(
+            size: 14,
+            color: isDark ? AppColors.grey200 : AppColors.grey400,
+          ),
         const SizedBox(width: 4),
         Text(
           _formatCount(likeCount),
@@ -181,7 +188,7 @@ class FeedCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isPrimary = _isPrimaryAction;
     final backgroundColor = isPrimary
-        ? AppColors.primary500
+        ? AppColors.primary600
         : isDark
         ? AppColors.darkGreyButton
         : AppColors.lightGreyButton;
