@@ -565,7 +565,7 @@ class _PostEmbedPreview extends StatelessWidget {
             aspectRatio: 9 / 16,
             child: PostTile(
               thumbnailUrl: thumbUrl ?? '',
-              views: post.likeCount ?? 0,
+              likes: post.likeCount ?? 0,
               seen: false,
               onTap: () => context.router.push(StandalonePostRoute(postUri: atUri)),
             ),

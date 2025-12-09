@@ -10,14 +10,14 @@ import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
 
 class PostTile extends StatelessWidget {
   final String thumbnailUrl;
-  final int views;
+  final int likes;
   final bool seen;
   final bool nsfwBlur;
   final VoidCallback onTap;
 
   const PostTile({
     required this.thumbnailUrl,
-    required this.views,
+    required this.likes,
     required this.seen,
     required this.onTap,
     this.nsfwBlur = false,
@@ -118,15 +118,15 @@ class PostTile extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                _formatViews(views),
+                                _formatViews(likes),
                                 style: AppTypography.textExtraSmallMedium.copyWith(
                                   color: AppColors.greyWhite,
-                                  fontSize: 12,
+                                  fontSize: 13,
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              AppIcons.eyeMin(
-                                size: 14,
+                              AppIcons.like2(
+                                size: 15,
                                 color: AppColors.greyWhite,
                               ),
                             ],
