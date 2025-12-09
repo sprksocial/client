@@ -73,11 +73,32 @@ jobs:
           echo "keyPassword=${{ secrets.SIGNING_KEY_PASSWORD }}" >> key.properties
         working-directory: android
 
+      - name: Configure Gradle for CI
+        run: |
+          # Override memory settings for CI (GitHub Actions has ~7GB RAM)
+          # Use sed to replace existing values or append if they don't exist
+          if grep -q "^org.gradle.jvmargs=" gradle.properties; then
+            sed -i 's|^org.gradle.jvmargs=.*|org.gradle.jvmargs=-Xmx4G -XX:MaxMetaspaceSize=1G -XX:ReservedCodeCacheSize=256m -XX:+HeapDumpOnOutOfMemoryError|' gradle.properties
+          else
+            echo "org.gradle.jvmargs=-Xmx4G -XX:MaxMetaspaceSize=1G -XX:ReservedCodeCacheSize=256m -XX:+HeapDumpOnOutOfMemoryError" >> gradle.properties
+          fi
+          # Disable daemon and parallel builds for CI stability
+          echo "org.gradle.daemon=false" >> gradle.properties
+          echo "org.gradle.parallel=false" >> gradle.properties
+          echo "org.gradle.configureondemand=false" >> gradle.properties
+        working-directory: android
+
+      - name: Clean previous builds
+        run: |
+          flutter clean
+          cd android && ./gradlew clean || true
+
       - name: Build PlayStore AAB
         env:
           POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+        timeout-minutes: 30
         run: |
-          flutter build appbundle
+          flutter build appbundle --verbose
 
       - name: Upload AAB to PlayStore
         uses: r0adkll/upload-google-play@v1
