@@ -184,7 +184,7 @@ class _CreateButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: AppGradients.accent,
-          border: Border.all(width: 2),
+          border: Border.all(width: 2, color: Theme.of(context).colorScheme.surface),
         ),
         child: AppIcons.add(size: 16, color: Colors.white),
       ),
