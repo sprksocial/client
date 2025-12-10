@@ -29,14 +29,12 @@ class SparkBottomNavBar extends StatelessWidget {
         _BarBackground(
           child: Container(
             padding: EdgeInsets.only(
-              left: 12,
-              right: 12,
               top: 12,
               bottom: 12 + bottomPadding,
             ),
             color: isDark ? const Color.fromARGB(51, 0, 0, 0) : const Color.fromARGB(178, 255, 255, 255),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 
               children: [
                 _NavIcon(
@@ -126,7 +124,7 @@ class _NavIcon extends StatelessWidget {
       onTap: onTap,
       child: AnimatedContainer(
         duration: AppConstants.animationFast,
-        padding: const EdgeInsets.all(2),
+        padding: const EdgeInsets.all(5),
         child: builder(context, isSelected),
       ),
     );
