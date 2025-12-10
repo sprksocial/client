@@ -56,9 +56,8 @@ jobs:
           echo "MESSAGES_SERVICE_URL=https://chat.sprk.so" >> .env
           echo "SHOWCASES_LICENSE_FLUTTER=${{ secrets.SHOWCASES_LICENSE_FLUTTER }}" >> .env
           echo "SIGNUPS_DISABLED=false" >> .env
-
-      - name: Set versionCode (commit count + run attempt)
-        run: |
+          
+          # Set versionCode (commit count + run attempt)
           COMMIT_COUNT=$(git rev-list --count HEAD)
           BUILD_ATTEMPT=${{ github.run_attempt }}
           VERSION_CODE=$((COMMIT_COUNT * 10 + BUILD_ATTEMPT))
@@ -67,38 +66,18 @@ jobs:
 
       - name: Configure Keystore
         run: |
-          echo "storeFile=/home/runner/work/_temp/keystore/upload_key.jks" >> key.properties
+          echo "storeFile=$RUNNER_TEMP/keystore/upload_key.jks" >> key.properties
           echo "storePassword=${{ secrets.SIGNING_STORE_PASSWORD }}" >> key.properties
           echo "keyAlias=${{ secrets.SIGNING_KEY_ALIAS }}" >> key.properties
           echo "keyPassword=${{ secrets.SIGNING_KEY_PASSWORD }}" >> key.properties
         working-directory: android
-
-      - name: Configure Gradle for CI
-        run: |
-          # Override memory settings for CI (GitHub Actions has ~7GB RAM)
-          # Use sed to replace existing values or append if they don't exist
-          if grep -q "^org.gradle.jvmargs=" gradle.properties; then
-            sed -i 's|^org.gradle.jvmargs=.*|org.gradle.jvmargs=-Xmx4G -XX:MaxMetaspaceSize=1G -XX:ReservedCodeCacheSize=256m -XX:+HeapDumpOnOutOfMemoryError|' gradle.properties
-          else
-            echo "org.gradle.jvmargs=-Xmx4G -XX:MaxMetaspaceSize=1G -XX:ReservedCodeCacheSize=256m -XX:+HeapDumpOnOutOfMemoryError" >> gradle.properties
-          fi
-          # Disable daemon and parallel builds for CI stability
-          echo "org.gradle.daemon=false" >> gradle.properties
-          echo "org.gradle.parallel=false" >> gradle.properties
-          echo "org.gradle.configureondemand=false" >> gradle.properties
-        working-directory: android
-
-      - name: Clean previous builds
-        run: |
-          flutter clean
-          cd android && ./gradlew clean || true
 
       - name: Build PlayStore AAB
         env:
           POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
         timeout-minutes: 30
         run: |
-          flutter build appbundle --verbose
+          flutter build appbundle
 
       - name: Upload AAB to PlayStore
         uses: r0adkll/upload-google-play@v1
