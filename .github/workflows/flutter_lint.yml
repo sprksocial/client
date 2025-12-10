@@ -33,33 +33,13 @@ jobs:
       - name: Generated code setup
         if: steps.changed_files.outputs.all_changed_files != ''
         run: |
-          flutter pub get
+          flutter pub get --enforce-lockfile
           dart run build_runner build --delete-conflicting-outputs
 
       - name: Run Flutter Analyze
         id: analyze_step
         if: steps.changed_files.outputs.all_changed_files != ''
-        run: |
-          echo "Changed Dart files:"
-          echo "${{ steps.changed_files.outputs.all_changed_files }}"
-
-          FILTERED_FILES=$(printf "%s\n" "${{ steps.changed_files.outputs.all_changed_files }}" | tr ' ' '\n' | grep -v '^widgetbook/' | tr '\n' ' ' | sed 's/[[:space:]]*$//')
-
-          if [ -z "$FILTERED_FILES" ]; then
-            echo "Only widgetbook files changed. Skipping flutter analyze."
-            exit 0
-          fi
-
-          echo "Analyzing:"
-          echo "$FILTERED_FILES"
-          # Run analyze and save output. Redirect stderr to stdout for capture.
-          # Continue with '|| true' so the workflow doesn't stop if issues are found,
-          # as we want to report them as annotations.
-          flutter analyze $FILTERED_FILES > flutter_analyze_output.txt 2>&1 || true
-
-          echo "--- Flutter Analyze Output (raw) ---"
-          cat flutter_analyze_output.txt
-          echo "------------------------------------"
+        run: flutter analyze
 
       - name: Process Analyze Output, Annotate & Check Errors
         if: steps.changed_files.outputs.all_changed_files != ''
