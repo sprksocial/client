@@ -18,6 +18,7 @@ import 'package:sparksocial/src/core/network/atproto/data/adapters/bsky/feed_ada
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:sparksocial/src/core/utils/json_utils.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
@@ -121,7 +122,7 @@ class FeedRepositoryImpl implements FeedRepository {
       // Create mutable copies to avoid "Cannot modify unmodifiable map" errors
       final rawPosts = posts.data.posts.map((post) {
         final json = post.toJson();
-        return jsonDecode(jsonEncode(json)) as Map<String, dynamic>;
+        return deepCopyJson(json);
       }).toList();
 
       for (final rawPost in rawPosts) {
@@ -269,7 +270,7 @@ class FeedRepositoryImpl implements FeedRepository {
         final rawFeed = resultBsky.data.feed.map((feedView) {
           final json = feedView.toJson();
           // Deep copy to make it mutable
-          return jsonDecode(jsonEncode(json)) as Map<String, dynamic>;
+          return deepCopyJson(json);
         }).toList();
 
         // Use adapter to convert Bluesky JSON to Spark structure

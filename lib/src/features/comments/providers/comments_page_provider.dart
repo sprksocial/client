@@ -89,7 +89,7 @@ class CommentsPage extends _$CommentsPage {
         try {
           if (thread.post case ThreadPostView(:final post)) {
             // Trigger feed UI update by incrementing the update counter
-            ref.read(postUpdateProvider(post.uri.toString()) as ProviderListenable<dynamic>).state++;
+            ref.read(postUpdateProvider(post.uri.toString()).notifier).state++;
           }
         } catch (e) {
           // Ignore cache update errors, the UI will still work
@@ -126,7 +126,7 @@ class CommentsPage extends _$CommentsPage {
         try {
           if (thread.post case ThreadPostView(:final post)) {
             // Trigger feed UI update by incrementing the update counter
-            ref.read(postUpdateProvider(post.uri.toString()) as ProviderListenable<dynamic>).state++;
+            ref.read(postUpdateProvider(post.uri.toString()).notifier).state++;
           }
         } catch (e) {
           // Ignore cache update errors, the UI will still work

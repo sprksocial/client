@@ -60,7 +60,7 @@ class CommentNotifier extends _$CommentNotifier {
         await _feedRepository.unlikePost(likeUri);
 
         // Trigger UI updates
-        ref.read(postUpdateProvider(state.thread.post.uri.toString()) as ProviderListenable<dynamic>).state++;
+        ref.read(postUpdateProvider(state.thread.post.uri.toString()).notifier).state++;
       } else {
         // Optimistically update UI for like
         final response = await _feedRepository.likePost(state.thread.post.cid, state.thread.post.uri);
@@ -84,7 +84,7 @@ class CommentNotifier extends _$CommentNotifier {
         );
 
         // Trigger UI updates
-        ref.read(postUpdateProvider(state.thread.post.uri.toString()) as ProviderListenable<dynamic>).state++;
+        ref.read(postUpdateProvider(state.thread.post.uri.toString()).notifier).state++;
       }
     } catch (e) {
       // Revert optimistic update on error

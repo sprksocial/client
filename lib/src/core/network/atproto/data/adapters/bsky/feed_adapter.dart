@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:atproto_core/atproto_core.dart';
 import 'package:bluesky/app_bsky_embed_images.dart';
 import 'package:bluesky/app_bsky_feed_getPostThread.dart' as bsky_thread;
@@ -7,6 +5,7 @@ import 'package:bluesky/app_bsky_feed_post.dart';
 import 'package:bluesky/app_bsky_richtext_facet.dart';
 // ignore: implementation_imports
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart' hide ReplyRef;
+import 'package:sparksocial/src/core/utils/json_utils.dart';
 
 /// Adapter for Bluesky feed models <-> Spark feed models
 ///
@@ -105,11 +104,11 @@ class BskyFeedAdapter {
       if (rootType == 'com.atproto.repo.strongRef') {
         // Leave as is
       } else if (rootType == 'app.bsky.feed.defs#postView') {
-        final postViewData = root;
-        postViewData.remove(r'$type');
+        final postViewData = deepCopyJson(root)..remove(r'$type');
         convertPostViewJson(postViewData, isNestedReply: true);
-        root.removeWhere((key, value) => key != r'$type');
-        root['post'] = postViewData;
+        root
+          ..clear()
+          ..addAll({r'$type': rootType, 'post': postViewData});
       } else if (rootType == 'app.bsky.feed.defs#notFoundPost' || rootType == 'app.bsky.feed.defs#blockedPost') {
         // Already in correct format
       } else if (root.containsKey('post')) {
@@ -127,11 +126,11 @@ class BskyFeedAdapter {
       if (parentType == 'com.atproto.repo.strongRef') {
         // Leave as is
       } else if (parentType == 'app.bsky.feed.defs#postView') {
-        final postViewData = jsonDecode(jsonEncode(parent)) as Map<String, dynamic>;
-        postViewData.remove(r'$type');
+        final postViewData = deepCopyJson(parent)..remove(r'$type');
         convertPostViewJson(postViewData, isNestedReply: true);
-        parent.removeWhere((key, value) => key != r'$type');
-        parent['post'] = postViewData;
+        parent
+          ..clear()
+          ..addAll({r'$type': parentType, 'post': postViewData});
       } else if (parentType == 'app.bsky.feed.defs#notFoundPost' || parentType == 'app.bsky.feed.defs#blockedPost') {
         // Already in correct format
       } else if (parent.containsKey('post')) {
@@ -169,11 +168,10 @@ class BskyFeedAdapter {
   /// Convert Spark images to Bluesky images
   List<EmbedImagesImage> convertImages(List<Image> sparkImages) {
     return sparkImages.map((sparkImage) {
-      return Image(
-            alt: sparkImage.alt ?? '',
-            image: sparkImage.image,
-          )
-          as EmbedImagesImage;
+      return EmbedImagesImage(
+        alt: sparkImage.alt ?? '',
+        image: sparkImage.image,
+      );
     }).toList();
   }
 
@@ -185,12 +183,10 @@ class BskyFeedAdapter {
     switch (media) {
       case MediaImage(:final image, :final alt):
         // Convert single Spark image to Bluesky embed images
-        final bskyImage =
-            Image(
-                  alt: alt ?? '',
-                  image: image,
-                )
-                as EmbedImagesImage;
+        final bskyImage = EmbedImagesImage(
+          alt: alt ?? '',
+          image: image,
+        );
         return UFeedPostEmbed.embedImages(data: EmbedImages(images: [bskyImage]));
 
       case MediaImages(:final images):
@@ -238,7 +234,10 @@ class BskyFeedAdapter {
     return FeedPostRecord(
       text: text,
       createdAt: createdAt,
-      reply: reply as ReplyRef?,
+      reply: ReplyRef(
+        root: reply.root,
+        parent: reply.parent,
+      ),
       embed: embed,
     );
   }

@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:bluesky/app_bsky_feed_defs.dart' as bsky_defs;
@@ -8,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:sparksocial/src/core/utils/json_utils.dart';
 import 'package:sparksocial/src/core/utils/uri_converter.dart';
 
 part 'feed_models.freezed.dart';
@@ -804,8 +803,8 @@ sealed class Thread with _$Thread {
           }
           final postJson = data.post.copyWith(embed: embed);
 
-          // Create PostView with safer parsing
-          final postViewJson = jsonDecode(jsonEncode(postJson.toJson())) as Map<String, dynamic>;
+          // Create PostView with deep copy - required because we modify nested structures like embeds
+          final postViewJson = deepCopyJson(postJson.toJson());
 
           // Ensure required fields are not null
           if (postViewJson['cid'] == null) {
