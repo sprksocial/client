@@ -777,7 +777,7 @@ sealed class Thread with _$Thread {
 
   factory Thread.fromJson(Map<String, dynamic> json) => _$ThreadFromJson(json);
 
-  static Thread _convertParentToThread(bsky_defs.UThreadViewPostParent parent, AtUri uri) {
+  static Thread? _convertParentToThread(bsky_defs.UThreadViewPostParent parent, AtUri uri) {
     switch (parent) {
       case bsky_defs.UThreadViewPostParentThreadViewPost(:final data):
         return Thread.fromBsky(
@@ -789,7 +789,7 @@ sealed class Thread with _$Thread {
       case bsky_defs.UThreadViewPostParentBlockedPost(:final data):
         return Thread.blockedPost(uri: data.uri, blocked: true, author: BlockedAuthor.fromJson(data.author.toJson()));
       case bsky_defs.UThreadViewPostParentUnknown():
-        throw Exception('Unknown parent type');
+        return null;
     }
   }
 

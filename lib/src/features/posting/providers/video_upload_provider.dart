@@ -121,7 +121,7 @@ Future<RepoStrongRef?> processAndPostVideo(
     try {
       final res = await ref.read(
         postStoryProvider(
-          Media.video(video: videoBlob).toJson(),
+          Media.video(video: videoBlob),
           selfLabels: [],
           tags: [],
         ).future,

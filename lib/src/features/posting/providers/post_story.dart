@@ -9,11 +9,10 @@ part 'post_story.g.dart';
 @riverpod
 FutureOr<RepoStrongRef?> postStory(
   Ref ref,
-  Map<String, dynamic> mediaJson, {
+  Media media, {
   List<SelfLabel>? selfLabels,
   List<String>? tags,
 }) async {
-  final media = Media.fromJson(mediaJson);
   final storyRepository = GetIt.I<StoryRepository>();
   return await storyRepository.postStory(media, selfLabels: selfLabels, tags: tags);
 }

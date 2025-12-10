@@ -166,17 +166,17 @@ class StoryRepositoryImpl implements StoryRepository {
 
       final record = StoryRecord(createdAt: DateTime.now().toUtc(), media: media, tags: tags, labels: selfLabels);
 
-      try {
-        final response = await _client.authRepository.atproto!.repo.createRecord(
-          repo: _client.sprkDid,
-          collection: 'so.sprk.story.post',
-          record: record.toJson(),
-        );
+      final response = await _client.authRepository.atproto!.repo.createRecord(
+        repo: _client.sprkDid,
+        collection: 'so.sprk.story.post',
+        record: record.toJson(),
+      );
 
-        return response.data as RepoStrongRef;
-      } catch (e) {
-        rethrow;
+      if (response.status.code != 200) {
+        throw Exception('Failed to post story: ${response.status} ${response.data}');
       }
+
+      return response.data as RepoStrongRef;
     });
   }
 }
