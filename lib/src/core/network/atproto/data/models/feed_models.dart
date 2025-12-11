@@ -1,7 +1,7 @@
 import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:bluesky/app_bsky_feed_defs.dart' as bsky_defs;
-import 'package:bluesky/app_bsky_feed_getPostthread.dart';
+import 'package:bluesky/app_bsky_feed_getpostthread.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
