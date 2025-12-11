@@ -4,10 +4,14 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/audio_timeline_state.dart';
+import 'package:sparksocial/src/core/design_system/theme/color_scheme.dart';
+import 'package:sparksocial/src/core/design_system/theme/text_theme.dart';
+import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/build_stickers.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_editor_main_bar_wrapper.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/spark_video_editor_bottom_section.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/spark_video_editor_header.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_progress_alert.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_timeline_state.dart';
 
 class VideoEditorConfigsBuilder {
   const VideoEditorConfigsBuilder._();
@@ -16,14 +20,19 @@ class VideoEditorConfigsBuilder {
     required EditorVideo video,
     required String taskId,
     required bool useMaterialDesign,
-    required GlobalKey<GroundedMainBarState> mainBarKey,
     required Widget Function() videoPlayerBuilder,
-    required AudioTimelineState audioTimelineState,
+    required VideoTimelineState videoTimelineState,
+    required void Function(double progress) onSeek,
+    required VoidCallback onTogglePlay,
+    required VoidCallback onToggleMute,
     List<AudioTrack> audioTracks = const [],
     VideoEditorConfigs videoEditorConfigs = const VideoEditorConfigs(
       initialMuted: true,
-      enablePlayButton: true,
-      playTimeSmoothingDuration: Duration(milliseconds: 600),
+      enableTrimBar: false,
+      playTimeSmoothingDuration: Duration(milliseconds: 300),
+      widgets: VideoEditorWidgets(
+        headerToolbar: SizedBox.shrink(),
+      ),
     ),
   }) {
     return ProImageEditorConfigs(
@@ -35,10 +44,8 @@ class VideoEditorConfigsBuilder {
       ),
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue.shade800,
-          brightness: Brightness.dark,
-        ),
+        colorScheme: AppColorScheme.dark,
+        textTheme: AppTextTheme.dark,
       ),
       mainEditor: MainEditorConfigs(
         tools: const [
@@ -70,26 +77,43 @@ class VideoEditorConfigsBuilder {
           bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
             key: key,
             builder: (context) {
-              return VideoEditorMainBarWrapper(
-                mainBarKey: mainBarKey,
+              return SparkVideoEditorBottomSection(
                 editor: editor,
-                configs: editor.configs,
-                callbacks: editor.callbacks,
-                audioTimelineState: audioTimelineState,
+                videoTimelineState: videoTimelineState,
+                onSeek: onSeek,
+                onTogglePlay: onTogglePlay,
+                onToggleMute: onToggleMute,
               );
             },
             stream: rebuildStream,
           ),
+          bodyItems: (editor, rebuildStream) => [
+            ReactiveWidget(
+              stream: rebuildStream,
+              builder: (_) => Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: SafeArea(
+                  bottom: false,
+                  child: SparkVideoEditorHeader(
+                    onBack: editor.closeEditor,
+                    onNext: editor.doneEditing,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         style: const MainEditorStyle(
-          background: Color(0xFF000000),
-          bottomBarBackground: Color(0xFF161616),
+          background: AppColors.greyBlack,
+          bottomBarBackground: AppColors.grey800,
         ),
       ),
       paintEditor: PaintEditorConfigs(
         style: const PaintEditorStyle(
-          background: Color(0xFF000000),
-          bottomBarBackground: Color(0xFF161616),
+          background: AppColors.greyBlack,
+          bottomBarBackground: AppColors.grey800,
           initialStrokeWidth: 5,
         ),
         widgets: PaintEditorWidgets(
@@ -124,7 +148,7 @@ class VideoEditorConfigsBuilder {
         ],
         style: TextEditorStyle(
           textFieldMargin: const EdgeInsets.only(top: kToolbarHeight),
-          bottomBarBackground: const Color(0xFF161616),
+          bottomBarBackground: AppColors.grey800,
           bottomBarMainAxisAlignment: !useMaterialDesign ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.start,
         ),
         widgets: TextEditorWidgets(
@@ -156,12 +180,12 @@ class VideoEditorConfigsBuilder {
         ),
       ),
       cropRotateEditor: CropRotateEditorConfigs(
-        style: const CropRotateEditorStyle(
-          cropCornerColor: Color(0xFFFFFFFF),
+        style: CropRotateEditorStyle(
+          cropCornerColor: AppColors.greyWhite,
           cropCornerThickness: 4,
-          background: Color(0xFF000000),
-          bottomBarBackground: Color(0xFF161616),
-          helperLineColor: Color(0x25FFFFFF),
+          background: AppColors.greyBlack,
+          bottomBarBackground: AppColors.grey800,
+          helperLineColor: AppColors.greyWhite.withAlpha(37),
         ),
         widgets: CropRotateEditorWidgets(
           appBar: (cropRotateEditor, rebuildStream) => null,
@@ -171,7 +195,7 @@ class VideoEditorConfigsBuilder {
               configs: cropRotateEditor.configs,
               callbacks: cropRotateEditor.callbacks,
               editor: cropRotateEditor,
-              selectedRatioColor: kImageEditorPrimaryColor,
+              selectedRatioColor: AppColors.primary500,
             ),
           ),
         ),
@@ -180,7 +204,7 @@ class VideoEditorConfigsBuilder {
         style: const FilterEditorStyle(
           filterListSpacing: 7,
           filterListMargin: EdgeInsets.fromLTRB(8, 0, 8, 8),
-          background: Color(0xFF000000),
+          background: AppColors.greyBlack,
         ),
         widgets: FilterEditorWidgets(
           slider: (editorState, rebuildStream, value, onChanged, onChangeEnd) => ReactiveWidget(
@@ -189,7 +213,7 @@ class VideoEditorConfigsBuilder {
               onChanged: onChanged,
               onChangeEnd: onChangeEnd,
               value: value,
-              activeColor: Colors.blue.shade200,
+              activeColor: AppColors.primary400,
             ),
           ),
           appBar: (editorState, rebuildStream) => null,
@@ -210,8 +234,8 @@ class VideoEditorConfigsBuilder {
       ),
       tuneEditor: TuneEditorConfigs(
         style: const TuneEditorStyle(
-          background: Color(0xFF000000),
-          bottomBarBackground: Color(0xFF161616),
+          background: AppColors.greyBlack,
+          bottomBarBackground: AppColors.grey800,
         ),
         widgets: TuneEditorWidgets(
           appBar: (editor, rebuildStream) => null,
@@ -232,7 +256,7 @@ class VideoEditorConfigsBuilder {
       blurEditor: BlurEditorConfigs(
         maxBlur: 25,
         style: const BlurEditorStyle(
-          background: Color(0xFF000000),
+          background: AppColors.greyBlack,
         ),
         widgets: BlurEditorWidgets(
           appBar: (blurEditor, rebuildStream) => null,

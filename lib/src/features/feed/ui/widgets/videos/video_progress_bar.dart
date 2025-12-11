@@ -129,8 +129,8 @@ class _FeedVideoProgressBarState extends State<FeedVideoProgressBar> {
     return _buffered
         .map<(double, double)>(
           (r) => (
-            (r.start.inMilliseconds / _total.inMilliseconds).clamp(0, 1),
-            (r.end.inMilliseconds / _total.inMilliseconds).clamp(0, 1),
+            (r.start.inMilliseconds / _total.inMilliseconds).clamp(0.0, 1.0),
+            (r.end.inMilliseconds / _total.inMilliseconds).clamp(0.0, 1.0),
           ),
         )
         .toList(growable: false);

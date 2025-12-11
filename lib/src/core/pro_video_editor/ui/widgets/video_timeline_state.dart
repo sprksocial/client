@@ -38,6 +38,14 @@ class VideoTimelineState extends ChangeNotifier {
   double _progress = 0;
   double get progress => _progress;
 
+  /// Whether the video is currently playing.
+  bool _isPlaying = false;
+  bool get isPlaying => _isPlaying;
+
+  /// Whether the audio is muted.
+  bool _isMuted = false;
+  bool get isMuted => _isMuted;
+
   /// Returns the active waveform data based on audio mode.
   List<double> get activeWaveformData => _useCustomAudio ? _customWaveformData : videoWaveformData;
 
@@ -99,6 +107,18 @@ class VideoTimelineState extends ChangeNotifier {
   /// Updates the current playback progress.
   void setProgress(double value) {
     _progress = value.clamp(0.0, 1.0);
+    notifyListeners();
+  }
+
+  /// Updates the playing state.
+  void setPlaying({required bool isPlaying}) {
+    _isPlaying = isPlaying;
+    notifyListeners();
+  }
+
+  /// Updates the muted state.
+  void setMuted({required bool isMuted}) {
+    _isMuted = isMuted;
     notifyListeners();
   }
 
