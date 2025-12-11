@@ -35,13 +35,8 @@ jobs:
         run: |
           flutter pub get --enforce-lockfile
           dart run build_runner build --delete-conflicting-outputs
-
-      - name: Widgetbook codegen
-        if: contains(steps.changed_files.outputs.all_changed_files, 'widgetbook/')
-        run: |
-          flutter pub get --enforce-lockfile
+          cd widgetbook
           dart run build_runner build --delete-conflicting-outputs
-        working-directory: widgetbook
 
       - name: Run Flutter Analyze
         id: analyze_step
