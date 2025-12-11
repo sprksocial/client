@@ -1,7 +1,7 @@
 import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:bluesky/app_bsky_feed_defs.dart' as bsky_defs;
-import 'package:bluesky/app_bsky_feed_getPostThread.dart' as bsky_thread;
+import 'package:bluesky/app_bsky_feed_getPostthread.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
@@ -781,7 +781,7 @@ sealed class Thread with _$Thread {
     switch (parent) {
       case bsky_defs.UThreadViewPostParentThreadViewPost(:final data):
         return Thread.fromBsky(
-          thread: bsky_thread.UFeedGetPostThreadThread.threadViewPost(data: data),
+          thread: UFeedGetPostThreadThread.threadViewPost(data: data),
           uri: uri,
         );
       case bsky_defs.UThreadViewPostParentNotFoundPost(:final data):
@@ -793,9 +793,9 @@ sealed class Thread with _$Thread {
     }
   }
 
-  factory Thread.fromBsky({required bsky_thread.UFeedGetPostThreadThread thread, required AtUri uri}) {
+  factory Thread.fromBsky({required UFeedGetPostThreadThread thread, required AtUri uri}) {
     switch (thread) {
-      case bsky_thread.UFeedGetPostThreadThreadThreadViewPost(:final data):
+      case UFeedGetPostThreadThreadThreadViewPost(:final data):
         try {
           var embed = data.post.embed;
           if (data.post.embed is bsky_defs.UPostViewEmbedEmbedExternalView) {
@@ -953,7 +953,7 @@ sealed class Thread with _$Thread {
                   switch (reply) {
                     case bsky_defs.UThreadViewPostRepliesThreadViewPost(:final data):
                       return Thread.fromBsky(
-                        thread: bsky_thread.UFeedGetPostThreadThread.threadViewPost(data: data),
+                        thread: UFeedGetPostThreadThread.threadViewPost(data: data),
                         uri: data.post.uri,
                       );
                     case bsky_defs.UThreadViewPostRepliesNotFoundPost(:final data):
@@ -976,9 +976,9 @@ sealed class Thread with _$Thread {
         } catch (e) {
           rethrow;
         }
-      case bsky_thread.UFeedGetPostThreadThreadNotFoundPost(:final data):
+      case UFeedGetPostThreadThreadNotFoundPost(:final data):
         return Thread.notFoundPost(uri: data.uri, notFound: true);
-      case bsky_thread.UFeedGetPostThreadThreadBlockedPost(:final data):
+      case UFeedGetPostThreadThreadBlockedPost(:final data):
         return Thread.blockedPost(uri: data.uri, blocked: true, author: BlockedAuthor.fromJson(data.author.toJson()));
       default:
         throw Exception('Unsupported thread type: ${thread.runtimeType}');

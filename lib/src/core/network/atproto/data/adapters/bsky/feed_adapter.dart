@@ -1,6 +1,6 @@
 import 'package:atproto_core/atproto_core.dart';
 import 'package:bluesky/app_bsky_embed_images.dart';
-import 'package:bluesky/app_bsky_feed_getPostThread.dart' as bsky_thread;
+import 'package:bluesky/app_bsky_feed_getpostthread.dart';
 import 'package:bluesky/app_bsky_feed_post.dart';
 import 'package:bluesky/app_bsky_richtext_facet.dart';
 // ignore: implementation_imports
@@ -255,7 +255,7 @@ class BskyFeedAdapter {
 
   /// Convert Bluesky thread to Spark thread
   Thread convertBskyThreadToSparkThread({
-    required bsky_thread.UFeedGetPostThreadThread thread,
+    required UFeedGetPostThreadThread thread,
     required AtUri uri,
   }) {
     return Thread.fromBsky(thread: thread, uri: uri);
