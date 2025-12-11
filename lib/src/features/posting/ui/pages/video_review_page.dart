@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:atproto/com_atproto_repo_strongref.dart';
@@ -31,7 +30,7 @@ class VideoReviewPage extends ConsumerStatefulWidget {
 
   /// Reference to the audio track used in the video, if any.
   /// Stored as JSON string for route serialization.
-  final String? soundRef;
+  final RepoStrongRef? soundRef;
 
   @override
   ConsumerState<VideoReviewPage> createState() => _VideoReviewPageState();
@@ -57,19 +56,6 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
     _descriptionController.dispose();
     _player?.dispose();
     super.dispose();
-  }
-
-  RepoStrongRef? _parseSoundRef(String? soundRefJson) {
-    if (soundRefJson == null) return null;
-    try {
-      final map = jsonDecode(soundRefJson) as Map<String, dynamic>;
-      return RepoStrongRef(
-        uri: AtUri.parse(map['uri'] as String),
-        cid: map['cid'] as String,
-      );
-    } catch (_) {
-      return null;
-    }
   }
 
   Future<void> _initPlayer() async {
@@ -111,7 +97,7 @@ class _VideoReviewPageState extends ConsumerState<VideoReviewPage> {
           description: description,
           altText: _videoAltText,
           storyMode: widget.storyMode,
-          soundRef: _parseSoundRef(widget.soundRef),
+          soundRef: widget.soundRef,
           crosspostToBsky: widget.storyMode ? false : _crosspostToBsky,
         ).future,
       );

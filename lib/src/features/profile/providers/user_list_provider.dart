@@ -79,7 +79,7 @@ class UserList extends _$UserList {
           final profilesResponse = await bskyClient.actor.getProfiles(actors: batch);
           fetchedProfiles.addAll(profilesResponse.data.profiles);
         }
-        final profilesMap = <String, dynamic>{for (final p in fetchedProfiles) p.did as String: p};
+        final profilesMap = {for (final p in fetchedProfiles) p.did: p};
 
         for (var i = 0; i < profiles.length; i++) {
           final profile = profiles[i];

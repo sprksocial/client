@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
@@ -122,16 +121,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       }
 
       await context.router.push(
-        VideoReviewRoute(
-          videoPath: result.video.path,
-          storyMode: widget.storyMode,
-          soundRef: result.soundRef != null
-              ? jsonEncode({
-                  'uri': result.soundRef!.uri.toString(),
-                  'cid': result.soundRef!.cid,
-                })
-              : null,
-        ),
+        VideoReviewRoute(videoPath: result.video.path, storyMode: widget.storyMode, soundRef: result.soundRef),
       );
 
       if (mounted) {

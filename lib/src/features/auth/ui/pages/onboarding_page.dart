@@ -27,6 +27,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     super.initState();
     _displayNameController = TextEditingController();
     _descriptionController = TextEditingController();
+    _displayNameController.addListener(_updateDisplayName);
+    _descriptionController.addListener(_updateDescription);
   }
 
   void _updateDisplayName() {
@@ -117,12 +119,6 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
         }
       }
     });
-
-    // Set up listeners for text changes
-    _displayNameController.removeListener(_updateDisplayName);
-    _displayNameController.addListener(_updateDisplayName);
-    _descriptionController.removeListener(_updateDescription);
-    _descriptionController.addListener(_updateDescription);
 
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;

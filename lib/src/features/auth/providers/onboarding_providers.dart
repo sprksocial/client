@@ -29,14 +29,14 @@ Future<bool> hasSparkProfile(Ref ref) async {
 @riverpod
 Future<ActorProfileRecord?> bskyProfile(Ref ref) async {
   final repository = ref.watch(onboardingRepositoryProvider);
-  return repository.getBskyProfile() as ActorProfileRecord?;
+  return repository.getBskyProfile();
 }
 
 /// Provider to get Bluesky follows
 @riverpod
 Future<FollowsResponse> bskyFollows(Ref ref, {String? cursor}) async {
   final repository = ref.watch(onboardingRepositoryProvider);
-  return repository.getBskyFollows(cursor: cursor) as FollowsResponse;
+  return repository.getBskyFollows(cursor: cursor);
 }
 
 /// Provider to manage the onboarding state
