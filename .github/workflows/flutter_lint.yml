@@ -5,6 +5,10 @@ on:
     branches: [main]
     types: [opened, synchronize, reopened]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   lint:
     runs-on: blacksmith-4vcpu-ubuntu-2404
@@ -33,6 +37,7 @@ jobs:
       - name: Codegen
         if: steps.changed_files.outputs.any_changed == 'true'
         run: |
+          touch .env
           flutter pub get --enforce-lockfile
           dart run build_runner build --delete-conflicting-outputs
           cd widgetbook
@@ -41,52 +46,11 @@ jobs:
       - name: Run Flutter Analyze
         id: analyze_step
         if: steps.changed_files.outputs.any_changed == 'true'
-        run: flutter analyze | tee flutter_analyze_output.txt || true
+        run: flutter analyze --write=flutter_analyze.log
 
-      - name: Process Analyze Output, Annotate & Check Errors
-        if: steps.changed_files.outputs.any_changed == 'true'
-        run: |
-          if [ ! -s flutter_analyze_output.txt ]; then
-            echo "::debug::flutter_analyze_output.txt not found or is empty. No annotations to create or errors to check."
-            exit 0
-          fi
-
-          echo "::debug::Starting annotation processing and error checking from flutter_analyze_output.txt"
-          found_any_issue="false"
-
-          while IFS= read -r line; do
-            if [[ "$line" =~ ^[[:space:]]*(info|warning|error)[[:space:]]+•[[:space:]]+(.+)[[:space:]]+•[[:space:]]+([^:]+):([0-9]+):([0-9]+)[[:space:]]+•[[:space:]]+(.+)$ ]]; then
-              found_any_issue="true"
-              type="${BASH_REMATCH[1]}"
-              message_body="${BASH_REMATCH[2]}"
-              file_path="${BASH_REMATCH[3]}"
-              line_num="${BASH_REMATCH[4]}"
-              col_num="${BASH_REMATCH[5]}"
-              rule_id="${BASH_REMATCH[6]}"
-
-              github_level="notice"
-              if [ "$type" = "warning" ]; then
-                github_level="warning"
-              elif [ "$type" = "error" ]; then
-                github_level="error"
-              fi
-
-              message_body_escaped="${message_body//'%'/'%25'}"
-              message_body_escaped="${message_body_escaped//$'\r'/'%0D'}"
-              message_body_escaped="${message_body_escaped//$'\n'/'%0A'}"
-
-              echo "::$github_level file=$file_path,line=$line_num,col=$col_num,title=$rule_id::$message_body_escaped"
-            elif [[ "$line" =~ issues\ found\.|\ Analyzing\ |^$|No\ issues\ found!|Looking\ for\ direct\ dependencies\ of|Running\ \"flutter\ pub\ get\"\ in ]]; then
-              echo "::debug::Skipping known non-issue line: $line"
-            else
-              echo "::debug::Skipping unparseable line from flutter_analyze_output.txt: $line"
-            fi
-          done < flutter_analyze_output.txt
-          echo "::debug::Finished annotation processing."
-
-          if [ "$found_any_issue" = "true" ]; then
-            echo "::error::Flutter analyze reported issues. See annotations for details. Failing workflow."
-            exit 1
-          else
-            echo "::debug::No flutter analyze issues found. Workflow will pass."
-          fi
+      - name: Flutter Analyze Commenter
+        if: ${{ !cancelled() }} # Required to run this step even if failure
+        uses: yorifuji/flutter-analyze-commenter@v1
+        with:
+          analyze-log: flutter_analyze.log
+          verbose: false
