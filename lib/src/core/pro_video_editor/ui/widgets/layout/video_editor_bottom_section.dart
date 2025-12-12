@@ -12,6 +12,7 @@ class VideoEditorBottomSection extends StatelessWidget {
     required this.onSeek,
     required this.onTogglePlay,
     required this.onToggleMute,
+    required this.onAddSound,
     super.key,
   });
 
@@ -20,6 +21,7 @@ class VideoEditorBottomSection extends StatelessWidget {
   final void Function(double progress) onSeek;
   final VoidCallback onTogglePlay;
   final VoidCallback onToggleMute;
+  final VoidCallback onAddSound;
 
   @override
   Widget build(BuildContext context) {
@@ -34,13 +36,13 @@ class VideoEditorBottomSection extends StatelessWidget {
             onRedo: editor.redoAction,
             onTogglePlay: onTogglePlay,
             onToggleMute: onToggleMute,
-            onAddSound: editor.openAudioEditor,
+            onAddSound: onAddSound,
             onSeek: onSeek,
             canUndo: editor.canUndo,
             canRedo: editor.canRedo,
           ),
           VideoToolbar(
-            onSound: editor.openAudioEditor,
+            onSound: onAddSound,
             onPaint: editor.openPaintEditor,
             onText: editor.openTextEditor,
             onCrop: editor.openCropRotateEditor,

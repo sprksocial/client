@@ -15,6 +15,7 @@ import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_rep
 import 'package:sparksocial/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:sparksocial/src/core/pro_video_editor/services/audio_helper_service.dart';
 import 'package:sparksocial/src/core/pro_video_editor/services/audio_waveform_extractor.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/audio/audio_selection_bottom_sheet.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/video_editor_configs_builder.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/video_initializing_widget.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/player/video_player_widget.dart';
@@ -94,6 +95,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
 
   late ProImageEditorConfigs _configs;
   late VideoTimelineState _videoTimelineState;
+  List<AudioTrack> _audioTracks = [];
 
   @override
   void initState() {
@@ -167,7 +169,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
 
     // Wait for completion
     await metadataFuture;
-    final audioTracks = await trendingAudiosFuture;
+    _audioTracks = await trendingAudiosFuture;
     _videoController = await controllerFuture;
 
     // Initialize audio timeline state
@@ -184,11 +186,12 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
         isLoadingListenable: _updateClipsNotifier,
       ),
       videoEditorConfigs: _videoConfigs,
-      audioTracks: audioTracks,
+      audioTracks: _audioTracks,
       videoTimelineState: _videoTimelineState,
       onSeek: _onTimelineSeek,
       onTogglePlay: _onTogglePlay,
       onToggleMute: _onToggleMute,
+      onAddSound: _showAudioSelectionBottomSheet,
     );
 
     // Update clip duration and thumbnails after first frame
@@ -368,6 +371,60 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     // state and triggers our configured onMuteToggle callback
     final isMuted = _proVideoController?.isMutedNotifier.value ?? false;
     _proVideoController?.setMuteState(!isMuted);
+  }
+
+  /// Shows the audio selection bottom sheet for choosing and editing audio tracks.
+  Future<void> _showAudioSelectionBottomSheet() async {
+    await _videoController.pause();
+    if (!mounted) return;
+    final selectedTrack = await showModalBottomSheet<AudioTrack>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) => AudioSelectionBottomSheet(
+          configs: _configs,
+          audioTracks: _audioTracks,
+          videoDuration: _videoMetadata.duration,
+          initialSelectedTrack: _proVideoController?.audioTrack,
+          onTrackSelected: (track) {
+            _proVideoController?.audioTrack = track;
+          },
+          onBalanceChanged: (balance) async {
+            await _audioService.balanceAudio(balance);
+          },
+          onStartTimeChanged: (startTime) async {
+            await _audioService.seek(startTime);
+            await _videoController.seekTo(Duration.zero);
+          },
+          onConfirm: (track) {
+            if (track != null) {
+              _proVideoController?.audioTrack = track;
+              unawaited(_extractCustomAudioWaveform(track));
+            }
+          },
+          onTrackPlay: (track) async {
+            final isNewTrack = !_audioService.useCustomAudio;
+            await _audioService.play(track);
+            if (isNewTrack) {
+              await _audioService.setAudioMode(useCustom: true);
+            } else {
+              await _audioService.balanceAudio();
+            }
+          },
+          onTrackStop: (track) async {
+            await _audioService.pause();
+          },
+        ),
+      ),
+    );
+    if (selectedTrack != null) {
+      setState(() {});
+    }
   }
 
   /// Generates the final video based on the given [parameters].

@@ -7,8 +7,6 @@ import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:sparksocial/src/core/design_system/theme/color_scheme.dart';
 import 'package:sparksocial/src/core/design_system/theme/text_theme.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/audio/audio_editor_bar.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/audio/audio_editor_edit_sheet.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/blur/blur_editor_bar.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/clip/clip_editor_bar.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/clip/clips_editor_bar.dart';
@@ -36,6 +34,7 @@ class VideoEditorConfigsBuilder {
     required void Function(double progress) onSeek,
     required VoidCallback onTogglePlay,
     required VoidCallback onToggleMute,
+    required VoidCallback onAddSound,
     List<AudioTrack> audioTracks = const [],
     VideoEditorConfigs videoEditorConfigs = const VideoEditorConfigs(
       initialMuted: true,
@@ -94,6 +93,7 @@ class VideoEditorConfigsBuilder {
                 onSeek: onSeek,
                 onTogglePlay: onTogglePlay,
                 onToggleMute: onToggleMute,
+                onAddSound: onAddSound,
               );
             },
             stream: rebuildStream,
@@ -329,41 +329,10 @@ class VideoEditorConfigsBuilder {
         ),
       ),
       audioEditor: AudioEditorConfigs(
-        style: const AudioEditorStyle(
-          reversedTrackList: true,
-        ),
-        widgets: AudioEditorWidgets(
-          appBar: (editorState, rebuildStream) => null,
-          bottomBar: (editorState, rebuildStream) {
-            final configs = editorState.configs;
-            return ReactiveWidget(
-              builder: (context) {
-                return AudioEditorBar(
-                  configs: configs,
-                  callbacks: editorState.callbacks,
-                  editor: editorState,
-                );
-              },
-              stream: rebuildStream,
-            );
-          },
-          editBottomBar: (editorState, controller, updateStartTime, updateBalance, openSelectTrack, confirm) {
-            // Get configs from the AudioMainBottomBar widget
-            final configs = (editorState as dynamic).widget.configs as ProImageEditorConfigs;
-            return AudioEditorEditSheet(
-              configs: configs,
-              editorState: editorState,
-              controller: controller,
-              updateStartTime: updateStartTime,
-              updateBalance: updateBalance,
-              openSelectTrack: openSelectTrack,
-              confirm: confirm,
-            );
-          },
-        ),
-        audioTracks: [
-          ...audioTracks,
-        ],
+        // Audio selection is now handled by the custom bottom sheet
+        // in _showAudioSelectionBottomSheet, so we provide an empty list here
+        // to prevent the default audio editor from showing
+        audioTracks: const [],
       ),
       clipsEditor: ClipsEditorConfigs(
         style: const ClipsEditorStyle(
