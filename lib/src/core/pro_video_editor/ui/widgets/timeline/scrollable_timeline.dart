@@ -1,12 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_timeline_state.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
 /// A scrollable video timeline widget that displays thumbnails, audio track,
 /// and a time ruler. The timeline scrolls horizontally and auto-follows playhead.
-class SparkScrollableTimeline extends StatefulWidget {
-  const SparkScrollableTimeline({
+class ScrollableTimeline extends StatefulWidget {
+  const ScrollableTimeline({
     required this.videoTimelineState,
     required this.onSeek,
     required this.onAddSound,
@@ -26,10 +26,10 @@ class SparkScrollableTimeline extends StatefulWidget {
   final double pixelsPerSecond;
 
   @override
-  State<SparkScrollableTimeline> createState() => _SparkScrollableTimelineState();
+  State<ScrollableTimeline> createState() => _ScrollableTimelineState();
 }
 
-class _SparkScrollableTimelineState extends State<SparkScrollableTimeline> {
+class _ScrollableTimelineState extends State<ScrollableTimeline> {
   late ScrollController _scrollController;
   bool _isUserScrolling = false;
   bool _isProgrammaticScroll = false;
@@ -487,7 +487,7 @@ class _AudioTrack extends StatelessWidget {
                     Icon(Icons.music_note, color: AppColors.grey300, size: 16),
                     SizedBox(width: 6),
                     Text(
-                      'Adicionar som',
+                      'Add sound',
                       style: TextStyle(
                         color: AppColors.grey300,
                         fontSize: 12,

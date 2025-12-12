@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 
-class SparkVideoEditorHeader extends StatelessWidget {
-  const SparkVideoEditorHeader({
+class VideoEditorHeader extends StatelessWidget {
+  const VideoEditorHeader({
     required this.onBack,
     required this.onNext,
     super.key,

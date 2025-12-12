@@ -1,23 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 
-class SparkVideoToolbar extends StatelessWidget {
-  const SparkVideoToolbar({
-    required this.onEdit,
+class VideoToolbar extends StatelessWidget {
+  const VideoToolbar({
     required this.onSound,
+    required this.onPaint,
     required this.onText,
-    required this.onEffects,
-    required this.onMagic,
-    required this.onSubtitle,
+    required this.onCrop,
+    required this.onTune,
+    required this.onFilter,
+    required this.onBlur,
+    required this.onEmoji,
+    required this.onStickers,
     super.key,
   });
 
-  final VoidCallback onEdit;
   final VoidCallback onSound;
+  final VoidCallback onPaint;
   final VoidCallback onText;
-  final VoidCallback onEffects;
-  final VoidCallback onMagic;
-  final VoidCallback onSubtitle;
+  final VoidCallback onCrop;
+  final VoidCallback onTune;
+  final VoidCallback onFilter;
+  final VoidCallback onBlur;
+  final VoidCallback onEmoji;
+  final VoidCallback onStickers;
 
   @override
   Widget build(BuildContext context) {
@@ -31,34 +37,49 @@ class SparkVideoToolbar extends StatelessWidget {
           child: Row(
             children: [
               _ToolButton(
-                icon: Icons.content_cut,
-                label: 'Editar',
-                onPressed: onEdit,
-              ),
-              _ToolButton(
                 icon: Icons.music_note,
-                label: 'Som',
+                label: 'Sound',
                 onPressed: onSound,
               ),
               _ToolButton(
+                icon: Icons.brush,
+                label: 'Paint',
+                onPressed: onPaint,
+              ),
+              _ToolButton(
                 icon: Icons.text_fields,
-                label: 'Texto',
+                label: 'Text',
                 onPressed: onText,
               ),
               _ToolButton(
-                icon: Icons.auto_awesome,
-                label: 'Efeitos',
-                onPressed: onEffects,
+                icon: Icons.crop_rotate,
+                label: 'Crop',
+                onPressed: onCrop,
               ),
               _ToolButton(
-                icon: Icons.auto_fix_high,
-                label: 'Magia',
-                onPressed: onMagic,
+                icon: Icons.tune,
+                label: 'Tune',
+                onPressed: onTune,
               ),
               _ToolButton(
-                icon: Icons.subtitles,
-                label: 'Legenda',
-                onPressed: onSubtitle,
+                icon: Icons.filter,
+                label: 'Filter',
+                onPressed: onFilter,
+              ),
+              _ToolButton(
+                icon: Icons.blur_on,
+                label: 'Blur',
+                onPressed: onBlur,
+              ),
+              _ToolButton(
+                icon: Icons.emoji_emotions,
+                label: 'Emoji',
+                onPressed: onEmoji,
+              ),
+              _ToolButton(
+                icon: Icons.star,
+                label: 'Stickers',
+                onPressed: onStickers,
               ),
             ],
           ),

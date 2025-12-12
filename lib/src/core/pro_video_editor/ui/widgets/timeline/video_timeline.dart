@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/design_system/theme/text_theme.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/spark_scrollable_timeline.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_timeline_state.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/scrollable_timeline.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
-class SparkVideoTimeline extends StatelessWidget {
-  const SparkVideoTimeline({
+class VideoTimeline extends StatelessWidget {
+  const VideoTimeline({
     required this.videoTimelineState,
     required this.onUndo,
     required this.onRedo,
@@ -205,7 +205,7 @@ class _TracksSection extends StatelessWidget {
         children: [
           const SizedBox(width: 4),
           Expanded(
-            child: SparkScrollableTimeline(
+            child: ScrollableTimeline(
               videoTimelineState: videoTimelineState,
               onSeek: onSeek,
               onAddSound: onAddSound,

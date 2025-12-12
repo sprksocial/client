@@ -15,10 +15,10 @@ import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_rep
 import 'package:sparksocial/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:sparksocial/src/core/pro_video_editor/services/audio_helper_service.dart';
 import 'package:sparksocial/src/core/pro_video_editor/services/audio_waveform_extractor.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_editor_configs_builder.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_initializing_widget.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_player_widget.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_timeline_state.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/video_editor_configs_builder.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/video_initializing_widget.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/player/video_player_widget.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 import 'package:video_player/video_player.dart';
 
 @RoutePage()

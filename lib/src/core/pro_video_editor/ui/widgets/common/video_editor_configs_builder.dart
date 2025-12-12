@@ -7,11 +7,22 @@ import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:sparksocial/src/core/design_system/theme/color_scheme.dart';
 import 'package:sparksocial/src/core/design_system/theme/text_theme.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/build_stickers.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/spark_video_editor_bottom_section.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/spark_video_editor_header.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_progress_alert.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_timeline_state.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/audio/audio_editor_bar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/audio/audio_editor_edit_sheet.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/blur/blur_editor_bar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/clip/clip_editor_bar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/clip/clips_editor_bar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/build_stickers.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/video_progress_alert.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/crop_rotate/crop_rotate_editor_bar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/filter/filter_editor_bar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/layout/video_editor_bottom_section.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/layout/video_editor_header.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/paint/paint_editor_bar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/text/text_editor_bar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/text/text_editor_color_picker.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/tune/tune_editor_bar.dart';
 
 class VideoEditorConfigsBuilder {
   const VideoEditorConfigsBuilder._();
@@ -77,7 +88,7 @@ class VideoEditorConfigsBuilder {
           bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
             key: key,
             builder: (context) {
-              return SparkVideoEditorBottomSection(
+              return VideoEditorBottomSection(
                 editor: editor,
                 videoTimelineState: videoTimelineState,
                 onSeek: onSeek,
@@ -96,7 +107,7 @@ class VideoEditorConfigsBuilder {
                 right: 0,
                 child: SafeArea(
                   bottom: false,
-                  child: SparkVideoEditorHeader(
+                  child: VideoEditorHeader(
                     onBack: editor.closeEditor,
                     onNext: editor.doneEditing,
                   ),
@@ -122,12 +133,14 @@ class VideoEditorConfigsBuilder {
           bottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
               builder: (context) {
-                return GroundedPaintBar(
+                return PaintEditorBar(
                   configs: editorState.configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,
                   i18nColor: 'Color',
-                  showColorPicker: (currentColor) {},
+                  showColorPicker: (currentColor) {
+                    // Color picker is handled by the colorPicker widget slot
+                  },
                 );
               },
               stream: rebuildStream,
@@ -153,16 +166,28 @@ class VideoEditorConfigsBuilder {
         ),
         widgets: TextEditorWidgets(
           appBar: (textEditor, rebuildStream) => null,
-          colorPicker: (textEditor, rebuildStream, currentColor, setColor) => null,
+          colorPicker: (textEditor, rebuildStream, currentColor, setColor) {
+            return ReactiveWidget(
+              stream: rebuildStream,
+              builder: (_) => TextEditorColorPicker(
+                configs: textEditor.configs,
+                primaryColor: currentColor,
+                onUpdateColor: setColor,
+                rebuildStream: rebuildStream,
+              ),
+            );
+          },
           bottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
               builder: (context) {
-                return GroundedTextBar(
+                return TextEditorBar(
                   configs: editorState.configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,
                   i18nColor: 'Color',
-                  showColorPicker: (currentColor) {},
+                  showColorPicker: (currentColor) {
+                    // Color picker is handled by the colorPicker widget slot
+                  },
                 );
               },
               stream: rebuildStream,
@@ -191,12 +216,14 @@ class VideoEditorConfigsBuilder {
           appBar: (cropRotateEditor, rebuildStream) => null,
           bottomBar: (cropRotateEditor, rebuildStream) => ReactiveWidget(
             stream: rebuildStream,
-            builder: (_) => GroundedCropRotateBar(
-              configs: cropRotateEditor.configs,
-              callbacks: cropRotateEditor.callbacks,
-              editor: cropRotateEditor,
-              selectedRatioColor: AppColors.primary500,
-            ),
+            builder: (context) {
+              return CropRotateEditorBar(
+                configs: cropRotateEditor.configs,
+                callbacks: cropRotateEditor.callbacks,
+                editor: cropRotateEditor,
+                selectedRatioColor: AppColors.primary500,
+              );
+            },
           ),
         ),
       ),
@@ -220,7 +247,7 @@ class VideoEditorConfigsBuilder {
           bottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
               builder: (context) {
-                return GroundedFilterBar(
+                return FilterEditorBar(
                   configs: editorState.configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,
@@ -242,7 +269,7 @@ class VideoEditorConfigsBuilder {
           bottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
               builder: (context) {
-                return GroundedTuneBar(
+                return TuneEditorBar(
                   configs: editorState.configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,
@@ -263,7 +290,7 @@ class VideoEditorConfigsBuilder {
           bottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
               builder: (context) {
-                return GroundedBlurBar(
+                return BlurEditorBar(
                   configs: editorState.configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,
@@ -308,15 +335,29 @@ class VideoEditorConfigsBuilder {
         widgets: AudioEditorWidgets(
           appBar: (editorState, rebuildStream) => null,
           bottomBar: (editorState, rebuildStream) {
+            final configs = editorState.configs;
             return ReactiveWidget(
-              builder: (_) {
-                return GroundedAudioBar(
-                  configs: editorState.configs,
+              builder: (context) {
+                return AudioEditorBar(
+                  configs: configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,
                 );
               },
               stream: rebuildStream,
+            );
+          },
+          editBottomBar: (editorState, controller, updateStartTime, updateBalance, openSelectTrack, confirm) {
+            // Get configs from the AudioMainBottomBar widget
+            final configs = (editorState as dynamic).widget.configs as ProImageEditorConfigs;
+            return AudioEditorEditSheet(
+              configs: configs,
+              editorState: editorState,
+              controller: controller,
+              updateStartTime: updateStartTime,
+              updateBalance: updateBalance,
+              openSelectTrack: openSelectTrack,
+              confirm: confirm,
             );
           },
         ),
@@ -332,8 +373,8 @@ class VideoEditorConfigsBuilder {
           appBar: (editorState, rebuildStream) => null,
           bottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
-              builder: (_) {
-                return GroundedClipsBar(
+              builder: (context) {
+                return ClipsEditorBar(
                   configs: editorState.configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,
@@ -345,8 +386,8 @@ class VideoEditorConfigsBuilder {
           editClipAppBar: (editorState, rebuildStream) => null,
           editClipBottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
-              builder: (_) {
-                return GroundedClipEditorBar(
+              builder: (context) {
+                return ClipEditorBar(
                   configs: editorState.configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,

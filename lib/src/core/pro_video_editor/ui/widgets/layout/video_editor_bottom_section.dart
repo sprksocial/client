@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/spark_video_timeline.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/spark_video_toolbar.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_timeline_state.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/layout/video_toolbar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
-class SparkVideoEditorBottomSection extends StatelessWidget {
-  const SparkVideoEditorBottomSection({
+class VideoEditorBottomSection extends StatelessWidget {
+  const VideoEditorBottomSection({
     required this.editor,
     required this.videoTimelineState,
     required this.onSeek,
@@ -28,7 +28,7 @@ class SparkVideoEditorBottomSection extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          SparkVideoTimeline(
+          VideoTimeline(
             videoTimelineState: videoTimelineState,
             onUndo: editor.undoAction,
             onRedo: editor.redoAction,
@@ -39,13 +39,16 @@ class SparkVideoEditorBottomSection extends StatelessWidget {
             canUndo: editor.canUndo,
             canRedo: editor.canRedo,
           ),
-          SparkVideoToolbar(
-            onEdit: editor.openCropRotateEditor,
+          VideoToolbar(
             onSound: editor.openAudioEditor,
+            onPaint: editor.openPaintEditor,
             onText: editor.openTextEditor,
-            onEffects: editor.openFilterEditor,
-            onMagic: editor.openTuneEditor,
-            onSubtitle: editor.openTextEditor,
+            onCrop: editor.openCropRotateEditor,
+            onTune: editor.openTuneEditor,
+            onFilter: editor.openFilterEditor,
+            onBlur: editor.openBlurEditor,
+            onEmoji: editor.openEmojiEditor,
+            onStickers: editor.openStickerEditor,
           ),
         ],
       ),
