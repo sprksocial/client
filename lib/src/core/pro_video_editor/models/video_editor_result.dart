@@ -1,4 +1,4 @@
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:image_picker/image_picker.dart';
 
 /// Result returned from the video editor containing the edited video
@@ -13,5 +13,5 @@ class VideoEditorResult {
   final XFile video;
 
   /// Reference to the audio track used, if any.
-  final StrongRef? soundRef;
+  final RepoStrongRef? soundRef;
 }

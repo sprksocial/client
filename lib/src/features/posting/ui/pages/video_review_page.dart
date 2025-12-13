@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -29,7 +29,8 @@ class VideoReviewPage extends ConsumerStatefulWidget {
   final bool storyMode;
 
   /// Reference to the audio track used in the video, if any.
-  final StrongRef? soundRef;
+  /// Stored as JSON string for route serialization.
+  final RepoStrongRef? soundRef;
 
   @override
   ConsumerState<VideoReviewPage> createState() => _VideoReviewPageState();

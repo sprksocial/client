@@ -8,7 +8,7 @@ import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/features/auth/auth.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
+import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
 
 @RoutePage()
 class ProfileSettingsPage extends ConsumerStatefulWidget {
@@ -30,12 +30,13 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
         ),
       );
 
-      // Get the profile notifier and call logout
-      final profileNotifier = ref.read(profileNotifierProvider().notifier);
-      await profileNotifier.logout();
+      // Call logout on the auth provider
+      await ref.read(authProvider.notifier).logout();
 
-      // Close loading dialog
       if (mounted) {
+        // Close loading dialog first
+        Navigator.of(context).pop();
+
         // Navigate to login screen
         context.router.replaceAll([const RegisterRoute()]);
       }
@@ -85,7 +86,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
       logger.i('Fetching Spark posts for DID: $did');
 
       // Fetch Spark posts directly from atproto to get raw records with URIs
-      final collection = NSID.parse('so.sprk.feed.post');
+      const collection = 'so.sprk.feed.post';
       logger.d('Fetching records from collection: $collection');
 
       final result = await atproto.repo.listRecords(
@@ -163,7 +164,9 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
           try {
             // Update the record in the PDS with the converted value
             final result = await atproto.repo.putRecord(
-              uri: post.uri,
+              repo: did,
+              collection: collection,
+              rkey: post.uri.rkey,
               record: post.convertedValue,
             );
 

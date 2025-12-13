@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/foundation.dart';
@@ -77,7 +77,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   late EditorVideo _video;
 
   String? _outputPath;
-  StrongRef? _selectedSoundRef;
+  RepoStrongRef? _selectedSoundRef;
 
   late VideoPlayerController _videoController;
 
@@ -272,11 +272,11 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   String _encodeTrackId(String uri, String cid, {String? authorAvatar}) =>
       jsonEncode({'uri': uri, 'cid': cid, 'authorAvatar': authorAvatar});
 
-  StrongRef? _decodeStrongRef(String? encoded) {
+  RepoStrongRef? _decodeStrongRef(String? encoded) {
     if (encoded == null) return null;
     try {
       final map = jsonDecode(encoded) as Map<String, dynamic>;
-      return StrongRef(
+      return RepoStrongRef(
         uri: AtUri.parse(map['uri'] as String),
         cid: map['cid'] as String,
       );

@@ -107,8 +107,7 @@ class GraphRepositoryImpl implements GraphRepository {
         throw Exception('Session DID not available');
       }
 
-      final collection = NSID.parse('so.sprk.graph.follow');
-      const recordType = 'so.sprk.graph.follow';
+      const collection = 'so.sprk.graph.follow';
 
       try {
         _logger.d('Checking if already following user: $did');
@@ -121,11 +120,11 @@ class GraphRepositoryImpl implements GraphRepository {
           throw Exception('Already following this user');
         }
 
-        final followRecord = {r'$type': recordType, 'subject': did, 'createdAt': DateTime.now().toUtc().toIso8601String()};
+        final followRecord = {r'$type': collection, 'subject': did, 'createdAt': DateTime.now().toUtc().toIso8601String()};
 
-        final result = await atproto.repo.createRecord(collection: collection, record: followRecord);
+        final result = await atproto.repo.createRecord(repo: sessionDid, collection: collection, record: followRecord);
 
-        _logger.i('User followed successfully with $recordType: ${result.data.uri}');
+        _logger.i('User followed successfully with $collection: ${result.data.uri}');
 
         return FollowUserResponse(uri: result.data.uri.toString(), cid: result.data.cid);
       } catch (e) {
@@ -150,7 +149,11 @@ class GraphRepositoryImpl implements GraphRepository {
         throw Exception('AtProto not initialized');
       }
 
-      await atproto.repo.deleteRecord(uri: followUri);
+      await atproto.repo.deleteRecord(
+        repo: followUri.hostname,
+        collection: followUri.collection.toString(),
+        rkey: followUri.rkey,
+      );
       _logger.i('User unfollowed successfully');
     });
   }

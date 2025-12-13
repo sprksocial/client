@@ -21,8 +21,8 @@ dependencies:
   camera: ^0.11.1
   path_provider: ^2.1.2
   flutter_svg: ^2.2.0
-  atproto: ^0.13.3
-  bluesky: ^0.18.10
+  atproto: ^1.2.4
+  bluesky: ^1.2.6
   http: ^1.2.0
   url_launcher: ^6.2.5
   shared_preferences: ^2.5.3
@@ -33,15 +33,15 @@ dependencies:
   image: ^4.5.4
   flutter_cache_manager: ^3.3.1
   synchronized: ^3.1.0
-  flutter_riverpod: ^2.4.9
-  riverpod_annotation: ^2.3.3
-  freezed: ^2.4.6
-  freezed_annotation: ^2.4.1
+  flutter_riverpod: ^3.0.3
+  riverpod_annotation: ^3.0.3
+  freezed: ^3.2.3
+  freezed_annotation: ^3.1.0
   json_annotation: ^4.9.0
   get_it: ^8.0.3
   auto_route: ^10.1.0+1
   flutter_secure_storage: ^9.2.4
-  atproto_core: ^0.11.2
+  atproto_core: ^1.0.7
   sqflite: ^2.4.2
   pool: ^1.5.0
   collection: ^1.19.1
@@ -73,7 +73,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   build_runner: ^2.5.4
-  riverpod_generator: ^2.3.9
+  riverpod_generator: ^3.0.3
   json_serializable: ^6.7.1
   auto_route_generator: ^10.2.3
   flutter_launcher_icons: ^0.14.3

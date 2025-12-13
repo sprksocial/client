@@ -1,15 +1,15 @@
 import 'dart:typed_data';
 
-import 'package:bluesky/bluesky.dart';
+import 'package:bluesky/app_bsky_actor_profile.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'onboarding_screen_state.freezed.dart';
 
 @freezed
-class OnboardingScreenState with _$OnboardingScreenState {
+abstract class OnboardingScreenState with _$OnboardingScreenState {
   const factory OnboardingScreenState({
     @Default(true) bool isLoading,
-    ProfileRecord? bskyProfileRecord,
+    ActorProfileRecord? bskyProfileRecord,
     String? initialAvatarCid,
     String? initialAvatarUrl,
     Uint8List? localAvatarBytes,

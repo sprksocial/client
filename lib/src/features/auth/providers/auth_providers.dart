@@ -1,6 +1,5 @@
 import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/auth/data/models/login_result.dart';

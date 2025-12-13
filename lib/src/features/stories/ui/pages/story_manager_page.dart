@@ -12,7 +12,7 @@ class StoryManagerPage extends ConsumerWidget {
   const StoryManagerPage({super.key});
 
   void _openStoryViewer(BuildContext context, WidgetRef ref, int index) {
-    final state = ref.read(storyManagerProvider).valueOrNull;
+    final state = ref.read(storyManagerProvider).value;
     if (state == null) return;
     // Build map required by AllStoriesRoute (single author -> list)
     if (state.stories.isEmpty) return;
@@ -27,7 +27,7 @@ class StoryManagerPage extends ConsumerWidget {
 
   Future<void> _deleteStory(BuildContext context, WidgetRef ref, int index) async {
     final notifier = ref.read(storyManagerProvider.notifier);
-    final stories = ref.read(storyManagerProvider).valueOrNull?.stories ?? [];
+    final stories = ref.read(storyManagerProvider).value?.stories ?? [];
     if (index >= stories.length) return;
     final story = stories[index];
     final shouldDelete =

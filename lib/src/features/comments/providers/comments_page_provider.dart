@@ -27,7 +27,6 @@ class CommentsPage extends _$CommentsPage {
         case BlockedPost():
           throw Exception('Post is blocked');
       }
-      throw Exception('Post not found');
     } catch (e) {
       final networkPost = await feedRepository.getPosts([postUri], bluesky: isBlueskyPost, filter: false);
       if (networkPost.isEmpty) {
@@ -43,7 +42,6 @@ class CommentsPage extends _$CommentsPage {
         case BlockedPost():
           throw Exception('Post is blocked');
       }
-      throw Exception('Post not found');
     }
   }
 

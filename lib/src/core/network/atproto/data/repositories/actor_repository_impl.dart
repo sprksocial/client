@@ -107,7 +107,9 @@ class ActorRepositoryImpl implements ActorRepository {
     }
 
     await atproto.repo.putRecord(
-      uri: AtUri.parse('at://${_client.authRepository.session!.did}/so.sprk.actor.profile/self'),
+      repo: _client.authRepository.session!.did,
+      collection: 'so.sprk.actor.profile',
+      rkey: 'self',
       record: record.toJson(),
     );
   }

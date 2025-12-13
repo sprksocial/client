@@ -4,7 +4,7 @@ import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.da
 part 'edit_profile_state.freezed.dart';
 
 @freezed
-class EditProfileState with _$EditProfileState {
+abstract class EditProfileState with _$EditProfileState {
   const factory EditProfileState({
     required ProfileViewDetailed profile,
     required String displayName,

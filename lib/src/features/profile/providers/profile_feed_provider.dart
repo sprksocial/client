@@ -1,6 +1,6 @@
 import 'dart:collection';
 
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -215,7 +215,7 @@ class ProfileFeed extends _$ProfileFeed {
     final settings = ref.read(settingsProvider.notifier);
     for (final label in postLabels) {
       try {
-        final labelPreference = await settings.getLabelPreference(label.value);
+        final labelPreference = await settings.getLabelPreference(label.val);
         if (labelPreference.setting == Setting.hide || labelPreference.adultOnly) {
           return true;
         }
@@ -251,9 +251,9 @@ class ProfileFeed extends _$ProfileFeed {
             postLabels.add(
               Label(
                 uri: postView.uri.toString(),
-                value: selfLabel.value,
+                val: selfLabel.val,
                 src: postView.uri.toString(),
-                createdAt: postView.indexedAt,
+                cts: postView.indexedAt,
               ),
             );
           }

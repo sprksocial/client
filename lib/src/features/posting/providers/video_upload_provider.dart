@@ -1,6 +1,5 @@
-import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:bluesky/com_atproto_repo_strongref.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
@@ -30,14 +29,14 @@ Future<VideoUploadResult?> processVideo(Ref ref, String videoPath) async {
 
 /// Post a video to the feed using the processed blob reference
 @riverpod
-Future<StrongRef?> postVideo(
+Future<RepoStrongRef?> postVideo(
   Ref ref, {
   required Blob blob,
   String description = '',
   String altText = '',
   String? videoPath,
   bool crosspostToBsky = false,
-  StrongRef? soundRef,
+  RepoStrongRef? soundRef,
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Posting Video');
   try {
@@ -56,7 +55,8 @@ Future<StrongRef?> postVideo(
     );
 
     final recordRes = await authAtProto.repo.createRecord(
-      collection: NSID.parse('so.sprk.feed.post'),
+      repo: authAtProto.session!.did,
+      collection: 'so.sprk.feed.post',
       record: postRecord.toJson(),
     );
 
@@ -72,7 +72,7 @@ Future<StrongRef?> postVideo(
       }
     }
     logger.i('Video posted successfully: ${recordRes.data.uri}');
-    return recordRes.data;
+    return recordRes.data as RepoStrongRef;
   } catch (error, stackTrace) {
     logger.e('Error posting video', error: error, stackTrace: stackTrace);
   }
@@ -81,14 +81,14 @@ Future<StrongRef?> postVideo(
 
 /// Process video and post it in one step
 @riverpod
-Future<StrongRef?> processAndPostVideo(
+Future<RepoStrongRef?> processAndPostVideo(
   Ref ref, {
   required String videoPath,
   String description = '',
   String altText = '',
   bool crosspostToBsky = false,
   bool storyMode = false,
-  StrongRef? soundRef,
+  RepoStrongRef? soundRef,
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Process/Post Video');
   logger.d('Processing then posting video: $videoPath (storyMode=$storyMode, sound=${soundRef?.uri})');
@@ -172,7 +172,8 @@ Future<void> _crosspostVideoToBlueSky(
   try {
     final bskyAtProto = authRepository.atproto!;
     final bskyResult = await bskyAtProto.repo.createRecord(
-      collection: NSID.parse('app.bsky.feed.post'),
+      repo: session.did,
+      collection: 'app.bsky.feed.post',
       record: bskyPostRecord,
       rkey: rkey,
     );

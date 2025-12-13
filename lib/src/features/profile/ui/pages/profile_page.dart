@@ -81,8 +81,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    final profileStateAsync = ref.watch(profileNotifierProvider(did: widget.did));
-    final notifier = ref.read(profileNotifierProvider(did: widget.did).notifier);
+    final profileStateAsync = ref.watch(profileProvider(did: widget.did));
+    final notifier = ref.read(profileProvider(did: widget.did).notifier);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
@@ -145,7 +145,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               onFollowTap: () async {
                 try {
                   await notifier.toggleFollow();
-                  final latestProfileState = ref.read(profileNotifierProvider(did: widget.did)).asData?.value;
+                  final latestProfileState = ref.read(profileProvider(did: widget.did)).asData?.value;
 
                   if (latestProfileState != null && !latestProfileState.showAuthPrompt) {
                     if (context.mounted) {
@@ -168,7 +168,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               onUnfollowTap: () async {
                 try {
                   await notifier.toggleFollow();
-                  final latestProfileState = ref.read(profileNotifierProvider(did: widget.did)).asData?.value;
+                  final latestProfileState = ref.read(profileProvider(did: widget.did)).asData?.value;
 
                   if (latestProfileState != null && !latestProfileState.showAuthPrompt) {
                     if (context.mounted) {

@@ -1,4 +1,5 @@
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_label_defs.dart';
+import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sparksocial/src/core/utils/uri_converter.dart';
@@ -7,7 +8,7 @@ part 'actor_models.freezed.dart';
 part 'actor_models.g.dart';
 
 @freezed
-class ActorViewer with _$ActorViewer {
+abstract class ActorViewer with _$ActorViewer {
   @JsonSerializable(explicitToJson: true)
   const factory ActorViewer({
     bool? muted,
@@ -25,7 +26,7 @@ class ActorViewer with _$ActorViewer {
 }
 
 @freezed
-class KnownFollowers with _$KnownFollowers {
+abstract class KnownFollowers with _$KnownFollowers {
   @JsonSerializable(explicitToJson: true)
   const factory KnownFollowers({
     required int count,
@@ -43,7 +44,7 @@ class KnownFollowers with _$KnownFollowers {
 }
 
 @freezed
-class ProfileViewBasic with _$ProfileViewBasic {
+abstract class ProfileViewBasic with _$ProfileViewBasic {
   @JsonSerializable(explicitToJson: true)
   const factory ProfileViewBasic({
     required String did,
@@ -52,7 +53,7 @@ class ProfileViewBasic with _$ProfileViewBasic {
     @UriConverter() Uri? avatar,
     // associated: lists, feedgens, starterpacks, labelers, chat?? not needed for now
     ActorViewer? viewer,
-    List<StrongRef>? stories,
+    List<RepoStrongRef>? stories,
   }) = _ProfileViewBasic;
   const ProfileViewBasic._();
 
@@ -60,7 +61,7 @@ class ProfileViewBasic with _$ProfileViewBasic {
 }
 
 @freezed
-class ProfileView with _$ProfileView {
+abstract class ProfileView with _$ProfileView {
   @JsonSerializable(explicitToJson: true)
   const factory ProfileView({
     required String did,
@@ -103,7 +104,7 @@ class SearchActorsResponse {
 }
 
 @freezed
-class ProfileViewDetailed with _$ProfileViewDetailed {
+abstract class ProfileViewDetailed with _$ProfileViewDetailed {
   @JsonSerializable(explicitToJson: true)
   const factory ProfileViewDetailed({
     required String did,
@@ -120,8 +121,8 @@ class ProfileViewDetailed with _$ProfileViewDetailed {
     // indexedAt and createdAt
     ActorViewer? viewer,
     List<Label>? labels,
-    StrongRef? pinnedPost, // this is a list if the backend implements https://github.com/sprksocial/spark-back-end/issues/13
-    List<StrongRef>? stories,
+    RepoStrongRef? pinnedPost, // this is a list if the backend implements https://github.com/sprksocial/spark-back-end/issues/13
+    List<RepoStrongRef>? stories,
   }) = _ProfileViewDetailed;
   const ProfileViewDetailed._();
 
