@@ -72,7 +72,7 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                   // First item is always the create button
                   if (index == 0) {
                     final userAvatarUrl = ref
-                        .read(profileNotifierProvider(did: currentUserDid!))
+                        .read(profileProvider(did: currentUserDid!))
                         .when(
                           data: (profileData) => profileData.profile!.avatar.toString(),
                           error: (error, stackTrace) => '',

@@ -1,18 +1,46 @@
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto_core/atproto_core.dart';
-import 'package:bluesky/bluesky.dart' as bsky;
+import 'package:bluesky/app_bsky_feed_defs.dart' as bsky_defs;
+import 'package:bluesky/app_bsky_feed_getpostthread.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:sparksocial/src/core/utils/json_utils.dart';
 import 'package:sparksocial/src/core/utils/uri_converter.dart';
 
 part 'feed_models.freezed.dart';
 part 'feed_models.g.dart';
 
+PostRecord _postRecordFromJson(dynamic json) {
+  if (json is! Map<String, dynamic>) {
+    throw Exception('Expected Map<String, dynamic> but got ${json.runtimeType}');
+  }
+  final record = Record.fromJson(json);
+  if (record is PostRecord) {
+    return record;
+  }
+  throw Exception('Expected PostRecord but got ${record.runtimeType}');
+}
+
+Map<String, dynamic> _postRecordToJson(PostRecord record) => record.toJson();
+
+StoryRecord _storyRecordFromJson(dynamic json) {
+  if (json is! Map<String, dynamic>) {
+    throw Exception('Expected Map<String, dynamic> but got ${json.runtimeType}');
+  }
+  final record = Record.fromJson(json);
+  if (record is StoryRecord) {
+    return record;
+  }
+  throw Exception('Expected StoryRecord but got ${record.runtimeType}');
+}
+
+Map<String, dynamic> _storyRecordToJson(StoryRecord record) => record.toJson();
+
 /// https://pub.dev/packages/freezed#union-types <= read this to know how to use pattern matching to know the type of the object
 @freezed
-class GeneratorViewerState with _$GeneratorViewerState {
+abstract class GeneratorViewerState with _$GeneratorViewerState {
   @JsonSerializable(explicitToJson: true)
   const factory GeneratorViewerState({
     @AtUriConverter() AtUri? like,
@@ -23,7 +51,7 @@ class GeneratorViewerState with _$GeneratorViewerState {
 }
 
 @freezed
-class GeneratorView with _$GeneratorView {
+abstract class GeneratorView with _$GeneratorView {
   @JsonSerializable(explicitToJson: true)
   const factory GeneratorView({
     @AtUriConverter() required AtUri uri,
@@ -47,7 +75,7 @@ class GeneratorView with _$GeneratorView {
 
 /// The feeds that are actually used in the app
 @freezed
-class Feed with _$Feed {
+abstract class Feed with _$Feed {
   @JsonSerializable(explicitToJson: true)
   factory Feed({
     required String type,
@@ -61,7 +89,7 @@ class Feed with _$Feed {
 
 /// Skeleton of a FeedView. Needs to be hydrated.
 @freezed
-class SkeletonFeedPost with _$SkeletonFeedPost {
+abstract class SkeletonFeedPost with _$SkeletonFeedPost {
   @JsonSerializable(explicitToJson: true)
   const factory SkeletonFeedPost({
     @AtUriConverter() required AtUri uri,
@@ -143,7 +171,7 @@ sealed class FeedViewPost with _$FeedViewPost {
 }
 
 @freezed
-class FeedView with _$FeedView {
+abstract class FeedView with _$FeedView {
   @JsonSerializable(explicitToJson: true)
   const factory FeedView({
     required List<FeedViewPost> feed,
@@ -155,7 +183,7 @@ class FeedView with _$FeedView {
 }
 
 @freezed
-class ReplyRef with _$ReplyRef {
+abstract class ReplyRef with _$ReplyRef {
   @JsonSerializable(explicitToJson: true)
   const factory ReplyRef({
     required ReplyRefPostReference root, // post, not found or blocked
@@ -200,7 +228,7 @@ sealed class ReplyRefPostReference with _$ReplyRefPostReference {
 }
 
 @freezed
-class BlockedAuthor with _$BlockedAuthor {
+abstract class BlockedAuthor with _$BlockedAuthor {
   @JsonSerializable(explicitToJson: true)
   const factory BlockedAuthor({required String did, Viewer? viewer}) = _BlockedAuthor;
   const BlockedAuthor._();
@@ -209,7 +237,7 @@ class BlockedAuthor with _$BlockedAuthor {
 }
 
 @freezed
-class PostThread with _$PostThread {
+abstract class PostThread with _$PostThread {
   @JsonSerializable(explicitToJson: true)
   const factory PostThread({required PostView post, List<PostView>? parent, List<PostView>? replies}) = _PostThread;
   const PostThread._();
@@ -218,7 +246,7 @@ class PostThread with _$PostThread {
 }
 
 @freezed
-class Viewer with _$Viewer {
+abstract class Viewer with _$Viewer {
   @JsonSerializable(explicitToJson: true)
   const factory Viewer({
     @AtUriConverter() AtUri? repost,
@@ -234,13 +262,13 @@ class Viewer with _$Viewer {
 }
 
 @freezed
-class PostView with _$PostView {
+abstract class PostView with _$PostView {
   @JsonSerializable(explicitToJson: true)
   const factory PostView({
     @AtUriConverter() required AtUri uri,
     required String cid,
     required ProfileViewBasic author,
-    required PostRecord record,
+    @JsonKey(fromJson: _postRecordFromJson, toJson: _postRecordToJson) required PostRecord record,
     required DateTime indexedAt,
     @Default(false) bool isRepost,
     int? likeCount,
@@ -463,7 +491,7 @@ sealed class MediaView with _$MediaView {
 }
 
 @freezed
-class EmbedViewExternal with _$EmbedViewExternal {
+abstract class EmbedViewExternal with _$EmbedViewExternal {
   @JsonSerializable(explicitToJson: true)
   const factory EmbedViewExternal({
     required String uri,
@@ -518,7 +546,7 @@ sealed class EmbedViewRecord with _$EmbedViewRecord {
 }
 
 @freezed
-class FeedSkeleton with _$FeedSkeleton {
+abstract class FeedSkeleton with _$FeedSkeleton {
   @JsonSerializable(explicitToJson: true)
   const factory FeedSkeleton({required List<SkeletonFeedPost> feed, String? cursor}) = _FeedSkeleton;
   const FeedSkeleton._();
@@ -527,7 +555,7 @@ class FeedSkeleton with _$FeedSkeleton {
 }
 
 @freezed
-class ImageUploadResult with _$ImageUploadResult {
+abstract class ImageUploadResult with _$ImageUploadResult {
   @JsonSerializable(explicitToJson: true)
   const factory ImageUploadResult({required String fullsize, required String alt, required Map<String, dynamic> image}) =
       _ImageUploadResult;
@@ -537,7 +565,7 @@ class ImageUploadResult with _$ImageUploadResult {
 }
 
 @freezed
-class CaptionRef with _$CaptionRef {
+abstract class CaptionRef with _$CaptionRef {
   @JsonSerializable(explicitToJson: true)
   const factory CaptionRef({
     required String text,
@@ -550,7 +578,7 @@ class CaptionRef with _$CaptionRef {
 
 /// Represents the index range for a facet in the text
 @freezed
-class FacetIndex with _$FacetIndex {
+abstract class FacetIndex with _$FacetIndex {
   @JsonSerializable(explicitToJson: true)
   const factory FacetIndex({
     /// Start index (inclusive)
@@ -567,7 +595,7 @@ class FacetIndex with _$FacetIndex {
 
 /// Represents a feature of a facet (mention, link, hashtag, etc.)
 @Freezed(unionKey: r'$type')
-class FacetFeature with _$FacetFeature {
+abstract class FacetFeature with _$FacetFeature {
   const FacetFeature._();
 
   // Spark facet feature types
@@ -608,7 +636,7 @@ class FacetFeature with _$FacetFeature {
 
 /// Represents a richtext facet for text formatting, mentions, links, etc.
 @freezed
-class Facet with _$Facet {
+abstract class Facet with _$Facet {
   @JsonSerializable(explicitToJson: true)
   const factory Facet({
     /// Index range for the facet in the text
@@ -624,7 +652,7 @@ class Facet with _$Facet {
 }
 
 @freezed
-class ViewImage with _$ViewImage {
+abstract class ViewImage with _$ViewImage {
   @JsonSerializable(explicitToJson: true)
   const factory ViewImage({
     @AtUriConverter() required Uri thumb,
@@ -727,7 +755,7 @@ sealed class ThreadPost with _$ThreadPost {
 }
 
 @Freezed(unionKey: r'$type')
-class Thread with _$Thread {
+sealed class Thread with _$Thread {
   const Thread._();
 
   // NORMAL POST
@@ -749,18 +777,34 @@ class Thread with _$Thread {
 
   factory Thread.fromJson(Map<String, dynamic> json) => _$ThreadFromJson(json);
 
-  factory Thread.fromBsky({required bsky.PostThreadView thread, required AtUri uri}) {
+  static Thread? _convertParentToThread(bsky_defs.UThreadViewPostParent parent, AtUri uri) {
+    switch (parent) {
+      case bsky_defs.UThreadViewPostParentThreadViewPost(:final data):
+        return Thread.fromBsky(
+          thread: UFeedGetPostThreadThread.threadViewPost(data: data),
+          uri: uri,
+        );
+      case bsky_defs.UThreadViewPostParentNotFoundPost(:final data):
+        return Thread.notFoundPost(uri: data.uri, notFound: true);
+      case bsky_defs.UThreadViewPostParentBlockedPost(:final data):
+        return Thread.blockedPost(uri: data.uri, blocked: true, author: BlockedAuthor.fromJson(data.author.toJson()));
+      case bsky_defs.UThreadViewPostParentUnknown():
+        return null;
+    }
+  }
+
+  factory Thread.fromBsky({required UFeedGetPostThreadThread thread, required AtUri uri}) {
     switch (thread) {
-      case bsky.UPostThreadViewRecord(:final data):
+      case UFeedGetPostThreadThreadThreadViewPost(:final data):
         try {
           var embed = data.post.embed;
-          if (data.post.embed is bsky.UEmbedViewExternal) {
+          if (data.post.embed is bsky_defs.UPostViewEmbedEmbedExternalView) {
             embed = null;
           }
           final postJson = data.post.copyWith(embed: embed);
 
-          // Create PostView with safer parsing
-          final postViewJson = postJson.toJson();
+          // Create PostView with deep copy - required because we modify nested structures like embeds
+          final postViewJson = deepCopyJson(postJson.toJson());
 
           // Ensure required fields are not null
           if (postViewJson['cid'] == null) {
@@ -903,21 +947,24 @@ class Thread with _$Thread {
 
           final thread = Thread.threadViewPost(
             post: ThreadPost.post(post: PostView.fromJson(postViewJson)),
-            parent: data.parent != null ? Thread.fromBsky(thread: data.parent!, uri: uri) : null,
+            parent: data.parent != null ? _convertParentToThread(data.parent!, uri) : null,
             replies: data.replies
                 ?.map((reply) {
                   switch (reply) {
-                    case bsky.UPostThreadViewRecord(:final data):
-                      return Thread.fromBsky(thread: reply, uri: data.post.uri);
-                    case bsky.UPostThreadViewNotFound(:final data):
+                    case bsky_defs.UThreadViewPostRepliesThreadViewPost(:final data):
+                      return Thread.fromBsky(
+                        thread: UFeedGetPostThreadThread.threadViewPost(data: data),
+                        uri: data.post.uri,
+                      );
+                    case bsky_defs.UThreadViewPostRepliesNotFoundPost(:final data):
                       return Thread.notFoundPost(uri: data.uri, notFound: true);
-                    case bsky.UPostThreadViewBlocked(:final data):
+                    case bsky_defs.UThreadViewPostRepliesBlockedPost(:final data):
                       return Thread.blockedPost(
                         uri: data.uri,
                         blocked: true,
                         author: BlockedAuthor.fromJson(data.author.toJson()),
                       );
-                    case bsky.UPostThreadViewUnknown():
+                    case bsky_defs.UThreadViewPostRepliesUnknown():
                       // Skip unknown reply types by returning null
                       return null;
                   }
@@ -929,10 +976,10 @@ class Thread with _$Thread {
         } catch (e) {
           rethrow;
         }
-      case bsky.UPostThreadViewNotFound():
-        return Thread.notFoundPost(uri: uri, notFound: true);
-      case bsky.UPostThreadViewBlocked(:final data):
-        return Thread.blockedPost(uri: uri, blocked: true, author: BlockedAuthor.fromJson(data.author.toJson()));
+      case UFeedGetPostThreadThreadNotFoundPost(:final data):
+        return Thread.notFoundPost(uri: data.uri, notFound: true);
+      case UFeedGetPostThreadThreadBlockedPost(:final data):
+        return Thread.blockedPost(uri: data.uri, blocked: true, author: BlockedAuthor.fromJson(data.author.toJson()));
       default:
         throw Exception('Unsupported thread type: ${thread.runtimeType}');
     }
@@ -1118,7 +1165,7 @@ class Thread with _$Thread {
 }
 
 @freezed
-class ThreadContext with _$ThreadContext {
+abstract class ThreadContext with _$ThreadContext {
   @JsonSerializable(explicitToJson: true)
   const factory ThreadContext({@AtUriConverter() AtUri? rootAuthorLike}) = _ThreadContext;
   const ThreadContext._();
@@ -1127,7 +1174,7 @@ class ThreadContext with _$ThreadContext {
 }
 
 @freezed
-class ReplyView with _$ReplyView {
+abstract class ReplyView with _$ReplyView {
   @JsonSerializable(explicitToJson: true)
   const factory ReplyView({
     @AtUriConverter() required AtUri uri,
@@ -1229,13 +1276,13 @@ class ReplyView with _$ReplyView {
 }
 
 @freezed
-class StoryView with _$StoryView {
+abstract class StoryView with _$StoryView {
   @JsonSerializable(explicitToJson: true)
   const factory StoryView({
     required String cid,
     @AtUriConverter() required AtUri uri,
     required ProfileViewBasic author,
-    required StoryRecord record,
+    @JsonKey(fromJson: _storyRecordFromJson, toJson: _storyRecordToJson) required StoryRecord record,
     required DateTime indexedAt,
     MediaView? media,
     // viewer eventually i think

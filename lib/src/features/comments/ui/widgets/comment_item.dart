@@ -1,3 +1,5 @@
+import 'package:atproto/com_atproto_moderation_createreport.dart';
+import 'package:atproto/com_atproto_moderation_defs.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
@@ -48,10 +50,7 @@ class _CommentItemState extends ConsumerState<CommentItem> {
         onSubmit: (subject, reasonType, reason, service) async {
           try {
             final result = await sprkRepository.repo.createReport(
-              subject: subject,
-              reasonType: reasonType,
-              reason: reason,
-              service: service,
+              input: ModerationCreateReportInput(subject: subject, reasonType: reasonType as ReasonType, reason: reason),
             );
 
             if (result) {
@@ -101,7 +100,7 @@ class _CommentItemState extends ConsumerState<CommentItem> {
 
   @override
   Widget build(BuildContext context) {
-    commentState = ref.watch(commentNotifierProvider(widget.thread));
+    commentState = ref.watch(commentProvider(widget.thread));
     const double thumbnailSize = 120;
 
     final borderRadius = BorderRadius.circular(8);
@@ -247,7 +246,7 @@ class _ActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final notifier = ref.read(commentNotifierProvider(commentState.thread).notifier);
+    final notifier = ref.read(commentProvider(commentState.thread).notifier);
     return Row(
       children: [
         TextButton(

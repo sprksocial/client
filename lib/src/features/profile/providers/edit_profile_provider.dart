@@ -79,7 +79,7 @@ class EditProfile extends _$EditProfile {
 
       if (state.localAvatar is Uint8List) {
         // A new avatar image was picked, upload it as a blob.
-        final respBlob = await atprotoClient.repo.uploadBlob(state.localAvatar as Uint8List);
+        final respBlob = await atprotoClient.repo.uploadBlob(bytes: state.localAvatar as Uint8List);
         if (respBlob.status.code != 200) {
           throw Exception('Failed to upload avatar blob');
         }
@@ -93,7 +93,11 @@ class EditProfile extends _$EditProfile {
         // and we need to maintain the existing one by fetching its Blob from the record.
         logger.d('Maintaining existing avatar from record ${state.profile.did}');
         final uri = AtUri.parse('at://${state.profile.did}/so.sprk.actor.profile/self');
-        final recRes = await atprotoClient.repo.getRecord(uri: uri);
+        final recRes = await atprotoClient.repo.getRecord(
+          collection: uri.collection.toString(),
+          repo: uri.hostname,
+          rkey: uri.rkey,
+        );
         final recordData = recRes.data.value;
 
         // Ensure the 'avatar' field exists and is a Map before converting to Blob.
@@ -119,7 +123,7 @@ class EditProfile extends _$EditProfile {
 
       // Invalidate the main profile provider to trigger a refresh
       if (state.profile.did == _authRepository.session?.did) {
-        ref.invalidate(profileNotifierProvider(did: state.profile.did));
+        ref.invalidate(profileProvider(did: state.profile.did));
       }
 
       state = state.copyWith(isSaving: false);

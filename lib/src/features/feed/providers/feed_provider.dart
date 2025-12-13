@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -181,7 +181,7 @@ class FeedNotifier extends _$FeedNotifier {
         if (post.record.selfLabels != null) {
           for (final selfLabel in post.record.selfLabels!) {
             postLabels.add(
-              Label(uri: key, value: selfLabel.value, src: key, createdAt: post.indexedAt),
+              Label(uri: key, val: selfLabel.val, src: key, cts: post.indexedAt),
             );
           }
         }
@@ -201,11 +201,11 @@ class FeedNotifier extends _$FeedNotifier {
             final existingLabels = value.postLabels;
 
             // if the new label is already in the existing labels, check if it should replace the existing one
-            if (existingLabels.any((label) => label.value == newLabel.value)) {
-              final existingLabel = existingLabels.firstWhere((label) => label.value == newLabel.value);
+            if (existingLabels.any((label) => label.val == newLabel.val)) {
+              final existingLabel = existingLabels.firstWhere((label) => label.val == newLabel.val);
 
               // if the new label says that the existing one is negated or expired, replace the existing one
-              if (((newLabel.ver ?? 0) > (existingLabel.ver ?? 0) && newLabel.isNegate) ||
+              if (((newLabel.ver ?? 0) > (existingLabel.ver ?? 0) && newLabel.isNeg) ||
                   existingLabel.exp != null && existingLabel.exp!.isBefore(DateTime.now())) {
                 existingLabels.remove(existingLabel);
                 return (
@@ -391,9 +391,9 @@ class FeedNotifier extends _$FeedNotifier {
     final settings = ref.read(settingsProvider.notifier);
     for (final label in postLabels) {
       try {
-        final labelPreference = await settings.getLabelPreference(label.value);
+        final labelPreference = await settings.getLabelPreference(label.val);
         if (labelPreference.setting == Setting.hide || labelPreference.adultOnly) {
-          _logger.d('Hiding post $uri due to label: ${label.value}');
+          _logger.d('Hiding post $uri due to label: ${label.val}');
           return true;
         }
       } catch (e) {

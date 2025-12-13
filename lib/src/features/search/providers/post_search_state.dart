@@ -6,7 +6,7 @@ part 'post_search_state.g.dart';
 
 /// Represents the state of the post search
 @freezed
-class PostSearchState with _$PostSearchState {
+abstract class PostSearchState with _$PostSearchState {
   /// Creates a new post search state
   const factory PostSearchState({
     /// Whether search results are loading

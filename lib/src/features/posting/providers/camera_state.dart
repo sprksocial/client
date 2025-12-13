@@ -4,7 +4,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 part 'camera_state.freezed.dart';
 
 @freezed
-class CameraState with _$CameraState {
+abstract class CameraState with _$CameraState {
   const factory CameraState({
     CameraController? controller,
     @Default([]) List<CameraDescription> cameras,

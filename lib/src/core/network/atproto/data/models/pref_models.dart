@@ -5,7 +5,7 @@ part 'pref_models.freezed.dart';
 part 'pref_models.g.dart';
 
 @freezed
-class Preferences with _$Preferences {
+abstract class Preferences with _$Preferences {
   @JsonSerializable(explicitToJson: true)
   factory Preferences({
     required List<Preference> preferences,
@@ -92,11 +92,11 @@ class Preferences with _$Preferences {
   }) = _Preferences;
   const Preferences._();
 
-  factory Preferences.fromJson(Map<String, dynamic> json) => _$$PreferencesImplFromJson(json);
+  factory Preferences.fromJson(Map<String, dynamic> json) => _$PreferencesFromJson(json);
 }
 
 @Freezed(unionKey: r'$type')
-class Preference with _$Preference {
+abstract class Preference with _$Preference {
   const Preference._();
 
   @FreezedUnionValue('so.sprk.actor.defs#contentLabelPref')
@@ -182,7 +182,7 @@ class Preference with _$Preference {
 }
 
 @freezed
-class SavedFeed with _$SavedFeed {
+abstract class SavedFeed with _$SavedFeed {
   factory SavedFeed({
     required String type,
     required String value,
@@ -212,7 +212,7 @@ class SavedFeed with _$SavedFeed {
 }
 
 @freezed
-class MutedWord with _$MutedWord {
+abstract class MutedWord with _$MutedWord {
   @JsonSerializable(explicitToJson: true)
   const factory MutedWord({
     required String value,
@@ -225,7 +225,7 @@ class MutedWord with _$MutedWord {
 }
 
 @freezed
-class LabelerPrefItem with _$LabelerPrefItem {
+abstract class LabelerPrefItem with _$LabelerPrefItem {
   @JsonSerializable(explicitToJson: true)
   const factory LabelerPrefItem({
     required String did,
@@ -236,7 +236,7 @@ class LabelerPrefItem with _$LabelerPrefItem {
 }
 
 @freezed
-class ContentLabelPref with _$ContentLabelPref {
+abstract class ContentLabelPref with _$ContentLabelPref {
   @JsonSerializable(explicitToJson: true)
   const factory ContentLabelPref({
     required String labelerDid,

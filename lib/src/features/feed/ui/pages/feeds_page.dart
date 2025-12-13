@@ -71,14 +71,14 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
     // for the debug overlay to update properly
     final feedStates = <Feed, FeedState>{};
     for (final feed in feeds) {
-      feedStates[feed] = ref.watch(feedNotifierProvider(feed));
+      feedStates[feed] = ref.watch(feedProvider(feed));
     }
 
     // Initialize feeds that haven't been loaded yet
     WidgetsBinding.instance.addPostFrameCallback((_) {
       for (final feed in feeds) {
         final state = feedStates[feed]!;
-        final notifier = ref.read(feedNotifierProvider(feed).notifier);
+        final notifier = ref.read(feedProvider(feed).notifier);
 
         // Only load if the feed is empty and not already loading and active
         if (state.length == 0 && !state.loadingFirstLoad && !state.isEndOfNetworkFeed && feed == activeFeed) {

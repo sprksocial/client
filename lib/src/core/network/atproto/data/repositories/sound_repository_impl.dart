@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
@@ -17,7 +17,7 @@ class SoundRepositoryImpl implements SoundRepository {
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger('SoundRepository');
 
   @override
-  Future<StrongRef> createSound({
+  Future<RepoStrongRef> createSound({
     required Blob sound,
     required String title,
     AudioDetails? details,
@@ -43,12 +43,13 @@ class SoundRepositoryImpl implements SoundRepository {
       );
 
       final result = await atproto.repo.createRecord(
-        collection: NSID.parse('so.sprk.sound.audio'),
+        repo: _client.sprkDid,
+        collection: 'so.sprk.sound.audio',
         record: audioRecord.toJson(),
       );
 
       _logger.i('Sound record created successfully: ${result.data.uri}');
-      return result.data;
+      return result.data as RepoStrongRef;
     });
   }
 

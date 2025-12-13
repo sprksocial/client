@@ -5,7 +5,7 @@ part 'login_result.freezed.dart';
 
 /// Result of a login attempt
 @freezed
-class LoginResult with _$LoginResult {
+abstract class LoginResult with _$LoginResult {
   const factory LoginResult({
     required LoginStatus status,
     String? error,

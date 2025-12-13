@@ -1,4 +1,4 @@
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 
@@ -9,7 +9,7 @@ abstract class SoundRepository {
   /// [title] The title of the sound.
   /// [details] Optional audio details (artist, title metadata).
   /// Returns a [StrongRef] to the created sound record.
-  Future<StrongRef> createSound({
+  Future<RepoStrongRef> createSound({
     required Blob sound,
     required String title,
     AudioDetails? details,

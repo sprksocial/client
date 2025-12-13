@@ -3,7 +3,11 @@ name: Flutter Analyze Changed Files
 on:
   pull_request:
     branches: [main]
-    types: [opened, synchronize, reopened] # Run when PR is opened, updated, or reopened
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
 
 jobs:
   lint:
@@ -22,89 +26,52 @@ jobs:
           files: |
             **/*.dart
 
+      - name: Get changed widgetbook Dart files
+        id: widgetbook_changed_files
+        uses: tj-actions/changed-files@v46
+        with:
+          files: |
+            widgetbook/**/*.dart
+
       - name: Set up Flutter
-        if: steps.changed_files.outputs.all_changed_files != ''
+        if: steps.changed_files.outputs.any_changed == 'true'
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          flutter-version: 3.35.7
+          flutter-version: 3.38.4
           cache: true
 
-      - name: Generated code setup
-        if: steps.changed_files.outputs.all_changed_files != ''
+      - name: Codegen (app)
+        if: steps.changed_files.outputs.any_changed == 'true'
         run: |
-          flutter pub get
+          touch .env
+          flutter pub get --enforce-lockfile
           dart run build_runner build --delete-conflicting-outputs
+
+      - name: Codegen (widgetbook)
+        if: steps.widgetbook_changed_files.outputs.any_changed == 'true'
+        run: |
+          cd widgetbook
+          dart run build_runner build --delete-conflicting-outputs
+
+      - name: Determine analyze targets
+        id: analyze_targets
+        if: steps.changed_files.outputs.any_changed == 'true'
+        run: |
+          if [ "${{ steps.widgetbook_changed_files.outputs.any_changed }}" = "true" ]; then
+            echo "targets=." >> "$GITHUB_OUTPUT"
+          else
+            echo "targets=lib test" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Run Flutter Analyze
         id: analyze_step
-        if: steps.changed_files.outputs.all_changed_files != ''
-        run: |
-          echo "Changed Dart files:"
-          echo "${{ steps.changed_files.outputs.all_changed_files }}"
+        if: steps.changed_files.outputs.any_changed == 'true'
+        run: flutter analyze --write=flutter_analyze.log ${{ steps.analyze_targets.outputs.targets }}
 
-          FILTERED_FILES=$(printf "%s\n" "${{ steps.changed_files.outputs.all_changed_files }}" | tr ' ' '\n' | grep -v '^widgetbook/' | tr '\n' ' ' | sed 's/[[:space:]]*$//')
-
-          if [ -z "$FILTERED_FILES" ]; then
-            echo "Only widgetbook files changed. Skipping flutter analyze."
-            exit 0
-          fi
-
-          echo "Analyzing:"
-          echo "$FILTERED_FILES"
-          # Run analyze and save output. Redirect stderr to stdout for capture.
-          # Continue with '|| true' so the workflow doesn't stop if issues are found,
-          # as we want to report them as annotations.
-          flutter analyze $FILTERED_FILES > flutter_analyze_output.txt 2>&1 || true
-
-          echo "--- Flutter Analyze Output (raw) ---"
-          cat flutter_analyze_output.txt
-          echo "------------------------------------"
-
-      - name: Process Analyze Output, Annotate & Check Errors
-        if: steps.changed_files.outputs.all_changed_files != ''
-        run: |
-          if [ ! -s flutter_analyze_output.txt ]; then
-            echo "::debug::flutter_analyze_output.txt not found or is empty. No annotations to create or errors to check."
-            exit 0
-          fi
-
-          echo "::debug::Starting annotation processing and error checking from flutter_analyze_output.txt"
-          found_any_issue="false" # Flag to track if any issues (info, warning, error) are found
-
-          while IFS= read -r line; do
-            if [[ "$line" =~ ^[[:space:]]*(info|warning|error)[[:space:]]+•[[:space:]]+(.+)[[:space:]]+•[[:space:]]+([^:]+):([0-9]+):([0-9]+)[[:space:]]+•[[:space:]]+(.+)$ ]]; then
-              found_any_issue="true" # Set flag if any issue is found
-              type="${BASH_REMATCH[1]}"
-              message_body="${BASH_REMATCH[2]}"
-              file_path="${BASH_REMATCH[3]}"
-              line_num="${BASH_REMATCH[4]}"
-              col_num="${BASH_REMATCH[5]}"
-              rule_id="${BASH_REMATCH[6]}"
-
-              github_level="notice" # Default for 'info'
-              if [ "$type" = "warning" ]; then
-                github_level="warning"
-              elif [ "$type" = "error" ]; then
-                github_level="error"
-              fi
-
-              message_body_escaped="${message_body//'%'/'%25'}"
-              message_body_escaped="${message_body_escaped//$'\r'/'%0D'}"
-              message_body_escaped="${message_body_escaped//$'\n'/'%0A'}"
-
-              echo "::$github_level file=$file_path,line=$line_num,col=$col_num,title=$rule_id::$message_body_escaped"
-            elif [[ "$line" =~ issues\ found\.|\ Analyzing\ |^$|No\ issues\ found!|Looking\ for\ direct\ dependencies\ of|Running\ \"flutter\ pub\ get\"\ in ]]; then
-              echo "::debug::Skipping known non-issue line: $line"
-            else
-              echo "::debug::Skipping unparseable line from flutter_analyze_output.txt: $line"
-            fi
-          done < flutter_analyze_output.txt
-          echo "::debug::Finished annotation processing."
-
-          if [ "$found_any_issue" = "true" ]; then
-            echo "::error::Flutter analyze reported issues. See annotations for details. Failing workflow."
-            exit 1
-          else
-            echo "::debug::No flutter analyze issues found. Workflow will pass."
-          fi
+      - name: Flutter Analyze Commenter
+        if: ${{ !cancelled() && steps.changed_files.outputs.any_changed == 'true' }} # Run only when analyze executed
+        uses: yorifuji/flutter-analyze-commenter@v1
+        with:
+          analyze-log: flutter_analyze.log
+          verbose: false

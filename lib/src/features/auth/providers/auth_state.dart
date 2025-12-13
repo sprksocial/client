@@ -6,7 +6,7 @@ part 'auth_state.freezed.dart';
 
 /// Authentication state for the application
 @freezed
-class AuthState with _$AuthState {
+abstract class AuthState with _$AuthState {
   const factory AuthState({
     @Default(false) bool isAuthenticated,
     Session? session,

@@ -1,4 +1,5 @@
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_label_defs.dart';
+import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 
@@ -9,7 +10,7 @@ abstract class StoryRepository {
   /// [media] The media of the story to post
   /// [selfLabels] The self labels of the story
   /// [tags] The tags of the story
-  Future<StrongRef> postStory(Media media, {List<SelfLabel>? selfLabels, List<String>? tags});
+  Future<RepoStrongRef> postStory(Media media, {List<SelfLabel>? selfLabels, List<String>? tags});
 
   /// Get stories timeline
   ///

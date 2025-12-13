@@ -1,4 +1,3 @@
-import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/config/app_config.dart';
@@ -45,7 +44,7 @@ class ServiceAuthHelper {
       // Use official atproto API to request service auth
       final res = await atproto.server.getServiceAuth(
         aud: serviceDid,
-        lxm: NSID.parse(nsid),
+        lxm: nsid,
         exp: exp,
       );
 

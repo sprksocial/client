@@ -1,9 +1,9 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/auth/data/models/onboarding_screen_state.dart'; // Import for OnboardingScreenState
+import 'package:sparksocial/src/core/auth/data/models/onboarding_screen_state.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/widgets/custom_text_field.dart'; // Corrected path
+import 'package:sparksocial/src/core/ui/widgets/custom_text_field.dart';
 import 'package:sparksocial/src/features/auth/providers/onboarding_notifier.dart';
 import 'package:sparksocial/src/features/auth/providers/onboarding_providers.dart';
 import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
@@ -27,30 +27,28 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     super.initState();
     _displayNameController = TextEditingController();
     _descriptionController = TextEditingController();
+    _displayNameController.addListener(_updateDisplayName);
+    _descriptionController.addListener(_updateDescription);
+  }
 
-    final initialState = ref.read(onboardingNotifierProvider);
-    if (initialState.hasValue && initialState.value != null) {
-      _displayNameController.text = initialState.value!.displayName;
-      _descriptionController.text = initialState.value!.description;
+  void _updateDisplayName() {
+    final currentProviderState = ref.read(onboardingProvider).value;
+    if (currentProviderState != null && _displayNameController.text != currentProviderState.displayName) {
+      ref.read(onboardingProvider.notifier).updateDisplayName(_displayNameController.text);
     }
+  }
 
-    _displayNameController.addListener(() {
-      final currentProviderState = ref.read(onboardingNotifierProvider).value;
-      if (currentProviderState != null && _displayNameController.text != currentProviderState.displayName) {
-        ref.read(onboardingNotifierProvider.notifier).updateDisplayName(_displayNameController.text);
-      }
-    });
-
-    _descriptionController.addListener(() {
-      final currentProviderState = ref.read(onboardingNotifierProvider).value;
-      if (currentProviderState != null && _descriptionController.text != currentProviderState.description) {
-        ref.read(onboardingNotifierProvider.notifier).updateDescription(_descriptionController.text);
-      }
-    });
+  void _updateDescription() {
+    final currentProviderState = ref.read(onboardingProvider).value;
+    if (currentProviderState != null && _descriptionController.text != currentProviderState.description) {
+      ref.read(onboardingProvider.notifier).updateDescription(_descriptionController.text);
+    }
   }
 
   @override
   void dispose() {
+    _displayNameController.removeListener(_updateDisplayName);
+    _descriptionController.removeListener(_updateDescription);
     _displayNameController.dispose();
     _descriptionController.dispose();
     super.dispose();
@@ -68,8 +66,8 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       final onboardingState = ref.read(onboardingStateProvider.notifier);
 
       // Determine avatar to use
-      dynamic avatarToUse;
-      final currentState = ref.read(onboardingNotifierProvider).value;
+      Object? avatarToUse;
+      final currentState = ref.read(onboardingProvider).value;
       if (currentState?.localAvatarBytes != null) {
         avatarToUse = currentState!.localAvatarBytes;
       } else if (currentState?.bskyProfileRecord?.avatar != null) {
@@ -106,16 +104,17 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
   @override
   Widget build(BuildContext context) {
-    final onboardingStateAsync = ref.watch(onboardingNotifierProvider);
-    final notifier = ref.read(onboardingNotifierProvider.notifier);
+    final onboardingStateAsync = ref.watch(onboardingProvider);
+    final notifier = ref.read(onboardingProvider.notifier);
 
-    ref.listen<AsyncValue<OnboardingScreenState>>(onboardingNotifierProvider, (_, next) {
+    // Initialize controllers from state if not already set
+    ref.listen<AsyncValue<OnboardingScreenState>>(onboardingProvider, (previous, next) {
       if (next.hasValue && next.value != null) {
         final stateValue = next.value!;
-        if (_displayNameController.text != stateValue.displayName) {
+        if (_displayNameController.text.isEmpty && stateValue.displayName.isNotEmpty) {
           _displayNameController.text = stateValue.displayName;
         }
-        if (_descriptionController.text != stateValue.description) {
+        if (_descriptionController.text.isEmpty && stateValue.description.isNotEmpty) {
           _descriptionController.text = stateValue.description;
         }
       }

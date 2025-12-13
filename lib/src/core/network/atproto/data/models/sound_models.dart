@@ -1,4 +1,4 @@
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
@@ -7,8 +7,21 @@ import 'package:sparksocial/src/core/utils/uri_converter.dart';
 part 'sound_models.freezed.dart';
 part 'sound_models.g.dart';
 
+AudioRecord _audioRecordFromJson(dynamic json) {
+  if (json is! Map<String, dynamic>) {
+    throw Exception('Expected Map<String, dynamic> but got ${json.runtimeType}');
+  }
+  final record = Record.fromJson(json);
+  if (record is AudioRecord) {
+    return record;
+  }
+  throw Exception('Expected AudioRecord but got ${record.runtimeType}');
+}
+
+Map<String, dynamic> _audioRecordToJson(AudioRecord record) => record.toJson();
+
 @freezed
-class AudioDetails with _$AudioDetails {
+abstract class AudioDetails with _$AudioDetails {
   @JsonSerializable(explicitToJson: true)
   const factory AudioDetails({
     String? artist,
@@ -19,13 +32,13 @@ class AudioDetails with _$AudioDetails {
 }
 
 @freezed
-class AudioView with _$AudioView {
+abstract class AudioView with _$AudioView {
   @JsonSerializable(explicitToJson: true)
   const factory AudioView({
     @AtUriConverter() required AtUri uri,
     required String cid,
     required ProfileViewBasic author,
-    required AudioRecord record,
+    @JsonKey(fromJson: _audioRecordFromJson, toJson: _audioRecordToJson) required AudioRecord record,
     required String title,
     @UriConverter() required Uri coverArt,
     required DateTime indexedAt,
@@ -40,7 +53,7 @@ class AudioView with _$AudioView {
 }
 
 @freezed
-class AudioPostsResponse with _$AudioPostsResponse {
+abstract class AudioPostsResponse with _$AudioPostsResponse {
   @JsonSerializable(explicitToJson: true)
   const factory AudioPostsResponse({
     required List<PostView> posts,
@@ -52,7 +65,7 @@ class AudioPostsResponse with _$AudioPostsResponse {
 }
 
 @freezed
-class TrendingAudiosResponse with _$TrendingAudiosResponse {
+abstract class TrendingAudiosResponse with _$TrendingAudiosResponse {
   @JsonSerializable(explicitToJson: true)
   const factory TrendingAudiosResponse({
     required List<AudioView> audios,
