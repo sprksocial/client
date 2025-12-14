@@ -1,17 +1,17 @@
 import 'package:atproto/com_atproto_moderation_createreport.dart';
-import 'package:atproto/com_atproto_moderation_defs.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/core/ui/widgets/image_content.dart';
-import 'package:sparksocial/src/core/ui/widgets/menu_action_button.dart';
+import 'package:sparksocial/src/core/ui/widgets/options_panel.dart';
 import 'package:sparksocial/src/core/ui/widgets/report_dialog.dart';
 import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
 import 'package:sparksocial/src/features/comments/providers/comment_provider.dart';
@@ -47,10 +47,10 @@ class _CommentItemState extends ConsumerState<CommentItem> {
       builder: (context) => ReportDialog(
         postUri: commentState.thread.post.uri.toString(),
         postCid: commentState.thread.post.cid,
-        onSubmit: (subject, reasonType, reason, service) async {
+        onSubmit: (subject, reasonType, reason) async {
           try {
             final result = await sprkRepository.repo.createReport(
-              input: ModerationCreateReportInput(subject: subject, reasonType: reasonType as ReasonType, reason: reason),
+              input: ModerationCreateReportInput(subject: subject, reasonType: reasonType, reason: reason),
             );
 
             if (result) {
@@ -150,12 +150,28 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                             ),
                           ),
                         ),
-                        MenuActionButton(
-                          onPressed: _handleReportComment,
-                          onDeletePressed: _handleDeleteComment,
-                          isCompact: true,
-                          backgroundColor: Theme.of(context).colorScheme.surface,
-                          authorDid: commentState.thread.post.author.did,
+                        Builder(
+                          builder: (context) {
+                            final authRepository = GetIt.instance<AuthRepository>();
+                            final userDid = authRepository.session?.did;
+                            final isCurrentUserAuthor = userDid == commentState.thread.post.author.did;
+                            final theme = Theme.of(context);
+                            final isDark = theme.brightness == Brightness.dark;
+                            final iconColor = isDark ? AppColors.white : AppColors.black;
+
+                            return GestureDetector(
+                              onTap: () => OptionsPanel.show(
+                                context: context,
+                                onReport: _handleReportComment,
+                                onDelete: isCurrentUserAuthor ? _handleDeleteComment : null,
+                              ),
+                              child: SizedBox(
+                                width: 28,
+                                height: 28,
+                                child: Icon(Icons.more_horiz, color: iconColor, size: 16),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),
