@@ -47,7 +47,7 @@ class UserListView extends ConsumerWidget {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: ProfileCard(
-            imageUrl: user.avatar.toString(),
+            imageUrl: user.avatar?.toString() ?? '',
             userName: user.displayName ?? user.handle,
             userHandle: '@${user.handle}',
             description: user.description,
