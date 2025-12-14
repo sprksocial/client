@@ -19,6 +19,7 @@ class SparkSideActionBar extends StatefulWidget {
     this.onCurate,
     this.onShare,
     this.onSoundTap,
+    this.optionsButton,
     this.likeCount,
     this.commentCount,
     this.curateCount,
@@ -38,6 +39,7 @@ class SparkSideActionBar extends StatefulWidget {
   final VoidCallback? onCurate; // called after a feed selection (or when opening?)
   final VoidCallback? onShare;
   final VoidCallback? onSoundTap;
+  final Widget? optionsButton;
 
   final String? likeCount;
   final String? commentCount;
@@ -171,6 +173,9 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
             cover: widget.soundCover!,
             onTap: widget.onSoundTap,
           ),
+        ],
+        if (widget.optionsButton != null) ...[
+          widget.optionsButton!,
         ],
       ],
     );

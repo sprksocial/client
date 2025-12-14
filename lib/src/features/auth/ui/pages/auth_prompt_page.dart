@@ -2,6 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/buttons/primary_button.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 
@@ -61,50 +62,20 @@ class AuthPromptPage extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(height: 60),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        minimumSize: const Size(320, 60),
-                      ),
+                    PrimaryButton(
+                      text: 'Login with ',
+                      trailing: SvgPicture.asset('assets/images/ataccount.svg', height: 22, width: 100),
                       onPressed: () {
                         context.router.push(const LoginRoute());
                       },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Login with ',
-                            style: TextStyle(fontWeight: FontWeight.normal, fontSize: 20, color: AppColors.white),
-                          ),
-                          SvgPicture.asset('assets/images/ataccount.svg', height: 22, width: 100),
-                        ],
-                      ),
                     ),
                     const SizedBox(height: 16),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        minimumSize: const Size(320, 60),
-                      ),
+                    PrimaryButton(
+                      text: 'Create an ',
+                      trailing: SvgPicture.asset('assets/images/ataccount.svg', height: 22, width: 100),
                       onPressed: () {
                         context.router.push(const RegisterRoute());
                       },
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            'Create an ',
-                            style: TextStyle(fontWeight: FontWeight.normal, fontSize: 20, color: AppColors.white),
-                          ),
-                          SvgPicture.asset('assets/images/ataccount.svg', height: 22, width: 100),
-                        ],
-                      ),
                     ),
                     if (onClose != null) ...[
                       const SizedBox(height: 24),

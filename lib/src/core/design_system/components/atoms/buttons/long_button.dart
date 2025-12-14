@@ -5,8 +5,16 @@ import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 import 'package:sparksocial/src/core/design_system/tokens/gradients.dart';
 import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
 
+/// A general-purpose button with gradient background that can display any text.
+///
+/// This button features an accent gradient background with a glass stroke border.
+/// It's commonly used in authentication screens and forms, but can be used
+/// anywhere a prominent action button is needed.
 class LongButton extends StatelessWidget {
+  /// The text to display on the button
   final String label;
+
+  /// Callback when the button is pressed
   final VoidCallback? onPressed;
 
   const LongButton({

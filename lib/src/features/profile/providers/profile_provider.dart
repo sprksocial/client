@@ -180,7 +180,7 @@ class ProfileNotifier extends _$ProfileNotifier {
     }
   }
 
-  Future<bool> createReport({required String did, required KnownReasonType reasonType, String? reason}) async {
+  Future<bool> createReport({required String did, required ReasonType reasonType, String? reason}) async {
     if (!authRepository.isAuthenticated) {
       logger.w('Cannot create report, user not authenticated');
       final currentData = state.asData?.value;
@@ -194,7 +194,7 @@ class ProfileNotifier extends _$ProfileNotifier {
       logger.d('Creating report for DID: $did with reason: $reasonType');
       final subject = UModerationCreateReportSubject.repoRef(data: RepoRef(did: did));
       final result = await sprkRepository.repo.createReport(
-        input: ModerationCreateReportInput(subject: subject, reasonType: reasonType as ReasonType, reason: reason),
+        input: ModerationCreateReportInput(subject: subject, reasonType: reasonType, reason: reason),
       );
       logger.i('Report created successfully for $did');
       return result;

@@ -13,7 +13,7 @@ import 'package:sparksocial/src/core/media/create_media_actions.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart' as actor_models;
 import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/widgets/menu_action_button.dart';
+import 'package:sparksocial/src/core/ui/widgets/options_panel.dart';
 import 'package:sparksocial/src/core/ui/widgets/report_dialog.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
@@ -206,37 +206,43 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 else
                   Padding(
                     padding: const EdgeInsets.only(right: 8),
-                    child: MenuActionButton(
-                      onPressed: () => showDialog(
+                    child: GestureDetector(
+                      onTap: () => OptionsPanel.show(
                         context: context,
-                        useRootNavigator: false,
-                        builder: (dContext) => ReportDialog(
-                          postUri: 'at://${profile.did}/app.bsky.actor.profile/self',
-                          postCid: profile.did,
-                          onSubmit: (subject, reasonType, reason, service) async {
-                            try {
-                              final success = await notifier.createReport(
-                                did: profile.did,
-                                reasonType: reasonType,
-                                reason: reason,
-                              );
-                              if (success && context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Report submitted successfully')),
+                        onReport: () => showDialog(
+                          context: context,
+                          useRootNavigator: false,
+                          builder: (dContext) => ReportDialog(
+                            postUri: 'at://${profile.did}/app.bsky.actor.profile/self',
+                            postCid: profile.did,
+                            onSubmit: (subject, reasonType, reason) async {
+                              try {
+                                final success = await notifier.createReport(
+                                  did: profile.did,
+                                  reasonType: reasonType,
+                                  reason: reason,
                                 );
+                                if (success && context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Report submitted successfully')),
+                                  );
+                                }
+                              } catch (e) {
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text('Error submitting report: $e')),
+                                  );
+                                }
                               }
-                            } catch (e) {
-                              if (context.mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Error submitting report: $e')),
-                                );
-                              }
-                            }
-                          },
+                            },
+                          ),
                         ),
+                        isProfile: true,
                       ),
-                      backgroundColor: colorScheme.onSurface.withAlpha(30),
-                      isProfile: true,
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        child: AppIcons.moreHoriz(color: colorScheme.onSurface),
+                      ),
                     ),
                   ),
               ],

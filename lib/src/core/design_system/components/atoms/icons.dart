@@ -257,6 +257,13 @@ class AppIcons {
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
     package: 'assets',
   );
+  static Widget moreHoriz({double size = 24, Color? color}) => SvgPicture.asset(
+    '$_path/more_horiz.svg',
+    width: size,
+    height: size,
+    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
+    package: 'assets',
+  );
   static Widget music({double size = 24, Color? color}) => SvgPicture.asset(
     '$_path/music.svg',
     width: size,
