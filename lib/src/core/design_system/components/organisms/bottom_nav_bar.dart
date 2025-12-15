@@ -41,16 +41,16 @@ class SparkBottomNavBar extends StatelessWidget {
                   isSelected: currentIndex == 0,
                   onTap: () => onTap(0),
                   builder: (c, selected) => selected
-                      ? AppIcons.navbarHomeFilled(color: isDark ? null : Colors.black)
-                      : AppIcons.navbarHome(color: isDark ? null : Colors.black),
+                      ? AppIcons.homeFilled(color: isDark ? null : Colors.black)
+                      : AppIcons.home(color: isDark ? null : Colors.black),
                 ),
 
                 _NavIcon(
                   isSelected: currentIndex == 1,
                   onTap: () => onTap(1),
                   builder: (c, selected) => selected
-                      ? AppIcons.navbarExploreFilled(color: isDark ? null : Colors.black)
-                      : AppIcons.navbarExplore(color: isDark ? null : Colors.black),
+                      ? AppIcons.exploreFilled(color: isDark ? null : Colors.black)
+                      : AppIcons.explore(color: isDark ? null : Colors.black),
                 ),
 
                 _NavIcon(
@@ -65,8 +65,8 @@ class SparkBottomNavBar extends StatelessWidget {
                   isSelected: currentIndex == 3,
                   onTap: () => onTap(3),
                   builder: (c, selected) => selected
-                      ? AppIcons.navbarMessagesFilled(color: isDark ? null : Colors.black)
-                      : AppIcons.navbarMessages(color: isDark ? null : Colors.black),
+                      ? AppIcons.messagesFilled(color: isDark ? null : Colors.black)
+                      : AppIcons.messages(color: isDark ? null : Colors.black),
                 ),
 
                 _ProfileAvatar(

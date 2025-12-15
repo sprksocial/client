@@ -125,7 +125,7 @@ class PostTile extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              AppIcons.like2(
+                              AppIcons.likeMini(
                                 size: 15,
                                 color: AppColors.greyWhite,
                               ),

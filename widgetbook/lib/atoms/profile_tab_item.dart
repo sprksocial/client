@@ -7,12 +7,7 @@ import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 Widget buildProfileTabItemSelectedUseCase(BuildContext context) {
   return Container(
     color: Theme.of(context).colorScheme.surface,
-    child: ProfileTabItem(
-      icon: AppIcons.profileGrid(),
-      filledIcon: AppIcons.profileGrid(),
-      isSelected: true,
-      onTap: () => print('Tab tapped'),
-    ),
+    child: ProfileTabItem(icon: AppIcons.grid(), filledIcon: AppIcons.gridFilled(), isSelected: true, onTap: () => print('Tab tapped')),
   );
 }
 
@@ -36,12 +31,10 @@ Widget buildProfileTabItemInteractiveUseCase(BuildContext context) {
 
 class _InteractiveProfileTabItemDemo extends StatefulWidget {
   @override
-  State<_InteractiveProfileTabItemDemo> createState() =>
-      _InteractiveProfileTabItemDemoState();
+  State<_InteractiveProfileTabItemDemo> createState() => _InteractiveProfileTabItemDemoState();
 }
 
-class _InteractiveProfileTabItemDemoState
-    extends State<_InteractiveProfileTabItemDemo> {
+class _InteractiveProfileTabItemDemoState extends State<_InteractiveProfileTabItemDemo> {
   bool _isSelected = false;
 
   @override
@@ -61,10 +54,7 @@ class _InteractiveProfileTabItemDemoState
             },
           ),
           const SizedBox(height: 16),
-          Text(
-            'Status: ${_isSelected ? "Selected" : "Unselected"}',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          Text('Status: ${_isSelected ? "Selected" : "Unselected"}', style: Theme.of(context).textTheme.bodyMedium),
         ],
       ),
     );
@@ -123,10 +113,7 @@ class _MultipleTabsDemoState extends State<_MultipleTabsDemo> {
             ],
           ),
           const SizedBox(height: 16),
-          Text(
-            'Selected tab: $_selectedIndex',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
+          Text('Selected tab: $_selectedIndex', style: Theme.of(context).textTheme.bodyMedium),
         ],
       ),
     );

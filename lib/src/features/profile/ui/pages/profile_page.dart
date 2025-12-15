@@ -250,8 +250,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 selectedIndex: tabsRouter.activeIndex,
                 tabs: [
                   ProfileTabItem(
-                    icon: AppIcons.profileGrid(),
-                    filledIcon: AppIcons.profileGridFilled(),
+                    icon: AppIcons.grid(),
+                    filledIcon: AppIcons.gridFilled(),
                     isSelected: tabsRouter.activeIndex == 0,
                     onTap: () => tabsRouter.setActiveIndex(0),
                   ),
