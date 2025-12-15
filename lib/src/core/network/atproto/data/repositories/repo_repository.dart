@@ -20,12 +20,20 @@ abstract class RepoRepository {
   ///
   /// [collection] The NSID of the collection to create the record in
   /// [record] The record data to create
-  Future<RepoStrongRef> createRecord({required String collection, required Map<String, dynamic> record, String? rkey});
+  /// [rkey] Optional record key
+  /// [repo] Optional DID of the repo (defaults to current user's DID if not provided)
+  Future<RepoStrongRef> createRecord({
+    required String collection,
+    required Map<String, dynamic> record,
+    String? rkey,
+    String? repo,
+  });
 
   /// Delete a record from the repository
   ///
   /// [uri] The URI of the record to delete
-  Future<void> deleteRecord({required AtUri uri});
+  /// [skipBskyCrosspostCleanup] If true, skips attempting to delete Bluesky crosspost
+  Future<void> deleteRecord({required AtUri uri, bool skipBskyCrosspostCleanup = false});
 
   /// Upload a blob to the repository
   ///
