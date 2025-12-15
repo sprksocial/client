@@ -4,10 +4,7 @@ import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 import 'package:widgetbook_workspace/tokens/colors_preview.dart';
 
-@UseCase(
-  name: 'Default',
-  type: AppColors,
-)
+@UseCase(name: 'Default', type: AppColors)
 Widget buildAppColorsUseCase(BuildContext context) {
   return const Padding(
     padding: EdgeInsets.all(24),
@@ -96,7 +93,7 @@ Widget buildAppColorsUseCase(BuildContext context) {
               AppColors.rajah900,
             ],
           ),
-           SizedBox(height: 24),
+          SizedBox(height: 24),
           ColorPalettePreview(
             name: 'Indigo',
             colors: [
@@ -112,7 +109,7 @@ Widget buildAppColorsUseCase(BuildContext context) {
               AppColors.indigo900,
             ],
           ),
-           SizedBox(height: 24),
+          SizedBox(height: 24),
           ColorPalettePreview(
             name: 'Blue',
             colors: [
@@ -128,8 +125,8 @@ Widget buildAppColorsUseCase(BuildContext context) {
               AppColors.blue900,
             ],
           ),
-           SizedBox(height: 24),
-           ColorPalettePreview(
+          SizedBox(height: 24),
+          ColorPalettePreview(
             name: 'Red',
             colors: [
               AppColors.red50,
@@ -144,8 +141,8 @@ Widget buildAppColorsUseCase(BuildContext context) {
               AppColors.red900,
             ],
           ),
-           SizedBox(height: 24),
-           ColorPalettePreview(
+          SizedBox(height: 24),
+          ColorPalettePreview(
             name: 'Green',
             colors: [
               AppColors.green50,

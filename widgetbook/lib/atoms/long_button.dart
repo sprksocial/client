@@ -5,25 +5,15 @@ import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 // Assuming the LongButton component is located at this path
 import 'package:sparksocial/src/core/design_system/components/atoms/buttons/long_button.dart';
 
-@UseCase(
-  name: 'no_ui',
-  type: LongButton,
-)
+@UseCase(name: 'no_ui', type: LongButton)
 Widget buildLongButtonNoUIUseCase(BuildContext context) {
   return LongButton(
-    label: context.knobs.string(
-      label: 'Label',
-      initialValue: 'Continue',
-    ),
+    label: context.knobs.string(label: 'Label', initialValue: 'Continue'),
     onPressed: () => print('LongButton was pressed.'),
   );
 }
 
-
-@UseCase(
-  name: 'resizable_parent',
-  type: LongButton,
-)
+@UseCase(name: 'resizable_parent', type: LongButton)
 Widget buildLongButtonInAResizableContainerUseCase(BuildContext context) {
   return Center(
     child: Container(

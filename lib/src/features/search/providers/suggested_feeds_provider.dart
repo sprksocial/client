@@ -31,7 +31,7 @@ class SuggestedFeeds extends _$SuggestedFeeds {
   /// Refresh the suggested feeds
   Future<void> refresh() async {
     state = const AsyncValue.loading();
-    
+
     try {
       _logger.d('Refreshing suggested Spark feeds...');
       // Only fetch Spark feeds

@@ -19,17 +19,10 @@ class TypographyPreview extends StatelessWidget {
           opacity: 0.64,
           child: Text(
             name.toUpperCase(),
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w200,
-            ),
+            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w200),
           ),
         ),
-        for (final style in styles.entries)
-          Text(
-            style.key,
-            style: style.value,
-          ),
+        for (final style in styles.entries) Text(style.key, style: style.value),
       ],
     );
   }
