@@ -23,34 +23,21 @@ class SoundRepositoryImpl implements SoundRepository {
     AudioDetails? details,
   }) async {
     _logger.d('Creating sound record with title: $title');
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
 
-      final atproto = _client.authRepository.atproto;
-      if (atproto == null) {
-        _logger.e('AtProto not initialized');
-        throw Exception('AtProto not initialized');
-      }
+    final audioRecord = AudioRecord(
+      sound: sound,
+      title: title,
+      createdAt: DateTime.now().toUtc(),
+      details: details,
+    );
 
-      final audioRecord = AudioRecord(
-        sound: sound,
-        title: title,
-        createdAt: DateTime.now().toUtc(),
-        details: details,
-      );
+    final result = await _client.repo.createRecord(
+      collection: 'so.sprk.sound.audio',
+      record: audioRecord.toJson(),
+    );
 
-      final result = await atproto.repo.createRecord(
-        repo: _client.sprkDid,
-        collection: 'so.sprk.sound.audio',
-        record: audioRecord.toJson(),
-      );
-
-      _logger.i('Sound record created successfully: ${result.data.uri}');
-      return result.data as RepoStrongRef;
-    });
+    _logger.i('Sound record created successfully: ${result.uri}');
+    return result;
   }
 
   @override

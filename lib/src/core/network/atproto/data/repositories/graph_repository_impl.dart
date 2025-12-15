@@ -122,11 +122,11 @@ class GraphRepositoryImpl implements GraphRepository {
 
         final followRecord = {r'$type': collection, 'subject': did, 'createdAt': DateTime.now().toUtc().toIso8601String()};
 
-        final result = await atproto.repo.createRecord(repo: sessionDid, collection: collection, record: followRecord);
+        final result = await _client.repo.createRecord(collection: collection, record: followRecord, repo: sessionDid);
 
-        _logger.i('User followed successfully with $collection: ${result.data.uri}');
+        _logger.i('User followed successfully with $collection: ${result.uri}');
 
-        return FollowUserResponse(uri: result.data.uri.toString(), cid: result.data.cid);
+        return FollowUserResponse(uri: result.uri.toString(), cid: result.cid);
       } catch (e) {
         _logger.e('Error in followUser', error: e);
         rethrow;
@@ -137,25 +137,8 @@ class GraphRepositoryImpl implements GraphRepository {
   @override
   Future<void> unfollowUser(AtUri followUri) async {
     _logger.d('Unfollowing user with follow URI: $followUri');
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
-      final atproto = _client.authRepository.atproto;
-      if (atproto == null) {
-        _logger.e('AtProto not initialized');
-        throw Exception('AtProto not initialized');
-      }
-
-      await atproto.repo.deleteRecord(
-        repo: followUri.hostname,
-        collection: followUri.collection.toString(),
-        rkey: followUri.rkey,
-      );
-      _logger.i('User unfollowed successfully');
-    });
+    await _client.repo.deleteRecord(uri: followUri, skipBskyCrosspostCleanup: true);
+    _logger.i('User unfollowed successfully');
   }
 
   @override

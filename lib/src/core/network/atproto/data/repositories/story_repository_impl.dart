@@ -158,25 +158,12 @@ class StoryRepositoryImpl implements StoryRepository {
   }
 
   @override
-  Future<RepoStrongRef> postStory(Media media, {List<SelfLabel>? selfLabels, List<String>? tags}) {
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        throw Exception('Not authenticated');
-      }
+  Future<RepoStrongRef> postStory(Media media, {List<SelfLabel>? selfLabels, List<String>? tags}) async {
+    final record = StoryRecord(createdAt: DateTime.now().toUtc(), media: media, tags: tags, labels: selfLabels);
 
-      final record = StoryRecord(createdAt: DateTime.now().toUtc(), media: media, tags: tags, labels: selfLabels);
-
-      final response = await _client.authRepository.atproto!.repo.createRecord(
-        repo: _client.sprkDid,
-        collection: 'so.sprk.story.post',
-        record: record.toJson(),
-      );
-
-      if (response.status.code != 200) {
-        throw Exception('Failed to post story: ${response.status} ${response.data}');
-      }
-
-      return response.data as RepoStrongRef;
-    });
+    return _client.repo.createRecord(
+      collection: 'so.sprk.story.post',
+      record: record.toJson(),
+    );
   }
 }

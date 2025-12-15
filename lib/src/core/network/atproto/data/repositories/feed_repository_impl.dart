@@ -687,57 +687,30 @@ class FeedRepositoryImpl implements FeedRepository {
   @override
   Future<RepoStrongRef> likePost(String postCid, AtUri postUri) async {
     _logger.d('Liking post with String: $postCid, URI: $postUri');
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
 
-      final atproto = _client.authRepository.atproto;
-      if (atproto == null) {
-        _logger.e('AtProto not initialized');
-        throw Exception('AtProto not initialized');
-      }
+    // Determine if this is a Bluesky post or Spark post
+    final isBskyPost = postUri.collection.toString().startsWith('app.bsky.feed.post');
+    final likeType = isBskyPost ? 'app.bsky.feed.like' : 'so.sprk.feed.like';
 
-      // Determine if this is a Bluesky post or Spark post
-      final isBskyPost = postUri.collection.toString().startsWith('app.bsky.feed.post');
-      final likeType = isBskyPost ? 'app.bsky.feed.like' : 'so.sprk.feed.like';
-      final likeCollection = likeType;
+    _logger.d('Post type: ${isBskyPost ? 'Bluesky' : 'Spark'}, using collection: $likeType');
 
-      _logger.d('Post type: ${isBskyPost ? 'Bluesky' : 'Spark'}, using collection: $likeType');
+    final likeRecord = {
+      r'$type': likeType,
+      'subject': {'cid': postCid, 'uri': postUri.toString()},
+      'createdAt': DateTime.now().toUtc().toIso8601String(),
+    };
 
-      final likeRecord = {
-        r'$type': likeType,
-        'subject': {'cid': postCid, 'uri': postUri.toString()},
-        'createdAt': DateTime.now().toUtc().toIso8601String(),
-      };
+    final result = await _client.repo.createRecord(collection: likeType, record: likeRecord);
+    _logger.i('Post liked successfully: ${result.uri}');
 
-      final result = await atproto.repo.createRecord(repo: _client.sprkDid, collection: likeCollection, record: likeRecord);
-
-      _logger.i('Post liked successfully: ${result.data.uri}');
-
-      return result.data as RepoStrongRef;
-    });
+    return result;
   }
 
   @override
   Future<void> unlikePost(AtUri likeUri) async {
     _logger.d('Unliking post with like URI: $likeUri');
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
-      final atproto = _client.authRepository.atproto;
-      if (atproto == null) {
-        _logger.e('AtProto not initialized');
-        throw Exception('AtProto not initialized');
-      }
-
-      await atproto.repo.deleteRecord(repo: _client.sprkDid, collection: likeUri.collection.toString(), rkey: likeUri.rkey);
-      _logger.i('Post unliked successfully');
-    });
+    await _client.repo.deleteRecord(uri: likeUri, skipBskyCrosspostCleanup: true);
+    _logger.i('Post unliked successfully');
   }
 
   @override
@@ -752,95 +725,91 @@ class FeedRepositoryImpl implements FeedRepository {
   }) async {
     _logger.d('Posting comment to parent: $parentUri');
 
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
+    if (!_client.authRepository.isAuthenticated) {
+      _logger.w('Not authenticated');
+      throw Exception('Not authenticated');
+    }
+
+    if (_client.authRepository.atproto == null) {
+      _logger.e('AtProto not initialized');
+      throw Exception('AtProto not initialized');
+    }
+
+    // Use parent as root if not provided
+    final effectiveRootCid = rootCid ?? parentCid;
+    final effectiveRootUri = rootUri ?? parentUri;
+
+    // Upload image if provided (replies only support single image)
+    Map<String, dynamic>? mediaJson;
+    if (imageFiles case final List<XFile> files when files.isNotEmpty) {
+      if (files.length > 1) {
+        _logger.w('Replies only support single image, using first image only');
+      }
+      final uploadedImageMaps = await uploadImages(imageFiles: [files.first], altTexts: altTexts);
+      final firstImage = uploadedImageMaps.first;
+      mediaJson = Media.image(image: firstImage.image, alt: firstImage.alt).toJson();
+    }
+
+    // Create the correct record JSON depending on the target platform.
+    final isSprk = parentUri.toString().contains('sprk');
+
+    final Map<String, dynamic> recordJson;
+    final NSID collection;
+
+    if (isSprk) {
+      // Sprk comment
+      final media = mediaJson != null ? Media.fromJson(mediaJson) : null;
+
+      // Validate that videos are not allowed in replies
+      if (media != null && (media is MediaVideo || media is MediaBskyVideo)) {
+        throw Exception('Videos are not allowed in replies');
       }
 
-      switch (_client.authRepository.atproto) {
-        case null:
-          _logger.e('AtProto not initialized');
-          throw Exception('AtProto not initialized');
-        case final atproto:
-          // Use parent as root if not provided
-          final effectiveRootCid = rootCid ?? parentCid;
-          final effectiveRootUri = rootUri ?? parentUri;
-
-          // Upload image if provided (replies only support single image)
-          Map<String, dynamic>? mediaJson;
-          if (imageFiles case final List<XFile> files when files.isNotEmpty) {
-            if (files.length > 1) {
-              _logger.w('Replies only support single image, using first image only');
-            }
-            final uploadedImageMaps = await uploadImages(imageFiles: [files.first], altTexts: altTexts);
-            final firstImage = uploadedImageMaps.first;
-            mediaJson = Media.image(image: firstImage.image, alt: firstImage.alt).toJson();
-          }
-
-          // Create the correct record JSON depending on the target platform.
-          final isSprk = parentUri.toString().contains('sprk');
-
-          final Map<String, dynamic> recordJson;
-          final NSID collection;
-
-          if (isSprk) {
-            // Sprk comment
-            final media = mediaJson != null ? Media.fromJson(mediaJson) : null;
-
-            // Validate that videos are not allowed in replies
-            if (media != null && (media is MediaVideo || media is MediaBskyVideo)) {
-              throw Exception('Videos are not allowed in replies');
-            }
-
-            final sprkRecord = ReplyRecord(
-              caption: CaptionRef(text: text, facets: []),
-              reply: RecordReplyRef(
-                root: RepoStrongRef(uri: effectiveRootUri, cid: effectiveRootCid),
-                parent: RepoStrongRef(uri: parentUri, cid: parentCid),
-              ),
-              createdAt: DateTime.now().toUtc(),
-              media: media,
-            );
-            recordJson = sprkRecord.toJson();
-            collection = NSID.parse('so.sprk.feed.reply');
-          } else {
-            // Bluesky comment - use adapter to create Bluesky-specific models
-            // Validate that videos are not allowed in replies before conversion
-            if (mediaJson != null) {
-              final media = Media.fromJson(mediaJson);
-              if (media is MediaVideo || media is MediaBskyVideo) {
-                _logger.e('Videos are not allowed in replies');
-                throw Exception('Videos are not allowed in replies');
-              }
-            }
-
-            final bskyMedia = mediaJson != null ? bskyFeedAdapter.convertJsonToBskyEmbed(mediaJson) : null;
-
-            final bskyRecord = bskyFeedAdapter.createCommentRecord(
-              text: text,
-              createdAt: DateTime.now().toUtc(),
-              reply: RecordReplyRef(
-                root: RepoStrongRef(uri: effectiveRootUri, cid: effectiveRootCid),
-                parent: RepoStrongRef(uri: parentUri, cid: parentCid),
-              ),
-              embed: bskyMedia,
-            );
-            recordJson = bskyRecord.toJson();
-            collection = NSID.parse('app.bsky.feed.post');
-          }
-
-          final result = await atproto.repo.createRecord(
-            repo: _client.sprkDid,
-            collection: collection.toString(),
-            record: recordJson,
-          );
-
-          _logger.i('Comment posted successfully: ${result.data.uri}');
-
-          return result.data as RepoStrongRef;
+      final sprkRecord = ReplyRecord(
+        caption: CaptionRef(text: text, facets: []),
+        reply: RecordReplyRef(
+          root: RepoStrongRef(uri: effectiveRootUri, cid: effectiveRootCid),
+          parent: RepoStrongRef(uri: parentUri, cid: parentCid),
+        ),
+        createdAt: DateTime.now().toUtc(),
+        media: media,
+      );
+      recordJson = sprkRecord.toJson();
+      collection = NSID.parse('so.sprk.feed.reply');
+    } else {
+      // Bluesky comment - use adapter to create Bluesky-specific models
+      // Validate that videos are not allowed in replies before conversion
+      if (mediaJson != null) {
+        final media = Media.fromJson(mediaJson);
+        if (media is MediaVideo || media is MediaBskyVideo) {
+          _logger.e('Videos are not allowed in replies');
+          throw Exception('Videos are not allowed in replies');
+        }
       }
-    });
+
+      final bskyMedia = mediaJson != null ? bskyFeedAdapter.convertJsonToBskyEmbed(mediaJson) : null;
+
+      final bskyRecord = bskyFeedAdapter.createCommentRecord(
+        text: text,
+        createdAt: DateTime.now().toUtc(),
+        reply: RecordReplyRef(
+          root: RepoStrongRef(uri: effectiveRootUri, cid: effectiveRootCid),
+          parent: RepoStrongRef(uri: parentUri, cid: parentCid),
+        ),
+        embed: bskyMedia,
+      );
+      recordJson = bskyRecord.toJson();
+      collection = NSID.parse('app.bsky.feed.post');
+    }
+
+    final result = await _client.repo.createRecord(
+      collection: collection.toString(),
+      record: recordJson,
+    );
+
+    _logger.i('Comment posted successfully: ${result.uri}');
+
+    return result;
   }
 
   @override
@@ -850,52 +819,48 @@ class FeedRepositoryImpl implements FeedRepository {
     Map<String, String> altTexts, {
     bool crosspostToBsky = false,
   }) async {
-    switch (imageFiles) {
-      case final List<XFile> files when files.isEmpty:
-        _logger.e('No images provided for image post');
-        throw ArgumentError('At least one image is required for an image post.');
-      default:
-        return _client.executeWithRetry(() async {
-          if (!_client.authRepository.isAuthenticated) {
-            _logger.w('Not authenticated');
-            throw Exception('Not authenticated');
-          }
-
-          if (_client.authRepository.atproto case final atproto?) {
-            final uploadedImageMaps = await uploadImages(imageFiles: imageFiles, altTexts: altTexts);
-
-            // Create Sprk post first
-            final record = PostRecord(
-              caption: CaptionRef(text: text, facets: []),
-              media: Media.images(images: uploadedImageMaps),
-              createdAt: DateTime.now().toUtc(),
-            );
-
-            final result = await atproto.repo.createRecord(
-              repo: _client.sprkDid,
-              collection: NSID.parse('so.sprk.feed.post').toString(),
-              record: record.toJson(),
-            );
-
-            _logger.i('Image post created successfully: ${result.data.uri}');
-
-            // Crosspost to Bluesky if enabled
-            if (crosspostToBsky) {
-              try {
-                await _crosspostToBlueSky(text, uploadedImageMaps, result.data as RepoStrongRef, altTexts);
-              } catch (e) {
-                _logger.w('Failed to crosspost to Bluesky: $e');
-                // Don't fail the entire operation if Bluesky crossposting fails
-              }
-            }
-
-            return result.data as RepoStrongRef;
-          } else {
-            _logger.e('AtProto not initialized');
-            throw Exception('AtProto not initialized');
-          }
-        });
+    if (imageFiles.isEmpty) {
+      _logger.e('No images provided for image post');
+      throw ArgumentError('At least one image is required for an image post.');
     }
+
+    if (!_client.authRepository.isAuthenticated) {
+      _logger.w('Not authenticated');
+      throw Exception('Not authenticated');
+    }
+
+    if (_client.authRepository.atproto == null) {
+      _logger.e('AtProto not initialized');
+      throw Exception('AtProto not initialized');
+    }
+
+    final uploadedImageMaps = await uploadImages(imageFiles: imageFiles, altTexts: altTexts);
+
+    // Create Sprk post
+    final record = PostRecord(
+      caption: CaptionRef(text: text, facets: []),
+      media: Media.images(images: uploadedImageMaps),
+      createdAt: DateTime.now().toUtc(),
+    );
+
+    final result = await _client.repo.createRecord(
+      collection: 'so.sprk.feed.post',
+      record: record.toJson(),
+    );
+
+    _logger.i('Image post created successfully: ${result.uri}');
+
+    // Crosspost to Bluesky if enabled
+    if (crosspostToBsky) {
+      try {
+        await _crosspostToBlueSky(text, uploadedImageMaps, result, altTexts);
+      } catch (e) {
+        _logger.w('Failed to crosspost to Bluesky: $e');
+        // Don't fail the entire operation if Bluesky crossposting fails
+      }
+    }
+
+    return result;
   }
 
   /// Helper to upload multiple images, stripping EXIF, and return a list of JSON maps for embedding
@@ -1114,15 +1079,13 @@ class FeedRepositoryImpl implements FeedRepository {
       facets: facets,
     );
 
-    final bskyAtProto = _client.authRepository.atproto!;
-    final bskyResult = await bskyAtProto.repo.createRecord(
-      repo: _client.sprkDid,
+    final bskyResult = await _client.repo.createRecord(
       collection: 'app.bsky.feed.post',
       record: bskyPost.toJson(),
       rkey: sparkPostData.uri.rkey,
     );
 
-    _logger.i('Successfully crossposted to Bluesky: ${bskyResult.data.uri}');
+    _logger.i('Successfully crossposted to Bluesky: ${bskyResult.uri}');
   }
 
   /// Prepare text for Bluesky post, handling link addition and truncation
@@ -1156,38 +1119,14 @@ class FeedRepositoryImpl implements FeedRepository {
   Future<bool> deletePost(AtUri postUri) async {
     _logger.d('Deleting post with URI: $postUri');
 
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
-      final atproto = _client.authRepository.atproto;
-      if (atproto == null) {
-        _logger.e('AtProto not initialized');
-        throw Exception('AtProto not initialized');
-      }
-
-      try {
-        final response = await atproto.repo.deleteRecord(
-          repo: _client.sprkDid,
-          collection: postUri.collection.toString(),
-          rkey: postUri.rkey,
-        );
-
-        switch (response.status.code) {
-          case 200:
-            _logger.i('Post deleted successfully: $postUri');
-            return true;
-          default:
-            _logger.e('Failed to delete post: ${response.status.code}');
-            return false;
-        }
-      } catch (e) {
-        _logger.e('Error deleting post', error: e);
-        return false;
-      }
-    });
+    try {
+      await _client.repo.deleteRecord(uri: postUri);
+      _logger.i('Post deleted successfully: $postUri');
+      return true;
+    } catch (e) {
+      _logger.e('Error deleting post', error: e);
+      return false;
+    }
   }
 
   @override
@@ -1201,36 +1140,22 @@ class FeedRepositoryImpl implements FeedRepository {
   }) async {
     _logger.d('Posting video with description: $text');
 
-    return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
+    final record = PostRecord(
+      caption: CaptionRef(text: text, facets: []),
+      media: Media.video(video: blob, alt: alt),
+      createdAt: DateTime.now().toUtc(),
+      langs: langs,
+      selfLabels: selfLabels,
+      tags: tags,
+    );
 
-      final record = PostRecord(
-        caption: CaptionRef(text: text, facets: []),
-        media: Media.video(video: blob, alt: alt),
-        createdAt: DateTime.now().toUtc(),
-        langs: langs,
-        selfLabels: selfLabels,
-        tags: tags,
-      );
+    final result = await _client.repo.createRecord(
+      collection: 'so.sprk.feed.post',
+      record: record.toJson(),
+    );
 
-      // Create the post record
-      final response = await _client.authRepository.atproto!.repo.createRecord(
-        repo: _client.sprkDid,
-        collection: 'so.sprk.feed.post',
-        record: record.toJson(),
-      );
-
-      if (response.status == HttpStatus.ok) {
-        _logger.i('Video posted successfully: ${response.data.uri}');
-        return response.data as RepoStrongRef;
-      } else {
-        _logger.e('Failed to post video: ${response.status} ${response.data}');
-        throw Exception('Failed to post video: ${response.status} ${response.data}');
-      }
-    });
+    _logger.i('Video posted successfully: ${result.uri}');
+    return result;
   }
 
   @override

@@ -67,35 +67,37 @@ class RepoRepositoryImpl implements RepoRepository {
   }
 
   @override
-  Future<RepoStrongRef> createRecord({required String collection, required Map<String, dynamic> record, String? rkey}) async {
+  Future<RepoStrongRef> createRecord({
+    required String collection,
+    required Map<String, dynamic> record,
+    String? rkey,
+    String? repo,
+  }) async {
     _logger.d('Creating record in collection: $collection');
     return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
       final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       }
 
-      final result = await atproto.repo.createRecord(repo: _client.sprkDid, collection: collection, record: record, rkey: rkey);
+      // Use provided repo DID or fall back to session DID
+      final repoDid = repo ?? _client.authRepository.session?.did;
+      if (repoDid == null) {
+        _logger.e('User session DID not available');
+        throw Exception('User session DID not available');
+      }
+
+      final result = await atproto.repo.createRecord(repo: repoDid, collection: collection, record: record, rkey: rkey);
       _logger.d('Record created successfully');
       return RepoStrongRef(uri: result.data.uri, cid: result.data.cid);
     });
   }
 
   @override
-  Future<void> deleteRecord({required AtUri uri}) async {
+  Future<void> deleteRecord({required AtUri uri, bool skipBskyCrosspostCleanup = false}) async {
     _logger.d('Deleting record at URI: $uri');
     return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
       final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
@@ -105,28 +107,30 @@ class RepoRepositoryImpl implements RepoRepository {
       await atproto.repo.deleteRecord(repo: uri.hostname, collection: uri.collection.toString(), rkey: uri.rkey);
       _logger.d('Record deleted successfully');
 
-      // Delete cross-posted Bluesky counterpart if it exists
-      try {
-        final did = uri.hostname;
-        final rkey = uri.rkey;
-        final blueskyUri = AtUri.parse('at://$did/app.bsky.feed.post/$rkey');
-
-        _logger.d('Attempting to delete Bluesky counterpart post: $blueskyUri');
-
+      // Delete cross-posted Bluesky counterpart if it exists (only for posts)
+      if (!skipBskyCrosspostCleanup) {
         try {
-          await atproto.repo.deleteRecord(
-            repo: blueskyUri.hostname,
-            collection: blueskyUri.collection.toString(),
-            rkey: blueskyUri.rkey,
-          );
-          _logger.d('Bluesky counterpart post deleted successfully');
+          final did = uri.hostname;
+          final rkey = uri.rkey;
+          final blueskyUri = AtUri.parse('at://$did/app.bsky.feed.post/$rkey');
+
+          _logger.d('Attempting to delete Bluesky counterpart post: $blueskyUri');
+
+          try {
+            await atproto.repo.deleteRecord(
+              repo: blueskyUri.hostname,
+              collection: blueskyUri.collection.toString(),
+              rkey: blueskyUri.rkey,
+            );
+            _logger.d('Bluesky counterpart post deleted successfully');
+          } catch (e) {
+            // Ignore errors like 404 – it simply means the counterpart does not exist.
+            _logger.w('Bluesky counterpart post not found or deletion failed', error: e);
+          }
         } catch (e) {
-          // Ignore errors like 404 – it simply means the counterpart does not exist.
-          _logger.w('Bluesky counterpart post not found or deletion failed', error: e);
+          // Best-effort only – do not fail original deletion.
+          _logger.w('Failed during Bluesky cross-post deletion cleanup', error: e);
         }
-      } catch (e) {
-        // Best-effort only – do not fail original deletion.
-        _logger.w('Failed during Bluesky cross-post deletion cleanup', error: e);
       }
     });
   }
