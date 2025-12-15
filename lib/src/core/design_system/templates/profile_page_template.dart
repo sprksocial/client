@@ -242,7 +242,7 @@ class _ProfileHeaderSection extends StatelessWidget {
                             onTap: onEarlySupporterTap,
                             child: Padding(
                               padding: const EdgeInsets.only(left: 6),
-                              child: AppIcons.sprkMatch(),
+                              child: AppIcons.match(),
                             ),
                           ),
                       ],

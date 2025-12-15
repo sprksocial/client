@@ -89,13 +89,6 @@ class AppIcons {
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
     package: 'assets',
   );
-  static Widget coin({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/coin.svg',
-    width: size,
-    height: size,
-    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
-    package: 'assets',
-  );
   static Widget colors({double size = 24, Color? color}) => SvgPicture.asset(
     '$_path/colors.svg',
     width: size,
@@ -112,20 +105,6 @@ class AppIcons {
   );
   static Widget disk({double size = 24, Color? color}) => SvgPicture.asset(
     '$_path/disk.svg',
-    width: size,
-    height: size,
-    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
-    package: 'assets',
-  );
-  static Widget exploreFilled2({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/explore_filled_2.svg',
-    width: size,
-    height: size,
-    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
-    package: 'assets',
-  );
-  static Widget exploreFilled({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/explore_filled.svg',
     width: size,
     height: size,
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
@@ -159,8 +138,29 @@ class AppIcons {
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
     package: 'assets',
   );
+  static Widget grid({double size = 24, Color? color}) => SvgPicture.asset(
+    '$_path/grid.svg',
+    width: size,
+    height: size,
+    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
+    package: 'assets',
+  );
+  static Widget gridFilled({double size = 24, Color? color}) => SvgPicture.asset(
+    '$_path/grid_filled.svg',
+    width: size,
+    height: size,
+    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
+    package: 'assets',
+  );
   static Widget hashtag({double size = 24, Color? color}) => SvgPicture.asset(
     '$_path/hashtag.svg',
+    width: size,
+    height: size,
+    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
+    package: 'assets',
+  );
+  static Widget home({double size = 24, Color? color}) => SvgPicture.asset(
+    '$_path/home.svg',
     width: size,
     height: size,
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
@@ -194,15 +194,8 @@ class AppIcons {
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
     package: 'assets',
   );
-  static Widget like2({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/like2.svg',
-    width: size,
-    height: size,
-    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
-    package: 'assets',
-  );
-  static Widget link2({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/link2.svg',
+  static Widget likeMini({double size = 24, Color? color}) => SvgPicture.asset(
+    '$_path/like_mini.svg',
     width: size,
     height: size,
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
@@ -229,27 +222,6 @@ class AppIcons {
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
     package: 'assets',
   );
-  static Widget more1({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/more1.svg',
-    width: size,
-    height: size,
-    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
-    package: 'assets',
-  );
-  static Widget more2({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/more2.svg',
-    width: size,
-    height: size,
-    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
-    package: 'assets',
-  );
-  static Widget more21({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/more21.svg',
-    width: size,
-    height: size,
-    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
-    package: 'assets',
-  );
   static Widget more({double size = 24, Color? color}) => SvgPicture.asset(
     '$_path/more.svg',
     width: size,
@@ -271,43 +243,22 @@ class AppIcons {
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
     package: 'assets',
   );
-  static Widget navbarExplore({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/navbar_explore.svg',
+  static Widget explore({double size = 24, Color? color}) => SvgPicture.asset(
+    '$_path/explore.svg',
     width: size,
     height: size,
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
     package: 'assets',
   );
-  static Widget navbarExploreFilled({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/navbar_explore_filled.svg',
+  static Widget exploreFilled({double size = 24, Color? color}) => SvgPicture.asset(
+    '$_path/explore_filled.svg',
     width: size,
     height: size,
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
     package: 'assets',
   );
-  static Widget navbarHome({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/navbar_home.svg',
-    width: size,
-    height: size,
-    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
-    package: 'assets',
-  );
-  static Widget navbarHomeFilled({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/navbar_home_filled.svg',
-    width: size,
-    height: size,
-    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
-    package: 'assets',
-  );
-  static Widget navbarMessages({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/navbar_messages.svg',
-    width: size,
-    height: size,
-    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
-    package: 'assets',
-  );
-  static Widget navbarMessagesFilled({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/navbar_messages_filled.svg',
+  static Widget messages({double size = 24, Color? color}) => SvgPicture.asset(
+    '$_path/messages.svg',
     width: size,
     height: size,
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
@@ -329,13 +280,6 @@ class AppIcons {
   );
   static Widget pin({double size = 24, Color? color}) => SvgPicture.asset(
     '$_path/pin.svg',
-    width: size,
-    height: size,
-    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
-    package: 'assets',
-  );
-  static Widget play1({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/play1.svg',
     width: size,
     height: size,
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
@@ -364,20 +308,6 @@ class AppIcons {
   );
   static Widget profileCurate({double size = 24, Color? color}) => SvgPicture.asset(
     '$_path/profile_curate.svg',
-    width: size,
-    height: size,
-    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
-    package: 'assets',
-  );
-  static Widget profileGrid({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/profile_grid.svg',
-    width: size,
-    height: size,
-    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
-    package: 'assets',
-  );
-  static Widget profileGridFilled({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/profile_grid_filled.svg',
     width: size,
     height: size,
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
@@ -453,8 +383,8 @@ class AppIcons {
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
     package: 'assets',
   );
-  static Widget sprkMatch({double size = 24, Color? color}) => SvgPicture.asset(
-    '$_path/sprk_match.svg',
+  static Widget match({double size = 24, Color? color}) => SvgPicture.asset(
+    '$_path/match.svg',
     width: size,
     height: size,
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,

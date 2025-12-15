@@ -5,13 +5,7 @@ import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 
 @UseCase(name: 'grid', type: AppIcons)
 Widget buildAppIconsGridUseCase(BuildContext context) {
-  final size = context.knobs.double.slider(
-    label: 'icon_size',
-    initialValue: 28,
-    min: 12,
-    max: 64,
-    divisions: 52,
-  );
+  final size = context.knobs.double.slider(label: 'icon_size', initialValue: 28, min: 12, max: 64, divisions: 52);
   final color = context.knobs.colorOrNull(label: 'tint_color');
   final icons = <Widget>[
     AppIcons.add(size: size, color: color),
@@ -28,7 +22,6 @@ Widget buildAppIconsGridUseCase(BuildContext context) {
     AppIcons.music(size: size, color: color),
     AppIcons.folderMini(size: size, color: color),
     AppIcons.play(size: size, color: color),
-    AppIcons.play1(size: size, color: color),
     AppIcons.micro(size: size, color: color),
     AppIcons.tag(size: size, color: color),
     AppIcons.hashtag(size: size, color: color),
