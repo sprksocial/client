@@ -67,7 +67,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(conversationProvider(widget.conversationId));

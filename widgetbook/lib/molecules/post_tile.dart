@@ -9,11 +9,29 @@ const _demoThumbnail = 'https://picsum.photos/400/600';
 Widget buildPostTileUseCase(BuildContext context) {
   return Center(
     child: SizedBox(
-      width: context.knobs.double.slider(label: 'width', initialValue: 150, min: 100, max: 300),
-      height: context.knobs.double.slider(label: 'height', initialValue: 200, min: 150, max: 400),
+      width: context.knobs.double.slider(
+        label: 'width',
+        initialValue: 150,
+        min: 100,
+        max: 300,
+      ),
+      height: context.knobs.double.slider(
+        label: 'height',
+        initialValue: 200,
+        min: 150,
+        max: 400,
+      ),
       child: PostTile(
-        thumbnailUrl: context.knobs.string(label: 'thumbnailUrl', initialValue: _demoThumbnail),
-        likes: context.knobs.int.slider(label: 'likes', initialValue: 1239, min: 0, max: 100000),
+        thumbnailUrl: context.knobs.string(
+          label: 'thumbnailUrl',
+          initialValue: _demoThumbnail,
+        ),
+        likes: context.knobs.int.slider(
+          label: 'likes',
+          initialValue: 1239,
+          min: 0,
+          max: 100000,
+        ),
         seen: context.knobs.boolean(label: 'seen', initialValue: false),
         nsfwBlur: context.knobs.boolean(label: 'nsfwBlur', initialValue: false),
         onTap: () => print('PostTile tapped'),
@@ -30,7 +48,12 @@ Widget buildPostTileSeenUseCase(BuildContext context) {
       height: 200,
       child: PostTile(
         thumbnailUrl: _demoThumbnail,
-        likes: context.knobs.int.slider(label: 'likes', initialValue: 5420, min: 0, max: 100000),
+        likes: context.knobs.int.slider(
+          label: 'likes',
+          initialValue: 5420,
+          min: 0,
+          max: 100000,
+        ),
         seen: true,
         nsfwBlur: false,
         onTap: () => print('Seen PostTile tapped'),

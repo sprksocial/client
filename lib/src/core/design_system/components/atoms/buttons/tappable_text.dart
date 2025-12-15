@@ -7,7 +7,9 @@ class TappableText extends StatelessWidget {
   final VoidCallback onTap;
 
   const TappableText({
-    required this.text, required this.onTap, super.key,
+    required this.text,
+    required this.onTap,
+    super.key,
   });
 
   @override
@@ -18,10 +20,7 @@ class TappableText extends StatelessWidget {
         width: 41,
         height: 14,
         child: Center(
-          child: Text(
-            text,
-            style: AppTypography.textExtraSmallThin
-          ),
+          child: Text(text, style: AppTypography.textExtraSmallThin),
         ),
       ),
     );

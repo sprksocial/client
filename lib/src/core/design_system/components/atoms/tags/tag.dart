@@ -22,7 +22,6 @@ class Tag extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(13),
       child: Container(
-
         // width: 107,
         // height: 35,
         padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),

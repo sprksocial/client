@@ -77,7 +77,6 @@ class ImageReviewPageTemplate extends StatelessWidget {
         leading: AppLeadingButton(color: theme.textTheme.titleLarge?.color, tooltip: 'Back'),
         title: Text(
           title,
-
         ),
         centerTitle: false,
       ),

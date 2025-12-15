@@ -40,7 +40,12 @@ Widget imageBackground({required BuildContext context, required Widget child}) {
   );
 }
 
-Widget gradientBackground({required BuildContext context, required Widget child, required Color startColor, required Color endColor}) {
+Widget gradientBackground({
+  required BuildContext context,
+  required Widget child,
+  required Color startColor,
+  required Color endColor,
+}) {
   return _BackgroundWrapper(
     background: Container(
       decoration: BoxDecoration(
@@ -55,7 +60,11 @@ Widget gradientBackground({required BuildContext context, required Widget child,
   );
 }
 
-Widget solidColorBackground({required BuildContext context, required Widget child, required Color color}) {
+Widget solidColorBackground({
+  required BuildContext context,
+  required Widget child,
+  required Color color,
+}) {
   return _BackgroundWrapper(
     background: Container(color: color),
     child: Center(child: child),
