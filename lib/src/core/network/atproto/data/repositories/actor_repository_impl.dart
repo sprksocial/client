@@ -118,7 +118,7 @@ class ActorRepositoryImpl implements ActorRepository {
   Future<bool> isEarlySupporter(String did) async {
     _logger.d('Checking early supporter status for DID: $did');
     try {
-      final response = await http.get(Uri.parse('https://spark-match.sparksplatforms.workers.dev/?did=$did'));
+      final response = await http.get(Uri.parse('https://early-supporters.sprk.so/?did=$did'));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final isSupporter = data['found'] == true;
