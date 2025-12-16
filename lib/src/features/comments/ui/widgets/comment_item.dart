@@ -36,7 +36,13 @@ class _CommentItemState extends ConsumerState<CommentItem> {
   }
 
   void _navigateToProfile() {
-    context.router.push(ProfileRoute(did: commentState.thread.post.author.did));
+    final author = commentState.thread.post.author;
+    context.router.push(
+      ProfileRoute(
+        did: author.did,
+        initialProfile: author,
+      ),
+    );
   }
 
   void _handleReportComment() {

@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
@@ -20,24 +18,26 @@ class TextButton extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return InteractivePressable(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-          child: Container(
-            width: double.infinity,
-            constraints: const BoxConstraints(minHeight: 36),
-            padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 11),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkGreyButton : AppColors.lightGreyButton,
-              borderRadius: BorderRadius.circular(8),
-              border: BoxBorder.all(
-                color: AppColors.greyBorder,
-                width: 1.25,
-              ),
+      borderRadius: const BorderRadius.all(Radius.circular(8)),
+      child: Container(
+        width: double.infinity,
+        constraints: const BoxConstraints(minHeight: 36),
+        padding: const EdgeInsets.symmetric(vertical: 9, horizontal: 11),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkGreyButton : AppColors.lightGreyButton,
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
+          border: const Border.fromBorderSide(
+            BorderSide(
+              color: AppColors.greyBorder,
+              width: 1.14667,
             ),
-            child: Text(label, textAlign: TextAlign.center, style: AppTypography.textSmallMedium),
+          ),
+        ),
+        child: Align(
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            style: AppTypography.textSmallMedium,
           ),
         ),
       ),

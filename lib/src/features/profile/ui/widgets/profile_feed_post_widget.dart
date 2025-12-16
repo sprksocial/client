@@ -151,12 +151,13 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                 _isAnimatingHeart = false;
               });
             },
-            child: GestureDetector(
-              onDoubleTap: () => _handleDoubleTapLike(post),
-              child: Stack(
-                children: [
-                  // Main content
-                  Positioned.fill(
+            child: Stack(
+              children: [
+                // Main content - only this part should detect double-tap for likes
+                Positioned.fill(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onDoubleTap: () => _handleDoubleTapLike(post),
                     child: switch (post.media) {
                       MediaViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
                       MediaViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
@@ -170,23 +171,28 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                       _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                     },
                   ),
+                ),
 
-                  // Overlay controls
-                  Positioned.fill(
-                    child: PostOverlay(
-                      post: post,
-                      isLiked: _overrideIsLiked ?? (post.viewer?.like != null),
-                      labels: post.labels ?? [],
-                      onProfilePressed: () {
-                        // No special handling needed for profile navigation in standalone feed
-                      },
-                      onUsernameTap: () {
-                        context.router.push(ProfileRoute(did: post.author.did));
-                      },
-                    ),
+                // Overlay controls - no double-tap detection, so buttons respond immediately
+                Positioned.fill(
+                  child: PostOverlay(
+                    post: post,
+                    isLiked: _overrideIsLiked ?? (post.viewer?.like != null),
+                    labels: post.labels ?? [],
+                    onProfilePressed: () {
+                      // No special handling needed for profile navigation in standalone feed
+                    },
+                    onUsernameTap: () {
+                      context.router.push(
+                        ProfileRoute(
+                          did: post.author.did,
+                          initialProfile: post.author,
+                        ),
+                      );
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
 

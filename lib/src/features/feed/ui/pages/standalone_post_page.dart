@@ -166,7 +166,12 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                             onUsernameTap: () {
                               // Pause video before navigating to profile
                               _videoPlayerKey.currentState?.pauseVideo();
-                              context.router.push(ProfileRoute(did: postData.author.did));
+                              context.router.push(
+                                ProfileRoute(
+                                  did: postData.author.did,
+                                  initialProfile: postData.author,
+                                ),
+                              );
                             },
                           ),
                         ),

@@ -67,7 +67,12 @@ class _SoundPageState extends ConsumerState<SoundPage> {
               SliverToBoxAdapter(
                 child: SoundHeaderCard(
                   audio: state.audio,
-                  onAuthorTap: () => context.router.push(ProfileRoute(did: state.audio.author.did)),
+                  onAuthorTap: () => context.router.push(
+                    ProfileRoute(
+                      did: state.audio.author.did,
+                      initialProfile: state.audio.author,
+                    ),
+                  ),
                 ),
               ),
 
