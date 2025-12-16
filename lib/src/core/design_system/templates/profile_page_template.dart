@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/design_system/components/molecules/profile_action_buttons.dart';
@@ -41,6 +42,7 @@ class ProfilePageTemplate extends StatelessWidget {
     this.onRefresh,
     this.selectedTabIndex = 0,
     this.onTabChanged,
+    this.isLoading = false,
   });
 
   final String displayName;
@@ -72,6 +74,7 @@ class ProfilePageTemplate extends StatelessWidget {
   final Function(int)? onTabChanged;
   final Widget contentWidget;
   final Future<void> Function()? onRefresh;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
@@ -92,29 +95,32 @@ class ProfilePageTemplate extends StatelessWidget {
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
-              child: _ProfileHeaderSection(
-                displayName: displayName,
-                handle: handle,
-                postsCount: postsCount,
-                followersCount: followersCount,
-                followingCount: followingCount,
-                avatarUrl: avatarUrl,
-                description: description,
-                links: links,
-                hasStories: hasStories,
-                isCurrentUser: isCurrentUser,
-                isFollowing: isFollowing,
-                isEarlySupporter: isEarlySupporter,
-                onAvatarTap: onAvatarTap,
-                onFollowersTap: onFollowersTap,
-                onFollowingTap: onFollowingTap,
-                onEditTap: onEditTap,
-                onFollowTap: onFollowTap,
-                onUnfollowTap: onUnfollowTap,
-                onShareTap: onShareTap,
-                onEarlySupporterTap: onEarlySupporterTap,
-                onMentionTap: onMentionTap,
-                onAddStoryTap: onAddStoryTap,
+              child: Skeletonizer(
+                enabled: isLoading,
+                child: _ProfileHeaderSection(
+                  displayName: displayName,
+                  handle: handle,
+                  postsCount: postsCount,
+                  followersCount: followersCount,
+                  followingCount: followingCount,
+                  avatarUrl: avatarUrl,
+                  description: description,
+                  links: links,
+                  hasStories: hasStories,
+                  isCurrentUser: isCurrentUser,
+                  isFollowing: isFollowing,
+                  isEarlySupporter: isEarlySupporter,
+                  onAvatarTap: onAvatarTap,
+                  onFollowersTap: onFollowersTap,
+                  onFollowingTap: onFollowingTap,
+                  onEditTap: onEditTap,
+                  onFollowTap: onFollowTap,
+                  onUnfollowTap: onUnfollowTap,
+                  onShareTap: onShareTap,
+                  onEarlySupporterTap: onEarlySupporterTap,
+                  onMentionTap: onMentionTap,
+                  onAddStoryTap: onAddStoryTap,
+                ),
               ),
             ),
             SliverPersistentHeader(
@@ -221,13 +227,15 @@ class _ProfileHeaderSection extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ProfileAvatar(
-                avatarUrl: avatarUrl,
-                displayName: displayName,
-                hasStories: hasStories,
-                onTap: onAvatarTap,
-                showAddButton: isCurrentUser,
-                onAddTap: onAddStoryTap,
+              Skeleton.keep(
+                child: ProfileAvatar(
+                  avatarUrl: avatarUrl,
+                  displayName: displayName,
+                  hasStories: hasStories,
+                  onTap: onAvatarTap,
+                  showAddButton: isCurrentUser,
+                  onAddTap: onAddStoryTap,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(
@@ -236,7 +244,9 @@ class _ProfileHeaderSection extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        Text(displayName, overflow: TextOverflow.ellipsis, style: AppTypography.textLargeBold),
+                        Skeleton.keep(
+                          child: Text(displayName, overflow: TextOverflow.ellipsis, style: AppTypography.textLargeBold),
+                        ),
                         if (isEarlySupporter)
                           GestureDetector(
                             onTap: onEarlySupporterTap,
@@ -248,7 +258,9 @@ class _ProfileHeaderSection extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 4),
-                    _buildHandleText(context, handle),
+                    Skeleton.keep(
+                      child: _buildHandleText(context, handle),
+                    ),
                     const SizedBox(height: 10),
                     ProfileStats(
                       postsCount: postsCount,
@@ -273,13 +285,15 @@ class _ProfileHeaderSection extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 16),
-          ProfileActionButtons(
-            isCurrentUser: isCurrentUser,
-            isFollowing: isFollowing,
-            onEditTap: onEditTap,
-            onFollowTap: onFollowTap,
-            onUnfollowTap: onUnfollowTap,
-            onShareTap: onShareTap,
+          Skeleton.leaf(
+            child: ProfileActionButtons(
+              isCurrentUser: isCurrentUser,
+              isFollowing: isFollowing,
+              onEditTap: onEditTap,
+              onFollowTap: onFollowTap,
+              onUnfollowTap: onUnfollowTap,
+              onShareTap: onShareTap,
+            ),
           ),
         ],
       ),

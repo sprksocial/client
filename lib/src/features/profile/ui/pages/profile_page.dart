@@ -25,8 +25,16 @@ import 'package:sparksocial/src/features/profile/ui/widgets/early_supporter_shee
 
 @RoutePage()
 class ProfilePage extends ConsumerStatefulWidget {
-  const ProfilePage({@PathParam('did') required this.did, super.key});
+  const ProfilePage({
+    @PathParam('did') required this.did,
+    this.initialProfile,
+    super.key,
+  });
   final String did;
+
+  /// Optional initial profile data to show while loading.
+  /// Can be partially filled - only did and handle are required in ProfileViewBasic.
+  final actor_models.ProfileViewBasic? initialProfile;
 
   @override
   ConsumerState<ProfilePage> createState() => _ProfilePageState();
@@ -86,33 +94,34 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    return profileStateAsync.when(
-      data: (state) {
-        if (state.showAuthPrompt) {
-          context.router.push(AuthPromptRoute(onClose: notifier.hideAuthPrompt));
-        }
+    // Always render the AutoTabsRouter so the grid starts loading immediately
+    return AutoTabsRouter(
+      routes: [
+        ProfileVideosRoute(did: widget.did),
+      ],
+      builder: (context, child) {
+        final tabsRouter = AutoTabsRouter.of(context);
 
-        final profile = state.profile;
-        if (profile == null) {
-          return ErrorScreen(
-            context: context,
-            message: 'Profile not found',
-            stackTrace: null,
-            onRetry: notifier.refreshProfile,
-            theme: theme,
-          );
-        }
-        final isCurrentUser = notifier.isCurrentUser();
-        final description = profile.description ?? '';
-        final links = TextFormatter.extractUrls(description);
-        final uniqueLinks = links.toSet().toList();
+        return profileStateAsync.when(
+          data: (state) {
+            if (state.showAuthPrompt) {
+              context.router.push(AuthPromptRoute(onClose: notifier.hideAuthPrompt));
+            }
 
-        return AutoTabsRouter(
-          routes: [
-            ProfileVideosRoute(did: widget.did),
-          ],
-          builder: (context, child) {
-            final tabsRouter = AutoTabsRouter.of(context);
+            final profile = state.profile;
+            if (profile == null) {
+              return ErrorScreen(
+                context: context,
+                message: 'Profile not found',
+                stackTrace: null,
+                onRetry: notifier.refreshProfile,
+                theme: theme,
+              );
+            }
+            final isCurrentUser = notifier.isCurrentUser();
+            final description = profile.description ?? '';
+            final links = TextFormatter.extractUrls(description);
+            final uniqueLinks = links.toSet().toList();
 
             return ProfilePageTemplate(
               displayName: profile.displayName ?? profile.handle,
@@ -273,19 +282,51 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               },
             );
           },
+          loading: () {
+            final initial = widget.initialProfile;
+
+            return ProfilePageTemplate(
+              isLoading: true,
+              displayName: initial?.displayName ?? initial?.handle ?? 'Loading...',
+              handle: initial?.handle ?? 'loading',
+              avatarUrl: initial?.avatar?.toString(),
+              postsCount: '0',
+              followersCount: '0',
+              followingCount: '0',
+              isCurrentUser: false,
+              appBarTitle: initial?.displayName ?? initial?.handle,
+              appBarActions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    child: AppIcons.moreHoriz(color: colorScheme.onSurface),
+                  ),
+                ),
+              ],
+              tabsWidget: ProfileTabBar(
+                selectedIndex: tabsRouter.activeIndex,
+                tabs: [
+                  ProfileTabItem(
+                    icon: AppIcons.grid(),
+                    filledIcon: AppIcons.gridFilled(),
+                    isSelected: tabsRouter.activeIndex == 0,
+                    onTap: () => tabsRouter.setActiveIndex(0),
+                  ),
+                ],
+              ),
+              contentWidget: child,
+            );
+          },
+          error: (error, stackTrace) => ErrorScreen(
+            context: context,
+            message: error.toString(),
+            stackTrace: stackTrace,
+            onRetry: notifier.refreshProfile,
+            theme: theme,
+          ),
         );
       },
-      loading: () => Scaffold(
-        backgroundColor: theme.scaffoldBackgroundColor,
-        body: const Center(child: CircularProgressIndicator()),
-      ),
-      error: (error, stackTrace) => ErrorScreen(
-        context: context,
-        message: error.toString(),
-        stackTrace: stackTrace,
-        onRetry: notifier.refreshProfile,
-        theme: theme,
-      ),
     );
   }
 

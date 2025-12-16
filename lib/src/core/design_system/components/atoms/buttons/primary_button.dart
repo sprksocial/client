@@ -45,7 +45,7 @@ class PrimaryButton extends StatelessWidget {
           minHeight: minHeight ?? 60,
         ),
         decoration: BoxDecoration(
-          color: AppColors.primary500,
+          color: AppColors.primary600,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(

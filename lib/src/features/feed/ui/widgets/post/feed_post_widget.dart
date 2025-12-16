@@ -199,14 +199,15 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                 _isAnimatingHeart = false;
               });
             },
-            child: GestureDetector(
-              onDoubleTap: () => _handleDoubleTapLike(postData),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Main content
-                  Positioned.fill(
-                    bottom: 0 + MediaQuery.of(context).padding.bottom,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Main content - only this part should detect double-tap for likes
+                Positioned.fill(
+                  bottom: 0 + MediaQuery.of(context).padding.bottom,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onDoubleTap: () => _handleDoubleTapLike(postData),
                     child: switch (postData.media) {
                       MediaViewVideo() => PostVideoPlayer(
                         key: _videoPlayerKey,
@@ -244,25 +245,30 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                       _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                     },
                   ),
+                ),
 
-                  // Overlay controls
-                  Positioned.fill(
-                    child: PostOverlay(
-                      post: postData,
-                      feed: widget.feed,
-                      isLiked: _overrideIsLiked ?? (postData.viewer?.like != null),
-                      labels: labels,
-                      onProfilePressed: () {
-                        _videoPlayerKey.currentState?.pauseVideo();
-                      },
-                      onUsernameTap: () {
-                        _videoPlayerKey.currentState?.pauseVideo();
-                        context.router.push(ProfileRoute(did: postData.author.did));
-                      },
-                    ),
+                // Overlay controls - no double-tap detection, so buttons respond immediately
+                Positioned.fill(
+                  child: PostOverlay(
+                    post: postData,
+                    feed: widget.feed,
+                    isLiked: _overrideIsLiked ?? (postData.viewer?.like != null),
+                    labels: labels,
+                    onProfilePressed: () {
+                      _videoPlayerKey.currentState?.pauseVideo();
+                    },
+                    onUsernameTap: () {
+                      _videoPlayerKey.currentState?.pauseVideo();
+                      context.router.push(
+                        ProfileRoute(
+                          did: postData.author.did,
+                          initialProfile: postData.author,
+                        ),
+                      );
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
 
 class ProfileStats extends StatelessWidget {
@@ -61,11 +62,13 @@ class _StatItem extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: AppTypography.textSmallThin.copyWith(
-            color: theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurfaceVariant,
-            fontSize: 14,
+        Skeleton.keep(
+          child: Text(
+            label,
+            style: AppTypography.textSmallThin.copyWith(
+              color: theme.textTheme.bodyMedium?.color ?? theme.colorScheme.onSurfaceVariant,
+              fontSize: 14,
+            ),
           ),
         ),
       ],

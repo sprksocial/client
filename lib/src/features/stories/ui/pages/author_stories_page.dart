@@ -291,7 +291,12 @@ class _AuthorStoriesPageState extends ConsumerState<AuthorStoriesPage> with Tick
                       children: [
                         GestureDetector(
                           onTap: () {
-                            context.router.push(ProfileRoute(did: widget.author.did));
+                            context.router.push(
+                              ProfileRoute(
+                                did: widget.author.did,
+                                initialProfile: widget.author,
+                              ),
+                            );
                           },
                           child: Container(
                             width: 40,

@@ -67,6 +67,7 @@ dependencies:
       ref: dev
   audioplayers: ^6.5.1
   audio_waveforms: ^2.0.0
+  skeletonizer: ^2.1.2
 
 dev_dependencies:
   flutter_test:
