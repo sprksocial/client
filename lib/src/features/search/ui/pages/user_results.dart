@@ -3,6 +3,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/design_system/components/molecules/profile_card.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/features/search/providers/search_provider.dart';
 
@@ -185,7 +186,17 @@ class _UserResultsState extends ConsumerState<UserResults> with AutomaticKeepAli
             showFollowButton: !ref.read(searchProvider.notifier).isCurrentUser(actor.did),
             onTap: () {
               if (actor.did.isNotEmpty) {
-                context.router.push(ProfileRoute(did: actor.did));
+                context.router.push(
+                  ProfileRoute(
+                    did: actor.did,
+                    initialProfile: ProfileViewBasic(
+                      did: actor.did,
+                      handle: actor.handle,
+                      displayName: actor.displayName,
+                      avatar: actor.avatar,
+                    ),
+                  ),
+                );
               }
             },
           ),

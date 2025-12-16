@@ -39,7 +39,7 @@ class MessageInput extends ConsumerWidget {
               children: [
                 UserAvatar(
                   imageUrl: ref
-                      .read(profileNotifierProvider(did: session?.did ?? ''))
+                      .read(profileProvider(did: session?.did ?? ''))
                       .when(
                         data: (profileData) => profileData.profile?.avatar?.toString() ?? '',
                         error: (error, stackTrace) => '',

@@ -1,4 +1,5 @@
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_label_defs.dart';
+import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
@@ -73,7 +74,7 @@ abstract class FeedRepository {
   ///
   /// [postCid] The String of the post to like
   /// [postUri] The URI of the post to like
-  Future<StrongRef> likePost(String postCid, AtUri postUri);
+  Future<RepoStrongRef> likePost(String postCid, AtUri postUri);
 
   /// Unlike a post
   ///
@@ -95,7 +96,7 @@ abstract class FeedRepository {
   /// [rootUri] The URI of the root post (optional, defaults to parent if not provided)
   /// [imageFiles] List of image files to attach (optional)
   /// [altTexts] Map of file paths to alt texts (optional)
-  Future<StrongRef> postComment(
+  Future<RepoStrongRef> postComment(
     String text,
     String parentCid,
     AtUri parentUri, {
@@ -111,7 +112,12 @@ abstract class FeedRepository {
   /// [imageFiles] List of image files to attach
   /// [altTexts] Map of file paths to alt texts
   /// [crosspostToBsky] Whether to also post to Bluesky
-  Future<StrongRef> postImages(String text, List<XFile> imageFiles, Map<String, String> altTexts, {bool crosspostToBsky = false});
+  Future<RepoStrongRef> postImages(
+    String text,
+    List<XFile> imageFiles,
+    Map<String, String> altTexts, {
+    bool crosspostToBsky = false,
+  });
 
   /// Upload images to the server
   ///
@@ -133,7 +139,7 @@ abstract class FeedRepository {
   /// [tags] The tags of the video
   /// [langs] The languages of the video
   /// [selfLabels] The self labels of the video
-  Future<StrongRef> postVideo(
+  Future<RepoStrongRef> postVideo(
     Blob blob, {
     String text = '',
     String alt = '',

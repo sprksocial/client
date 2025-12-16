@@ -1,6 +1,5 @@
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto_core/atproto_core.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
@@ -8,7 +7,7 @@ import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 part 'like_post.g.dart';
 
 @riverpod
-Future<StrongRef> likePost(Ref ref, String postCid, AtUri postUri) async {
+Future<RepoStrongRef> likePost(Ref ref, String postCid, AtUri postUri) async {
   try {
     // like post
     return await GetIt.I<SprkRepository>().feed.likePost(postCid, postUri);

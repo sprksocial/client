@@ -91,6 +91,16 @@ class ProfileCard extends StatelessWidget {
                                 width: 36,
                                 height: 36,
                                 fit: BoxFit.cover,
+                                errorWidget: (context, url, error) => Container(
+                                  width: 36,
+                                  height: 36,
+                                  color: isDark ? AppColors.grey600 : AppColors.grey300,
+                                  child: Icon(
+                                    Icons.person,
+                                    size: 20,
+                                    color: isDark ? AppColors.grey400 : AppColors.grey600,
+                                  ),
+                                ),
                               )
                             : Container(
                                 width: 36,

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:atproto_core/atproto_core.dart';
+import 'package:bluesky/app_bsky_feed_searchposts.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -64,12 +65,12 @@ class PostSearch extends _$PostSearch {
 
       final bskyApi = bsky.Bluesky.fromSession(bskySession);
       final sprkSearch = _feedRepository.searchPosts(query);
-      final bskySearch = bskyApi.feed.searchPosts(query, sort: 'top');
+      final bskySearch = bskyApi.feed.searchPosts(q: query, sort: KnownFeedSearchPostsSort.top as FeedSearchPostsSort);
 
       final results = await Future.wait([sprkSearch, bskySearch]);
 
       final sprkResponse = results[0] as ({String? cursor, List<PostView> posts});
-      final bskyResponse = results[1] as XRPCResponse<bsky.PostsByQuery>;
+      final bskyResponse = results[1] as XRPCResponse<FeedSearchPostsOutput>;
 
       final bskyPosts = bskyResponse.data.posts
           .asMap()
@@ -168,7 +169,11 @@ class PostSearch extends _$PostSearch {
         return;
       }
       final bskyApi = bsky.Bluesky.fromSession(bskySession);
-      final response = await bskyApi.feed.searchPosts(state.query, sort: 'latest', cursor: bskyCursor);
+      final response = await bskyApi.feed.searchPosts(
+        q: state.query,
+        sort: KnownFeedSearchPostsSort.latest as FeedSearchPostsSort,
+        cursor: bskyCursor,
+      );
 
       final bskyPosts = response.data.posts
           .asMap()

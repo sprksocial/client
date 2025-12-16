@@ -56,14 +56,9 @@ class PostTile extends StatelessWidget {
                   child: CachedNetworkImage(
                     imageUrl: thumbnailUrl,
                     fit: BoxFit.cover,
+                    fadeInDuration: const Duration(milliseconds: 150),
                     placeholder: (context, url) => const ColoredBox(
                       color: AppColors.grey800,
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary500),
-                        ),
-                      ),
                     ),
                     errorWidget: (context, url, error) => const ColoredBox(
                       color: AppColors.grey800,
@@ -78,14 +73,9 @@ class PostTile extends StatelessWidget {
                 CachedNetworkImage(
                   imageUrl: thumbnailUrl,
                   fit: BoxFit.cover,
+                  fadeInDuration: const Duration(milliseconds: 150),
                   placeholder: (context, url) => const ColoredBox(
                     color: AppColors.grey800,
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary500),
-                      ),
-                    ),
                   ),
                   errorWidget: (context, url, error) => const ColoredBox(
                     color: AppColors.grey800,
@@ -125,7 +115,7 @@ class PostTile extends StatelessWidget {
                                 ),
                               ),
                               const SizedBox(width: 4),
-                              AppIcons.like2(
+                              AppIcons.likeMini(
                                 size: 15,
                                 color: AppColors.greyWhite,
                               ),

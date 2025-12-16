@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_moderation_createreport.dart';
+import 'package:atproto/com_atproto_repo_strongref.dart';
+import 'package:atproto/com_atproto_services.dart';
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
-import 'package:http/http.dart' as http;
+import 'package:sparksocial/src/core/network/atproto/data/models/record_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
@@ -19,7 +21,7 @@ class RepoRepositoryImpl implements RepoRepository {
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger('RepoAPI');
 
   @override
-  Future<({Record record, StrongRef strongRef})> getRecord({required AtUri uri}) async {
+  Future<({Record record, RepoStrongRef strongRef})> getRecord({required AtUri uri}) async {
     _logger.d('Getting record for URI: $uri');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -31,14 +33,17 @@ class RepoRepositoryImpl implements RepoRepository {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       }
-      final result = await atproto.repo.getRecord(uri: uri);
+      final result = await atproto.repo.getRecord(repo: uri.hostname, collection: uri.collection.toString(), rkey: uri.rkey);
       _logger.d('Record retrieved successfully');
-      return (record: result.data, strongRef: StrongRef(uri: result.data.uri, cid: result.data.cid ?? ''));
+      return (
+        record: Record.fromJson(result.data.value),
+        strongRef: RepoStrongRef(uri: result.data.uri, cid: result.data.cid ?? ''),
+      );
     });
   }
 
   @override
-  Future<StrongRef> editRecord({required AtUri uri, required Record record}) async {
+  Future<RepoStrongRef> editRecord({required AtUri uri, required Record record}) async {
     _logger.d('Editing record at URI: $uri');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -50,69 +55,82 @@ class RepoRepositoryImpl implements RepoRepository {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       }
-      final result = await atproto.repo.putRecord(uri: uri, record: record.toJson());
+      final result = await atproto.repo.putRecord(
+        repo: uri.hostname,
+        collection: uri.collection.toString(),
+        rkey: uri.rkey,
+        record: record.toJson(),
+      );
       _logger.d('Record edited successfully');
-      return StrongRef(uri: result.data.uri, cid: result.data.cid);
+      return RepoStrongRef(uri: result.data.uri, cid: result.data.cid);
     });
   }
 
   @override
-  Future<StrongRef> createRecord({required NSID collection, required Map<String, dynamic> record, String? rkey}) async {
+  Future<RepoStrongRef> createRecord({
+    required String collection,
+    required Map<String, dynamic> record,
+    String? rkey,
+    String? repo,
+  }) async {
     _logger.d('Creating record in collection: $collection');
     return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
       final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       }
 
-      final result = await atproto.repo.createRecord(collection: collection, record: record, rkey: rkey);
+      // Use provided repo DID or fall back to session DID
+      final repoDid = repo ?? _client.authRepository.session?.did;
+      if (repoDid == null) {
+        _logger.e('User session DID not available');
+        throw Exception('User session DID not available');
+      }
+
+      final result = await atproto.repo.createRecord(repo: repoDid, collection: collection, record: record, rkey: rkey);
       _logger.d('Record created successfully');
-      return StrongRef(uri: result.data.uri, cid: result.data.cid);
+      return RepoStrongRef(uri: result.data.uri, cid: result.data.cid);
     });
   }
 
   @override
-  Future<void> deleteRecord({required AtUri uri}) async {
+  Future<void> deleteRecord({required AtUri uri, bool skipBskyCrosspostCleanup = false}) async {
     _logger.d('Deleting record at URI: $uri');
     return _client.executeWithRetry(() async {
-      if (!_client.authRepository.isAuthenticated) {
-        _logger.w('Not authenticated');
-        throw Exception('Not authenticated');
-      }
-
       final atproto = _client.authRepository.atproto;
       if (atproto == null) {
         _logger.e('AtProto not initialized');
         throw Exception('AtProto not initialized');
       }
 
-      await atproto.repo.deleteRecord(uri: uri);
+      await atproto.repo.deleteRecord(repo: uri.hostname, collection: uri.collection.toString(), rkey: uri.rkey);
       _logger.d('Record deleted successfully');
 
-      // Delete cross-posted Bluesky counterpart if it exists
-      try {
-        final did = uri.hostname;
-        final rkey = uri.rkey;
-        final blueskyUri = AtUri.parse('at://$did/app.bsky.feed.post/$rkey');
-
-        _logger.d('Attempting to delete Bluesky counterpart post: $blueskyUri');
-
+      // Delete cross-posted Bluesky counterpart if it exists (only for posts)
+      if (!skipBskyCrosspostCleanup) {
         try {
-          await atproto.repo.deleteRecord(uri: blueskyUri);
-          _logger.d('Bluesky counterpart post deleted successfully');
+          final did = uri.hostname;
+          final rkey = uri.rkey;
+          final blueskyUri = AtUri.parse('at://$did/app.bsky.feed.post/$rkey');
+
+          _logger.d('Attempting to delete Bluesky counterpart post: $blueskyUri');
+
+          try {
+            await atproto.repo.deleteRecord(
+              repo: blueskyUri.hostname,
+              collection: blueskyUri.collection.toString(),
+              rkey: blueskyUri.rkey,
+            );
+            _logger.d('Bluesky counterpart post deleted successfully');
+          } catch (e) {
+            // Ignore errors like 404 – it simply means the counterpart does not exist.
+            _logger.w('Bluesky counterpart post not found or deletion failed', error: e);
+          }
         } catch (e) {
-          // Ignore errors like 404 – it simply means the counterpart does not exist.
-          _logger.w('Bluesky counterpart post not found or deletion failed', error: e);
+          // Best-effort only – do not fail original deletion.
+          _logger.w('Failed during Bluesky cross-post deletion cleanup', error: e);
         }
-      } catch (e) {
-        // Best-effort only – do not fail original deletion.
-        _logger.w('Failed during Bluesky cross-post deletion cleanup', error: e);
       }
     });
   }
@@ -132,7 +150,7 @@ class RepoRepositoryImpl implements RepoRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final result = await atproto.repo.uploadBlob(data);
+      final result = await atproto.repo.uploadBlob(bytes: data);
       _logger.d('Blob uploaded successfully');
 
       return result.data.blob;
@@ -142,7 +160,7 @@ class RepoRepositoryImpl implements RepoRepository {
   @override
   Future<List<Record>> listRecords({
     required String repo,
-    required NSID collection,
+    required String collection,
     String? cursor,
     int? limit,
     bool? reverse,
@@ -177,13 +195,8 @@ class RepoRepositoryImpl implements RepoRepository {
   }
 
   @override
-  Future<bool> createReport({
-    required ReportSubject subject,
-    required ModerationReasonType reasonType,
-    String? reason,
-    ModerationService? service,
-  }) async {
-    _logger.i('Creating moderation report for reason: ${reasonType.value}');
+  Future<bool> createReport({required ModerationCreateReportInput input, ModerationService? service}) async {
+    _logger.i('Creating moderation report for reason: ${input.reasonType}');
 
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -198,7 +211,7 @@ class RepoRepositoryImpl implements RepoRepository {
       } else if (service != null) {
         _logger.d('Using provided moderation service');
         try {
-          final report = await service.createReport(subject: subject, reasonType: reasonType, reason: reason);
+          final report = await service.createReport(subject: input.subject, reasonType: input.reasonType, reason: input.reason);
           return report.status.code == 200;
         } catch (e) {
           _logger.e('Error creating report with service', error: e);
@@ -207,43 +220,37 @@ class RepoRepositoryImpl implements RepoRepository {
       } else {
         _logger.d('Using direct API call for moderation report');
         final endpoint = NSID.parse('com.atproto.moderation.createReport');
-        final subjectData = subject.data;
+        final subjectData = input.subject.data;
 
         Map<String, dynamic> body;
 
-        if (subjectData is StrongRef) {
-          final strongRef = subjectData.toJson();
+        if (subjectData is RepoStrongRef) {
           body = {
-            'subject': {r'$type': 'com.atproto.repo.strongRef', 'uri': strongRef['uri'], 'cid': strongRef['cid']},
-            'reasonType': reasonType.value,
-          };
-        } else if (subjectData is RepoRef) {
-          body = {
-            'subject': {r'$type': 'com.atproto.admin.defs.repoRef', 'did': subjectData.did},
-            'reasonType': reasonType.value,
+            'subject': {r'$type': 'com.atproto.repo.strongRef', 'uri': subjectData.uri, 'cid': subjectData.cid},
+            'reasonType': input.reasonType.data.toString(),
           };
         } else {
           _logger.e('Invalid subject data type: ${subjectData.runtimeType}');
           throw Exception('Invalid subject data');
         }
 
-        if (reason != null) {
-          body['reason'] = reason;
+        if (input.reason != null) {
+          body['reason'] = input.reason;
         }
 
-        // Send to Spark's PDS (don't use the user's PDS as it might be different)
-        // TODO: send to a chosen labeler's PDS
-        final uri = Uri.parse('https://pds.sprk.so/xrpc/$endpoint');
-        final headers = {'Authorization': 'Bearer ${atproto.session!.accessJwt}', 'Content-Type': 'application/json'};
-
-        _logger.d('Sending report to: $uri');
+        // Send to Spark's Mod service
+        final headers = {
+          'Authorization': 'Bearer ${atproto.session!.accessJwt}',
+          'Content-Type': 'application/json',
+          'atproto-proxy': _client.modDid,
+        };
 
         try {
-          final response = await http.post(uri, headers: headers, body: jsonEncode(body));
+          final response = await atproto.post(endpoint, headers: headers, body: jsonEncode(body));
 
-          if (response.statusCode != 200) {
-            _logger.e('Failed to create report: ${response.body}', error: 'HTTP ${response.statusCode}');
-            throw Exception('Failed to create report: ${response.body}');
+          if (response.status != HttpStatus.ok) {
+            _logger.e('Failed to create report: ${response.data}', error: 'HTTP ${response.status}');
+            throw Exception('Failed to create report: ${response.data}');
           }
 
           _logger.i('Report created successfully');

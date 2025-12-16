@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
 
 class ActionButton extends StatelessWidget {
@@ -20,6 +21,7 @@ class ActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     const baseSize = 45.0;
     const pressedScale = 0.9;
     const iconSize = 34.0;
@@ -45,10 +47,21 @@ class ActionButton extends StatelessWidget {
                 child: Container(
                   width: baseSize,
                   height: baseSize,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withAlpha(25),
-                    shape: BoxShape.circle,
-                  ),
+                  decoration: isActive
+                      ? const BoxDecoration(
+                          color: AppColors.primary600,
+                          shape: BoxShape.circle,
+                        )
+                      : BoxDecoration(
+                          color: isDark ? AppColors.darkGreyButton : AppColors.lightGreyButton,
+                          shape: BoxShape.circle,
+                          border: const Border.fromBorderSide(
+                            BorderSide(
+                              color: AppColors.greyBorder,
+                              width: 1.14667,
+                            ),
+                          ),
+                        ),
                   child: Center(child: sizedIcon),
                 ),
               ),

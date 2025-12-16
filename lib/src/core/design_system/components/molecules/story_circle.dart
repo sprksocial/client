@@ -107,10 +107,34 @@ class StoryCircle extends StatelessWidget {
                       shape: BoxShape.circle,
                       color: Colors.transparent,
                     ),
-                    child: CircleAvatar(
-                      radius: _imageSize / 2,
-                      backgroundColor: const Color(0xFFD9D9D9),
-                      backgroundImage: CachedNetworkImageProvider(imageUrl),
+                    child: ClipOval(
+                      child: imageUrl.isNotEmpty
+                          ? CachedNetworkImage(
+                              imageUrl: imageUrl,
+                              width: _imageSize,
+                              height: _imageSize,
+                              fit: BoxFit.cover,
+                              errorWidget: (context, url, error) => Container(
+                                width: _imageSize,
+                                height: _imageSize,
+                                color: const Color(0xFFD9D9D9),
+                                child: const Icon(
+                                  Icons.person,
+                                  size: _imageSize * 0.5,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            )
+                          : Container(
+                              width: _imageSize,
+                              height: _imageSize,
+                              color: const Color(0xFFD9D9D9),
+                              child: const Icon(
+                                Icons.person,
+                                size: _imageSize * 0.5,
+                                color: Colors.grey,
+                              ),
+                            ),
                     ),
                   ),
                 ),

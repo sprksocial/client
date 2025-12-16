@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -344,15 +345,42 @@ class _ConvoListTile extends StatelessWidget {
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  CircleAvatar(
-                    radius: 22,
-                    backgroundColor: theme.colorScheme.surfaceContainerHighest,
-                    backgroundImage: (avatarUrl != null && avatarUrl!.isNotEmpty)
-                        ? NetworkImage(avatarUrl!) as ImageProvider
-                        : null,
-                    child: (avatarUrl == null || avatarUrl!.isEmpty)
-                        ? Text(displayName.isNotEmpty ? displayName.characters.first.toUpperCase() : '?')
-                        : null,
+                  ClipOval(
+                    child: (avatarUrl != null && avatarUrl!.isNotEmpty)
+                        ? CachedNetworkImage(
+                            imageUrl: avatarUrl!,
+                            width: 44,
+                            height: 44,
+                            fit: BoxFit.cover,
+                            errorWidget: (context, url, error) => Container(
+                              width: 44,
+                              height: 44,
+                              color: theme.colorScheme.surfaceContainerHighest,
+                              child: Center(
+                                child: Text(
+                                  displayName.isNotEmpty ? displayName.characters.first.toUpperCase() : '?',
+                                  style: TextStyle(
+                                    color: theme.colorScheme.onSurface,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          )
+                        : Container(
+                            width: 44,
+                            height: 44,
+                            color: theme.colorScheme.surfaceContainerHighest,
+                            child: Center(
+                              child: Text(
+                                displayName.isNotEmpty ? displayName.characters.first.toUpperCase() : '?',
+                                style: TextStyle(
+                                  color: theme.colorScheme.onSurface,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
                   ),
                   if (selected)
                     Container(

@@ -5,7 +5,7 @@ import 'package:image_picker/image_picker.dart';
 part 'comment_input_state.freezed.dart';
 
 @freezed
-class CommentInputState with _$CommentInputState {
+abstract class CommentInputState with _$CommentInputState {
   const factory CommentInputState({
     required TextEditingController textController,
     required ImagePicker imagePicker,

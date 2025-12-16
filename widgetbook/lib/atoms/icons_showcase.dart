@@ -28,7 +28,6 @@ Widget buildAppIconsGridUseCase(BuildContext context) {
     AppIcons.music(size: size, color: color),
     AppIcons.folderMini(size: size, color: color),
     AppIcons.play(size: size, color: color),
-    AppIcons.play1(size: size, color: color),
     AppIcons.micro(size: size, color: color),
     AppIcons.tag(size: size, color: color),
     AppIcons.hashtag(size: size, color: color),

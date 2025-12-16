@@ -1,13 +1,14 @@
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_label_defs.dart';
+import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto/core.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 
-part 'records.freezed.dart';
-part 'records.g.dart';
+part 'record_models.freezed.dart';
+part 'record_models.g.dart';
 
 @Freezed(unionKey: r'$type')
-class Record with _$Record {
+abstract class Record with _$Record {
   factory Record.fromJson(Map<String, dynamic> json) => _$RecordFromJson(json);
   const Record._();
   @JsonSerializable(explicitToJson: true)
@@ -20,7 +21,7 @@ class Record with _$Record {
     List<String>? tags,
     List<SelfLabel>? selfLabels,
     Media? media,
-    StrongRef? sound,
+    RepoStrongRef? sound,
   }) = PostRecord;
 
   @JsonSerializable(explicitToJson: true)
@@ -39,7 +40,7 @@ class Record with _$Record {
   const factory Record.story({
     required Media media,
     required DateTime createdAt,
-    StrongRef? sound,
+    RepoStrongRef? sound,
     List<SelfLabel>? labels,
     List<String>? tags,
   }) = StoryRecord;
@@ -52,8 +53,8 @@ class Record with _$Record {
     Blob? avatar,
     Blob? banner,
     List<SelfLabel>? selfLabels,
-    StrongRef? joinedViaStarterPack,
-    StrongRef? pinnedPost,
+    RepoStrongRef? joinedViaStarterPack,
+    RepoStrongRef? pinnedPost,
     DateTime? createdAt,
   }) = ProfileRecord;
 
@@ -63,7 +64,7 @@ class Record with _$Record {
     required Blob sound,
     required String title,
     required DateTime createdAt,
-    StrongRef? origin,
+    RepoStrongRef? origin,
     AudioDetails? details,
     List<SelfLabel>? labels,
   }) = AudioRecord;
@@ -103,9 +104,9 @@ class Record with _$Record {
 
 /// Skeleton of a ReplyRef. Needs to be hydrated.
 @freezed
-class RecordReplyRef with _$RecordReplyRef {
+abstract class RecordReplyRef with _$RecordReplyRef {
   @JsonSerializable(explicitToJson: true)
-  const factory RecordReplyRef({required StrongRef root, required StrongRef parent}) = _RecordReplyRef;
+  const factory RecordReplyRef({required RepoStrongRef root, required RepoStrongRef parent}) = _RecordReplyRef;
   const RecordReplyRef._();
 
   factory RecordReplyRef.fromJson(Map<String, dynamic> json) => _$RecordReplyRefFromJson(json);
@@ -148,7 +149,7 @@ sealed class Media with _$Media {
 
   @FreezedUnionValue('app.bsky.embed.record')
   @JsonSerializable(explicitToJson: true)
-  const factory Media.bskyRecord({required StrongRef record}) = MediaBskyRecord;
+  const factory Media.bskyRecord({required RepoStrongRef record}) = MediaBskyRecord;
 
   @FreezedUnionValue('app.bsky.embed.recordWithMedia')
   @JsonSerializable(explicitToJson: true)
@@ -167,7 +168,7 @@ sealed class Media with _$Media {
 }
 
 @freezed
-class EmbedExternal with _$EmbedExternal {
+abstract class EmbedExternal with _$EmbedExternal {
   @JsonSerializable(explicitToJson: true)
   const factory EmbedExternal({
     required String uri,
@@ -181,7 +182,7 @@ class EmbedExternal with _$EmbedExternal {
 }
 
 @freezed
-class Image with _$Image {
+abstract class Image with _$Image {
   @JsonSerializable(explicitToJson: true)
   const factory Image({
     required Blob image,

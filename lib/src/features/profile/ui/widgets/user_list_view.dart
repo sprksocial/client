@@ -47,7 +47,7 @@ class UserListView extends ConsumerWidget {
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
           child: ProfileCard(
-            imageUrl: user.avatar.toString(),
+            imageUrl: user.avatar?.toString() ?? '',
             userName: user.displayName ?? user.handle,
             userHandle: '@${user.handle}',
             description: user.description,
@@ -59,7 +59,17 @@ class UserListView extends ConsumerWidget {
               ref.read(userListProvider(did: did, type: type).notifier).unfollowUser(user.did);
             },
             showFollowButton: !ref.read(userListProvider(did: did, type: type).notifier).isCurrentUser(user.did),
-            onTap: () => context.router.push(ProfileRoute(did: user.did)),
+            onTap: () => context.router.push(
+              ProfileRoute(
+                did: user.did,
+                initialProfile: ProfileViewBasic(
+                  did: user.did,
+                  handle: user.handle,
+                  displayName: user.displayName,
+                  avatar: user.avatar,
+                ),
+              ),
+            ),
           ),
         );
       },

@@ -121,11 +121,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
       }
 
       await context.router.push(
-        VideoReviewRoute(
-          videoPath: result.video.path,
-          storyMode: widget.storyMode,
-          soundRef: result.soundRef,
-        ),
+        VideoReviewRoute(videoPath: result.video.path, storyMode: widget.storyMode, soundRef: result.soundRef),
       );
 
       if (mounted) {

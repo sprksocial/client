@@ -4,6 +4,7 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:skeletonizer/skeletonizer.dart';
 import 'package:sparksocial/src/core/design_system/components/molecules/post_tile.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
@@ -103,7 +104,6 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
             if (index >= filteredUris.length) {
               return ColoredBox(
                 color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                child: const Center(child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))),
               );
             }
 
@@ -123,7 +123,24 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
           },
         );
       },
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => Skeletonizer(
+        child: GridView.builder(
+          padding: const EdgeInsets.all(5),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 5,
+            mainAxisSpacing: 5,
+            childAspectRatio: 9 / 16,
+          ),
+          itemCount: 12,
+          itemBuilder: (context, index) => Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(15),
+            ),
+          ),
+        ),
+      ),
       error: (error, stack) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

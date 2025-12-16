@@ -72,9 +72,9 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                   // First item is always the create button
                   if (index == 0) {
                     final userAvatarUrl = ref
-                        .read(profileNotifierProvider(did: currentUserDid!))
+                        .read(profileProvider(did: currentUserDid!))
                         .when(
-                          data: (profileData) => profileData.profile!.avatar.toString(),
+                          data: (profileData) => profileData.profile?.avatar?.toString() ?? '',
                           error: (error, stackTrace) => '',
                           loading: () => '',
                         );
@@ -108,7 +108,7 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                       padding: const EdgeInsets.only(right: 12),
                       child: StoryCircle.story(
                         userName: author.displayName ?? author.handle,
-                        imageUrl: author.avatar.toString(),
+                        imageUrl: author.avatar?.toString() ?? '',
                       ),
                     ),
                   );

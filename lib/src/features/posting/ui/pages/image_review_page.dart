@@ -1,4 +1,4 @@
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart' hide Image;
@@ -100,7 +100,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
     }
   }
 
-  Future<StrongRef?> _uploadImagesAndPost() async {
+  Future<RepoStrongRef?> _uploadImagesAndPost() async {
     if (_isPosting) return null;
     setState(() {
       _isPosting = true;
@@ -108,7 +108,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
     try {
       final crosspostEnabled = widget.storyMode ? false : _crosspostToBsky;
       final description = _descriptionController.text;
-      StrongRef result;
+      RepoStrongRef result;
       if (widget.storyMode) {
         final uploadedImage = await _feedRepository.uploadImages(
           imageFiles: _imageFiles,
@@ -123,7 +123,7 @@ class _ImageReviewPageState extends ConsumerState<ImageReviewPage> {
         );
         final asyncResult = await ref.read(storyProvider.future);
         if (asyncResult == null) {
-          throw Exception('Story post returned null StrongRef');
+          throw Exception('Story post returned null RepoStrongRef');
         }
         result = asyncResult;
       } else {

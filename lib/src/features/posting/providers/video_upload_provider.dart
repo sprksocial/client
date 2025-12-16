@@ -1,9 +1,7 @@
-import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:bluesky/com_atproto_repo_strongref.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/features/posting/providers/post_story.dart';
@@ -30,23 +28,18 @@ Future<VideoUploadResult?> processVideo(Ref ref, String videoPath) async {
 
 /// Post a video to the feed using the processed blob reference
 @riverpod
-Future<StrongRef?> postVideo(
+Future<RepoStrongRef?> postVideo(
   Ref ref, {
   required Blob blob,
   String description = '',
   String altText = '',
   String? videoPath,
   bool crosspostToBsky = false,
-  StrongRef? soundRef,
+  RepoStrongRef? soundRef,
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Posting Video');
   try {
     logger.d('Posting video (size=${blob.size}, crosspost=$crosspostToBsky, sound=${soundRef?.uri})');
-    final authRepository = GetIt.I<AuthRepository>();
-    final authAtProto = authRepository.atproto;
-    if (authAtProto == null || authAtProto.session == null) {
-      throw Exception('AtProto not initialized');
-    }
 
     final postRecord = PostRecord(
       caption: CaptionRef(text: description.isNotEmpty ? description : '', facets: []),
@@ -55,24 +48,20 @@ Future<StrongRef?> postVideo(
       sound: soundRef,
     );
 
-    final recordRes = await authAtProto.repo.createRecord(
-      collection: NSID.parse('so.sprk.feed.post'),
+    final result = await GetIt.I<SprkRepository>().repo.createRecord(
+      collection: 'so.sprk.feed.post',
       record: postRecord.toJson(),
     );
 
-    if (recordRes.status != HttpStatus.ok) {
-      throw Exception('Failed to post video: ${recordRes.status}');
-    }
-
     if (crosspostToBsky) {
       try {
-        await _crosspostVideoToBlueSky(ref, description, blob, altText, recordRes.data.uri.rkey);
+        await _crosspostVideoToBlueSky(ref, description, blob, altText, result.uri.rkey);
       } catch (e, s) {
         logger.w('Crosspost to Bluesky failed: $e', error: e, stackTrace: s);
       }
     }
-    logger.i('Video posted successfully: ${recordRes.data.uri}');
-    return recordRes.data;
+    logger.i('Video posted successfully: ${result.uri}');
+    return result;
   } catch (error, stackTrace) {
     logger.e('Error posting video', error: error, stackTrace: stackTrace);
   }
@@ -81,14 +70,14 @@ Future<StrongRef?> postVideo(
 
 /// Process video and post it in one step
 @riverpod
-Future<StrongRef?> processAndPostVideo(
+Future<RepoStrongRef?> processAndPostVideo(
   Ref ref, {
   required String videoPath,
   String description = '',
   String altText = '',
   bool crosspostToBsky = false,
   bool storyMode = false,
-  StrongRef? soundRef,
+  RepoStrongRef? soundRef,
 }) async {
   final logger = GetIt.I<LogService>().getLogger('Process/Post Video');
   logger.d('Processing then posting video: $videoPath (storyMode=$storyMode, sound=${soundRef?.uri})');
@@ -157,26 +146,22 @@ Future<void> _crosspostVideoToBlueSky(
   String rkey,
 ) async {
   final logger = GetIt.I<LogService>().getLogger('Crosspost Video');
-  final authRepository = GetIt.I<AuthRepository>();
   logger.d('Crossposting video to Bluesky');
-  final session = authRepository.session;
-  if (session == null) {
-    throw Exception('No session available for Bluesky crosspost');
-  }
+
   final bskyPostRecord = <String, dynamic>{
     r'$type': 'app.bsky.feed.post',
     'text': text,
     'embed': {r'$type': 'app.bsky.embed.video', 'video': blob.toJson(), 'alt': altText},
     'createdAt': DateTime.now().toUtc().toIso8601String(),
   };
+
   try {
-    final bskyAtProto = authRepository.atproto!;
-    final bskyResult = await bskyAtProto.repo.createRecord(
-      collection: NSID.parse('app.bsky.feed.post'),
+    final result = await GetIt.I<SprkRepository>().repo.createRecord(
+      collection: 'app.bsky.feed.post',
       record: bskyPostRecord,
       rkey: rkey,
     );
-    logger.i('Crossposted video to Bluesky: ${bskyResult.data.uri}');
+    logger.i('Crossposted video to Bluesky: ${result.uri}');
   } catch (e, s) {
     logger.w('Failed to crosspost video: $e', error: e, stackTrace: s);
   }

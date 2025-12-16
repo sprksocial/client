@@ -1,6 +1,8 @@
 import 'dart:async';
 
-import 'package:atproto/atproto.dart' as atp;
+import 'package:atproto/com_atproto_admin_defs.dart';
+import 'package:atproto/com_atproto_moderation_createreport.dart';
+import 'package:atproto/com_atproto_moderation_defs.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -178,7 +180,7 @@ class ProfileNotifier extends _$ProfileNotifier {
     }
   }
 
-  Future<bool> createReport({required String did, required atp.ModerationReasonType reasonType, String? reason}) async {
+  Future<bool> createReport({required String did, required ReasonType reasonType, String? reason}) async {
     if (!authRepository.isAuthenticated) {
       logger.w('Cannot create report, user not authenticated');
       final currentData = state.asData?.value;
@@ -190,8 +192,10 @@ class ProfileNotifier extends _$ProfileNotifier {
 
     try {
       logger.d('Creating report for DID: $did with reason: $reasonType');
-      final subject = atp.ReportSubject.repoRef(data: atp.RepoRef(did: did));
-      final result = await sprkRepository.repo.createReport(subject: subject, reasonType: reasonType, reason: reason);
+      final subject = UModerationCreateReportSubject.repoRef(data: RepoRef(did: did));
+      final result = await sprkRepository.repo.createReport(
+        input: ModerationCreateReportInput(subject: subject, reasonType: reasonType, reason: reason),
+      );
       logger.i('Report created successfully for $did');
       return result;
     } catch (e, s) {

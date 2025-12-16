@@ -1,5 +1,4 @@
-import 'package:bluesky/bluesky.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:bluesky/app_bsky_actor_profile.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
@@ -28,13 +27,9 @@ Future<bool> hasSparkProfile(Ref ref) async {
 
 /// Provider to get the user's Bluesky profile for import
 @riverpod
-Future<ProfileRecord?> bskyProfile(Ref ref) async {
+Future<ActorProfileRecord?> bskyProfile(Ref ref) async {
   final repository = ref.watch(onboardingRepositoryProvider);
-  final profileData = await repository.getBskyProfile();
-
-  if (profileData == null) return null;
-
-  return profileData;
+  return repository.getBskyProfile();
 }
 
 /// Provider to get Bluesky follows
@@ -50,11 +45,10 @@ class OnboardingState extends _$OnboardingState {
   @override
   Future<void> build() async {
     // Initial build does nothing
-    return;
   }
 
   /// Import Bluesky profile to create a Spark profile
-  Future<void> importProfile(ProfileRecord bskyProfile) async {
+  Future<void> importProfile(ActorProfileRecord bskyProfile) async {
     state = const AsyncLoading();
 
     try {

@@ -57,7 +57,11 @@ class ImageContent extends StatelessWidget {
                 placeholder: (context, url) => Container(
                   color: Colors.grey[850]?.withValues(alpha: 128),
                   child: const Center(
-                    child: SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54)),
+                    child: SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white54),
+                    ),
                   ),
                 ),
                 errorWidget: (context, url, error) => ColoredBox(
@@ -72,7 +76,10 @@ class ImageContent extends StatelessWidget {
                   right: 4,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: Colors.black.withValues(alpha: 179), borderRadius: BorderRadius.circular(10)),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 179),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: Text(
                       '+${imageUrls.length - 1}',
                       style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),

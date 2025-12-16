@@ -1,10 +1,11 @@
-import 'dart:convert';
-
 import 'package:atproto_core/atproto_core.dart';
-import 'package:bluesky/bluesky.dart' as bsky;
+import 'package:bluesky/app_bsky_embed_images.dart';
+import 'package:bluesky/app_bsky_feed_getpostthread.dart';
+import 'package:bluesky/app_bsky_feed_post.dart';
+import 'package:bluesky/app_bsky_richtext_facet.dart';
 // ignore: implementation_imports
-import 'package:bluesky/src/services/entities/converter/embed_converter.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:sparksocial/src/core/network/atproto/data/models/models.dart' hide ReplyRef;
+import 'package:sparksocial/src/core/utils/json_utils.dart';
 
 /// Adapter for Bluesky feed models <-> Spark feed models
 ///
@@ -103,11 +104,11 @@ class BskyFeedAdapter {
       if (rootType == 'com.atproto.repo.strongRef') {
         // Leave as is
       } else if (rootType == 'app.bsky.feed.defs#postView') {
-        final postViewData = jsonDecode(jsonEncode(root)) as Map<String, dynamic>;
-        postViewData.remove(r'$type');
+        final postViewData = deepCopyJson(root)..remove(r'$type');
         convertPostViewJson(postViewData, isNestedReply: true);
-        root.removeWhere((key, value) => key != r'$type');
-        root['post'] = postViewData;
+        root
+          ..clear()
+          ..addAll({r'$type': rootType, 'post': postViewData});
       } else if (rootType == 'app.bsky.feed.defs#notFoundPost' || rootType == 'app.bsky.feed.defs#blockedPost') {
         // Already in correct format
       } else if (root.containsKey('post')) {
@@ -125,11 +126,11 @@ class BskyFeedAdapter {
       if (parentType == 'com.atproto.repo.strongRef') {
         // Leave as is
       } else if (parentType == 'app.bsky.feed.defs#postView') {
-        final postViewData = jsonDecode(jsonEncode(parent)) as Map<String, dynamic>;
-        postViewData.remove(r'$type');
+        final postViewData = deepCopyJson(parent)..remove(r'$type');
         convertPostViewJson(postViewData, isNestedReply: true);
-        parent.removeWhere((key, value) => key != r'$type');
-        parent['post'] = postViewData;
+        parent
+          ..clear()
+          ..addAll({r'$type': parentType, 'post': postViewData});
       } else if (parentType == 'app.bsky.feed.defs#notFoundPost' || parentType == 'app.bsky.feed.defs#blockedPost') {
         // Already in correct format
       } else if (parent.containsKey('post')) {
@@ -165,67 +166,99 @@ class BskyFeedAdapter {
   // ============================================================================
 
   /// Convert Spark images to Bluesky images
-  List<bsky.Image> convertImages(List<Image> sparkImages) {
+  List<EmbedImagesImage> convertImages(List<Image> sparkImages) {
     return sparkImages.map((sparkImage) {
-      return bsky.Image(
+      return EmbedImagesImage(
         alt: sparkImage.alt ?? '',
         image: sparkImage.image,
       );
     }).toList();
   }
 
+  /// Convert Spark Media JSON to Bluesky embed format
+  /// Returns null if media is null or not supported for Bluesky
+  UFeedPostEmbed? convertJsonToBskyEmbed(Map<String, dynamic> mediaJson) {
+    final media = Media.fromJson(mediaJson);
+
+    switch (media) {
+      case MediaImage(:final image, :final alt):
+        // Convert single Spark image to Bluesky embed images
+        final bskyImage = EmbedImagesImage(
+          alt: alt ?? '',
+          image: image,
+        );
+        return UFeedPostEmbed.embedImages(data: EmbedImages(images: [bskyImage]));
+
+      case MediaImages(:final images):
+        // Convert multiple Spark images to Bluesky embed images
+        final bskyImages = convertImages(images);
+        return UFeedPostEmbed.embedImages(data: EmbedImages(images: bskyImages));
+
+      case MediaBskyImages(:final images):
+        // Already in Bluesky format, convert to embed
+        final bskyImages = convertImages(images);
+        return UFeedPostEmbed.embedImages(data: EmbedImages(images: bskyImages));
+
+      case MediaVideo():
+      case MediaBskyVideo():
+      case MediaBskyRecord():
+      case MediaBskyRecordWithMedia():
+      case MediaBskyExternal():
+        // Videos and other embed types are not supported for comments/replies
+        return null;
+    }
+  }
+
   /// Create a Bluesky post record
-  bsky.PostRecord createPostRecord({
+  FeedPostRecord createPostRecord({
     required String text,
     required DateTime createdAt,
-    List<bsky.Image>? images,
-    List<bsky.Facet>? facets,
+    List<EmbedImagesImage>? images,
+    List<RichtextFacet>? facets,
   }) {
-    return bsky.PostRecord(
+    return FeedPostRecord(
       text: text,
       createdAt: createdAt,
-      embed: images != null && images.isNotEmpty ? bsky.Embed.images(data: bsky.EmbedImages(images: images)) : null,
+      embed: images != null && images.isNotEmpty ? UFeedPostEmbed.embedImages(data: EmbedImages(images: images)) : null,
       facets: facets,
     );
   }
 
   /// Create Bluesky comment/reply record
-  bsky.PostRecord createCommentRecord({
+  FeedPostRecord createCommentRecord({
     required String text,
     required DateTime createdAt,
-    required bsky.ReplyRef reply,
-    bsky.Embed? embed,
+    required RecordReplyRef reply,
+    UFeedPostEmbed? embed,
   }) {
-    return bsky.PostRecord(
+    return FeedPostRecord(
       text: text,
       createdAt: createdAt,
-      reply: reply,
+      reply: ReplyRef(
+        root: reply.root,
+        parent: reply.parent,
+      ),
       embed: embed,
     );
   }
 
   /// Create a link facet for Bluesky posts
-  bsky.Facet createLinkFacet({
+  RichtextFacet createLinkFacet({
     required String linkUrl,
     required int byteStart,
   }) {
-    return bsky.Facet(
-      index: bsky.ByteSlice(byteStart: byteStart, byteEnd: byteStart + linkUrl.length),
-      features: [bsky.FacetFeature.link(data: bsky.FacetLink(uri: linkUrl))],
+    return RichtextFacet(
+      index: RichtextFacetByteSlice(byteStart: byteStart, byteEnd: byteStart + linkUrl.length),
+      features: [URichtextFacetFeatures.richtextFacetLink(data: RichtextFacetLink(uri: linkUrl))],
     );
   }
 
   /// Convert Bluesky thread to Spark thread
   Thread convertBskyThreadToSparkThread({
-    required bsky.PostThreadView thread,
+    required UFeedGetPostThreadThread thread,
     required AtUri uri,
   }) {
     return Thread.fromBsky(thread: thread, uri: uri);
-  }
-
-  /// Convert media JSON to Bluesky embed
-  bsky.Embed? convertJsonToBskyEmbed(Map<String, dynamic> mediaJson) {
-    return embedConverter.fromJson(mediaJson);
   }
 }
 

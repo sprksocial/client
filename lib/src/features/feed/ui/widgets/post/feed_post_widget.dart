@@ -1,4 +1,4 @@
-import 'package:atproto/atproto.dart';
+import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
@@ -46,7 +46,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
   }
 
   void _loadPost() {
-    final feedState = ref.read(feedNotifierProvider(widget.feed));
+    final feedState = ref.read(feedProvider(widget.feed));
     if (widget.index < feedState.loadedPosts.length) {
       final post = feedState.loadedPosts[widget.index];
       final currentUri = post.uri.toString();
@@ -87,7 +87,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
         viewer: postData.viewer?.copyWith(like: newLike.uri) ?? Viewer(like: newLike.uri, repost: postData.viewer?.repost),
       );
 
-      ref.read(feedNotifierProvider(widget.feed).notifier).replacePost(updatedPost);
+      ref.read(feedProvider(widget.feed).notifier).replacePost(updatedPost);
       if (mounted) {
         setState(() {
           _overrideIsLiked = true;
@@ -99,7 +99,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
   }
 
   Future<void> _checkContentWarning(String postUri) async {
-    final feedState = ref.read(feedNotifierProvider(widget.feed));
+    final feedState = ref.read(feedProvider(widget.feed));
     if (widget.index < feedState.loadedPosts.length) {
       final post = feedState.loadedPosts[widget.index];
       if (post.uri.toString() != postUri) {
@@ -133,7 +133,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
   @override
   Widget build(BuildContext context) {
     // Check if we need to reload post due to state changes
-    final feedState = ref.watch(feedNotifierProvider(widget.feed));
+    final feedState = ref.watch(feedProvider(widget.feed));
     final navigationState = ref.watch(navigationProvider);
 
     // Check if user is not on feeds tab (index 0)
@@ -150,7 +150,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
         _lastUpdateCount = updateCount;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            ref.read(feedNotifierProvider(widget.feed).notifier).refreshPost(AtUri.parse(currentUri));
+            ref.read(feedProvider(widget.feed).notifier).refreshPost(AtUri.parse(currentUri));
             setState(_loadPost);
             _checkContentWarning(currentUri);
           }
@@ -182,7 +182,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
 
           // Get labels for the overlay
           var labels = <Label>[];
-          final feedState = ref.read(feedNotifierProvider(widget.feed));
+          final feedState = ref.read(feedProvider(widget.feed));
           if (widget.index < feedState.loadedPosts.length) {
             final post = feedState.loadedPosts[widget.index];
             final extraInfo = feedState.extraInfo[post.uri];
@@ -199,14 +199,15 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                 _isAnimatingHeart = false;
               });
             },
-            child: GestureDetector(
-              onDoubleTap: () => _handleDoubleTapLike(postData),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Main content
-                  Positioned.fill(
-                    bottom: 0 + MediaQuery.of(context).padding.bottom,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                // Main content - only this part should detect double-tap for likes
+                Positioned.fill(
+                  bottom: 0 + MediaQuery.of(context).padding.bottom,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onDoubleTap: () => _handleDoubleTapLike(postData),
                     child: switch (postData.media) {
                       MediaViewVideo() => PostVideoPlayer(
                         key: _videoPlayerKey,
@@ -244,25 +245,30 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                       _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                     },
                   ),
+                ),
 
-                  // Overlay controls
-                  Positioned.fill(
-                    child: PostOverlay(
-                      post: postData,
-                      feed: widget.feed,
-                      isLiked: _overrideIsLiked ?? (postData.viewer?.like != null),
-                      labels: labels,
-                      onProfilePressed: () {
-                        _videoPlayerKey.currentState?.pauseVideo();
-                      },
-                      onUsernameTap: () {
-                        _videoPlayerKey.currentState?.pauseVideo();
-                        context.router.push(ProfileRoute(did: postData.author.did));
-                      },
-                    ),
+                // Overlay controls - no double-tap detection, so buttons respond immediately
+                Positioned.fill(
+                  child: PostOverlay(
+                    post: postData,
+                    feed: widget.feed,
+                    isLiked: _overrideIsLiked ?? (postData.viewer?.like != null),
+                    labels: labels,
+                    onProfilePressed: () {
+                      _videoPlayerKey.currentState?.pauseVideo();
+                    },
+                    onUsernameTap: () {
+                      _videoPlayerKey.currentState?.pauseVideo();
+                      context.router.push(
+                        ProfileRoute(
+                          did: postData.author.did,
+                          initialProfile: postData.author,
+                        ),
+                      );
+                    },
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
 

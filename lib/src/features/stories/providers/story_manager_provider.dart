@@ -56,7 +56,7 @@ class StoryManager extends _$StoryManager {
       do {
         final result = await atproto.repo.listRecords(
           repo: did,
-          collection: NSID.parse(collection),
+          collection: collection,
           cursor: cursor,
           limit: 100,
         );
@@ -85,7 +85,7 @@ class StoryManager extends _$StoryManager {
   }
 
   Future<void> deleteStory(StoryView story) async {
-    final current = state.valueOrNull;
+    final current = state.value;
     if (current == null) return;
     try {
       // Optimistic update

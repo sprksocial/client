@@ -8,8 +8,8 @@ Widget buildProfileTabItemSelectedUseCase(BuildContext context) {
   return Container(
     color: Theme.of(context).colorScheme.surface,
     child: ProfileTabItem(
-      icon: AppIcons.profileGrid(),
-      filledIcon: AppIcons.profileGrid(),
+      icon: AppIcons.grid(),
+      filledIcon: AppIcons.gridFilled(),
       isSelected: true,
       onTap: () => print('Tab tapped'),
     ),

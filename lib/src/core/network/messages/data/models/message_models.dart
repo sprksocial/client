@@ -4,7 +4,7 @@ part 'message_models.freezed.dart';
 part 'message_models.g.dart';
 
 @freezed
-class Embed with _$Embed {
+abstract class Embed with _$Embed {
   @JsonSerializable(explicitToJson: true)
   const factory Embed({String? url, String? type, String? preview}) = _Embed;
   const Embed._();
@@ -16,7 +16,7 @@ class Embed with _$Embed {
 }
 
 @freezed
-class Message with _$Message {
+abstract class Message with _$Message {
   @JsonSerializable(explicitToJson: true)
   const factory Message({
     required int id,
@@ -34,7 +34,7 @@ class Message with _$Message {
 // XRPC Models for chat service
 
 @freezed
-class SenderView with _$SenderView {
+abstract class SenderView with _$SenderView {
   @JsonSerializable(explicitToJson: true)
   const factory SenderView({
     required String did,
@@ -45,7 +45,7 @@ class SenderView with _$SenderView {
 }
 
 @freezed
-class ReactionView with _$ReactionView {
+abstract class ReactionView with _$ReactionView {
   @JsonSerializable(explicitToJson: true)
   const factory ReactionView({
     required String value,
@@ -58,7 +58,7 @@ class ReactionView with _$ReactionView {
 }
 
 @freezed
-class MessageView with _$MessageView {
+abstract class MessageView with _$MessageView {
   @JsonSerializable(explicitToJson: true)
   const factory MessageView({
     required String id,
@@ -75,7 +75,7 @@ class MessageView with _$MessageView {
 }
 
 @freezed
-class DeletedMessageView with _$DeletedMessageView {
+abstract class DeletedMessageView with _$DeletedMessageView {
   @JsonSerializable(explicitToJson: true)
   const factory DeletedMessageView({
     required String id,
@@ -89,7 +89,7 @@ class DeletedMessageView with _$DeletedMessageView {
 }
 
 @freezed
-class ConvoView with _$ConvoView {
+abstract class ConvoView with _$ConvoView {
   @JsonSerializable(explicitToJson: true)
   const factory ConvoView({
     required String id,

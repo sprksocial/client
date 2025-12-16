@@ -6,7 +6,7 @@ part 'search_state.g.dart';
 
 /// Represents the state of the search screen
 @freezed
-class SearchState with _$SearchState {
+abstract class SearchState with _$SearchState {
   /// Creates a new search state
   const factory SearchState({
     /// Whether search results are loading

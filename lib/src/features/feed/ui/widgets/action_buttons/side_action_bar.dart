@@ -2,9 +2,12 @@ import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/design_system/components/organisms/side_action_bar.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
+import 'package:sparksocial/src/core/ui/widgets/options_panel.dart';
+import 'package:sparksocial/src/core/ui/widgets/report_dialog.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/share_panel.dart';
@@ -89,7 +92,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         );
 
         if (widget.feed != null) {
-          ref.read(feedNotifierProvider(widget.feed!).notifier).replacePost(updatedPost);
+          ref.read(feedProvider(widget.feed!).notifier).replacePost(updatedPost);
         }
 
         _currentPost = updatedPost;
@@ -104,7 +107,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
           );
 
           if (widget.feed != null) {
-            ref.read(feedNotifierProvider(widget.feed!).notifier).replacePost(updatedPost);
+            ref.read(feedProvider(widget.feed!).notifier).replacePost(updatedPost);
           }
 
           _currentPost = updatedPost;
@@ -198,6 +201,17 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     }
   }
 
+  void _handleReport() {
+    final currentPost = _currentPost ?? widget.post;
+    showDialog(
+      context: context,
+      builder: (context) => ReportDialog(
+        postUri: currentPost.uri.toString(),
+        postCid: currentPost.cid,
+      ),
+    );
+  }
+
   // Future<void> _handleCurate() async {
   //   // For now, this is a placeholder for curate functionality
   //   // In the future, this could add the post to a custom feed or collection
@@ -233,6 +247,20 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       soundCover: currentPost.sound?.coverArt.toString(),
       // isCurated: isCurated, // Curation disabled
       // curateDestinations: curateDestinations, // Curation disabled
+      optionsButton: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => OptionsPanel.show(
+          context: context,
+          onReport: _handleReport,
+        ),
+        child: SizedBox(
+          width: 40,
+          height: 40,
+          child: Center(
+            child: AppIcons.moreHoriz(size: 32, color: Colors.white),
+          ),
+        ),
+      ),
     );
   }
 }
