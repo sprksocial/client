@@ -43,6 +43,8 @@ class ProfilePageTemplate extends StatelessWidget {
     this.selectedTabIndex = 0,
     this.onTabChanged,
     this.isLoading = false,
+    this.contentSlivers,
+    this.scrollController,
   });
 
   final String displayName;
@@ -73,8 +75,10 @@ class ProfilePageTemplate extends StatelessWidget {
   final int selectedTabIndex;
   final Function(int)? onTabChanged;
   final Widget contentWidget;
+  final List<Widget>? contentSlivers;
   final Future<void> Function()? onRefresh;
   final bool isLoading;
+  final ScrollController? scrollController;
 
   @override
   Widget build(BuildContext context) {
@@ -92,43 +96,50 @@ class ProfilePageTemplate extends StatelessWidget {
       ),
       body: RefreshIndicator(
         onRefresh: onRefresh ?? () async {},
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Skeletonizer(
-                enabled: isLoading,
-                child: _ProfileHeaderSection(
-                  displayName: displayName,
-                  handle: handle,
-                  postsCount: postsCount,
-                  followersCount: followersCount,
-                  followingCount: followingCount,
-                  avatarUrl: avatarUrl,
-                  description: description,
-                  links: links,
-                  hasStories: hasStories,
-                  isCurrentUser: isCurrentUser,
-                  isFollowing: isFollowing,
-                  isEarlySupporter: isEarlySupporter,
-                  onAvatarTap: onAvatarTap,
-                  onFollowersTap: onFollowersTap,
-                  onFollowingTap: onFollowingTap,
-                  onEditTap: onEditTap,
-                  onFollowTap: onFollowTap,
-                  onUnfollowTap: onUnfollowTap,
-                  onShareTap: onShareTap,
-                  onEarlySupporterTap: onEarlySupporterTap,
-                  onMentionTap: onMentionTap,
-                  onAddStoryTap: onAddStoryTap,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            // Handle scroll notifications for pagination if needed
+            return false;
+          },
+          child: CustomScrollView(
+            controller: scrollController,
+            slivers: [
+              SliverToBoxAdapter(
+                child: Skeletonizer(
+                  enabled: isLoading,
+                  child: _ProfileHeaderSection(
+                    displayName: displayName,
+                    handle: handle,
+                    postsCount: postsCount,
+                    followersCount: followersCount,
+                    followingCount: followingCount,
+                    avatarUrl: avatarUrl,
+                    description: description,
+                    links: links,
+                    hasStories: hasStories,
+                    isCurrentUser: isCurrentUser,
+                    isFollowing: isFollowing,
+                    isEarlySupporter: isEarlySupporter,
+                    onAvatarTap: onAvatarTap,
+                    onFollowersTap: onFollowersTap,
+                    onFollowingTap: onFollowingTap,
+                    onEditTap: onEditTap,
+                    onFollowTap: onFollowTap,
+                    onUnfollowTap: onUnfollowTap,
+                    onShareTap: onShareTap,
+                    onEarlySupporterTap: onEarlySupporterTap,
+                    onMentionTap: onMentionTap,
+                    onAddStoryTap: onAddStoryTap,
+                  ),
                 ),
               ),
-            ),
-            SliverPersistentHeader(
-              pinned: true,
-              delegate: StickyProfileTabBar(child: tabsWidget),
-            ),
-            SliverFillRemaining(child: contentWidget),
-          ],
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: StickyProfileTabBar(child: tabsWidget),
+              ),
+              if (contentSlivers != null) ...contentSlivers! else SliverFillRemaining(child: contentWidget),
+            ],
+          ),
         ),
       ),
     );

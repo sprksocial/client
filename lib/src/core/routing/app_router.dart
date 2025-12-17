@@ -73,9 +73,6 @@ class AppRouter extends RootStackRouter {
         AutoRoute(
           page: UserProfileRoute.page,
           path: 'profile',
-          children: [
-            AutoRoute(page: ProfileVideosRoute.page, path: 'videos'),
-          ],
         ),
       ],
     ),
@@ -110,9 +107,6 @@ class AppRouter extends RootStackRouter {
     AutoRoute(
       page: ProfileRoute.page,
       path: '/profile/:did',
-      children: [
-        AutoRoute(page: ProfileVideosRoute.page, path: 'videos', initial: true),
-      ],
     ),
     AutoRoute(page: UserListRoute.page, path: '/profile/:did/users'),
     AutoRoute(page: VideoReviewRoute.page, path: '/video-review'),
