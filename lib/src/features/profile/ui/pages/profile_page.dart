@@ -1,3 +1,4 @@
+import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +23,7 @@ import 'package:sparksocial/src/features/profile/providers/profile_feed_provider
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/pages/user_list_page.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/early_supporter_sheet.dart';
+import 'package:sparksocial/src/features/profile/ui/widgets/profile_grid_tab.dart';
 
 @RoutePage()
 class ProfilePage extends ConsumerStatefulWidget {
@@ -43,10 +45,53 @@ class ProfilePage extends ConsumerStatefulWidget {
 class _ProfilePageState extends ConsumerState<ProfilePage> {
   late final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ProfilePage');
   late final IdentityRepository _identityRepository = GetIt.instance<IdentityRepository>();
+  late final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    // Trigger loading when user is within ~2 rows of the bottom (each row is roughly 200px at 9:16 aspect ratio)
+    if (_scrollController.hasClients && _scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 500) {
+      final profileUri = AtUri.parse('at://${widget.did}');
+      ref.read(profileFeedProvider(profileUri, false).notifier).loadMore();
+    }
+  }
+
+  /// Builds slivers for a given tab index
+  /// Tab 0 is built directly (default profile content), other tabs use route pages
+  List<Widget> _buildSliversForTab({
+    required BuildContext context,
+    required WidgetRef ref,
+    required int tabIndex,
+  }) {
+    final profileUri = AtUri.parse('at://${widget.did}');
+
+    switch (tabIndex) {
+      case 0:
+        // First tab - default profile grid content (not a route)
+        final gridTab = ProfileGridTab(profileUri: profileUri);
+        return gridTab.buildSlivers(context, ref);
+      // Add more tabs here - these correspond to route pages:
+      // case 1:
+      //   return ProfileLikedPage.buildSlivers(context, ref, widget.did);
+      // case 2:
+      //   return ProfileVideosOnlyPage.buildSlivers(context, ref, widget.did);
+      default:
+        // Fallback to first tab
+        final gridTab = ProfileGridTab(profileUri: profileUri);
+        return gridTab.buildSlivers(context, ref);
+    }
   }
 
   void _showEarlySupporterInfo(BuildContext context) {
@@ -94,240 +139,260 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
 
-    // Always render the AutoTabsRouter so the grid starts loading immediately
-    return AutoTabsRouter(
-      routes: [
-        ProfileVideosRoute(did: widget.did),
-      ],
-      builder: (context, child) {
-        final tabsRouter = AutoTabsRouter.of(context);
+    // Tab 0 is the default profile content (built directly, not a route)
+    // Tabs 1+ are subpages (route pages)
+    // For now we only have tab 0, so we use simple state management
+    // When adding tabs 1+, use AutoTabsRouter with those routes
 
-        return profileStateAsync.when(
-          data: (state) {
-            if (state.showAuthPrompt) {
-              context.router.push(AuthPromptRoute(onClose: notifier.hideAuthPrompt));
-            }
+    // Build slivers for tab 0 immediately - tabs load in parallel with profile
+    final contentSlivers = _buildSliversForTab(
+      context: context,
+      ref: ref,
+      tabIndex: 0, // Always tab 0 for now
+    );
 
-            final profile = state.profile;
-            if (profile == null) {
-              return ErrorScreen(
-                context: context,
-                message: 'Profile not found',
-                stackTrace: null,
-                onRetry: notifier.refreshProfile,
-                theme: theme,
-              );
-            }
-            final isCurrentUser = notifier.isCurrentUser();
-            final description = profile.description ?? '';
-            final links = TextFormatter.extractUrls(description);
-            final uniqueLinks = links.toSet().toList();
+    return profileStateAsync.when(
+      data: (state) {
+        if (state.showAuthPrompt) {
+          context.router.push(AuthPromptRoute(onClose: notifier.hideAuthPrompt));
+        }
 
-            return ProfilePageTemplate(
-              displayName: profile.displayName ?? profile.handle,
-              handle: profile.handle,
-              postsCount: TextFormatter.formatCount(profile.postsCount),
-              followersCount: TextFormatter.formatCount(profile.followersCount),
-              followingCount: TextFormatter.formatCount(profile.followsCount),
-              avatarUrl: profile.avatar?.toString(),
-              description: description.isNotEmpty ? description : null,
-              links: uniqueLinks.isNotEmpty ? uniqueLinks : null,
-              hasStories: profile.stories?.isNotEmpty ?? false,
-              isCurrentUser: isCurrentUser,
-              isFollowing: profile.viewer?.following != null,
-              isEarlySupporter: state.isEarlySupporter,
-              onAvatarTap: (profile.stories?.isNotEmpty ?? false) ? () => _openStoriesViewer(profile) : null,
-              onFollowersTap: () => context.router.push(UserListRoute(did: widget.did, type: UserListType.followers)),
-              onFollowingTap: () => context.router.push(UserListRoute(did: widget.did, type: UserListType.following)),
-              onEditTap: () {
-                context.router.push(EditProfileRoute(profile: profile)).then((updated) {
-                  if (updated == true) {
-                    notifier.refreshProfile();
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Profile updated successfully')),
-                      );
-                    }
-                  }
-                });
-              },
-              onFollowTap: () async {
-                try {
-                  await notifier.toggleFollow();
-                  final latestProfileState = ref.read(profileProvider(did: widget.did)).asData?.value;
+        final profile = state.profile;
+        if (profile == null) {
+          return ErrorScreen(
+            context: context,
+            message: 'Profile not found',
+            stackTrace: null,
+            onRetry: notifier.refreshProfile,
+            theme: theme,
+          );
+        }
+        final isCurrentUser = notifier.isCurrentUser();
+        final description = profile.description ?? '';
+        final links = TextFormatter.extractUrls(description);
+        final uniqueLinks = links.toSet().toList();
 
-                  if (latestProfileState != null && !latestProfileState.showAuthPrompt) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Followed successfully'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    }
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-                    );
-                  }
+        return ProfilePageTemplate(
+          displayName: profile.displayName ?? profile.handle,
+          handle: profile.handle,
+          postsCount: TextFormatter.formatCount(profile.postsCount),
+          followersCount: TextFormatter.formatCount(profile.followersCount),
+          followingCount: TextFormatter.formatCount(profile.followsCount),
+          avatarUrl: profile.avatar?.toString(),
+          description: description.isNotEmpty ? description : null,
+          links: uniqueLinks.isNotEmpty ? uniqueLinks : null,
+          hasStories: profile.stories?.isNotEmpty ?? false,
+          isCurrentUser: isCurrentUser,
+          isFollowing: profile.viewer?.following != null,
+          isEarlySupporter: state.isEarlySupporter,
+          onAvatarTap: (profile.stories?.isNotEmpty ?? false) ? () => _openStoriesViewer(profile) : null,
+          onFollowersTap: () => context.router.push(UserListRoute(did: widget.did, type: UserListType.followers)),
+          onFollowingTap: () => context.router.push(UserListRoute(did: widget.did, type: UserListType.following)),
+          onEditTap: () {
+            context.router.push(EditProfileRoute(profile: profile)).then((updated) {
+              if (updated == true) {
+                notifier.refreshProfile();
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Profile updated successfully')),
+                  );
                 }
-              },
-              onUnfollowTap: () async {
-                try {
-                  await notifier.toggleFollow();
-                  final latestProfileState = ref.read(profileProvider(did: widget.did)).asData?.value;
-
-                  if (latestProfileState != null && !latestProfileState.showAuthPrompt) {
-                    if (context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Unfollowed successfully'),
-                          backgroundColor: Colors.green,
-                        ),
-                      );
-                    }
-                  }
-                } catch (e) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
-                    );
-                  }
-                }
-              },
-              onShareTap: () => _logger.i('Share profile tapped for ${profile.did}'),
-              onEarlySupporterTap: () => _showEarlySupporterInfo(context),
-              onMentionTap: _handleUsernameTap,
-              onAddStoryTap: isCurrentUser ? () => _handleAddStory(context) : null,
-              appBarTitle: profile.displayName ?? profile.handle,
-              appBarActions: [
-                if (isCurrentUser)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: IconButton(
-                      padding: EdgeInsets.zero,
-                      onPressed: () => context.router.push(const ProfileSettingsRoute()),
-                      icon: Icon(FluentIcons.options_24_regular, color: colorScheme.onSurface),
-                    ),
-                  )
-                else
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8),
-                    child: GestureDetector(
-                      onTap: () => OptionsPanel.show(
-                        context: context,
-                        onReport: () => showDialog(
-                          context: context,
-                          useRootNavigator: false,
-                          builder: (dContext) => ReportDialog(
-                            postUri: 'at://${profile.did}/app.bsky.actor.profile/self',
-                            postCid: profile.did,
-                            onSubmit: (subject, reasonType, reason) async {
-                              try {
-                                final success = await notifier.createReport(
-                                  did: profile.did,
-                                  reasonType: reasonType,
-                                  reason: reason,
-                                );
-                                if (success && context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Report submitted successfully')),
-                                  );
-                                }
-                              } catch (e) {
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text('Error submitting report: $e')),
-                                  );
-                                }
-                              }
-                            },
-                          ),
-                        ),
-                        isProfile: true,
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        child: AppIcons.moreHoriz(color: colorScheme.onSurface),
-                      ),
-                    ),
-                  ),
-              ],
-              tabsWidget: ProfileTabBar(
-                selectedIndex: tabsRouter.activeIndex,
-                tabs: [
-                  ProfileTabItem(
-                    icon: AppIcons.grid(),
-                    filledIcon: AppIcons.gridFilled(),
-                    isSelected: tabsRouter.activeIndex == 0,
-                    onTap: () => tabsRouter.setActiveIndex(0),
-                  ),
-                  // ProfileTabItem(
-                  //   icon: AppIcons.profileLiked(),
-                  //   filledIcon: AppIcons.likeFilled(),
-                  //   isSelected: tabsRouter.activeIndex == 1,
-                  //   onTap: () => tabsRouter.setActiveIndex(1),
-                  // ),
-                ],
-              ),
-
-              selectedTabIndex: tabsRouter.activeIndex,
-              onTabChanged: tabsRouter.setActiveIndex,
-              contentWidget: child,
-              onRefresh: () async {
-                await notifier.refreshProfile();
-                ref.invalidate(profileFeedProvider);
-              },
-            );
+              }
+            });
           },
-          loading: () {
-            final initial = widget.initialProfile;
+          onFollowTap: () async {
+            try {
+              await notifier.toggleFollow();
+              final latestProfileState = ref.read(profileProvider(did: widget.did)).asData?.value;
 
-            return ProfilePageTemplate(
-              isLoading: true,
-              displayName: initial?.displayName ?? initial?.handle ?? 'Loading...',
-              handle: initial?.handle ?? 'loading',
-              avatarUrl: initial?.avatar?.toString(),
-              postsCount: '0',
-              followersCount: '0',
-              followingCount: '0',
-              isCurrentUser: false,
-              appBarTitle: initial?.displayName ?? initial?.handle,
-              appBarActions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 8),
+              if (latestProfileState != null && !latestProfileState.showAuthPrompt) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Followed successfully'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              }
+            } catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                );
+              }
+            }
+          },
+          onUnfollowTap: () async {
+            try {
+              await notifier.toggleFollow();
+              final latestProfileState = ref.read(profileProvider(did: widget.did)).asData?.value;
+
+              if (latestProfileState != null && !latestProfileState.showAuthPrompt) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Unfollowed successfully'),
+                      backgroundColor: Colors.green,
+                    ),
+                  );
+                }
+              }
+            } catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                );
+              }
+            }
+          },
+          onShareTap: () => _logger.i('Share profile tapped for ${profile.did}'),
+          onEarlySupporterTap: () => _showEarlySupporterInfo(context),
+          onMentionTap: _handleUsernameTap,
+          onAddStoryTap: isCurrentUser ? () => _handleAddStory(context) : null,
+          appBarTitle: profile.displayName ?? profile.handle,
+          appBarActions: [
+            if (isCurrentUser)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: IconButton(
+                  padding: EdgeInsets.zero,
+                  onPressed: () => context.router.push(const ProfileSettingsRoute()),
+                  icon: Icon(FluentIcons.options_24_regular, color: colorScheme.onSurface),
+                ),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: GestureDetector(
+                  onTap: () => OptionsPanel.show(
+                    context: context,
+                    onReport: () => showDialog(
+                      context: context,
+                      useRootNavigator: false,
+                      builder: (dContext) => ReportDialog(
+                        postUri: 'at://${profile.did}/app.bsky.actor.profile/self',
+                        postCid: profile.did,
+                        onSubmit: (subject, reasonType, reason) async {
+                          try {
+                            final success = await notifier.createReport(
+                              did: profile.did,
+                              reasonType: reasonType,
+                              reason: reason,
+                            );
+                            if (success && context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Report submitted successfully')),
+                              );
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error submitting report: $e')),
+                              );
+                            }
+                          }
+                        },
+                      ),
+                    ),
+                    isProfile: true,
+                  ),
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     child: AppIcons.moreHoriz(color: colorScheme.onSurface),
                   ),
                 ),
-              ],
-              tabsWidget: ProfileTabBar(
-                selectedIndex: tabsRouter.activeIndex,
-                tabs: [
-                  ProfileTabItem(
-                    icon: AppIcons.grid(),
-                    filledIcon: AppIcons.gridFilled(),
-                    isSelected: tabsRouter.activeIndex == 0,
-                    onTap: () => tabsRouter.setActiveIndex(0),
-                  ),
-                ],
               ),
-              contentWidget: child,
-            );
-          },
-          error: (error, stackTrace) => ErrorScreen(
-            context: context,
-            message: error.toString(),
-            stackTrace: stackTrace,
-            onRetry: notifier.refreshProfile,
-            theme: theme,
+          ],
+          tabsWidget: ProfileTabBar(
+            selectedIndex: 0, // Always 0 for now
+            tabs: _buildTabItems(0),
           ),
+
+          selectedTabIndex: 0,
+          onTabChanged: (index) {
+            // When adding tabs 1+ with AutoTabsRouter, this will be: tabsRouter.setActiveIndex(index)
+            // For now with only tab 0, this is a no-op
+          },
+          contentWidget: const SizedBox.shrink(), // Not used when contentSlivers is provided
+          contentSlivers: contentSlivers,
+          scrollController: _scrollController,
+          onRefresh: () async {
+            await notifier.refreshProfile();
+            ref.invalidate(profileFeedProvider);
+          },
         );
       },
+      loading: () {
+        final initial = widget.initialProfile;
+
+        return ProfilePageTemplate(
+          isLoading: true,
+          displayName: initial?.displayName ?? initial?.handle ?? 'Loading...',
+          handle: initial?.handle ?? 'loading',
+          avatarUrl: initial?.avatar?.toString(),
+          postsCount: '0',
+          followersCount: '0',
+          followingCount: '0',
+          isCurrentUser: false,
+          appBarTitle: initial?.displayName ?? initial?.handle,
+          appBarActions: [
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                child: AppIcons.moreHoriz(color: colorScheme.onSurface),
+              ),
+            ),
+          ],
+          tabsWidget: ProfileTabBar(
+            selectedIndex: 0, // Always 0 for now
+            tabs: _buildTabItems(0),
+          ),
+          contentWidget: const SizedBox.shrink(), // Not used when contentSlivers is provided
+          contentSlivers: contentSlivers, // Tabs load even while profile is loading
+          scrollController: _scrollController,
+        );
+      },
+      error: (error, stackTrace) => ErrorScreen(
+        context: context,
+        message: error.toString(),
+        stackTrace: stackTrace,
+        onRetry: notifier.refreshProfile,
+        theme: theme,
+      ),
     );
+  }
+
+  /// Builds the list of tab items - easy to add new tabs here!
+  /// When adding tabs 1+, switch to using AutoTabsRouter and pass TabsRouter instead of int
+  List<ProfileTabItem> _buildTabItems(int activeIndex) {
+    return [
+      ProfileTabItem(
+        icon: AppIcons.grid(),
+        filledIcon: AppIcons.gridFilled(),
+        isSelected: activeIndex == 0,
+        onTap: () {
+          // When using AutoTabsRouter: tabsRouter.setActiveIndex(0)
+          setState(() {
+            // activeTabIndex = 0; // Will be handled by state management
+          });
+        },
+      ),
+      // Add more tabs here (these will correspond to route pages):
+      // ProfileTabItem(
+      //   icon: AppIcons.profileLiked(),
+      //   filledIcon: AppIcons.likeFilled(),
+      //   isSelected: activeIndex == 1,
+      //   onTap: () => tabsRouter.setActiveIndex(1),
+      // ),
+      // ProfileTabItem(
+      //   icon: AppIcons.video(),
+      //   filledIcon: AppIcons.videoFilled(),
+      //   isSelected: activeIndex == 2,
+      //   onTap: () => tabsRouter.setActiveIndex(2),
+      // ),
+    ];
   }
 
   Future<void> _openStoriesViewer(actor_models.ProfileViewDetailed profile) async {
