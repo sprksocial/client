@@ -70,6 +70,14 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
     _showEditControls = _selectedTrack != null;
   }
 
+  @override
+  void dispose() {
+    if (_selectedTrack != null) {
+      widget.onTrackStop(_selectedTrack!);
+    }
+    super.dispose();
+  }
+
   void _handleTrackSelection(AudioTrack track) {
     setState(() {
       _selectedTrack = track;
@@ -110,9 +118,9 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: AppColors.grey900,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -127,7 +135,7 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
                   opacity: animation,
                   child: SlideTransition(
                     position: Tween<Offset>(
-                      begin: const Offset(0.0, 0.1),
+                      begin: const Offset(0, 0.1),
                       end: Offset.zero,
                     ).animate(animation),
                     child: child,
@@ -198,4 +206,3 @@ class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {
     );
   }
 }
-

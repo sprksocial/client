@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/buttons/circle_icon_button.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 
 class VideoEditorHeader extends StatelessWidget {
@@ -18,54 +20,23 @@ class VideoEditorHeader extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _CircleButton(
+          CircleIconButton(
             onPressed: onBack,
             backgroundColor: AppColors.grey600.withAlpha(180),
-            child: const Icon(
-              Icons.chevron_left,
-              color: AppColors.greyWhite,
-              size: 28,
-            ),
+            icon: AppIcons.chevronleft(),
+            semanticLabel: 'Back',
           ),
-          _CircleButton(
+          CircleIconButton(
             onPressed: onNext,
             backgroundColor: AppColors.primary500,
-            child: const Icon(
+            icon: const Icon(
               Icons.arrow_forward,
-              color: AppColors.greyWhite,
               size: 22,
             ),
+            iconColor: AppColors.greyWhite,
+            semanticLabel: 'Done',
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _CircleButton extends StatelessWidget {
-  const _CircleButton({
-    required this.onPressed,
-    required this.backgroundColor,
-    required this.child,
-  });
-
-  final VoidCallback onPressed;
-  final Color backgroundColor;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: backgroundColor,
-      shape: const CircleBorder(),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onPressed,
-        child: SizedBox(
-          width: 44,
-          height: 44,
-          child: Center(child: child),
-        ),
       ),
     );
   }

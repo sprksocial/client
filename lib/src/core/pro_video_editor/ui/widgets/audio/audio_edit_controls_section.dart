@@ -113,7 +113,7 @@ class _AudioEditControlsSectionState extends State<AudioEditControlsSection> {
                     ? Image.network(
                         widget.audioTrack.image!.networkUrl ?? '',
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _buildDefaultIcon(),
+                        errorBuilder: (_, _, _) => _buildDefaultIcon(),
                       )
                     : _buildDefaultIcon(),
               ),
@@ -283,4 +283,3 @@ class _AudioEditControlsSectionState extends State<AudioEditControlsSection> {
     );
   }
 }
-

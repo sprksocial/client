@@ -35,6 +35,7 @@ class VideoEditorConfigsBuilder {
     required VoidCallback onTogglePlay,
     required VoidCallback onToggleMute,
     required VoidCallback onAddSound,
+    required VoidCallback onToggleFullscreen,
     List<AudioTrack> audioTracks = const [],
     VideoEditorConfigs videoEditorConfigs = const VideoEditorConfigs(
       initialMuted: true,
@@ -59,7 +60,7 @@ class VideoEditorConfigsBuilder {
       ),
       mainEditor: MainEditorConfigs(
         tools: const [
-          // SubEditorMode.videoClips,
+          //SubEditorMode.videoClips,
           SubEditorMode.audio,
           SubEditorMode.paint,
           SubEditorMode.text,
@@ -94,6 +95,7 @@ class VideoEditorConfigsBuilder {
                 onTogglePlay: onTogglePlay,
                 onToggleMute: onToggleMute,
                 onAddSound: onAddSound,
+                onToggleFullscreen: onToggleFullscreen,
               );
             },
             stream: rebuildStream,
@@ -317,6 +319,9 @@ class VideoEditorConfigsBuilder {
           setLayer: setLayer,
           scrollController: scrollController,
         ),
+        style: const StickerEditorStyle(
+          showDragHandle: false,
+        ),
       ),
       i18n: const I18n(
         paintEditor: I18nPaintEditor(
@@ -328,12 +333,12 @@ class VideoEditorConfigsBuilder {
           textAlign: 'Align',
         ),
       ),
-      audioEditor: AudioEditorConfigs(
-        // Audio selection is now handled by the custom bottom sheet
-        // in _showAudioSelectionBottomSheet, so we provide an empty list here
-        // to prevent the default audio editor from showing
-        audioTracks: const [],
-      ),
+      // audioEditor: const AudioEditorConfigs(
+      //   // Audio selection is now handled by the custom bottom sheet
+      //   // in _showAudioSelectionBottomSheet, so we provide an empty list here
+      //   // to prevent the default audio editor from showing
+      //   audioTracks: const [],
+      // ),
       clipsEditor: ClipsEditorConfigs(
         style: const ClipsEditorStyle(
           reversedClipsList: true,

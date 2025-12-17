@@ -14,6 +14,7 @@ class VideoTimeline extends StatelessWidget {
     required this.onToggleMute,
     required this.onAddSound,
     required this.onSeek,
+    required this.onToggleFullscreen,
     required this.canUndo,
     required this.canRedo,
     super.key,
@@ -26,6 +27,7 @@ class VideoTimeline extends StatelessWidget {
   final VoidCallback onToggleMute;
   final VoidCallback onAddSound;
   final void Function(double progress) onSeek;
+  final VoidCallback onToggleFullscreen;
   final bool canUndo;
   final bool canRedo;
 
@@ -44,6 +46,7 @@ class VideoTimeline extends StatelessWidget {
                 onUndo: onUndo,
                 onRedo: onRedo,
                 onTogglePlay: onTogglePlay,
+                onToggleFullscreen: onToggleFullscreen,
                 canUndo: canUndo,
                 canRedo: canRedo,
                 isPlaying: videoTimelineState.isPlaying,
@@ -70,6 +73,7 @@ class _TransportControls extends StatelessWidget {
     required this.onUndo,
     required this.onRedo,
     required this.onTogglePlay,
+    required this.onToggleFullscreen,
     required this.canUndo,
     required this.canRedo,
     required this.isPlaying,
@@ -79,6 +83,7 @@ class _TransportControls extends StatelessWidget {
   final VoidCallback onUndo;
   final VoidCallback onRedo;
   final VoidCallback onTogglePlay;
+  final VoidCallback onToggleFullscreen;
   final bool canUndo;
   final bool canRedo;
   final bool isPlaying;
@@ -163,7 +168,7 @@ class _TransportControls extends StatelessWidget {
                   constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: onToggleFullscreen,
                   icon: const Icon(
                     Icons.fullscreen,
                     color: AppColors.greyWhite,

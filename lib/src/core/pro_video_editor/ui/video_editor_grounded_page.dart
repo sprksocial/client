@@ -18,6 +18,7 @@ import 'package:sparksocial/src/core/pro_video_editor/services/audio_waveform_ex
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/audio/audio_selection_bottom_sheet.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/video_editor_configs_builder.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/video_initializing_widget.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/player/video_fullscreen_preview_page.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/player/video_player_widget.dart';
 import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 import 'package:video_player/video_player.dart';
@@ -192,6 +193,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       onTogglePlay: _onTogglePlay,
       onToggleMute: _onToggleMute,
       onAddSound: _showAudioSelectionBottomSheet,
+      onToggleFullscreen: _openFullscreenPreview,
     );
 
     // Update clip duration and thumbnails after first frame
@@ -371,6 +373,42 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     // state and triggers our configured onMuteToggle callback
     final isMuted = _proVideoController?.isMutedNotifier.value ?? false;
     _proVideoController?.setMuteState(!isMuted);
+  }
+
+  Future<void> _openFullscreenPreview() async {
+    if (!mounted) return;
+    if (_proVideoController == null) return;
+
+    await Navigator.of(context).push<void>(
+      PageRouteBuilder(
+        barrierColor: Colors.black,
+        transitionDuration: const Duration(milliseconds: 260),
+        reverseTransitionDuration: const Duration(milliseconds: 220),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return VideoFullscreenPreviewPage(
+            controller: _videoController,
+            videoTimelineState: _videoTimelineState,
+            onTogglePlay: _onTogglePlay,
+            onSeek: _onTimelineSeek,
+          );
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final curve = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          );
+
+          return FadeTransition(
+            opacity: curve,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.98, end: 1).animate(curve),
+              child: child,
+            ),
+          );
+        },
+      ),
+    );
   }
 
   /// Shows the audio selection bottom sheet for choosing and editing audio tracks.

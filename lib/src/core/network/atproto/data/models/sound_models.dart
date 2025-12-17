@@ -11,7 +11,10 @@ AudioRecord _audioRecordFromJson(dynamic json) {
   if (json is! Map<String, dynamic>) {
     throw Exception('Expected Map<String, dynamic> but got ${json.runtimeType}');
   }
-  final record = Record.fromJson(json);
+
+  final jsonWithType = json.containsKey(r'$type') ? json : {...json, r'$type': 'so.sprk.sound.audio'};
+
+  final record = Record.fromJson(jsonWithType);
   if (record is AudioRecord) {
     return record;
   }
