@@ -24,10 +24,36 @@ class _ImageCarouselState extends ConsumerState<ImageCarousel> {
     carouselController = CarouselSliderController();
   }
 
+  Widget _buildSingleImage() {
+    return Stack(
+      children: [
+        DecoratedBox(
+          decoration: const BoxDecoration(color: AppColors.black),
+          child: CachedNetworkImage(
+            imageUrl: widget.imageUrls[0],
+            fit: BoxFit.contain,
+            height: MediaQuery.of(context).size.height,
+            placeholder: (context, url) => const Center(child: CircularProgressIndicator()),
+            errorWidget: (context, url, error) => const Center(child: Icon(FluentIcons.error_circle_24_regular)),
+          ),
+        ),
+        if (widget.alts != null && widget.alts!.isNotEmpty && widget.alts![0] != '')
+          Positioned(bottom: 0, left: 0, right: 0, child: Text(widget.alts![0])),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final safeBottom = MediaQuery.of(context).padding.bottom;
+    final hasMultipleImages = widget.imageUrls.length > 1;
 
+    // If only one image, show it directly without carousel
+    if (!hasMultipleImages) {
+      return _buildSingleImage();
+    }
+
+    // Multiple images: use carousel with dots
     return Stack(
       children: [
         CarouselSlider.builder(
