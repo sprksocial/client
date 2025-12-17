@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 
 /// A widget that displays an initializing screen while the video editor starts up.
 class VideoInitializingWidget extends StatelessWidget {
@@ -7,30 +8,51 @@ class VideoInitializingWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.blueGrey.shade900,
-              Colors.black87,
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: const Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.video_settings_outlined, size: 72, color: Colors.white70),
-              SizedBox(height: 20),
-              Text(
-                'Initializing editor…',
-                style: TextStyle(fontSize: 18, color: Colors.white70),
+      backgroundColor: AppColors.greyBlack,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: AppColors.grey700,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.primary500.withAlpha(140)),
+                    ),
+                    child: const Center(
+                      child: Icon(
+                        Icons.video_settings_outlined,
+                        size: 34,
+                        color: AppColors.primary500,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Initializing editor…',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.greyWhite,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const CircularProgressIndicator.adaptive(
+                    valueColor: AlwaysStoppedAnimation(AppColors.primary500),
+                    backgroundColor: AppColors.grey700,
+                    strokeWidth: 3,
+                  ),
+                ],
               ),
-              SizedBox(height: 20),
-              CircularProgressIndicator.adaptive(),
-            ],
+            ),
           ),
         ),
       ),
