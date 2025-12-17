@@ -46,7 +46,8 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
   }
 
   void _onScroll() {
-    if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 200) {
+    // Trigger loading when user is within ~2 rows of the bottom (each row is roughly 200px at 9:16 aspect ratio)
+    if (scrollController.position.pixels >= scrollController.position.maxScrollExtent - 500) {
       ref.read(profileFeedProvider(widget.profileUri, widget.videosOnly).notifier).loadMore();
     }
   }
@@ -90,37 +91,39 @@ class _ProfileGridWidgetState extends ConsumerState<ProfileGridWidget> {
           );
         }
 
-        return GridView.builder(
+        return CustomScrollView(
           controller: scrollController,
-          padding: const EdgeInsets.all(5),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
-            crossAxisSpacing: 5,
-            mainAxisSpacing: 5,
-            childAspectRatio: 9 / 16,
-          ),
-          itemCount: filteredUris.length + (state.isEndOfNetwork ? 0 : 1),
-          itemBuilder: (context, index) {
-            if (index >= filteredUris.length) {
-              return ColoredBox(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-              );
-            }
+          slivers: [
+            SliverPadding(
+              padding: const EdgeInsets.all(5),
+              sliver: SliverGrid(
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 5,
+                  mainAxisSpacing: 5,
+                  childAspectRatio: 9 / 16,
+                ),
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    final postUri = filteredUris[index];
+                    final postView = state.postViews[postUri];
+                    final postSource = state.postSources[postUri];
 
-            final postUri = filteredUris[index];
-            final postView = state.postViews[postUri];
-            final postSource = state.postSources[postUri];
+                    if (postView == null) {
+                      return const SizedBox.shrink();
+                    }
 
-            if (postView == null) {
-              return const SizedBox.shrink();
-            }
-
-            return ProfileGridTile(
-              postView: postView,
-              postSource: postSource,
-              onTap: () => _onPostTapDynamic(postUri),
-            );
-          },
+                    return ProfileGridTile(
+                      postView: postView,
+                      postSource: postSource,
+                      onTap: () => _onPostTapDynamic(postUri),
+                    );
+                  },
+                  childCount: filteredUris.length,
+                ),
+              ),
+            ),
+          ],
         );
       },
       loading: () => Skeletonizer(

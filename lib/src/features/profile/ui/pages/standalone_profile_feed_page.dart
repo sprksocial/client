@@ -85,10 +85,6 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
               }
             },
             itemBuilder: (context, index) {
-              if (index >= filteredUris.length) {
-                return const Center(child: CircularProgressIndicator(color: AppColors.white));
-              }
-
               final postUri = filteredUris[index];
               final post = state.postViews[postUri];
               return ProfileFeedPostWidget(postUri: postUri, profileUri: profileAtUri, videosOnly: widget.videosOnly, post: post);

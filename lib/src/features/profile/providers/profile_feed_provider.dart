@@ -36,6 +36,8 @@ class ProfileFeed extends _$ProfileFeed {
     }
   }
 
+  /// Load author feed from Spark first, falling back to Bluesky if Spark fails.
+  /// This mirrors the profile loading behavior where we only show one source.
   Future<ProfileFeedState> _loadUnifiedFeed({
     required AtUri profileUri,
     required String? sparkCursor,
@@ -48,47 +50,28 @@ class ProfileFeed extends _$ProfileFeed {
     final postViews = Map<AtUri, PostView>.from(currentState?.postViews ?? {});
     final allPosts = List<AtUri>.from(currentState?.allPosts ?? []);
 
-    final sparkRkeys = allPosts.where((uri) => postSources[uri] == 'sprk').map((uri) => uri.rkey).toSet();
-
     final newPosts = <PostView>[];
 
-    final sparkResult = await _fetchFromSource(
+    // Fetch from Spark API (which internally falls back to Bluesky if Spark fails)
+    // This mirrors the profile loading behavior: Spark first, Bluesky only as fallback
+    final result = await _fetchFromSource(
       (cursor) => _feedRepository.getAuthorFeed(profileUri, limit: ProfileFeedState.fetchLimit, cursor: cursor),
       sparkCursor,
-      'Sprk',
+      'AuthorFeed',
     );
 
-    for (final feedViewPost in sparkResult.posts) {
+    for (final feedViewPost in result.posts) {
       final uri = feedViewPost.uri;
       if (!postViews.containsKey(uri)) {
         final postView = feedViewPost.asPost;
         if (postView != null) {
           newPosts.add(postView);
-          postSources[uri] = 'sprk';
+          // Determine source based on URI collection
+          final isBlueskyPost = uri.collection.toString().startsWith('app.bsky');
+          postSources[uri] = isBlueskyPost ? 'bsky' : 'sprk';
           postTypes[uri] = postView.videoUrl.isNotEmpty;
           postViews[uri] = postView;
-          sparkRkeys.add(uri.rkey);
         }
-      }
-    }
-
-    final bskyResult = await _fetchFromSource(
-      (cursor) => _feedRepository.getAuthorFeed(profileUri, limit: ProfileFeedState.fetchLimit, cursor: cursor, bluesky: true),
-      blueskyCursor,
-      'Bsky',
-    );
-
-    for (final feedViewPost in bskyResult.posts) {
-      final uri = feedViewPost.uri;
-      if (sparkRkeys.contains(uri.rkey) || postViews.containsKey(uri)) {
-        continue;
-      }
-      final postView = feedViewPost.asPost;
-      if (postView != null) {
-        newPosts.add(postView);
-        postSources[uri] = 'bsky';
-        postTypes[uri] = _isMediaVideo(postView.media);
-        postViews[uri] = postView;
       }
     }
 
@@ -121,16 +104,21 @@ class ProfileFeed extends _$ProfileFeed {
     // Here we only apply label-based filtering and return all posts.
     final filteredPosts = await _filterHiddenPosts(allPosts, postViews);
 
+    // End of network when:
+    // 1. API returns null cursor (no more pages)
+    // 2. API returns fewer posts than requested (last page)
+    // 3. No new posts were added (duplicates or empty response)
     final isEndOfNetwork =
-        (sparkResult.cursor == null && bskyResult.cursor == null) ||
+        result.cursor == null ||
+        result.posts.length < ProfileFeedState.fetchLimit ||
         (currentState != null && currentState.allPosts.length == allPosts.length);
 
     return ProfileFeedState(
       loadedPosts: filteredPosts,
       allPosts: allPosts,
       isEndOfNetwork: isEndOfNetwork,
-      cursor: sparkResult.cursor,
-      blueskyCursor: bskyResult.cursor,
+      cursor: result.cursor,
+      blueskyCursor: null, // No longer tracking separate Bluesky cursor
       // ignore: prefer_collection_literals
       extraInfo: currentState?.extraInfo ?? LinkedHashMap(),
       postSources: postSources,
@@ -151,20 +139,6 @@ class ProfileFeed extends _$ProfileFeed {
       _logger.e('Failed to load from $sourceName: $e', error: e, stackTrace: stackTrace);
       return (posts: <FeedViewPost>[], cursor: cursor);
     }
-  }
-
-  bool _isMediaVideo(MediaView? embed) {
-    if (embed == null) return false;
-    return embed.when(
-      video: (cid, playlist, thumbnail, alt) => true,
-      bskyVideo: (cid, playlist, thumbnail, alt) => true,
-      bskyRecordWithMedia: (record, media) => _isMediaVideo(media),
-      image: (image) => false,
-      images: (images) => false,
-      bskyImages: (images) => false,
-      bskyRecord: (record) => false,
-      bskyExternal: (external) => false,
-    );
   }
 
   Future<void> loadMore() async {
