@@ -2,7 +2,6 @@ import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/design_system/components/organisms/side_action_bar.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
@@ -239,6 +238,10 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       // onCurate: _handleCurate, // Curation disabled
       onShare: _handleShare,
       onSoundTap: currentPost.sound != null ? _handleSoundTap : null,
+      onOptions: () => OptionsPanel.show(
+        context: context,
+        onReport: _handleReport,
+      ),
       likeCount: likeCount.toString(),
       commentCount: commentCount.toString(),
       // curateCount: repostCount.toString(), // Curation disabled
@@ -247,20 +250,6 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       soundCover: currentPost.sound?.coverArt.toString(),
       // isCurated: isCurated, // Curation disabled
       // curateDestinations: curateDestinations, // Curation disabled
-      optionsButton: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: () => OptionsPanel.show(
-          context: context,
-          onReport: _handleReport,
-        ),
-        child: SizedBox(
-          width: 40,
-          height: 40,
-          child: Center(
-            child: AppIcons.moreHoriz(size: 32, color: Colors.white),
-          ),
-        ),
-      ),
     );
   }
 }
