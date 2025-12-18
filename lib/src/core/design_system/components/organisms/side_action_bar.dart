@@ -19,7 +19,7 @@ class SparkSideActionBar extends StatefulWidget {
     this.onCurate,
     this.onShare,
     this.onSoundTap,
-    this.optionsButton,
+    this.onOptions,
     this.likeCount,
     this.commentCount,
     this.curateCount,
@@ -39,7 +39,7 @@ class SparkSideActionBar extends StatefulWidget {
   final VoidCallback? onCurate; // called after a feed selection (or when opening?)
   final VoidCallback? onShare;
   final VoidCallback? onSoundTap;
-  final Widget? optionsButton;
+  final VoidCallback? onOptions;
 
   final String? likeCount;
   final String? commentCount;
@@ -139,45 +139,66 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
 
   @override
   Widget build(BuildContext context) {
+    final children = <Widget>[
+      _ActionItem(
+        isActive: widget.isLiked,
+        label: widget.likeCount,
+        icon: widget.isLiked ? AppIcons.likeFilled(size: 32) : AppIcons.like(size: 32),
+        onTap: widget.onLike,
+      ),
+      const SizedBox(height: 13),
+      _ActionItem(
+        icon: AppIcons.comment(size: 32),
+        label: widget.commentCount,
+        onTap: widget.onComment,
+      ),
+    ];
+
+    if (widget.onCurate != null) {
+      children.addAll([
+        const SizedBox(height: 13),
+        _ActionItem(
+          key: _curateKey,
+          isActive: widget.isCurated || _showingPopover,
+          icon: AppIcons.sideCurate(size: 32),
+          label: widget.curateCount,
+          onTap: _togglePopover,
+        ),
+      ]);
+    }
+
+    children.addAll([
+      const SizedBox(height: 13),
+      _ActionItem(
+        icon: AppIcons.share(size: 32),
+        label: widget.shareCount,
+        onTap: widget.onShare,
+      ),
+    ]);
+
+    if (widget.onOptions != null) {
+      children.addAll([
+        const SizedBox(height: 6),
+        _ActionItem(
+          icon: AppIcons.moreHoriz(size: 32, color: Colors.white),
+          onTap: widget.onOptions,
+        ),
+      ]);
+    }
+
+    if (widget.soundCover != null) {
+      children.addAll([
+        const SizedBox(height: 13),
+        _SoundItem(
+          cover: widget.soundCover!,
+          onTap: widget.onSoundTap,
+        ),
+      ]);
+    }
+
     return Column(
       mainAxisSize: MainAxisSize.min,
-      spacing: 13,
-      children: [
-        _ActionItem(
-          isActive: widget.isLiked,
-          label: widget.likeCount,
-          icon: widget.isLiked ? AppIcons.likeFilled(size: 32) : AppIcons.like(size: 32),
-          onTap: widget.onLike,
-        ),
-        _ActionItem(
-          icon: AppIcons.comment(size: 32),
-          label: widget.commentCount,
-          onTap: widget.onComment,
-        ),
-        if (widget.onCurate != null) ...[
-          _ActionItem(
-            key: _curateKey,
-            isActive: widget.isCurated || _showingPopover,
-            icon: AppIcons.sideCurate(size: 32),
-            label: widget.curateCount,
-            onTap: _togglePopover,
-          ),
-        ],
-        _ActionItem(
-          icon: AppIcons.share(size: 32),
-          label: widget.shareCount,
-          onTap: widget.onShare,
-        ),
-        if (widget.soundCover != null) ...[
-          _SoundItem(
-            cover: widget.soundCover!,
-            onTap: widget.onSoundTap,
-          ),
-        ],
-        if (widget.optionsButton != null) ...[
-          widget.optionsButton!,
-        ],
-      ],
+      children: children,
     );
   }
 }
