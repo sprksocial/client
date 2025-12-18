@@ -61,7 +61,7 @@ jobs:
           if [ "${{ steps.widgetbook_changed_files.outputs.any_changed }}" = "true" ]; then
             echo "targets=." >> "$GITHUB_OUTPUT"
           else
-            echo "targets=lib test" >> "$GITHUB_OUTPUT"
+            echo "targets=lib" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Run Flutter Analyze

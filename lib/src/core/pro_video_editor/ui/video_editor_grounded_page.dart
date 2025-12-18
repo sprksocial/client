@@ -9,17 +9,18 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository.dart';
 import 'package:sparksocial/src/core/pro_video_editor/models/video_editor_result.dart';
 import 'package:sparksocial/src/core/pro_video_editor/services/audio_helper_service.dart';
 import 'package:sparksocial/src/core/pro_video_editor/services/audio_waveform_extractor.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/audio_timeline_state.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_editor_configs_builder.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_initializing_widget.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_player_widget.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/audio/audio_selection_bottom_sheet.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/video_editor_configs_builder.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/video_initializing_widget.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/player/video_fullscreen_preview_page.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/player/video_player_widget.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 import 'package:video_player/video_player.dart';
 
 @RoutePage()
@@ -38,7 +39,6 @@ class VideoEditorGroundedPage extends StatefulWidget {
 
 class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   final _editorKey = GlobalKey<ProImageEditorState>();
-  final _mainEditorBarKey = GlobalKey<GroundedMainBarState>();
   final bool _useMaterialDesign = platformDesignMode == ImageEditorDesignMode.material;
 
   /// The target format for the exported video.
@@ -46,8 +46,11 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
 
   /// Video editor configuration settings.
   final VideoEditorConfigs _videoConfigs = const VideoEditorConfigs(
-    enablePlayButton: true,
+    enableTrimBar: false,
     playTimeSmoothingDuration: Duration(milliseconds: 600),
+    widgets: VideoEditorWidgets(
+      headerToolbar: SizedBox.shrink(),
+    ),
   );
 
   /// Indicates whether a seek operation is in progress.
@@ -92,7 +95,8 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   final _waveformExtractor = AudioWaveformExtractor.instance;
 
   late ProImageEditorConfigs _configs;
-  late AudioTimelineState _audioTimelineState;
+  late VideoTimelineState _videoTimelineState;
+  List<AudioTrack> _audioTracks = [];
 
   @override
   void initState() {
@@ -105,7 +109,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   void dispose() {
     _audioService.dispose();
     _videoController.dispose();
-    _audioTimelineState.dispose();
+    _videoTimelineState.dispose();
     super.dispose();
   }
 
@@ -142,10 +146,16 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       );
     }
 
+    if (!mounted) return;
+
     /// Optional precache every thumbnail
     final cacheList = temporaryThumbnails.map((item) => precacheImage(item, context));
     await Future.wait(cacheList);
+
+    if (!mounted) return;
+
     _thumbnails = temporaryThumbnails;
+    _videoTimelineState.setThumbnails(temporaryThumbnails);
 
     if (_proVideoController != null) {
       _proVideoController!.thumbnails = _thumbnails;
@@ -160,11 +170,11 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
 
     // Wait for completion
     await metadataFuture;
-    final audioTracks = await trendingAudiosFuture;
+    _audioTracks = await trendingAudiosFuture;
     _videoController = await controllerFuture;
 
     // Initialize audio timeline state
-    _audioTimelineState = AudioTimelineState(
+    _videoTimelineState = VideoTimelineState(
       videoDuration: _videoMetadata.duration,
     );
 
@@ -172,14 +182,18 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       video: widget.video,
       taskId: _taskId,
       useMaterialDesign: _useMaterialDesign,
-      mainBarKey: _mainEditorBarKey,
       videoPlayerBuilder: () => VideoPlayerWidget(
         controller: _videoController,
         isLoadingListenable: _updateClipsNotifier,
       ),
       videoEditorConfigs: _videoConfigs,
-      audioTracks: audioTracks,
-      audioTimelineState: _audioTimelineState,
+      audioTracks: _audioTracks,
+      videoTimelineState: _videoTimelineState,
+      onSeek: _onTimelineSeek,
+      onTogglePlay: _onTogglePlay,
+      onToggleMute: _onToggleMute,
+      onAddSound: _showAudioSelectionBottomSheet,
+      onToggleFullscreen: _openFullscreenPreview,
     );
 
     // Update clip duration and thumbnails after first frame
@@ -221,7 +235,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   Future<void> _extractVideoWaveform() async {
     final waveformData = await _waveformExtractor.extractFromVideo(_video);
     if (mounted) {
-      _audioTimelineState.setVideoWaveform(waveformData);
+      _videoTimelineState.setVideoWaveform(waveformData);
     }
   }
 
@@ -230,7 +244,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     final waveformData = await _waveformExtractor.extractFromAudio(track.audio);
     final authorAvatar = _decodeAuthorAvatar(track.id);
     if (mounted) {
-      _audioTimelineState.setCustomAudio(
+      _videoTimelineState.setCustomAudio(
         track,
         waveformData,
         authorAvatarUrl: authorAvatar,
@@ -301,7 +315,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     _proVideoController!.setPlayTime(duration);
 
     // Update audio timeline progress
-    _audioTimelineState.setProgressFromDuration(duration);
+    _videoTimelineState.setProgressFromDuration(duration);
 
     if (_durationSpan != null && duration >= _durationSpan!.end) {
       _seekToPosition(_durationSpan!);
@@ -334,6 +348,120 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       final nextSeek = _tempDurationSpan!;
       _tempDurationSpan = null; // Clear the pending seek
       await _seekToPosition(nextSeek); // Process the latest request
+    }
+  }
+
+  void _onTimelineSeek(double progress) {
+    final duration = _videoMetadata.duration;
+    final targetPosition = Duration(
+      milliseconds: (duration.inMilliseconds * progress).round(),
+    );
+
+    _videoController.seekTo(targetPosition);
+    _proVideoController?.setPlayTime(targetPosition);
+    _videoTimelineState.setProgressFromDuration(targetPosition);
+  }
+
+  void _onTogglePlay() {
+    // Use ProVideoController to toggle play state - this updates the internal
+    // overlay and triggers the video player callbacks we've configured
+    _proVideoController?.togglePlayState();
+  }
+
+  void _onToggleMute() {
+    // Use ProVideoController to toggle mute state - this updates the internal
+    // state and triggers our configured onMuteToggle callback
+    final isMuted = _proVideoController?.isMutedNotifier.value ?? false;
+    _proVideoController?.setMuteState(!isMuted);
+  }
+
+  Future<void> _openFullscreenPreview() async {
+    if (!mounted) return;
+    if (_proVideoController == null) return;
+
+    await Navigator.of(context).push<void>(
+      PageRouteBuilder(
+        barrierColor: Colors.black,
+        transitionDuration: const Duration(milliseconds: 260),
+        reverseTransitionDuration: const Duration(milliseconds: 220),
+        pageBuilder: (context, animation, secondaryAnimation) {
+          return VideoFullscreenPreviewPage(
+            controller: _videoController,
+            videoTimelineState: _videoTimelineState,
+            onTogglePlay: _onTogglePlay,
+            onSeek: _onTimelineSeek,
+          );
+        },
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          final curve = CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeOutCubic,
+            reverseCurve: Curves.easeInCubic,
+          );
+
+          return FadeTransition(
+            opacity: curve,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.98, end: 1).animate(curve),
+              child: child,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  /// Shows the audio selection bottom sheet for choosing and editing audio tracks.
+  Future<void> _showAudioSelectionBottomSheet() async {
+    await _videoController.pause();
+    if (!mounted) return;
+    final selectedTrack = await showModalBottomSheet<AudioTrack>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.6,
+        minChildSize: 0.4,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (context, scrollController) => AudioSelectionBottomSheet(
+          configs: _configs,
+          audioTracks: _audioTracks,
+          videoDuration: _videoMetadata.duration,
+          initialSelectedTrack: _proVideoController?.audioTrack,
+          onTrackSelected: (track) {
+            _proVideoController?.audioTrack = track;
+          },
+          onBalanceChanged: (balance) async {
+            await _audioService.balanceAudio(balance);
+          },
+          onStartTimeChanged: (startTime) async {
+            await _audioService.seek(startTime);
+            await _videoController.seekTo(Duration.zero);
+          },
+          onConfirm: (track) {
+            if (track != null) {
+              _proVideoController?.audioTrack = track;
+              unawaited(_extractCustomAudioWaveform(track));
+            }
+          },
+          onTrackPlay: (track) async {
+            final isNewTrack = !_audioService.useCustomAudio;
+            await _audioService.play(track);
+            if (isNewTrack) {
+              await _audioService.setAudioMode(useCustom: true);
+            } else {
+              await _audioService.balanceAudio();
+            }
+          },
+          onTrackStop: (track) async {
+            await _audioService.pause();
+          },
+        ),
+      ),
+    );
+    if (selectedTrack != null) {
+      setState(() {});
     }
   }
 
@@ -436,9 +564,16 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
             onCompleteWithParameters: generateVideo,
             onCloseEditor: onCloseEditor,
             videoEditorCallbacks: VideoEditorCallbacks(
-              onPause: _videoController.pause,
-              onPlay: _videoController.play,
+              onPause: () {
+                _videoController.pause();
+                _videoTimelineState.setPlaying(isPlaying: false);
+              },
+              onPlay: () {
+                _videoController.play();
+                _videoTimelineState.setPlaying(isPlaying: true);
+              },
               onMuteToggle: (isMuted) async {
+                _videoTimelineState.setMuted(isMuted: isMuted);
                 if (isMuted) {
                   await _audioService.muteAll();
                 } else {
@@ -478,12 +613,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
                 await _audioService.pause();
               },
             ),
-            mainEditorCallbacks: MainEditorCallbacks(
-              onStartCloseSubEditor: (value) {
-                /// Start the reversed animation for the bottombar
-                _mainEditorBarKey.currentState?.setState(() {});
-              },
-            ),
+            mainEditorCallbacks: const MainEditorCallbacks(),
             stickerEditorCallbacks: StickerEditorCallbacks(
               onSearchChanged: (value) {
                 /// Filter your stickers

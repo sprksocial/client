@@ -4,10 +4,23 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:pro_image_editor/designs/grounded/grounded_design.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/audio_timeline_state.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/build_stickers.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_editor_main_bar_wrapper.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/video_progress_alert.dart';
+import 'package:sparksocial/src/core/design_system/theme/color_scheme.dart';
+import 'package:sparksocial/src/core/design_system/theme/text_theme.dart';
+import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/blur/blur_editor_bar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/clip/clip_editor_bar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/clip/clips_editor_bar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/build_stickers.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/video_progress_alert.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/crop_rotate/crop_rotate_editor_bar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/filter/filter_editor_bar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/layout/video_editor_bottom_section.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/layout/video_editor_header.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/paint/paint_editor_bar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/text/text_editor_bar.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/text/text_editor_color_picker.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
+import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/tune/tune_editor_bar.dart';
 
 class VideoEditorConfigsBuilder {
   const VideoEditorConfigsBuilder._();
@@ -16,14 +29,21 @@ class VideoEditorConfigsBuilder {
     required EditorVideo video,
     required String taskId,
     required bool useMaterialDesign,
-    required GlobalKey<GroundedMainBarState> mainBarKey,
     required Widget Function() videoPlayerBuilder,
-    required AudioTimelineState audioTimelineState,
+    required VideoTimelineState videoTimelineState,
+    required void Function(double progress) onSeek,
+    required VoidCallback onTogglePlay,
+    required VoidCallback onToggleMute,
+    required VoidCallback onAddSound,
+    required VoidCallback onToggleFullscreen,
     List<AudioTrack> audioTracks = const [],
     VideoEditorConfigs videoEditorConfigs = const VideoEditorConfigs(
       initialMuted: true,
-      enablePlayButton: true,
-      playTimeSmoothingDuration: Duration(milliseconds: 600),
+      enableTrimBar: false,
+      playTimeSmoothingDuration: Duration(milliseconds: 300),
+      widgets: VideoEditorWidgets(
+        headerToolbar: SizedBox.shrink(),
+      ),
     ),
   }) {
     return ProImageEditorConfigs(
@@ -35,14 +55,12 @@ class VideoEditorConfigsBuilder {
       ),
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: Colors.blue.shade800,
-          brightness: Brightness.dark,
-        ),
+        colorScheme: AppColorScheme.dark,
+        textTheme: AppTextTheme.dark,
       ),
       mainEditor: MainEditorConfigs(
         tools: const [
-          // SubEditorMode.videoClips,
+          //SubEditorMode.videoClips,
           SubEditorMode.audio,
           SubEditorMode.paint,
           SubEditorMode.text,
@@ -70,26 +88,45 @@ class VideoEditorConfigsBuilder {
           bottomBar: (editor, rebuildStream, key) => ReactiveWidget(
             key: key,
             builder: (context) {
-              return VideoEditorMainBarWrapper(
-                mainBarKey: mainBarKey,
+              return VideoEditorBottomSection(
                 editor: editor,
-                configs: editor.configs,
-                callbacks: editor.callbacks,
-                audioTimelineState: audioTimelineState,
+                videoTimelineState: videoTimelineState,
+                onSeek: onSeek,
+                onTogglePlay: onTogglePlay,
+                onToggleMute: onToggleMute,
+                onAddSound: onAddSound,
+                onToggleFullscreen: onToggleFullscreen,
               );
             },
             stream: rebuildStream,
           ),
+          bodyItems: (editor, rebuildStream) => [
+            ReactiveWidget(
+              stream: rebuildStream,
+              builder: (_) => Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: SafeArea(
+                  bottom: false,
+                  child: VideoEditorHeader(
+                    onBack: editor.closeEditor,
+                    onNext: editor.doneEditing,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
         style: const MainEditorStyle(
-          background: Color(0xFF000000),
-          bottomBarBackground: Color(0xFF161616),
+          background: AppColors.greyBlack,
+          bottomBarBackground: AppColors.grey800,
         ),
       ),
       paintEditor: PaintEditorConfigs(
         style: const PaintEditorStyle(
-          background: Color(0xFF000000),
-          bottomBarBackground: Color(0xFF161616),
+          background: AppColors.greyBlack,
+          bottomBarBackground: AppColors.grey800,
           initialStrokeWidth: 5,
         ),
         widgets: PaintEditorWidgets(
@@ -98,12 +135,14 @@ class VideoEditorConfigsBuilder {
           bottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
               builder: (context) {
-                return GroundedPaintBar(
+                return PaintEditorBar(
                   configs: editorState.configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,
                   i18nColor: 'Color',
-                  showColorPicker: (currentColor) {},
+                  showColorPicker: (currentColor) {
+                    // Color picker is handled by the colorPicker widget slot
+                  },
                 );
               },
               stream: rebuildStream,
@@ -124,21 +163,33 @@ class VideoEditorConfigsBuilder {
         ],
         style: TextEditorStyle(
           textFieldMargin: const EdgeInsets.only(top: kToolbarHeight),
-          bottomBarBackground: const Color(0xFF161616),
+          bottomBarBackground: AppColors.grey800,
           bottomBarMainAxisAlignment: !useMaterialDesign ? MainAxisAlignment.spaceEvenly : MainAxisAlignment.start,
         ),
         widgets: TextEditorWidgets(
           appBar: (textEditor, rebuildStream) => null,
-          colorPicker: (textEditor, rebuildStream, currentColor, setColor) => null,
+          colorPicker: (textEditor, rebuildStream, currentColor, setColor) {
+            return ReactiveWidget(
+              stream: rebuildStream,
+              builder: (_) => TextEditorColorPicker(
+                configs: textEditor.configs,
+                primaryColor: currentColor,
+                onUpdateColor: setColor,
+                rebuildStream: rebuildStream,
+              ),
+            );
+          },
           bottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
               builder: (context) {
-                return GroundedTextBar(
+                return TextEditorBar(
                   configs: editorState.configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,
                   i18nColor: 'Color',
-                  showColorPicker: (currentColor) {},
+                  showColorPicker: (currentColor) {
+                    // Color picker is handled by the colorPicker widget slot
+                  },
                 );
               },
               stream: rebuildStream,
@@ -156,23 +207,25 @@ class VideoEditorConfigsBuilder {
         ),
       ),
       cropRotateEditor: CropRotateEditorConfigs(
-        style: const CropRotateEditorStyle(
-          cropCornerColor: Color(0xFFFFFFFF),
+        style: CropRotateEditorStyle(
+          cropCornerColor: AppColors.greyWhite,
           cropCornerThickness: 4,
-          background: Color(0xFF000000),
-          bottomBarBackground: Color(0xFF161616),
-          helperLineColor: Color(0x25FFFFFF),
+          background: AppColors.greyBlack,
+          bottomBarBackground: AppColors.grey800,
+          helperLineColor: AppColors.greyWhite.withAlpha(37),
         ),
         widgets: CropRotateEditorWidgets(
           appBar: (cropRotateEditor, rebuildStream) => null,
           bottomBar: (cropRotateEditor, rebuildStream) => ReactiveWidget(
             stream: rebuildStream,
-            builder: (_) => GroundedCropRotateBar(
-              configs: cropRotateEditor.configs,
-              callbacks: cropRotateEditor.callbacks,
-              editor: cropRotateEditor,
-              selectedRatioColor: kImageEditorPrimaryColor,
-            ),
+            builder: (context) {
+              return CropRotateEditorBar(
+                configs: cropRotateEditor.configs,
+                callbacks: cropRotateEditor.callbacks,
+                editor: cropRotateEditor,
+                selectedRatioColor: AppColors.primary500,
+              );
+            },
           ),
         ),
       ),
@@ -180,7 +233,7 @@ class VideoEditorConfigsBuilder {
         style: const FilterEditorStyle(
           filterListSpacing: 7,
           filterListMargin: EdgeInsets.fromLTRB(8, 0, 8, 8),
-          background: Color(0xFF000000),
+          background: AppColors.greyBlack,
         ),
         widgets: FilterEditorWidgets(
           slider: (editorState, rebuildStream, value, onChanged, onChangeEnd) => ReactiveWidget(
@@ -189,14 +242,14 @@ class VideoEditorConfigsBuilder {
               onChanged: onChanged,
               onChangeEnd: onChangeEnd,
               value: value,
-              activeColor: Colors.blue.shade200,
+              activeColor: AppColors.primary400,
             ),
           ),
           appBar: (editorState, rebuildStream) => null,
           bottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
               builder: (context) {
-                return GroundedFilterBar(
+                return FilterEditorBar(
                   configs: editorState.configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,
@@ -210,15 +263,15 @@ class VideoEditorConfigsBuilder {
       ),
       tuneEditor: TuneEditorConfigs(
         style: const TuneEditorStyle(
-          background: Color(0xFF000000),
-          bottomBarBackground: Color(0xFF161616),
+          background: AppColors.greyBlack,
+          bottomBarBackground: AppColors.grey800,
         ),
         widgets: TuneEditorWidgets(
           appBar: (editor, rebuildStream) => null,
           bottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
               builder: (context) {
-                return GroundedTuneBar(
+                return TuneEditorBar(
                   configs: editorState.configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,
@@ -232,14 +285,14 @@ class VideoEditorConfigsBuilder {
       blurEditor: BlurEditorConfigs(
         maxBlur: 25,
         style: const BlurEditorStyle(
-          background: Color(0xFF000000),
+          background: AppColors.greyBlack,
         ),
         widgets: BlurEditorWidgets(
           appBar: (blurEditor, rebuildStream) => null,
           bottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
               builder: (context) {
-                return GroundedBlurBar(
+                return BlurEditorBar(
                   configs: editorState.configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,
@@ -266,6 +319,9 @@ class VideoEditorConfigsBuilder {
           setLayer: setLayer,
           scrollController: scrollController,
         ),
+        style: const StickerEditorStyle(
+          showDragHandle: false,
+        ),
       ),
       i18n: const I18n(
         paintEditor: I18nPaintEditor(
@@ -277,29 +333,12 @@ class VideoEditorConfigsBuilder {
           textAlign: 'Align',
         ),
       ),
-      audioEditor: AudioEditorConfigs(
-        style: const AudioEditorStyle(
-          reversedTrackList: true,
-        ),
-        widgets: AudioEditorWidgets(
-          appBar: (editorState, rebuildStream) => null,
-          bottomBar: (editorState, rebuildStream) {
-            return ReactiveWidget(
-              builder: (_) {
-                return GroundedAudioBar(
-                  configs: editorState.configs,
-                  callbacks: editorState.callbacks,
-                  editor: editorState,
-                );
-              },
-              stream: rebuildStream,
-            );
-          },
-        ),
-        audioTracks: [
-          ...audioTracks,
-        ],
-      ),
+      // audioEditor: const AudioEditorConfigs(
+      //   // Audio selection is now handled by the custom bottom sheet
+      //   // in _showAudioSelectionBottomSheet, so we provide an empty list here
+      //   // to prevent the default audio editor from showing
+      //   audioTracks: const [],
+      // ),
       clipsEditor: ClipsEditorConfigs(
         style: const ClipsEditorStyle(
           reversedClipsList: true,
@@ -308,8 +347,8 @@ class VideoEditorConfigsBuilder {
           appBar: (editorState, rebuildStream) => null,
           bottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
-              builder: (_) {
-                return GroundedClipsBar(
+              builder: (context) {
+                return ClipsEditorBar(
                   configs: editorState.configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,
@@ -321,8 +360,8 @@ class VideoEditorConfigsBuilder {
           editClipAppBar: (editorState, rebuildStream) => null,
           editClipBottomBar: (editorState, rebuildStream) {
             return ReactiveWidget(
-              builder: (_) {
-                return GroundedClipEditorBar(
+              builder: (context) {
+                return ClipEditorBar(
                   configs: editorState.configs,
                   callbacks: editorState.callbacks,
                   editor: editorState,
