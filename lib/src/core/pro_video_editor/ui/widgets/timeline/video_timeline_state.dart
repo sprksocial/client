@@ -1,9 +1,9 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 
-/// Manages the state for the audio timeline in the video editor.
-class AudioTimelineState extends ChangeNotifier {
-  AudioTimelineState({
+/// Manages the state for the video timeline in the video editor.
+class VideoTimelineState extends ChangeNotifier {
+  VideoTimelineState({
     required this.videoDuration,
     this.videoWaveformData = const [],
   });
@@ -13,6 +13,10 @@ class AudioTimelineState extends ChangeNotifier {
 
   /// Waveform data for the original video audio.
   List<double> videoWaveformData;
+
+  /// Video thumbnails for the timeline track.
+  List<ImageProvider>? _thumbnails;
+  List<ImageProvider>? get thumbnails => _thumbnails;
 
   /// Waveform data for the custom audio track (if any).
   List<double> _customWaveformData = [];
@@ -33,6 +37,14 @@ class AudioTimelineState extends ChangeNotifier {
   /// Current playback position (0.0 to 1.0).
   double _progress = 0;
   double get progress => _progress;
+
+  /// Whether the video is currently playing.
+  bool _isPlaying = false;
+  bool get isPlaying => _isPlaying;
+
+  /// Whether the audio is muted.
+  bool _isMuted = false;
+  bool get isMuted => _isMuted;
 
   /// Returns the active waveform data based on audio mode.
   List<double> get activeWaveformData => _useCustomAudio ? _customWaveformData : videoWaveformData;
@@ -67,6 +79,12 @@ class AudioTimelineState extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Updates the video thumbnails.
+  void setThumbnails(List<ImageProvider> value) {
+    _thumbnails = value;
+    notifyListeners();
+  }
+
   /// Sets the custom audio track, its waveform data, and author avatar.
   void setCustomAudio(
     AudioTrack? track,
@@ -89,6 +107,18 @@ class AudioTimelineState extends ChangeNotifier {
   /// Updates the current playback progress.
   void setProgress(double value) {
     _progress = value.clamp(0.0, 1.0);
+    notifyListeners();
+  }
+
+  /// Updates the playing state.
+  void setPlaying({required bool isPlaying}) {
+    _isPlaying = isPlaying;
+    notifyListeners();
+  }
+
+  /// Updates the muted state.
+  void setMuted({required bool isMuted}) {
+    _isMuted = isMuted;
     notifyListeners();
   }
 
