@@ -118,7 +118,6 @@ class ProfileFeed extends _$ProfileFeed {
       allPosts: allPosts,
       isEndOfNetwork: isEndOfNetwork,
       cursor: result.cursor,
-      blueskyCursor: null, // No longer tracking separate Bluesky cursor
       // ignore: prefer_collection_literals
       extraInfo: currentState?.extraInfo ?? LinkedHashMap(),
       postSources: postSources,

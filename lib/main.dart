@@ -12,9 +12,6 @@ import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/core/utils/logging/riverpod_logger.dart';
 import 'package:sparksocial/src/sprk_app.dart';
 
-// Global RouteObserver instance
-final RouteObserver<ModalRoute<void>> routeObserver = RouteObserver<ModalRoute<void>>();
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

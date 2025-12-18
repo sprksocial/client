@@ -308,8 +308,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             selectedIndex: 0, // Always 0 for now
             tabs: _buildTabItems(0),
           ),
-
-          selectedTabIndex: 0,
           onTabChanged: (index) {
             // When adding tabs 1+ with AutoTabsRouter, this will be: tabsRouter.setActiveIndex(index)
             // For now with only tab 0, this is a no-op

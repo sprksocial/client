@@ -375,8 +375,8 @@ class _LinkPreviewText extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    final title = metadata.title?.isNotEmpty ?? true && metadata.title != 'null' ? metadata.title : null;
-    final desc = metadata.desc?.isNotEmpty ?? true && metadata.desc != 'null' ? metadata.desc : null;
+    final title = metadata.title?.isNotEmpty ?? (metadata.title != 'null') ? metadata.title : null;
+    final desc = metadata.desc?.isNotEmpty ?? (metadata.desc != 'null') ? metadata.desc : null;
 
     return Padding(
       padding: const EdgeInsets.all(8),
