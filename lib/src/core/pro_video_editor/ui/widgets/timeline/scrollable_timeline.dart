@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
@@ -33,6 +34,7 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
   late ScrollController _scrollController;
   bool _isUserScrolling = false;
   bool _isProgrammaticScroll = false;
+  Timer? _scrollEndTimer;
 
   double get _totalWidth => widget.videoTimelineState.videoDuration.inMilliseconds / 1000 * widget.pixelsPerSecond;
 
@@ -48,6 +50,7 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
   @override
   void dispose() {
     widget.videoTimelineState.removeListener(_onProgressChange);
+    _scrollEndTimer?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -97,10 +100,16 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                       if (notification is ScrollStartNotification) {
                         // Only mark as user scrolling if not a programmatic scroll
                         if (!_isProgrammaticScroll) {
+                          _scrollEndTimer?.cancel();
                           _isUserScrolling = true;
                         }
                       } else if (notification is ScrollEndNotification) {
-                        _isUserScrolling = false;
+                        _scrollEndTimer?.cancel();
+                        _scrollEndTimer = Timer(const Duration(milliseconds: 300), () {
+                          if (mounted) {
+                            _isUserScrolling = false;
+                          }
+                        });
                       } else if (notification is ScrollUpdateNotification) {
                         // Only seek when user is actually scrolling, not during programmatic scroll
                         if (_isUserScrolling && !_isProgrammaticScroll) {
