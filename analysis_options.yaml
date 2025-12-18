@@ -32,5 +32,6 @@ analyzer:
     document_ignores: ignore
     one_member_abstracts: ignore
     avoid_bool_literals_in_conditional_expressions: ignore
+    discarded_futures: ignore
   exclude:
     - '**/*.g.dart'

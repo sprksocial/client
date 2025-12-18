@@ -90,7 +90,7 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       r'$type': 'so.sprk.actor.profile',
       'displayName': displayName,
       'description': description,
-      if (avatarField != null) 'avatar': avatarField,
+      'avatar': ?avatarField,
     };
 
     await _repoRepository.createRecord(

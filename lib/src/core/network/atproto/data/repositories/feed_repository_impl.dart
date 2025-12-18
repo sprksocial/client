@@ -125,9 +125,7 @@ class FeedRepositoryImpl implements FeedRepository {
         return deepCopyJson(json);
       }).toList();
 
-      for (final rawPost in rawPosts) {
-        bskyFeedAdapter.convertPostViewJson(rawPost);
-      }
+      rawPosts.forEach(bskyFeedAdapter.convertPostViewJson);
 
       final parsedPosts = rawPosts.map(PostView.fromJson).toList();
       final sparkPosts = parsedPosts.map((post) => post.toSparkPostView()).toList();
