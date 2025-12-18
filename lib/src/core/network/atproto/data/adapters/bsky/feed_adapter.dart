@@ -3,7 +3,6 @@ import 'package:bluesky/app_bsky_embed_images.dart';
 import 'package:bluesky/app_bsky_feed_getpostthread.dart';
 import 'package:bluesky/app_bsky_feed_post.dart';
 import 'package:bluesky/app_bsky_richtext_facet.dart';
-// ignore: implementation_imports
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart' hide ReplyRef;
 import 'package:sparksocial/src/core/utils/json_utils.dart';
 

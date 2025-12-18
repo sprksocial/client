@@ -103,8 +103,8 @@ class MessagesRepositoryXrpc implements MessagesRepository {
   }) async {
     final params = <String, String>{
       if (limit != null) 'limit': limit.toString(),
-      if (cursor != null) 'cursor': cursor,
-      if (readState != null) 'readState': readState,
+      'cursor': ?cursor,
+      'readState': ?readState,
     };
 
     final data = await _callQuery('so.sprk.chat.convo.listConvos', params);
@@ -164,7 +164,7 @@ class MessagesRepositoryXrpc implements MessagesRepository {
     final params = <String, String>{
       'convoId': convoId,
       if (limit != null) 'limit': limit.toString(),
-      if (cursor != null) 'cursor': cursor,
+      'cursor': ?cursor,
     };
 
     final data = await _callQuery('so.sprk.chat.convo.getMessages', params);
@@ -186,8 +186,8 @@ class MessagesRepositoryXrpc implements MessagesRepository {
       'convoId': convoId,
       'message': <String, dynamic>{
         'text': text,
-        if (facets != null) 'facets': facets,
-        if (embed != null) 'embed': embed,
+        'facets': ?facets,
+        'embed': ?embed,
       },
     };
 
