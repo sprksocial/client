@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:atproto/com_atproto_moderation_createreport.dart';
@@ -226,8 +225,8 @@ class RepoRepositoryImpl implements RepoRepository {
 
         if (subjectData is RepoStrongRef) {
           body = {
-            'subject': {r'$type': 'com.atproto.repo.strongRef', 'uri': subjectData.uri, 'cid': subjectData.cid},
-            'reasonType': input.reasonType.data.toString(),
+            'subject': {r'$type': 'com.atproto.repo.strongRef', 'uri': subjectData.uri.toString(), 'cid': subjectData.cid},
+            'reasonType': input.reasonType.toJson(),
           };
         } else {
           _logger.e('Invalid subject data type: ${subjectData.runtimeType}');
@@ -246,7 +245,7 @@ class RepoRepositoryImpl implements RepoRepository {
         };
 
         try {
-          final response = await atproto.post(endpoint, headers: headers, body: jsonEncode(body));
+          final response = await atproto.post(endpoint, headers: headers, body: body);
 
           if (response.status != HttpStatus.ok) {
             _logger.e('Failed to create report: ${response.data}', error: 'HTTP ${response.status}');
