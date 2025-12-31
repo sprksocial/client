@@ -8,7 +8,9 @@ import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/utils/logging/logging.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
+import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_progress_bar.dart';
+import 'package:sparksocial/src/features/home/providers/feed_settings_visibility_provider.dart';
 import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
 
 class PostVideoPlayer extends ConsumerStatefulWidget {
@@ -32,6 +34,8 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
 
   int? _lastNavigationIndex;
   int? _lastFeedIndex;
+  bool? _lastFeedSettingsVisible;
+  bool _wasPlayingWhenMenuOpened = false;
 
   bool get isPlaying => videoController?.isPlaying() ?? false;
   bool get isInitialized => videoController?.isVideoInitialized() ?? false;
@@ -123,8 +127,16 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
     }
   }
 
-  void _handleAutoPlayPause(bool shouldPlay) {
+  void _handleAutoPlayPause(bool shouldPlay, {bool isFeedSettingsVisible = false}) {
     if (_userInteracted) return;
+
+    // Don't play if feed settings menu is open
+    if (isFeedSettingsVisible) {
+      if (isPlaying) {
+        videoController?.pause();
+      }
+      return;
+    }
 
     if (shouldPlay && !isPlaying) {
       videoController?.play();
@@ -142,6 +154,33 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
     }
   }
 
+  void _handleFeedSettingsVisibility(bool isFeedSettingsVisible, bool isOnFeedsTab, FeedState? feedState) {
+    if (!isInitialized) return;
+
+    // Pause videos when feed settings menu is open
+    if (isFeedSettingsVisible && isPlaying) {
+      _wasPlayingWhenMenuOpened = true;
+      videoController?.pause();
+    }
+    // Resume videos when feed settings menu closes
+    // Resume if it was playing when menu opened, or if auto-play conditions are met
+    else if (!isFeedSettingsVisible) {
+      final wasPlaying = _wasPlayingWhenMenuOpened;
+      _wasPlayingWhenMenuOpened = false;
+      
+      if (wasPlaying && !isPlaying) {
+        // Resume if it was playing when menu opened
+        videoController?.play();
+      } else if (!_userInteracted) {
+        // Otherwise, check auto-play conditions
+        final shouldPlay = isOnFeedsTab && (feedState == null || feedState.index == widget.index);
+        if (shouldPlay && !isPlaying) {
+          videoController?.play();
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!isInitialized) {
@@ -150,6 +189,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
 
     final navigationState = ref.watch(navigationProvider);
     final isOnFeedsTab = navigationState.currentIndex == 0;
+    final feedSettingsVisible = ref.watch(feedSettingsVisibilityProvider);
 
     final feedState = widget.feed != null ? ref.watch(feedProvider(widget.feed!)) : null;
 
@@ -161,17 +201,27 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
         }
       });
     }
+
+    // Handle feed settings visibility changes
+    if (_lastFeedSettingsVisible != feedSettingsVisible) {
+      _lastFeedSettingsVisible = feedSettingsVisible;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _handleFeedSettingsVisibility(feedSettingsVisible, isOnFeedsTab, feedState);
+        }
+      });
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (feedState != null && _lastFeedIndex != feedState.index) {
         _lastFeedIndex = feedState.index;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted && !_userInteracted) {
             final shouldPlay = feedState.index == widget.index && isOnFeedsTab;
-            _handleAutoPlayPause(shouldPlay);
+            _handleAutoPlayPause(shouldPlay, isFeedSettingsVisible: feedSettingsVisible);
           }
         });
       } else if (widget.feed == null && widget.index == null) {
-        _handleAutoPlayPause(true);
+        _handleAutoPlayPause(true, isFeedSettingsVisible: feedSettingsVisible);
       }
     });
 
