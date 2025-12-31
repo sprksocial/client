@@ -154,18 +154,13 @@ class FeedNotifier extends _$FeedNotifier {
       // We just need to merge them with self-labels and process them
       final allLabels = <Label>[];
       final postsWithMergedLabels = <PostView>[];
-      int postsWithoutLabels = 0;
-      
+      var postsWithoutLabels = 0;
+
       for (final post in posts) {
         final key = post.uri.toString();
         // Start with labels from the post view (from appview)
         final postLabels = <Label>[...?post.labels];
-        
-        // Log if post has no labels (might indicate appview didn't include them)
-        if (postLabels.isEmpty) {
-          postsWithoutLabels++;
-        }
-        
+
         // Add self-labels from the post record
         if (post.record.selfLabels != null) {
           for (final selfLabel in post.record.selfLabels!) {
@@ -174,15 +169,21 @@ class FeedNotifier extends _$FeedNotifier {
             );
           }
         }
+
+        // Check if post has no labels from appview (after adding self-labels, check original)
+        if (post.labels == null || post.labels!.isEmpty) {
+          postsWithoutLabels++;
+        }
+
         allLabels.addAll(postLabels);
         postsWithMergedLabels.add(post.copyWith(labels: postLabels));
       }
-      
+
       // Log warning if many posts are missing labels (might indicate header issue)
       if (postsWithoutLabels > 0 && postsWithoutLabels == posts.length) {
         _logger.w('All ${posts.length} posts are missing labels - check if atproto-accept-labelers header is being sent');
       } else if (postsWithoutLabels > posts.length / 2) {
-        _logger.w('${postsWithoutLabels}/${posts.length} posts are missing labels - some labels may not be included');
+        _logger.w('$postsWithoutLabels/${posts.length} posts are missing labels - some labels may not be included');
       }
 
       final extraInfo = LinkedHashMap<AtUri, ({List<Label> postLabels})>.from(
@@ -260,7 +261,7 @@ class FeedNotifier extends _$FeedNotifier {
 
   Future<({int count, List<PostView> posts, String? cursor})> fetch({int? limit}) async {
     final pageLimit = limit ?? FeedState.fetchLimit;
-    
+
     // Get labelers for the header
     final settings = ref.read(settingsProvider.notifier);
     List<String> labelerDids;
@@ -278,7 +279,7 @@ class FeedNotifier extends _$FeedNotifier {
       final modDid = _sprkRepository.modDid.split('#').first;
       labelerDids = [modDid];
     }
-    
+
     final feedView = await _feedRepository.getFeed(_feed, limit: pageLimit, cursor: state.cursor, labelerDids: labelerDids);
 
     // Extract PostView from FeedViewPost items (they're already hydrated)

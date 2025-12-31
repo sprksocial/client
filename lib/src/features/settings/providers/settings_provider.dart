@@ -554,7 +554,7 @@ class Settings extends _$Settings {
     final existingContentLabelPreferences = preferences.preferences.where((pref) => pref.isContentLabelPref(pref)).toList();
 
     // Track if we found the preference to update
-    bool found = false;
+    var found = false;
 
     // Preserve all other content label preferences and update the one we're changing
     for (final pref in existingContentLabelPreferences) {

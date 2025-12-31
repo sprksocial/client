@@ -432,7 +432,7 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Configure how this labeler\'s content labels are handled in your feeds.',
+                    "Configure how this labeler's content labels are handled in your feeds.",
                     style: TextStyle(
                       color: colorScheme.onSurface.withAlpha(178),
                       fontSize: 14,
