@@ -25,6 +25,7 @@ class FeedNotifier extends _$FeedNotifier {
   static const _errorCooldown = Duration(seconds: 10);
   late Feed _feed;
   late final FeedRepository _feedRepository;
+  late final SprkRepository _sprkRepository;
   late final SparkLogger _logger;
   late final DownloadManagerInterface _downloadManager;
 
@@ -38,7 +39,8 @@ class FeedNotifier extends _$FeedNotifier {
 
     // Initialize logger first for debugging
     if (!_isInitialized()) {
-      _feedRepository = GetIt.instance<SprkRepository>().feed;
+      _sprkRepository = GetIt.instance<SprkRepository>();
+      _feedRepository = _sprkRepository.feed;
       _downloadManager = GetIt.instance<DownloadManagerInterface>();
       _logger = GetIt.instance<LogService>().getLogger('FeedNotifier ${feed.config.id}');
     } else {
@@ -148,36 +150,23 @@ class FeedNotifier extends _$FeedNotifier {
     }
 
     try {
-      final uris = posts.map((post) => post.uri).toList();
-      final settings = ref.read(settingsProvider.notifier);
-      List<String> followedLabelers;
-      try {
-        followedLabelers = await settings.getLabelers().timeout(
-          const Duration(seconds: 5),
-          onTimeout: () => ['did:plc:pbgyr67hftvpoqtvaurpsctc'], // Default labeler
-        );
-      } catch (e) {
-        followedLabelers = ['did:plc:pbgyr67hftvpoqtvaurpsctc']; // Default labeler
-      }
-      List<Label> fetchedLabels;
-      try {
-        final (cursor: _, labels: labelsFromApi) = await _feedRepository.getLabels(uris, sources: followedLabelers);
-        fetchedLabels = labelsFromApi;
-      } catch (e) {
-        _logger.e('Error getting labels for new posts: $e');
-        fetchedLabels = const [];
-      }
-
-      final labelsByUri = <String, List<Label>>{};
-      for (final label in fetchedLabels) {
-        labelsByUri.putIfAbsent(label.uri, () => []).add(label);
-      }
-
+      // Labels are already included in post views from the appview
+      // We just need to merge them with self-labels and process them
       final allLabels = <Label>[];
       final postsWithMergedLabels = <PostView>[];
+      int postsWithoutLabels = 0;
+      
       for (final post in posts) {
         final key = post.uri.toString();
-        final postLabels = <Label>[...?labelsByUri[key], ...?post.labels];
+        // Start with labels from the post view (from appview)
+        final postLabels = <Label>[...?post.labels];
+        
+        // Log if post has no labels (might indicate appview didn't include them)
+        if (postLabels.isEmpty) {
+          postsWithoutLabels++;
+        }
+        
+        // Add self-labels from the post record
         if (post.record.selfLabels != null) {
           for (final selfLabel in post.record.selfLabels!) {
             postLabels.add(
@@ -187,6 +176,13 @@ class FeedNotifier extends _$FeedNotifier {
         }
         allLabels.addAll(postLabels);
         postsWithMergedLabels.add(post.copyWith(labels: postLabels));
+      }
+      
+      // Log warning if many posts are missing labels (might indicate header issue)
+      if (postsWithoutLabels > 0 && postsWithoutLabels == posts.length) {
+        _logger.w('All ${posts.length} posts are missing labels - check if atproto-accept-labelers header is being sent');
+      } else if (postsWithoutLabels > posts.length / 2) {
+        _logger.w('${postsWithoutLabels}/${posts.length} posts are missing labels - some labels may not be included');
       }
 
       final extraInfo = LinkedHashMap<AtUri, ({List<Label> postLabels})>.from(
@@ -264,7 +260,26 @@ class FeedNotifier extends _$FeedNotifier {
 
   Future<({int count, List<PostView> posts, String? cursor})> fetch({int? limit}) async {
     final pageLimit = limit ?? FeedState.fetchLimit;
-    final feedView = await _feedRepository.getFeed(_feed, limit: pageLimit, cursor: state.cursor);
+    
+    // Get labelers for the header
+    final settings = ref.read(settingsProvider.notifier);
+    List<String> labelerDids;
+    try {
+      labelerDids = await settings.getLabelers().timeout(
+        const Duration(seconds: 5),
+        onTimeout: () {
+          // Use modDid from repository as fallback
+          final modDid = _sprkRepository.modDid.split('#').first;
+          return [modDid];
+        },
+      );
+    } catch (e) {
+      // Use modDid from repository as fallback
+      final modDid = _sprkRepository.modDid.split('#').first;
+      labelerDids = [modDid];
+    }
+    
+    final feedView = await _feedRepository.getFeed(_feed, limit: pageLimit, cursor: state.cursor, labelerDids: labelerDids);
 
     // Extract PostView from FeedViewPost items (they're already hydrated)
     final posts = <PostView>[];

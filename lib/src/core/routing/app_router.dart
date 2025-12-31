@@ -100,6 +100,11 @@ class AppRouter extends RootStackRouter {
       path: '/settings',
       customRouteBuilder: feedSettingsBuilder,
     ),
+    CustomRoute(
+      page: LabelerLabelSettingsRoute.page,
+      path: '/labeler/:did/labels',
+      customRouteBuilder: feedSettingsBuilder,
+    ),
 
     // Deep linking routes or routes that will be pushed on top of everything
     AutoRoute(page: StandalonePostRoute.page, path: '/post/:postUri'),

@@ -16,12 +16,16 @@ class FeedListPage extends ConsumerStatefulWidget {
   ConsumerState<FeedListPage> createState() => _FeedListPageState();
 }
 
-class _FeedListPageState extends ConsumerState<FeedListPage> {
+class _FeedListPageState extends ConsumerState<FeedListPage> with AutomaticKeepAliveClientMixin {
   bool _isReordering = false;
   bool _isEditMode = false;
 
   @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context); // Required for AutomaticKeepAliveClientMixin
     final settingsState = ref.watch(settingsProvider);
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;

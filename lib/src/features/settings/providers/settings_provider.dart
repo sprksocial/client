@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
@@ -22,13 +25,21 @@ PrefRepository prefRepository(Ref ref) {
 class Settings extends _$Settings {
   late final PrefRepository _prefRepository;
   late final FeedRepository _feedRepository;
+  late final SprkRepository _sprkRepository;
   late final SparkLogger _logger;
   late final Feed _defaultFeed;
+
+  String get _defaultModServiceDid {
+    // Extract DID part from modDid (remove fragment if present)
+    final modDid = _sprkRepository.modDid;
+    return modDid.split('#').first;
+  }
 
   @override
   SettingsState build() {
     _prefRepository = ref.watch(prefRepositoryProvider);
-    _feedRepository = GetIt.instance<SprkRepository>().feed;
+    _sprkRepository = GetIt.instance<SprkRepository>();
+    _feedRepository = _sprkRepository.feed;
     _logger = GetIt.instance<LogService>().getLogger('Settings');
     _defaultFeed = Feed(
       type: 'timeline',
@@ -55,7 +66,8 @@ class Settings extends _$Settings {
       // If there are no feeds, set default preferences
       if (savedFeeds.isEmpty) {
         try {
-          final defaultPrefs = DefaultPreferences.defaultPreferences;
+          final modServiceDid = _defaultModServiceDid;
+          final defaultPrefs = DefaultPreferences.defaultPreferences(modServiceDid: modServiceDid);
           await _prefRepository.putPreferences(defaultPrefs);
 
           // Reload preferences after setting defaults
@@ -296,11 +308,132 @@ class Settings extends _$Settings {
 
   Future<List<String>> getLabelers() async {
     final preferences = await _prefRepository.getPreferences();
-    final labelers = preferences.labelers?.map((labeler) => labeler.did).toList() ?? [];
-    if (!labelers.contains('did:plc:pbgyr67hftvpoqtvaurpsctc')) {
-      labelers.add('did:plc:pbgyr67hftvpoqtvaurpsctc');
+    var labelers = preferences.labelers?.map((labeler) => labeler.did).toList() ?? [];
+
+    // Ensure default mod service labeler is always present
+    final modServiceDid = _defaultModServiceDid;
+    final wasAdded = !labelers.contains(modServiceDid);
+    if (wasAdded) {
+      _logger.d('Default mod service labeler not found, adding it');
+      labelers = [modServiceDid, ...labelers];
+
+      // Update preferences to include default labeler
+      final updatedLabelers = <LabelerPrefItem>[
+        LabelerPrefItem(did: modServiceDid),
+        ...(preferences.labelers ?? []),
+      ];
+      final updatedPreferences = preferences.preferences.where((pref) => !pref.isLabelersPref(pref)).toList();
+      updatedPreferences.add(Preference.labelersPref(labelers: updatedLabelers));
+
+      await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
     }
+
+    // Ensure all labelers' label values are set as preferences
+    // Do this asynchronously to avoid blocking
+    Future.microtask(() => _ensureAllLabelersPoliciesSet(labelers));
+
     return labelers;
+  }
+
+  /// Ensures all label values from all subscribed labelers have preferences set
+  Future<void> _ensureAllLabelersPoliciesSet(List<String> labelerDids) async {
+    for (final did in labelerDids) {
+      try {
+        await _fetchLabelerPoliciesAndSetDefaults(did);
+      } catch (e) {
+        _logger.w('Error ensuring label values for labeler $did: $e');
+      }
+    }
+  }
+
+  /// Adds a labeler to the user's subscribed labelers list
+  Future<void> addLabeler(String did) async {
+    try {
+      _logger.d('Adding labeler: $did');
+      final preferences = await _prefRepository.getPreferences();
+      final currentLabelers = preferences.labelers ?? [];
+
+      // Check if labeler already exists
+      if (currentLabelers.any((labeler) => labeler.did == did)) {
+        _logger.w('Labeler already exists: $did');
+        return;
+      }
+
+      // Create updated preferences with new labeler
+      final updatedLabelers = [...currentLabelers, LabelerPrefItem(did: did)];
+      final updatedPreferences = preferences.preferences.where((pref) => !pref.isLabelersPref(pref)).toList();
+      updatedPreferences.add(Preference.labelersPref(labelers: updatedLabelers));
+
+      await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+      _logger.d('Labeler added successfully: $did');
+
+      // Fetch and set default label preferences for this labeler
+      await _fetchLabelerPoliciesAndSetDefaults(did);
+    } catch (e) {
+      _logger.e('Error adding labeler: $e');
+      rethrow;
+    }
+  }
+
+  /// Removes a labeler from the user's subscribed labelers list
+  Future<void> removeLabeler(String did) async {
+    try {
+      // Prevent removal of default mod service labeler
+      if (did == _defaultModServiceDid) {
+        _logger.w('Attempted to remove default mod service labeler, which is not allowed');
+        throw Exception('Cannot remove the default mod service labeler');
+      }
+
+      _logger.d('Removing labeler: $did');
+      final preferences = await _prefRepository.getPreferences();
+      final currentLabelers = preferences.labelers ?? [];
+
+      // Remove the labeler
+      final updatedLabelers = currentLabelers.where((labeler) => labeler.did != did).toList();
+
+      // Create updated preferences
+      final updatedPreferences = preferences.preferences.where((pref) => !pref.isLabelersPref(pref)).toList();
+      updatedPreferences.add(Preference.labelersPref(labelers: updatedLabelers));
+
+      await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+      _logger.d('Labeler removed successfully: $did');
+    } catch (e) {
+      _logger.e('Error removing labeler: $e');
+      rethrow;
+    }
+  }
+
+  /// Syncs labelers from server (useful for manual refresh)
+  Future<void> syncLabelers() async {
+    try {
+      _logger.d('Syncing labelers from server...');
+      // Fetch fresh preferences
+      final preferences = await _prefRepository.getPreferences();
+      final labelers = preferences.labelers?.map((labeler) => labeler.did).toList() ?? [];
+
+      // Ensure default mod service labeler is present
+      final modServiceDid = _defaultModServiceDid;
+      if (!labelers.contains(modServiceDid)) {
+        labelers.insert(0, modServiceDid);
+        final updatedLabelers = <LabelerPrefItem>[
+          LabelerPrefItem(did: modServiceDid),
+          ...(preferences.labelers ?? []),
+        ];
+        final updatedPreferences = preferences.preferences.where((pref) => !pref.isLabelersPref(pref)).toList();
+        updatedPreferences.add(Preference.labelersPref(labelers: updatedLabelers));
+        await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+      }
+
+      _logger.d('Syncing label value preferences for ${labelers.length} labelers');
+
+      // Ensure all labelers' label values are set as preferences
+      await _ensureAllLabelersPoliciesSet(labelers);
+
+      _logger.d('Labelers synced successfully');
+    } catch (e) {
+      _logger.e('Error syncing labelers: $e');
+      rethrow;
+    }
   }
 
   Future<LabelPreference> getLabelPreference(String value) async {
@@ -346,12 +479,115 @@ class Settings extends _$Settings {
     if (!existingContentPrefs.any((pref) => pref.label == value)) {
       updatedPreferences.add(
         Preference.contentLabelPref(
-          labelerDid: 'did:plc:pbgyr67hftvpoqtvaurpsctc',
+          labelerDid: _defaultModServiceDid,
           label: value,
           visibility: _settingToVisibility(setting),
         ),
       );
     }
+    await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+  }
+
+  /// Gets label preferences for a specific labeler
+  Future<Map<String, LabelPreference>> getLabelPreferencesForLabeler(String labelerDid) async {
+    final preferences = await _prefRepository.getPreferences();
+
+    // Get content label preferences from the main preferences list
+    final contentLabelPrefsMap = <String, String>{}; // label -> visibility
+    for (final pref in preferences.preferences) {
+      final contentLabelPref = pref.mapOrNull(contentLabelPref: (p) => p);
+      if (contentLabelPref != null && contentLabelPref.labelerDid == labelerDid) {
+        contentLabelPrefsMap[contentLabelPref.label] = contentLabelPref.visibility;
+      }
+    }
+
+    // Also check contentLabelPrefs property
+    final contentLabelPrefsFromProperty = preferences.contentLabelPrefs ?? [];
+    for (final pref in contentLabelPrefsFromProperty) {
+      final prefLabelerDid = pref.labelerDid;
+      final prefLabel = pref.label;
+      final prefVisibility = pref.visibility;
+      if (prefLabelerDid == labelerDid && !contentLabelPrefsMap.containsKey(prefLabel)) {
+        contentLabelPrefsMap[prefLabel] = prefVisibility;
+      }
+    }
+
+    final result = <String, LabelPreference>{};
+    for (final entry in contentLabelPrefsMap.entries) {
+      final label = entry.key;
+      final visibility = entry.value;
+
+      // Get the actual saved setting from visibility
+      final setting = _visibilityToSetting(visibility);
+
+      // For blur, we need to infer it from the setting
+      // If setting is 'warn', default to media blur, otherwise none
+      final blurs = setting == Setting.warn ? Blurs.media : Blurs.none;
+
+      result[label] = LabelPreference(
+        value: label,
+        blurs: blurs,
+        severity: _visibilityToSeverity(visibility),
+        defaultSetting: setting, // This should ideally come from label definitions, but we use current as default
+        setting: setting,
+        adultOnly: _isAdultOnlyLabel(label),
+      );
+    }
+    return result;
+  }
+
+  /// Sets label preference for a specific labeler
+  Future<void> setLabelPreferenceForLabeler(
+    String labelerDid,
+    String value,
+    Blurs blurs,
+    Severity severity,
+    bool adultOnly,
+    Setting setting,
+  ) async {
+    final preferences = await _prefRepository.getPreferences();
+
+    // Get all non-content-label preferences
+    final updatedPreferences = preferences.preferences.where((pref) => !pref.isContentLabelPref(pref)).toList();
+
+    // Get all existing content label preferences from the preferences list
+    final existingContentLabelPreferences = preferences.preferences.where((pref) => pref.isContentLabelPref(pref)).toList();
+
+    // Track if we found the preference to update
+    bool found = false;
+
+    // Preserve all other content label preferences and update the one we're changing
+    for (final pref in existingContentLabelPreferences) {
+      final contentLabelPref = pref.mapOrNull(contentLabelPref: (p) => p);
+      if (contentLabelPref != null) {
+        if (contentLabelPref.labelerDid == labelerDid && contentLabelPref.label == value) {
+          // Update this specific preference
+          updatedPreferences.add(
+            Preference.contentLabelPref(
+              labelerDid: labelerDid,
+              label: value,
+              visibility: _settingToVisibility(setting),
+            ),
+          );
+          found = true;
+        } else {
+          // Keep other preferences as-is
+          updatedPreferences.add(pref);
+        }
+      }
+    }
+
+    // If preference doesn't exist, add it
+    if (!found) {
+      updatedPreferences.add(
+        Preference.contentLabelPref(
+          labelerDid: labelerDid,
+          label: value,
+          visibility: _settingToVisibility(setting),
+        ),
+      );
+    }
+
     await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
   }
 
@@ -421,5 +657,150 @@ class Settings extends _$Settings {
       'nsfl',
     };
     return adultOnlyLabels.contains(label);
+  }
+
+  /// Fetches labeler policies and sets default content label preferences
+  /// for label values that don't already have preferences
+  Future<void> _fetchLabelerPoliciesAndSetDefaults(String did) async {
+    try {
+      final rawResponse = await _sprkRepository.executeWithRetry(() async {
+        if (!_sprkRepository.authRepository.isAuthenticated) {
+          throw Exception('Not authenticated');
+        }
+        final atproto = _sprkRepository.authRepository.atproto;
+        if (atproto == null) {
+          throw Exception('AtProto not initialized');
+        }
+        final result = await atproto.get(
+          NSID.parse('so.sprk.labeler.getServices'),
+          parameters: {
+            'dids': [did],
+            'detailed': true,
+          },
+          headers: {'atproto-proxy': _sprkRepository.sprkDid},
+          to: (jsonMap) => jsonMap,
+          adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        );
+        if (result.status != HttpStatus.ok) {
+          throw Exception('Failed to retrieve labeler services');
+        }
+        return result.data as Map<String, dynamic>;
+      });
+
+      final viewsJson = rawResponse['views'] as List<dynamic>?;
+      if (viewsJson == null || viewsJson.isEmpty) {
+        return;
+      }
+
+      final viewJson = viewsJson.first as Map<String, dynamic>;
+      final policiesJson = viewJson['policies'] as Map<String, dynamic>?;
+
+      if (policiesJson == null) {
+        return;
+      }
+
+      final labelValuesJson = policiesJson['labelValues'] as List<dynamic>?;
+      if (labelValuesJson == null || labelValuesJson.isEmpty) {
+        return;
+      }
+
+      final labelValues = labelValuesJson.map((v) => v as String).toList();
+
+      final labelValueDefinitionsJson = policiesJson['labelValueDefinitions'] as List<dynamic>?;
+      final labelDefinitionMap = <String, Map<String, dynamic>>{};
+      if (labelValueDefinitionsJson != null) {
+        for (final defJson in labelValueDefinitionsJson) {
+          final def = defJson as Map<String, dynamic>;
+          final identifier = def['identifier'] as String?;
+          if (identifier != null) {
+            labelDefinitionMap[identifier] = def;
+          }
+        }
+      }
+
+      final preferences = await _prefRepository.getPreferences();
+
+      // Get all existing content label preferences from both sources
+      final existingContentLabelPreferences = preferences.preferences.where((pref) => pref.isContentLabelPref(pref)).toList();
+      final existingContentPrefsFromProperty = preferences.contentLabelPrefs ?? [];
+
+      // Build a map of existing preferences by labelerDid:label
+      final existingPrefsMap = <String, String>{}; // "labelerDid:label" -> "visibility"
+      for (final pref in existingContentLabelPreferences) {
+        final contentLabelPref = pref.mapOrNull(contentLabelPref: (p) => p);
+        if (contentLabelPref != null) {
+          existingPrefsMap['${contentLabelPref.labelerDid}:${contentLabelPref.label}'] = contentLabelPref.visibility;
+        }
+      }
+      for (final pref in existingContentPrefsFromProperty) {
+        final key = '${pref.labelerDid}:${pref.label}';
+        if (!existingPrefsMap.containsKey(key)) {
+          existingPrefsMap[key] = pref.visibility;
+        }
+      }
+
+      final preferencesToAdd = <Preference>[];
+
+      for (final labelValue in labelValues) {
+        final key = '$did:$labelValue';
+        final hasExistingPref = existingPrefsMap.containsKey(key);
+
+        if (!hasExistingPref) {
+          String defaultVisibility;
+          final definition = labelDefinitionMap[labelValue];
+          if (definition != null) {
+            defaultVisibility = definition['defaultSetting'] as String? ?? 'warn';
+          } else {
+            defaultVisibility = _getDefaultVisibilityForLabel(labelValue);
+          }
+
+          preferencesToAdd.add(
+            Preference.contentLabelPref(
+              labelerDid: did,
+              label: labelValue,
+              visibility: defaultVisibility,
+            ),
+          );
+        }
+      }
+
+      if (preferencesToAdd.isNotEmpty) {
+        // Preserve all existing preferences and add new ones
+        final updatedPreferences = [
+          ...preferences.preferences.where((pref) => !pref.isContentLabelPref(pref)),
+          ...existingContentLabelPreferences,
+          ...preferencesToAdd,
+        ];
+        await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
+      }
+    } catch (e) {
+      _logger.e('Error fetching labeler policies for $did: $e');
+    }
+  }
+
+  /// Determines default visibility setting for a label value
+  String _getDefaultVisibilityForLabel(String labelValue) {
+    // Use similar logic to LabelSettingsPage._createDefaultLabelPreference
+    switch (labelValue) {
+      case '!hide':
+      case 'dmca-violation':
+        return 'hide';
+      case '!no-promote':
+        return 'hide';
+      case '!warn':
+      case 'doxxing':
+      case 'porn':
+      case 'sexual':
+      case 'nsfl':
+      case 'gore':
+        return 'warn';
+      case '!no-unauthenticated':
+        return 'ignore';
+      case 'nudity':
+        return 'ignore';
+      default:
+        // For unknown labels, default to warn
+        return 'warn';
+    }
   }
 }

@@ -23,7 +23,8 @@ export 'package:sparksocial/src/features/profile/ui/pages/user_profile_page.dart
 export 'package:sparksocial/src/features/search/ui/pages/search_page.dart';
 export 'package:sparksocial/src/features/settings/ui/pages/feed_list_page.dart';
 export 'package:sparksocial/src/features/settings/ui/pages/feed_settings_page.dart';
-export 'package:sparksocial/src/features/settings/ui/pages/label_settings_page.dart';
+export 'package:sparksocial/src/features/settings/ui/pages/labeler_management_page.dart';
+export 'package:sparksocial/src/features/settings/ui/pages/labeler_label_settings_page.dart';
 export 'package:sparksocial/src/features/settings/ui/pages/profile_settings_page.dart';
 export 'package:sparksocial/src/features/sound/ui/pages/sound_page.dart';
 export 'package:sparksocial/src/features/stories/ui/pages/all_stories_page.dart';
