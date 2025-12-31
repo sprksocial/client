@@ -41,7 +41,7 @@ class SprkRepositoryImpl implements SprkRepository {
   String get bskyDid => 'did:web:api.bsky.app#bsky_appview';
 
   @override
-  String get modDid => 'did:web:mod.sprk.so#atproto_label';
+  String get modDid => 'did:plc:pbgyr67hftvpoqtvaurpsctc#atproto_labeler';
 
   static String _getSprkDid() {
     final sprkAppView = Uri.parse(AppConfig.appViewUrl);

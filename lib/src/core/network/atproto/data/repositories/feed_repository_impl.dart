@@ -28,6 +28,12 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.v('FeedRepository initialized');
   }
   final SprkRepository _client;
+
+  /// Formats labeler DIDs into the atproto-accept-labelers header format
+  /// Format: "did1,did2,did3" (comma-separated list)
+  String _formatLabelerHeader(List<String> labelerDids) {
+    return labelerDids.join(',');
+  }
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger('FeedRepository');
 
   bool _postViewHasMedia(PostView post) => post.hasSupportedMedia;
@@ -86,11 +92,11 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<FeedView> getFeed(Feed feed, {int limit = 20, String? cursor}) async {
+  Future<FeedView> getFeed(Feed feed, {int limit = 20, String? cursor, List<String>? labelerDids}) async {
     _logger.d('Getting feed skeleton for feed: $feed, limit: $limit, cursor: $cursor');
     if (feed.view == null) {
       if (feed.type == 'timeline') {
-        return getTimeline(limit: limit, cursor: cursor);
+        return getTimeline(limit: limit, cursor: cursor, labelerDids: labelerDids);
       }
       // For custom feeds, fetch the feed generator view first
       final feedUri = AtUri(feed.config.value);
@@ -98,13 +104,13 @@ class FeedRepositoryImpl implements FeedRepository {
       // Update the feed with the view and continue
       final feedWithView = Feed(type: feed.type, config: feed.config, view: view);
       return _client.executeWithRetry(() async {
-        final result = await getFeedView(feedWithView.view!.uri, limit: limit, cursor: cursor);
+        final result = await getFeedView(feedWithView.view!.uri, limit: limit, cursor: cursor, labelerDids: labelerDids);
         _logger.d('Feed skeleton retrieved successfully');
         return result;
       });
     }
     return _client.executeWithRetry(() async {
-      final result = await getFeedView(feed.view!.uri, limit: limit, cursor: cursor);
+      final result = await getFeedView(feed.view!.uri, limit: limit, cursor: cursor, labelerDids: labelerDids);
       _logger.d('Feed skeleton retrieved successfully');
       return result;
     });
@@ -144,10 +150,13 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
+      final headers = <String, String>{'atproto-proxy': _client.sprkDid};
+      // Note: labeler header could be added here if needed for getPosts
+
       final result = await atproto.get(
         NSID.parse('so.sprk.feed.getPosts'),
         parameters: {'uris': uris},
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: headers,
         to: (jsonMap) {
           final posts = jsonMap['posts']! as List<dynamic>;
           _logger.d('Raw API response for first post: ${posts.isNotEmpty ? posts[0] : "empty"}');
@@ -303,6 +312,7 @@ class FeedRepositoryImpl implements FeedRepository {
   Future<FeedView> getTimeline({
     int limit = 20,
     String? cursor,
+    List<String>? labelerDids,
   }) async {
     _logger.d('Getting timeline feed, limit: $limit, cursor: $cursor');
     return _client.executeWithRetry(() async {
@@ -322,10 +332,15 @@ class FeedRepositoryImpl implements FeedRepository {
         parameters['cursor'] = cursor;
       }
 
+      final headers = <String, String>{'atproto-proxy': _client.sprkDid};
+      if (labelerDids != null && labelerDids.isNotEmpty) {
+        headers['atproto-accept-labelers'] = _formatLabelerHeader(labelerDids);
+      }
+
       final result = await atproto.get(
         NSID.parse('so.sprk.feed.getTimeline'),
         parameters: parameters,
-        headers: {'atproto-proxy': _client.sprkDid},
+        headers: headers,
         to: (jsonMap) {
           if (!jsonMap.containsKey('feed')) {
             return const FeedView(feed: []);
@@ -376,6 +391,7 @@ class FeedRepositoryImpl implements FeedRepository {
     AtUri feedUri, {
     int limit = 20,
     String? cursor,
+    List<String>? labelerDids,
   }) async {
     _logger.d('Getting feed for URI: $feedUri, limit: $limit, cursor: $cursor');
     return _client.executeWithRetry(() async {
@@ -400,10 +416,15 @@ class FeedRepositoryImpl implements FeedRepository {
         parameters['cursor'] = cursor;
       }
 
+      final headers = <String, String>{'atproto-proxy': isBskyFeed ? _client.bskyDid : _client.sprkDid};
+      if (!isBskyFeed && labelerDids != null && labelerDids.isNotEmpty) {
+        headers['atproto-accept-labelers'] = _formatLabelerHeader(labelerDids);
+      }
+
       final result = await atproto.get(
         isBskyFeed ? NSID.parse('app.bsky.feed.getFeed') : NSID.parse('so.sprk.feed.getFeed'),
         parameters: parameters,
-        headers: {'atproto-proxy': isBskyFeed ? _client.bskyDid : _client.sprkDid},
+        headers: headers,
         to: (jsonMap) {
           if (!jsonMap.containsKey('feed')) {
             return const FeedView(feed: []);
@@ -1215,13 +1236,15 @@ class FeedRepositoryImpl implements FeedRepository {
 
       final labels = <Label>[];
 
-      final labelers = sources?.isNotEmpty ?? true ? sources! : ['did:plc:pbgyr67hftvpoqtvaurpsctc'];
+      // Use modDid from repository as fallback if no sources provided
+      final defaultLabelerDid = _client.modDid.split('#').first;
+      final labelers = sources?.isNotEmpty ?? true ? sources! : [defaultLabelerDid];
 
       final parameters = {'uriPatterns': uris, 'sources': labelers, 'limit': limit, 'cursor': cursor};
 
       final response = await atproto.get(
         NSID.parse('com.atproto.label.queryLabels'),
-        headers: {'atproto-proxy': 'did:plc:pbgyr67hftvpoqtvaurpsctc#atproto_labeler'},
+        headers: {'atproto-proxy': _client.modDid},
         parameters: parameters,
         to: (jsonMap) => jsonMap,
         adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
@@ -1235,8 +1258,8 @@ class FeedRepositoryImpl implements FeedRepository {
           ..remove('sig') // i am NOT going to convert that sig string into a UInt8List i am going to PASS OUT and DIE
           ..putIfAbsent(
             'src',
-            () => 'did:plc:pbgyr67hftvpoqtvaurpsctc',
-          ); // fix this when there's multiple labelers support. for now idgaf. src is null for some reason in the response
+            () => defaultLabelerDid,
+          ); // Use default labeler DID if src is missing from response
         labels.add(Label.fromJson(cleanLabel));
       }
 

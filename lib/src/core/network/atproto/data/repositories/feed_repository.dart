@@ -10,7 +10,8 @@ abstract class FeedRepository {
   ///
   /// [feed] The feed to get the skeleton for
   /// [limit] The number of items to return
-  Future<FeedView> getFeed(Feed feed, {int limit = 20, String? cursor});
+  /// [labelerDids] Optional list of labeler DIDs to include in the atproto-accept-labelers header
+  Future<FeedView> getFeed(Feed feed, {int limit = 20, String? cursor, List<String>? labelerDids});
 
   /// Get posts by URIs (hydrates a skeleton)
   ///
@@ -37,9 +38,11 @@ abstract class FeedRepository {
   /// Returns fully hydrated post views in a FeedView structure.
   /// [limit] The number of items to return (default 20)
   /// [cursor] Pagination cursor for the next set of results
+  /// [labelerDids] Optional list of labeler DIDs to include in the atproto-accept-labelers header
   Future<FeedView> getTimeline({
     int limit = 20,
     String? cursor,
+    List<String>? labelerDids,
   });
 
   /// Get feed by URI
@@ -48,10 +51,12 @@ abstract class FeedRepository {
   /// [feedUri] The URI of the feed to get
   /// [limit] The number of items to return (default 20)
   /// [cursor] Pagination cursor for the next set of results
+  /// [labelerDids] Optional list of labeler DIDs to include in the atproto-accept-labelers header
   Future<FeedView> getFeedView(
     AtUri feedUri, {
     int limit = 20,
     String? cursor,
+    List<String>? labelerDids,
   });
 
   Future<GeneratorView> getFeedGenerator(AtUri feed);
