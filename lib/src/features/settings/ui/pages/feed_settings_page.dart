@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:sparksocial/src/features/settings/ui/pages/feed_list_page.dart';
-import 'package:sparksocial/src/features/settings/ui/pages/label_settings_page.dart';
+import 'package:sparksocial/src/features/settings/ui/pages/labeler_management_page.dart';
 
 @RoutePage()
 class FeedSettingsPage extends ConsumerStatefulWidget {
@@ -39,7 +39,7 @@ class _FeedSettingsPageState extends ConsumerState<FeedSettingsPage> with Single
           controller: _tabController,
           tabs: const [
             Tab(text: 'Your Feeds'),
-            Tab(text: 'Content Labels'),
+            Tab(text: 'Labelers'),
           ],
         ),
       ),
@@ -47,7 +47,7 @@ class _FeedSettingsPageState extends ConsumerState<FeedSettingsPage> with Single
         controller: _tabController,
         children: const [
           FeedListPage(),
-          LabelSettingsPage(),
+          LabelerManagementPage(),
         ],
       ),
     );

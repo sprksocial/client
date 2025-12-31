@@ -5,7 +5,9 @@ class DefaultPreferences {
   DefaultPreferences._();
 
   /// Get default preferences including default feeds and label preferences
-  static Preferences get defaultPreferences {
+  /// [modServiceDid] The DID of the mod service labeler (required)
+  static Preferences defaultPreferences({required String modServiceDid}) {
+    final labelerDid = modServiceDid;
     // Default feeds: timeline, forYou, latest
     final defaultFeeds = [
       SavedFeed(
@@ -27,51 +29,51 @@ class DefaultPreferences {
 
     // Default label preferences
     final defaultLabelPrefs = [
-      const Preference.contentLabelPref(
-        labelerDid: 'did:plc:pbgyr67hftvpoqtvaurpsctc', // mod.sprk.team
+      Preference.contentLabelPref(
+        labelerDid: labelerDid,
         label: '!hide',
         visibility: 'hide',
       ),
-      const Preference.contentLabelPref(
-        labelerDid: 'did:plc:pbgyr67hftvpoqtvaurpsctc',
+      Preference.contentLabelPref(
+        labelerDid: labelerDid,
         label: '!no-promote',
         visibility: 'hide',
       ),
-      const Preference.contentLabelPref(
-        labelerDid: 'did:plc:pbgyr67hftvpoqtvaurpsctc',
+      Preference.contentLabelPref(
+        labelerDid: labelerDid,
         label: '!warn',
         visibility: 'warn',
       ),
-      const Preference.contentLabelPref(
-        labelerDid: 'did:plc:pbgyr67hftvpoqtvaurpsctc',
+      Preference.contentLabelPref(
+        labelerDid: labelerDid,
         label: '!no-unauthenticated',
         visibility: 'ignore',
       ),
-      const Preference.contentLabelPref(
-        labelerDid: 'did:plc:pbgyr67hftvpoqtvaurpsctc',
+      Preference.contentLabelPref(
+        labelerDid: labelerDid,
         label: 'dmca-violation',
         visibility: 'hide',
       ),
-      const Preference.contentLabelPref(
-        labelerDid: 'did:plc:pbgyr67hftvpoqtvaurpsctc',
+      Preference.contentLabelPref(
+        labelerDid: labelerDid,
         label: 'doxxing',
         visibility: 'warn',
       ),
-      const Preference.contentLabelPref(
-        labelerDid: 'did:plc:pbgyr67hftvpoqtvaurpsctc',
+      Preference.contentLabelPref(
+        labelerDid: labelerDid,
         label: 'nsfl',
         visibility: 'warn',
       ),
-      const Preference.contentLabelPref(
-        labelerDid: 'did:plc:pbgyr67hftvpoqtvaurpsctc',
+      Preference.contentLabelPref(
+        labelerDid: labelerDid,
         label: 'gore',
         visibility: 'warn',
       ),
     ];
 
-    // Default labelers (mod.sprk.team)
+    // Default labelers
     final defaultLabelers = [
-      const LabelerPrefItem(did: 'did:plc:pbgyr67hftvpoqtvaurpsctc'),
+      LabelerPrefItem(did: labelerDid),
     ];
 
     return Preferences(
