@@ -34,7 +34,12 @@ class _FeedSettingsPageState extends ConsumerState<FeedSettingsPage> with Single
 
   @override
   void dispose() {
-    _visibilityNotifier?.setVisible(false);
+    // Mark feed settings as not visible when page closes
+    // Use Future to delay the modification until after dispose completes
+    final notifier = _visibilityNotifier;
+    Future(() {
+      notifier?.setVisible(false);
+    });
     _tabController.dispose();
     super.dispose();
   }

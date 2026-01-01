@@ -51,6 +51,7 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
       },
       action: IconButton(
         icon: AppIcons.hashtag(),
+        padding: const EdgeInsets.all(5),
         onPressed: () => context.router.navigate(const FeedSettingsRoute()),
       ),
     );
