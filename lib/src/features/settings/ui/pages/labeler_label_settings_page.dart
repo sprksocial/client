@@ -6,6 +6,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
@@ -270,12 +271,6 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
             severity: newSeverity,
           );
         });
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Preference saved')),
-          );
-        }
       }
     } catch (e) {
       _logger.e('Error updating label preference: $e');
@@ -296,8 +291,15 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
       return Scaffold(
         backgroundColor: colorScheme.surface,
         appBar: AppBar(
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          backgroundColor: colorScheme.surface,
+          foregroundColor: colorScheme.onSurface,
+          iconTheme: IconThemeData(color: colorScheme.onSurface),
+          titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(color: colorScheme.onSurface),
           title: const Text('Labeler Settings'),
           centerTitle: true,
+          leading: const AppLeadingButton(),
         ),
         body: const Center(child: CircularProgressIndicator()),
       );
@@ -307,8 +309,15 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
       return Scaffold(
         backgroundColor: colorScheme.surface,
         appBar: AppBar(
+          elevation: 0,
+          scrolledUnderElevation: 0,
+          backgroundColor: colorScheme.surface,
+          foregroundColor: colorScheme.onSurface,
+          iconTheme: IconThemeData(color: colorScheme.onSurface),
+          titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(color: colorScheme.onSurface),
           title: const Text('Labeler Settings'),
           centerTitle: true,
+          leading: const AppLeadingButton(),
         ),
         body: Center(
           child: Padding(
@@ -347,8 +356,15 @@ class _LabelerLabelSettingsPageState extends ConsumerState<LabelerLabelSettingsP
     return Scaffold(
       backgroundColor: colorScheme.surface,
       appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        backgroundColor: colorScheme.surface,
+        foregroundColor: colorScheme.onSurface,
+        iconTheme: IconThemeData(color: colorScheme.onSurface),
+        titleTextStyle: theme.appBarTheme.titleTextStyle?.copyWith(color: colorScheme.onSurface),
         title: const Text('Labeler Settings'),
         centerTitle: true,
+        leading: const AppLeadingButton(),
       ),
       body: RefreshIndicator(
         onRefresh: _loadLabelerSettings,

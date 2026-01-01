@@ -25,7 +25,6 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage> w
   List<String> _labelerDids = [];
   Map<String, ProfileViewDetailed?> _labelerProfiles = {};
   bool _isLoading = true;
-  bool _isSyncing = false;
 
   @override
   bool get wantKeepAlive => true;
@@ -102,31 +101,6 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage> w
       setState(() {
         _labelerProfiles = profileMap;
       });
-    }
-  }
-
-  Future<void> _syncLabelers() async {
-    try {
-      setState(() => _isSyncing = true);
-      final settings = ref.read(settingsProvider.notifier);
-      await settings.syncLabelers();
-      await _loadLabelers();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Labelers synced successfully')),
-        );
-      }
-    } catch (e) {
-      _logger.e('Error syncing labelers: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to sync labelers: $e')),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isSyncing = false);
-      }
     }
   }
 
@@ -320,32 +294,14 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage> w
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: _addLabeler,
-                        icon: const Icon(Icons.add, size: 18),
-                        label: const Text('Add Labeler'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colorScheme.primary,
-                          foregroundColor: colorScheme.onPrimary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    IconButton(
-                      onPressed: _isSyncing ? null : _syncLabelers,
-                      icon: _isSyncing
-                          ? const SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            )
-                          : const Icon(Icons.refresh),
-                      tooltip: 'Sync Labelers',
-                    ),
-                  ],
+                child: ElevatedButton.icon(
+                  onPressed: _addLabeler,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Add Labeler'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorScheme.primary,
+                    foregroundColor: colorScheme.onPrimary,
+                  ),
                 ),
               ),
             ),
