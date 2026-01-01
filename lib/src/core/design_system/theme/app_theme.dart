@@ -13,13 +13,13 @@ class AppTheme {
       brightness: Brightness.light,
       colorScheme: AppColorScheme.light,
       scaffoldBackgroundColor: AppColors.greyWhite,
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 0,
-        backgroundColor: AppColors.greyWhite,
-        foregroundColor: AppColors.grey800,
-        iconTheme: IconThemeData(color: AppColors.grey800),
-        titleTextStyle: AppTypography.textLargeBold,
+        backgroundColor: AppColorScheme.light.surface,
+        foregroundColor: AppColorScheme.light.onSurface,
+        iconTheme: IconThemeData(color: AppColorScheme.light.onSurface),
+        titleTextStyle: AppTypography.textLargeBold.copyWith(color: AppColorScheme.light.onSurface),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
@@ -97,13 +97,13 @@ class AppTheme {
       splashColor: Colors.transparent,
       focusColor: Colors.transparent,
       scaffoldBackgroundColor: AppColors.greyBlack,
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 0,
-        backgroundColor: AppColors.greyBlack,
-        foregroundColor: AppColors.grey100,
-        iconTheme: IconThemeData(color: AppColors.grey100),
-        titleTextStyle: AppTypography.textLargeBold,
+        backgroundColor: AppColorScheme.dark.surface,
+        foregroundColor: AppColorScheme.dark.onSurface,
+        iconTheme: IconThemeData(color: AppColorScheme.dark.onSurface),
+        titleTextStyle: AppTypography.textLargeBold.copyWith(color: AppColorScheme.dark.onSurface),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(

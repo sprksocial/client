@@ -159,10 +159,16 @@ class AppRouter extends RootStackRouter {
   Route<T> feedSettingsBuilder<T>(BuildContext context, Widget child, AutoRoutePage<T> page) {
     return ModalBottomSheetRoute(
       settings: page,
-      builder: (context) => child,
+      builder: (context) => Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: child,
+      ),
       isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      clipBehavior: Clip.antiAlias,
     );
   }
 }
