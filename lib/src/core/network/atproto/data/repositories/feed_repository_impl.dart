@@ -34,6 +34,7 @@ class FeedRepositoryImpl implements FeedRepository {
   String _formatLabelerHeader(List<String> labelerDids) {
     return labelerDids.join(',');
   }
+
   final SparkLogger _logger = GetIt.instance<LogService>().getLogger('FeedRepository');
 
   bool _postViewHasMedia(PostView post) => post.hasSupportedMedia;
@@ -1000,20 +1001,26 @@ class FeedRepositoryImpl implements FeedRepository {
           throw Exception('Timed out waiting for video processing to finish');
         }
 
-        response = await http.get(
-          Uri.parse('${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.getJobStatus').replace(
-            queryParameters: {
-              'jobId': responseData['jobStatus']?['jobId'],
-            },
-          ),
-          headers: {'Authorization': 'Bearer $serviceToken', 'Content-Type': _getContentType(cleanVideoPath)},
-        );
-        if (response.statusCode != 200) {
-          throw Exception('Failed to check video upload status: ${response.statusCode} ${response.body}');
+        try {
+          response = await http.get(
+            Uri.parse('${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.getJobStatus').replace(
+              queryParameters: {
+                'jobId': responseData['jobStatus']?['jobId'],
+              },
+            ),
+            headers: {'Authorization': 'Bearer $serviceToken', 'Content-Type': _getContentType(cleanVideoPath)},
+          );
+          if (response.statusCode != 200) {
+            throw Exception('Failed to check video upload status: ${response.statusCode} ${response.body}');
+          }
+          responseData = jsonDecode(response.body);
+          _logger.d('Video upload status response: $responseData');
+          jobState = responseData['jobStatus']?['state'] as String?;
+        } catch (e) {
+          // Network or parsing error during polling - log and rethrow
+          _logger.e('Error polling video upload status on attempt $attempts/$maxAttempts', error: e);
+          rethrow;
         }
-        responseData = jsonDecode(response.body);
-        _logger.d('Video upload status response: $responseData');
-        jobState = responseData['jobStatus']?['state'] as String?;
       }
 
       if (responseData['jobStatus']?['state'] == 'JOB_STATE_FAILED') {

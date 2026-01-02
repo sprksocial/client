@@ -28,4 +28,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get searchPlaceholder => 'Search...';
+
+  @override
+  String get optionsPanelDelete => 'Delete';
+
+  @override
+  String get optionsPanelBlock => 'Block';
+
+  @override
+  String get optionsPanelUnblock => 'Unblock';
+
+  @override
+  String get optionsPanelReport => 'Report';
+
+  @override
+  String get optionsPanelReportProfile => 'Report Profile';
+
+  @override
+  String get optionsPanelClose => 'Close';
 }

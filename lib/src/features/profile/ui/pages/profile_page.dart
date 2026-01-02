@@ -19,6 +19,8 @@ import 'package:sparksocial/src/core/ui/widgets/report_dialog.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/core/utils/text_formatter.dart';
+import 'package:sparksocial/src/core/utils/blocking_utils.dart';
+import 'package:sparksocial/src/core/utils/error_messages.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/pages/user_list_page.dart';
@@ -184,6 +186,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           hasStories: profile.stories?.isNotEmpty ?? false,
           isCurrentUser: isCurrentUser,
           isFollowing: profile.viewer?.following != null,
+          isBlocking: isBlocking(profile.viewer),
           isEarlySupporter: state.isEarlySupporter,
           onAvatarTap: (profile.stories?.isNotEmpty ?? false) ? () => _openStoriesViewer(profile) : null,
           onFollowersTap: () => context.router.push(UserListRoute(did: widget.did, type: UserListType.followers)),
@@ -218,7 +221,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             } catch (e) {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                  SnackBar(
+                    content: Text(ErrorMessages.getOperationErrorMessage('follow', e)),
+                    backgroundColor: Colors.red,
+                  ),
                 );
               }
             }
@@ -241,7 +247,32 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             } catch (e) {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+                  SnackBar(
+                    content: Text(ErrorMessages.getOperationErrorMessage('unfollow', e)),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            }
+          },
+          onUnblockTap: () async {
+            try {
+              await notifier.toggleBlock();
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('User unblocked'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              }
+            } catch (e) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(ErrorMessages.getOperationErrorMessage('unblock', e)),
+                    backgroundColor: Colors.red,
+                  ),
                 );
               }
             }
@@ -288,13 +319,44 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                           } catch (e) {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error submitting report: $e')),
+                                SnackBar(
+                                  content: Text(ErrorMessages.getOperationErrorMessage('report', e)),
+                                ),
                               );
                             }
                           }
                         },
                       ),
                     ),
+                    onBlock: () async {
+                      try {
+                        final wasBlocked = isBlocking(profile.viewer);
+                        await notifier.toggleBlock();
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(wasBlocked ? 'User unblocked' : 'User blocked'),
+                              backgroundColor: Colors.green,
+                            ),
+                          );
+                        }
+                      } catch (e) {
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                ErrorMessages.getOperationErrorMessage(
+                                  isBlocking(profile.viewer) ? 'unblock' : 'block',
+                                  e,
+                                ),
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
+                      }
+                    },
+                    isBlocked: isBlocking(profile.viewer),
                     isProfile: true,
                   ),
                   child: Container(

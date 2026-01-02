@@ -13,6 +13,8 @@ class ProfileCard extends StatelessWidget {
     required this.isFollowing,
     required this.onFollow,
     required this.onUnfollow,
+    this.isBlocking = false,
+    this.onUnblock,
     this.showFollowButton = true,
     this.description,
     this.onTap,
@@ -28,6 +30,8 @@ class ProfileCard extends StatelessWidget {
     required VoidCallback onFollow,
     required VoidCallback onUnfollow,
     required String description,
+    bool isBlocking = false,
+    VoidCallback? onUnblock,
     bool showFollowButton = true,
     VoidCallback? onTap,
     Key? key,
@@ -38,6 +42,8 @@ class ProfileCard extends StatelessWidget {
          isFollowing: isFollowing,
          onFollow: onFollow,
          onUnfollow: onUnfollow,
+         isBlocking: isBlocking,
+         onUnblock: onUnblock,
          showFollowButton: showFollowButton,
          description: description,
          onTap: onTap,
@@ -48,8 +54,10 @@ class ProfileCard extends StatelessWidget {
   final String userName;
   final String userHandle;
   final bool isFollowing;
+  final bool isBlocking;
   final VoidCallback onFollow;
   final VoidCallback onUnfollow;
+  final VoidCallback? onUnblock;
   final bool showFollowButton;
   final String? description;
   final VoidCallback? onTap;
@@ -140,8 +148,10 @@ class ProfileCard extends StatelessWidget {
                   const SizedBox(width: 8),
                   FollowButton(
                     isFollowing: isFollowing,
+                    isBlocking: isBlocking,
                     onFollow: onFollow,
                     onUnfollow: onUnfollow,
+                    onUnblock: onUnblock,
                   ),
                 ],
               ],

@@ -26,6 +26,7 @@ class ProfilePageTemplate extends StatelessWidget {
     this.links,
     this.hasStories = false,
     this.isFollowing = false,
+    this.isBlocking = false,
     this.isEarlySupporter = false,
     this.onAvatarTap,
     this.onFollowersTap,
@@ -33,6 +34,7 @@ class ProfilePageTemplate extends StatelessWidget {
     this.onEditTap,
     this.onFollowTap,
     this.onUnfollowTap,
+    this.onUnblockTap,
     this.onShareTap,
     this.onEarlySupporterTap,
     this.onMentionTap,
@@ -58,6 +60,7 @@ class ProfilePageTemplate extends StatelessWidget {
   final bool hasStories;
   final bool isCurrentUser;
   final bool isFollowing;
+  final bool isBlocking;
   final bool isEarlySupporter;
   final VoidCallback? onAvatarTap;
   final VoidCallback? onFollowersTap;
@@ -65,6 +68,7 @@ class ProfilePageTemplate extends StatelessWidget {
   final VoidCallback? onEditTap;
   final VoidCallback? onFollowTap;
   final VoidCallback? onUnfollowTap;
+  final VoidCallback? onUnblockTap;
   final VoidCallback? onShareTap;
   final VoidCallback? onEarlySupporterTap;
   final Function(String username)? onMentionTap;
@@ -119,6 +123,7 @@ class ProfilePageTemplate extends StatelessWidget {
                     hasStories: hasStories,
                     isCurrentUser: isCurrentUser,
                     isFollowing: isFollowing,
+                    isBlocking: isBlocking,
                     isEarlySupporter: isEarlySupporter,
                     onAvatarTap: onAvatarTap,
                     onFollowersTap: onFollowersTap,
@@ -126,6 +131,7 @@ class ProfilePageTemplate extends StatelessWidget {
                     onEditTap: onEditTap,
                     onFollowTap: onFollowTap,
                     onUnfollowTap: onUnfollowTap,
+                    onUnblockTap: onUnblockTap,
                     onShareTap: onShareTap,
                     onEarlySupporterTap: onEarlySupporterTap,
                     onMentionTap: onMentionTap,
@@ -156,6 +162,7 @@ class _ProfileHeaderSection extends StatelessWidget {
     required this.isCurrentUser,
     required this.hasStories,
     required this.isFollowing,
+    required this.isBlocking,
     required this.isEarlySupporter,
     this.avatarUrl,
     this.description,
@@ -166,6 +173,7 @@ class _ProfileHeaderSection extends StatelessWidget {
     this.onEditTap,
     this.onFollowTap,
     this.onUnfollowTap,
+    this.onUnblockTap,
     this.onShareTap,
     this.onEarlySupporterTap,
     this.onMentionTap,
@@ -183,6 +191,7 @@ class _ProfileHeaderSection extends StatelessWidget {
   final bool hasStories;
   final bool isCurrentUser;
   final bool isFollowing;
+  final bool isBlocking;
   final bool isEarlySupporter;
   final VoidCallback? onAvatarTap;
   final VoidCallback? onFollowersTap;
@@ -190,6 +199,7 @@ class _ProfileHeaderSection extends StatelessWidget {
   final VoidCallback? onEditTap;
   final VoidCallback? onFollowTap;
   final VoidCallback? onUnfollowTap;
+  final VoidCallback? onUnblockTap;
   final VoidCallback? onShareTap;
   final VoidCallback? onEarlySupporterTap;
   final Function(String username)? onMentionTap;
@@ -300,9 +310,11 @@ class _ProfileHeaderSection extends StatelessWidget {
             child: ProfileActionButtons(
               isCurrentUser: isCurrentUser,
               isFollowing: isFollowing,
+              isBlocking: isBlocking,
               onEditTap: onEditTap,
               onFollowTap: onFollowTap,
               onUnfollowTap: onUnfollowTap,
+              onUnblockTap: onUnblockTap,
               onShareTap: onShareTap,
             ),
           ),
