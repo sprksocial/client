@@ -209,6 +209,14 @@ class Camera extends _$Camera {
         await currentState.controller!.dispose();
         _logger.i('Camera controller disposed successfully');
       }
+
+      state = AsyncValue.data(
+        currentState?.copyWith(
+              controller: null,
+              isInitialized: false,
+            ) ??
+            const CameraState(),
+      );
     } catch (e, stackTrace) {
       _logger.e('Error disposing camera', error: e, stackTrace: stackTrace);
     }
@@ -220,5 +228,9 @@ class Camera extends _$Camera {
       _logger.d('Clearing camera error');
       state = AsyncValue.data(currentState.copyWith(error: null));
     }
+  }
+
+  Future<void> disposeCamera() async {
+    await _disposeCamera();
   }
 }
