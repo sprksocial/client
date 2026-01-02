@@ -31,4 +31,27 @@ abstract class GraphRepository {
   /// [currentFollowUri] The current follow URI if following, null if not following
   /// Returns the follow URI if now following, null if unfollowed
   Future<String?> toggleFollow(String did, AtUri? currentFollowUri);
+
+  /// Get blocks for a DID
+  ///
+  /// [did] The DID to get blocks for
+  /// [cursor] Optional cursor for pagination
+  Future<BlocksResponse> getBlocks(String did, {String? cursor});
+
+  /// Block a user
+  ///
+  /// [did] The DID of the user to block
+  Future<BlockUserResponse> blockUser(String did);
+
+  /// Unblock a user
+  ///
+  /// [blockUri] The URI of the block record to delete
+  Future<void> unblockUser(AtUri blockUri);
+
+  /// Toggle block status for a user
+  ///
+  /// [did] The DID of the user to toggle block for
+  /// [currentBlockUri] The current block URI if blocking, null if not blocking
+  /// Returns the block URI if now blocking, null if unblocked
+  Future<String?> toggleBlock(String did, AtUri? currentBlockUri);
 }

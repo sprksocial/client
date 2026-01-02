@@ -80,6 +80,7 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: EditProfileRoute.page, path: '/profile-editor'),
 
     AutoRoute(page: ProfileSettingsRoute.page, path: '/profile-settings'),
+    AutoRoute(page: BlocksRoute.page, path: '/blocks'),
 
     // Messages/DMs routes
     AutoRoute(page: ChatRoute.page, path: '/chat/:conversationId'),

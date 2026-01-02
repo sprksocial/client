@@ -11,6 +11,9 @@ class FollowButton extends StatelessWidget {
     super.key,
     this.followText = 'Follow',
     this.unfollowText = 'Unfollow',
+    this.isBlocking = false,
+    this.onUnblock,
+    this.unblockText = 'Unblock',
     this.width,
   });
 
@@ -19,11 +22,43 @@ class FollowButton extends StatelessWidget {
   final VoidCallback onUnfollow;
   final String followText;
   final String unfollowText;
+  final bool isBlocking;
+  final VoidCallback? onUnblock;
+  final String unblockText;
   final double? width;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    if (isBlocking && onUnblock != null) {
+      return InteractivePressable(
+        onTap: onUnblock,
+        borderRadius: const BorderRadius.all(Radius.circular(8)),
+        child: Container(
+          width: width ?? 109.47,
+          height: 36,
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.red900 : AppColors.red50,
+            borderRadius: const BorderRadius.all(Radius.circular(8)),
+            border: Border.fromBorderSide(
+              BorderSide(
+                color: isDark ? AppColors.red800 : AppColors.red200,
+              ),
+            ),
+          ),
+          child: Align(
+            child: Text(
+              unblockText,
+              textAlign: TextAlign.center,
+              style: AppTypography.textSmallMedium.copyWith(
+                color: isDark ? AppColors.red400 : AppColors.red700,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
 
     return InteractivePressable(
       onTap: isFollowing ? onUnfollow : onFollow,
@@ -35,9 +70,9 @@ class FollowButton extends StatelessWidget {
             ? BoxDecoration(
                 color: isDark ? AppColors.darkGreyButton : AppColors.lightGreyButton,
                 borderRadius: const BorderRadius.all(Radius.circular(8)),
-                border: const Border.fromBorderSide(
+                border: Border.fromBorderSide(
                   BorderSide(
-                    color: Color.fromRGBO(255, 255, 255, 0.15),
+                    color: isDark ? AppColors.grey700.withValues(alpha: 0.3) : AppColors.grey100.withValues(alpha: 0.3),
                     width: 1.14667,
                   ),
                 ),
@@ -48,7 +83,6 @@ class FollowButton extends StatelessWidget {
               ),
         child: Align(
           child: Text(
-            // The text depends on the current state.
             isFollowing ? unfollowText : followText,
             textAlign: TextAlign.center,
             style: AppTypography.textSmallMedium,

@@ -116,72 +116,62 @@ class Settings extends _$Settings {
 
   /// Likes a feed generator
   Future<void> likeFeed(Feed feed) async {
-    try {
-      if (feed.view != null) {
-        final likeRef = await _feedRepository.likePost(feed.view!.cid, feed.view!.uri);
+    if (feed.view != null) {
+      final likeRef = await _feedRepository.likePost(feed.view!.cid, feed.view!.uri);
 
-        // Update the feed with the like information
-        final updatedFeed = Feed(
-          type: feed.type,
-          config: feed.config,
-          view: feed.view?.copyWith(
-            viewer: feed.view!.viewer?.copyWith(like: likeRef.uri) ?? GeneratorViewerState(like: likeRef.uri),
-          ),
-        );
+      // Update the feed with the like information
+      final updatedFeed = Feed(
+        type: feed.type,
+        config: feed.config,
+        view: feed.view?.copyWith(
+          viewer: feed.view!.viewer?.copyWith(like: likeRef.uri) ?? GeneratorViewerState(like: likeRef.uri),
+        ),
+      );
 
-        // Update feeds list
-        final updatedFeeds = state.feeds.map((f) => f.config.id == updatedFeed.config.id ? updatedFeed : f).toList();
+      // Update feeds list
+      final updatedFeeds = state.feeds.map((f) => f.config.id == updatedFeed.config.id ? updatedFeed : f).toList();
 
-        // Add to liked feeds if not already there
-        final likedFeeds = [...state.likedFeeds];
-        if (!likedFeeds.any((f) => f.config.id == updatedFeed.config.id)) {
-          likedFeeds.add(updatedFeed);
-        }
-
-        state = state.copyWith(
-          feeds: updatedFeeds,
-          likedFeeds: likedFeeds,
-        );
-
-        await _updateFeedsInPreferences(updatedFeeds);
+      // Add to liked feeds if not already there
+      final likedFeeds = [...state.likedFeeds];
+      if (!likedFeeds.any((f) => f.config.id == updatedFeed.config.id)) {
+        likedFeeds.add(updatedFeed);
       }
-    } catch (e) {
-      _logger.e('Error liking feed: $e');
-      rethrow;
+
+      state = state.copyWith(
+        feeds: updatedFeeds,
+        likedFeeds: likedFeeds,
+      );
+
+      await _updateFeedsInPreferences(updatedFeeds);
     }
   }
 
   /// Unlikes a feed generator
   Future<void> unlikeFeed(Feed feed) async {
-    try {
-      if (feed.view?.viewer?.like != null) {
-        await _feedRepository.unlikePost(feed.view!.viewer!.like!);
+    if (feed.view?.viewer?.like != null) {
+      await _feedRepository.unlikePost(feed.view!.viewer!.like!);
 
-        // Update the feed to remove like information
-        final updatedFeed = Feed(
-          type: feed.type,
-          config: feed.config,
-          view: feed.view?.copyWith(
-            viewer: feed.view!.viewer?.copyWith(like: null),
-          ),
-        );
+      // Update the feed to remove like information
+      final updatedFeed = Feed(
+        type: feed.type,
+        config: feed.config,
+        view: feed.view?.copyWith(
+          viewer: feed.view!.viewer?.copyWith(like: null),
+        ),
+      );
 
-        // Update feeds list
-        final updatedFeeds = state.feeds.map((f) => f.config.id == updatedFeed.config.id ? updatedFeed : f).toList();
+      // Update feeds list
+      final updatedFeeds = state.feeds.map((f) => f.config.id == updatedFeed.config.id ? updatedFeed : f).toList();
 
-        // Remove from liked feeds
-        final likedFeeds = state.likedFeeds.where((f) => f.config.id != updatedFeed.config.id).toList();
+      // Remove from liked feeds
+      final likedFeeds = state.likedFeeds.where((f) => f.config.id != updatedFeed.config.id).toList();
 
-        state = state.copyWith(
-          feeds: updatedFeeds,
-          likedFeeds: likedFeeds,
-        );
+      state = state.copyWith(
+        feeds: updatedFeeds,
+        likedFeeds: likedFeeds,
+      );
 
-        await _updateFeedsInPreferences(updatedFeeds);
-      }
-    } catch (e) {
-      _logger.e('Error unliking feed: $e');
-      rethrow;
+      await _updateFeedsInPreferences(updatedFeeds);
     }
   }
 
@@ -202,15 +192,10 @@ class Settings extends _$Settings {
 
   /// Updates preferences with new feeds list
   Future<void> _updateFeedsInPreferences(List<Feed> feeds) async {
-    try {
-      final preferences = await _prefRepository.getPreferences();
-      final updatedPreferences = preferences.preferences.where((pref) => !pref.isSavedFeedsPref(pref)).toList();
-      updatedPreferences.add(Preference.savedFeedsPref(items: feeds.map((feed) => feed.config).toList()));
-      await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
-    } catch (e) {
-      _logger.e('Error updating feeds in preferences: $e');
-      rethrow;
-    }
+    final preferences = await _prefRepository.getPreferences();
+    final updatedPreferences = preferences.preferences.where((pref) => !pref.isSavedFeedsPref(pref)).toList();
+    updatedPreferences.add(Preference.savedFeedsPref(items: feeds.map((feed) => feed.config).toList()));
+    await _prefRepository.putPreferences(Preferences(preferences: updatedPreferences));
   }
 
   /// Adds a feed to feeds list

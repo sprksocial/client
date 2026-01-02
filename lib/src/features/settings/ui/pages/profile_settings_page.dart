@@ -241,7 +241,7 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.1),
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ListTile(
@@ -251,6 +251,24 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
                 ),
                 trailing: const Icon(FluentIcons.database_24_regular),
                 onTap: _handleUpdateSparkPosts,
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ListTile(
+                title: const Text(
+                  'Blocked Users',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                trailing: const Icon(FluentIcons.prohibited_24_regular),
+                onTap: () => context.router.push(const BlocksRoute()),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
               ),
             ),
