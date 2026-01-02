@@ -16,6 +16,7 @@ export 'package:sparksocial/src/features/messages/ui/pages/new_chat_search_page.
 export 'package:sparksocial/src/features/posting/ui/pages/image_review_page.dart';
 export 'package:sparksocial/src/features/posting/ui/pages/recording_page.dart';
 export 'package:sparksocial/src/features/posting/ui/pages/video_review_page.dart';
+export 'package:sparksocial/src/features/profile/ui/pages/blocks_page.dart';
 export 'package:sparksocial/src/features/profile/ui/pages/edit_profile_page.dart';
 export 'package:sparksocial/src/features/profile/ui/pages/profile_page.dart';
 export 'package:sparksocial/src/features/profile/ui/pages/standalone_profile_feed_page.dart';

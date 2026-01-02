@@ -49,6 +49,8 @@ class SprkRepositoryImpl implements SprkRepository {
   }
 
   /// Execute API request with token expiration handling
+  /// This method performs a single retry after refreshing the token.
+  /// To prevent infinite loops, it does NOT call executeWithRetry recursively.
   @override
   Future<T> executeWithRetry<T>(Future<T> Function() apiCall) async {
     try {
@@ -65,9 +67,15 @@ class SprkRepositoryImpl implements SprkRepository {
           throw Exception('Failed to refresh expired token');
         }
 
-        _logger.i('Token refreshed successfully, retrying API call');
-        // Retry the call with the new token
-        return apiCall();
+        _logger.i('Token refreshed successfully, retrying API call once');
+        // Retry the call with the new token - do NOT wrap in executeWithRetry
+        // to prevent potential infinite loops
+        try {
+          return await apiCall();
+        } catch (retryError) {
+          _logger.e('API call failed after token refresh', error: retryError);
+          rethrow;
+        }
       }
 
       _logger.e('API call failed', error: e);

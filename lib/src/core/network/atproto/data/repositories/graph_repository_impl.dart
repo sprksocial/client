@@ -158,4 +158,112 @@ class GraphRepositoryImpl implements GraphRepository {
       }
     });
   }
+
+  @override
+  Future<BlocksResponse> getBlocks(String did, {String? cursor}) async {
+    _logger.d('Getting blocks for DID: $did with cursor: $cursor');
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+      try {
+        final params = <String, dynamic>{'actor': did};
+        if (cursor != null) {
+          params['cursor'] = cursor;
+        }
+        final result = await atproto.get(
+          NSID.parse('so.sprk.graph.getBlocks'),
+          parameters: params,
+          headers: {'atproto-proxy': _client.sprkDid},
+          to: (jsonMap) => jsonMap,
+          adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        );
+        _logger.d('Blocks retrieved successfully');
+        return BlocksResponse.fromJson(result.data as Map<String, dynamic>);
+      } on FormatException catch (fe) {
+        _logger.e('Error retrieving blocks for DID: $did', error: fe);
+        throw Exception('Failed to retrieve blocks for DID: $did');
+      }
+    });
+  }
+
+  @override
+  Future<BlockUserResponse> blockUser(String did) async {
+    _logger.d('Blocking user with DID: $did');
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final sessionDid = _client.authRepository.session?.did;
+      if (sessionDid == null) {
+        _logger.e('Session DID not available for authenticated user');
+        throw Exception('Session DID not available');
+      }
+
+      const collection = 'so.sprk.graph.block';
+
+      try {
+        _logger.d('Checking if already blocking user: $did');
+        final existingBlocks = await atproto.repo.listRecords(repo: sessionDid, collection: collection);
+
+        final isAlreadyBlocking = existingBlocks.data.records.any((record) => record.value['subject'] == did);
+
+        if (isAlreadyBlocking) {
+          _logger.w('Already blocking this user: $did');
+          throw Exception('Already blocking this user');
+        }
+
+        final blockRecord = {r'$type': collection, 'subject': did, 'createdAt': DateTime.now().toUtc().toIso8601String()};
+
+        final result = await _client.repo.createRecord(collection: collection, record: blockRecord, repo: sessionDid);
+
+        _logger.i('User blocked successfully with $collection: ${result.uri}');
+
+        return BlockUserResponse(uri: result.uri.toString(), cid: result.cid);
+      } catch (e) {
+        _logger.e('Error in blockUser', error: e);
+        rethrow;
+      }
+    });
+  }
+
+  @override
+  Future<void> unblockUser(AtUri blockUri) async {
+    _logger.d('Unblocking user with block URI: $blockUri');
+    await _client.repo.deleteRecord(uri: blockUri, skipBskyCrosspostCleanup: true);
+    _logger.i('User unblocked successfully');
+  }
+
+  @override
+  Future<String?> toggleBlock(String did, AtUri? currentBlockUri) async {
+    _logger.d('Toggling block for DID: $did, current URI: $currentBlockUri');
+    return _client.executeWithRetry(() async {
+      if (currentBlockUri != null) {
+        // User is blocking, so unblock
+        await unblockUser(currentBlockUri);
+        _logger.i('User unblocked via toggle');
+        return null;
+      } else {
+        // User is not blocking, so block
+        final response = await blockUser(did);
+        _logger.i('User blocked via toggle: ${response.uri}');
+        return response.uri;
+      }
+    });
+  }
 }

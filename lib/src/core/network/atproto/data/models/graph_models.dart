@@ -24,3 +24,17 @@ abstract class FollowUserResponse with _$FollowUserResponse {
 
   factory FollowUserResponse.fromJson(Map<String, dynamic> json) => _$FollowUserResponseFromJson(json);
 }
+
+@freezed
+abstract class BlocksResponse with _$BlocksResponse {
+  const factory BlocksResponse({required List<ProfileView> blocks, String? cursor}) = _BlocksResponse;
+
+  factory BlocksResponse.fromJson(Map<String, dynamic> json) => _$BlocksResponseFromJson(json);
+}
+
+@freezed
+abstract class BlockUserResponse with _$BlockUserResponse {
+  const factory BlockUserResponse({required String uri, required String cid}) = _BlockUserResponse;
+
+  factory BlockUserResponse.fromJson(Map<String, dynamic> json) => _$BlockUserResponseFromJson(json);
+}

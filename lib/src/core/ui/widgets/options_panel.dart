@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:sparksocial/src/core/l10n/app_localizations.dart';
 
 class OptionsPanel {
   static void show({
     required BuildContext context,
     required VoidCallback onReport,
     VoidCallback? onDelete,
+    VoidCallback? onBlock,
+    bool isBlocked = false,
     bool isProfile = false,
   }) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : Colors.black;
@@ -26,16 +30,28 @@ class OptionsPanel {
               if (onDelete != null)
                 ListTile(
                   leading: const Icon(Icons.delete_outline, color: Colors.red),
-                  title: const Text('Delete', style: TextStyle(color: Colors.red)),
+                  title: Text(l10n.optionsPanelDelete, style: const TextStyle(color: Colors.red)),
                   onTap: () {
                     Navigator.of(context).pop();
                     onDelete();
                   },
                 ),
+              if (onBlock != null)
+                ListTile(
+                  leading: const Icon(Icons.block, color: Colors.red),
+                  title: Text(
+                    isBlocked ? l10n.optionsPanelUnblock : l10n.optionsPanelBlock,
+                    style: const TextStyle(color: Colors.red),
+                  ),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    onBlock();
+                  },
+                ),
               ListTile(
                 leading: const Icon(Icons.report_outlined),
                 title: Text(
-                  isProfile ? 'Report Profile' : 'Report',
+                  isProfile ? l10n.optionsPanelReportProfile : l10n.optionsPanelReport,
                   style: TextStyle(color: textColor),
                 ),
                 onTap: () {
@@ -45,7 +61,7 @@ class OptionsPanel {
               ),
               ListTile(
                 leading: const Icon(Icons.close),
-                title: Text('Close', style: TextStyle(color: textColor)),
+                title: Text(l10n.optionsPanelClose, style: TextStyle(color: textColor)),
                 onTap: () {
                   Navigator.of(context).pop();
                 },

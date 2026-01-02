@@ -7,17 +7,21 @@ class ProfileActionButtons extends StatelessWidget {
     required this.isCurrentUser,
     super.key,
     this.isFollowing = false,
+    this.isBlocking = false,
     this.onEditTap,
     this.onFollowTap,
     this.onUnfollowTap,
+    this.onUnblockTap,
     this.onShareTap,
   });
 
   final bool isCurrentUser;
   final bool isFollowing;
+  final bool isBlocking;
   final VoidCallback? onEditTap;
   final VoidCallback? onFollowTap;
   final VoidCallback? onUnfollowTap;
+  final VoidCallback? onUnblockTap;
   final VoidCallback? onShareTap;
 
   @override
@@ -47,10 +51,12 @@ class ProfileActionButtons extends StatelessWidget {
         Expanded(
           child: FollowButton(
             isFollowing: isFollowing,
+            isBlocking: isBlocking,
             onFollow: onFollowTap ?? () {},
             onUnfollow: onUnfollowTap ?? () {},
+            onUnblock: onUnblockTap,
             unfollowText: 'Following',
-            width: double.infinity, // Stretch across available space like before
+            width: double.infinity,
           ),
         ),
         const SizedBox(width: 8),

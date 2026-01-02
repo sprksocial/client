@@ -156,27 +156,95 @@ class ProfileNotifier extends _$ProfileNotifier {
 
       // Then refresh the profile data in the background to ensure consistency
       // Use a small delay to allow backend to propagate changes
-      Future.delayed(const Duration(milliseconds: 500), () async {
-        try {
-          final refreshedProfile = await actorRepository.getProfile(profile.did);
-          final isEarlySupporter = await actorRepository.isEarlySupporter(profile.did);
+      // Note: This is intentionally unawaited - we use optimistic updates above
+      // and refresh in the background. If this fails, the optimistic state remains.
+      unawaited(
+        Future.delayed(const Duration(milliseconds: 500)).then((_) async {
+          try {
+            final refreshedProfile = await actorRepository.getProfile(profile.did);
+            final isEarlySupporter = await actorRepository.isEarlySupporter(profile.did);
 
-          // Only update if the state hasn't changed (user hasn't navigated away)
-          final currentState = state.asData?.value;
-          if (currentState?.profile?.did == profile.did) {
-            state = AsyncData(currentState!.copyWith(profile: refreshedProfile, isEarlySupporter: isEarlySupporter));
+            // Only update if the state hasn't changed (user hasn't navigated away)
+            final currentState = state.asData?.value;
+            if (currentState?.profile?.did == profile.did) {
+              state = AsyncData(currentState!.copyWith(profile: refreshedProfile, isEarlySupporter: isEarlySupporter));
+            }
+          } catch (e) {
+            logger.w('Background profile refresh failed: $e');
+            // Keep the optimistic state if refresh fails
           }
-        } catch (e) {
-          logger.w('Background profile refresh failed: $e');
-          // Keep the optimistic state if refresh fails
-        }
-      });
+        }),
+      );
 
       return newFollowUriResult;
     } catch (e, s) {
       logger.e('Error toggling follow for ${profile.did}', error: e, stackTrace: s);
       state = AsyncData(originalStateValue);
       throw Exception('Failed to toggle follow: $e');
+    }
+  }
+
+  Future<String?> toggleBlock() async {
+    final currentData = state.asData!.value;
+    final profile = currentData.profile;
+
+    if (profile == null) {
+      logger.w('Cannot toggle block, profile not loaded.');
+      throw Exception('Profile not loaded, cannot toggle block.');
+    }
+    if (!authRepository.isAuthenticated) {
+      logger.i('User not authenticated, showing auth prompt for block action.');
+      state = AsyncData(currentData.copyWith(showAuthPrompt: true));
+      return null;
+    }
+
+    logger.d('Toggling block for profile: ${profile.did}, current block URI: ${profile.viewer?.blocking ?? 'none'}');
+    final originalStateValue = currentData;
+
+    try {
+      final newBlockUriResult = await sprkRepository.graph.toggleBlock(profile.did, profile.viewer?.blocking);
+
+      if (newBlockUriResult != null) {
+        logger.i('Successfully blocked ${profile.did}. New block URI: $newBlockUriResult');
+      } else {
+        logger.i('Successfully unblocked ${profile.did}.');
+      }
+
+      // Update state optimistically first
+      final optimisticViewer =
+          profile.viewer?.copyWith(blocking: newBlockUriResult != null ? AtUri.parse(newBlockUriResult) : null) ??
+          ActorViewer(blocking: newBlockUriResult != null ? AtUri.parse(newBlockUriResult) : null);
+
+      final optimisticProfile = profile.copyWith(viewer: optimisticViewer);
+      state = AsyncData(originalStateValue.copyWith(profile: optimisticProfile));
+
+      // Then refresh the profile data in the background to ensure consistency
+      // Use a small delay to allow backend to propagate changes
+      // Note: This is intentionally unawaited - we use optimistic updates above
+      // and refresh in the background. If this fails, the optimistic state remains.
+      unawaited(
+        Future.delayed(const Duration(milliseconds: 500)).then((_) async {
+          try {
+            final refreshedProfile = await actorRepository.getProfile(profile.did);
+            final isEarlySupporter = await actorRepository.isEarlySupporter(profile.did);
+
+            // Only update if the state hasn't changed (user hasn't navigated away)
+            final currentState = state.asData?.value;
+            if (currentState?.profile?.did == profile.did) {
+              state = AsyncData(currentState!.copyWith(profile: refreshedProfile, isEarlySupporter: isEarlySupporter));
+            }
+          } catch (e) {
+            logger.w('Background profile refresh failed: $e');
+            // Keep the optimistic state if refresh fails
+          }
+        }),
+      );
+
+      return newBlockUriResult;
+    } catch (e, s) {
+      logger.e('Error toggling block for ${profile.did}', error: e, stackTrace: s);
+      state = AsyncData(originalStateValue);
+      throw Exception('Failed to toggle block: $e');
     }
   }
 
