@@ -16,11 +16,11 @@ import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.da
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/ui/widgets/options_panel.dart';
 import 'package:sparksocial/src/core/ui/widgets/report_dialog.dart';
+import 'package:sparksocial/src/core/utils/blocking_utils.dart';
+import 'package:sparksocial/src/core/utils/error_messages.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/core/utils/text_formatter.dart';
-import 'package:sparksocial/src/core/utils/blocking_utils.dart';
-import 'package:sparksocial/src/core/utils/error_messages.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/pages/user_list_page.dart';
