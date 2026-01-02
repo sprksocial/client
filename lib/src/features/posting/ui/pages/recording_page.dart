@@ -104,6 +104,11 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
     try {
       _logger.d('Processing recorded video: ${videoFile.path}');
 
+      final cameraNotifier = ref.read(cameraProvider.notifier);
+      await cameraNotifier.disposeCamera();
+
+      if (!mounted) return;
+
       final editorVideo = EditorVideo.file(File(videoFile.path));
       final result = await GetIt.I<ProVideoEditorRepository>().openVideoEditor(
         context,
@@ -117,6 +122,7 @@ class _RecordingPageState extends ConsumerState<RecordingPage> {
           _isProcessing = false;
         });
         _logger.d('User cancelled video editing');
+        await cameraNotifier.reinitializeCamera();
         return;
       }
 
