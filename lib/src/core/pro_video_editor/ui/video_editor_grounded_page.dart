@@ -213,12 +213,20 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     ]);
     if (!mounted) return;
 
+    // Adjust resolution based on rotation metadata
+    final rotation = _videoMetadata.rotation;
+    final convertedRotation = rotation % 360;
+    final is90DegRotated = convertedRotation == 90 || convertedRotation == 270;
+    final adjustedResolution = is90DegRotated
+        ? Size(_videoMetadata.resolution.height, _videoMetadata.resolution.width)
+        : _videoMetadata.resolution;
+
     _proVideoController = ProVideoController(
       videoPlayer: VideoPlayerWidget(
         controller: _videoController,
         isLoadingListenable: _updateClipsNotifier,
       ),
-      initialResolution: _videoMetadata.resolution,
+      initialResolution: adjustedResolution,
       videoDuration: _videoMetadata.duration,
       fileSize: _videoMetadata.fileSize,
       thumbnails: _thumbnails,
