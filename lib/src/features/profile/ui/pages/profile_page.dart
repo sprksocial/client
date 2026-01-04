@@ -289,7 +289,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 child: IconButton(
                   padding: EdgeInsets.zero,
                   onPressed: () => context.router.push(const ProfileSettingsRoute()),
-                  icon: Icon(FluentIcons.options_24_regular, color: colorScheme.onSurface),
+                  icon: AppIcons.gear(color: colorScheme.onSurface),
                 ),
               )
             else
