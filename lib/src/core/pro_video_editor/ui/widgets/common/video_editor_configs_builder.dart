@@ -36,6 +36,7 @@ class VideoEditorConfigsBuilder {
     required VoidCallback onToggleMute,
     required VoidCallback onAddSound,
     required VoidCallback onToggleFullscreen,
+    Future<bool> Function()? onBeforeExport,
     List<AudioTrack> audioTracks = const [],
     VideoEditorConfigs videoEditorConfigs = const VideoEditorConfigs(
       initialMuted: true,
@@ -111,7 +112,18 @@ class VideoEditorConfigsBuilder {
                   bottom: false,
                   child: VideoEditorHeader(
                     onBack: editor.closeEditor,
-                    onNext: editor.doneEditing,
+                    onNext: () {
+                      // Check if export is allowed before proceeding
+                      if (onBeforeExport != null) {
+                        onBeforeExport().then((canExport) {
+                          if (canExport) {
+                            editor.doneEditing();
+                          }
+                        });
+                      } else {
+                        editor.doneEditing();
+                      }
+                    },
                   ),
                 ),
               ),
