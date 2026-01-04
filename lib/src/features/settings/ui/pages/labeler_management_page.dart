@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -371,8 +372,7 @@ class _LabelerManagementPageState extends ConsumerState<LabelerManagementPage> w
                                 IconButton(
                                   padding: EdgeInsets.zero,
                                   constraints: const BoxConstraints(),
-                                  icon: const Icon(Icons.settings_outlined),
-                                  color: colorScheme.onSurface,
+                                  icon: AppIcons.gear(color: colorScheme.onSurface),
                                   onPressed: () {
                                     context.router.push(LabelerLabelSettingsRoute(did: did));
                                   },

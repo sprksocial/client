@@ -404,4 +404,11 @@ class AppIcons {
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
     package: 'assets',
   );
+  static Widget gear({double size = 24, Color? color}) => SvgPicture.asset(
+    '$_path/gear.svg',
+    width: size,
+    height: size,
+    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
+    package: 'assets',
+  );
 }
