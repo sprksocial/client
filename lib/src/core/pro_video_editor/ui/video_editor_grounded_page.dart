@@ -194,7 +194,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       onToggleMute: _onToggleMute,
       onAddSound: _showAudioSelectionBottomSheet,
       onToggleFullscreen: _openFullscreenPreview,
-      onBeforeExport: _checkCanExport,
     );
 
     // Update clip duration and thumbnails after first frame
@@ -472,37 +471,6 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     if (selectedTrack != null) {
       setState(() {});
     }
-  }
-
-  /// Checks if the video can be exported.
-  /// Returns true if export is allowed, false otherwise.
-  Future<bool> _checkCanExport() async {
-    final videoPath = _video.file?.path;
-    final isUnsupportedFormat =
-        videoPath != null && videoPath.toLowerCase().endsWith('.mov') && videoPath.contains('image_picker');
-
-    if (isUnsupportedFormat) {
-      if (mounted) {
-        await showDialog<void>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Export Not Supported'),
-            content: const Text(
-              'This video format cannot be exported due to compatibility issues. '
-              'Please try recording or selecting a different video.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
-      }
-      return false;
-    }
-    return true;
   }
 
   /// Generates the final video based on the given [parameters].
