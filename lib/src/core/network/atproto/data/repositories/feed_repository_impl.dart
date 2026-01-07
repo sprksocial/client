@@ -734,6 +734,35 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
+  Future<RepoStrongRef> repostPost(String postCid, AtUri postUri) async {
+    _logger.d('Reposting post with CID: $postCid, URI: $postUri');
+
+    // Determine if this is a Bluesky post or Spark post
+    final isBskyPost = postUri.collection.toString().startsWith('app.bsky.feed.post');
+    final repostType = isBskyPost ? 'app.bsky.feed.repost' : 'so.sprk.feed.repost';
+
+    _logger.d('Post type: ${isBskyPost ? 'Bluesky' : 'Spark'}, using collection: $repostType');
+
+    final repostRecord = {
+      r'$type': repostType,
+      'subject': {'cid': postCid, 'uri': postUri.toString()},
+      'createdAt': DateTime.now().toUtc().toIso8601String(),
+    };
+
+    final result = await _client.repo.createRecord(collection: repostType, record: repostRecord);
+    _logger.i('Post reposted successfully: ${result.uri}');
+
+    return result;
+  }
+
+  @override
+  Future<void> unrepostPost(AtUri repostUri) async {
+    _logger.d('Unreposting post with repost URI: $repostUri');
+    await _client.repo.deleteRecord(uri: repostUri, skipBskyCrosspostCleanup: true);
+    _logger.i('Post unreposted successfully');
+  }
+
+  @override
   Future<RepoStrongRef> postComment(
     String text,
     String parentCid,

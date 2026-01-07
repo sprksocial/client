@@ -327,6 +327,20 @@ class AppIcons {
     colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
     package: 'assets',
   );
+  static Widget repost({double size = 24, Color? color}) => SvgPicture.asset(
+    '$_path/repost.svg',
+    width: size,
+    height: size,
+    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
+    package: 'assets',
+  );
+  static Widget repostLarge({double size = 24, Color? color}) => SvgPicture.asset(
+    '$_path/repost_large.svg',
+    width: size,
+    height: size,
+    colorFilter: color != null ? ColorFilter.mode(color, BlendMode.srcIn) : null,
+    package: 'assets',
+  );
   static Widget search({double size = 24, Color? color}) => SvgPicture.asset(
     '$_path/search.svg',
     width: size,
