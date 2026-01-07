@@ -5,7 +5,7 @@ alwaysApply: false
 ---
 # Spark Social - Project Overview
 
-This is a Flutter application for a social media platform inspired by TikTok, integrated with the Bluesky/AT Protocol.
+This is a Flutter application for a social media platform inspired by TikTok, integrated with the AT Protocol.
 
 ## Main Entry Points
 - [lib/main.dart](mdc:lib/main.dart) - Main application entry point
