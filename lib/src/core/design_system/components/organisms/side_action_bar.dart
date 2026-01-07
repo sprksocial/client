@@ -245,7 +245,7 @@ class _ActionItemState extends State<_ActionItem> with SingleTickerProviderState
       vsync: this,
     );
     _bounceAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.3), weight: 40),
+      TweenSequenceItem(tween: Tween(begin: 1, end: 1.3), weight: 40),
       TweenSequenceItem(tween: Tween(begin: 1.3, end: 0.9), weight: 30),
       TweenSequenceItem(tween: Tween(begin: 0.9, end: 1.05), weight: 30),
     ]).animate(CurvedAnimation(parent: _bounceController, curve: Curves.easeOut));
