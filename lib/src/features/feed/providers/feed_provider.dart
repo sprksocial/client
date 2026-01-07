@@ -402,6 +402,28 @@ class FeedNotifier extends _$FeedNotifier {
     state = state.copyWith(loadedPosts: updatedPosts);
   }
 
+  /// Removes a post at the specified index from the feed
+  /// and adjusts the current index if necessary.
+  void removePostAtIndex(int index) {
+    if (index < 0 || index >= state.length) return;
+
+    final postToRemove = state.loadedPosts[index];
+    final updatedPosts = [...state.loadedPosts]..removeAt(index);
+
+    // Clean up extraInfo for the removed post
+    final updatedExtraInfo = LinkedHashMap<AtUri, ({List<Label> postLabels})>.from(state.extraInfo)..remove(postToRemove.uri);
+
+    // Adjust current index: if we removed a post before current position,
+    // decrement index to stay on the same visual post
+    final newIndex = state.index > index ? state.index - 1 : state.index;
+
+    state = state.copyWith(
+      loadedPosts: updatedPosts,
+      extraInfo: updatedExtraInfo,
+      index: newIndex,
+    );
+  }
+
   /// Checks if a post should be hidden based on its labels and user preferences
   Future<bool> _shouldHidePost(AtUri uri, List<Label> postLabels) async {
     final settings = ref.read(settingsProvider.notifier);

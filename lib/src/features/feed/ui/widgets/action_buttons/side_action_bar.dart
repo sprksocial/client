@@ -2,11 +2,13 @@ import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/design_system/components/organisms/side_action_bar.dart';
 import 'package:sparksocial/src/core/network/atproto/atproto.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/ui/widgets/options_panel.dart';
 import 'package:sparksocial/src/core/ui/widgets/report_dialog.dart';
+import 'package:sparksocial/src/core/utils/blocking_utils.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 import 'package:sparksocial/src/features/feed/providers/repost_post.dart';
@@ -24,6 +26,7 @@ class SideActionBar extends ConsumerStatefulWidget {
     this.profileImageUrl,
     this.isImage = false,
     this.onProfilePressed,
+    this.onBlockAndAdvance,
   });
   final Feed? feed;
   final String likeCount;
@@ -34,6 +37,9 @@ class SideActionBar extends ConsumerStatefulWidget {
   final PostView post;
   final bool isImage;
   final VoidCallback? onProfilePressed;
+
+  /// Callback invoked after successfully blocking a user, typically to advance to the next post
+  final VoidCallback? onBlockAndAdvance;
 
   @override
   ConsumerState<SideActionBar> createState() => SideActionBarState();
@@ -287,6 +293,43 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     );
   }
 
+  Future<void> _handleBlock() async {
+    final currentPost = _currentPost ?? widget.post;
+    final author = currentPost.author;
+    final wasBlocked = isBlocking(author.viewer);
+
+    try {
+      final graphRepository = GetIt.instance<SprkRepository>().graph;
+      await graphRepository.toggleBlock(
+        author.did,
+        author.viewer?.blocking,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(wasBlocked ? 'User unblocked' : 'User blocked'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+
+      // If blocking (not unblocking) and callback is provided, advance to next post
+      if (!wasBlocked && widget.onBlockAndAdvance != null) {
+        widget.onBlockAndAdvance!();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to ${wasBlocked ? 'unblock' : 'block'} user: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   // Future<void> _handleCurate() async {
   //   // For now, this is a placeholder for curate functionality
   //   // In the future, this could add the post to a custom feed or collection
@@ -316,6 +359,8 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       onOptions: () => OptionsPanel.show(
         context: context,
         onReport: _handleReport,
+        onBlock: _handleBlock,
+        isBlocked: isBlocking(currentPost.author.viewer),
       ),
       likeCount: _likeCount.toString(),
       commentCount: commentCount.toString(),
