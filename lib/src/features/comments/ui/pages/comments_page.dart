@@ -48,17 +48,15 @@ class _CommentsPageState extends ConsumerState<CommentsPage> with SingleTickerPr
       builder: (context, child) {
         return Transform.translate(offset: Offset(0, height * (1 - _animation.value)), child: child);
       },
-      child: SafeArea(
-        child: Container(
-          height: height,
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
-          ),
-          child: const ClipRRect(
-            borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
-            child: AutoRouter(),
-          ),
+      child: Container(
+        height: height,
+        decoration: BoxDecoration(
+          color: backgroundColor,
+          borderRadius: const BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+        ),
+        child: const ClipRRect(
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(12), topRight: Radius.circular(12)),
+          child: SafeArea(child: AutoRouter()),
         ),
       ),
     );

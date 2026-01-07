@@ -268,7 +268,7 @@ class _ActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final notifier = ref.read(commentProvider(commentState.thread).notifier);
+    final notifier = ref.read(commentProvider(widget.thread).notifier);
     return Row(
       children: [
         TextButton(
@@ -276,6 +276,7 @@ class _ActionButtons extends StatelessWidget {
             padding: EdgeInsets.zero,
             minimumSize: Size.zero,
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            splashFactory: NoSplash.splashFactory,
           ),
           onPressed: notifier.toggleLike,
           child: Row(
