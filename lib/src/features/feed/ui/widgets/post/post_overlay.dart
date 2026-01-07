@@ -1,5 +1,6 @@
 import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:flutter/material.dart';
+import 'package:sparksocial/src/core/design_system/components/molecules/known_interactions_bar.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
@@ -65,22 +66,37 @@ class PostOverlay extends StatelessWidget {
                 children: [
                   // Info Bar (Left side)
                   Expanded(
-                    child: FutureBuilder<List<String>>(
-                      future: LabelUtils.getInformLabels(labels),
-                      builder: (context, snapshot) {
-                        final informLabels = snapshot.data ?? [];
-                        return InfoBar(
-                          username: post.author.handle,
-                          displayName: post.author.displayName ?? post.author.handle,
-                          avatarUrl: post.author.avatar?.toString(),
-                          description: post.displayText,
-                          hashtags: post.record.hashtags,
-                          informLabels: informLabels,
-                          isSprk: post.uri.toString().contains('so.sprk'),
-                          audio: post.sound,
-                          onUsernameTap: onUsernameTap,
-                        );
-                      },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Known Interactions (reposts/likes from followed users)
+                        if (post.viewer?.knownInteractions != null && post.viewer!.knownInteractions!.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: KnownInteractionsBar(
+                              interactions: post.viewer?.knownInteractions,
+                            ),
+                          ),
+                        // Author info and caption
+                        FutureBuilder<List<String>>(
+                          future: LabelUtils.getInformLabels(labels),
+                          builder: (context, snapshot) {
+                            final informLabels = snapshot.data ?? [];
+                            return InfoBar(
+                              username: post.author.handle,
+                              displayName: post.author.displayName ?? post.author.handle,
+                              avatarUrl: post.author.avatar?.toString(),
+                              description: post.displayText,
+                              hashtags: post.record.hashtags,
+                              informLabels: informLabels,
+                              isSprk: post.uri.toString().contains('so.sprk'),
+                              audio: post.sound,
+                              onUsernameTap: onUsernameTap,
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
 

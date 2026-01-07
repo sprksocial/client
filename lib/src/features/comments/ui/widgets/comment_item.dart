@@ -1,7 +1,7 @@
 import 'package:atproto/com_atproto_moderation_createreport.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
-import 'package:fluentui_system_icons/fluentui_system_icons.dart';
+import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
@@ -280,11 +280,9 @@ class _ActionButtons extends StatelessWidget {
           onPressed: notifier.toggleLike,
           child: Row(
             children: [
-              Icon(
-                (!commentState.isLiked) ? FluentIcons.heart_24_regular : FluentIcons.heart_24_filled,
-                size: 16,
-                color: commentState.isLiked ? AppColors.red : secondaryTextColor,
-              ),
+              commentState.isLiked
+                  ? AppIcons.likeFilled(size: 16, color: AppColors.pink)
+                  : AppIcons.like(size: 16, color: secondaryTextColor),
               const SizedBox(width: 4),
               Text(commentState.likeCount.toString(), style: TextStyle(fontSize: 12, color: secondaryTextColor)),
             ],

@@ -67,7 +67,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
   }
 
   Future<void> _handleDoubleTapLike(PostView postData) async {
-    final isCurrentlyLiked = postData.viewer?.like != null;
+    final isCurrentlyLiked = _overrideIsLiked ?? (postData.viewer?.like != null);
 
     if (isCurrentlyLiked) {
       return;
@@ -82,9 +82,10 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
       // Like the post using the same logic as SideActionBar
       final newLike = await ref.read(likePostProvider(postData.cid, postData.uri).future);
 
-      // Update the post's viewer field with the new like reference
+      // Update the post's viewer field with the new like reference and increment like count
       final updatedPost = postData.copyWith(
-        viewer: postData.viewer?.copyWith(like: newLike.uri) ?? Viewer(like: newLike.uri, repost: postData.viewer?.repost),
+        likeCount: (postData.likeCount ?? 0) + 1,
+        viewer: postData.viewer?.copyWith(like: newLike.uri) ?? ViewerState(like: newLike.uri, repost: postData.viewer?.repost),
       );
 
       ref.read(feedProvider(widget.feed).notifier).replacePost(updatedPost);
@@ -180,12 +181,12 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
             }
           });
 
-          // Get labels for the overlay
+          // Get labels for the overlay and use the latest post from feed state
           var labels = <Label>[];
-          final feedState = ref.read(feedProvider(widget.feed));
+          // Use the post from feed state as it has the latest updates (e.g., after like/repost)
+          final currentPost = (widget.index < feedState.loadedPosts.length) ? feedState.loadedPosts[widget.index] : postData;
           if (widget.index < feedState.loadedPosts.length) {
-            final post = feedState.loadedPosts[widget.index];
-            final extraInfo = feedState.extraInfo[post.uri];
+            final extraInfo = feedState.extraInfo[currentPost.uri];
             if (extraInfo != null) {
               labels = extraInfo.postLabels;
             }
@@ -250,9 +251,9 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                 // Overlay controls - no double-tap detection, so buttons respond immediately
                 Positioned.fill(
                   child: PostOverlay(
-                    post: postData,
+                    post: currentPost,
                     feed: widget.feed,
-                    isLiked: _overrideIsLiked ?? (postData.viewer?.like != null),
+                    isLiked: _overrideIsLiked ?? (currentPost.viewer?.like != null),
                     labels: labels,
                     onProfilePressed: () {
                       _videoPlayerKey.currentState?.pauseVideo();
@@ -261,8 +262,8 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                       _videoPlayerKey.currentState?.pauseVideo();
                       context.router.push(
                         ProfileRoute(
-                          did: postData.author.did,
-                          initialProfile: postData.author,
+                          did: currentPost.author.did,
+                          initialProfile: currentPost.author,
                         ),
                       );
                     },

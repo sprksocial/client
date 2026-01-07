@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/tokens/constants.dart';
+import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 
 /// Curate popover item data
 class CurateDestination {
@@ -16,15 +16,18 @@ class SparkSideActionBar extends StatefulWidget {
     super.key,
     this.onLike,
     this.onComment,
+    this.onRepost,
     this.onCurate,
     this.onShare,
     this.onSoundTap,
     this.onOptions,
     this.likeCount,
     this.commentCount,
+    this.repostCount,
     this.curateCount,
     this.shareCount,
     this.isLiked = false,
+    this.isReposted = false,
     this.isCurated = false,
     this.soundCover,
     this.curateDestinations = const <CurateDestination>[
@@ -36,6 +39,7 @@ class SparkSideActionBar extends StatefulWidget {
 
   final VoidCallback? onLike;
   final VoidCallback? onComment;
+  final VoidCallback? onRepost;
   final VoidCallback? onCurate; // called after a feed selection (or when opening?)
   final VoidCallback? onShare;
   final VoidCallback? onSoundTap;
@@ -43,10 +47,12 @@ class SparkSideActionBar extends StatefulWidget {
 
   final String? likeCount;
   final String? commentCount;
+  final String? repostCount;
   final String? curateCount;
   final String? shareCount;
 
   final bool isLiked;
+  final bool isReposted;
   final bool isCurated;
   final String? soundCover;
   final List<CurateDestination> curateDestinations;
@@ -152,6 +158,13 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
         label: widget.commentCount,
         onTap: widget.onComment,
       ),
+      const SizedBox(height: 13),
+      _ActionItem(
+        isActive: widget.isReposted,
+        icon: AppIcons.repostLarge(size: 32, color: widget.isReposted ? AppColors.green : null),
+        label: widget.repostCount,
+        onTap: widget.onRepost,
+      ),
     ];
 
     if (widget.onCurate != null) {
@@ -171,7 +184,6 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
       const SizedBox(height: 13),
       _ActionItem(
         icon: AppIcons.share(size: 32),
-        label: widget.shareCount,
         onTap: widget.onShare,
       ),
     ]);
@@ -203,7 +215,7 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
   }
 }
 
-class _ActionItem extends StatelessWidget {
+class _ActionItem extends StatefulWidget {
   const _ActionItem({
     required this.icon,
     this.label,
@@ -218,20 +230,61 @@ class _ActionItem extends StatelessWidget {
   final bool isActive;
 
   @override
+  State<_ActionItem> createState() => _ActionItemState();
+}
+
+class _ActionItemState extends State<_ActionItem> with SingleTickerProviderStateMixin {
+  late AnimationController _bounceController;
+  late Animation<double> _bounceAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _bounceController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _bounceAnimation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.3), weight: 40),
+      TweenSequenceItem(tween: Tween(begin: 1.3, end: 0.9), weight: 30),
+      TweenSequenceItem(tween: Tween(begin: 0.9, end: 1.05), weight: 30),
+    ]).animate(CurvedAnimation(parent: _bounceController, curve: Curves.easeOut));
+  }
+
+  @override
+  void didUpdateWidget(_ActionItem oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isActive != widget.isActive) {
+      _bounceController.forward(from: 0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _bounceController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: onTap,
+      onTap: widget.onTap,
       child: Column(
         children: [
-          AnimatedScale(
-            scale: isActive ? 1.05 : 1.0,
-            duration: AppConstants.animationFast,
-            child: SizedBox(width: 40, height: 40, child: Center(child: icon)),
+          AnimatedBuilder(
+            animation: _bounceAnimation,
+            builder: (context, child) {
+              return Transform.scale(
+                scale: _bounceController.isAnimating ? _bounceAnimation.value : (widget.isActive ? 1.05 : 1.0),
+                child: child,
+              );
+            },
+            child: SizedBox(width: 40, height: 40, child: Center(child: widget.icon)),
           ),
-          if (label != null && label!.isNotEmpty)
+          if (widget.label != null && widget.label!.isNotEmpty)
             Text(
-              label!,
+              widget.label!,
               style: const TextStyle(
                 fontSize: 12,
                 height: 1.1,

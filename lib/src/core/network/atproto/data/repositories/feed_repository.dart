@@ -86,6 +86,17 @@ abstract class FeedRepository {
   /// [likeUri] The URI of the like to delete
   Future<void> unlikePost(AtUri likeUri);
 
+  /// Repost a post
+  ///
+  /// [postCid] The CID of the post to repost
+  /// [postUri] The URI of the post to repost
+  Future<RepoStrongRef> repostPost(String postCid, AtUri postUri);
+
+  /// Unrepost a post (delete the repost)
+  ///
+  /// [repostUri] The URI of the repost to delete
+  Future<void> unrepostPost(AtUri repostUri);
+
   /// Delete a post by its URI
   ///
   /// [postUri] The URI of the post to delete

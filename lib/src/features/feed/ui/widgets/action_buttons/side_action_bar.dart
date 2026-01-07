@@ -9,6 +9,7 @@ import 'package:sparksocial/src/core/ui/widgets/options_panel.dart';
 import 'package:sparksocial/src/core/ui/widgets/report_dialog.dart';
 import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
 import 'package:sparksocial/src/features/feed/providers/like_post.dart';
+import 'package:sparksocial/src/features/feed/providers/repost_post.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/share_panel.dart';
 
 class SideActionBar extends ConsumerStatefulWidget {
@@ -40,12 +41,18 @@ class SideActionBar extends ConsumerStatefulWidget {
 
 class SideActionBarState extends ConsumerState<SideActionBar> {
   bool _isLiked = false;
+  bool _isReposted = false;
+  int _likeCount = 0;
+  int _repostCount = 0;
   PostView? _currentPost; // Track the current post state locally
 
   @override
   void initState() {
     super.initState();
     _isLiked = widget.isLiked;
+    _isReposted = widget.post.viewer?.repost != null;
+    _likeCount = int.tryParse(widget.likeCount) ?? widget.post.likeCount ?? 0;
+    _repostCount = widget.post.repostCount ?? 0;
     _currentPost = widget.post; // Initialize with the original post
   }
 
@@ -60,6 +67,9 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     if (oldWidget.post != widget.post) {
       setState(() {
         _currentPost = widget.post;
+        _isReposted = widget.post.viewer?.repost != null;
+        _likeCount = int.tryParse(widget.likeCount) ?? widget.post.likeCount ?? 0;
+        _repostCount = widget.post.repostCount ?? 0;
       });
     }
   }
@@ -69,14 +79,17 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     if (mounted) {
       setState(() {
         _isLiked = updatedPost.viewer?.like != null;
+        _likeCount = updatedPost.likeCount ?? _likeCount;
         _currentPost = updatedPost;
       });
     }
   }
 
   Future<void> _handleLike() async {
+    final wasLiked = _isLiked;
     setState(() {
       _isLiked = !_isLiked;
+      _likeCount += _isLiked ? 1 : -1;
     });
 
     try {
@@ -86,8 +99,10 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         final newLike = await ref.read(likePostProvider(currentPost.cid, currentPost.uri).future);
 
         final updatedPost = currentPost.copyWith(
+          likeCount: _likeCount,
           viewer:
-              currentPost.viewer?.copyWith(like: newLike.uri) ?? Viewer(like: newLike.uri, repost: currentPost.viewer?.repost),
+              currentPost.viewer?.copyWith(like: newLike.uri) ??
+              ViewerState(like: newLike.uri, repost: currentPost.viewer?.repost),
         );
 
         if (widget.feed != null) {
@@ -102,7 +117,8 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
           await ref.read(unlikePostProvider(AtUri.parse(currentPost.viewer!.like!.toString())).future);
 
           final updatedPost = currentPost.copyWith(
-            viewer: currentPost.viewer?.copyWith(like: null) ?? Viewer(repost: currentPost.viewer?.repost),
+            likeCount: _likeCount,
+            viewer: currentPost.viewer?.copyWith(like: null) ?? ViewerState(repost: currentPost.viewer?.repost),
           );
 
           if (widget.feed != null) {
@@ -115,12 +131,72 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     } catch (e) {
       // Revert the UI state if the operation failed
       setState(() {
-        _isLiked = !_isLiked;
+        _isLiked = wasLiked;
+        _likeCount += wasLiked ? 1 : -1;
       });
 
       // Show error to user
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to ${_isLiked ? 'like' : 'unlike'} post: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to ${wasLiked ? 'unlike' : 'like'} post: $e')));
+      }
+    }
+  }
+
+  Future<void> _handleRepost() async {
+    final wasReposted = _isReposted;
+    setState(() {
+      _isReposted = !_isReposted;
+      _repostCount += _isReposted ? 1 : -1;
+    });
+
+    try {
+      if (_isReposted) {
+        // Repost the post
+        final currentPost = _currentPost ?? widget.post;
+        final newRepost = await ref.read(repostPostProvider(currentPost.cid, currentPost.uri).future);
+
+        final updatedPost = currentPost.copyWith(
+          repostCount: _repostCount,
+          viewer:
+              currentPost.viewer?.copyWith(repost: newRepost.uri) ??
+              ViewerState(repost: newRepost.uri, like: currentPost.viewer?.like),
+        );
+
+        if (widget.feed != null) {
+          ref.read(feedProvider(widget.feed!).notifier).replacePost(updatedPost);
+        }
+
+        _currentPost = updatedPost;
+      } else {
+        // Unrepost the post
+        final currentPost = _currentPost ?? widget.post;
+        if (currentPost.viewer?.repost != null) {
+          await ref.read(unrepostPostProvider(currentPost.viewer!.repost!).future);
+
+          final updatedPost = currentPost.copyWith(
+            repostCount: _repostCount,
+            viewer: currentPost.viewer?.copyWith(repost: null) ?? ViewerState(like: currentPost.viewer?.like),
+          );
+
+          if (widget.feed != null) {
+            ref.read(feedProvider(widget.feed!).notifier).replacePost(updatedPost);
+          }
+
+          _currentPost = updatedPost;
+        }
+      }
+    } catch (e) {
+      // Revert the UI state if the operation failed
+      setState(() {
+        _isReposted = wasReposted;
+        _repostCount += wasReposted ? 1 : -1;
+      });
+
+      // Show error to user
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to ${wasReposted ? 'unrepost' : 'repost'} post: $e')));
       }
     }
   }
@@ -226,15 +302,14 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
     // Curation disabled: do not build curate destinations from feeds
 
     final currentPost = _currentPost ?? widget.post;
-    final likeCount = int.tryParse(widget.likeCount) ?? 0;
 
     final commentCount = currentPost.replyCount ?? int.tryParse(widget.commentCount) ?? 0;
-    // final repostCount = currentPost.repostCount ?? int.tryParse(widget.shareCount) ?? 0; // Curation disabled
     // final isCurated = currentPost.viewer?.repost != null; // Curation disabled
 
     return SparkSideActionBar(
       onLike: _handleLike,
       onComment: _handleCommentPressed,
+      onRepost: _handleRepost,
       // onCurate: _handleCurate, // Curation disabled
       onShare: _handleShare,
       onSoundTap: currentPost.sound != null ? _handleSoundTap : null,
@@ -242,11 +317,13 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         context: context,
         onReport: _handleReport,
       ),
-      likeCount: likeCount.toString(),
+      likeCount: _likeCount.toString(),
       commentCount: commentCount.toString(),
+      repostCount: _repostCount.toString(),
       // curateCount: repostCount.toString(), // Curation disabled
       shareCount: widget.shareCount,
       isLiked: _isLiked,
+      isReposted: _isReposted,
       soundCover: currentPost.sound?.coverArt.toString(),
       // isCurated: isCurated, // Curation disabled
       // curateDestinations: curateDestinations, // Curation disabled

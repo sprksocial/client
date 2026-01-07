@@ -154,10 +154,8 @@ sealed class FeedViewPost with _$FeedViewPost {
     reply: (r) => r.reply.media,
   );
 
-  Viewer? get viewer => map(
-    post: (p) => p.post.viewer,
-    reply: (r) => r.reply.viewer,
-  );
+  ViewerState? get viewerState => mapOrNull(post: (p) => p.post.viewer);
+  ReplyViewerState? get replyViewerState => mapOrNull(reply: (r) => r.reply.viewer);
 
   String get displayText => map(
     post: (p) => p.post.displayText,
@@ -230,7 +228,7 @@ sealed class ReplyRefPostReference with _$ReplyRefPostReference {
 @freezed
 abstract class BlockedAuthor with _$BlockedAuthor {
   @JsonSerializable(explicitToJson: true)
-  const factory BlockedAuthor({required String did, Viewer? viewer}) = _BlockedAuthor;
+  const factory BlockedAuthor({required String did, ViewerState? viewer}) = _BlockedAuthor;
   const BlockedAuthor._();
 
   factory BlockedAuthor.fromJson(Map<String, dynamic> json) => _$BlockedAuthorFromJson(json);
@@ -245,20 +243,73 @@ abstract class PostThread with _$PostThread {
   factory PostThread.fromJson(Map<String, dynamic> json) => _$PostThreadFromJson(json);
 }
 
+/// Metadata about the requesting account's relationship with the subject content.
+/// Only has meaningful content for authed requests.
 @freezed
-abstract class Viewer with _$Viewer {
+abstract class ViewerState with _$ViewerState {
   @JsonSerializable(explicitToJson: true)
-  const factory Viewer({
+  const factory ViewerState({
     @AtUriConverter() AtUri? repost,
     @AtUriConverter() AtUri? like,
     bool? threadMuted,
     bool? replyDisabled,
     bool? embeddingDisabled,
-    bool? pinned,
-  }) = _Viewer;
-  const Viewer._();
+    List<KnownInteraction>? knownInteractions,
+  }) = _ViewerState;
+  const ViewerState._();
 
-  factory Viewer.fromJson(Map<String, dynamic> json) => _$ViewerFromJson(json);
+  factory ViewerState.fromJson(Map<String, dynamic> json) => _$ViewerStateFromJson(json);
+}
+
+/// Metadata about the requesting account's relationship with reply content.
+/// Only has meaningful content for authed requests.
+@freezed
+abstract class ReplyViewerState with _$ReplyViewerState {
+  @JsonSerializable(explicitToJson: true)
+  const factory ReplyViewerState({
+    @AtUriConverter() AtUri? like,
+    bool? threadMuted,
+    bool? replyDisabled,
+    bool? embeddingDisabled,
+  }) = _ReplyViewerState;
+  const ReplyViewerState._();
+
+  factory ReplyViewerState.fromJson(Map<String, dynamic> json) => _$ReplyViewerStateFromJson(json);
+}
+
+@Freezed(unionKey: r'$type')
+sealed class KnownInteraction with _$KnownInteraction {
+  const KnownInteraction._();
+
+  @FreezedUnionValue('so.sprk.feed.defs#knownRepost')
+  @JsonSerializable(explicitToJson: true)
+  const factory KnownInteraction.repost({
+    required ProfileViewBasic by,
+    required DateTime indexedAt,
+    @AtUriConverter() AtUri? uri,
+    String? cid,
+  }) = KnownRepost;
+
+  @FreezedUnionValue('so.sprk.feed.defs#knownLike')
+  @JsonSerializable(explicitToJson: true)
+  const factory KnownInteraction.like({
+    required ProfileViewBasic by,
+    required DateTime indexedAt,
+    @AtUriConverter() AtUri? uri,
+    String? cid,
+  }) = KnownLike;
+
+  @FreezedUnionValue('so.sprk.feed.defs#knownReply')
+  @JsonSerializable(explicitToJson: true)
+  const factory KnownInteraction.reply({
+    required ProfileViewBasic by,
+    required DateTime indexedAt,
+    @AtUriConverter() AtUri? uri,
+    String? cid,
+    String? text,
+  }) = KnownReply;
+
+  factory KnownInteraction.fromJson(Map<String, dynamic> json) => _$KnownInteractionFromJson(json);
 }
 
 @freezed
@@ -274,9 +325,8 @@ abstract class PostView with _$PostView {
     int? likeCount,
     int? replyCount,
     int? repostCount,
-    int? quoteCount,
     List<Label>? labels,
-    Viewer? viewer,
+    ViewerState? viewer,
     MediaView? media,
     AudioView? sound,
   }) = _PostView;
@@ -690,9 +740,14 @@ sealed class ThreadPost with _$ThreadPost {
     ThreadReplyView(:final reply) => reply.cid,
   };
 
-  Viewer? get viewer => switch (this) {
+  ViewerState? get viewer => switch (this) {
     ThreadPostView(:final post) => post.viewer,
-    ThreadReplyView(:final reply) => reply.viewer,
+    ThreadReplyView(:final reply) => ViewerState(
+      like: reply.viewer?.like,
+      threadMuted: reply.viewer?.threadMuted,
+      replyDisabled: reply.viewer?.replyDisabled,
+      embeddingDisabled: reply.viewer?.embeddingDisabled,
+    ),
   };
 
   int? get likeCount => switch (this) {
@@ -1186,7 +1241,7 @@ abstract class ReplyView with _$ReplyView {
     int? replyCount,
     int? likeCount,
     List<Label>? labels,
-    Viewer? viewer,
+    ReplyViewerState? viewer,
   }) = _ReplyView;
   const ReplyView._();
 

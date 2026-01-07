@@ -11,7 +11,7 @@ import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
 
 part 'comment_provider.g.dart';
 
-@riverpod
+@Riverpod(keepAlive: true)
 class CommentNotifier extends _$CommentNotifier {
   @override
   CommentState build(Thread thread) {
@@ -31,6 +31,7 @@ class CommentNotifier extends _$CommentNotifier {
   Future<void> toggleLike() async {
     final wasLiked = state.isLiked;
     final currentLikeCount = state.thread.post.likeCount ?? 0;
+    final postUri = state.thread.post.uri.toString();
 
     try {
       if (wasLiked) {
@@ -60,7 +61,7 @@ class CommentNotifier extends _$CommentNotifier {
         await _feedRepository.unlikePost(likeUri);
 
         // Trigger UI updates
-        ref.read(postUpdateProvider(state.thread.post.uri.toString()).notifier).state++;
+        ref.read(postUpdateProvider(postUri).notifier).state++;
       } else {
         // Optimistically update UI for like
         final response = await _feedRepository.likePost(state.thread.post.cid, state.thread.post.uri);
@@ -68,13 +69,13 @@ class CommentNotifier extends _$CommentNotifier {
         final updatedPost = switch (state.thread.post) {
           ThreadPostView(:final post) => ThreadPostView(
             post: post.copyWith(
-              viewer: post.viewer?.copyWith(like: response.uri) ?? Viewer(like: response.uri),
+              viewer: post.viewer?.copyWith(like: response.uri) ?? ViewerState(like: response.uri),
               likeCount: currentLikeCount + 1,
             ),
           ),
           ThreadReplyView(:final reply) => ThreadReplyView(
             reply: reply.copyWith(
-              viewer: reply.viewer?.copyWith(like: response.uri) ?? Viewer(like: response.uri),
+              viewer: reply.viewer?.copyWith(like: response.uri) ?? ReplyViewerState(like: response.uri),
               likeCount: currentLikeCount + 1,
             ),
           ),
@@ -84,7 +85,7 @@ class CommentNotifier extends _$CommentNotifier {
         );
 
         // Trigger UI updates
-        ref.read(postUpdateProvider(state.thread.post.uri.toString()).notifier).state++;
+        ref.read(postUpdateProvider(postUri).notifier).state++;
       }
     } catch (e) {
       // Revert optimistic update on error

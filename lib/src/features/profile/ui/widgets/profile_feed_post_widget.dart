@@ -10,6 +10,7 @@ import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/core/ui/widgets/content_warning_overlay.dart';
 import 'package:sparksocial/src/core/ui/widgets/heart_animation.dart';
 import 'package:sparksocial/src/core/utils/label_utils.dart';
+import 'package:sparksocial/src/features/feed/providers/like_post.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/post/post_overlay.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
@@ -31,6 +32,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
   bool _shouldBlurContent = false;
   List<String> _warningLabels = [];
   bool? _overrideIsLiked;
+  PostView? _currentPost;
 
   @override
   void initState() {
@@ -62,7 +64,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
   }
 
   Future<void> _handleDoubleTapLike(PostView postData) async {
-    final isCurrentlyLiked = postData.viewer?.like != null;
+    final isCurrentlyLiked = _overrideIsLiked ?? (postData.viewer?.like != null);
 
     if (isCurrentlyLiked) {
       return;
@@ -74,10 +76,19 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
     });
 
     try {
-      // Drive SideActionBar via props instead of GlobalKey/stateful method
+      // Like the post using the same logic as SideActionBar
+      final newLike = await ref.read(likePostProvider(postData.cid, postData.uri).future);
+
+      // Update the post's viewer field with the new like reference and increment like count
+      final updatedPost = postData.copyWith(
+        likeCount: (postData.likeCount ?? 0) + 1,
+        viewer: postData.viewer?.copyWith(like: newLike.uri) ?? ViewerState(like: newLike.uri, repost: postData.viewer?.repost),
+      );
+
       if (mounted) {
         setState(() {
           _overrideIsLiked = true;
+          _currentPost = updatedPost;
         });
       }
     } catch (e) {
@@ -142,7 +153,7 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
             );
           }
 
-          final post = snapshot.data!;
+          final post = _currentPost ?? snapshot.data!;
 
           final mainContent = HeartAnimation(
             isAnimating: _isAnimatingHeart,

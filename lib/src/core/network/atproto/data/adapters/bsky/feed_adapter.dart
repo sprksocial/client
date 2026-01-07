@@ -366,7 +366,6 @@ extension BskyPostViewAdapter on PostView {
       likeCount: likeCount,
       replyCount: replyCount,
       repostCount: repostCount,
-      quoteCount: quoteCount,
     );
   }
 }
