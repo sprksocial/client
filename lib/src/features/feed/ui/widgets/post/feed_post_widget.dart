@@ -18,10 +18,13 @@ import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dar
 import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
 
 class FeedPostWidget extends ConsumerStatefulWidget {
-  const FeedPostWidget({required this.index, required this.feed, super.key});
+  const FeedPostWidget({required this.index, required this.feed, super.key, this.onBlockAndAdvance});
 
   final int index;
   final Feed feed;
+
+  /// Callback invoked after successfully blocking a user, typically to advance to the next post
+  final VoidCallback? onBlockAndAdvance;
 
   @override
   ConsumerState<FeedPostWidget> createState() => _FeedPostWidgetState();
@@ -267,6 +270,7 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
                         ),
                       );
                     },
+                    onBlockAndAdvance: widget.onBlockAndAdvance,
                   ),
                 ),
               ],

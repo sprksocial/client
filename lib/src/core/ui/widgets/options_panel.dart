@@ -29,8 +29,8 @@ class OptionsPanel {
             children: [
               if (onDelete != null)
                 ListTile(
-                  leading: const Icon(Icons.delete_outline, color: Colors.red),
-                  title: Text(l10n.optionsPanelDelete, style: const TextStyle(color: Colors.red)),
+                  leading: Icon(Icons.delete_outline, color: textColor),
+                  title: Text(l10n.optionsPanelDelete, style: TextStyle(color: textColor)),
                   onTap: () {
                     Navigator.of(context).pop();
                     onDelete();
@@ -38,10 +38,10 @@ class OptionsPanel {
                 ),
               if (onBlock != null)
                 ListTile(
-                  leading: const Icon(Icons.block, color: Colors.red),
+                  leading: Icon(Icons.block, color: textColor),
                   title: Text(
                     isBlocked ? l10n.optionsPanelUnblock : l10n.optionsPanelBlock,
-                    style: const TextStyle(color: Colors.red),
+                    style: TextStyle(color: textColor),
                   ),
                   onTap: () {
                     Navigator.of(context).pop();

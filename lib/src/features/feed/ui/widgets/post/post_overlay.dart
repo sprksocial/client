@@ -15,6 +15,7 @@ class PostOverlay extends StatelessWidget {
     this.onProfilePressed,
     this.onUsernameTap,
     this.labels = const [],
+    this.onBlockAndAdvance,
   });
 
   final PostView post;
@@ -23,6 +24,9 @@ class PostOverlay extends StatelessWidget {
   final VoidCallback? onProfilePressed;
   final VoidCallback? onUsernameTap;
   final List<Label> labels;
+
+  /// Callback invoked after successfully blocking a user, typically to advance to the next post
+  final VoidCallback? onBlockAndAdvance;
 
   @override
   Widget build(BuildContext context) {
@@ -113,6 +117,7 @@ class PostOverlay extends StatelessWidget {
                       profileImageUrl: post.author.avatar.toString(),
                       isImage: post.media is MediaViewImages || post.media is MediaViewBskyImages,
                       onProfilePressed: onProfilePressed,
+                      onBlockAndAdvance: onBlockAndAdvance,
                     ),
                   ),
                 ],

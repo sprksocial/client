@@ -40,6 +40,24 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
     super.dispose();
   }
 
+  /// Scrolls to the next post and removes the current one from the feed.
+  /// This allows users to quickly advance through their feed while
+  /// removing posts they've already seen.
+  Future<void> scrollToNextAndRemovePrevious() async {
+    final state = ref.read(feedProvider(widget.feed));
+    final notifier = ref.read(feedProvider(widget.feed).notifier);
+    final currentIndex = state.index;
+
+    // Check if there's a next post to scroll to
+    if (currentIndex >= state.length - 1) return;
+
+    // Remove the current post. Since the PageController is at currentIndex,
+    // and we're removing the item at currentIndex, the next post naturally
+    // takes its place at the same index. The PageView will rebuild with
+    // the new item at this index, effectively showing the "next" post.
+    notifier.removePostAtIndex(currentIndex);
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context); // Required for AutomaticKeepAliveClientMixin
@@ -146,7 +164,7 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
                   if (shouldBeActive) {
                     return Stack(
                       children: [
-                        FeedPostWidget(index: index, feed: widget.feed),
+                        FeedPostWidget(index: index, feed: widget.feed, onBlockAndAdvance: scrollToNextAndRemovePrevious),
                         const Positioned(
                           bottom: 10,
                           left: 10,
@@ -175,7 +193,7 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
                       : const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
                 } else {
                   if (shouldBeActive) {
-                    return FeedPostWidget(index: index, feed: widget.feed);
+                    return FeedPostWidget(index: index, feed: widget.feed, onBlockAndAdvance: scrollToNextAndRemovePrevious);
                   } else {
                     // Return SizedBox to maintain scroll position but hide content
                     return const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));

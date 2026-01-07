@@ -82,7 +82,6 @@ class _CommentItemState extends ConsumerState<CommentItem> {
         actions: [
           TextButton(onPressed: () => context.router.maybePop(), child: const Text('Cancel')),
           TextButton(
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
             onPressed: () async {
               try {
                 await ref
