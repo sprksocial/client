@@ -65,7 +65,10 @@ class PostSearch extends _$PostSearch {
 
       final bskyApi = bsky.Bluesky.fromSession(bskySession);
       final sprkSearch = _feedRepository.searchPosts(query);
-      final bskySearch = bskyApi.feed.searchPosts(q: query, sort: KnownFeedSearchPostsSort.top as FeedSearchPostsSort);
+      final bskySearch = bskyApi.feed.searchPosts(
+        q: query,
+        sort: const FeedSearchPostsSort.unknown(data: 'top'),
+      );
 
       final results = await Future.wait([sprkSearch, bskySearch]);
 
@@ -171,7 +174,7 @@ class PostSearch extends _$PostSearch {
       final bskyApi = bsky.Bluesky.fromSession(bskySession);
       final response = await bskyApi.feed.searchPosts(
         q: state.query,
-        sort: KnownFeedSearchPostsSort.latest as FeedSearchPostsSort,
+        sort: const FeedSearchPostsSort.unknown(data: 'latest'),
         cursor: bskyCursor,
       );
 
