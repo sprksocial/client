@@ -133,96 +133,94 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: FutureBuilder<PostView?>(
-        future: _loadPostWithFallback(),
-        builder: (context, snapshot) {
-          if (!snapshot.hasData) {
-            return const ColoredBox(
-              color: AppColors.black,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.error_outline, color: AppColors.white, size: 48),
-                    SizedBox(height: 16),
-                    Text('Failed to load post', style: TextStyle(color: AppColors.white)),
-                  ],
-                ),
+    return FutureBuilder<PostView?>(
+      future: _loadPostWithFallback(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const ColoredBox(
+            color: AppColors.black,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, color: AppColors.white, size: 48),
+                  SizedBox(height: 16),
+                  Text('Failed to load post', style: TextStyle(color: AppColors.white)),
+                ],
               ),
-            );
-          }
+            ),
+          );
+        }
 
-          final post = _currentPost ?? snapshot.data!;
+        final post = _currentPost ?? snapshot.data!;
 
-          final mainContent = HeartAnimation(
-            isAnimating: _isAnimatingHeart,
-            onEnd: () {
-              setState(() {
-                _isAnimatingHeart = false;
-              });
-            },
-            child: Stack(
-              children: [
-                // Main content - only this part should detect double-tap for likes
-                Positioned.fill(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onDoubleTap: () => _handleDoubleTapLike(post),
-                    child: switch (post.media) {
+        final mainContent = HeartAnimation(
+          isAnimating: _isAnimatingHeart,
+          onEnd: () {
+            setState(() {
+              _isAnimatingHeart = false;
+            });
+          },
+          child: Stack(
+            children: [
+              // Main content - only this part should detect double-tap for likes
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onDoubleTap: () => _handleDoubleTapLike(post),
+                  child: switch (post.media) {
+                    MediaViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
+                    MediaViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
+                    MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
+                    MediaViewBskyRecordWithMedia(:final media) => switch (media) {
                       MediaViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
                       MediaViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
                       MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
-                      MediaViewBskyRecordWithMedia(:final media) => switch (media) {
-                        MediaViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
-                        MediaViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
-                        MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
-                        _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
-                      },
                       _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                     },
-                  ),
+                    _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
+                  },
                 ),
+              ),
 
-                // Overlay controls - no double-tap detection, so buttons respond immediately
-                Positioned.fill(
-                  child: PostOverlay(
-                    post: post,
-                    isLiked: _overrideIsLiked ?? (post.viewer?.like != null),
-                    labels: post.labels ?? [],
-                    onProfilePressed: () {
-                      // No special handling needed for profile navigation in standalone feed
-                    },
-                    onUsernameTap: () {
-                      context.router.push(
-                        ProfileRoute(
-                          did: post.author.did,
-                          initialProfile: post.author,
-                        ),
-                      );
-                    },
-                  ),
+              // Overlay controls - no double-tap detection, so buttons respond immediately
+              Positioned.fill(
+                child: PostOverlay(
+                  post: post,
+                  isLiked: _overrideIsLiked ?? (post.viewer?.like != null),
+                  labels: post.labels ?? [],
+                  onProfilePressed: () {
+                    // No special handling needed for profile navigation in standalone feed
+                  },
+                  onUsernameTap: () {
+                    context.router.push(
+                      ProfileRoute(
+                        did: post.author.did,
+                        initialProfile: post.author,
+                      ),
+                    );
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
+          ),
+        );
+
+        if (_showWarningOverlay) {
+          return ContentWarningOverlay(
+            onViewContent: () {
+              setState(() {
+                _showWarningOverlay = false;
+              });
+            },
+            warningLabels: _warningLabels,
+            shouldBlur: _shouldBlurContent,
+            child: mainContent,
           );
+        }
 
-          if (_showWarningOverlay) {
-            return ContentWarningOverlay(
-              onViewContent: () {
-                setState(() {
-                  _showWarningOverlay = false;
-                });
-              },
-              warningLabels: _warningLabels,
-              shouldBlur: _shouldBlurContent,
-              child: mainContent,
-            );
-          }
-
-          return mainContent;
-        },
-      ),
+        return mainContent;
+      },
     );
   }
 }

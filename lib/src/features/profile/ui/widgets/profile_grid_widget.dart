@@ -22,15 +22,8 @@ List<Widget> buildProfileGridSlivers({
 
   return feedState.when(
     data: (state) {
-      // Filter posts in client depending on configuration
-      final filteredUris = () {
-        if (both) return state.loadedPosts;
-        if (videosOnly) {
-          return state.loadedPosts.where((u) => state.postTypes[u] ?? true).toList();
-        }
-        // images only
-        return state.loadedPosts.where((u) => state.postTypes[u] == false).toList();
-      }();
+      // Display all posts returned by server - no client-side filtering
+      final filteredUris = state.loadedPosts;
 
       if (filteredUris.isEmpty) {
         return [

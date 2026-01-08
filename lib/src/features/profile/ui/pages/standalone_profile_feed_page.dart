@@ -1,7 +1,11 @@
+import 'dart:ui';
+
 import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:sparksocial/src/core/design_system/tokens/constants.dart';
+import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/snappy_page_scroll_physics.dart';
@@ -27,11 +31,13 @@ class StandaloneProfileFeedPage extends ConsumerStatefulWidget {
 class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFeedPage> {
   late final PageController pageController;
   late final AtUri profileAtUri;
+  int _currentIndex = 0;
 
   @override
   void initState() {
     super.initState();
     profileAtUri = AtUri.parse(widget.profileUri);
+    _currentIndex = widget.initialPostIndex;
     pageController = PageController(initialPage: widget.initialPostIndex);
   }
 
@@ -44,73 +50,157 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
   @override
   Widget build(BuildContext context) {
     final feedState = ref.watch(profileFeedProvider(profileAtUri, widget.videosOnly));
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
       backgroundColor: AppColors.black,
-      appBar: AppBar(backgroundColor: AppColors.black, leading: const AutoLeadingButton()),
-      body: feedState.when(
-        data: (state) {
-          // Filter client-side
-          final filteredUris = widget.videosOnly
-              ? state.loadedPosts.where((u) => state.postTypes[u] ?? true).toList()
-              : state.loadedPosts.where((u) => state.postTypes[u] == false).toList();
+      body: Stack(
+        children: [
+          // Full-screen content
+          feedState.when(
+            data: (state) {
+              // Display all posts returned by server - no client-side filtering
+              final filteredUris = state.loadedPosts;
 
-          if (filteredUris.isEmpty) {
-            return const Center(
-              child: Text('No posts available', style: TextStyle(color: AppColors.white)),
-            );
-          }
-
-          // Ensure initial index is within bounds
-          final safeInitialIndex = widget.initialPostIndex.clamp(0, filteredUris.length - 1);
-
-          // Update page controller if needed
-          if (pageController.hasClients && pageController.page?.round() != safeInitialIndex) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted && pageController.hasClients) {
-                pageController.jumpToPage(safeInitialIndex);
+              if (filteredUris.isEmpty) {
+                return const Center(
+                  child: Text('No posts available', style: TextStyle(color: AppColors.white)),
+                );
               }
-            });
-          }
 
-          return CacheablePageView.builder(
-            controller: pageController,
-            scrollDirection: Axis.vertical,
-            physics: const SnappyPageScrollPhysics(),
-            itemCount: filteredUris.length,
-            onPageChanged: (index) {
-              // Load more posts when approaching the end
-              if (index >= filteredUris.length - 3 && !state.isEndOfNetwork) {
-                ref.read(profileFeedProvider(profileAtUri, widget.videosOnly).notifier).loadMore();
-              }
-            },
-            itemBuilder: (context, index) {
-              final postUri = filteredUris[index];
-              final post = state.postViews[postUri];
-              return ProfileFeedPostWidget(postUri: postUri, profileUri: profileAtUri, videosOnly: widget.videosOnly, post: post);
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator(color: AppColors.white)),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, color: AppColors.white, size: 48),
-              const SizedBox(height: 16),
-              Text(
-                'Error loading feed: $error',
-                style: const TextStyle(color: AppColors.white),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  ref.read(profileFeedProvider(profileAtUri, widget.videosOnly).notifier).refresh();
+              return CacheablePageView.builder(
+                cachePageExtent: 1,
+                controller: pageController,
+                scrollDirection: Axis.vertical,
+                physics: const SnappyPageScrollPhysics(),
+                allowImplicitScrolling: true,
+                itemCount: filteredUris.length,
+                onPageChanged: (index) {
+                  setState(() {
+                    _currentIndex = index;
+                  });
+                  // Load more posts when approaching the end
+                  if (index >= filteredUris.length - 3 && !state.isEndOfNetwork) {
+                    ref.read(profileFeedProvider(profileAtUri, widget.videosOnly).notifier).loadMore();
+                  }
                 },
-                child: const Text('Retry'),
+                itemBuilder: (context, index) {
+                  final postUri = filteredUris[index];
+                  final post = state.postViews[postUri];
+                  return ProfileFeedPostWidget(
+                    postUri: postUri,
+                    profileUri: profileAtUri,
+                    videosOnly: widget.videosOnly,
+                    post: post,
+                  );
+                },
+              );
+            },
+            loading: () => const Center(child: CircularProgressIndicator(color: AppColors.white)),
+            error: (error, stack) => Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, color: AppColors.white, size: 48),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Error loading feed: $error',
+                    style: const TextStyle(color: AppColors.white),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () {
+                      ref.read(profileFeedProvider(profileAtUri, widget.videosOnly).notifier).refresh();
+                    },
+                    child: const Text('Retry'),
+                  ),
+                ],
               ),
-            ],
+            ),
+          ),
+          // Back button overlay - respects safe area for the button only
+          Positioned(
+            top: 0,
+            left: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: AppColors.white),
+                  onPressed: () => context.router.maybePop(),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: _CommentBar(
+        bottomPadding: bottomPadding,
+        onTap: () {
+          final state = feedState.value;
+          if (state != null && state.loadedPosts.isNotEmpty) {
+            final currentPostUri = state.loadedPosts[_currentIndex];
+            final post = state.postViews[currentPostUri];
+            if (post != null) {
+              context.router.push(CommentsRoute(postUri: post.uri.toString(), isSprk: post.isSprk, post: post));
+            }
+          }
+        },
+      ),
+    );
+  }
+}
+
+class _CommentBar extends StatelessWidget {
+  const _CommentBar({
+    required this.bottomPadding,
+    required this.onTap,
+  });
+
+  final double bottomPadding;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(
+          sigmaX: AppConstants.blurBottomBar.toDouble(),
+          sigmaY: AppConstants.blurBottomBar.toDouble(),
+        ),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(51, 0, 0, 0),
+            border: Border(
+              top: BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 2),
+            ),
+          ),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onTap,
+            child: Container(
+              padding: EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 12,
+                bottom: 12 + bottomPadding,
+              ),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: const Text(
+                  'Add comment...',
+                  style: TextStyle(
+                    color: Colors.white54,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ),
