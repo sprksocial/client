@@ -16,11 +16,21 @@ import 'package:sparksocial/src/features/feed/ui/widgets/post/post_overlay.dart'
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
 
 class ProfileFeedPostWidget extends ConsumerStatefulWidget {
-  const ProfileFeedPostWidget({required this.postUri, required this.profileUri, required this.videosOnly, super.key, this.post});
+  const ProfileFeedPostWidget({
+    required this.postUri,
+    required this.profileUri,
+    required this.videosOnly,
+    super.key,
+    this.post,
+    this.index,
+  });
   final AtUri postUri;
   final AtUri profileUri;
   final bool videosOnly;
   final PostView? post;
+
+  /// The index of this post in the profile feed, used for video visibility tracking.
+  final int? index;
 
   @override
   ConsumerState<ProfileFeedPostWidget> createState() => _ProfileFeedPostWidgetState();
@@ -169,12 +179,32 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                   behavior: HitTestBehavior.opaque,
                   onDoubleTap: () => _handleDoubleTapLike(post),
                   child: switch (post.media) {
-                    MediaViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
-                    MediaViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
+                    MediaViewVideo() => PostVideoPlayer(
+                      videoUrl: post.videoUrl,
+                      thumbnail: post.thumbnailUrl,
+                      profileFeedUri: widget.index != null ? widget.profileUri.toString() : null,
+                      index: widget.index,
+                    ),
+                    MediaViewBskyVideo() => PostVideoPlayer(
+                      videoUrl: post.videoUrl,
+                      thumbnail: post.thumbnailUrl,
+                      profileFeedUri: widget.index != null ? widget.profileUri.toString() : null,
+                      index: widget.index,
+                    ),
                     MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
                     MediaViewBskyRecordWithMedia(:final media) => switch (media) {
-                      MediaViewVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
-                      MediaViewBskyVideo() => PostVideoPlayer(videoUrl: post.videoUrl, thumbnail: post.thumbnailUrl),
+                      MediaViewVideo() => PostVideoPlayer(
+                        videoUrl: post.videoUrl,
+                        thumbnail: post.thumbnailUrl,
+                        profileFeedUri: widget.index != null ? widget.profileUri.toString() : null,
+                        index: widget.index,
+                      ),
+                      MediaViewBskyVideo() => PostVideoPlayer(
+                        videoUrl: post.videoUrl,
+                        thumbnail: post.thumbnailUrl,
+                        profileFeedUri: widget.index != null ? widget.profileUri.toString() : null,
+                        index: widget.index,
+                      ),
                       MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: post.imageUrls),
                       _ => const DecoratedBox(decoration: BoxDecoration(color: AppColors.black)),
                     },
@@ -193,12 +223,21 @@ class _ProfileFeedPostWidgetState extends ConsumerState<ProfileFeedPostWidget> {
                     // No special handling needed for profile navigation in standalone feed
                   },
                   onUsernameTap: () {
-                    context.router.push(
-                      ProfileRoute(
-                        did: post.author.did,
-                        initialProfile: post.author,
-                      ),
-                    );
+                    // Extract DID from the profile URI (format: at://did:plc:...)
+                    final currentProfileDid = widget.profileUri.hostname;
+
+                    // If clicking on the same profile we're viewing, navigate back
+                    if (post.author.did == currentProfileDid) {
+                      context.router.maybePop();
+                    } else {
+                      // Otherwise, navigate to the new profile
+                      context.router.push(
+                        ProfileRoute(
+                          did: post.author.did,
+                          initialProfile: post.author,
+                        ),
+                      );
+                    }
                   },
                 ),
               ),

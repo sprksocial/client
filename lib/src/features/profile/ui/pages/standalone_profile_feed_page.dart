@@ -9,6 +9,7 @@ import 'package:sparksocial/src/core/routing/app_router.dart';
 import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/snappy_page_scroll_physics.dart';
+import 'package:sparksocial/src/features/profile/providers/profile_feed_index_provider.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_feed_post_widget.dart';
 
@@ -32,6 +33,7 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
   late final PageController pageController;
   late final AtUri profileAtUri;
   int _currentIndex = 0;
+  bool _hasInitializedIndex = false;
 
   @override
   void initState() {
@@ -49,6 +51,14 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
 
   @override
   Widget build(BuildContext context) {
+    // Initialize the index provider SYNCHRONOUSLY before any child widgets build.
+    // This prevents race conditions where video widgets see the default index (0)
+    // before the correct initial index is set.
+    if (!_hasInitializedIndex) {
+      _hasInitializedIndex = true;
+      ref.read(profileFeedIndexProvider(widget.profileUri).notifier).setIndex(widget.initialPostIndex);
+    }
+
     final feedState = ref.watch(profileFeedProvider(profileAtUri, widget.videosOnly));
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
@@ -79,6 +89,8 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
                   setState(() {
                     _currentIndex = index;
                   });
+                  // Update the profile feed index provider for video visibility tracking
+                  ref.read(profileFeedIndexProvider(widget.profileUri).notifier).setIndex(index);
                   // Load more posts when approaching the end
                   if (index >= filteredUris.length - 3 && !state.isEndOfNetwork) {
                     ref.read(profileFeedProvider(profileAtUri, widget.videosOnly).notifier).loadMore();
@@ -92,6 +104,7 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
                     profileUri: profileAtUri,
                     videosOnly: widget.videosOnly,
                     post: post,
+                    index: index,
                   );
                 },
               );

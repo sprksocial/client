@@ -12,14 +12,26 @@ import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_progress_bar.dart';
 import 'package:sparksocial/src/features/home/providers/feed_settings_visibility_provider.dart';
 import 'package:sparksocial/src/features/home/providers/navigation_provider.dart';
+import 'package:sparksocial/src/features/profile/providers/profile_feed_index_provider.dart';
 
 class PostVideoPlayer extends ConsumerStatefulWidget {
-  const PostVideoPlayer({required this.videoUrl, required this.thumbnail, super.key, this.feed, this.index});
+  const PostVideoPlayer({
+    required this.videoUrl,
+    required this.thumbnail,
+    super.key,
+    this.feed,
+    this.index,
+    this.profileFeedUri,
+  });
 
   final String videoUrl;
   final String thumbnail;
   final Feed? feed;
   final int? index;
+
+  /// The profile URI for standalone profile feed visibility tracking.
+  /// When provided along with [index], uses profile feed index provider instead of feed provider.
+  final String? profileFeedUri;
 
   @override
   ConsumerState<PostVideoPlayer> createState() => PostVideoPlayerState();
@@ -167,7 +179,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
     else if (!isFeedSettingsVisible) {
       final wasPlaying = _wasPlayingWhenMenuOpened;
       _wasPlayingWhenMenuOpened = false;
-      
+
       if (wasPlaying && !isPlaying) {
         // Resume if it was playing when menu opened
         videoController?.play();
@@ -192,6 +204,7 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
     final feedSettingsVisible = ref.watch(feedSettingsVisibilityProvider);
 
     final feedState = widget.feed != null ? ref.watch(feedProvider(widget.feed!)) : null;
+    final profileFeedIndex = widget.profileFeedUri != null ? ref.watch(profileFeedIndexProvider(widget.profileFeedUri!)) : null;
 
     if (_lastNavigationIndex != navigationState.currentIndex) {
       _lastNavigationIndex = navigationState.currentIndex;
@@ -220,7 +233,19 @@ class PostVideoPlayerState extends ConsumerState<PostVideoPlayer> with TickerPro
             _handleAutoPlayPause(shouldPlay, isFeedSettingsVisible: feedSettingsVisible);
           }
         });
-      } else if (widget.feed == null && widget.index == null) {
+      } else if (profileFeedIndex != null && widget.index != null) {
+        // Profile feed visibility check
+        if (_lastFeedIndex != profileFeedIndex) {
+          _lastFeedIndex = profileFeedIndex;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && !_userInteracted) {
+              final shouldPlay = profileFeedIndex == widget.index;
+              _handleAutoPlayPause(shouldPlay, isFeedSettingsVisible: feedSettingsVisible);
+            }
+          });
+        }
+      } else if (widget.feed == null && widget.index == null && widget.profileFeedUri == null) {
+        // True standalone mode (no feed tracking at all)
         _handleAutoPlayPause(true, isFeedSettingsVisible: feedSettingsVisible);
       }
     });
