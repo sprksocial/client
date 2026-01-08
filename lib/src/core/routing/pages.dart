@@ -20,6 +20,7 @@ export 'package:sparksocial/src/features/profile/ui/pages/blocks_page.dart';
 export 'package:sparksocial/src/features/profile/ui/pages/edit_profile_page.dart';
 export 'package:sparksocial/src/features/profile/ui/pages/profile_page.dart';
 export 'package:sparksocial/src/features/profile/ui/pages/standalone_profile_feed_page.dart';
+export 'package:sparksocial/src/features/profile/ui/pages/standalone_reposts_feed_page.dart';
 export 'package:sparksocial/src/features/profile/ui/pages/user_profile_page.dart';
 export 'package:sparksocial/src/features/search/ui/pages/search_page.dart';
 export 'package:sparksocial/src/features/settings/ui/pages/feed_list_page.dart';
