@@ -161,7 +161,7 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
       const SizedBox(height: 13),
       _ActionItem(
         isActive: widget.isReposted,
-        icon: AppIcons.repostLarge(size: 32, color: widget.isReposted ? AppColors.green : null),
+        icon: AppIcons.repost(size: 32, color: widget.isReposted ? AppColors.green : null),
         label: widget.repostCount,
         onTap: widget.onRepost,
       ),

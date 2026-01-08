@@ -10,35 +10,31 @@ import 'package:sparksocial/src/core/ui/foundation/colors.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
 import 'package:sparksocial/src/features/feed/ui/widgets/feed/snappy_page_scroll_physics.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_index_provider.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
+import 'package:sparksocial/src/features/profile/providers/profile_reposts_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_feed_post_widget.dart';
 
 @RoutePage()
-class StandaloneProfileFeedPage extends ConsumerStatefulWidget {
-  const StandaloneProfileFeedPage({
-    required this.profileUri,
-    required this.videosOnly,
+class StandaloneRepostsFeedPage extends ConsumerStatefulWidget {
+  const StandaloneRepostsFeedPage({
+    required this.actor,
     required this.initialPostIndex,
     super.key,
   });
-  final String profileUri;
-  final bool videosOnly;
+  final String actor;
   final int initialPostIndex;
 
   @override
-  ConsumerState<StandaloneProfileFeedPage> createState() => _StandaloneProfileFeedPageState();
+  ConsumerState<StandaloneRepostsFeedPage> createState() => _StandaloneRepostsFeedPageState();
 }
 
-class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFeedPage> {
+class _StandaloneRepostsFeedPageState extends ConsumerState<StandaloneRepostsFeedPage> {
   late final PageController pageController;
-  late final AtUri profileAtUri;
   int _currentIndex = 0;
   bool _hasInitializedIndex = false;
 
   @override
   void initState() {
     super.initState();
-    profileAtUri = AtUri.parse(widget.profileUri);
     _currentIndex = widget.initialPostIndex;
     pageController = PageController(initialPage: widget.initialPostIndex);
   }
@@ -57,11 +53,11 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
     if (!_hasInitializedIndex) {
       _hasInitializedIndex = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(profileFeedIndexProvider(widget.profileUri).notifier).setIndex(widget.initialPostIndex);
+        ref.read(profileFeedIndexProvider('reposts:${widget.actor}').notifier).setIndex(widget.initialPostIndex);
       });
     }
 
-    final feedState = ref.watch(profileFeedProvider(profileAtUri, widget.videosOnly));
+    final repostsState = ref.watch(profileRepostsProvider(widget.actor));
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
@@ -69,14 +65,14 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
       body: Stack(
         children: [
           // Full-screen content
-          feedState.when(
+          repostsState.when(
             data: (state) {
               // Display all posts returned by server - no client-side filtering
               final filteredUris = state.loadedPosts;
 
               if (filteredUris.isEmpty) {
                 return const Center(
-                  child: Text('No posts available', style: TextStyle(color: AppColors.white)),
+                  child: Text('No reposts available', style: TextStyle(color: AppColors.white)),
                 );
               }
 
@@ -92,19 +88,21 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
                     _currentIndex = index;
                   });
                   // Update the profile feed index provider for video visibility tracking
-                  ref.read(profileFeedIndexProvider(widget.profileUri).notifier).setIndex(index);
+                  ref.read(profileFeedIndexProvider('reposts:${widget.actor}').notifier).setIndex(index);
                   // Load more posts when approaching the end
                   if (index >= filteredUris.length - 3 && !state.isEndOfNetwork) {
-                    ref.read(profileFeedProvider(profileAtUri, widget.videosOnly).notifier).loadMore();
+                    ref.read(profileRepostsProvider(widget.actor).notifier).loadMore();
                   }
                 },
                 itemBuilder: (context, index) {
                   final postUri = filteredUris[index];
                   final post = state.postViews[postUri];
+                  // Create a profile URI from the actor for the post widget
+                  final profileUri = AtUri.parse('at://${widget.actor}');
                   return ProfileFeedPostWidget(
                     postUri: postUri,
-                    profileUri: profileAtUri,
-                    videosOnly: widget.videosOnly,
+                    profileUri: profileUri,
+                    videosOnly: false,
                     post: post,
                     index: index,
                   );
@@ -119,14 +117,14 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
                   const Icon(Icons.error_outline, color: AppColors.white, size: 48),
                   const SizedBox(height: 16),
                   Text(
-                    'Error loading feed: $error',
+                    'Error loading reposts: $error',
                     style: const TextStyle(color: AppColors.white),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      ref.read(profileFeedProvider(profileAtUri, widget.videosOnly).notifier).refresh();
+                      ref.read(profileRepostsProvider(widget.actor).notifier).refresh();
                     },
                     child: const Text('Retry'),
                   ),
@@ -153,7 +151,7 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
       bottomNavigationBar: _CommentBar(
         bottomPadding: bottomPadding,
         onTap: () {
-          final state = feedState.value;
+          final state = repostsState.value;
           if (state != null && state.loadedPosts.isNotEmpty) {
             final currentPostUri = state.loadedPosts[_currentIndex];
             final post = state.postViews[currentPostUri];

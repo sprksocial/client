@@ -190,4 +190,15 @@ abstract class FeedRepository {
     String sort = 'latest',
     String? cursor,
   });
+
+  /// Get a list of posts reposted by an actor
+  ///
+  /// [actor] The at-identifier of the actor (handle or DID)
+  /// [limit] The number of items to return (default 50, max 100)
+  /// [cursor] Pagination cursor for the next set of results
+  Future<({List<FeedViewPost> posts, String? cursor})> getActorReposts(
+    String actor, {
+    int limit = 50,
+    String? cursor,
+  });
 }

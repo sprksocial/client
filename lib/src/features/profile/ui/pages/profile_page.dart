@@ -22,9 +22,12 @@ import 'package:sparksocial/src/core/utils/logging/logger.dart';
 import 'package:sparksocial/src/core/utils/text_formatter.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
 import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
+import 'package:sparksocial/src/features/profile/providers/profile_reposts_provider.dart';
 import 'package:sparksocial/src/features/profile/ui/pages/user_list_page.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/early_supporter_sheet.dart';
 import 'package:sparksocial/src/features/profile/ui/widgets/profile_grid_tab.dart';
+import 'package:sparksocial/src/features/profile/ui/widgets/profile_reposts_tab.dart';
+import 'package:sparksocial/src/features/profile/ui/widgets/profile_tab_base.dart';
 
 @RoutePage()
 class ProfilePage extends ConsumerStatefulWidget {
@@ -47,6 +50,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   late final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ProfilePage');
   late final IdentityRepository _identityRepository = GetIt.instance<IdentityRepository>();
   late final ScrollController _scrollController = ScrollController();
+  int _activeTabIndex = 0;
+  final Map<int, ProfileTabBase> _cachedTabWidgets = {};
 
   @override
   void initState() {
@@ -65,8 +70,42 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     // Trigger loading when user is within ~2 rows of the bottom (each row is roughly 200px at 9:16 aspect ratio)
     if (_scrollController.hasClients && _scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 500) {
       final profileUri = AtUri.parse('at://${widget.did}');
-      ref.read(profileFeedProvider(profileUri, false).notifier).loadMore();
+      if (_activeTabIndex == 0) {
+        ref.read(profileFeedProvider(profileUri, false).notifier).loadMore();
+      } else if (_activeTabIndex == 1) {
+        final actor = profileUri.hostname;
+        ref.read(profileRepostsProvider(actor).notifier).loadMore();
+      }
     }
+  }
+
+  /// Gets or creates a tab widget for the given index
+  /// Caches tab widgets to keep them loaded when switching tabs
+  ProfileTabBase _getTabWidget(int tabIndex) {
+    if (_cachedTabWidgets.containsKey(tabIndex)) {
+      return _cachedTabWidgets[tabIndex]!;
+    }
+
+    final profileUri = AtUri.parse('at://${widget.did}');
+    ProfileTabBase tabWidget;
+
+    switch (tabIndex) {
+      case 0:
+        // First tab - default profile grid content (not a route)
+        tabWidget = ProfileGridTab(profileUri: profileUri);
+        break;
+      case 1:
+        // Second tab - reposts
+        tabWidget = ProfileRepostsTab(profileUri: profileUri);
+        break;
+      default:
+        // Fallback to first tab
+        tabWidget = ProfileGridTab(profileUri: profileUri);
+    }
+
+    // Cache the tab widget to keep it loaded
+    _cachedTabWidgets[tabIndex] = tabWidget;
+    return tabWidget;
   }
 
   /// Builds slivers for a given tab index
@@ -76,23 +115,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     required WidgetRef ref,
     required int tabIndex,
   }) {
-    final profileUri = AtUri.parse('at://${widget.did}');
-
-    switch (tabIndex) {
-      case 0:
-        // First tab - default profile grid content (not a route)
-        final gridTab = ProfileGridTab(profileUri: profileUri);
-        return gridTab.buildSlivers(context, ref);
-      // Add more tabs here - these correspond to route pages:
-      // case 1:
-      //   return ProfileLikedPage.buildSlivers(context, ref, widget.did);
-      // case 2:
-      //   return ProfileVideosOnlyPage.buildSlivers(context, ref, widget.did);
-      default:
-        // Fallback to first tab
-        final gridTab = ProfileGridTab(profileUri: profileUri);
-        return gridTab.buildSlivers(context, ref);
-    }
+    final tabWidget = _getTabWidget(tabIndex);
+    return tabWidget.buildSlivers(context, ref);
   }
 
   void _showEarlySupporterInfo(BuildContext context) {
@@ -142,14 +166,22 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
 
     // Tab 0 is the default profile content (built directly, not a route)
     // Tabs 1+ are subpages (route pages)
-    // For now we only have tab 0, so we use simple state management
-    // When adding tabs 1+, use AutoTabsRouter with those routes
+    // Initialize all tabs to cache their widgets
+    final profileUri = AtUri.parse('at://${widget.did}');
+    _getTabWidget(0);
+    _getTabWidget(1);
 
-    // Build slivers for tab 0 immediately - tabs load in parallel with profile
+    // Watch all tab providers to keep their state alive even when not visible
+    // This ensures tabs don't reload when switching between them
+    ref.watch(profileFeedProvider(profileUri, false));
+    final actor = profileUri.hostname;
+    ref.watch(profileRepostsProvider(actor));
+
+    // Build slivers for the active tab using cached widget
     final contentSlivers = _buildSliversForTab(
       context: context,
       ref: ref,
-      tabIndex: 0, // Always tab 0 for now
+      tabIndex: _activeTabIndex,
     );
 
     return profileStateAsync.when(
@@ -366,12 +398,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               ),
           ],
           tabsWidget: ProfileTabBar(
-            selectedIndex: 0, // Always 0 for now
-            tabs: _buildTabItems(0),
+            selectedIndex: _activeTabIndex,
+            tabs: _buildTabItems(_activeTabIndex),
           ),
           onTabChanged: (index) {
-            // When adding tabs 1+ with AutoTabsRouter, this will be: tabsRouter.setActiveIndex(index)
-            // For now with only tab 0, this is a no-op
+            setState(() {
+              _activeTabIndex = index;
+            });
           },
           contentWidget: const SizedBox.shrink(), // Not used when contentSlivers is provided
           contentSlivers: contentSlivers,
@@ -405,8 +438,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             ),
           ],
           tabsWidget: ProfileTabBar(
-            selectedIndex: 0, // Always 0 for now
-            tabs: _buildTabItems(0),
+            selectedIndex: _activeTabIndex,
+            tabs: _buildTabItems(_activeTabIndex),
           ),
           contentWidget: const SizedBox.shrink(), // Not used when contentSlivers is provided
           contentSlivers: contentSlivers, // Tabs load even while profile is loading
@@ -432,9 +465,18 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
         filledIcon: AppIcons.gridFilled(),
         isSelected: activeIndex == 0,
         onTap: () {
-          // When using AutoTabsRouter: tabsRouter.setActiveIndex(0)
           setState(() {
-            // activeTabIndex = 0; // Will be handled by state management
+            _activeTabIndex = 0;
+          });
+        },
+      ),
+      ProfileTabItem(
+        icon: AppIcons.repost(),
+        filledIcon: AppIcons.repost(), // No filled variant exists, use same icon
+        isSelected: activeIndex == 1,
+        onTap: () {
+          setState(() {
+            _activeTabIndex = 1;
           });
         },
       ),
@@ -442,12 +484,6 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       // ProfileTabItem(
       //   icon: AppIcons.profileLiked(),
       //   filledIcon: AppIcons.likeFilled(),
-      //   isSelected: activeIndex == 1,
-      //   onTap: () => tabsRouter.setActiveIndex(1),
-      // ),
-      // ProfileTabItem(
-      //   icon: AppIcons.video(),
-      //   filledIcon: AppIcons.videoFilled(),
       //   isSelected: activeIndex == 2,
       //   onTap: () => tabsRouter.setActiveIndex(2),
       // ),

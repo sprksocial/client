@@ -1350,6 +1350,57 @@ class FeedRepositoryImpl implements FeedRepository {
     });
   }
 
+  @override
+  Future<({List<FeedViewPost> posts, String? cursor})> getActorReposts(
+    String actor, {
+    int limit = 50,
+    String? cursor,
+  }) async {
+    _logger.d('Getting actor reposts for actor: $actor, limit: $limit, cursor: $cursor');
+
+    return _client.executeWithRetry(() async {
+      if (!_client.authRepository.isAuthenticated) {
+        _logger.w('Not authenticated');
+        throw Exception('Not authenticated');
+      }
+
+      final atproto = _client.authRepository.atproto;
+      if (atproto == null) {
+        _logger.e('AtProto not initialized');
+        throw Exception('AtProto not initialized');
+      }
+
+      final parameters = <String, dynamic>{
+        'actor': actor,
+        'limit': limit,
+      };
+
+      if (cursor != null) {
+        parameters['cursor'] = cursor;
+      }
+
+      final result = await atproto.get(
+        NSID.parse('so.sprk.feed.getActorReposts'),
+        parameters: parameters,
+        headers: {'atproto-proxy': _client.sprkDid},
+        to: (jsonMap) {
+          final rawFeed = jsonMap['feed']! as List<dynamic>;
+          final feedPosts = _parseAndFilterPosts<FeedViewPost>(
+            rawPosts: rawFeed,
+            fromJson: FeedViewPost.fromJson,
+            hasMedia: _feedViewPostHasMedia,
+            getUri: _getFeedViewPostUri,
+            source: 'sprk actor reposts',
+          );
+          return (posts: feedPosts, cursor: jsonMap['cursor'] as String?);
+        },
+        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+      );
+      _logger.d('Actor reposts retrieved successfully: ${result.data.posts.length} posts');
+      return result.data;
+    });
+  }
+
   /// Helper method to determine content type based on file extension
   String _getContentType(String videoPath) {
     final extension = path.extension(videoPath).toLowerCase();
