@@ -262,7 +262,7 @@ class FeedRepositoryImpl implements FeedRepository {
         return bskyFeedAdapter.processBskyAuthorFeed(
           rawFeed: resultBsky.data.feed,
           cursor: resultBsky.data.cursor,
-          onError: (message, {error, stackTrace}) => _logger.e(message, error: error, stackTrace: stackTrace),
+          onError: _logger.e,
         );
       } catch (e) {
         _logger.e('Error getting author feed from Bsky', error: e);
