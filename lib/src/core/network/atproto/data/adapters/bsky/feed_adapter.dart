@@ -694,9 +694,7 @@ class BskyFeedAdapter {
     }).toList();
 
     // Convert each post
-    for (final rawPost in rawPostsJson) {
-      convertPostViewJson(rawPost);
-    }
+    rawPostsJson.forEach(convertPostViewJson);
 
     // Parse and convert to Spark format
     final parsedPosts = rawPostsJson.map(PostView.fromJson).toList();
