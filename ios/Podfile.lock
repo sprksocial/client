@@ -14,12 +14,13 @@ PODS:
   - camera_avfoundation (0.0.1):
     - Flutter
   - Flutter (1.0.0)
-  - flutter_secure_storage (6.0.0):
-    - Flutter
-  - fvp (0.35.1):
+  - flutter_secure_storage_darwin (10.0.0):
     - Flutter
     - FlutterMacOS
-    - mdk (~> 0.35.0)
+  - fvp (0.35.2):
+    - Flutter
+    - FlutterMacOS
+    - mdk (~> 0.35.1)
   - GCDWebServer (3.5.4):
     - GCDWebServer/Core (= 3.5.4)
   - GCDWebServer/Core (3.5.4)
@@ -28,7 +29,7 @@ PODS:
     - PINCache (>= 3.0.1-beta.3)
   - image_picker_ios (0.0.1):
     - Flutter
-  - mdk (0.35.0)
+  - mdk (0.35.1)
   - package_info_plus (0.4.5):
     - Flutter
   - path_provider_foundation (0.0.1):
@@ -42,7 +43,7 @@ PODS:
   - PINCache/Core (3.0.4):
     - PINOperation (~> 1.2.3)
   - PINOperation (1.2.3)
-  - PostHog (3.35.0)
+  - PostHog (3.37.1)
   - posthog_flutter (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -69,7 +70,7 @@ DEPENDENCIES:
   - better_player_plus (from `.symlinks/plugins/better_player_plus/ios`)
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - Flutter (from `Flutter`)
-  - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
+  - flutter_secure_storage_darwin (from `.symlinks/plugins/flutter_secure_storage_darwin/darwin`)
   - fvp (from `.symlinks/plugins/fvp/darwin`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
@@ -103,8 +104,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/camera_avfoundation/ios"
   Flutter:
     :path: Flutter
-  flutter_secure_storage:
-    :path: ".symlinks/plugins/flutter_secure_storage/ios"
+  flutter_secure_storage_darwin:
+    :path: ".symlinks/plugins/flutter_secure_storage_darwin/darwin"
   fvp:
     :path: ".symlinks/plugins/fvp/darwin"
   image_picker_ios:
@@ -135,17 +136,17 @@ SPEC CHECKSUMS:
   Cache: 4ca7e00363fca5455f26534e5607634c820ffc2d
   camera_avfoundation: 5675ca25298b6f81fa0a325188e7df62cc217741
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  flutter_secure_storage: 1ed9476fba7e7a782b22888f956cce43e2c62f13
-  fvp: 5a47a325ffa8d63e70a276a6436416ae703206a5
+  flutter_secure_storage_darwin: acdb3f316ed05a3e68f856e0353b133eec373a23
+  fvp: 4fe77c2b30122233a57f425dafd219ed35565809
   GCDWebServer: 2c156a56c8226e2d5c0c3f208a3621ccffbe3ce4
   HLSCachingReverseProxyServer: 59935e1e0244ad7f3375d75b5ef46e8eb26ab181
   image_picker_ios: e0ece4aa2a75771a7de3fa735d26d90817041326
-  mdk: baa616b93f696c7066df0e5ebe057badfa9c462b
+  mdk: 59bbe9e2ac2a052455ab1b076c245680d66cf6c0
   package_info_plus: af8e2ca6888548050f16fa2f1938db7b5a5df499
   path_provider_foundation: bb55f6dbba17d0dccd6737fe6f7f34fbd0376880
   PINCache: d9a87a0ff397acffe9e2f0db972ac14680441158
   PINOperation: fb563bcc9c32c26d6c78aaff967d405aa2ee74a7
-  PostHog: da83ef8bee8c21ccb2b3680054e22c85d352f142
+  PostHog: cf23456d5de1c19efe5823437069440a12198c91
   posthog_flutter: 9535ac2d4ab65ccb9ace3886dcc0b3105198bad5
   pro_video_editor: 44ef9a6d48dbd757ed428cf35396dd05f35c7830
   shared_preferences_foundation: 7036424c3d8ec98dfe75ff1667cb0cd531ec82bb

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
 import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
 import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
@@ -33,7 +34,10 @@ class FollowButton extends StatelessWidget {
 
     if (isBlocking && onUnblock != null) {
       return InteractivePressable(
-        onTap: onUnblock,
+        onTap: () {
+          HapticFeedback.mediumImpact();
+          onUnblock!();
+        },
         borderRadius: const BorderRadius.all(Radius.circular(8)),
         child: Container(
           width: width ?? 109.47,
@@ -61,7 +65,14 @@ class FollowButton extends StatelessWidget {
     }
 
     return InteractivePressable(
-      onTap: isFollowing ? onUnfollow : onFollow,
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        if (isFollowing) {
+          onUnfollow();
+        } else {
+          onFollow();
+        }
+      },
       borderRadius: const BorderRadius.all(Radius.circular(8)),
       child: Container(
         width: width ?? 109.47,

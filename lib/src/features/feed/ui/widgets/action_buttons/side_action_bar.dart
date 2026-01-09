@@ -1,6 +1,7 @@
 import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 import 'package:sparksocial/src/core/design_system/components/organisms/side_action_bar.dart';
@@ -92,6 +93,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
   }
 
   Future<void> _handleLike() async {
+    HapticFeedback.mediumImpact();
     final wasLiked = _isLiked;
     setState(() {
       _isLiked = !_isLiked;
@@ -149,6 +151,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
   }
 
   Future<void> _handleRepost() async {
+    HapticFeedback.lightImpact();
     final wasReposted = _isReposted;
     setState(() {
       _isReposted = !_isReposted;

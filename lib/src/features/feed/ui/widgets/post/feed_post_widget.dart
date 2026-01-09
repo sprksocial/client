@@ -2,6 +2,7 @@ import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto/core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:sparksocial/src/core/routing/app_router.dart';
@@ -75,6 +76,9 @@ class _FeedPostWidgetState extends ConsumerState<FeedPostWidget> {
     if (isCurrentlyLiked) {
       return;
     }
+
+    // Haptic feedback for the like action
+    HapticFeedback.mediumImpact();
 
     // Start heart animation
     setState(() {
