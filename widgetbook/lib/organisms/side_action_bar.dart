@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/organisms/side_action_bar.dart';
+import 'package:spark/src/core/design_system/components/organisms/side_action_bar.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 

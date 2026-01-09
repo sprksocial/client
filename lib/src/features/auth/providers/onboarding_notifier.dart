@@ -3,11 +3,11 @@ import 'dart:typed_data';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/auth/data/models/onboarding_screen_state.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/auth/data/models/onboarding_screen_state.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 
 part 'onboarding_notifier.g.dart';
 
@@ -56,7 +56,10 @@ class OnboardingNotifier extends _$OnboardingNotifier {
       );
     } catch (e, s) {
       _logger.e('Failed to load Bsky profile', error: e, stackTrace: s);
-      return const OnboardingScreenState(isLoading: false, errorMessage: 'Failed to load profile.');
+      return const OnboardingScreenState(
+        isLoading: false,
+        errorMessage: 'Failed to load profile.',
+      );
     }
   }
 
@@ -97,7 +100,9 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     if (state.hasValue) {
       final currentProfileData = state.value!.bskyProfileRecord;
       final originalDisplayName = currentProfileData?.displayName ?? '';
-      state = AsyncValue.data(state.value!.copyWith(displayName: originalDisplayName));
+      state = AsyncValue.data(
+        state.value!.copyWith(displayName: originalDisplayName),
+      );
     }
   }
 
@@ -105,7 +110,9 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     if (state.hasValue) {
       final currentProfileData = state.value!.bskyProfileRecord;
       final originalDescription = currentProfileData?.description ?? '';
-      state = AsyncValue.data(state.value!.copyWith(description: originalDescription));
+      state = AsyncValue.data(
+        state.value!.copyWith(description: originalDescription),
+      );
     }
   }
 
@@ -129,7 +136,8 @@ class OnboardingNotifier extends _$OnboardingNotifier {
       return null;
     }
 
-    if (currentVal.initialAvatarUrl != null && currentVal.initialAvatarUrl!.isNotEmpty) {
+    if (currentVal.initialAvatarUrl != null &&
+        currentVal.initialAvatarUrl!.isNotEmpty) {
       return currentVal.initialAvatarUrl;
     }
 
@@ -143,7 +151,13 @@ class OnboardingNotifier extends _$OnboardingNotifier {
     return null;
   }
 
-  ({String displayName, String description, Uint8List? avatarBytes, String? initialAvatarUrl, String? initialAvatarCid})?
+  ({
+    String displayName,
+    String description,
+    Uint8List? avatarBytes,
+    String? initialAvatarUrl,
+    String? initialAvatarCid,
+  })?
   getOnboardingDataForNextStep() {
     if (!state.hasValue) return null;
     final current = state.value!;

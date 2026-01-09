@@ -3,16 +3,16 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/widgets/content_warning_overlay.dart';
-import 'package:sparksocial/src/core/utils/label_utils.dart';
-import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/images/image_carousel.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/post/post_overlay.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/videos/video_player.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/widgets/content_warning_overlay.dart';
+import 'package:spark/src/core/utils/label_utils.dart';
+import 'package:spark/src/features/feed/providers/post_updates.dart';
+import 'package:spark/src/features/feed/ui/widgets/images/image_carousel.dart';
+import 'package:spark/src/features/feed/ui/widgets/post/post_overlay.dart';
+import 'package:spark/src/features/feed/ui/widgets/videos/video_player.dart';
 
 @RoutePage()
 class StandalonePostPage extends ConsumerStatefulWidget {
@@ -27,7 +27,8 @@ class StandalonePostPage extends ConsumerStatefulWidget {
 class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
   Future<PostView>? _postFuture;
   int? _lastUpdateCount;
-  final GlobalKey<PostVideoPlayerState> _videoPlayerKey = GlobalKey<PostVideoPlayerState>();
+  final GlobalKey<PostVideoPlayerState> _videoPlayerKey =
+      GlobalKey<PostVideoPlayerState>();
   bool _showWarningOverlay = false;
   List<String> _warningLabels = [];
   bool _shouldBlurContent = false;
@@ -50,11 +51,15 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
   Future<PostView> _loadPostWithFallback() async {
     final feedRepository = GetIt.instance<SprkRepository>().feed;
     final uri = AtUri.parse(widget.postUri);
-    final isBlueskyPost = uri.collection.toString().startsWith('app.bsky.feed.post');
+    final isBlueskyPost = uri.collection.toString().startsWith(
+      'app.bsky.feed.post',
+    );
     const maxRetries = 3;
     const delay = Duration(seconds: 2);
     for (var i = 0; i < maxRetries; i++) {
-      final networkPost = await feedRepository.getPosts([uri], bluesky: isBlueskyPost);
+      final networkPost = await feedRepository.getPosts([
+        uri,
+      ], bluesky: isBlueskyPost);
       if (networkPost.isNotEmpty) {
         return networkPost.first;
       }
@@ -108,14 +113,19 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
 
     return Scaffold(
       backgroundColor: Colors.black,
-      appBar: AppBar(backgroundColor: Colors.transparent, elevation: 0, leading: const AppLeadingButton()),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: const AppLeadingButton(),
+      ),
       body: SafeArea(
         child: _postFuture == null
             ? const Center(child: CircularProgressIndicator())
             : FutureBuilder<PostView>(
                 future: _postFuture,
                 builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.done && snapshot.hasData) {
+                  if (snapshot.connectionState == ConnectionState.done &&
+                      snapshot.hasData) {
                     final postData = snapshot.data!;
 
                     final mainContent = Stack(
@@ -134,21 +144,24 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                               videoUrl: postData.videoUrl,
                               thumbnail: postData.thumbnailUrl,
                             ),
-                            MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
-                            MediaViewBskyRecordWithMedia(:final media) => switch (media) {
-                              MediaViewVideo() => PostVideoPlayer(
-                                key: _videoPlayerKey,
-                                videoUrl: postData.videoUrl,
-                                thumbnail: postData.thumbnailUrl,
-                              ),
-                              MediaViewBskyVideo() => PostVideoPlayer(
-                                key: _videoPlayerKey,
-                                videoUrl: postData.videoUrl,
-                                thumbnail: postData.thumbnailUrl,
-                              ),
-                              MediaViewImages() || MediaViewBskyImages() => ImageCarousel(imageUrls: postData.imageUrls),
-                              _ => const SizedBox.shrink(),
-                            },
+                            MediaViewImages() || MediaViewBskyImages() =>
+                              ImageCarousel(imageUrls: postData.imageUrls),
+                            MediaViewBskyRecordWithMedia(:final media) =>
+                              switch (media) {
+                                MediaViewVideo() => PostVideoPlayer(
+                                  key: _videoPlayerKey,
+                                  videoUrl: postData.videoUrl,
+                                  thumbnail: postData.thumbnailUrl,
+                                ),
+                                MediaViewBskyVideo() => PostVideoPlayer(
+                                  key: _videoPlayerKey,
+                                  videoUrl: postData.videoUrl,
+                                  thumbnail: postData.thumbnailUrl,
+                                ),
+                                MediaViewImages() || MediaViewBskyImages() =>
+                                  ImageCarousel(imageUrls: postData.imageUrls),
+                                _ => const SizedBox.shrink(),
+                              },
                             _ => const SizedBox.shrink(),
                           },
                         ),
@@ -199,7 +212,11 @@ class _StandalonePostPageState extends ConsumerState<StandalonePostPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(Icons.error, color: Colors.white, size: 48),
+                          const Icon(
+                            Icons.error,
+                            color: Colors.white,
+                            size: 48,
+                          ),
                           const SizedBox(height: 16),
                           Text(
                             'Error loading post: ${snapshot.error}',

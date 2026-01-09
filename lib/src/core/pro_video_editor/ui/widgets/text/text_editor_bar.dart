@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/text_editor_bottom_action_bar.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/common/text_editor_bottom_action_bar.dart';
 
 /// A custom text editor bottom bar widget for video editor.
 ///
@@ -93,7 +93,8 @@ class _TextEditorBarState extends State<TextEditorBar> {
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               ..._buildConfigs(),
-              if (textEditorConfigs.customTextStyles != null && textEditorConfigs.customTextStyles!.isNotEmpty) ...[
+              if (textEditorConfigs.customTextStyles != null &&
+                  textEditorConfigs.customTextStyles!.isNotEmpty) ...[
                 const SizedBox(width: 5),
                 _buildDivider(),
                 ..._buildFontStyleButtons(),

@@ -17,7 +17,8 @@ abstract class IdentityInfo with _$IdentityInfo {
     Map<String, dynamic>? didDocument,
   }) = _IdentityInfo;
 
-  factory IdentityInfo.fromJson(Map<String, dynamic> json) => _$IdentityInfoFromJson(json);
+  factory IdentityInfo.fromJson(Map<String, dynamic> json) =>
+      _$IdentityInfoFromJson(json);
 }
 
 /// Represents the state of identity resolution operations

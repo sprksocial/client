@@ -1,6 +1,6 @@
 import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
-import 'package:sparksocial/src/core/auth/data/models/login_result.dart';
+import 'package:spark/src/core/auth/data/models/login_result.dart';
 
 /// Authentication repository interface for AT Protocol
 abstract class AuthRepository {
@@ -27,8 +27,12 @@ abstract class AuthRepository {
   /// [password] - The user password
   /// [inviteCode] - Optional invite code for restricted registrations
   ///
-  /// Returns a tuple with a boolean indicating success and an optional error message
-  Future<({bool success, String? error})> register(String handle, String email, String password, String? inviteCode);
+  Future<({bool success, String? error})> register(
+    String handle,
+    String email,
+    String password,
+    String? inviteCode,
+  );
 
   /// Logs out the current user
   Future<void> logout();

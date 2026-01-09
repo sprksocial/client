@@ -1,8 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/tokens/constants.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/tokens/constants.dart';
 
 class SparkBottomNavBar extends StatelessWidget {
   const SparkBottomNavBar({
@@ -21,7 +21,8 @@ class SparkBottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottomPadding = MediaQuery.of(context).padding.bottom;
     // Always use dark mode when on home tab (index 0)
-    final isDark = currentIndex == 0 || Theme.of(context).brightness == Brightness.dark;
+    final isDark =
+        currentIndex == 0 || Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -32,7 +33,9 @@ class SparkBottomNavBar extends StatelessWidget {
               top: 12,
               bottom: 12 + bottomPadding,
             ),
-            color: isDark ? const Color.fromARGB(51, 0, 0, 0) : const Color.fromARGB(178, 255, 255, 255),
+            color: isDark
+                ? const Color.fromARGB(51, 0, 0, 0)
+                : const Color.fromARGB(178, 255, 255, 255),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 
@@ -49,7 +52,9 @@ class SparkBottomNavBar extends StatelessWidget {
                   isSelected: currentIndex == 1,
                   onTap: () => onTap(1),
                   builder: (c, selected) => selected
-                      ? AppIcons.exploreFilled(color: isDark ? null : Colors.black)
+                      ? AppIcons.exploreFilled(
+                          color: isDark ? null : Colors.black,
+                        )
                       : AppIcons.explore(color: isDark ? null : Colors.black),
                 ),
 
@@ -57,15 +62,21 @@ class SparkBottomNavBar extends StatelessWidget {
                   isSelected: currentIndex == 2,
                   onTap: () => onTap(2),
                   builder: (c, selected) => selected
-                      ? AppIcons.navbarPostFilled(color: isDark ? null : Colors.black)
-                      : AppIcons.navbarPost(color: isDark ? null : Colors.black),
+                      ? AppIcons.navbarPostFilled(
+                          color: isDark ? null : Colors.black,
+                        )
+                      : AppIcons.navbarPost(
+                          color: isDark ? null : Colors.black,
+                        ),
                 ),
 
                 _NavIcon(
                   isSelected: currentIndex == 3,
                   onTap: () => onTap(3),
                   builder: (c, selected) => selected
-                      ? AppIcons.messagesFilled(color: isDark ? null : Colors.black)
+                      ? AppIcons.messagesFilled(
+                          color: isDark ? null : Colors.black,
+                        )
                       : AppIcons.messages(color: isDark ? null : Colors.black),
                 ),
 
@@ -92,11 +103,17 @@ class _BarBackground extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(0),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: AppConstants.blurBottomBar.toDouble(), sigmaY: AppConstants.blurBottomBar.toDouble()),
+        filter: ImageFilter.blur(
+          sigmaX: AppConstants.blurBottomBar.toDouble(),
+          sigmaY: AppConstants.blurBottomBar.toDouble(),
+        ),
         child: DecoratedBox(
           decoration: BoxDecoration(
             border: Border(
-              top: BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 2),
+              top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.08),
+                width: 2,
+              ),
             ),
           ),
           child: child,
@@ -146,7 +163,8 @@ class _ProfileAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Always use dark mode when on home tab (index 0)
-    final isDark = currentIndex == 0 || Theme.of(context).brightness == Brightness.dark;
+    final isDark =
+        currentIndex == 0 || Theme.of(context).brightness == Brightness.dark;
     final avatar = Container(
       width: 34,
       height: 34,
@@ -155,8 +173,12 @@ class _ProfileAvatar extends StatelessWidget {
         border: Border.all(
           color: Colors.white,
         ),
-        image: image is AssetImage ? null : DecorationImage(image: image, fit: BoxFit.cover),
-        color: image is AssetImage ? (isDark ? const Color(0xFF424242) : const Color(0xFFE0E0E0)) : null,
+        image: image is AssetImage
+            ? null
+            : DecorationImage(image: image, fit: BoxFit.cover),
+        color: image is AssetImage
+            ? (isDark ? const Color(0xFF424242) : const Color(0xFFE0E0E0))
+            : null,
       ),
       child: image is AssetImage
           ? Icon(

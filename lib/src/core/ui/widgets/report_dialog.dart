@@ -6,10 +6,10 @@ import 'package:bluesky/com_atproto_repo_strongref.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/long_button.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 
 enum ReportCategory {
   violence('Violence'),
@@ -40,22 +40,36 @@ class ReportReason {
 }
 
 class ReportDialog extends ConsumerStatefulWidget {
-  const ReportDialog({required this.postUri, required this.postCid, super.key, this.onSubmit});
+  const ReportDialog({
+    required this.postUri,
+    required this.postCid,
+    super.key,
+    this.onSubmit,
+  });
   final String postUri;
   final String postCid;
 
-  /// Callback for report submission. Uses [ReasonType] directly to support both known and unknown reason types.
-  final Function(UModerationCreateReportSubject subject, ReasonType reasonType, String? reason)? onSubmit;
+  /// Callback for report submission. Uses [ReasonType] directly to support
+  /// known & unknown reason types.
+  final Function(
+    UModerationCreateReportSubject subject,
+    ReasonType reasonType,
+    String? reason,
+  )?
+  onSubmit;
 
   @override
   ConsumerState<ReportDialog> createState() => _ReportDialogState();
 }
 
 class _ReportDialogState extends ConsumerState<ReportDialog> {
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ReportDialog');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'ReportDialog',
+  );
   ReportCategory? _selectedCategory;
   ReportReason? _selectedReason;
-  final TextEditingController _additionalInfoController = TextEditingController();
+  final TextEditingController _additionalInfoController =
+      TextEditingController();
   bool _isSubmitting = false;
   String? _errorMessage;
 
@@ -78,25 +92,29 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
         value: 'tools.ozone.report.defs#reasonViolenceGraphicContent',
         displayName: 'Graphic Content',
         description: 'Graphic or violent imagery',
-        knownType: KnownReasonType.toolsOzoneReportDefsReasonViolenceGraphicContent,
+        knownType:
+            KnownReasonType.toolsOzoneReportDefsReasonViolenceGraphicContent,
       ),
       const ReportReason(
         value: 'tools.ozone.report.defs#reasonViolenceGlorification',
         displayName: 'Glorification of Violence',
         description: 'Content that glorifies violence',
-        knownType: KnownReasonType.toolsOzoneReportDefsReasonViolenceGlorification,
+        knownType:
+            KnownReasonType.toolsOzoneReportDefsReasonViolenceGlorification,
       ),
       const ReportReason(
         value: 'tools.ozone.report.defs#reasonViolenceExtremistContent',
         displayName: 'Extremist Content',
         description: 'Content promoting extremist ideologies',
-        knownType: KnownReasonType.toolsOzoneReportDefsReasonViolenceExtremistContent,
+        knownType:
+            KnownReasonType.toolsOzoneReportDefsReasonViolenceExtremistContent,
       ),
       const ReportReason(
         value: 'tools.ozone.report.defs#reasonViolenceTrafficking',
         displayName: 'Trafficking',
         description: 'Content related to human trafficking',
-        knownType: KnownReasonType.toolsOzoneReportDefsReasonViolenceTrafficking,
+        knownType:
+            KnownReasonType.toolsOzoneReportDefsReasonViolenceTrafficking,
       ),
       const ReportReason(
         value: 'tools.ozone.report.defs#reasonViolenceOther',
@@ -166,7 +184,8 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
         value: 'tools.ozone.report.defs#reasonChildSafetyHarassment',
         displayName: 'Harassment',
         description: 'Harassment targeting minors',
-        knownType: KnownReasonType.toolsOzoneReportDefsReasonChildSafetyHarassment,
+        knownType:
+            KnownReasonType.toolsOzoneReportDefsReasonChildSafetyHarassment,
       ),
       const ReportReason(
         value: 'tools.ozone.report.defs#reasonChildSafetyOther',
@@ -192,7 +211,8 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
         value: 'tools.ozone.report.defs#reasonHarassmentHateSpeech',
         displayName: 'Hate Speech',
         description: 'Hate speech or discriminatory content',
-        knownType: KnownReasonType.toolsOzoneReportDefsReasonHarassmentHateSpeech,
+        knownType:
+            KnownReasonType.toolsOzoneReportDefsReasonHarassmentHateSpeech,
       ),
       const ReportReason(
         value: 'tools.ozone.report.defs#reasonHarassmentDoxxing',
@@ -218,7 +238,8 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
         value: 'tools.ozone.report.defs#reasonMisleadingImpersonation',
         displayName: 'Impersonation',
         description: 'Impersonating another person or entity',
-        knownType: KnownReasonType.toolsOzoneReportDefsReasonMisleadingImpersonation,
+        knownType:
+            KnownReasonType.toolsOzoneReportDefsReasonMisleadingImpersonation,
       ),
       const ReportReason(
         value: 'tools.ozone.report.defs#reasonMisleadingSpam',
@@ -236,7 +257,8 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
         value: 'tools.ozone.report.defs#reasonMisleadingElections',
         displayName: 'Election Misinformation',
         description: 'False information about elections',
-        knownType: KnownReasonType.toolsOzoneReportDefsReasonMisleadingElections,
+        knownType:
+            KnownReasonType.toolsOzoneReportDefsReasonMisleadingElections,
       ),
       const ReportReason(
         value: 'tools.ozone.report.defs#reasonMisleadingOther',
@@ -256,7 +278,8 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
         value: 'tools.ozone.report.defs#reasonRuleProhibitedSales',
         displayName: 'Prohibited Sales',
         description: 'Prohibited goods or services',
-        knownType: KnownReasonType.toolsOzoneReportDefsReasonRuleProhibitedSales,
+        knownType:
+            KnownReasonType.toolsOzoneReportDefsReasonRuleProhibitedSales,
       ),
       const ReportReason(
         value: 'tools.ozone.report.defs#reasonRuleBanEvasion',
@@ -343,9 +366,14 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
     if (_selectedReason == null) return;
 
     final subject = UModerationCreateReportSubject.repoStrongRef(
-      data: RepoStrongRef(cid: widget.postCid, uri: AtUri.parse(widget.postUri)),
+      data: RepoStrongRef(
+        cid: widget.postCid,
+        uri: AtUri.parse(widget.postUri),
+      ),
     );
-    final reason = _additionalInfoController.text.isNotEmpty ? _additionalInfoController.text : null;
+    final reason = _additionalInfoController.text.isNotEmpty
+        ? _additionalInfoController.text
+        : null;
 
     setState(() {
       _isSubmitting = true;
@@ -353,7 +381,8 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
     });
 
     try {
-      // Build the ReasonType: use known type if available, otherwise use unknown with the raw value
+      // Build the ReasonType: use known type if available, otherwise unknown
+      // with the raw value
       final reasonType = _selectedReason!.knownType != null
           ? ReasonType.knownValue(data: _selectedReason!.knownType!)
           : ReasonType.unknown(data: _selectedReason!.value);
@@ -400,9 +429,13 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final textColor = theme.textTheme.bodyMedium?.color ?? (theme.brightness == Brightness.dark ? Colors.white : Colors.black);
+    final textColor =
+        theme.textTheme.bodyMedium?.color ??
+        (theme.brightness == Brightness.dark ? Colors.white : Colors.black);
     final isStep2 = _selectedCategory != null;
-    final reasons = isStep2 ? (_categoryReasons[_selectedCategory!] ?? <ReportReason>[]) : <ReportReason>[];
+    final reasons = isStep2
+        ? (_categoryReasons[_selectedCategory!] ?? <ReportReason>[])
+        : <ReportReason>[];
 
     return AlertDialog(
       backgroundColor: theme.colorScheme.surface,
@@ -475,9 +508,14 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
                 style: theme.textTheme.bodySmall?.copyWith(color: textColor),
                 decoration: InputDecoration(
                   hintText: 'Additional details (optional)',
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 8,
+                  ),
                   border: const OutlineInputBorder(),
-                  hintStyle: theme.textTheme.bodySmall?.copyWith(color: theme.hintColor),
+                  hintStyle: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.hintColor,
+                  ),
                   fillColor: theme.colorScheme.surface,
                   filled: true,
                 ),
@@ -494,7 +532,13 @@ class _ReportDialogState extends ConsumerState<ReportDialog> {
                     border: Border.all(color: theme.colorScheme.error),
                     borderRadius: BorderRadius.circular(4),
                   ),
-                  child: Text(_errorMessage!, style: TextStyle(color: theme.colorScheme.error, fontSize: 12)),
+                  child: Text(
+                    _errorMessage!,
+                    style: TextStyle(
+                      color: theme.colorScheme.error,
+                      fontSize: 12,
+                    ),
+                  ),
                 ),
               ),
           ],
@@ -530,7 +574,9 @@ class _CategoryTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final textColor = theme.textTheme.bodyMedium?.color ?? (theme.brightness == Brightness.dark ? Colors.white : Colors.black);
+    final textColor =
+        theme.textTheme.bodyMedium?.color ??
+        (theme.brightness == Brightness.dark ? Colors.white : Colors.black);
     final isSelected = selectedCategory == category;
 
     return InkWell(
@@ -540,7 +586,9 @@ class _CategoryTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
         margin: const EdgeInsets.only(bottom: 4),
         decoration: BoxDecoration(
-          color: isSelected ? theme.colorScheme.primary.withAlpha(25) : Colors.transparent,
+          color: isSelected
+              ? theme.colorScheme.primary.withAlpha(25)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
             color: isSelected ? theme.colorScheme.primary : Colors.transparent,
@@ -583,17 +631,26 @@ class _ReasonTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final textColor = theme.textTheme.bodyMedium?.color ?? (theme.brightness == Brightness.dark ? Colors.white : Colors.black);
+    final textColor =
+        theme.textTheme.bodyMedium?.color ??
+        (theme.brightness == Brightness.dark ? Colors.white : Colors.black);
 
     return RadioListTile<ReportReason>(
       title: Text(
         reason.displayName,
-        style: theme.textTheme.bodyMedium?.copyWith(color: textColor, fontWeight: FontWeight.w500, fontSize: 13),
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: textColor,
+          fontWeight: FontWeight.w500,
+          fontSize: 13,
+        ),
       ),
       subtitle: reason.description != null
           ? Text(
               reason.description!,
-              style: theme.textTheme.bodySmall?.copyWith(color: textColor.withAlpha(179), fontSize: 10),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: textColor.withAlpha(179),
+                fontSize: 10,
+              ),
             )
           : null,
       value: reason,

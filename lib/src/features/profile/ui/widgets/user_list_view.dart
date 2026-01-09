@@ -1,11 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/profile_card.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/profile/providers/user_list_provider.dart';
-import 'package:sparksocial/src/features/profile/ui/pages/user_list_page.dart';
+import 'package:spark/src/core/design_system/components/molecules/profile_card.dart';
+import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/features/profile/providers/user_list_provider.dart';
+import 'package:spark/src/features/profile/ui/pages/user_list_page.dart';
 
 class UserListView extends ConsumerWidget {
   final List<ProfileView> users;
@@ -53,12 +53,18 @@ class UserListView extends ConsumerWidget {
             description: user.description,
             isFollowing: user.viewer?.following != null,
             onFollow: () {
-              ref.read(userListProvider(did: did, type: type).notifier).followUser(user.did);
+              ref
+                  .read(userListProvider(did: did, type: type).notifier)
+                  .followUser(user.did);
             },
             onUnfollow: () {
-              ref.read(userListProvider(did: did, type: type).notifier).unfollowUser(user.did);
+              ref
+                  .read(userListProvider(did: did, type: type).notifier)
+                  .unfollowUser(user.did);
             },
-            showFollowButton: !ref.read(userListProvider(did: did, type: type).notifier).isCurrentUser(user.did),
+            showFollowButton: !ref
+                .read(userListProvider(did: did, type: type).notifier)
+                .isCurrentUser(user.did),
             onTap: () => context.router.push(
               ProfileRoute(
                 did: user.did,

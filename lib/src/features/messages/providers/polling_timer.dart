@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/features/messages/providers/conversation_provider.dart';
+import 'package:spark/src/features/messages/providers/conversation_provider.dart';
 
 part 'polling_timer.g.dart';
 

@@ -1,9 +1,9 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class ActionButton extends StatelessWidget {
   final Widget icon;
@@ -53,7 +53,9 @@ class ActionButton extends StatelessWidget {
                           shape: BoxShape.circle,
                         )
                       : BoxDecoration(
-                          color: isDark ? AppColors.darkGreyButton : AppColors.lightGreyButton,
+                          color: isDark
+                              ? AppColors.darkGreyButton
+                              : AppColors.lightGreyButton,
                           shape: BoxShape.circle,
                           border: const Border.fromBorderSide(
                             BorderSide(

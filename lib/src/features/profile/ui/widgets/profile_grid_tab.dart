@@ -2,10 +2,10 @@ import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_grid_widget.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_tab_base.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
+import 'package:spark/src/features/profile/ui/widgets/profile_grid_widget.dart';
+import 'package:spark/src/features/profile/ui/widgets/profile_tab_base.dart';
 
 /// Tab widget that displays all posts (images and videos) in a grid
 /// This is the default profile tab (tab 0) - built directly, not via a route

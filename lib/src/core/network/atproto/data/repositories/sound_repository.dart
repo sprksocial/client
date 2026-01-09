@@ -1,6 +1,6 @@
 import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto_core/atproto_core.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
 
 abstract class SoundRepository {
   /// Create a new sound record.

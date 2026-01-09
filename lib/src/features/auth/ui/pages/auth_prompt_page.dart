@@ -2,9 +2,9 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/primary_button.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/primary_button.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
 
 @RoutePage()
 class AuthPromptPage extends StatelessWidget {
@@ -23,7 +23,10 @@ class AuthPromptPage extends StatelessWidget {
               leading: IconButton(
                 padding: EdgeInsets.zero,
                 onPressed: onClose,
-                icon: Icon(FluentIcons.dismiss_24_regular, color: Theme.of(context).colorScheme.onSurface),
+                icon: Icon(
+                  FluentIcons.dismiss_24_regular,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               backgroundColor: Colors.transparent,
               elevation: 0,
@@ -32,7 +35,11 @@ class AuthPromptPage extends StatelessWidget {
       body: Stack(
         children: [
           Positioned.fill(
-            child: Image.asset('branding/gradient.webp', fit: BoxFit.cover, package: 'assets'),
+            child: Image.asset(
+              'branding/gradient.webp',
+              fit: BoxFit.cover,
+              package: 'assets',
+            ),
           ),
           SafeArea(
             child: Center(
@@ -42,29 +49,44 @@ class AuthPromptPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     SvgPicture.asset(
-                      isDarkMode ? 'assets/images/logo_dark_mode.svg' : 'assets/images/logo_dark_mode.svg',
+                      isDarkMode
+                          ? 'assets/images/logo_dark_mode.svg'
+                          : 'assets/images/logo_dark_mode.svg',
                       height: 140,
                       width: 140,
                     ),
                     const SizedBox(height: 21),
                     const Text(
                       'Welcome to Spark',
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: AppColors.white),
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.white,
+                      ),
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 5),
                     const SizedBox(
                       width: 340,
                       child: Text(
-                        'Add an account to create videos, connect with friends, and more.',
+                        'Log in to create videos, connect with friends, '
+                        'and more.',
                         textAlign: TextAlign.center,
-                        style: TextStyle(color: AppColors.white, fontSize: 20, height: 1.5),
+                        style: TextStyle(
+                          color: AppColors.white,
+                          fontSize: 20,
+                          height: 1.5,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 60),
                     PrimaryButton(
                       text: 'Login with ',
-                      trailing: SvgPicture.asset('assets/images/ataccount.svg', height: 22, width: 100),
+                      trailing: SvgPicture.asset(
+                        'assets/images/ataccount.svg',
+                        height: 22,
+                        width: 100,
+                      ),
                       onPressed: () {
                         context.router.push(const LoginRoute());
                       },
@@ -72,7 +94,11 @@ class AuthPromptPage extends StatelessWidget {
                     const SizedBox(height: 16),
                     PrimaryButton(
                       text: 'Create an ',
-                      trailing: SvgPicture.asset('assets/images/ataccount.svg', height: 22, width: 100),
+                      trailing: SvgPicture.asset(
+                        'assets/images/ataccount.svg',
+                        height: 22,
+                        width: 100,
+                      ),
                       onPressed: () {
                         context.router.push(const RegisterRoute());
                       },
@@ -81,7 +107,12 @@ class AuthPromptPage extends StatelessWidget {
                       const SizedBox(height: 24),
                       TextButton(
                         onPressed: onClose,
-                        child: Text('Continue browsing', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+                        child: Text(
+                          'Continue browsing',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
                       ),
                     ],
                   ],

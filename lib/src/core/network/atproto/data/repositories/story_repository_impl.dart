@@ -1,9 +1,9 @@
 import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto_core/atproto_core.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/story_repository.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/story_repository.dart';
 
 /// Implementation of Story-related API endpoints
 class StoryRepositoryImpl implements StoryRepository {
@@ -11,17 +11,21 @@ class StoryRepositoryImpl implements StoryRepository {
   final SprkRepository _client;
 
   /// Fixes the media structure in story JSON to match the expected model format
-  /// The API sometimes returns media fields directly instead of nested in an 'image' object
+  /// The API sometimes returns media fields directly instead of nested in
+  /// 'image' object
   void _fixMediaStructure(Map<String, dynamic> storyJson) {
     final media = storyJson['media'];
     if (media is! Map<String, dynamic>) return;
 
     final mediaType = media[r'$type'] as String?;
 
-    // Fix so.sprk.media.image#view - it should have an 'image' field with ViewImage structure
+    // Fix so.sprk.media.image#view - it should have an 'image' field with
+    //ViewImage structure
     if (mediaType == 'so.sprk.media.image#view') {
       // If media has thumb/fullsize directly but no 'image' field, wrap them
-      if (media.containsKey('thumb') && media.containsKey('fullsize') && !media.containsKey('image')) {
+      if (media.containsKey('thumb') &&
+          media.containsKey('fullsize') &&
+          !media.containsKey('image')) {
         media['image'] = {
           'thumb': media['thumb'],
           'fullsize': media['fullsize'],
@@ -38,7 +42,10 @@ class StoryRepositoryImpl implements StoryRepository {
   }
 
   @override
-  Future<({String? cursor, Map<ProfileViewBasic, List<StoryView>> storiesByAuthor})> getStoriesTimeline({
+  Future<
+    ({String? cursor, Map<ProfileViewBasic, List<StoryView>> storiesByAuthor})
+  >
+  getStoriesTimeline({
     int limit = 30,
     String? cursor,
   }) {
@@ -65,17 +72,24 @@ class StoryRepositoryImpl implements StoryRepository {
           final storiesByAuthorMap = <ProfileViewBasic, List<StoryView>>{};
 
           // Handle missing or null storiesByAuthor field
-          if (!jsonMap.containsKey('storiesByAuthor') || jsonMap['storiesByAuthor'] == null) {
-            return (storiesByAuthor: storiesByAuthorMap, cursor: jsonMap['cursor'] as String?);
+          if (!jsonMap.containsKey('storiesByAuthor') ||
+              jsonMap['storiesByAuthor'] == null) {
+            return (
+              storiesByAuthor: storiesByAuthorMap,
+              cursor: jsonMap['cursor'] as String?,
+            );
           }
 
-          final storiesByAuthorArray = (jsonMap['storiesByAuthor'] as List<dynamic>?) ?? <dynamic>[];
+          final storiesByAuthorArray =
+              (jsonMap['storiesByAuthor'] as List<dynamic>?) ?? <dynamic>[];
 
           for (var i = 0; i < storiesByAuthorArray.length; i++) {
             final item = storiesByAuthorArray[i];
             try {
               final itemMap = item as Map<String, dynamic>;
-              final author = ProfileViewBasic.fromJson(itemMap['author'] as Map<String, dynamic>);
+              final author = ProfileViewBasic.fromJson(
+                itemMap['author'] as Map<String, dynamic>,
+              );
 
               final storiesArray = itemMap['stories'] as List<dynamic>?;
               if (storiesArray == null) {
@@ -87,7 +101,9 @@ class StoryRepositoryImpl implements StoryRepository {
                 final story = storiesArray[j];
                 try {
                   // Fix the media structure if needed
-                  final storyMap = Map<String, dynamic>.from(story as Map<String, dynamic>);
+                  final storyMap = Map<String, dynamic>.from(
+                    story as Map<String, dynamic>,
+                  );
                   _fixMediaStructure(storyMap);
 
                   final storyView = StoryView.fromJson(storyMap);
@@ -105,7 +121,10 @@ class StoryRepositoryImpl implements StoryRepository {
             }
           }
 
-          return (storiesByAuthor: storiesByAuthorMap, cursor: jsonMap['cursor'] as String?);
+          return (
+            storiesByAuthor: storiesByAuthorMap,
+            cursor: jsonMap['cursor'] as String?,
+          );
         },
       );
 
@@ -139,7 +158,9 @@ class StoryRepositoryImpl implements StoryRepository {
           for (final story in storiesArray) {
             try {
               // Fix the media structure if needed
-              final storyMap = Map<String, dynamic>.from(story as Map<String, dynamic>);
+              final storyMap = Map<String, dynamic>.from(
+                story as Map<String, dynamic>,
+              );
               _fixMediaStructure(storyMap);
 
               final storyView = StoryView.fromJson(storyMap);
@@ -158,8 +179,17 @@ class StoryRepositoryImpl implements StoryRepository {
   }
 
   @override
-  Future<RepoStrongRef> postStory(Media media, {List<SelfLabel>? selfLabels, List<String>? tags}) async {
-    final record = StoryRecord(createdAt: DateTime.now().toUtc(), media: media, tags: tags, labels: selfLabels);
+  Future<RepoStrongRef> postStory(
+    Media media, {
+    List<SelfLabel>? selfLabels,
+    List<String>? tags,
+  }) async {
+    final record = StoryRecord(
+      createdAt: DateTime.now().toUtc(),
+      media: media,
+      tags: tags,
+      labels: selfLabels,
+    );
 
     return _client.repo.createRecord(
       collection: 'so.sprk.story.post',

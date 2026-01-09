@@ -3,11 +3,11 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/profile_card.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/search/providers/search_provider.dart';
+import 'package:spark/src/core/design_system/components/molecules/profile_card.dart';
+import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:spark/src/core/network/messages/data/repository/messages_repository.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/features/search/providers/search_provider.dart';
 
 @RoutePage()
 class NewChatSearchPage extends ConsumerStatefulWidget {
@@ -34,7 +34,9 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
   }
 
   void _onSearchChanged() {
-    ref.read(searchProvider.notifier).updateQuery(_searchController.text.trim());
+    ref
+        .read(searchProvider.notifier)
+        .updateQuery(_searchController.text.trim());
   }
 
   @override
@@ -57,7 +59,10 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
                   controller: _searchController,
                   decoration: InputDecoration(
                     hintText: 'Search users',
-                    prefixIcon: Icon(FluentIcons.search_24_regular, color: theme.textTheme.bodyMedium?.color),
+                    prefixIcon: Icon(
+                      FluentIcons.search_24_regular,
+                      color: theme.textTheme.bodyMedium?.color,
+                    ),
                     filled: true,
                     suffixIcon: _searchController.text.isNotEmpty
                         ? IconButton(
@@ -79,7 +84,10 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(color: colorScheme.outline),
                     ),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
                   ),
                 ),
               ),
@@ -90,13 +98,28 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(FluentIcons.search_24_regular, size: 48, color: theme.textTheme.bodyMedium?.color),
+                        Icon(
+                          FluentIcons.search_24_regular,
+                          size: 48,
+                          color: theme.textTheme.bodyMedium?.color,
+                        ),
                         const SizedBox(height: 16),
-                        Text('Search for users', style: TextStyle(fontSize: 16, color: theme.textTheme.bodyMedium?.color)),
+                        Text(
+                          'Search for users',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: theme.textTheme.bodyMedium?.color,
+                          ),
+                        ),
                         const SizedBox(height: 8),
                         Text(
                           'Tap the search bar above to find people',
-                          style: TextStyle(fontSize: 14, color: theme.textTheme.bodyMedium?.color?.withAlpha(180)),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: theme.textTheme.bodyMedium?.color?.withAlpha(
+                              180,
+                            ),
+                          ),
                           textAlign: TextAlign.center,
                         ),
                       ],
@@ -105,7 +128,11 @@ class _NewChatSearchPageState extends ConsumerState<NewChatSearchPage> {
                 ),
               ] else ...[
                 Theme(
-                  data: Theme.of(context).copyWith(tabBarTheme: const TabBarThemeData(dividerColor: Colors.transparent)),
+                  data: Theme.of(context).copyWith(
+                    tabBarTheme: const TabBarThemeData(
+                      dividerColor: Colors.transparent,
+                    ),
+                  ),
                   child: TabBar(
                     tabs: const [Tab(text: 'Users')],
                     indicatorColor: colorScheme.primary,
@@ -147,7 +174,8 @@ class _UserResultsState extends ConsumerState<_UserResults> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
       // Trigger pagination when close to the bottom
       ref.read(searchProvider.notifier).loadMoreUsers();
     }
@@ -155,7 +183,7 @@ class _UserResultsState extends ConsumerState<_UserResults> {
 
   Future<void> _startChat(ProfileView actor) async {
     try {
-      // Get or create the conversation for these members, then navigate with convoId
+      // Get or create conversation for members, then navigate with convoId
       final repo = GetIt.I<MessagesRepository>();
       final convo = await repo.getConvoForMembers([actor.did]);
       if (!mounted) return;
@@ -170,7 +198,9 @@ class _UserResultsState extends ConsumerState<_UserResults> {
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Unable to start chat: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Unable to start chat: $e')));
     }
   }
 
@@ -190,7 +220,9 @@ class _UserResultsState extends ConsumerState<_UserResults> {
       return const SizedBox.shrink();
     }
 
-    final itemCount = state.isLoadingMore ? state.searchResults.length + 1 : state.searchResults.length;
+    final itemCount = state.isLoadingMore
+        ? state.searchResults.length + 1
+        : state.searchResults.length;
 
     return ListView.builder(
       controller: _scrollController,

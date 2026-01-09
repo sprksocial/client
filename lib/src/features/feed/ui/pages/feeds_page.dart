@@ -1,13 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
-import 'package:sparksocial/src/features/feed/ui/pages/feed_page.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/feed/feeds_bar.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/features/feed/providers/feed_provider.dart';
+import 'package:spark/src/features/feed/providers/feed_state.dart';
+import 'package:spark/src/features/feed/ui/pages/feed_page.dart';
+import 'package:spark/src/features/feed/ui/widgets/feed/feeds_bar.dart';
+import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
 class FeedsPage extends ConsumerStatefulWidget {
@@ -67,8 +67,8 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
     final feeds = settings.feeds.where((feed) => feed.config.pinned).toList();
     final activeFeed = settings.activeFeed;
 
-    // Feed providers are watched at MainPage level, but we still need to watch them here
-    // for the debug overlay to update properly
+    // Feed providers are watched at MainPage level, but we still need to watch
+    // them here for the debug overlay to update properly
     final feedStates = <Feed, FeedState>{};
     for (final feed in feeds) {
       feedStates[feed] = ref.watch(feedProvider(feed));
@@ -81,7 +81,10 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
         final notifier = ref.read(feedProvider(feed).notifier);
 
         // Only load if the feed is empty and not already loading and active
-        if (state.length == 0 && !state.loadingFirstLoad && !state.isEndOfNetworkFeed && feed == activeFeed) {
+        if (state.length == 0 &&
+            !state.loadingFirstLoad &&
+            !state.isEndOfNetworkFeed &&
+            feed == activeFeed) {
           notifier.loadAndUpdateFirstLoad();
         }
       }
@@ -91,7 +94,9 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
     final needsInitialization = !_isInitialized;
     final activeFeedChanged = _lastActiveFeed != activeFeed;
     final feedsListChanged =
-        _lastFeedsList == null || _lastFeedsList!.length != feeds.length || !_lastFeedsList!.every(feeds.contains);
+        _lastFeedsList == null ||
+        _lastFeedsList!.length != feeds.length ||
+        !_lastFeedsList!.every(feeds.contains);
 
     if (needsInitialization || activeFeedChanged || feedsListChanged) {
       _updatePageController(feeds, activeFeed);
@@ -119,19 +124,23 @@ class _FeedsPageState extends ConsumerState<FeedsPage> {
               if (index >= 0 && index < feeds.length) {
                 final selectedFeed = feeds[index];
                 if (selectedFeed != activeFeed) {
-                  ref.read(settingsProvider.notifier).setActiveFeed(selectedFeed);
+                  ref
+                      .read(settingsProvider.notifier)
+                      .setActiveFeed(selectedFeed);
                 }
               }
             },
             itemBuilder: (context, index) {
               if (index >= 0 && index < feeds.length) {
-                // Use feed identifier as key to preserve state across reordering
+                // Use feed ID as key to preserve state across reordering
                 return KeyedSubtree(
                   key: ValueKey(feeds[index].config.id),
                   child: FeedPage(feed: feeds[index]),
                 );
               }
-              return const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
+              return const DecoratedBox(
+                decoration: BoxDecoration(color: AppColors.black),
+              );
             },
           ),
           Positioned(

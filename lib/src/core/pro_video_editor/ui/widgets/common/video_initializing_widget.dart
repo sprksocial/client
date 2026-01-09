@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 
-/// A widget that displays an initializing screen while the video editor starts up.
+/// A widget that displays an initializing screen while the video editor starts.
 class VideoInitializingWidget extends StatelessWidget {
   const VideoInitializingWidget({super.key});
 
@@ -24,7 +24,9 @@ class VideoInitializingWidget extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: AppColors.grey700,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.primary500.withAlpha(140)),
+                      border: Border.all(
+                        color: AppColors.primary500.withAlpha(140),
+                      ),
                     ),
                     child: const Center(
                       child: Icon(

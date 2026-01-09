@@ -40,7 +40,9 @@ class AppTabItem extends StatelessWidget {
           decoration: BoxDecoration(
             border: Border(
               bottom: BorderSide(
-                color: isSelected ? (indicatorColor ?? theme.colorScheme.primary) : Colors.transparent,
+                color: isSelected
+                    ? (indicatorColor ?? theme.colorScheme.primary)
+                    : Colors.transparent,
                 width: indicatorThickness,
               ),
             ),

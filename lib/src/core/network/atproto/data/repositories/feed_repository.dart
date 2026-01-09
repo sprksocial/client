@@ -2,7 +2,7 @@ import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
 
 /// Interface for Feed-related API endpoints
 abstract class FeedRepository {
@@ -10,13 +10,22 @@ abstract class FeedRepository {
   ///
   /// [feed] The feed to get the skeleton for
   /// [limit] The number of items to return
-  /// [labelerDids] Optional list of labeler DIDs to include in the atproto-accept-labelers header
-  Future<FeedView> getFeed(Feed feed, {int limit = 20, String? cursor, List<String>? labelerDids});
+  /// [labelerDids] Optional list of DIDs to include in the labeler header
+  Future<FeedView> getFeed(
+    Feed feed, {
+    int limit = 20,
+    String? cursor,
+    List<String>? labelerDids,
+  });
 
   /// Get posts by URIs (hydrates a skeleton)
   ///
   /// [uris] List of post URIs to fetch
-  Future<List<PostView>> getPosts(List<AtUri> uris, {bool bluesky = false, bool filter = true});
+  Future<List<PostView>> getPosts(
+    List<AtUri> uris, {
+    bool bluesky = false,
+    bool filter = true,
+  });
 
   /// Get an author's feed
   ///
@@ -38,7 +47,7 @@ abstract class FeedRepository {
   /// Returns fully hydrated post views in a FeedView structure.
   /// [limit] The number of items to return (default 20)
   /// [cursor] Pagination cursor for the next set of results
-  /// [labelerDids] Optional list of labeler DIDs to include in the atproto-accept-labelers header
+  /// [labelerDids] Optional list of DIDs to include in the labeler header
   Future<FeedView> getTimeline({
     int limit = 20,
     String? cursor,
@@ -51,7 +60,7 @@ abstract class FeedRepository {
   /// [feedUri] The URI of the feed to get
   /// [limit] The number of items to return (default 20)
   /// [cursor] Pagination cursor for the next set of results
-  /// [labelerDids] Optional list of labeler DIDs to include in the atproto-accept-labelers header
+  /// [labelerDids] Optional list of DIDs to include in the labeler header
   Future<FeedView> getFeedView(
     AtUri feedUri, {
     int limit = 20,
@@ -65,7 +74,10 @@ abstract class FeedRepository {
   ///
   /// [feeds] List of feed URIs to fetch
   /// [bluesky] Whether to fetch from Bluesky API instead of Spark
-  Future<List<GeneratorView>> getFeedGenerators(List<AtUri> feeds, {bool bluesky = false});
+  Future<List<GeneratorView>> getFeedGenerators(
+    List<AtUri> feeds, {
+    bool bluesky = false,
+  });
 
   /// Get suggested feed generators
   ///
@@ -108,8 +120,8 @@ abstract class FeedRepository {
   /// [text] The text content of the comment
   /// [parentCid] The String of the parent post
   /// [parentUri] The URI of the parent post
-  /// [rootCid] The String of the root post (optional, defaults to parent if not provided)
-  /// [rootUri] The URI of the root post (optional, defaults to parent if not provided)
+  /// [rootCid] The String of the root post (optional, defaults to parent)
+  /// [rootUri] The URI of the root post (optional, defaults to parent)
   /// [imageFiles] List of image files to attach (optional)
   /// [altTexts] Map of file paths to alt texts (optional)
   Future<RepoStrongRef> postComment(
@@ -139,13 +151,17 @@ abstract class FeedRepository {
   ///
   /// [imageFiles] List of image files to upload
   /// [altTexts] Map of file paths to alt texts
-  Future<List<Image>> uploadImages({required List<XFile> imageFiles, Map<String, String>? altTexts});
+  Future<List<Image>> uploadImages({
+    required List<XFile> imageFiles,
+    Map<String, String>? altTexts,
+  });
 
   /// Upload a video to the server
   ///
   /// [videoPath] The path to the video file
-  /// Returns a [VideoUploadResult] containing the video blob and optional extracted audio
   Future<VideoUploadResult> uploadVideo(String videoPath);
+
+  /// Returns a [VideoUploadResult] containing the video blob & optional audio
 
   /// Post a video to the user's feed
   ///
@@ -170,7 +186,12 @@ abstract class FeedRepository {
   /// [depth] The depth of the thread to get
   /// [parentHeight] The height of the parent post
   /// [bluesky] Whether the thread is a Bluesky thread
-  Future<Thread> getThread(AtUri uri, {int depth = 2, int parentHeight = 0, bool bluesky = false});
+  Future<Thread> getThread(
+    AtUri uri, {
+    int depth = 2,
+    int parentHeight = 0,
+    bool bluesky = false,
+  });
 
   /// Get labels for a list of URIs
   ///
@@ -178,7 +199,12 @@ abstract class FeedRepository {
   /// [sources] Optional list of label sources (DIDs) to filter on.
   /// [limit] Optional limit on the number of labels to return.
   /// [cursor] Optional pagination cursor.
-  Future<({List<Label> labels, String? cursor})> getLabels(List<AtUri> uris, {List<String>? sources, int? limit, String? cursor});
+  Future<({List<Label> labels, String? cursor})> getLabels(
+    List<AtUri> uris, {
+    List<String>? sources,
+    int? limit,
+    String? cursor,
+  });
 
   /// Search for posts
   /// [query] The search query string

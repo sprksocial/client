@@ -4,10 +4,10 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_reposts_provider.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_grid_widget.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_tab_base.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/features/profile/providers/profile_reposts_provider.dart';
+import 'package:spark/src/features/profile/ui/widgets/profile_grid_widget.dart';
+import 'package:spark/src/features/profile/ui/widgets/profile_tab_base.dart';
 
 /// Tab widget that displays reposted posts in a grid
 class ProfileRepostsTab extends ProfileTabBase {
@@ -142,7 +142,9 @@ class ProfileRepostsTab extends ProfileTabBase {
               (context, index) => Skeletonizer(
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
                     borderRadius: BorderRadius.circular(15),
                   ),
                 ),
@@ -163,7 +165,9 @@ class ProfileRepostsTab extends ProfileTabBase {
                 Text('Error loading reposts: $error'),
                 const SizedBox(height: 16),
                 ElevatedButton(
-                  onPressed: () => ref.read(profileRepostsProvider(actor).notifier).refresh(),
+                  onPressed: () => ref
+                      .read(profileRepostsProvider(actor).notifier)
+                      .refresh(),
                   child: const Text('Retry'),
                 ),
               ],

@@ -1,12 +1,12 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/auth/data/models/onboarding_screen_state.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/widgets/custom_text_field.dart';
-import 'package:sparksocial/src/features/auth/providers/onboarding_notifier.dart';
-import 'package:sparksocial/src/features/auth/providers/onboarding_providers.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/core/auth/data/models/onboarding_screen_state.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/widgets/custom_text_field.dart';
+import 'package:spark/src/features/auth/providers/onboarding_notifier.dart';
+import 'package:spark/src/features/auth/providers/onboarding_providers.dart';
+import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 @RoutePage()
 class OnboardingPage extends ConsumerStatefulWidget {
@@ -33,15 +33,21 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
 
   void _updateDisplayName() {
     final currentProviderState = ref.read(onboardingProvider).value;
-    if (currentProviderState != null && _displayNameController.text != currentProviderState.displayName) {
-      ref.read(onboardingProvider.notifier).updateDisplayName(_displayNameController.text);
+    if (currentProviderState != null &&
+        _displayNameController.text != currentProviderState.displayName) {
+      ref
+          .read(onboardingProvider.notifier)
+          .updateDisplayName(_displayNameController.text);
     }
   }
 
   void _updateDescription() {
     final currentProviderState = ref.read(onboardingProvider).value;
-    if (currentProviderState != null && _descriptionController.text != currentProviderState.description) {
-      ref.read(onboardingProvider.notifier).updateDescription(_descriptionController.text);
+    if (currentProviderState != null &&
+        _descriptionController.text != currentProviderState.description) {
+      ref
+          .read(onboardingProvider.notifier)
+          .updateDescription(_descriptionController.text);
     }
   }
 
@@ -92,7 +98,9 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
       context.router.replaceAll([const MainRoute()]);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error completing profile: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error completing profile: $e')));
     } finally {
       if (mounted) {
         setState(() {
@@ -108,13 +116,18 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
     final notifier = ref.read(onboardingProvider.notifier);
 
     // Initialize controllers from state if not already set
-    ref.listen<AsyncValue<OnboardingScreenState>>(onboardingProvider, (previous, next) {
+    ref.listen<AsyncValue<OnboardingScreenState>>(onboardingProvider, (
+      previous,
+      next,
+    ) {
       if (next.hasValue && next.value != null) {
         final stateValue = next.value!;
-        if (_displayNameController.text.isEmpty && stateValue.displayName.isNotEmpty) {
+        if (_displayNameController.text.isEmpty &&
+            stateValue.displayName.isNotEmpty) {
           _displayNameController.text = stateValue.displayName;
         }
-        if (_descriptionController.text.isEmpty && stateValue.description.isNotEmpty) {
+        if (_descriptionController.text.isEmpty &&
+            stateValue.description.isNotEmpty) {
           _descriptionController.text = stateValue.description;
         }
       }
@@ -140,7 +153,10 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
             children: [
               Text('Error: $err'),
               const SizedBox(height: 8),
-              ElevatedButton(onPressed: notifier.reloadProfile, child: const Text('Retry')),
+              ElevatedButton(
+                onPressed: notifier.reloadProfile,
+                child: const Text('Retry'),
+              ),
             ],
           ),
         ),
@@ -149,11 +165,14 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
           if (state.localAvatarBytes != null) {
             avatarImageProvider = MemoryImage(state.localAvatarBytes!);
           } else if (notifier.currentAvatarDisplayUrl != null) {
-            avatarImageProvider = NetworkImage(notifier.currentAvatarDisplayUrl!);
+            avatarImageProvider = NetworkImage(
+              notifier.currentAvatarDisplayUrl!,
+            );
           }
 
           final hasLocalAvatar = state.localAvatarBytes != null;
-          final isAvatarActive = hasLocalAvatar || notifier.currentAvatarDisplayUrl != null;
+          final isAvatarActive =
+              hasLocalAvatar || notifier.currentAvatarDisplayUrl != null;
 
           return Center(
             child: Padding(
@@ -165,16 +184,22 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                   children: [
                     Center(
                       child: Stack(
-                        alignment: Alignment.bottomRight, // Changed alignment for better visibility
+                        alignment: Alignment.bottomRight,
                         children: [
                           GestureDetector(
                             onTap: notifier.pickAvatar,
                             child: CircleAvatar(
                               radius: 50,
                               backgroundImage: avatarImageProvider,
-                              backgroundColor: theme.colorScheme.surfaceContainerHighest, // Placeholder color
+                              backgroundColor: theme
+                                  .colorScheme
+                                  .surfaceContainerHighest, // Placeholder color
                               child: avatarImageProvider == null
-                                  ? Icon(Icons.person, size: 50, color: theme.colorScheme.onSurfaceVariant)
+                                  ? Icon(
+                                      Icons.person,
+                                      size: 50,
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    )
                                   : null,
                             ),
                           ),
@@ -185,27 +210,41 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                if (hasLocalAvatar) // Show undo if a local avatar is picked
+                                if (hasLocalAvatar) // If true, show undo button
                                   Padding(
                                     padding: const EdgeInsets.all(4),
                                     child: GestureDetector(
                                       onTap: notifier.revertAvatarToInitial,
                                       child: Container(
-                                        decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.black54,
+                                          shape: BoxShape.circle,
+                                        ),
                                         padding: const EdgeInsets.all(4),
-                                        child: const Icon(Icons.undo, size: 16, color: Colors.white),
+                                        child: const Icon(
+                                          Icons.undo,
+                                          size: 16,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                if (isAvatarActive) // Show close if any avatar is active
+                                if (isAvatarActive) // If true, show close
                                   Padding(
                                     padding: const EdgeInsets.all(4),
                                     child: GestureDetector(
                                       onTap: notifier.clearAvatarSelection,
                                       child: Container(
-                                        decoration: const BoxDecoration(color: Colors.black54, shape: BoxShape.circle),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.black54,
+                                          shape: BoxShape.circle,
+                                        ),
                                         padding: const EdgeInsets.all(4),
-                                        child: const Icon(Icons.close, size: 16, color: Colors.white),
+                                        child: const Icon(
+                                          Icons.close,
+                                          size: 16,
+                                          color: Colors.white,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -224,15 +263,24 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                           CustomTextField(
                             controller: _displayNameController,
                             hintText: 'Display Name',
-                            fillColor: theme.inputDecorationTheme.fillColor ?? theme.colorScheme.surface,
+                            fillColor:
+                                theme.inputDecorationTheme.fillColor ??
+                                theme.colorScheme.surface,
                             onUndo:
                                 (state.bskyProfileRecord?.displayName != null &&
-                                    _displayNameController.text != (state.bskyProfileRecord?.displayName ?? ''))
+                                    _displayNameController.text !=
+                                        (state.bskyProfileRecord?.displayName ??
+                                            ''))
                                 ? notifier.resetDisplayName
                                 : null,
                             validator: (value) {
-                              if (value == null || value.trim().isEmpty) return 'Display Name is required';
-                              if (value.trim().length > 64) return 'Display Name cannot exceed 64 characters';
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Display Name is required';
+                              }
+                              if (value.trim().length > 64) {
+                                return 'Display Name cannot exceed '
+                                    '64 characters';
+                              }
                               return null;
                             },
                           ),
@@ -240,15 +288,21 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                           CustomTextField(
                             controller: _descriptionController,
                             hintText: 'Bio',
-                            fillColor: theme.inputDecorationTheme.fillColor ?? theme.colorScheme.surface,
+                            fillColor:
+                                theme.inputDecorationTheme.fillColor ??
+                                theme.colorScheme.surface,
                             maxLines: 3,
                             onUndo:
                                 (state.bskyProfileRecord?.description != null &&
-                                    _descriptionController.text != (state.bskyProfileRecord?.description ?? ''))
+                                    _descriptionController.text !=
+                                        (state.bskyProfileRecord?.description ??
+                                            ''))
                                 ? notifier.resetDescription
                                 : null,
                             validator: (value) {
-                              if (value != null && value.trim().length > 256) return 'Bio cannot exceed 256 characters';
+                              if (value != null && value.trim().length > 256) {
+                                return 'Bio cannot exceed 256 characters';
+                              }
                               return null; // Bio is optional
                             },
                           ),
@@ -256,18 +310,35 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
                           Align(
                             alignment: Alignment.centerRight,
                             child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleCompleteOnboarding,
+                              onPressed: _isLoading
+                                  ? null
+                                  : _handleCompleteOnboarding,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: colorScheme.primary,
                                 foregroundColor: colorScheme.onPrimary,
-                                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
                               ),
                               child: _isLoading
-                                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                      ),
+                                    )
                                   : const Row(
                                       mainAxisSize: MainAxisSize.min,
-                                      children: [Text('Complete'), SizedBox(width: 8), Icon(Icons.check)],
+                                      children: [
+                                        Text('Complete'),
+                                        SizedBox(width: 8),
+                                        Icon(Icons.check),
+                                      ],
                                     ),
                             ),
                           ),

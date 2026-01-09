@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/tab_item.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/app_tab_bar.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/glass_avatar.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/components/atoms/tab_item.dart';
+import 'package:spark/src/core/design_system/components/molecules/app_tab_bar.dart';
+import 'package:spark/src/core/design_system/components/molecules/glass_avatar.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class ChatListItemData {
   const ChatListItemData({
@@ -63,7 +63,12 @@ class ChatListPageTemplate extends StatelessWidget {
           onPressed: onAddTap,
           icon: AppIcons.addUser(color: theme.colorScheme.onSurface),
         ),
-        title: Text(title, style: AppTypography.textMediumBold.copyWith(color: theme.colorScheme.onSurface)),
+        title: Text(
+          title,
+          style: AppTypography.textMediumBold.copyWith(
+            color: theme.colorScheme.onSurface,
+          ),
+        ),
       ),
       body: Column(
         children: [
@@ -103,15 +108,29 @@ class _Tabs extends StatelessWidget {
     return AppTabBar(
       tabs: [
         AppTabItem(
-          activeChild: const Text('Messages', style: AppTypography.textMediumBold),
-          inactiveChild: Text('Messages', style: AppTypography.textMediumBold.copyWith(color: inactive)),
+          activeChild: const Text(
+            'Messages',
+            style: AppTypography.textMediumBold,
+          ),
+          inactiveChild: Text(
+            'Messages',
+            style: AppTypography.textMediumBold.copyWith(color: inactive),
+          ),
           isSelected: selectedIndex == 0,
           onTap: () => onChanged(0),
           indicatorColor: theme.colorScheme.onSurface,
         ),
         // AppTabItem(
-        //   activeChild: Text('Activity', style: AppTypography.textMediumBold.copyWith(color: theme.colorScheme.onSurface)),
-        //   inactiveChild: Text('Activity', style: AppTypography.textMediumBold.copyWith(color: inactive)),
+        //   activeChild: Text(
+        //     'Activity',
+        //     style: AppTypography.textMediumBold.copyWith(
+        //       color: theme.colorScheme.onSurface,
+        //     ),
+        //   ),
+        //   inactiveChild: Text(
+        //     'Activity',
+        //     style: AppTypography.textMediumBold.copyWith(color: inactive),
+        //   ),
         //   isSelected: selectedIndex == 1,
         //   onTap: () => onChanged(1),
         //   indicatorColor: theme.colorScheme.onSurface,
@@ -135,29 +154,44 @@ class _ChatTile extends StatelessWidget {
       onTap: onTap,
       horizontalTitleGap: 12,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: GlassAvatar(imageUrl: data.avatarUrl ?? '', username: data.handle),
+      leading: GlassAvatar(
+        imageUrl: data.avatarUrl ?? '',
+        username: data.handle,
+      ),
       title: Row(
         children: [
           Expanded(
-            child: Text(data.displayName, maxLines: 1, overflow: TextOverflow.ellipsis, style: AppTypography.textLargeBold),
+            child: Text(
+              data.displayName,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.textLargeBold,
+            ),
           ),
           const SizedBox(width: 6),
           if (data.unread) ...[
             Container(
               width: 10,
               height: 10,
-              decoration: BoxDecoration(color: theme.colorScheme.onSurface, shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.onSurface,
+                shape: BoxShape.circle,
+              ),
             ),
             const SizedBox(width: 6),
 
             Text(
               data.timestamp,
-              style: AppTypography.textExtraSmallThin.copyWith(color: onSurface.withAlpha(160)),
+              style: AppTypography.textExtraSmallThin.copyWith(
+                color: onSurface.withAlpha(160),
+              ),
             ),
           ] else ...[
             Text(
               data.timestamp,
-              style: AppTypography.textExtraSmallThin.copyWith(color: onSurface.withAlpha(160)),
+              style: AppTypography.textExtraSmallThin.copyWith(
+                color: onSurface.withAlpha(160),
+              ),
             ),
           ],
         ],
@@ -167,8 +201,12 @@ class _ChatTile extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
         style: data.unread
-            ? AppTypography.textSmallBold.copyWith(color: onSurface.withAlpha(190))
-            : AppTypography.textSmallMedium.copyWith(color: onSurface.withAlpha(190)),
+            ? AppTypography.textSmallBold.copyWith(
+                color: onSurface.withAlpha(190),
+              )
+            : AppTypography.textSmallMedium.copyWith(
+                color: onSurface.withAlpha(190),
+              ),
       ),
     );
   }

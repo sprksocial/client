@@ -1,7 +1,7 @@
 import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
 
 part 'labeler_models.freezed.dart';
 part 'labeler_models.g.dart';
@@ -81,7 +81,8 @@ abstract class LabelPreference with _$LabelPreference {
   }) = _LabelPreference;
   const LabelPreference._();
 
-  factory LabelPreference.fromJson(Map<String, dynamic> json) => _$LabelPreferenceFromJson(json);
+  factory LabelPreference.fromJson(Map<String, dynamic> json) =>
+      _$LabelPreferenceFromJson(json);
 }
 
 @freezed
@@ -98,7 +99,8 @@ abstract class LabelerView with _$LabelerView {
   }) = _LabelerView;
   const LabelerView._();
 
-  factory LabelerView.fromJson(Map<String, dynamic> json) => _$LabelerViewFromJson(json);
+  factory LabelerView.fromJson(Map<String, dynamic> json) =>
+      _$LabelerViewFromJson(json);
 }
 
 @freezed
@@ -116,16 +118,19 @@ abstract class LabelerViewDetailed with _$LabelerViewDetailed {
   }) = _LabelerViewDetailed;
   const LabelerViewDetailed._();
 
-  factory LabelerViewDetailed.fromJson(Map<String, dynamic> json) => _$LabelerViewDetailedFromJson(json);
+  factory LabelerViewDetailed.fromJson(Map<String, dynamic> json) =>
+      _$LabelerViewDetailedFromJson(json);
 }
 
 @freezed
 abstract class LabelerViewerState with _$LabelerViewerState {
   @JsonSerializable(explicitToJson: true)
-  factory LabelerViewerState({@AtUriConverter() required AtUri like}) = _LabelerViewerState;
+  factory LabelerViewerState({@AtUriConverter() required AtUri like}) =
+      _LabelerViewerState;
   const LabelerViewerState._();
 
-  factory LabelerViewerState.fromJson(Map<String, dynamic> json) => _$LabelerViewerStateFromJson(json);
+  factory LabelerViewerState.fromJson(Map<String, dynamic> json) =>
+      _$LabelerViewerStateFromJson(json);
 }
 
 @freezed
@@ -133,10 +138,11 @@ abstract class LabelerPolicies with _$LabelerPolicies {
   @JsonSerializable(explicitToJson: true)
   factory LabelerPolicies({
     required List<String>
-    labelValues, // knownValues (array of strings, optional): a set of suggested or common values for this field. Values are not limited to this set (aka, not a closed enum).
+    labelValues, // Values are not limited to this set (aka, not a closed enum).
     List<LabelValueDefinition>? labelValueDefinitions,
   }) = _LabelerPolicies;
   const LabelerPolicies._();
 
-  factory LabelerPolicies.fromJson(Map<String, dynamic> json) => _$LabelerPoliciesFromJson(json);
+  factory LabelerPolicies.fromJson(Map<String, dynamic> json) =>
+      _$LabelerPoliciesFromJson(json);
 }

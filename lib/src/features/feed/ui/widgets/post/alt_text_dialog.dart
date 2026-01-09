@@ -17,7 +17,10 @@ class AltTextDialog extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+          borderRadius: const BorderRadius.only(
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -30,14 +33,19 @@ class AltTextDialog extends StatelessWidget {
                 height: 4,
                 margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  color: theme.brightness == Brightness.dark ? Colors.grey[700] : Colors.grey[300],
+                  color: theme.brightness == Brightness.dark
+                      ? Colors.grey[700]
+                      : Colors.grey[300],
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
             Text('Image Description', style: theme.textTheme.titleLarge),
             const SizedBox(height: 12),
-            Text(altText, style: theme.textTheme.bodyLarge?.copyWith(height: 1.4)),
+            Text(
+              altText,
+              style: theme.textTheme.bodyLarge?.copyWith(height: 1.4),
+            ),
             const SizedBox(height: 16),
           ],
         ),

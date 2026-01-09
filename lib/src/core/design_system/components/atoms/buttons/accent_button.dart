@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/gradients.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/gradients.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class AccentButton extends StatelessWidget {
   final String label;
@@ -21,7 +21,10 @@ class AccentButton extends StatelessWidget {
       onTap: onPressed,
       borderRadius: BorderRadius.circular(500),
       child: Container(
-        constraints: BoxConstraints.tightFor(height: 30, width: label.length * 10 + 20),
+        constraints: BoxConstraints.tightFor(
+          height: 30,
+          width: label.length * 10 + 20,
+        ),
         height: 30,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         decoration: BoxDecoration(

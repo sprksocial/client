@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/features/clips_editor/pages/clips_editor_page.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/text_editor_bottom_action_bar.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/common/text_editor_bottom_action_bar.dart';
 
 /// A custom clips editor bottom bar widget for video editor.
 ///

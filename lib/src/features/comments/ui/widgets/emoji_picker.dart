@@ -1,17 +1,41 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
 
 class EmojiPicker extends StatelessWidget {
-  const EmojiPicker({required this.onEmojiSelected, required this.isDarkMode, super.key});
+  const EmojiPicker({
+    required this.onEmojiSelected,
+    required this.isDarkMode,
+    super.key,
+  });
   final Function(String) onEmojiSelected;
   final bool isDarkMode;
-  static const List<String> _emojis = ['❤️', '😂', '👍', '🔥', '😍', '🙌', '👏', '🎉', '😮', '🤔', '👀', '💯', '🤣', '😊', '🙏'];
+  static const List<String> _emojis = [
+    '❤️',
+    '😂',
+    '👍',
+    '🔥',
+    '😍',
+    '🙌',
+    '👏',
+    '🎉',
+    '😮',
+    '🤔',
+    '👀',
+    '💯',
+    '🤣',
+    '😊',
+    '🙏',
+  ];
 
   // Common emojis list
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = isDarkMode ? AppColors.deepPurple.withAlpha(128) : AppColors.lightLavender.withAlpha(77);
-    final borderColor = isDarkMode ? AppColors.darkPurple : AppColors.lightLavender;
+    final backgroundColor = isDarkMode
+        ? AppColors.deepPurple.withAlpha(128)
+        : AppColors.lightLavender.withAlpha(77);
+    final borderColor = isDarkMode
+        ? AppColors.darkPurple
+        : AppColors.lightLavender;
 
     return Container(
       height: 50,
@@ -25,7 +49,10 @@ class EmojiPicker extends StatelessWidget {
         itemCount: _emojis.length,
         padding: const EdgeInsets.symmetric(horizontal: 8),
         itemBuilder: (context, index) {
-          return _EmojiItem(onEmojiSelected: onEmojiSelected, emoji: _emojis[index]);
+          return _EmojiItem(
+            onEmojiSelected: onEmojiSelected,
+            emoji: _emojis[index],
+          );
         },
       ),
     );
@@ -52,7 +79,9 @@ class _EmojiItem extends StatelessWidget {
           width: 40,
           height: 40,
           margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 5),
-          child: Center(child: Text(emoji, style: const TextStyle(fontSize: 24))),
+          child: Center(
+            child: Text(emoji, style: const TextStyle(fontSize: 24)),
+          ),
         ),
       ),
     );

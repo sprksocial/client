@@ -3,10 +3,10 @@ import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/shapes.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/shapes.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class PostTile extends StatelessWidget {
   final String thumbnailUrl;
@@ -32,12 +32,17 @@ class PostTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Squircle shape from design tokens
-    final BorderRadiusGeometry radius = BorderRadius.circular(AppShapes.squircleRadius);
+    final BorderRadiusGeometry radius = BorderRadius.circular(
+      AppShapes.squircleRadius,
+    );
     final side = BorderSide(
       width: AppShapes.squircleBorderWidth,
       color: Colors.white.withAlpha(AppShapes.squircleBorderAlpha),
     );
-    final ShapeBorder shape = RoundedSuperellipseBorder(side: side, borderRadius: radius);
+    final ShapeBorder shape = RoundedSuperellipseBorder(
+      side: side,
+      borderRadius: radius,
+    );
 
     return GestureDetector(
       onTap: onTap,
@@ -93,9 +98,15 @@ class PostTile extends StatelessWidget {
                 bottom: 0,
                 right: 0,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 6,
+                  ),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 4,
+                    ),
                     child: seen
                         ? Text(
                             'seen',
@@ -109,10 +120,11 @@ class PostTile extends StatelessWidget {
                             children: [
                               Text(
                                 _formatViews(likes),
-                                style: AppTypography.textExtraSmallMedium.copyWith(
-                                  color: AppColors.greyWhite,
-                                  fontSize: 13,
-                                ),
+                                style: AppTypography.textExtraSmallMedium
+                                    .copyWith(
+                                      color: AppColors.greyWhite,
+                                      fontSize: 13,
+                                    ),
                               ),
                               const SizedBox(width: 4),
                               AppIcons.likeMini(

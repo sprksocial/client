@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_refresh_trigger_provider.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/feed/snappy_page_scroll_physics.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/post/feed_post_widget.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/post/no_more_posts.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/features/feed/providers/feed_provider.dart';
+import 'package:spark/src/features/feed/providers/feed_refresh_trigger_provider.dart';
+import 'package:spark/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
+import 'package:spark/src/features/feed/ui/widgets/feed/snappy_page_scroll_physics.dart';
+import 'package:spark/src/features/feed/ui/widgets/post/feed_post_widget.dart';
+import 'package:spark/src/features/feed/ui/widgets/post/no_more_posts.dart';
+import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 class FeedPage extends ConsumerStatefulWidget {
   const FeedPage({required this.feed, super.key});
@@ -19,7 +19,8 @@ class FeedPage extends ConsumerStatefulWidget {
   ConsumerState<FeedPage> createState() => _FeedPageState();
 }
 
-class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClientMixin {
+class _FeedPageState extends ConsumerState<FeedPage>
+    with AutomaticKeepAliveClientMixin {
   late final PageController pageController;
   final _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
   bool _hasInitialized = false;
@@ -64,7 +65,9 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
 
     final state = ref.watch(feedProvider(widget.feed));
     final notifier = ref.read(feedProvider(widget.feed).notifier);
-    final shouldBeActive = ref.watch(settingsProvider.select((settings) => settings.activeFeed == widget.feed));
+    final shouldBeActive = ref.watch(
+      settingsProvider.select((settings) => settings.activeFeed == widget.feed),
+    );
 
     ref.listen(feedRefreshTriggerProvider(widget.feed), (previous, next) {
       if (previous != next) {
@@ -130,7 +133,10 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   const Text('Error loading feed'),
-                  TextButton(onPressed: onRefresh, child: const Text('Try again')),
+                  TextButton(
+                    onPressed: onRefresh,
+                    child: const Text('Try again'),
+                  ),
                 ],
               ),
             )
@@ -141,7 +147,9 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
               itemCount: state.length + (state.isEndOfNetworkFeed ? 1 : 0),
               scrollDirection: Axis.vertical,
               restorationId: widget.feed.config.id,
-              physics: shouldBeActive ? const SnappyPageScrollPhysics() : const NeverScrollableScrollPhysics(),
+              physics: shouldBeActive
+                  ? const SnappyPageScrollPhysics()
+                  : const NeverScrollableScrollPhysics(),
               allowImplicitScrolling: true,
               onPageChanged: (index) {
                 // Only handle page changes when active
@@ -157,46 +165,68 @@ class _FeedPageState extends ConsumerState<FeedPage> with AutomaticKeepAliveClie
                 if (index == state.length) {
                   return shouldBeActive
                       ? const NoMorePosts()
-                      : const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
+                      : const DecoratedBox(
+                          decoration: BoxDecoration(color: AppColors.black),
+                        );
                 }
                 // Handle last item with loading indicator
-                else if (index == state.length - 1 && !state.isEndOfNetworkFeed) {
+                else if (index == state.length - 1 &&
+                    !state.isEndOfNetworkFeed) {
                   if (shouldBeActive) {
                     return Stack(
                       children: [
-                        FeedPostWidget(index: index, feed: widget.feed, onBlockAndAdvance: scrollToNextAndRemovePrevious),
+                        FeedPostWidget(
+                          index: index,
+                          feed: widget.feed,
+                          onBlockAndAdvance: scrollToNextAndRemovePrevious,
+                        ),
                         const Positioned(
                           bottom: 10,
                           left: 10,
                           child: SizedBox(
                             width: 15,
                             height: 15,
-                            child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.white),
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: AppColors.white,
+                            ),
                           ),
                         ),
                       ],
                     );
                   } else {
-                    return const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
+                    return const DecoratedBox(
+                      decoration: BoxDecoration(color: AppColors.black),
+                    );
                   }
                 }
                 // Handle first load state
                 else if (state.length == 0 && state.loadingFirstLoad) {
                   return shouldBeActive
                       ? const Center(child: CircularProgressIndicator())
-                      : const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
+                      : const DecoratedBox(
+                          decoration: BoxDecoration(color: AppColors.black),
+                        );
                 }
                 // Handle empty state
                 else if (state.length == 0 && !state.loadingFirstLoad) {
                   return shouldBeActive
                       ? const NoMorePosts()
-                      : const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
+                      : const DecoratedBox(
+                          decoration: BoxDecoration(color: AppColors.black),
+                        );
                 } else {
                   if (shouldBeActive) {
-                    return FeedPostWidget(index: index, feed: widget.feed, onBlockAndAdvance: scrollToNextAndRemovePrevious);
+                    return FeedPostWidget(
+                      index: index,
+                      feed: widget.feed,
+                      onBlockAndAdvance: scrollToNextAndRemovePrevious,
+                    );
                   } else {
-                    // Return SizedBox to maintain scroll position but hide content
-                    return const DecoratedBox(decoration: BoxDecoration(color: AppColors.black));
+                    // SizedBox to maintain scroll position but hide content
+                    return const DecoratedBox(
+                      decoration: BoxDecoration(color: AppColors.black),
+                    );
                   }
                 }
               },

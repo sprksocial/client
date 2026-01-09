@@ -15,7 +15,8 @@ abstract class RecordingState with _$RecordingState {
 
   bool get hasReachedMaxDuration => elapsedDuration >= maxDuration;
 
-  double get progress => elapsedDuration.inMilliseconds / maxDuration.inMilliseconds;
+  double get progress =>
+      elapsedDuration.inMilliseconds / maxDuration.inMilliseconds;
 
   String get formattedDuration {
     final minutes = elapsedDuration.inMinutes;

@@ -1,5 +1,5 @@
 import 'package:bluesky/bluesky.dart' as bsky;
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
 
 /// Adapter for Bluesky actor models <-> Spark actor models
 ///
@@ -8,35 +8,49 @@ import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 class BskyActorAdapter {
   const BskyActorAdapter();
 
-  // ============================================================================
+  // ===========================================================================
   // Bluesky -> Spark Conversions
-  // ============================================================================
+  // ===========================================================================
 
   /// Get a single profile from Bluesky and convert to Spark format
-  Future<ProfileViewDetailed> getProfileFromBluesky(bsky.Bluesky bluesky, String did) async {
+  Future<ProfileViewDetailed> getProfileFromBluesky(
+    bsky.Bluesky bluesky,
+    String did,
+  ) async {
     final profile = await bluesky.actor.getProfile(actor: did);
     return convertBskyProfileToSpark(profile.data.toJson());
   }
 
   /// Get multiple profiles from Bluesky and convert to Spark format
-  Future<List<ProfileViewDetailed>> getProfilesFromBluesky(bsky.Bluesky bluesky, List<String> dids) async {
+  Future<List<ProfileViewDetailed>> getProfilesFromBluesky(
+    bsky.Bluesky bluesky,
+    List<String> dids,
+  ) async {
     final profiles = await bluesky.actor.getProfiles(actors: dids);
-    return profiles.data.profiles.map((p) => convertBskyProfileToSpark(p.toJson())).toList();
+    return profiles.data.profiles
+        .map((p) => convertBskyProfileToSpark(p.toJson()))
+        .toList();
   }
 
   /// Convert a Bluesky profile JSON to Spark ProfileViewDetailed
-  ProfileViewDetailed convertBskyProfileToSpark(Map<String, dynamic> bskyProfileJson) {
+  ProfileViewDetailed convertBskyProfileToSpark(
+    Map<String, dynamic> bskyProfileJson,
+  ) {
     // Bluesky and Spark profile structures are compatible, just parse directly
     return ProfileViewDetailed.fromJson(bskyProfileJson);
   }
 
   /// Convert a Bluesky ProfileView JSON to Spark ProfileView
-  ProfileView convertBskyProfileViewToSpark(Map<String, dynamic> bskyProfileJson) {
+  ProfileView convertBskyProfileViewToSpark(
+    Map<String, dynamic> bskyProfileJson,
+  ) {
     return ProfileView.fromJson(bskyProfileJson);
   }
 
   /// Convert a Bluesky ProfileViewBasic JSON to Spark ProfileViewBasic
-  ProfileViewBasic convertBskyProfileViewBasicToSpark(Map<String, dynamic> bskyProfileJson) {
+  ProfileViewBasic convertBskyProfileViewBasicToSpark(
+    Map<String, dynamic> bskyProfileJson,
+  ) {
     return ProfileViewBasic.fromJson(bskyProfileJson);
   }
 }

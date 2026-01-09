@@ -1,12 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/shapes.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/shapes.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 
 class FeedCard extends StatelessWidget {
   const FeedCard({
@@ -134,7 +134,11 @@ class FeedCard extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(_title, style: AppTypography.textSmallBold, overflow: TextOverflow.ellipsis),
+        Text(
+          _title,
+          style: AppTypography.textSmallBold,
+          overflow: TextOverflow.ellipsis,
+        ),
         if (_subtitle != null)
           Text(
             _subtitle!,
@@ -194,14 +198,20 @@ class FeedCard extends StatelessWidget {
         : AppColors.lightGreyButton;
 
     final textStyle = AppTypography.textSmallMedium.copyWith(
-      color: isPrimary ? Colors.white : (isDark ? AppColors.grey100 : AppColors.grey900),
+      color: isPrimary
+          ? Colors.white
+          : (isDark ? AppColors.grey100 : AppColors.grey900),
     );
 
     return InteractivePressable(
       onTap: _actionCallback,
       borderRadius: const BorderRadius.all(Radius.circular(8)),
       child: Container(
-        constraints: const BoxConstraints(minWidth: 110, minHeight: 36, maxHeight: 36),
+        constraints: const BoxConstraints(
+          minWidth: 110,
+          minHeight: 36,
+          maxHeight: 36,
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
           color: backgroundColor,
@@ -209,12 +219,18 @@ class FeedCard extends StatelessWidget {
           border: isPrimary
               ? null
               : Border.all(
-                  color: isDark ? Colors.white.withValues(alpha: 0.15) : AppColors.grey200,
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.15)
+                      : AppColors.grey200,
                   width: 1.1,
                 ),
         ),
         alignment: Alignment.center,
-        child: Text(_actionLabel, style: textStyle, overflow: TextOverflow.ellipsis),
+        child: Text(
+          _actionLabel,
+          style: textStyle,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
     );
   }
@@ -249,7 +265,8 @@ class _FeedAvatar extends StatelessWidget {
         width: 36,
         height: 36,
         fit: BoxFit.cover,
-        placeholder: (context, url) => _FallbackAvatar(isDark: isDark, showLoader: true),
+        placeholder: (context, url) =>
+            _FallbackAvatar(isDark: isDark, showLoader: true),
         errorWidget: (context, url, error) => _FallbackAvatar(isDark: isDark),
       ),
     );
@@ -281,7 +298,9 @@ class _FallbackAvatar extends StatelessWidget {
                 height: 14,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary500),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppColors.primary500,
+                  ),
                 ),
               ),
             )

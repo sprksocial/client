@@ -4,12 +4,12 @@ import 'package:auto_route/auto_route.dart';
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/templates/chat_thread_page_template.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/messages/providers/conversation_provider.dart';
-import 'package:sparksocial/src/features/messages/providers/polling_timer.dart';
-import 'package:sparksocial/src/features/messages/ui/widgets/messages_list.dart';
+import 'package:spark/src/core/design_system/templates/chat_thread_page_template.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/messages/providers/conversation_provider.dart';
+import 'package:spark/src/features/messages/providers/polling_timer.dart';
+import 'package:spark/src/features/messages/ui/widgets/messages_list.dart';
 
 @RoutePage()
 class ChatPage extends ConsumerStatefulWidget {
@@ -58,11 +58,15 @@ class _ChatPageState extends ConsumerState<ChatPage> {
     _messageController.clear();
 
     try {
-      final chatService = ref.read(conversationProvider(widget.conversationId).notifier);
+      final chatService = ref.read(
+        conversationProvider(widget.conversationId).notifier,
+      );
       await chatService.sendMessage(widget.conversationId, content);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to send message: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to send message: $e')));
       }
     }
   }
@@ -70,13 +74,18 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(conversationProvider(widget.conversationId));
-    ref.listen(pollingTriggerProvider(widget.conversationId), (previous, next) {});
+    ref.listen(
+      pollingTriggerProvider(widget.conversationId),
+      (previous, next) {},
+    );
     // When the conversation loads for the first time, notify backend as read
     ref.listen(conversationProvider(widget.conversationId), (prev, next) {
       final data = next.asData?.value;
       if (!_markedReadOnce && data != null && data.messages.isNotEmpty) {
         _markedReadOnce = true;
-        ref.read(conversationProvider(widget.conversationId).notifier).markReadUpToLatest();
+        ref
+            .read(conversationProvider(widget.conversationId).notifier)
+            .markReadUpToLatest();
       }
     });
     final messagesWidget = state.when(
@@ -92,12 +101,20 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(FluentIcons.error_circle_24_regular, size: 48, color: Theme.of(context).colorScheme.error),
+            Icon(
+              FluentIcons.error_circle_24_regular,
+              size: 48,
+              color: Theme.of(context).colorScheme.error,
+            ),
             const SizedBox(height: 16),
-            Text('Failed to load messages', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            Text(
+              'Failed to load messages',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
             const SizedBox(height: 8),
             ElevatedButton(
-              onPressed: () => ref.invalidate(conversationProvider(widget.conversationId)),
+              onPressed: () =>
+                  ref.invalidate(conversationProvider(widget.conversationId)),
               child: const Text('Retry'),
             ),
           ],

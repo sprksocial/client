@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/avatar_stack.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/tokens/gradients.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/ui/theme/theme.dart';
+import 'package:spark/src/core/design_system/components/atoms/avatar_stack.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/tokens/gradients.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/ui/theme/theme.dart';
 
 /// A widget that displays known interactions (reposts and likes) as
 /// overlapping avatar stacks with icons in frosted glass pill containers.

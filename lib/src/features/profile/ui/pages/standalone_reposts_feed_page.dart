@@ -4,14 +4,14 @@ import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/tokens/constants.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/feed/snappy_page_scroll_physics.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_feed_index_provider.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_reposts_provider.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_feed_post_widget.dart';
+import 'package:spark/src/core/design_system/tokens/constants.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
+import 'package:spark/src/features/feed/ui/widgets/feed/snappy_page_scroll_physics.dart';
+import 'package:spark/src/features/profile/providers/profile_feed_index_provider.dart';
+import 'package:spark/src/features/profile/providers/profile_reposts_provider.dart';
+import 'package:spark/src/features/profile/ui/widgets/profile_feed_post_widget.dart';
 
 @RoutePage()
 class StandaloneRepostsFeedPage extends ConsumerStatefulWidget {
@@ -24,10 +24,12 @@ class StandaloneRepostsFeedPage extends ConsumerStatefulWidget {
   final int initialPostIndex;
 
   @override
-  ConsumerState<StandaloneRepostsFeedPage> createState() => _StandaloneRepostsFeedPageState();
+  ConsumerState<StandaloneRepostsFeedPage> createState() =>
+      _StandaloneRepostsFeedPageState();
 }
 
-class _StandaloneRepostsFeedPageState extends ConsumerState<StandaloneRepostsFeedPage> {
+class _StandaloneRepostsFeedPageState
+    extends ConsumerState<StandaloneRepostsFeedPage> {
   late final PageController pageController;
   int _currentIndex = 0;
   bool _hasInitializedIndex = false;
@@ -47,13 +49,12 @@ class _StandaloneRepostsFeedPageState extends ConsumerState<StandaloneRepostsFee
 
   @override
   Widget build(BuildContext context) {
-    // Initialize the index provider after the build phase to avoid modifying providers during build.
-    // This prevents race conditions where video widgets see the default index (0)
-    // before the correct initial index is set.
     if (!_hasInitializedIndex) {
       _hasInitializedIndex = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(profileFeedIndexProvider('reposts:${widget.actor}').notifier).setIndex(widget.initialPostIndex);
+        ref
+            .read(profileFeedIndexProvider('reposts:${widget.actor}').notifier)
+            .setIndex(widget.initialPostIndex);
       });
     }
 
@@ -72,7 +73,10 @@ class _StandaloneRepostsFeedPageState extends ConsumerState<StandaloneRepostsFee
 
               if (filteredUris.isEmpty) {
                 return const Center(
-                  child: Text('No reposts available', style: TextStyle(color: AppColors.white)),
+                  child: Text(
+                    'No reposts available',
+                    style: TextStyle(color: AppColors.white),
+                  ),
                 );
               }
 
@@ -87,11 +91,19 @@ class _StandaloneRepostsFeedPageState extends ConsumerState<StandaloneRepostsFee
                   setState(() {
                     _currentIndex = index;
                   });
-                  // Update the profile feed index provider for video visibility tracking
-                  ref.read(profileFeedIndexProvider('reposts:${widget.actor}').notifier).setIndex(index);
+                  ref
+                      .read(
+                        profileFeedIndexProvider(
+                          'reposts:${widget.actor}',
+                        ).notifier,
+                      )
+                      .setIndex(index);
                   // Load more posts when approaching the end
-                  if (index >= filteredUris.length - 3 && !state.isEndOfNetwork) {
-                    ref.read(profileRepostsProvider(widget.actor).notifier).loadMore();
+                  if (index >= filteredUris.length - 3 &&
+                      !state.isEndOfNetwork) {
+                    ref
+                        .read(profileRepostsProvider(widget.actor).notifier)
+                        .loadMore();
                   }
                 },
                 itemBuilder: (context, index) {
@@ -109,12 +121,18 @@ class _StandaloneRepostsFeedPageState extends ConsumerState<StandaloneRepostsFee
                 },
               );
             },
-            loading: () => const Center(child: CircularProgressIndicator(color: AppColors.white)),
+            loading: () => const Center(
+              child: CircularProgressIndicator(color: AppColors.white),
+            ),
             error: (error, stack) => Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, color: AppColors.white, size: 48),
+                  const Icon(
+                    Icons.error_outline,
+                    color: AppColors.white,
+                    size: 48,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Error loading reposts: $error',
@@ -124,7 +142,9 @@ class _StandaloneRepostsFeedPageState extends ConsumerState<StandaloneRepostsFee
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      ref.read(profileRepostsProvider(widget.actor).notifier).refresh();
+                      ref
+                          .read(profileRepostsProvider(widget.actor).notifier)
+                          .refresh();
                     },
                     child: const Text('Retry'),
                   ),
@@ -156,7 +176,13 @@ class _StandaloneRepostsFeedPageState extends ConsumerState<StandaloneRepostsFee
             final currentPostUri = state.loadedPosts[_currentIndex];
             final post = state.postViews[currentPostUri];
             if (post != null) {
-              context.router.push(CommentsRoute(postUri: post.uri.toString(), isSprk: post.isSprk, post: post));
+              context.router.push(
+                CommentsRoute(
+                  postUri: post.uri.toString(),
+                  isSprk: post.isSprk,
+                  post: post,
+                ),
+              );
             }
           }
         },
@@ -186,7 +212,10 @@ class _CommentBar extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color.fromARGB(51, 0, 0, 0),
             border: Border(
-              top: BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 2),
+              top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.08),
+                width: 2,
+              ),
             ),
           ),
           child: GestureDetector(
@@ -200,7 +229,10 @@ class _CommentBar extends StatelessWidget {
                 bottom: 12 + bottomPadding,
               ),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(24),

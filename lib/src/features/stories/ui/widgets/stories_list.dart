@@ -1,13 +1,13 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/create_media_sheet.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/story_circle.dart';
-import 'package:sparksocial/src/core/media/create_media_actions.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
-import 'package:sparksocial/src/features/stories/providers/stories_by_author.dart';
+import 'package:spark/src/core/design_system/components/molecules/create_media_sheet.dart';
+import 'package:spark/src/core/design_system/components/molecules/story_circle.dart';
+import 'package:spark/src/core/media/create_media_actions.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/profile/providers/profile_provider.dart';
+import 'package:spark/src/features/stories/providers/stories_by_author.dart';
 
 class StoriesList extends ConsumerStatefulWidget {
   const StoriesList({super.key});
@@ -24,7 +24,10 @@ class _StoriesListState extends ConsumerState<StoriesList> {
       context,
       onRecord: CreateMediaActions.onRecord(context, storyMode: true),
       onUploadVideo: CreateMediaActions.onUploadVideo(context, storyMode: true),
-      onUploadImages: CreateMediaActions.onUploadImages(context, storyMode: true),
+      onUploadImages: CreateMediaActions.onUploadImages(
+        context,
+        storyMode: true,
+      ),
     );
   }
 
@@ -41,7 +44,11 @@ class _StoriesListState extends ConsumerState<StoriesList> {
             children: [
               Text(
                 'Stories',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).colorScheme.onSurface),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
               const Spacer(),
               IconButton(
@@ -57,7 +64,13 @@ class _StoriesListState extends ConsumerState<StoriesList> {
           child: storiesByAuthor.when(
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, stackTrace) => Center(
-              child: Text(error.toString(), style: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14)),
+              child: Text(
+                error.toString(),
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 14,
+                ),
+              ),
             ),
             data: (data) {
               final session = ref.read(sessionProvider);
@@ -74,7 +87,8 @@ class _StoriesListState extends ConsumerState<StoriesList> {
                     final userAvatarUrl = ref
                         .read(profileProvider(did: currentUserDid!))
                         .when(
-                          data: (profileData) => profileData.profile?.avatar?.toString() ?? '',
+                          data: (profileData) =>
+                              profileData.profile?.avatar?.toString() ?? '',
                           error: (error, stackTrace) => '',
                           loading: () => '',
                         );

@@ -3,31 +3,32 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/identity_repository.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/profile_tab_item.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/create_media_sheet.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/profile_tab_bar.dart';
-import 'package:sparksocial/src/core/design_system/templates/profile_page_template.dart';
-import 'package:sparksocial/src/core/media/create_media_actions.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart' as actor_models;
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/widgets/options_panel.dart';
-import 'package:sparksocial/src/core/ui/widgets/report_dialog.dart';
-import 'package:sparksocial/src/core/utils/blocking_utils.dart';
-import 'package:sparksocial/src/core/utils/error_messages.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/core/utils/text_formatter.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_reposts_provider.dart';
-import 'package:sparksocial/src/features/profile/ui/pages/user_list_page.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/early_supporter_sheet.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_grid_tab.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_reposts_tab.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_tab_base.dart';
+import 'package:spark/src/core/auth/data/repositories/identity_repository.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/components/atoms/profile_tab_item.dart';
+import 'package:spark/src/core/design_system/components/molecules/create_media_sheet.dart';
+import 'package:spark/src/core/design_system/components/molecules/profile_tab_bar.dart';
+import 'package:spark/src/core/design_system/templates/profile_page_template.dart';
+import 'package:spark/src/core/media/create_media_actions.dart';
+import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/network/atproto/data/models/actor_models.dart'
+    as actor_models;
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/widgets/options_panel.dart';
+import 'package:spark/src/core/ui/widgets/report_dialog.dart';
+import 'package:spark/src/core/utils/blocking_utils.dart';
+import 'package:spark/src/core/utils/error_messages.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/utils/text_formatter.dart';
+import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
+import 'package:spark/src/features/profile/providers/profile_provider.dart';
+import 'package:spark/src/features/profile/providers/profile_reposts_provider.dart';
+import 'package:spark/src/features/profile/ui/pages/user_list_page.dart';
+import 'package:spark/src/features/profile/ui/widgets/early_supporter_sheet.dart';
+import 'package:spark/src/features/profile/ui/widgets/profile_grid_tab.dart';
+import 'package:spark/src/features/profile/ui/widgets/profile_reposts_tab.dart';
+import 'package:spark/src/features/profile/ui/widgets/profile_tab_base.dart';
 
 @RoutePage()
 class ProfilePage extends ConsumerStatefulWidget {
@@ -39,7 +40,7 @@ class ProfilePage extends ConsumerStatefulWidget {
   final String did;
 
   /// Optional initial profile data to show while loading.
-  /// Can be partially filled - only did and handle are required in ProfileViewBasic.
+  // Can be partially filled - only did & handle required in ProfileViewBasic.
   final actor_models.ProfileViewBasic? initialProfile;
 
   @override
@@ -47,8 +48,11 @@ class ProfilePage extends ConsumerStatefulWidget {
 }
 
 class _ProfilePageState extends ConsumerState<ProfilePage> {
-  late final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ProfilePage');
-  late final IdentityRepository _identityRepository = GetIt.instance<IdentityRepository>();
+  late final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'ProfilePage',
+  );
+  late final IdentityRepository _identityRepository =
+      GetIt.instance<IdentityRepository>();
   late final ScrollController _scrollController = ScrollController();
   int _activeTabIndex = 0;
   final Map<int, ProfileTabBase> _cachedTabWidgets = {};
@@ -67,8 +71,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   void _onScroll() {
-    // Trigger loading when user is within ~2 rows of the bottom (each row is roughly 200px at 9:16 aspect ratio)
-    if (_scrollController.hasClients && _scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 500) {
+    // Trigger loading when user is within ~2 rows of the bottom
+    if (_scrollController.hasClients &&
+        _scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 500) {
       final profileUri = AtUri.parse('at://${widget.did}');
       if (_activeTabIndex == 0) {
         ref.read(profileFeedProvider(profileUri, false).notifier).loadMore();
@@ -107,7 +113,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   /// Builds slivers for a given tab index
-  /// Tab 0 is built directly (default profile content), other tabs use route pages
+  // Tab 0 is built directly (default profile content), other tabs use routes
   List<Widget> _buildSliversForTab({
     required BuildContext context,
     required WidgetRef ref,
@@ -123,17 +129,24 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => const SafeArea(
-        child: Padding(padding: EdgeInsets.only(top: 20), child: EarlySupporterSheet()),
+        child: Padding(
+          padding: EdgeInsets.only(top: 20),
+          child: EarlySupporterSheet(),
+        ),
       ),
     );
   }
 
   Future<void> _handleUsernameTap(String username) async {
     try {
-      final cleanUsername = username.startsWith('@') ? username.substring(1) : username;
+      final cleanUsername = username.startsWith('@')
+          ? username.substring(1)
+          : username;
       _logger.d('Username clicked: $cleanUsername');
 
-      final didRes = await _identityRepository.resolveHandleToDid(cleanUsername);
+      final didRes = await _identityRepository.resolveHandleToDid(
+        cleanUsername,
+      );
       if (didRes == null) {
         _logger.w('Could not resolve handle to DID for $cleanUsername');
         return;
@@ -151,7 +164,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       context,
       onRecord: CreateMediaActions.onRecord(context, storyMode: true),
       onUploadVideo: CreateMediaActions.onUploadVideo(context, storyMode: true),
-      onUploadImages: CreateMediaActions.onUploadImages(context, storyMode: true),
+      onUploadImages: CreateMediaActions.onUploadImages(
+        context,
+        storyMode: true,
+      ),
     );
   }
 
@@ -185,7 +201,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     return profileStateAsync.when(
       data: (state) {
         if (state.showAuthPrompt) {
-          context.router.push(AuthPromptRoute(onClose: notifier.hideAuthPrompt));
+          context.router.push(
+            AuthPromptRoute(onClose: notifier.hideAuthPrompt),
+          );
         }
 
         final profile = state.profile;
@@ -217,16 +235,26 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           isFollowing: profile.viewer?.following != null,
           isBlocking: isBlocking(profile.viewer),
           isEarlySupporter: state.isEarlySupporter,
-          onAvatarTap: (profile.stories?.isNotEmpty ?? false) ? () => _openStoriesViewer(profile) : null,
-          onFollowersTap: () => context.router.push(UserListRoute(did: widget.did, type: UserListType.followers)),
-          onFollowingTap: () => context.router.push(UserListRoute(did: widget.did, type: UserListType.following)),
+          onAvatarTap: (profile.stories?.isNotEmpty ?? false)
+              ? () => _openStoriesViewer(profile)
+              : null,
+          onFollowersTap: () => context.router.push(
+            UserListRoute(did: widget.did, type: UserListType.followers),
+          ),
+          onFollowingTap: () => context.router.push(
+            UserListRoute(did: widget.did, type: UserListType.following),
+          ),
           onEditTap: () {
-            context.router.push(EditProfileRoute(profile: profile)).then((updated) {
+            context.router.push(EditProfileRoute(profile: profile)).then((
+              updated,
+            ) {
               if (updated == true) {
                 notifier.refreshProfile();
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Profile updated successfully')),
+                    const SnackBar(
+                      content: Text('Profile updated successfully'),
+                    ),
                   );
                 }
               }
@@ -235,9 +263,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           onFollowTap: () async {
             try {
               await notifier.toggleFollow();
-              final latestProfileState = ref.read(profileProvider(did: widget.did)).asData?.value;
+              final latestProfileState = ref
+                  .read(profileProvider(did: widget.did))
+                  .asData
+                  ?.value;
 
-              if (latestProfileState != null && !latestProfileState.showAuthPrompt) {
+              if (latestProfileState != null &&
+                  !latestProfileState.showAuthPrompt) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -251,7 +283,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(ErrorMessages.getOperationErrorMessage('follow', e)),
+                    content: Text(
+                      ErrorMessages.getOperationErrorMessage('follow', e),
+                    ),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -261,9 +295,13 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
           onUnfollowTap: () async {
             try {
               await notifier.toggleFollow();
-              final latestProfileState = ref.read(profileProvider(did: widget.did)).asData?.value;
+              final latestProfileState = ref
+                  .read(profileProvider(did: widget.did))
+                  .asData
+                  ?.value;
 
-              if (latestProfileState != null && !latestProfileState.showAuthPrompt) {
+              if (latestProfileState != null &&
+                  !latestProfileState.showAuthPrompt) {
                 if (context.mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -277,7 +315,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(ErrorMessages.getOperationErrorMessage('unfollow', e)),
+                    content: Text(
+                      ErrorMessages.getOperationErrorMessage('unfollow', e),
+                    ),
                     backgroundColor: Colors.red,
                   ),
                 );
@@ -299,14 +339,17 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text(ErrorMessages.getOperationErrorMessage('unblock', e)),
+                    content: Text(
+                      ErrorMessages.getOperationErrorMessage('unblock', e),
+                    ),
                     backgroundColor: Colors.red,
                   ),
                 );
               }
             }
           },
-          onShareTap: () => _logger.i('Share profile tapped for ${profile.did}'),
+          onShareTap: () =>
+              _logger.i('Share profile tapped for ${profile.did}'),
           onEarlySupporterTap: () => _showEarlySupporterInfo(context),
           onMentionTap: _handleUsernameTap,
           onAddStoryTap: isCurrentUser ? () => _handleAddStory(context) : null,
@@ -317,7 +360,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                 padding: const EdgeInsets.only(right: 8),
                 child: IconButton(
                   padding: EdgeInsets.zero,
-                  onPressed: () => context.router.push(const ProfileSettingsRoute()),
+                  onPressed: () =>
+                      context.router.push(const ProfileSettingsRoute()),
                   icon: AppIcons.gear(color: colorScheme.onSurface),
                 ),
               )
@@ -331,7 +375,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                       context: context,
                       useRootNavigator: false,
                       builder: (dContext) => ReportDialog(
-                        postUri: 'at://${profile.did}/app.bsky.actor.profile/self',
+                        postUri:
+                            'at://${profile.did}/app.bsky.actor.profile/self',
                         postCid: profile.did,
                         onSubmit: (subject, reasonType, reason) async {
                           try {
@@ -342,14 +387,23 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             );
                             if (success && context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Report submitted successfully')),
+                                const SnackBar(
+                                  content: Text(
+                                    'Report submitted successfully',
+                                  ),
+                                ),
                               );
                             }
                           } catch (e) {
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
-                                  content: Text(ErrorMessages.getOperationErrorMessage('report', e)),
+                                  content: Text(
+                                    ErrorMessages.getOperationErrorMessage(
+                                      'report',
+                                      e,
+                                    ),
+                                  ),
                                 ),
                               );
                             }
@@ -364,7 +418,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                         if (context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(wasBlocked ? 'User unblocked' : 'User blocked'),
+                              content: Text(
+                                wasBlocked ? 'User unblocked' : 'User blocked',
+                              ),
                               backgroundColor: Colors.green,
                             ),
                           );
@@ -375,7 +431,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
                             SnackBar(
                               content: Text(
                                 ErrorMessages.getOperationErrorMessage(
-                                  isBlocking(profile.viewer) ? 'unblock' : 'block',
+                                  isBlocking(profile.viewer)
+                                      ? 'unblock'
+                                      : 'block',
                                   e,
                                 ),
                               ),
@@ -404,7 +462,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
               _activeTabIndex = index;
             });
           },
-          contentWidget: const SizedBox.shrink(), // Not used when contentSlivers is provided
+          contentWidget:
+              const SizedBox.shrink(), // Not used when contentSlivers provided
           contentSlivers: contentSlivers,
           scrollController: _scrollController,
           onRefresh: () async {
@@ -439,8 +498,10 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
             selectedIndex: _activeTabIndex,
             tabs: _buildTabItems(_activeTabIndex),
           ),
-          contentWidget: const SizedBox.shrink(), // Not used when contentSlivers is provided
-          contentSlivers: contentSlivers, // Tabs load even while profile is loading
+          contentWidget:
+              const SizedBox.shrink(), // Not used when contentSlivers provided
+          contentSlivers:
+              contentSlivers, // Tabs load even while profile is loading
           scrollController: _scrollController,
         );
       },
@@ -455,7 +516,7 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
   }
 
   /// Builds the list of tab items - easy to add new tabs here!
-  /// When adding tabs 1+, switch to using AutoTabsRouter and pass TabsRouter instead of int
+  // When adding tabs 1+, switch to AutoTabsRouter & pass TabsRouter not int
   List<ProfileTabItem> _buildTabItems(int activeIndex) {
     return [
       ProfileTabItem(
@@ -470,7 +531,8 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       ),
       ProfileTabItem(
         icon: AppIcons.repost(),
-        filledIcon: AppIcons.repost(), // No filled variant exists, use same icon
+        filledIcon:
+            AppIcons.repost(), // No filled variant exists, use same icon
         isSelected: activeIndex == 1,
         onTap: () {
           setState(() {
@@ -488,11 +550,15 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
     ];
   }
 
-  Future<void> _openStoriesViewer(actor_models.ProfileViewDetailed profile) async {
+  Future<void> _openStoriesViewer(
+    actor_models.ProfileViewDetailed profile,
+  ) async {
     if (profile.stories?.isEmpty ?? true) return;
 
     try {
-      final storyUris = profile.stories!.map((strongRef) => strongRef.uri).toList();
+      final storyUris = profile.stories!
+          .map((strongRef) => strongRef.uri)
+          .toList();
       if (storyUris.isEmpty) return;
 
       final storyRepository = GetIt.instance<StoryRepository>();
@@ -514,7 +580,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       );
 
       if (mounted) {
-        context.router.push(AllStoriesRoute(storiesByAuthor: {authorBasic: stories}));
+        context.router.push(
+          AllStoriesRoute(storiesByAuthor: {authorBasic: stories}),
+        );
       }
     } catch (e, s) {
       _logger.e('Failed to open stories viewer', error: e, stackTrace: s);
@@ -545,7 +613,11 @@ class ErrorScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(
           'Profile',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: theme.textTheme.titleLarge?.color),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            color: theme.textTheme.titleLarge?.color,
+          ),
         ),
         backgroundColor: theme.brightness == Brightness.dark
             ? theme.colorScheme.surfaceContainerHighest
@@ -558,7 +630,11 @@ class ErrorScreen extends StatelessWidget {
           children: [
             Text(
               message,
-              style: TextStyle(color: theme.textTheme.bodyLarge?.color, fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: theme.textTheme.bodyLarge?.color,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),

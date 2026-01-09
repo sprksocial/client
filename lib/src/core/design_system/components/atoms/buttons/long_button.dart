@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:gradient_borders/box_borders/gradient_box_border.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/gradients.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/gradients.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 /// A general-purpose button with gradient background that can display any text.
 ///
-/// This button features an accent gradient background with a glass stroke border.
+/// It has an accent gradient background with a glass stroke border.
 /// It's commonly used in authentication screens and forms, but can be used
 /// anywhere a prominent action button is needed.
 class LongButton extends StatelessWidget {
@@ -34,7 +34,10 @@ class LongButton extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: AppGradients.accent,
           borderRadius: BorderRadius.circular(8),
-          border: const GradientBoxBorder(gradient: AppGradients.glassStroke, width: 3),
+          border: const GradientBoxBorder(
+            gradient: AppGradients.glassStroke,
+            width: 3,
+          ),
         ),
         child: Center(
           child: Text(

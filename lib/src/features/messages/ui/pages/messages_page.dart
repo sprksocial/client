@@ -3,10 +3,10 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/design_system/templates/chat_list_page_template.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/features/messages/providers/conversations_provider.dart';
+import 'package:spark/src/core/design_system/templates/chat_list_page_template.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/utils/logging/logging.dart';
+import 'package:spark/src/features/messages/providers/conversations_provider.dart';
 
 @RoutePage()
 class MessagesPage extends ConsumerStatefulWidget {
@@ -46,7 +46,9 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
 
         Future<void> refreshAndInvalidate() async {
           final refreshed = await ref.refresh(conversationsProvider.future);
-          logger.d('Refreshed conversations: ${refreshed.conversations.length}');
+          logger.d(
+            'Refreshed conversations: ${refreshed.conversations.length}',
+          );
         }
 
         return ChatListPageTemplate(
@@ -79,11 +81,21 @@ class _MessagesPageState extends ConsumerState<MessagesPage> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(FluentIcons.error_circle_24_regular, size: 48, color: theme.colorScheme.error),
+              Icon(
+                FluentIcons.error_circle_24_regular,
+                size: 48,
+                color: theme.colorScheme.error,
+              ),
               const SizedBox(height: 16),
-              Text('Failed to load conversations', style: TextStyle(color: theme.colorScheme.error)),
+              Text(
+                'Failed to load conversations',
+                style: TextStyle(color: theme.colorScheme.error),
+              ),
               const SizedBox(height: 8),
-              ElevatedButton(onPressed: () => ref.invalidate(conversationsProvider), child: const Text('Retry')),
+              ElevatedButton(
+                onPressed: () => ref.invalidate(conversationsProvider),
+                child: const Text('Retry'),
+              ),
             ],
           ),
         );
@@ -114,7 +126,11 @@ class ActivitiesTab extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(FluentIcons.star_24_regular, size: 64, color: Theme.of(context).colorScheme.onSurface.withAlpha(128)),
+          Icon(
+            FluentIcons.star_24_regular,
+            size: 64,
+            color: Theme.of(context).colorScheme.onSurface.withAlpha(128),
+          ),
           const SizedBox(height: 16),
           Text(
             'Activities',
@@ -127,7 +143,10 @@ class ActivitiesTab extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             'Activity features coming soon',
-            style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.onSurface.withAlpha(128)),
+            style: TextStyle(
+              fontSize: 14,
+              color: Theme.of(context).colorScheme.onSurface.withAlpha(128),
+            ),
           ),
         ],
       ),

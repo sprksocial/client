@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/tokens/gradients.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/tokens/gradients.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 enum StoryType { story, live, cf, create }
 
@@ -208,7 +208,10 @@ class _CreateButton extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           gradient: AppGradients.accent,
-          border: Border.all(width: 2, color: Theme.of(context).colorScheme.surface),
+          border: Border.all(
+            width: 2,
+            color: Theme.of(context).colorScheme.surface,
+          ),
         ),
         child: AppIcons.add(size: 16, color: Colors.white),
       ),

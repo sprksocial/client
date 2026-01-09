@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
-import 'package:sparksocial/src/core/config/app_config.dart';
-import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
-import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
-import 'package:sparksocial/src/core/network/xrpc/service_auth_helper.dart';
-import 'package:sparksocial/src/core/utils/utils.dart';
+import 'package:spark/src/core/config/app_config.dart';
+import 'package:spark/src/core/network/messages/data/models/message_models.dart';
+import 'package:spark/src/core/network/messages/data/repository/messages_repository.dart';
+import 'package:spark/src/core/network/xrpc/service_auth_helper.dart';
+import 'package:spark/src/core/utils/utils.dart';
 
 /// XRPC-based implementation of MessagesRepository using service auth
 class MessagesRepositoryXrpc implements MessagesRepository {
@@ -46,7 +46,9 @@ class MessagesRepositoryXrpc implements MessagesRepository {
       if (response.statusCode == 200) {
         return jsonDecode(response.body) as Map<String, dynamic>;
       } else {
-        throw Exception('XRPC query failed: ${response.statusCode} ${response.body}');
+        throw Exception(
+          'XRPC query failed: ${response.statusCode} ${response.body}',
+        );
       }
     } catch (e) {
       _logger.e('Error calling XRPC query $nsid', error: e);
@@ -87,7 +89,9 @@ class MessagesRepositoryXrpc implements MessagesRepository {
         if (response.body.isEmpty) return <String, dynamic>{};
         return jsonDecode(response.body) as Map<String, dynamic>;
       } else {
-        throw Exception('XRPC procedure failed: ${response.statusCode} ${response.body}');
+        throw Exception(
+          'XRPC procedure failed: ${response.statusCode} ${response.body}',
+        );
       }
     } catch (e) {
       _logger.e('Error calling XRPC procedure $nsid', error: e);
@@ -110,7 +114,10 @@ class MessagesRepositoryXrpc implements MessagesRepository {
     final data = await _callQuery('so.sprk.chat.convo.listConvos', params);
 
     final convos =
-        (data['convos'] as List<dynamic>?)?.map((json) => ConvoView.fromJson(json as Map<String, dynamic>)).toList() ?? [];
+        (data['convos'] as List<dynamic>?)
+            ?.map((json) => ConvoView.fromJson(json as Map<String, dynamic>))
+            .toList() ??
+        [];
 
     return (conversations: convos, cursor: data['cursor'] as String?);
   }
@@ -129,11 +136,17 @@ class MessagesRepositoryXrpc implements MessagesRepository {
   Future<ConvoView> getConvoForMembers(List<String> members) async {
     // Build URL with repeated members parameters
     // Need to manually construct query string for repeated params
-    final baseUri = Uri.parse('$_baseUrl/xrpc/so.sprk.chat.convo.getConvoForMembers');
-    final queryParts = members.map((m) => 'members=${Uri.encodeComponent(m)}').join('&');
+    final baseUri = Uri.parse(
+      '$_baseUrl/xrpc/so.sprk.chat.convo.getConvoForMembers',
+    );
+    final queryParts = members
+        .map((m) => 'members=${Uri.encodeComponent(m)}')
+        .join('&');
     final url = Uri.parse('$baseUri?$queryParts');
 
-    final token = await _serviceAuthHelper.getServiceToken('so.sprk.chat.convo.getConvoForMembers');
+    final token = await _serviceAuthHelper.getServiceToken(
+      'so.sprk.chat.convo.getConvoForMembers',
+    );
 
     _logger.d('GET $url');
 
@@ -151,7 +164,9 @@ class MessagesRepositoryXrpc implements MessagesRepository {
       final data = jsonDecode(response.body) as Map<String, dynamic>;
       return ConvoView.fromJson(data['convo'] as Map<String, dynamic>);
     } else {
-      throw Exception('XRPC query failed: ${response.statusCode} ${response.body}');
+      throw Exception(
+        'XRPC query failed: ${response.statusCode} ${response.body}',
+      );
     }
   }
 
@@ -170,7 +185,10 @@ class MessagesRepositoryXrpc implements MessagesRepository {
     final data = await _callQuery('so.sprk.chat.convo.getMessages', params);
 
     final messages =
-        (data['messages'] as List<dynamic>?)?.map((json) => MessageView.fromJson(json as Map<String, dynamic>)).toList() ?? [];
+        (data['messages'] as List<dynamic>?)
+            ?.map((json) => MessageView.fromJson(json as Map<String, dynamic>))
+            .toList() ??
+        [];
 
     return (messages: messages, cursor: data['cursor'] as String?);
   }
@@ -225,7 +243,10 @@ class MessagesRepositoryXrpc implements MessagesRepository {
       'value': value,
     };
 
-    final data = await _callProcedure('so.sprk.chat.convo.removeReaction', body);
+    final data = await _callProcedure(
+      'so.sprk.chat.convo.removeReaction',
+      body,
+    );
 
     return MessageView.fromJson(data);
   }

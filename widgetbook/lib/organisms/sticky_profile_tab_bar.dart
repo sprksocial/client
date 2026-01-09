@@ -1,10 +1,10 @@
 import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/profile_tab_item.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/profile_tab_bar.dart';
-import 'package:sparksocial/src/core/design_system/components/organisms/sticky_profile_tab_bar.dart';
+import 'package:spark/src/core/design_system/components/atoms/profile_tab_item.dart';
+import 'package:spark/src/core/design_system/components/molecules/profile_tab_bar.dart';
+import 'package:spark/src/core/design_system/components/organisms/sticky_profile_tab_bar.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 
 @UseCase(name: 'default', type: StickyProfileTabBar)
 Widget buildStickyProfileTabBarUseCase(BuildContext context) {

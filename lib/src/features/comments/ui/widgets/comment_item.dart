@@ -4,22 +4,26 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
-import 'package:sparksocial/src/core/ui/widgets/image_content.dart';
-import 'package:sparksocial/src/core/ui/widgets/options_panel.dart';
-import 'package:sparksocial/src/core/ui/widgets/report_dialog.dart';
-import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
-import 'package:sparksocial/src/features/comments/providers/comment_provider.dart';
-import 'package:sparksocial/src/features/comments/providers/comment_state.dart';
-import 'package:sparksocial/src/features/comments/providers/comments_page_provider.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/ui/widgets/image_content.dart';
+import 'package:spark/src/core/ui/widgets/options_panel.dart';
+import 'package:spark/src/core/ui/widgets/report_dialog.dart';
+import 'package:spark/src/core/ui/widgets/user_avatar.dart';
+import 'package:spark/src/features/comments/providers/comment_provider.dart';
+import 'package:spark/src/features/comments/providers/comment_state.dart';
+import 'package:spark/src/features/comments/providers/comments_page_provider.dart';
 
 class CommentItem extends ConsumerStatefulWidget {
-  const CommentItem({required this.thread, required this.mainPostUri, super.key});
+  const CommentItem({
+    required this.thread,
+    required this.mainPostUri,
+    super.key,
+  });
   final ThreadViewPost thread;
   final AtUri mainPostUri;
 
@@ -56,14 +60,22 @@ class _CommentItemState extends ConsumerState<CommentItem> {
         onSubmit: (subject, reasonType, reason) async {
           try {
             final result = await sprkRepository.repo.createReport(
-              input: ModerationCreateReportInput(subject: subject, reasonType: reasonType, reason: reason),
+              input: ModerationCreateReportInput(
+                subject: subject,
+                reasonType: reasonType,
+                reason: reason,
+              ),
             );
 
             if (result) {
-              scaffoldMessenger.showSnackBar(const SnackBar(content: Text('Report submitted successfully')));
+              scaffoldMessenger.showSnackBar(
+                const SnackBar(content: Text('Report submitted successfully')),
+              );
             }
           } catch (e) {
-            scaffoldMessenger.showSnackBar(SnackBar(content: Text('Error submitting report: $e')));
+            scaffoldMessenger.showSnackBar(
+              SnackBar(content: Text('Error submitting report: $e')),
+            );
           }
         },
       ),
@@ -78,21 +90,33 @@ class _CommentItemState extends ConsumerState<CommentItem> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Comment'),
-        content: const Text('Are you sure you want to delete this comment? This action cannot be undone.'),
+        content: const Text(
+          'Are you sure you want to delete this comment? This action '
+          'cannot be undone.',
+        ),
         actions: [
-          TextButton(onPressed: () => context.router.maybePop(), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => context.router.maybePop(),
+            child: const Text('Cancel'),
+          ),
           TextButton(
             onPressed: () async {
               try {
                 await ref
-                    .read(commentsPageProvider(postUri: widget.mainPostUri).notifier)
+                    .read(
+                      commentsPageProvider(
+                        postUri: widget.mainPostUri,
+                      ).notifier,
+                    )
                     .deleteComment(commentState.thread.post.uri.toString());
                 if (context.mounted) {
                   await context.router.maybePop(); // to close the menu below
                 }
               } catch (e) {
                 if (mounted) {
-                  scaffoldMessenger.showSnackBar(SnackBar(content: Text('Failed to delete comment: $e')));
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(content: Text('Failed to delete comment: $e')),
+                  );
                 }
               }
             },
@@ -143,13 +167,24 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                                   commentState.thread.post.author.handle,
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                                    color: Theme.of(
+                                      context,
+                                    ).textTheme.bodyLarge?.color,
                                   ),
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  _formatDate(commentState.thread.post.indexedAt.toLocal().toString()),
-                                  style: TextStyle(fontSize: 12, color: Theme.of(context).textTheme.bodyMedium?.color),
+                                  _formatDate(
+                                    commentState.thread.post.indexedAt
+                                        .toLocal()
+                                        .toString(),
+                                  ),
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Theme.of(
+                                      context,
+                                    ).textTheme.bodyMedium?.color,
+                                  ),
                                 ),
                               ],
                             ),
@@ -157,23 +192,33 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                         ),
                         Builder(
                           builder: (context) {
-                            final authRepository = GetIt.instance<AuthRepository>();
+                            final authRepository =
+                                GetIt.instance<AuthRepository>();
                             final userDid = authRepository.session?.did;
-                            final isCurrentUserAuthor = userDid == commentState.thread.post.author.did;
+                            final isCurrentUserAuthor =
+                                userDid == commentState.thread.post.author.did;
                             final theme = Theme.of(context);
                             final isDark = theme.brightness == Brightness.dark;
-                            final iconColor = isDark ? AppColors.white : AppColors.black;
+                            final iconColor = isDark
+                                ? AppColors.white
+                                : AppColors.black;
 
                             return GestureDetector(
                               onTap: () => OptionsPanel.show(
                                 context: context,
                                 onReport: _handleReportComment,
-                                onDelete: isCurrentUserAuthor ? _handleDeleteComment : null,
+                                onDelete: isCurrentUserAuthor
+                                    ? _handleDeleteComment
+                                    : null,
                               ),
                               child: SizedBox(
                                 width: 28,
                                 height: 28,
-                                child: Icon(Icons.more_horiz, color: iconColor, size: 16),
+                                child: Icon(
+                                  Icons.more_horiz,
+                                  color: iconColor,
+                                  size: 16,
+                                ),
                               ),
                             );
                           },
@@ -183,9 +228,13 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                     const SizedBox(height: 4),
 
                     if (commentState.thread.post.displayText.isNotEmpty)
-                      Text(commentState.thread.post.displayText, style: Theme.of(context).textTheme.bodyMedium),
+                      Text(
+                        commentState.thread.post.displayText,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
 
-                    if (commentState.thread.post.media != null && hasImages) ...[
+                    if (commentState.thread.post.media != null &&
+                        hasImages) ...[
                       const SizedBox(height: 8),
                       ImageContent(
                         imageUrls: commentState.thread.post.imageUrls,
@@ -199,7 +248,9 @@ class _CommentItemState extends ConsumerState<CommentItem> {
                       ref: ref,
                       commentState: commentState,
                       widget: widget,
-                      secondaryTextColor: Theme.of(context).textTheme.bodyMedium!.color!,
+                      secondaryTextColor: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium!.color!,
                     ),
                   ],
                 ),
@@ -208,7 +259,8 @@ class _CommentItemState extends ConsumerState<CommentItem> {
           ),
         ),
 
-        if (commentState.thread.post.replyCount != null && commentState.thread.post.replyCount! > 0)
+        if (commentState.thread.post.replyCount != null &&
+            commentState.thread.post.replyCount! > 0)
           _RepliesSection(commentState),
 
         Container(height: 0.5, color: Theme.of(context).colorScheme.surface),
@@ -244,12 +296,16 @@ class _RepliesSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.router.push(RepliesRoute(postUri: commentState.thread.post.uri.toString())),
+      onTap: () => context.router.push(
+        RepliesRoute(postUri: commentState.thread.post.uri.toString()),
+      ),
       child: Container(
         margin: const EdgeInsets.only(left: 64),
         padding: const EdgeInsets.only(top: 4, bottom: 8),
         decoration: BoxDecoration(
-          border: Border(left: BorderSide(color: Theme.of(context).colorScheme.surface)),
+          border: Border(
+            left: BorderSide(color: Theme.of(context).colorScheme.surface),
+          ),
         ),
         child: Text('Show ${commentState.thread.post.replyCount} replies'),
       ),
@@ -258,7 +314,12 @@ class _RepliesSection extends StatelessWidget {
 }
 
 class _ActionButtons extends StatelessWidget {
-  const _ActionButtons({required this.ref, required this.commentState, required this.widget, required this.secondaryTextColor});
+  const _ActionButtons({
+    required this.ref,
+    required this.commentState,
+    required this.widget,
+    required this.secondaryTextColor,
+  });
 
   final WidgetRef ref;
   final CommentState commentState;
@@ -285,7 +346,10 @@ class _ActionButtons extends StatelessWidget {
               else
                 AppIcons.like(size: 16, color: secondaryTextColor),
               const SizedBox(width: 4),
-              Text(commentState.likeCount.toString(), style: TextStyle(fontSize: 12, color: secondaryTextColor)),
+              Text(
+                commentState.likeCount.toString(),
+                style: TextStyle(fontSize: 12, color: secondaryTextColor),
+              ),
             ],
           ),
         ),
@@ -298,9 +362,14 @@ class _ActionButtons extends StatelessWidget {
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
           ),
           onPressed: () {
-            context.router.push(RepliesRoute(postUri: commentState.thread.post.uri.toString()));
+            context.router.push(
+              RepliesRoute(postUri: commentState.thread.post.uri.toString()),
+            );
           },
-          child: Text('Reply', style: TextStyle(fontSize: 12, color: secondaryTextColor)),
+          child: Text(
+            'Reply',
+            style: TextStyle(fontSize: 12, color: secondaryTextColor),
+          ),
         ),
       ],
     );

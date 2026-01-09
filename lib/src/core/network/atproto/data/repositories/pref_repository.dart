@@ -1,4 +1,4 @@
-import 'package:sparksocial/src/core/network/atproto/data/models/pref_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
 
 /// Interface for Preference-related API endpoints
 abstract class PrefRepository {

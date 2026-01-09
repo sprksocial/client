@@ -2,11 +2,11 @@ import 'package:atproto/atproto.dart';
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/auth/data/models/login_result.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_state.dart';
+import 'package:spark/src/core/auth/data/models/login_result.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/features/auth/providers/auth_state.dart';
 
 part 'auth_providers.g.dart';
 
@@ -53,13 +53,21 @@ class Auth extends _$Auth {
   /// [handle] - The user handle (e.g. username)
   /// [password] - The user password
   /// [authCode] - Optional authentication code for two-factor authentication
-  Future<LoginResult> login(String handle, String password, {String? authCode}) async {
+  Future<LoginResult> login(
+    String handle,
+    String password, {
+    String? authCode,
+  }) async {
     _logger.i('Login attempt by service layer');
 
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final result = await _authRepository.login(handle, password, authCode: authCode);
+      final result = await _authRepository.login(
+        handle,
+        password,
+        authCode: authCode,
+      );
 
       if (!result.isSuccess) {
         state = state.copyWith(isLoading: false, error: result.error);
@@ -82,13 +90,23 @@ class Auth extends _$Auth {
   /// [email] - The user email address
   /// [password] - The user password
   /// [inviteCode] - Optional invite code for restricted registrations
-  Future<LoginResult> register(String handle, String email, String password, String? inviteCode) async {
+  Future<LoginResult> register(
+    String handle,
+    String email,
+    String password,
+    String? inviteCode,
+  ) async {
     _logger.i('Registration attempt by service layer');
 
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final result = await _authRepository.register(handle, email, password, inviteCode);
+      final result = await _authRepository.register(
+        handle,
+        email,
+        password,
+        inviteCode,
+      );
       _updateState();
       state = state.copyWith(isLoading: false, error: result.error);
       return LoginResult.success();

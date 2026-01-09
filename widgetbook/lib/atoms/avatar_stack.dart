@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/avatar_stack.dart';
+import 'package:spark/src/core/design_system/components/atoms/avatar_stack.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 

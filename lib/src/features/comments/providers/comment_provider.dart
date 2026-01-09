@@ -2,9 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:sparksocial/src/features/comments/providers/comment_state.dart';
-import 'package:sparksocial/src/features/feed/providers/post_updates.dart';
+import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/features/comments/providers/comment_state.dart';
+import 'package:spark/src/features/feed/providers/post_updates.dart';
 
 part 'comment_provider.g.dart';
 
@@ -55,18 +55,25 @@ class CommentNotifier extends _$CommentNotifier {
         await _feedRepository.unlikePost(likeUri);
         ref.read(postUpdateProvider(postUri).notifier).state++;
       } else {
-        final response = await _feedRepository.likePost(state.thread.post.cid, state.thread.post.uri);
+        final response = await _feedRepository.likePost(
+          state.thread.post.cid,
+          state.thread.post.uri,
+        );
 
         final updatedPost = switch (state.thread.post) {
           ThreadPostView(:final post) => ThreadPostView(
             post: post.copyWith(
-              viewer: post.viewer?.copyWith(like: response.uri) ?? ViewerState(like: response.uri),
+              viewer:
+                  post.viewer?.copyWith(like: response.uri) ??
+                  ViewerState(like: response.uri),
               likeCount: currentLikeCount + 1,
             ),
           ),
           ThreadReplyView(:final reply) => ThreadReplyView(
             reply: reply.copyWith(
-              viewer: reply.viewer?.copyWith(like: response.uri) ?? ReplyViewerState(like: response.uri),
+              viewer:
+                  reply.viewer?.copyWith(like: response.uri) ??
+                  ReplyViewerState(like: response.uri),
               likeCount: currentLikeCount + 1,
             ),
           ),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 import 'package:widgetbook/widgetbook.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/toggles/follow_button.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/toggles/glass_follow_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/toggles/follow_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/toggles/glass_follow_button.dart';
 
 @UseCase(name: 'follow_states', type: FollowButton)
 Widget buildFollowButtonFollowStatesUseCase(BuildContext context) {

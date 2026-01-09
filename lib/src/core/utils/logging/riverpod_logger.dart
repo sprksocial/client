@@ -1,12 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
 
-import 'package:sparksocial/src/core/utils/logging/logging.dart';
+import 'package:spark/src/core/utils/logging/logging.dart';
 
 /// A ProviderObserver that logs provider changes
 final class SparkRiverpodLogger extends ProviderObserver {
   /// Constructor
-  SparkRiverpodLogger({LogService? logService}) : _logService = logService ?? GetIt.instance<LogService>() {
+  SparkRiverpodLogger({LogService? logService})
+    : _logService = logService ?? GetIt.instance<LogService>() {
     _logger = _logService.getLogger('Riverpod');
   }
   final LogService _logService;
@@ -14,16 +15,25 @@ final class SparkRiverpodLogger extends ProviderObserver {
 
   @override
   void didAddProvider(ProviderObserverContext context, Object? value) {
-    _logger.d('${context.provider.name ?? context.provider.runtimeType} added: ${_truncateIfNeeded(value.toString())}');
+    _logger.d(
+      '${context.provider.name ?? context.provider.runtimeType} '
+      'added: ${_truncateIfNeeded(value.toString())}',
+    );
   }
 
   @override
   void didDisposeProvider(ProviderObserverContext context) {
-    _logger.d('${context.provider.name ?? context.provider.runtimeType} was disposed.');
+    _logger.d(
+      '${context.provider.name ?? context.provider.runtimeType} was disposed.',
+    );
   }
 
   @override
-  void didUpdateProvider(ProviderObserverContext context, Object? previousValue, Object? newValue) {
+  void didUpdateProvider(
+    ProviderObserverContext context,
+    Object? previousValue,
+    Object? newValue,
+  ) {
     // Skip logging if previous and new values are identical
     if (previousValue == newValue) return;
 
@@ -32,7 +42,10 @@ final class SparkRiverpodLogger extends ProviderObserver {
 
     final diff = _generateDiff(previousValue, newValue);
     if (diff.isNotEmpty && diff != 'No changes') {
-      _logger.d('${context.provider.name ?? context.provider.runtimeType} changed: $diff');
+      _logger.d(
+        '${context.provider.name ?? context.provider.runtimeType} '
+        'changed: $diff',
+      );
     }
   }
 
@@ -40,8 +53,12 @@ final class SparkRiverpodLogger extends ProviderObserver {
   String _generateDiff(Object? previous, Object? current) {
     // Handle null cases
     if (previous == null && current == null) return 'No changes';
-    if (previous == null) return 'Added: ${_truncateIfNeeded(current.toString())}';
-    if (current == null) return 'Removed: ${_truncateIfNeeded(previous.toString())}';
+    if (previous == null) {
+      return 'Added: ${_truncateIfNeeded(current.toString())}';
+    }
+    if (current == null) {
+      return 'Removed: ${_truncateIfNeeded(previous.toString())}';
+    }
 
     // Handle Map types
     if (previous is Map && current is Map) {
@@ -59,18 +76,25 @@ final class SparkRiverpodLogger extends ProviderObserver {
 
     if (previousStr == currentStr) return 'No visible changes';
 
-    // Try to parse structured objects (like ClassName(field1: value1, field2: value2))
-    final structuredDiff = _tryParseStructuredObjectDiff(previousStr, currentStr);
-    if (structuredDiff != null && structuredDiff.isNotEmpty) return structuredDiff;
+    final structuredDiff = _tryParseStructuredObjectDiff(
+      previousStr,
+      currentStr,
+    );
+    if (structuredDiff != null && structuredDiff.isNotEmpty) {
+      return structuredDiff;
+    }
 
-    // For very long objects, try to show just the class name and indicate change
+    // For very long objects, try to show just class name and indicate change
     if (previousStr.length > 1000 || currentStr.length > 1000) {
       final className = _extractClassName(previousStr);
-      return className != null ? '$className fields changed' : 'Object changed (too large to diff)';
+      return className != null
+          ? '$className fields changed'
+          : 'Object changed (too large to diff)';
     }
 
     // Fallback to simple before → after for smaller objects
-    return '${_truncateIfNeeded(previousStr)} → ${_truncateIfNeeded(currentStr)}';
+    return '${_truncateIfNeeded(previousStr)} → '
+        '${_truncateIfNeeded(currentStr)}';
   }
 
   /// Generates diff for Map objects
@@ -87,7 +111,10 @@ final class SparkRiverpodLogger extends ProviderObserver {
       } else if (!current.containsKey(key)) {
         changes.add('- $key: ${_truncateIfNeeded(prevValue.toString())}');
       } else if (prevValue != currValue) {
-        changes.add('~ $key: ${_truncateIfNeeded(prevValue.toString())} → ${_truncateIfNeeded(currValue.toString())}');
+        changes.add(
+          '~ $key: ${_truncateIfNeeded(prevValue.toString())} → '
+          '${_truncateIfNeeded(currValue.toString())}',
+        );
       }
     }
 
@@ -122,7 +149,12 @@ final class SparkRiverpodLogger extends ProviderObserver {
     // Add removed items
     if (removed.isNotEmpty) {
       if (removed.length <= 3) {
-        changes.add('removed: [${removed.map((e) => _truncateIfNeeded(e.toString(), maxLength: 50)).join(', ')}]');
+        changes.add(
+          'removed: [${removed.map((e) => _truncateIfNeeded(
+            e.toString(),
+            maxLength: 50,
+          )).join(', ')}]',
+        );
       } else {
         changes.add('removed: ${removed.length} items');
       }
@@ -131,7 +163,12 @@ final class SparkRiverpodLogger extends ProviderObserver {
     // Add added items
     if (added.isNotEmpty) {
       if (added.length <= 3) {
-        changes.add('added: [${added.map((e) => _truncateIfNeeded(e.toString(), maxLength: 50)).join(', ')}]');
+        changes.add(
+          'added: [${added.map((e) => _truncateIfNeeded(
+            e.toString(),
+            maxLength: 50,
+          )).join(', ')}]',
+        );
       } else {
         changes.add('added: ${added.length} items');
       }
@@ -142,7 +179,8 @@ final class SparkRiverpodLogger extends ProviderObserver {
       for (var i = 0; i < previous.length; i++) {
         if (previous[i] != current[i]) {
           changes.add(
-            '[$i]: ${_truncateIfNeeded(previous[i].toString(), maxLength: 50)} → ${_truncateIfNeeded(current[i].toString(), maxLength: 50)}',
+            '[$i]: ${_truncateIfNeeded(previous[i].toString(), maxLength: 50)} '
+            '→ ${_truncateIfNeeded(current[i].toString(), maxLength: 50)}',
           );
           if (changes.length >= 3) {
             changes.add('... and ${previous.length - i - 1} more changes');
@@ -155,7 +193,6 @@ final class SparkRiverpodLogger extends ProviderObserver {
     return changes.isEmpty ? 'No changes' : changes.join(', ');
   }
 
-  /// Tries to parse structured objects like ClassName(field1: value1, field2: value2)
   String? _tryParseStructuredObjectDiff(String previous, String current) {
     final prevFields = _parseStructuredObject(previous);
     final currFields = _parseStructuredObject(current);
@@ -184,7 +221,8 @@ final class SparkRiverpodLogger extends ProviderObserver {
             changes.add('$key: $listDiff');
           } else {
             changes.add(
-              '$key: ${_truncateIfNeeded(prevValue, maxLength: 100)} → ${_truncateIfNeeded(currValue, maxLength: 100)}',
+              '$key: ${_truncateIfNeeded(prevValue, maxLength: 100)} → '
+              '${_truncateIfNeeded(currValue, maxLength: 100)}',
             );
           }
         }
@@ -201,7 +239,6 @@ final class SparkRiverpodLogger extends ProviderObserver {
     return match?.group(1)?.trim();
   }
 
-  /// Parses a structured object string like "ClassName(field1: value1, field2: value2)"
   Map<String, String>? _parseStructuredObject(String objStr) {
     // Match pattern like ClassName(...)
     final match = RegExp(r'^[^(]+\((.+)\)$').firstMatch(objStr.trim());
@@ -278,7 +315,10 @@ final class SparkRiverpodLogger extends ProviderObserver {
   /// Tries to parse field values as lists and generate list diffs
   String? _tryParseFieldAsListDiff(String prevValue, String currValue) {
     // Check if both values look like lists [...]
-    if (!prevValue.startsWith('[') || !prevValue.endsWith(']') || !currValue.startsWith('[') || !currValue.endsWith(']')) {
+    if (!prevValue.startsWith('[') ||
+        !prevValue.endsWith(']') ||
+        !currValue.startsWith('[') ||
+        !currValue.endsWith(']')) {
       return null;
     }
 
@@ -307,6 +347,7 @@ final class SparkRiverpodLogger extends ProviderObserver {
     if (text.length <= maxLength) {
       return text;
     }
-    return '${text.substring(0, maxLength)}... (${text.length - maxLength} more characters)';
+    return '${text.substring(0, maxLength)}... '
+        '(${text.length - maxLength} more characters)';
   }
 }

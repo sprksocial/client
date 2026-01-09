@@ -4,18 +4,19 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/features/auth/auth.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/features/auth/auth.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
 
 @RoutePage()
 class ProfileSettingsPage extends ConsumerStatefulWidget {
   const ProfileSettingsPage({super.key});
 
   @override
-  ConsumerState<ProfileSettingsPage> createState() => _ProfileSettingsPageState();
+  ConsumerState<ProfileSettingsPage> createState() =>
+      _ProfileSettingsPageState();
 }
 
 class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
@@ -107,12 +108,12 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
       logger.i('Filtered to ${topLevelRecords.length} top-level posts');
 
       // Filter to only old posts and convert them to new format
-      final oldPosts = <({AtUri uri, String? cid, Map<String, dynamic> convertedValue})>[];
+      final oldPosts =
+          <({AtUri uri, String? cid, Map<String, dynamic> convertedValue})>[];
 
       for (final record in topLevelRecords) {
         final value = record.value;
 
-        // Check if this is an old post (has "text" at root or "embed" field, but not "caption" or "media")
         final isOldPost =
             (value.containsKey('text') || value.containsKey('embed')) &&
             !value.containsKey('caption') &&
@@ -135,7 +136,10 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
 
             if (embedType != null) {
               // Convert namespace from so.sprk.embed.* to so.sprk.media.*
-              final newType = embedType.replaceFirst('so.sprk.embed.', 'so.sprk.media.');
+              final newType = embedType.replaceFirst(
+                'so.sprk.embed.',
+                'so.sprk.media.',
+              );
               embed[r'$type'] = newType;
             }
 
@@ -171,14 +175,18 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
             );
 
             successCount++;
-            logger.i('Updated Post ${i + 1}: ${post.uri}, New CID: ${result.data.cid}');
+            logger.i(
+              'Updated Post ${i + 1}: ${post.uri}, New CID: ${result.data.cid}',
+            );
           } catch (e) {
             errorCount++;
             logger.e('Error updating Post ${i + 1}: ${post.uri}', error: e);
           }
         }
 
-        logger.i('Update complete: $successCount successful, $errorCount failed');
+        logger.i(
+          'Update complete: $successCount successful, $errorCount failed',
+        );
       }
 
       // Close loading dialog
@@ -189,7 +197,9 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
         if (oldPosts.isEmpty) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text('No old posts found. All posts are already in the new format.'),
+              content: Text(
+                'No old posts found. All posts are already in the new format.',
+              ),
               backgroundColor: Colors.green,
             ),
           );
@@ -199,7 +209,9 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
               content: Text(
                 'Updated $successCount/${oldPosts.length} old posts to new format${errorCount > 0 ? ' ($errorCount failed)' : ''}.',
               ),
-              backgroundColor: successCount == oldPosts.length ? Colors.green : Colors.orange,
+              backgroundColor: successCount == oldPosts.length
+                  ? Colors.green
+                  : Colors.orange,
             ),
           );
         }
@@ -241,7 +253,9 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ListTile(
@@ -251,7 +265,10 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
                 ),
                 trailing: const Icon(FluentIcons.database_24_regular),
                 onTap: _handleUpdateSparkPosts,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
               ),
             ),
           ),
@@ -259,7 +276,9 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                color: Theme.of(
+                  context,
+                ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ListTile(
@@ -269,7 +288,10 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
                 ),
                 trailing: const Icon(FluentIcons.prohibited_24_regular),
                 onTap: () => context.router.push(const BlocksRoute()),
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
               ),
             ),
           ),
@@ -277,17 +299,29 @@ class _ProfileSettingsPageState extends ConsumerState<ProfileSettingsPage> {
             padding: const EdgeInsets.symmetric(vertical: 8),
             child: Container(
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.error.withValues(alpha: 0.1),
+                color: Theme.of(
+                  context,
+                ).colorScheme.error.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: ListTile(
                 title: const Text(
                   'Logout',
-                  style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Colors.red,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-                trailing: const Icon(FluentIcons.sign_out_24_regular, color: Colors.red),
+                trailing: const Icon(
+                  FluentIcons.sign_out_24_regular,
+                  color: Colors.red,
+                ),
                 onTap: _handleLogout,
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 4,
+                ),
               ),
             ),
           ),

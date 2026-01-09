@@ -38,7 +38,8 @@ class DSVideoProgressBar extends StatelessWidget {
   /// Dense variant (slightly smaller thumb and height adjustments if true).
   final bool dense;
 
-  /// Whether this widget should react to gestures. If true, wraps a GestureDetector.
+  /// Whether this widget should react to gestures.
+  /// If true, wraps a GestureDetector.
   final bool enableGestures;
 
   /// Height of the interactive tap/drag target when gestures are enabled.
@@ -93,8 +94,12 @@ class DSVideoProgressBar extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.pinkAccent.withValues(alpha: 0.13),
                     border: Border(
-                      top: BorderSide(color: Colors.pinkAccent.withValues(alpha: 0.3)),
-                      bottom: BorderSide(color: Colors.pinkAccent.withValues(alpha: 0.6)),
+                      top: BorderSide(
+                        color: Colors.pinkAccent.withValues(alpha: 0.3),
+                      ),
+                      bottom: BorderSide(
+                        color: Colors.pinkAccent.withValues(alpha: 0.6),
+                      ),
                     ),
                   ),
                 ),
@@ -191,7 +196,12 @@ class _ProgressPainter extends CustomPainter {
 
     final bufferedPaint = Paint()..color = bufferedColor;
     for (final (start, end) in bufferedSegments) {
-      final segRect = Rect.fromLTWH(size.width * start, 0, size.width * (end - start), size.height);
+      final segRect = Rect.fromLTWH(
+        size.width * start,
+        0,
+        size.width * (end - start),
+        size.height,
+      );
       canvas.save();
       canvas.clipRect(trackRect);
       canvas.drawRect(segRect, bufferedPaint);
@@ -261,7 +271,8 @@ class _GestureWrapperState extends State<_GestureWrapper> {
         return GestureDetector(
           behavior: HitTestBehavior.translucent,
           onHorizontalDragStart: (_) => widget.onDragStart?.call(),
-          onHorizontalDragUpdate: (d) => _handleUpdate(context, d.localPosition),
+          onHorizontalDragUpdate: (d) =>
+              _handleUpdate(context, d.localPosition),
           onHorizontalDragEnd: (_) => widget.onDragEnd?.call(_lastFraction),
           onTapDown: (d) {
             widget.onDragStart?.call();

@@ -1,5 +1,5 @@
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
 
 part 'sound_page_state.freezed.dart';
 

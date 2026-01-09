@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 /// A modal bottom sheet for adjusting font scale in the text editor.
 class TextEditorFontScaleSheet extends StatefulWidget {
@@ -24,7 +24,8 @@ class TextEditorFontScaleSheet extends StatefulWidget {
   final StreamController<void> rebuildController;
 
   @override
-  State<TextEditorFontScaleSheet> createState() => _TextEditorFontScaleSheetState();
+  State<TextEditorFontScaleSheet> createState() =>
+      _TextEditorFontScaleSheetState();
 }
 
 class _TextEditorFontScaleSheetState extends State<TextEditorFontScaleSheet> {
@@ -105,7 +106,11 @@ class _TextEditorFontScaleSheetState extends State<TextEditorFontScaleSheet> {
           child: Slider(
             max: textEditorConfigs.maxFontScale,
             min: textEditorConfigs.minFontScale,
-            divisions: ((textEditorConfigs.maxFontScale - textEditorConfigs.minFontScale) / 0.1).round(),
+            divisions:
+                ((textEditorConfigs.maxFontScale -
+                            textEditorConfigs.minFontScale) /
+                        0.1)
+                    .round(),
             value: _value,
             onChanged: updateValue,
             activeColor: AppColors.primary400,

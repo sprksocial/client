@@ -4,20 +4,22 @@ import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_feed_state.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/features/profile/providers/profile_feed_state.dart';
+import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 part 'profile_feed_provider.g.dart';
 
 @riverpod
 class ProfileFeed extends _$ProfileFeed {
   final FeedRepository _feedRepository = GetIt.instance<SprkRepository>().feed;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ProfileFeed');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'ProfileFeed',
+  );
   bool _isLoading = false;
 
   @override
@@ -31,7 +33,11 @@ class ProfileFeed extends _$ProfileFeed {
       );
       return result;
     } catch (e, stackTrace) {
-      _logger.e('Error loading initial posts: $e', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error loading initial posts: $e',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
@@ -45,17 +51,23 @@ class ProfileFeed extends _$ProfileFeed {
     required bool videosOnly,
     ProfileFeedState? currentState,
   }) async {
-    final postSources = Map<AtUri, String>.from(currentState?.postSources ?? {});
+    final postSources = Map<AtUri, String>.from(
+      currentState?.postSources ?? {},
+    );
     final postTypes = Map<AtUri, bool>.from(currentState?.postTypes ?? {});
     final postViews = Map<AtUri, PostView>.from(currentState?.postViews ?? {});
     final allPosts = List<AtUri>.from(currentState?.allPosts ?? []);
 
     final newPosts = <PostView>[];
 
-    // Fetch from Spark API (which internally falls back to Bluesky if Spark fails)
-    // This mirrors the profile loading behavior: Spark first, Bluesky only as fallback
+    // Fetch from Spark API (internally falls back to Bluesky if Spark fails)
+    // This mirrors profile loading behavior
     final result = await _fetchFromSource(
-      (cursor) => _feedRepository.getAuthorFeed(profileUri, limit: ProfileFeedState.fetchLimit, cursor: cursor),
+      (cursor) => _feedRepository.getAuthorFeed(
+        profileUri,
+        limit: ProfileFeedState.fetchLimit,
+        cursor: cursor,
+      ),
       sparkCursor,
       'AuthorFeed',
     );
@@ -67,7 +79,9 @@ class ProfileFeed extends _$ProfileFeed {
         if (postView != null) {
           newPosts.add(postView);
           // Determine source based on URI collection
-          final isBlueskyPost = uri.collection.toString().startsWith('app.bsky');
+          final isBlueskyPost = uri.collection.toString().startsWith(
+            'app.bsky',
+          );
           postSources[uri] = isBlueskyPost ? 'bsky' : 'sprk';
           postTypes[uri] = postView.videoUrl.isNotEmpty;
           postViews[uri] = postView;
@@ -84,13 +98,16 @@ class ProfileFeed extends _$ProfileFeed {
         final settings = ref.read(settingsProvider.notifier);
         final followedLabelers = await settings.getLabelers();
         final newPostUris = newPosts.map((post) => post.uri).toList();
-        final (cursor: _, labels: additionalLabels) = await _feedRepository.getLabels(newPostUris, sources: followedLabelers);
+        final (cursor: _, labels: additionalLabels) = await _feedRepository
+            .getLabels(newPostUris, sources: followedLabelers);
         // Add the additional labels to the posts
         for (final label in additionalLabels) {
           final uri = AtUri.parse(label.uri);
           final post = postViews[uri];
           if (post != null) {
-            final existingLabels = post.labels != null ? List<Label>.from(post.labels!) : <Label>[];
+            final existingLabels = post.labels != null
+                ? List<Label>.from(post.labels!)
+                : <Label>[];
             existingLabels.add(label);
             postViews[uri] = post.copyWith(labels: existingLabels);
           }
@@ -111,7 +128,8 @@ class ProfileFeed extends _$ProfileFeed {
     final isEndOfNetwork =
         result.cursor == null ||
         result.posts.length < ProfileFeedState.fetchLimit ||
-        (currentState != null && currentState.allPosts.length == allPosts.length);
+        (currentState != null &&
+            currentState.allPosts.length == allPosts.length);
 
     return ProfileFeedState(
       loadedPosts: filteredPosts,
@@ -127,7 +145,10 @@ class ProfileFeed extends _$ProfileFeed {
   }
 
   Future<({List<FeedViewPost> posts, String? cursor})> _fetchFromSource(
-    Future<({List<FeedViewPost> posts, String? cursor})> Function(String? cursor) fetcher,
+    Future<({List<FeedViewPost> posts, String? cursor})> Function(
+      String? cursor,
+    )
+    fetcher,
     String? cursor,
     String sourceName,
   ) async {
@@ -135,7 +156,11 @@ class ProfileFeed extends _$ProfileFeed {
       final result = await fetcher(cursor);
       return result;
     } catch (e, stackTrace) {
-      _logger.e('Failed to load from $sourceName: $e', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Failed to load from $sourceName: $e',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return (posts: <FeedViewPost>[], cursor: cursor);
     }
   }
@@ -189,7 +214,8 @@ class ProfileFeed extends _$ProfileFeed {
     for (final label in postLabels) {
       try {
         final labelPreference = await settings.getLabelPreference(label.val);
-        if (labelPreference.setting == Setting.hide || labelPreference.adultOnly) {
+        if (labelPreference.setting == Setting.hide ||
+            labelPreference.adultOnly) {
           return true;
         }
       } catch (e) {
@@ -200,7 +226,7 @@ class ProfileFeed extends _$ProfileFeed {
     return false;
   }
 
-  /// Filters URIs based on label preferences, removing posts that should be hidden
+  /// Filters URIs based on label preferences
   Future<List<AtUri>> _filterHiddenPosts(
     List<AtUri> uris,
     Map<AtUri, PostView> postViews,

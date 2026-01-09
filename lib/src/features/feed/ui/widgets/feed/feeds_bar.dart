@@ -1,11 +1,11 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/templates/feeds_bar_template.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_refresh_trigger_provider.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/templates/feeds_bar_template.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/features/feed/providers/feed_refresh_trigger_provider.dart';
+import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 class FeedsBar extends ConsumerStatefulWidget implements PreferredSizeWidget {
   const FeedsBar({required this.pageController, super.key});
@@ -25,10 +25,17 @@ class _FeedsBarState extends ConsumerState<FeedsBar> {
     final settings = ref.watch(settingsProvider);
 
     // Only show pinned feeds in the home view
-    final pinnedFeeds = settings.feeds.where((feed) => feed.config.pinned).toList();
+    final pinnedFeeds = settings.feeds
+        .where((feed) => feed.config.pinned)
+        .toList();
 
     final tags = pinnedFeeds
-        .map((feed) => (id: feed.config.id, text: feed.view != null ? feed.view!.displayName : 'Following'))
+        .map(
+          (feed) => (
+            id: feed.config.id,
+            text: feed.view != null ? feed.view!.displayName : 'Following',
+          ),
+        )
         .toList();
 
     return FeedsBarTemplate(

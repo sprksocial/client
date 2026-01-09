@@ -1,5 +1,5 @@
-import 'package:sparksocial/src/core/utils/logging/log_level.dart';
-import 'package:sparksocial/src/core/utils/logging/log_output.dart';
+import 'package:spark/src/core/utils/logging/log_level.dart';
+import 'package:spark/src/core/utils/logging/log_output.dart';
 
 /// A flexible and customizable logging system for Spark Social
 class SparkLogger {
@@ -57,7 +57,12 @@ class SparkLogger {
   }
 
   /// Internal logging method
-  void _log(LogLevel level, String message, Object? error, StackTrace? stackTrace) {
+  void _log(
+    LogLevel level,
+    String message,
+    Object? error,
+    StackTrace? stackTrace,
+  ) {
     // Skip if level is lower than minimum level
     if (level.value < _minLevel.value) {
       return;

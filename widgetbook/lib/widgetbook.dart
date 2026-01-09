@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart' as widgetbook;
-import 'package:sparksocial/src/core/design_system/theme/app_theme.dart';
+import 'package:spark/src/core/design_system/theme/app_theme.dart';
 
 import 'widgetbook.directories.g.dart';
 

@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/toggles/follow_button.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/shapes.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/components/atoms/toggles/follow_button.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/shapes.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class ProfileCard extends StatelessWidget {
   const ProfileCard({
@@ -102,22 +102,30 @@ class ProfileCard extends StatelessWidget {
                                 errorWidget: (context, url, error) => Container(
                                   width: 36,
                                   height: 36,
-                                  color: isDark ? AppColors.grey600 : AppColors.grey300,
+                                  color: isDark
+                                      ? AppColors.grey600
+                                      : AppColors.grey300,
                                   child: Icon(
                                     Icons.person,
                                     size: 20,
-                                    color: isDark ? AppColors.grey400 : AppColors.grey600,
+                                    color: isDark
+                                        ? AppColors.grey400
+                                        : AppColors.grey600,
                                   ),
                                 ),
                               )
                             : Container(
                                 width: 36,
                                 height: 36,
-                                color: isDark ? AppColors.grey600 : AppColors.grey300,
+                                color: isDark
+                                    ? AppColors.grey600
+                                    : AppColors.grey300,
                                 child: Icon(
                                   Icons.person,
                                   size: 20,
-                                  color: isDark ? AppColors.grey400 : AppColors.grey600,
+                                  color: isDark
+                                      ? AppColors.grey400
+                                      : AppColors.grey600,
                                 ),
                               ),
                       ),
@@ -128,7 +136,10 @@ class ProfileCard extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(userName, style: AppTypography.textSmallBold),
-                            Text(userHandle, style: AppTypography.textSmallThin),
+                            Text(
+                              userHandle,
+                              style: AppTypography.textSmallThin,
+                            ),
                             if (description?.isNotEmpty ?? false) ...[
                               const SizedBox(height: 3),
                               Text(

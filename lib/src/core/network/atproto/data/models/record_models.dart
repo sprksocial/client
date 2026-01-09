@@ -2,7 +2,7 @@ import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto/core.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
 
 part 'record_models.freezed.dart';
 part 'record_models.g.dart';
@@ -106,10 +106,14 @@ abstract class Record with _$Record {
 @freezed
 abstract class RecordReplyRef with _$RecordReplyRef {
   @JsonSerializable(explicitToJson: true)
-  const factory RecordReplyRef({required RepoStrongRef root, required RepoStrongRef parent}) = _RecordReplyRef;
+  const factory RecordReplyRef({
+    required RepoStrongRef root,
+    required RepoStrongRef parent,
+  }) = _RecordReplyRef;
   const RecordReplyRef._();
 
-  factory RecordReplyRef.fromJson(Map<String, dynamic> json) => _$RecordReplyRefFromJson(json);
+  factory RecordReplyRef.fromJson(Map<String, dynamic> json) =>
+      _$RecordReplyRefFromJson(json);
 }
 
 @Freezed(unionKey: r'$type')
@@ -145,11 +149,13 @@ sealed class Media with _$Media {
 
   @FreezedUnionValue('app.bsky.embed.images')
   @JsonSerializable(explicitToJson: true)
-  const factory Media.bskyImages({required List<Image> images}) = MediaBskyImages;
+  const factory Media.bskyImages({required List<Image> images}) =
+      MediaBskyImages;
 
   @FreezedUnionValue('app.bsky.embed.record')
   @JsonSerializable(explicitToJson: true)
-  const factory Media.bskyRecord({required RepoStrongRef record}) = MediaBskyRecord;
+  const factory Media.bskyRecord({required RepoStrongRef record}) =
+      MediaBskyRecord;
 
   @FreezedUnionValue('app.bsky.embed.recordWithMedia')
   @JsonSerializable(explicitToJson: true)
@@ -178,7 +184,8 @@ abstract class EmbedExternal with _$EmbedExternal {
   }) = _EmbedExternal;
   const EmbedExternal._();
 
-  factory EmbedExternal.fromJson(Map<String, dynamic> json) => _$EmbedExternalFromJson(json);
+  factory EmbedExternal.fromJson(Map<String, dynamic> json) =>
+      _$EmbedExternalFromJson(json);
 }
 
 @freezed

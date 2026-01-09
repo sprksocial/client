@@ -3,18 +3,20 @@ import 'dart:convert';
 import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 
 class SoundRepositoryImpl implements SoundRepository {
   SoundRepositoryImpl(this._client) {
     _logger.v('SoundRepository initialized');
   }
   final SprkRepository _client;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('SoundRepository');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'SoundRepository',
+  );
 
   @override
   Future<RepoStrongRef> createSound({
@@ -46,7 +48,9 @@ class SoundRepositoryImpl implements SoundRepository {
     int limit = 50,
     String? cursor,
   }) async {
-    _logger.d('Getting audio posts for URI: $uri, limit: $limit, cursor: $cursor');
+    _logger.d(
+      'Getting audio posts for URI: $uri, limit: $limit, cursor: $cursor',
+    );
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
@@ -74,10 +78,13 @@ class SoundRepositoryImpl implements SoundRepository {
         to: (jsonMap) {
           return AudioPostsResponse.fromJson(jsonMap);
         },
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
 
-      _logger.d('Audio posts retrieved successfully: ${result.data.posts.length} posts');
+      _logger.d(
+        'Audio posts retrieved successfully: ${result.data.posts.length} posts',
+      );
       return result.data;
     });
   }
@@ -113,10 +120,14 @@ class SoundRepositoryImpl implements SoundRepository {
         to: (jsonMap) {
           return TrendingAudiosResponse.fromJson(jsonMap);
         },
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
 
-      _logger.d('Trending audios retrieved successfully: ${result.data.audios.length} audios');
+      _logger.d(
+        'Trending audios retrieved successfully: '
+        '${result.data.audios.length} audios',
+      );
       return result.data;
     });
   }

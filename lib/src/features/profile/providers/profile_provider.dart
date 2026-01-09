@@ -6,12 +6,12 @@ import 'package:atproto/com_atproto_moderation_defs.dart';
 import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_state.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
+import 'package:spark/src/features/profile/providers/profile_state.dart';
 
 part 'profile_provider.g.dart';
 
@@ -36,11 +36,16 @@ class ProfileNotifier extends _$ProfileNotifier {
     return state.asData!.value;
   }
 
-  Future<void> loadProfileData(String? targetDidArgument, ProfileState currentState) async {
+  Future<void> loadProfileData(
+    String? targetDidArgument,
+    ProfileState currentState,
+  ) async {
     final effectiveDid = targetDidArgument ?? authRepository.session?.did;
 
     if (!authRepository.isAuthenticated && effectiveDid == null) {
-      logger.i('User not authenticated and no DID provided, showing auth prompt.');
+      logger.i(
+        'User not authenticated and no DID provided, showing auth prompt.',
+      );
       state = AsyncData(currentState.copyWith(showAuthPrompt: true));
       return;
     }
@@ -55,9 +60,13 @@ class ProfileNotifier extends _$ProfileNotifier {
       logger.d('Loading profile for DID: $effectiveDid');
       final profile = await actorRepository.getProfile(effectiveDid);
 
-      logger.d('Profile loaded successfully for $effectiveDid: ${profile.handle}');
+      logger.d(
+        'Profile loaded successfully for $effectiveDid: ${profile.handle}',
+      );
 
-      final isEarlySupporter = await actorRepository.isEarlySupporter(effectiveDid);
+      final isEarlySupporter = await actorRepository.isEarlySupporter(
+        effectiveDid,
+      );
       logger.d('Early supporter status for $effectiveDid: $isEarlySupporter');
 
       state = AsyncData(
@@ -69,7 +78,11 @@ class ProfileNotifier extends _$ProfileNotifier {
         ),
       );
     } catch (e, s) {
-      logger.e('Error loading profile for DID: $effectiveDid', error: e, stackTrace: s);
+      logger.e(
+        'Error loading profile for DID: $effectiveDid',
+        error: e,
+        stackTrace: s,
+      );
       state = AsyncError(e, s);
     }
   }
@@ -92,14 +105,26 @@ class ProfileNotifier extends _$ProfileNotifier {
         currentProfileState ?? ProfileState(currentViewDid: didToRefresh),
       );
 
-      final videosRefreshFuture = ref.read(profileFeedProvider(profileUri, true).notifier).refresh();
-      final photosRefreshFuture = ref.read(profileFeedProvider(profileUri, false).notifier).refresh();
+      final videosRefreshFuture = ref
+          .read(profileFeedProvider(profileUri, true).notifier)
+          .refresh();
+      final photosRefreshFuture = ref
+          .read(profileFeedProvider(profileUri, false).notifier)
+          .refresh();
 
-      await Future.wait([profileRefreshFuture, videosRefreshFuture, photosRefreshFuture]);
+      await Future.wait([
+        profileRefreshFuture,
+        videosRefreshFuture,
+        photosRefreshFuture,
+      ]);
 
       logger.i('Profile and feeds for $didToRefresh refreshed successfully.');
     } catch (e, s) {
-      logger.e('Error refreshing profile for $didToRefresh', error: e, stackTrace: s);
+      logger.e(
+        'Error refreshing profile for $didToRefresh',
+        error: e,
+        stackTrace: s,
+      );
       // If we have current data, keep it; otherwise show error
       if (currentProfileState == null) {
         state = AsyncError(e, s);
@@ -117,7 +142,8 @@ class ProfileNotifier extends _$ProfileNotifier {
   bool isCurrentUser() {
     final profileDid = state.asData?.value.profile?.did;
     if (profileDid == null) return false;
-    return authRepository.isAuthenticated && authRepository.session?.did == profileDid;
+    return authRepository.isAuthenticated &&
+        authRepository.session?.did == profileDid;
   }
 
   Future<String?> toggleFollow() async {
@@ -129,45 +155,75 @@ class ProfileNotifier extends _$ProfileNotifier {
       throw Exception('Profile not loaded, cannot toggle follow.');
     }
     if (!authRepository.isAuthenticated) {
-      logger.i('User not authenticated, showing auth prompt for follow action.');
+      logger.i(
+        'User not authenticated, showing auth prompt for follow action.',
+      );
       state = AsyncData(currentData.copyWith(showAuthPrompt: true));
       return null;
     }
 
-    logger.d('Toggling follow for profile: ${profile.did}, current follow URI: ${profile.viewer?.following ?? 'none'}');
+    logger.d(
+      'Toggling follow for profile: ${profile.did}, '
+      'current follow URI: ${profile.viewer?.following ?? 'none'}',
+    );
     final originalStateValue = currentData;
 
     try {
-      final newFollowUriResult = await sprkRepository.graph.toggleFollow(profile.did, profile.viewer?.following);
+      final newFollowUriResult = await sprkRepository.graph.toggleFollow(
+        profile.did,
+        profile.viewer?.following,
+      );
 
       if (newFollowUriResult != null) {
-        logger.i('Successfully followed ${profile.did}. New follow URI: $newFollowUriResult');
+        logger.i(
+          'Successfully followed ${profile.did}. '
+          'New follow URI: $newFollowUriResult',
+        );
       } else {
         logger.i('Successfully unfollowed ${profile.did}.');
       }
 
       // Update state optimistically first
       final optimisticViewer =
-          profile.viewer?.copyWith(following: newFollowUriResult != null ? AtUri.parse(newFollowUriResult) : null) ??
-          ActorViewer(following: newFollowUriResult != null ? AtUri.parse(newFollowUriResult) : null);
+          profile.viewer?.copyWith(
+            following: newFollowUriResult != null
+                ? AtUri.parse(newFollowUriResult)
+                : null,
+          ) ??
+          ActorViewer(
+            following: newFollowUriResult != null
+                ? AtUri.parse(newFollowUriResult)
+                : null,
+          );
 
       final optimisticProfile = profile.copyWith(viewer: optimisticViewer);
-      state = AsyncData(originalStateValue.copyWith(profile: optimisticProfile));
+      state = AsyncData(
+        originalStateValue.copyWith(profile: optimisticProfile),
+      );
 
       // Then refresh the profile data in the background to ensure consistency
       // Use a small delay to allow backend to propagate changes
       // Note: This is intentionally unawaited - we use optimistic updates above
-      // and refresh in the background. If this fails, the optimistic state remains.
+      // & refresh in the background. If this fails, optimistic state remains.
       unawaited(
         Future.delayed(const Duration(milliseconds: 500)).then((_) async {
           try {
-            final refreshedProfile = await actorRepository.getProfile(profile.did);
-            final isEarlySupporter = await actorRepository.isEarlySupporter(profile.did);
+            final refreshedProfile = await actorRepository.getProfile(
+              profile.did,
+            );
+            final isEarlySupporter = await actorRepository.isEarlySupporter(
+              profile.did,
+            );
 
-            // Only update if the state hasn't changed (user hasn't navigated away)
+            // Only update if state hasn't changed (user hasn't navigated away)
             final currentState = state.asData?.value;
             if (currentState?.profile?.did == profile.did) {
-              state = AsyncData(currentState!.copyWith(profile: refreshedProfile, isEarlySupporter: isEarlySupporter));
+              state = AsyncData(
+                currentState!.copyWith(
+                  profile: refreshedProfile,
+                  isEarlySupporter: isEarlySupporter,
+                ),
+              );
             }
           } catch (e) {
             logger.w('Background profile refresh failed: $e');
@@ -178,7 +234,11 @@ class ProfileNotifier extends _$ProfileNotifier {
 
       return newFollowUriResult;
     } catch (e, s) {
-      logger.e('Error toggling follow for ${profile.did}', error: e, stackTrace: s);
+      logger.e(
+        'Error toggling follow for ${profile.did}',
+        error: e,
+        stackTrace: s,
+      );
       state = AsyncData(originalStateValue);
       throw Exception('Failed to toggle follow: $e');
     }
@@ -198,40 +258,68 @@ class ProfileNotifier extends _$ProfileNotifier {
       return null;
     }
 
-    logger.d('Toggling block for profile: ${profile.did}, current block URI: ${profile.viewer?.blocking ?? 'none'}');
+    logger.d(
+      'Toggling block for profile: ${profile.did}, '
+      'current block URI: ${profile.viewer?.blocking ?? 'none'}',
+    );
     final originalStateValue = currentData;
 
     try {
-      final newBlockUriResult = await sprkRepository.graph.toggleBlock(profile.did, profile.viewer?.blocking);
+      final newBlockUriResult = await sprkRepository.graph.toggleBlock(
+        profile.did,
+        profile.viewer?.blocking,
+      );
 
       if (newBlockUriResult != null) {
-        logger.i('Successfully blocked ${profile.did}. New block URI: $newBlockUriResult');
+        logger.i(
+          'Successfully blocked ${profile.did}. '
+          'New block URI: $newBlockUriResult',
+        );
       } else {
         logger.i('Successfully unblocked ${profile.did}.');
       }
 
       // Update state optimistically first
       final optimisticViewer =
-          profile.viewer?.copyWith(blocking: newBlockUriResult != null ? AtUri.parse(newBlockUriResult) : null) ??
-          ActorViewer(blocking: newBlockUriResult != null ? AtUri.parse(newBlockUriResult) : null);
+          profile.viewer?.copyWith(
+            blocking: newBlockUriResult != null
+                ? AtUri.parse(newBlockUriResult)
+                : null,
+          ) ??
+          ActorViewer(
+            blocking: newBlockUriResult != null
+                ? AtUri.parse(newBlockUriResult)
+                : null,
+          );
 
       final optimisticProfile = profile.copyWith(viewer: optimisticViewer);
-      state = AsyncData(originalStateValue.copyWith(profile: optimisticProfile));
+      state = AsyncData(
+        originalStateValue.copyWith(profile: optimisticProfile),
+      );
 
       // Then refresh the profile data in the background to ensure consistency
       // Use a small delay to allow backend to propagate changes
       // Note: This is intentionally unawaited - we use optimistic updates above
-      // and refresh in the background. If this fails, the optimistic state remains.
+      // & refresh in the background. If this fails, optimistic state remains.
       unawaited(
         Future.delayed(const Duration(milliseconds: 500)).then((_) async {
           try {
-            final refreshedProfile = await actorRepository.getProfile(profile.did);
-            final isEarlySupporter = await actorRepository.isEarlySupporter(profile.did);
+            final refreshedProfile = await actorRepository.getProfile(
+              profile.did,
+            );
+            final isEarlySupporter = await actorRepository.isEarlySupporter(
+              profile.did,
+            );
 
-            // Only update if the state hasn't changed (user hasn't navigated away)
+            // Only update if state hasn't changed (user hasn't navigated away)
             final currentState = state.asData?.value;
             if (currentState?.profile?.did == profile.did) {
-              state = AsyncData(currentState!.copyWith(profile: refreshedProfile, isEarlySupporter: isEarlySupporter));
+              state = AsyncData(
+                currentState!.copyWith(
+                  profile: refreshedProfile,
+                  isEarlySupporter: isEarlySupporter,
+                ),
+              );
             }
           } catch (e) {
             logger.w('Background profile refresh failed: $e');
@@ -242,13 +330,21 @@ class ProfileNotifier extends _$ProfileNotifier {
 
       return newBlockUriResult;
     } catch (e, s) {
-      logger.e('Error toggling block for ${profile.did}', error: e, stackTrace: s);
+      logger.e(
+        'Error toggling block for ${profile.did}',
+        error: e,
+        stackTrace: s,
+      );
       state = AsyncData(originalStateValue);
       throw Exception('Failed to toggle block: $e');
     }
   }
 
-  Future<bool> createReport({required String did, required ReasonType reasonType, String? reason}) async {
+  Future<bool> createReport({
+    required String did,
+    required ReasonType reasonType,
+    String? reason,
+  }) async {
     if (!authRepository.isAuthenticated) {
       logger.w('Cannot create report, user not authenticated');
       final currentData = state.asData?.value;
@@ -260,9 +356,15 @@ class ProfileNotifier extends _$ProfileNotifier {
 
     try {
       logger.d('Creating report for DID: $did with reason: $reasonType');
-      final subject = UModerationCreateReportSubject.repoRef(data: RepoRef(did: did));
+      final subject = UModerationCreateReportSubject.repoRef(
+        data: RepoRef(did: did),
+      );
       final result = await sprkRepository.repo.createReport(
-        input: ModerationCreateReportInput(subject: subject, reasonType: reasonType, reason: reason),
+        input: ModerationCreateReportInput(
+          subject: subject,
+          reasonType: reasonType,
+          reason: reason,
+        ),
       );
       logger.i('Report created successfully for $did');
       return result;
@@ -279,7 +381,10 @@ class ProfileNotifier extends _$ProfileNotifier {
     final currentProfileState = state.asData?.value;
     final currentDid = currentProfileState?.currentViewDid;
 
-    await loadProfileData(currentDid, currentProfileState ?? ProfileState(currentViewDid: currentDid));
+    await loadProfileData(
+      currentDid,
+      currentProfileState ?? ProfileState(currentViewDid: currentDid),
+    );
   }
 
   void triggerAuthPrompt() {
@@ -288,7 +393,9 @@ class ProfileNotifier extends _$ProfileNotifier {
       state = AsyncData(currentData.copyWith(showAuthPrompt: true));
       logger.i('Auth prompt triggered from notifier.');
     } else {
-      logger.i('Auth prompt trigger requested, but no current data state to update.');
+      logger.i(
+        'Auth prompt trigger requested, but no current data state to update.',
+      );
     }
   }
 }

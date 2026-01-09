@@ -1,10 +1,10 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/profile_card.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/profile/providers/blocks_provider.dart';
+import 'package:spark/src/core/design_system/components/molecules/profile_card.dart';
+import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/features/profile/providers/blocks_provider.dart';
 
 class BlocksListView extends ConsumerWidget {
   final List<ProfileView> users;

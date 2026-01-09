@@ -28,7 +28,8 @@ abstract class Message with _$Message {
   }) = _Message;
   const Message._();
 
-  factory Message.fromJson(Map<String, dynamic> json) => _$MessageFromJson(json);
+  factory Message.fromJson(Map<String, dynamic> json) =>
+      _$MessageFromJson(json);
 }
 
 // XRPC Models for chat service
@@ -41,7 +42,8 @@ abstract class SenderView with _$SenderView {
   }) = _SenderView;
   const SenderView._();
 
-  factory SenderView.fromJson(Map<String, dynamic> json) => _$SenderViewFromJson(json);
+  factory SenderView.fromJson(Map<String, dynamic> json) =>
+      _$SenderViewFromJson(json);
 }
 
 @freezed
@@ -54,7 +56,8 @@ abstract class ReactionView with _$ReactionView {
   }) = _ReactionView;
   const ReactionView._();
 
-  factory ReactionView.fromJson(Map<String, dynamic> json) => _$ReactionViewFromJson(json);
+  factory ReactionView.fromJson(Map<String, dynamic> json) =>
+      _$ReactionViewFromJson(json);
 }
 
 @freezed
@@ -71,7 +74,8 @@ abstract class MessageView with _$MessageView {
   }) = _MessageView;
   const MessageView._();
 
-  factory MessageView.fromJson(Map<String, dynamic> json) => _$MessageViewFromJson(json);
+  factory MessageView.fromJson(Map<String, dynamic> json) =>
+      _$MessageViewFromJson(json);
 }
 
 @freezed
@@ -85,7 +89,8 @@ abstract class DeletedMessageView with _$DeletedMessageView {
   }) = _DeletedMessageView;
   const DeletedMessageView._();
 
-  factory DeletedMessageView.fromJson(Map<String, dynamic> json) => _$DeletedMessageViewFromJson(json);
+  factory DeletedMessageView.fromJson(Map<String, dynamic> json) =>
+      _$DeletedMessageViewFromJson(json);
 }
 
 @freezed
@@ -102,5 +107,6 @@ abstract class ConvoView with _$ConvoView {
   }) = _ConvoView;
   const ConvoView._();
 
-  factory ConvoView.fromJson(Map<String, dynamic> json) => _$ConvoViewFromJson(json);
+  factory ConvoView.fromJson(Map<String, dynamic> json) =>
+      _$ConvoViewFromJson(json);
 }

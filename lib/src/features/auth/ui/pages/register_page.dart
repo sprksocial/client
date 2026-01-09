@@ -3,13 +3,13 @@ import 'package:fluentui_system_icons/fluentui_system_icons.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/config/app_config.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/long_button.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/auth/providers/onboarding_providers.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/core/config/app_config.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/long_button.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/auth/providers/onboarding_providers.dart';
+import 'package:spark/src/features/settings/providers/settings_provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 @RoutePage()
@@ -123,7 +123,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                   const SizedBox(height: 24),
                   Text(
                     'Create Account',
-                    style: AppTypography.displaySmallBold.copyWith(color: colorScheme.onSurface),
+                    style: AppTypography.displaySmallBold.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
@@ -136,12 +138,20 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       ),
                       child: Row(
                         children: [
-                          Icon(FluentIcons.warning_24_regular, color: colorScheme.error),
+                          Icon(
+                            FluentIcons.warning_24_regular,
+                            color: colorScheme.error,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'New account registration is currently disabled while we correct issues in our system. We will try to re-enable it as soon as possible.',
-                              style: AppTypography.textSmallMedium.copyWith(color: colorScheme.error),
+                              'New account registration is currently disabled '
+                              'while we correct issues in our system. '
+                              'We are working to remedy this as soon as '
+                              'possible.',
+                              style: AppTypography.textSmallMedium.copyWith(
+                                color: colorScheme.error,
+                              ),
                             ),
                           ),
                         ],
@@ -155,10 +165,16 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     keyboardType: TextInputType.emailAddress,
                     decoration: InputDecoration(
                       hintText: 'Your email address',
-                      prefixIcon: Icon(FluentIcons.mail_24_regular, color: colorScheme.primary),
+                      prefixIcon: Icon(
+                        FluentIcons.mail_24_regular,
+                        color: colorScheme.primary,
+                      ),
                       filled: true,
                       fillColor: colorScheme.surface,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: colorScheme.outline),
@@ -176,7 +192,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         borderSide: BorderSide(color: colorScheme.error),
                       ),
                     ),
-                    style: AppTypography.textMediumMedium.copyWith(color: colorScheme.onSurface),
+                    style: AppTypography.textMediumMedium.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
                     onChanged: (_) => setState(() {}),
                   ),
 
@@ -185,20 +203,28 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     controller: _handleController,
                     decoration: InputDecoration(
                       hintText: 'username',
-                      prefixIcon: Icon(FluentIcons.mention_24_regular, color: colorScheme.primary),
+                      prefixIcon: Icon(
+                        FluentIcons.mention_24_regular,
+                        color: colorScheme.primary,
+                      ),
                       suffixIcon: Padding(
                         padding: const EdgeInsets.only(right: 16),
                         child: Center(
                           widthFactor: 1,
                           child: Text(
                             '.sprk.so',
-                            style: AppTypography.textMediumMedium.copyWith(color: colorScheme.primary),
+                            style: AppTypography.textMediumMedium.copyWith(
+                              color: colorScheme.primary,
+                            ),
                           ),
                         ),
                       ),
                       filled: true,
                       fillColor: colorScheme.surface,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: colorScheme.outline),
@@ -216,7 +242,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         borderSide: BorderSide(color: colorScheme.error),
                       ),
                     ),
-                    style: AppTypography.textMediumMedium.copyWith(color: colorScheme.onSurface),
+                    style: AppTypography.textMediumMedium.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
                     onChanged: (_) => setState(() {}),
                   ),
 
@@ -227,7 +255,10 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                     obscureText: !_isPasswordVisible,
                     decoration: InputDecoration(
                       hintText: 'Your password',
-                      prefixIcon: Icon(FluentIcons.key_24_regular, color: colorScheme.primary),
+                      prefixIcon: Icon(
+                        FluentIcons.key_24_regular,
+                        color: colorScheme.primary,
+                      ),
                       suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
@@ -235,13 +266,18 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                           });
                         },
                         icon: Icon(
-                          _isPasswordVisible ? FluentIcons.eye_off_24_regular : FluentIcons.eye_24_regular,
+                          _isPasswordVisible
+                              ? FluentIcons.eye_off_24_regular
+                              : FluentIcons.eye_24_regular,
                           color: colorScheme.primary,
                         ),
                       ),
                       filled: true,
                       fillColor: colorScheme.surface,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                         borderSide: BorderSide(color: colorScheme.outline),
@@ -259,7 +295,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         borderSide: BorderSide(color: colorScheme.error),
                       ),
                     ),
-                    style: AppTypography.textMediumMedium.copyWith(color: colorScheme.onSurface),
+                    style: AppTypography.textMediumMedium.copyWith(
+                      color: colorScheme.onSurface,
+                    ),
                     onChanged: (_) => setState(() {}),
                   ),
 
@@ -275,12 +313,17 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       ),
                       child: Row(
                         children: [
-                          Icon(FluentIcons.warning_24_regular, color: colorScheme.error),
+                          Icon(
+                            FluentIcons.warning_24_regular,
+                            color: colorScheme.error,
+                          ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               _errorMessage!,
-                              style: AppTypography.textSmallMedium.copyWith(color: colorScheme.error),
+                              style: AppTypography.textSmallMedium.copyWith(
+                                color: colorScheme.error,
+                              ),
                             ),
                           ),
                         ],
@@ -318,7 +361,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                     color: colorScheme.primary,
                                     decoration: TextDecoration.underline,
                                   ),
-                                  recognizer: TapGestureRecognizer()..onTap = () => _launchUrl('https://sprk.so/terms'),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () =>
+                                        _launchUrl('https://sprk.so/terms'),
                                 ),
                                 const TextSpan(text: ' and '),
                                 TextSpan(
@@ -327,7 +372,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                                     color: colorScheme.primary,
                                     decoration: TextDecoration.underline,
                                   ),
-                                  recognizer: TapGestureRecognizer()..onTap = () => _launchUrl('https://sprk.so/privacy'),
+                                  recognizer: TapGestureRecognizer()
+                                    ..onTap = () =>
+                                        _launchUrl('https://sprk.so/privacy'),
                                 ),
                                 const TextSpan(text: '.'),
                               ],
@@ -364,7 +411,8 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       ),
                       const SizedBox(width: 4),
                       TextButton(
-                        onPressed: () => context.router.push(const LoginRoute()),
+                        onPressed: () =>
+                            context.router.push(const LoginRoute()),
                         child: Text(
                           'Sign in',
                           style: AppTypography.textMediumBold.copyWith(

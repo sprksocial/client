@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/network/atproto/data/models/graph_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/graph_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 
 /// Implementation of Graph-related API endpoints
 class GraphRepositoryImpl implements GraphRepository {
@@ -14,7 +14,9 @@ class GraphRepositoryImpl implements GraphRepository {
     _logger.v('GraphRepository initialized');
   }
   final SprkRepository _client;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('GraphRepository');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'GraphRepository',
+  );
 
   @override
   Future<FollowersResponse> getFollowers(String did, {String? cursor}) async {
@@ -40,7 +42,9 @@ class GraphRepositoryImpl implements GraphRepository {
           parameters: params,
           headers: {'atproto-proxy': _client.sprkDid},
           to: (jsonMap) => jsonMap,
-          adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+          adaptor: (uint8) =>
+              jsonDecode(utf8.decode(uint8 as List<int>))
+                  as Map<String, dynamic>,
         );
         _logger.d('Followers retrieved successfully');
         return FollowersResponse.fromJson(result.data as Map<String, dynamic>);
@@ -75,7 +79,9 @@ class GraphRepositoryImpl implements GraphRepository {
           parameters: params,
           headers: {'atproto-proxy': _client.sprkDid},
           to: (jsonMap) => jsonMap,
-          adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+          adaptor: (uint8) =>
+              jsonDecode(utf8.decode(uint8 as List<int>))
+                  as Map<String, dynamic>,
         );
         _logger.d('Follows retrieved successfully');
         return FollowsResponse.fromJson(result.data as Map<String, dynamic>);
@@ -111,18 +117,31 @@ class GraphRepositoryImpl implements GraphRepository {
 
       try {
         _logger.d('Checking if already following user: $did');
-        final existingFollows = await atproto.repo.listRecords(repo: sessionDid, collection: collection);
+        final existingFollows = await atproto.repo.listRecords(
+          repo: sessionDid,
+          collection: collection,
+        );
 
-        final isAlreadyFollowing = existingFollows.data.records.any((record) => record.value['subject'] == did);
+        final isAlreadyFollowing = existingFollows.data.records.any(
+          (record) => record.value['subject'] == did,
+        );
 
         if (isAlreadyFollowing) {
           _logger.w('Already following this user: $did');
           throw Exception('Already following this user');
         }
 
-        final followRecord = {r'$type': collection, 'subject': did, 'createdAt': DateTime.now().toUtc().toIso8601String()};
+        final followRecord = {
+          r'$type': collection,
+          'subject': did,
+          'createdAt': DateTime.now().toUtc().toIso8601String(),
+        };
 
-        final result = await _client.repo.createRecord(collection: collection, record: followRecord, repo: sessionDid);
+        final result = await _client.repo.createRecord(
+          collection: collection,
+          record: followRecord,
+          repo: sessionDid,
+        );
 
         _logger.i('User followed successfully with $collection: ${result.uri}');
 
@@ -137,7 +156,10 @@ class GraphRepositoryImpl implements GraphRepository {
   @override
   Future<void> unfollowUser(AtUri followUri) async {
     _logger.d('Unfollowing user with follow URI: $followUri');
-    await _client.repo.deleteRecord(uri: followUri, skipBskyCrosspostCleanup: true);
+    await _client.repo.deleteRecord(
+      uri: followUri,
+      skipBskyCrosspostCleanup: true,
+    );
     _logger.i('User unfollowed successfully');
   }
 
@@ -183,7 +205,9 @@ class GraphRepositoryImpl implements GraphRepository {
           parameters: params,
           headers: {'atproto-proxy': _client.sprkDid},
           to: (jsonMap) => jsonMap,
-          adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+          adaptor: (uint8) =>
+              jsonDecode(utf8.decode(uint8 as List<int>))
+                  as Map<String, dynamic>,
         );
         _logger.d('Blocks retrieved successfully');
         return BlocksResponse.fromJson(result.data as Map<String, dynamic>);
@@ -219,18 +243,31 @@ class GraphRepositoryImpl implements GraphRepository {
 
       try {
         _logger.d('Checking if already blocking user: $did');
-        final existingBlocks = await atproto.repo.listRecords(repo: sessionDid, collection: collection);
+        final existingBlocks = await atproto.repo.listRecords(
+          repo: sessionDid,
+          collection: collection,
+        );
 
-        final isAlreadyBlocking = existingBlocks.data.records.any((record) => record.value['subject'] == did);
+        final isAlreadyBlocking = existingBlocks.data.records.any(
+          (record) => record.value['subject'] == did,
+        );
 
         if (isAlreadyBlocking) {
           _logger.w('Already blocking this user: $did');
           throw Exception('Already blocking this user');
         }
 
-        final blockRecord = {r'$type': collection, 'subject': did, 'createdAt': DateTime.now().toUtc().toIso8601String()};
+        final blockRecord = {
+          r'$type': collection,
+          'subject': did,
+          'createdAt': DateTime.now().toUtc().toIso8601String(),
+        };
 
-        final result = await _client.repo.createRecord(collection: collection, record: blockRecord, repo: sessionDid);
+        final result = await _client.repo.createRecord(
+          collection: collection,
+          record: blockRecord,
+          repo: sessionDid,
+        );
 
         _logger.i('User blocked successfully with $collection: ${result.uri}');
 
@@ -245,7 +282,10 @@ class GraphRepositoryImpl implements GraphRepository {
   @override
   Future<void> unblockUser(AtUri blockUri) async {
     _logger.d('Unblocking user with block URI: $blockUri');
-    await _client.repo.deleteRecord(uri: blockUri, skipBskyCrosspostCleanup: true);
+    await _client.repo.deleteRecord(
+      uri: blockUri,
+      skipBskyCrosspostCleanup: true,
+    );
     _logger.i('User unblocked successfully');
   }
 

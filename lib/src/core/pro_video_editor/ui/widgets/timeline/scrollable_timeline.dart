@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 
 /// A scrollable video timeline widget that displays thumbnails, audio track,
-/// and a time ruler. The timeline scrolls horizontally and auto-follows playhead.
+/// and a time ruler. The timeline scrolls horizontally & auto-follows playhead.
 class ScrollableTimeline extends StatefulWidget {
   const ScrollableTimeline({
     required this.videoTimelineState,
@@ -36,9 +36,13 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
   bool _isProgrammaticScroll = false;
   Timer? _scrollEndTimer;
 
-  double get _totalWidth => widget.videoTimelineState.videoDuration.inMilliseconds / 1000 * widget.pixelsPerSecond;
+  double get _totalWidth =>
+      widget.videoTimelineState.videoDuration.inMilliseconds /
+      1000 *
+      widget.pixelsPerSecond;
 
-  double get _totalHeight => widget.rulerHeight + widget.thumbnailHeight + 8 + widget.audioTrackHeight;
+  double get _totalHeight =>
+      widget.rulerHeight + widget.thumbnailHeight + 8 + widget.audioTrackHeight;
 
   @override
   void initState() {
@@ -98,20 +102,22 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                   NotificationListener<ScrollNotification>(
                     onNotification: (notification) {
                       if (notification is ScrollStartNotification) {
-                        // Only mark as user scrolling if not a programmatic scroll
+                        // Only mark user scrolling if not programmatic scroll
                         if (!_isProgrammaticScroll) {
                           _scrollEndTimer?.cancel();
                           _isUserScrolling = true;
                         }
                       } else if (notification is ScrollEndNotification) {
                         _scrollEndTimer?.cancel();
-                        _scrollEndTimer = Timer(const Duration(milliseconds: 300), () {
-                          if (mounted) {
-                            _isUserScrolling = false;
-                          }
-                        });
+                        _scrollEndTimer = Timer(
+                          const Duration(milliseconds: 300),
+                          () {
+                            if (mounted) {
+                              _isUserScrolling = false;
+                            }
+                          },
+                        );
                       } else if (notification is ScrollUpdateNotification) {
-                        // Only seek when user is actually scrolling, not during programmatic scroll
                         if (_isUserScrolling && !_isProgrammaticScroll) {
                           _onScrollUpdate();
                         }
@@ -125,14 +131,17 @@ class _ScrollableTimelineState extends State<ScrollableTimeline> {
                       child: SizedBox(
                         width: _totalWidth + viewportWidth,
                         child: Padding(
-                          padding: EdgeInsets.symmetric(horizontal: viewportWidth / 2),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: viewportWidth / 2,
+                          ),
                           child: Column(
                             children: [
                               _TimeRuler(
                                 totalWidth: _totalWidth,
                                 pixelsPerSecond: widget.pixelsPerSecond,
                                 height: widget.rulerHeight,
-                                videoDuration: widget.videoTimelineState.videoDuration,
+                                videoDuration:
+                                    widget.videoTimelineState.videoDuration,
                               ),
                               _VideoThumbnailTrack(
                                 totalWidth: _totalWidth,
@@ -285,7 +294,8 @@ class _TimeRulerPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _TimeRulerPainter oldDelegate) {
-    return oldDelegate.totalSeconds != totalSeconds || oldDelegate.pixelsPerSecond != pixelsPerSecond;
+    return oldDelegate.totalSeconds != totalSeconds ||
+        oldDelegate.pixelsPerSecond != pixelsPerSecond;
   }
 }
 
@@ -425,7 +435,11 @@ class _AudioTrack extends StatelessWidget {
                       ),
                     )
                   else
-                    const Icon(Icons.music_note, color: AppColors.greyWhite, size: 18),
+                    const Icon(
+                      Icons.music_note,
+                      color: AppColors.greyWhite,
+                      size: 18,
+                    ),
                   const SizedBox(width: 8),
                   Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -542,9 +556,15 @@ class _AudioWaveformPainter extends CustomPainter {
     final centerY = size.height / 2;
 
     for (var i = 0; i < barCount; i++) {
-      final sampleIndex = (i * samplesPerBar).floor().clamp(0, waveformData.length - 1);
+      final sampleIndex = (i * samplesPerBar).floor().clamp(
+        0,
+        waveformData.length - 1,
+      );
       final amplitude = waveformData[sampleIndex];
-      final barHeight = (amplitude * size.height * 0.7).clamp(2.0, size.height - 4);
+      final barHeight = (amplitude * size.height * 0.7).clamp(
+        2.0,
+        size.height - 4,
+      );
       final x = i * barStep + barWidth / 2;
 
       canvas.drawLine(
@@ -557,6 +577,7 @@ class _AudioWaveformPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _AudioWaveformPainter oldDelegate) {
-    return oldDelegate.waveformData != waveformData || oldDelegate.totalWidth != totalWidth;
+    return oldDelegate.waveformData != waveformData ||
+        oldDelegate.totalWidth != totalWidth;
   }
 }

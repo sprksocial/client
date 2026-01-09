@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/templates/info_bar_template.dart';
+import 'package:spark/src/core/design_system/templates/info_bar_template.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart' as wb;
 
 @wb.UseCase(name: 'default', type: InfoBarTemplate)

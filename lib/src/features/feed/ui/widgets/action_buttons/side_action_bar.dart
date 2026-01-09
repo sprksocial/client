@@ -4,16 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/design_system/components/organisms/side_action_bar.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/widgets/options_panel.dart';
-import 'package:sparksocial/src/core/ui/widgets/report_dialog.dart';
-import 'package:sparksocial/src/core/utils/blocking_utils.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
-import 'package:sparksocial/src/features/feed/providers/like_post.dart';
-import 'package:sparksocial/src/features/feed/providers/repost_post.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/share_panel.dart';
+import 'package:spark/src/core/design_system/components/organisms/side_action_bar.dart';
+import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/widgets/options_panel.dart';
+import 'package:spark/src/core/ui/widgets/report_dialog.dart';
+import 'package:spark/src/core/utils/blocking_utils.dart';
+import 'package:spark/src/features/feed/providers/feed_provider.dart';
+import 'package:spark/src/features/feed/providers/like_post.dart';
+import 'package:spark/src/features/feed/providers/repost_post.dart';
+import 'package:spark/src/features/feed/ui/widgets/action_buttons/share_panel.dart';
 
 class SideActionBar extends ConsumerStatefulWidget {
   const SideActionBar({
@@ -39,7 +39,7 @@ class SideActionBar extends ConsumerStatefulWidget {
   final bool isImage;
   final VoidCallback? onProfilePressed;
 
-  /// Callback invoked after successfully blocking a user, typically to advance to the next post
+  /// Callback invoked after successfully blocking a user
   final VoidCallback? onBlockAndAdvance;
 
   @override
@@ -75,7 +75,8 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       setState(() {
         _currentPost = widget.post;
         _isReposted = widget.post.viewer?.repost != null;
-        _likeCount = int.tryParse(widget.likeCount) ?? widget.post.likeCount ?? 0;
+        _likeCount =
+            int.tryParse(widget.likeCount) ?? widget.post.likeCount ?? 0;
         _repostCount = widget.post.repostCount ?? 0;
       });
     }
@@ -104,17 +105,24 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       if (_isLiked) {
         // Like the post
         final currentPost = _currentPost ?? widget.post;
-        final newLike = await ref.read(likePostProvider(currentPost.cid, currentPost.uri).future);
+        final newLike = await ref.read(
+          likePostProvider(currentPost.cid, currentPost.uri).future,
+        );
 
         final updatedPost = currentPost.copyWith(
           likeCount: _likeCount,
           viewer:
               currentPost.viewer?.copyWith(like: newLike.uri) ??
-              ViewerState(like: newLike.uri, repost: currentPost.viewer?.repost),
+              ViewerState(
+                like: newLike.uri,
+                repost: currentPost.viewer?.repost,
+              ),
         );
 
         if (widget.feed != null) {
-          ref.read(feedProvider(widget.feed!).notifier).replacePost(updatedPost);
+          ref
+              .read(feedProvider(widget.feed!).notifier)
+              .replacePost(updatedPost);
         }
 
         _currentPost = updatedPost;
@@ -122,15 +130,23 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         // Unlike the post
         final currentPost = _currentPost ?? widget.post;
         if (currentPost.viewer?.like != null) {
-          await ref.read(unlikePostProvider(AtUri.parse(currentPost.viewer!.like!.toString())).future);
+          await ref.read(
+            unlikePostProvider(
+              AtUri.parse(currentPost.viewer!.like!.toString()),
+            ).future,
+          );
 
           final updatedPost = currentPost.copyWith(
             likeCount: _likeCount,
-            viewer: currentPost.viewer?.copyWith(like: null) ?? ViewerState(repost: currentPost.viewer?.repost),
+            viewer:
+                currentPost.viewer?.copyWith(like: null) ??
+                ViewerState(repost: currentPost.viewer?.repost),
           );
 
           if (widget.feed != null) {
-            ref.read(feedProvider(widget.feed!).notifier).replacePost(updatedPost);
+            ref
+                .read(feedProvider(widget.feed!).notifier)
+                .replacePost(updatedPost);
           }
 
           _currentPost = updatedPost;
@@ -145,7 +161,11 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 
       // Show error to user
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to ${wasLiked ? 'unlike' : 'like'} post: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to ${wasLiked ? 'unlike' : 'like'} post: $e'),
+          ),
+        );
       }
     }
   }
@@ -162,17 +182,24 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       if (_isReposted) {
         // Repost the post
         final currentPost = _currentPost ?? widget.post;
-        final newRepost = await ref.read(repostPostProvider(currentPost.cid, currentPost.uri).future);
+        final newRepost = await ref.read(
+          repostPostProvider(currentPost.cid, currentPost.uri).future,
+        );
 
         final updatedPost = currentPost.copyWith(
           repostCount: _repostCount,
           viewer:
               currentPost.viewer?.copyWith(repost: newRepost.uri) ??
-              ViewerState(repost: newRepost.uri, like: currentPost.viewer?.like),
+              ViewerState(
+                repost: newRepost.uri,
+                like: currentPost.viewer?.like,
+              ),
         );
 
         if (widget.feed != null) {
-          ref.read(feedProvider(widget.feed!).notifier).replacePost(updatedPost);
+          ref
+              .read(feedProvider(widget.feed!).notifier)
+              .replacePost(updatedPost);
         }
 
         _currentPost = updatedPost;
@@ -180,15 +207,21 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         // Unrepost the post
         final currentPost = _currentPost ?? widget.post;
         if (currentPost.viewer?.repost != null) {
-          await ref.read(unrepostPostProvider(currentPost.viewer!.repost!).future);
+          await ref.read(
+            unrepostPostProvider(currentPost.viewer!.repost!).future,
+          );
 
           final updatedPost = currentPost.copyWith(
             repostCount: _repostCount,
-            viewer: currentPost.viewer?.copyWith(repost: null) ?? ViewerState(like: currentPost.viewer?.like),
+            viewer:
+                currentPost.viewer?.copyWith(repost: null) ??
+                ViewerState(like: currentPost.viewer?.like),
           );
 
           if (widget.feed != null) {
-            ref.read(feedProvider(widget.feed!).notifier).replacePost(updatedPost);
+            ref
+                .read(feedProvider(widget.feed!).notifier)
+                .replacePost(updatedPost);
           }
 
           _currentPost = updatedPost;
@@ -205,7 +238,13 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text('Failed to ${wasReposted ? 'unrepost' : 'repost'} post: $e')));
+        ).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Failed to ${wasReposted ? 'unrepost' : 'repost'} post: $e',
+            ),
+          ),
+        );
       }
     }
   }
@@ -255,7 +294,8 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       postUri = postUri.replaceAll('so.sprk.feed.post/', '');
 
       shareUrl = 'https://watch.sprk.so/?uri=$postUri';
-      embedCode = '<iframe src="embed.html?uri=$postUri" width="100%" height="400" frameborder="0" allowfullscreen></iframe>';
+      embedCode =
+          '<iframe src="embed.html?uri=$postUri" width="100%" height="400" frameborder="0" allowfullscreen></iframe>';
     }
 
     showModalBottomSheet(
@@ -275,13 +315,21 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 
   void _handleCommentPressed() {
     final currentPost = _currentPost ?? widget.post;
-    context.router.push(CommentsRoute(postUri: currentPost.uri.toString(), isSprk: currentPost.isSprk, post: currentPost));
+    context.router.push(
+      CommentsRoute(
+        postUri: currentPost.uri.toString(),
+        isSprk: currentPost.isSprk,
+        post: currentPost,
+      ),
+    );
   }
 
   void _handleSoundTap() {
     final currentPost = _currentPost ?? widget.post;
     if (currentPost.sound != null) {
-      context.router.push(SoundRoute(audioUri: currentPost.sound!.uri.toString()));
+      context.router.push(
+        SoundRoute(audioUri: currentPost.sound!.uri.toString()),
+      );
     }
   }
 
@@ -317,7 +365,7 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
         );
       }
 
-      // If blocking (not unblocking) and callback is provided, advance to next post
+      // If blocking and callback provided, advance to next post
       if (!wasBlocked && widget.onBlockAndAdvance != null) {
         widget.onBlockAndAdvance!();
       }
@@ -325,7 +373,9 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Failed to ${wasBlocked ? 'unblock' : 'block'} user: $e'),
+            content: Text(
+              'Failed to ${wasBlocked ? 'unblock' : 'block'} user: $e',
+            ),
             backgroundColor: Colors.red,
           ),
         );
@@ -349,7 +399,8 @@ class SideActionBarState extends ConsumerState<SideActionBar> {
 
     final currentPost = _currentPost ?? widget.post;
 
-    final commentCount = currentPost.replyCount ?? int.tryParse(widget.commentCount) ?? 0;
+    final commentCount =
+        currentPost.replyCount ?? int.tryParse(widget.commentCount) ?? 0;
     // final isCurated = currentPost.viewer?.repost != null; // Curation disabled
 
     return SparkSideActionBar(
@@ -416,7 +467,11 @@ class CopyField extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               child: Text(
                 text,
-                style: TextStyle(fontFamily: 'monospace', color: textColor.withAlpha(204), fontSize: 13),
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  color: textColor.withAlpha(204),
+                  fontSize: 13,
+                ),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
@@ -430,12 +485,23 @@ class CopyField extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
-                  transitionBuilder: (Widget child, Animation<double> animation) {
-                    return ScaleTransition(scale: animation, child: child);
-                  },
+                  transitionBuilder:
+                      (Widget child, Animation<double> animation) {
+                        return ScaleTransition(scale: animation, child: child);
+                      },
                   child: isCopied
-                      ? const Icon(Icons.check_circle, key: ValueKey('copied'), color: Colors.green, size: 20)
-                      : Icon(Icons.content_copy_rounded, key: const ValueKey('copy'), color: accentColor, size: 20),
+                      ? const Icon(
+                          Icons.check_circle,
+                          key: ValueKey('copied'),
+                          color: Colors.green,
+                          size: 20,
+                        )
+                      : Icon(
+                          Icons.content_copy_rounded,
+                          key: const ValueKey('copy'),
+                          color: accentColor,
+                          size: 20,
+                        ),
                 ),
               ),
             ),

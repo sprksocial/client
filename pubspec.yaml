@@ -1,4 +1,4 @@
-name: sparksocial
+name: spark
 description: "Spark mobile app"
 publish_to: "none"
 # The number after + should stay fixed, the android workflow will change it on every build

@@ -4,12 +4,12 @@ import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
-import 'package:sparksocial/src/core/network/atproto/data/adapters/bsky/actor_adapter.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/network/atproto/data/adapters/bsky/actor_adapter.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 
 /// Actor-related API endpoints implementation
 class ActorRepositoryImpl implements ActorRepository {
@@ -17,7 +17,9 @@ class ActorRepositoryImpl implements ActorRepository {
     _logger.v('ActorAPI initialized');
   }
   final SprkRepository _client;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('ActorAPI');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'ActorAPI',
+  );
 
   @override
   Future<ProfileViewDetailed> getProfile(String did) async {
@@ -39,15 +41,24 @@ class ActorRepositoryImpl implements ActorRepository {
           parameters: {'actor': did},
           headers: {'atproto-proxy': _client.sprkDid},
           to: (jsonMap) => jsonMap,
-          adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+          adaptor: (uint8) =>
+              jsonDecode(utf8.decode(uint8 as List<int>))
+                  as Map<String, dynamic>,
         );
-        return ProfileViewDetailed.fromJson(result.data as Map<String, dynamic>);
+        return ProfileViewDetailed.fromJson(
+          result.data as Map<String, dynamic>,
+        );
       } catch (e) {
         _logger
           ..e('Failed to retrieve profile for DID: $did', error: e)
           ..i('Trying to get profile from bluesky');
-        final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
-        final profile = await bskyActorAdapter.getProfileFromBluesky(bluesky, did);
+        final bluesky = bsky.Bluesky.fromSession(
+          _client.authRepository.session!,
+        );
+        final profile = await bskyActorAdapter.getProfileFromBluesky(
+          bluesky,
+          did,
+        );
         _logger.d('Profile retrieved successfully from bluesky');
         return profile;
       }
@@ -55,7 +66,10 @@ class ActorRepositoryImpl implements ActorRepository {
   }
 
   @override
-  Future<SearchActorsResponse> searchActors(String query, {String? cursor}) async {
+  Future<SearchActorsResponse> searchActors(
+    String query, {
+    String? cursor,
+  }) async {
     _logger.d('Searching actors with query: $query, cursor: $cursor');
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -79,7 +93,8 @@ class ActorRepositoryImpl implements ActorRepository {
         parameters: parameters,
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) => jsonMap,
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
 
       _logger.d('Actor search completed successfully');
@@ -88,19 +103,29 @@ class ActorRepositoryImpl implements ActorRepository {
       final actorsJson = (data['actors'] as List? ?? []).cast<dynamic>();
       final cursorNext = data['cursor'] as String?;
 
-      final actors = actorsJson.map((e) => ProfileView.fromJson(e as Map<String, dynamic>)).toList();
+      final actors = actorsJson
+          .map((e) => ProfileView.fromJson(e as Map<String, dynamic>))
+          .toList();
 
       return SearchActorsResponse(actors: actors, cursor: cursorNext);
     });
   }
 
   @override
-  Future<void> updateProfile({required String displayName, required String description, Blob? avatar}) async {
+  Future<void> updateProfile({
+    required String displayName,
+    required String description,
+    Blob? avatar,
+  }) async {
     if (!_client.authRepository.isAuthenticated) {
       throw Exception('Not authenticated');
     }
 
-    final record = ProfileRecord(displayName: displayName, description: description, avatar: avatar);
+    final record = ProfileRecord(
+      displayName: displayName,
+      description: description,
+      avatar: avatar,
+    );
 
     final atproto = _client.authRepository.atproto;
     if (atproto == null) {
@@ -119,17 +144,26 @@ class ActorRepositoryImpl implements ActorRepository {
   Future<bool> isEarlySupporter(String did) async {
     _logger.d('Checking early supporter status for DID: $did');
     try {
-      final response = await http.get(Uri.parse('https://early-supporters.sprk.so/?did=$did'));
+      final response = await http.get(
+        Uri.parse('https://early-supporters.sprk.so/?did=$did'),
+      );
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final isSupporter = data['found'] == true;
         _logger.d('Early supporter status for $did: $isSupporter');
         return isSupporter;
       }
-      _logger.w('Failed to check early supporter status for $did, status code: ${response.statusCode}');
+      _logger.w(
+        'Failed to check early supporter status for $did, status code: '
+        '${response.statusCode}',
+      );
       return false;
     } catch (e, s) {
-      _logger.e('Error checking early supporter status for $did', error: e, stackTrace: s);
+      _logger.e(
+        'Error checking early supporter status for $did',
+        error: e,
+        stackTrace: s,
+      );
       return false;
     }
   }
@@ -158,17 +192,27 @@ class ActorRepositoryImpl implements ActorRepository {
           parameters: {'actors': dids},
           headers: {'atproto-proxy': _client.sprkDid},
           to: (jsonMap) => jsonMap,
-          adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+          adaptor: (uint8) =>
+              jsonDecode(utf8.decode(uint8 as List<int>))
+                  as Map<String, dynamic>,
         );
         return (result.data['profiles']! as List)
-            .map((json) => ProfileViewDetailed.fromJson(json as Map<String, dynamic>))
+            .map(
+              (json) =>
+                  ProfileViewDetailed.fromJson(json as Map<String, dynamic>),
+            )
             .toList();
       } catch (e) {
         _logger
           ..e('Failed to retrieve profile for DIDs: $dids', error: e)
           ..i('Trying to get profiles from bluesky');
-        final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
-        final profiles = await bskyActorAdapter.getProfilesFromBluesky(bluesky, dids);
+        final bluesky = bsky.Bluesky.fromSession(
+          _client.authRepository.session!,
+        );
+        final profiles = await bskyActorAdapter.getProfilesFromBluesky(
+          bluesky,
+          dids,
+        );
         _logger.d('Profiles retrieved successfully from bluesky');
         return profiles;
       }

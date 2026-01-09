@@ -1,11 +1,11 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/shapes.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/shapes.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
 
 class SoundHeaderCard extends StatefulWidget {
   const SoundHeaderCard({
@@ -42,11 +42,15 @@ class _SoundHeaderCardState extends State<SoundHeaderCard> {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: ShapeDecoration(
-        color: isDark ? colorScheme.surfaceContainerHighest : colorScheme.surfaceContainerLow,
+        color: isDark
+            ? colorScheme.surfaceContainerHighest
+            : colorScheme.surfaceContainerLow,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppShapes.squircleRadius),
           side: BorderSide(
-            color: isDark ? Colors.white.withAlpha(25) : Colors.black.withAlpha(15),
+            color: isDark
+                ? Colors.white.withAlpha(25)
+                : Colors.black.withAlpha(15),
           ),
         ),
       ),
@@ -105,7 +109,10 @@ class _SoundHeaderCardState extends State<SoundHeaderCard> {
 
                 // Use count badge
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: isDark ? AppColors.grey700 : AppColors.grey100,
                     borderRadius: BorderRadius.circular(12),
@@ -241,10 +248,14 @@ class _CoverArtWithPlayerState extends State<_CoverArtWithPlayer> {
               height: 88,
               decoration: ShapeDecoration(
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(AppShapes.squircleRadius - 4),
+                  borderRadius: BorderRadius.circular(
+                    AppShapes.squircleRadius - 4,
+                  ),
                   side: BorderSide(
                     width: 1.5,
-                    color: isDark ? Colors.white.withAlpha(40) : Colors.black.withAlpha(20),
+                    color: isDark
+                        ? Colors.white.withAlpha(40)
+                        : Colors.black.withAlpha(20),
                   ),
                 ),
                 shadows: [
@@ -256,7 +267,9 @@ class _CoverArtWithPlayerState extends State<_CoverArtWithPlayer> {
                 ],
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(AppShapes.squircleRadius - 4),
+                borderRadius: BorderRadius.circular(
+                  AppShapes.squircleRadius - 4,
+                ),
                 child: CachedNetworkImage(
                   imageUrl: widget.coverArtUrl,
                   fit: BoxFit.cover,
@@ -265,7 +278,9 @@ class _CoverArtWithPlayerState extends State<_CoverArtWithPlayer> {
                     child: Center(
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary500),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primary500,
+                        ),
                       ),
                     ),
                   ),
@@ -342,7 +357,9 @@ class _PlayButtonWithProgress extends StatelessWidget {
               value: progress,
               strokeWidth: strokeWidth,
               backgroundColor: Colors.white.withAlpha(50),
-              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary500),
+              valueColor: const AlwaysStoppedAnimation<Color>(
+                AppColors.primary500,
+              ),
             ),
           ),
 

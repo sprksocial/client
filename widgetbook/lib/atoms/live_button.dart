@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
 
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/live_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/live_button.dart';
 
 import 'package:widgetbook_workspace/widgetbook_usecases_templates.dart';
 

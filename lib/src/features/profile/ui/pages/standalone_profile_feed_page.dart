@@ -4,14 +4,14 @@ import 'package:atproto_core/atproto_core.dart';
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/tokens/constants.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/feed/snappy_page_scroll_physics.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_feed_index_provider.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_feed_provider.dart';
-import 'package:sparksocial/src/features/profile/ui/widgets/profile_feed_post_widget.dart';
+import 'package:spark/src/core/design_system/tokens/constants.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/features/feed/ui/widgets/feed/cacheable_page_view.dart';
+import 'package:spark/src/features/feed/ui/widgets/feed/snappy_page_scroll_physics.dart';
+import 'package:spark/src/features/profile/providers/profile_feed_index_provider.dart';
+import 'package:spark/src/features/profile/providers/profile_feed_provider.dart';
+import 'package:spark/src/features/profile/ui/widgets/profile_feed_post_widget.dart';
 
 @RoutePage()
 class StandaloneProfileFeedPage extends ConsumerStatefulWidget {
@@ -26,10 +26,12 @@ class StandaloneProfileFeedPage extends ConsumerStatefulWidget {
   final int initialPostIndex;
 
   @override
-  ConsumerState<StandaloneProfileFeedPage> createState() => _StandaloneProfileFeedPageState();
+  ConsumerState<StandaloneProfileFeedPage> createState() =>
+      _StandaloneProfileFeedPageState();
 }
 
-class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFeedPage> {
+class _StandaloneProfileFeedPageState
+    extends ConsumerState<StandaloneProfileFeedPage> {
   late final PageController pageController;
   late final AtUri profileAtUri;
   int _currentIndex = 0;
@@ -51,17 +53,18 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
 
   @override
   Widget build(BuildContext context) {
-    // Initialize the index provider after the build phase to avoid modifying providers during build.
-    // This prevents race conditions where video widgets see the default index (0)
-    // before the correct initial index is set.
     if (!_hasInitializedIndex) {
       _hasInitializedIndex = true;
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(profileFeedIndexProvider(widget.profileUri).notifier).setIndex(widget.initialPostIndex);
+        ref
+            .read(profileFeedIndexProvider(widget.profileUri).notifier)
+            .setIndex(widget.initialPostIndex);
       });
     }
 
-    final feedState = ref.watch(profileFeedProvider(profileAtUri, widget.videosOnly));
+    final feedState = ref.watch(
+      profileFeedProvider(profileAtUri, widget.videosOnly),
+    );
     final bottomPadding = MediaQuery.of(context).padding.bottom;
 
     return Scaffold(
@@ -76,7 +79,10 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
 
               if (filteredUris.isEmpty) {
                 return const Center(
-                  child: Text('No posts available', style: TextStyle(color: AppColors.white)),
+                  child: Text(
+                    'No posts available',
+                    style: TextStyle(color: AppColors.white),
+                  ),
                 );
               }
 
@@ -91,11 +97,22 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
                   setState(() {
                     _currentIndex = index;
                   });
-                  // Update the profile feed index provider for video visibility tracking
-                  ref.read(profileFeedIndexProvider(widget.profileUri).notifier).setIndex(index);
+                  ref
+                      .read(
+                        profileFeedIndexProvider(widget.profileUri).notifier,
+                      )
+                      .setIndex(index);
                   // Load more posts when approaching the end
-                  if (index >= filteredUris.length - 3 && !state.isEndOfNetwork) {
-                    ref.read(profileFeedProvider(profileAtUri, widget.videosOnly).notifier).loadMore();
+                  if (index >= filteredUris.length - 3 &&
+                      !state.isEndOfNetwork) {
+                    ref
+                        .read(
+                          profileFeedProvider(
+                            profileAtUri,
+                            widget.videosOnly,
+                          ).notifier,
+                        )
+                        .loadMore();
                   }
                 },
                 itemBuilder: (context, index) {
@@ -111,12 +128,18 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
                 },
               );
             },
-            loading: () => const Center(child: CircularProgressIndicator(color: AppColors.white)),
+            loading: () => const Center(
+              child: CircularProgressIndicator(color: AppColors.white),
+            ),
             error: (error, stack) => Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, color: AppColors.white, size: 48),
+                  const Icon(
+                    Icons.error_outline,
+                    color: AppColors.white,
+                    size: 48,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Error loading feed: $error',
@@ -126,7 +149,14 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () {
-                      ref.read(profileFeedProvider(profileAtUri, widget.videosOnly).notifier).refresh();
+                      ref
+                          .read(
+                            profileFeedProvider(
+                              profileAtUri,
+                              widget.videosOnly,
+                            ).notifier,
+                          )
+                          .refresh();
                     },
                     child: const Text('Retry'),
                   ),
@@ -158,7 +188,13 @@ class _StandaloneProfileFeedPageState extends ConsumerState<StandaloneProfileFee
             final currentPostUri = state.loadedPosts[_currentIndex];
             final post = state.postViews[currentPostUri];
             if (post != null) {
-              context.router.push(CommentsRoute(postUri: post.uri.toString(), isSprk: post.isSprk, post: post));
+              context.router.push(
+                CommentsRoute(
+                  postUri: post.uri.toString(),
+                  isSprk: post.isSprk,
+                  post: post,
+                ),
+              );
             }
           }
         },
@@ -188,7 +224,10 @@ class _CommentBar extends StatelessWidget {
           decoration: BoxDecoration(
             color: const Color.fromARGB(51, 0, 0, 0),
             border: Border(
-              top: BorderSide(color: Colors.white.withValues(alpha: 0.08), width: 2),
+              top: BorderSide(
+                color: Colors.white.withValues(alpha: 0.08),
+                width: 2,
+              ),
             ),
           ),
           child: GestureDetector(
@@ -202,7 +241,10 @@ class _CommentBar extends StatelessWidget {
                 bottom: 12 + bottomPadding,
               ),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(24),

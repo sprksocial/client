@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/design_system/theme/app_theme.dart';
-import 'package:sparksocial/src/core/l10n/app_localizations.dart';
-import 'package:sparksocial/src/core/routing/app_router.dart';
-import 'package:sparksocial/src/core/ui/theme/providers/theme_provider.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_provider.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/core/design_system/theme/app_theme.dart';
+import 'package:spark/src/core/l10n/app_localizations.dart';
+import 'package:spark/src/core/routing/app_router.dart';
+import 'package:spark/src/core/ui/theme/providers/theme_provider.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/features/feed/providers/feed_provider.dart';
+import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 class SprkApp extends ConsumerStatefulWidget {
   const SprkApp({super.key});

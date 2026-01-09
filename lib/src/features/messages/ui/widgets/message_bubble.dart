@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
-import 'package:sparksocial/src/features/messages/ui/widgets/sender_avatar.dart';
+import 'package:spark/src/core/network/messages/data/models/message_models.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/features/messages/ui/widgets/sender_avatar.dart';
 
 class MessageBubble extends StatelessWidget {
   const MessageBubble({
@@ -29,7 +29,7 @@ class MessageBubble extends StatelessWidget {
 
     var cleanedText = text.replaceAll(urlPattern, '').trim();
 
-    // Clean up multiple spaces and newlines that might be left after URL removal
+    // Clean up spaces and newlines that might be left after URL removal
     return cleanedText = cleanedText.replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 
@@ -49,11 +49,17 @@ class MessageBubble extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
-        mainAxisAlignment: isCurrentUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: isCurrentUser
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isCurrentUser && showAvatar) ...[
-            SenderAvatar(isCurrentUser: false, otherUserAvatar: otherUserAvatar, otherUserHandle: otherUserHandle),
+            SenderAvatar(
+              isCurrentUser: false,
+              otherUserAvatar: otherUserAvatar,
+              otherUserHandle: otherUserHandle,
+            ),
             const SizedBox(width: 8),
           ] else if (!isCurrentUser) ...[
             const SizedBox(width: 40),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/crop_rotate/crop_rotate_editor_bottom_action_bar.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/crop_rotate/crop_rotate_editor_bottom_action_bar.dart';
 
 /// A custom paint editor bottom bar widget for video editor.
 ///
@@ -153,10 +153,14 @@ class _PaintEditorBarState extends State<PaintEditorBar> {
             child: child,
           ),
         ),
-        child: widget.editor.paintMode == PaintMode.rect || widget.editor.paintMode == PaintMode.circle
+        child:
+            widget.editor.paintMode == PaintMode.rect ||
+                widget.editor.paintMode == PaintMode.circle
             ? Center(
                 child: _buildIconTextButton(
-                  icon: widget.editor.fillBackground ? paintEditorConfigs.icons.fill : paintEditorConfigs.icons.noFill,
+                  icon: widget.editor.fillBackground
+                      ? paintEditorConfigs.icons.fill
+                      : paintEditorConfigs.icons.noFill,
                   label: i18n.paintEditor.toggleFill,
                   onPressed: () {
                     widget.editor.toggleFill();
@@ -193,8 +197,12 @@ class _PaintEditorBarState extends State<PaintEditorBar> {
     required VoidCallback onPressed,
     bool isActive = false,
   }) {
-    final color = isActive ? paintEditorConfigs.style.bottomBarActiveItemColor : _foreGroundColor;
-    final labelColor = isActive ? paintEditorConfigs.style.bottomBarActiveItemColor : _foreGroundColorAccent;
+    final color = isActive
+        ? paintEditorConfigs.style.bottomBarActiveItemColor
+        : _foreGroundColor;
+    final labelColor = isActive
+        ? paintEditorConfigs.style.bottomBarActiveItemColor
+        : _foreGroundColorAccent;
 
     return TextButton(
       onPressed: onPressed,

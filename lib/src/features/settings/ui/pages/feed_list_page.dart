@@ -3,10 +3,10 @@ import 'dart:ui' show lerpDouble;
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/settings_feed_card.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_state.dart';
+import 'package:spark/src/core/design_system/components/molecules/settings_feed_card.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/features/settings/providers/settings_state.dart';
 
 @RoutePage()
 class FeedListPage extends ConsumerStatefulWidget {
@@ -16,7 +16,8 @@ class FeedListPage extends ConsumerStatefulWidget {
   ConsumerState<FeedListPage> createState() => _FeedListPageState();
 }
 
-class _FeedListPageState extends ConsumerState<FeedListPage> with AutomaticKeepAliveClientMixin {
+class _FeedListPageState extends ConsumerState<FeedListPage>
+    with AutomaticKeepAliveClientMixin {
   bool _isReordering = false;
   bool _isEditMode = false;
 
@@ -41,7 +42,11 @@ class _FeedListPageState extends ConsumerState<FeedListPage> with AutomaticKeepA
               children: [
                 Text(
                   'Your Feeds',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: colorScheme.onSurface),
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: colorScheme.onSurface,
+                  ),
                 ),
                 const Spacer(),
                 TextButton.icon(
@@ -51,10 +56,16 @@ class _FeedListPageState extends ConsumerState<FeedListPage> with AutomaticKeepA
                     });
                   },
                   icon: Icon(_isEditMode ? Icons.check : Icons.edit, size: 18),
-                  label: Text(_isEditMode ? 'Done' : 'Edit', style: const TextStyle(fontSize: 14)),
+                  label: Text(
+                    _isEditMode ? 'Done' : 'Edit',
+                    style: const TextStyle(fontSize: 14),
+                  ),
                   style: TextButton.styleFrom(
                     foregroundColor: colorScheme.primary,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                 ),
               ],
@@ -84,12 +95,16 @@ class _FeedListPageState extends ConsumerState<FeedListPage> with AutomaticKeepA
                 try {
                   // Get the actual indices in the full feeds list
                   final filteredFeeds = _getFilteredFeeds(settingsState);
-                  final actualOldIndex = settingsState.feeds.indexOf(filteredFeeds[oldIndex]);
+                  final actualOldIndex = settingsState.feeds.indexOf(
+                    filteredFeeds[oldIndex],
+                  );
                   final actualNewIndex = newIndex < filteredFeeds.length
                       ? settingsState.feeds.indexOf(filteredFeeds[newIndex])
                       : settingsState.feeds.length - 1;
 
-                  await ref.read(settingsProvider.notifier).reorderFeed(actualOldIndex, actualNewIndex);
+                  await ref
+                      .read(settingsProvider.notifier)
+                      .reorderFeed(actualOldIndex, actualNewIndex);
                 } catch (e) {
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -102,7 +117,9 @@ class _FeedListPageState extends ConsumerState<FeedListPage> with AutomaticKeepA
                 return AnimatedBuilder(
                   animation: animation,
                   builder: (context, child) {
-                    final animValue = Curves.easeInOutCubic.transform(animation.value);
+                    final animValue = Curves.easeInOutCubic.transform(
+                      animation.value,
+                    );
                     final elevation = lerpDouble(2, 8, animValue)!;
                     final scale = lerpDouble(1, 1.05, animValue)!;
 
@@ -126,27 +143,35 @@ class _FeedListPageState extends ConsumerState<FeedListPage> with AutomaticKeepA
                 final feed = filteredFeeds[index];
                 final isActive = settingsState.activeFeed == feed;
 
-                // Determine if this feed can be deleted (Following feed cannot be deleted)
-                final canDelete = !(feed.type == 'timeline' && feed.config.value == 'following');
+                // Determine if feed can be deleted (Following can't be deleted)
+                final canDelete =
+                    !(feed.type == 'timeline' &&
+                        feed.config.value == 'following');
 
                 return Padding(
                   key: ValueKey(feed.config.id),
                   padding: const EdgeInsets.symmetric(vertical: 4),
                   child: SettingsFeedCard(
                     feed: feed,
-                    mode: _isEditMode ? SettingsFeedCardMode.edit : SettingsFeedCardMode.display,
+                    mode: _isEditMode
+                        ? SettingsFeedCardMode.edit
+                        : SettingsFeedCardMode.display,
                     isActive: isActive,
                     index: index,
                     onTap: _isEditMode || _isReordering
                         ? null
                         : () {
-                            ref.read(settingsProvider.notifier).setActiveFeed(feed);
+                            ref
+                                .read(settingsProvider.notifier)
+                                .setActiveFeed(feed);
                           },
                     onDelete: _isEditMode && canDelete
                         ? () async {
                             // Handle delete action
                             try {
-                              await ref.read(settingsProvider.notifier).removeFeed(feed);
+                              await ref
+                                  .read(settingsProvider.notifier)
+                                  .removeFeed(feed);
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Feed removed')),
@@ -155,7 +180,9 @@ class _FeedListPageState extends ConsumerState<FeedListPage> with AutomaticKeepA
                             } catch (e) {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Failed to remove feed: $e')),
+                                  SnackBar(
+                                    content: Text('Failed to remove feed: $e'),
+                                  ),
                                 );
                               }
                             }
@@ -170,8 +197,12 @@ class _FeedListPageState extends ConsumerState<FeedListPage> with AutomaticKeepA
                                 config: feed.config.copyWith(pinned: true),
                                 view: feed.view,
                               );
-                              await ref.read(settingsProvider.notifier).removeFeed(feed);
-                              await ref.read(settingsProvider.notifier).addFeed(updatedFeed);
+                              await ref
+                                  .read(settingsProvider.notifier)
+                                  .removeFeed(feed);
+                              await ref
+                                  .read(settingsProvider.notifier)
+                                  .addFeed(updatedFeed);
                             }
                           }
                         : null,
@@ -184,15 +215,21 @@ class _FeedListPageState extends ConsumerState<FeedListPage> with AutomaticKeepA
                                 config: feed.config.copyWith(pinned: false),
                                 view: feed.view,
                               );
-                              await ref.read(settingsProvider.notifier).removeFeed(feed);
-                              await ref.read(settingsProvider.notifier).addFeed(updatedFeed);
+                              await ref
+                                  .read(settingsProvider.notifier)
+                                  .removeFeed(feed);
+                              await ref
+                                  .read(settingsProvider.notifier)
+                                  .addFeed(updatedFeed);
                             }
                           }
                         : null,
                     onLike: feed.view != null
                         ? () async {
                             try {
-                              await ref.read(settingsProvider.notifier).likeFeed(feed);
+                              await ref
+                                  .read(settingsProvider.notifier)
+                                  .likeFeed(feed);
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Feed liked')),
@@ -201,7 +238,9 @@ class _FeedListPageState extends ConsumerState<FeedListPage> with AutomaticKeepA
                             } catch (e) {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Failed to like feed: $e')),
+                                  SnackBar(
+                                    content: Text('Failed to like feed: $e'),
+                                  ),
                                 );
                               }
                             }
@@ -210,7 +249,9 @@ class _FeedListPageState extends ConsumerState<FeedListPage> with AutomaticKeepA
                     onUnlike: feed.view?.viewer?.like != null
                         ? () async {
                             try {
-                              await ref.read(settingsProvider.notifier).unlikeFeed(feed);
+                              await ref
+                                  .read(settingsProvider.notifier)
+                                  .unlikeFeed(feed);
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(content: Text('Feed unliked')),
@@ -219,7 +260,9 @@ class _FeedListPageState extends ConsumerState<FeedListPage> with AutomaticKeepA
                             } catch (e) {
                               if (context.mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Failed to unlike feed: $e')),
+                                  SnackBar(
+                                    content: Text('Failed to unlike feed: $e'),
+                                  ),
                                 );
                               }
                             }

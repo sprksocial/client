@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Shows a standardized bottom sheet for creating media: Record, Upload Video, Upload Images.
+/// Shows a standardized bottom sheet for creating media:
+/// Record, Upload Video, Upload Images.
 /// Only renders the actions whose callbacks are provided (non-null).
 Future showCreateMediaSheet(
   BuildContext context, {
@@ -28,7 +29,10 @@ Future showCreateMediaSheet(
               if (onRecord != null)
                 ListTile(
                   leading: Icon(Icons.camera_alt, color: colorScheme.onSurface),
-                  title: Text('Record', style: TextStyle(color: colorScheme.onSurface)),
+                  title: Text(
+                    'Record',
+                    style: TextStyle(color: colorScheme.onSurface),
+                  ),
                   onTap: () {
                     Navigator.of(context).pop();
                     onRecord();
@@ -37,7 +41,10 @@ Future showCreateMediaSheet(
               if (onUploadVideo != null)
                 ListTile(
                   leading: Icon(Icons.videocam, color: colorScheme.onSurface),
-                  title: Text('Upload Video', style: TextStyle(color: colorScheme.onSurface)),
+                  title: Text(
+                    'Upload Video',
+                    style: TextStyle(color: colorScheme.onSurface),
+                  ),
                   onTap: () {
                     Navigator.of(context).pop();
                     onUploadVideo();
@@ -45,8 +52,14 @@ Future showCreateMediaSheet(
                 ),
               if (onUploadImages != null)
                 ListTile(
-                  leading: Icon(Icons.photo_library, color: colorScheme.onSurface),
-                  title: Text('Upload Images', style: TextStyle(color: colorScheme.onSurface)),
+                  leading: Icon(
+                    Icons.photo_library,
+                    color: colorScheme.onSurface,
+                  ),
+                  title: Text(
+                    'Upload Images',
+                    style: TextStyle(color: colorScheme.onSurface),
+                  ),
                   onTap: () {
                     Navigator.of(context).pop();
                     onUploadImages();

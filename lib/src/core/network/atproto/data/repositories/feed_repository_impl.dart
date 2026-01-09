@@ -13,13 +13,13 @@ import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as path;
-import 'package:sparksocial/src/core/config/app_config.dart';
-import 'package:sparksocial/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/config/app_config.dart';
+import 'package:spark/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
+import 'package:spark/src/core/network/atproto/data/models/models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 
 /// Implementation of Feed-related API endpoints
 class FeedRepositoryImpl implements FeedRepository {
@@ -34,7 +34,9 @@ class FeedRepositoryImpl implements FeedRepository {
     return labelerDids.join(',');
   }
 
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('FeedRepository');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'FeedRepository',
+  );
 
   bool _postViewHasMedia(PostView post) => post.hasSupportedMedia;
 
@@ -60,7 +62,9 @@ class FeedRepositoryImpl implements FeedRepository {
 
     for (final rawPost in rawPosts) {
       try {
-        final postData = rawPost is Map<String, dynamic> ? rawPost : rawPost.toJson();
+        final postData = rawPost is Map<String, dynamic>
+            ? rawPost
+            : rawPost.toJson();
 
         // Fix missing $type field for FeedViewPost union type
         if ((postData[r'$type'] as String?) == null) {
@@ -85,36 +89,67 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<FeedView> getFeed(Feed feed, {int limit = 20, String? cursor, List<String>? labelerDids}) async {
-    _logger.d('Getting feed skeleton for feed: $feed, limit: $limit, cursor: $cursor');
+  Future<FeedView> getFeed(
+    Feed feed, {
+    int limit = 20,
+    String? cursor,
+    List<String>? labelerDids,
+  }) async {
+    _logger.d(
+      'Getting feed skeleton for feed: $feed, limit: $limit, cursor: $cursor',
+    );
     if (feed.view == null) {
       if (feed.type == 'timeline') {
-        return getTimeline(limit: limit, cursor: cursor, labelerDids: labelerDids);
+        return getTimeline(
+          limit: limit,
+          cursor: cursor,
+          labelerDids: labelerDids,
+        );
       }
       // For custom feeds, fetch the feed generator view first
       final feedUri = AtUri(feed.config.value);
       final view = await getFeedGenerator(feedUri);
       // Update the feed with the view and continue
-      final feedWithView = Feed(type: feed.type, config: feed.config, view: view);
+      final feedWithView = Feed(
+        type: feed.type,
+        config: feed.config,
+        view: view,
+      );
       return _client.executeWithRetry(() async {
-        final result = await getFeedView(feedWithView.view!.uri, limit: limit, cursor: cursor, labelerDids: labelerDids);
+        final result = await getFeedView(
+          feedWithView.view!.uri,
+          limit: limit,
+          cursor: cursor,
+          labelerDids: labelerDids,
+        );
         _logger.d('Feed skeleton retrieved successfully');
         return result;
       });
     }
     return _client.executeWithRetry(() async {
-      final result = await getFeedView(feed.view!.uri, limit: limit, cursor: cursor, labelerDids: labelerDids);
+      final result = await getFeedView(
+        feed.view!.uri,
+        limit: limit,
+        cursor: cursor,
+        labelerDids: labelerDids,
+      );
       _logger.d('Feed skeleton retrieved successfully');
       return result;
     });
   }
 
   @override
-  Future<List<PostView>> getPosts(List<AtUri> uris, {bool bluesky = false, bool filter = true}) async {
+  Future<List<PostView>> getPosts(
+    List<AtUri> uris, {
+    bool bluesky = false,
+    bool filter = true,
+  }) async {
     _logger.d('Getting posts for URIs: ${uris.length} URIs');
     if (bluesky) {
       _logger.d('Getting posts on bluesky API for: ${uris.length} URIs');
-      final blueskyClient = bsky.Bluesky.fromSession(_client.authRepository.session!);
+      final blueskyClient = bsky.Bluesky.fromSession(
+        _client.authRepository.session!,
+      );
       final posts = await blueskyClient.feed.getPosts(uris: uris);
 
       // Use adapter to process Bluesky posts
@@ -144,7 +179,10 @@ class FeedRepositoryImpl implements FeedRepository {
         headers: headers,
         to: (jsonMap) {
           final posts = jsonMap['posts']! as List<dynamic>;
-          _logger.d('Raw API response for first post: ${posts.isNotEmpty ? posts[0] : "empty"}');
+          _logger.d(
+            'Raw API response for first post: '
+            '${posts.isNotEmpty ? posts[0] : "empty"}',
+          );
           return _parseAndFilterPosts<PostView>(
             rawPosts: posts,
             fromJson: PostView.fromJson,
@@ -153,11 +191,15 @@ class FeedRepositoryImpl implements FeedRepository {
             source: 'sprk',
           );
         },
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
       _logger.d('Posts retrieved successfully: ${result.data.length} posts');
       if (result.data.isNotEmpty) {
-        _logger.d('First post replyCount: ${result.data.first.replyCount}, likeCount: ${result.data.first.likeCount}');
+        _logger.d(
+          'First post replyCount: ${result.data.first.replyCount}, '
+          'likeCount: ${result.data.first.likeCount}',
+        );
       }
 
       return result.data;
@@ -172,13 +214,26 @@ class FeedRepositoryImpl implements FeedRepository {
     bool videosOnly = false,
     bool bluesky = false,
   }) async {
-    _logger.d('Getting author feed for actor: $actorUri, limit: $limit, cursor: $cursor, bluesky: $bluesky');
+    _logger.d(
+      'Getting author feed for actor: $actorUri, limit: $limit, '
+      'cursor: $cursor, bluesky: $bluesky',
+    );
 
     if (bluesky) {
-      return _getAuthorFeedFromBluesky(actorUri, limit: limit, cursor: cursor, videosOnly: videosOnly);
+      return _getAuthorFeedFromBluesky(
+        actorUri,
+        limit: limit,
+        cursor: cursor,
+        videosOnly: videosOnly,
+      );
     }
 
-    return _getAuthorFeedFromSpark(actorUri, limit: limit, cursor: cursor, videosOnly: videosOnly);
+    return _getAuthorFeedFromSpark(
+      actorUri,
+      limit: limit,
+      cursor: cursor,
+      videosOnly: videosOnly,
+    );
   }
 
   /// Get author feed from Spark API with fallback to Bluesky
@@ -200,7 +255,10 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final parameters = <String, dynamic>{'actor': actorUri.hostname, 'limit': limit};
+      final parameters = <String, dynamic>{
+        'actor': actorUri.hostname,
+        'limit': limit,
+      };
 
       if (videosOnly) {
         parameters['filter'] = 'posts_with_video';
@@ -226,19 +284,30 @@ class FeedRepositoryImpl implements FeedRepository {
             );
             return (posts: feedPosts, cursor: jsonMap['cursor'] as String?);
           },
-          adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+          adaptor: (uint8) =>
+              jsonDecode(utf8.decode(uint8 as List<int>))
+                  as Map<String, dynamic>,
         );
         _logger.d('Author feed retrieved successfully from Sprk');
         return result.data;
       } catch (e) {
-        _logger.e('Error getting author feed from Sprk. Trying Bsky...', error: e);
-        return _getAuthorFeedFromBluesky(actorUri, limit: limit, cursor: cursor, videosOnly: videosOnly);
+        _logger.e(
+          'Error getting author feed from Sprk. Trying Bsky...',
+          error: e,
+        );
+        return _getAuthorFeedFromBluesky(
+          actorUri,
+          limit: limit,
+          cursor: cursor,
+          videosOnly: videosOnly,
+        );
       }
     });
   }
 
   /// Get author feed directly from Bluesky API
-  Future<({List<FeedViewPost> posts, String? cursor})> _getAuthorFeedFromBluesky(
+  Future<({List<FeedViewPost> posts, String? cursor})>
+  _getAuthorFeedFromBluesky(
     AtUri actorUri, {
     required int limit,
     required String? cursor,
@@ -251,12 +320,17 @@ class FeedRepositoryImpl implements FeedRepository {
       }
 
       try {
-        final resultBsky = await bsky.Bluesky.fromSession(_client.authRepository.session!).feed.getAuthorFeed(
-          actor: actorUri.hostname,
-          limit: limit,
-          cursor: cursor,
-          filter: FeedGetAuthorFeedFilter.valueOf(videosOnly ? 'posts_with_video' : 'posts_with_media'),
-        );
+        final resultBsky =
+            await bsky.Bluesky.fromSession(
+              _client.authRepository.session!,
+            ).feed.getAuthorFeed(
+              actor: actorUri.hostname,
+              limit: limit,
+              cursor: cursor,
+              filter: FeedGetAuthorFeedFilter.valueOf(
+                videosOnly ? 'posts_with_video' : 'posts_with_media',
+              ),
+            );
 
         // Use adapter to process Bluesky author feed
         return bskyFeedAdapter.processBskyAuthorFeed(
@@ -319,20 +393,21 @@ class FeedRepositoryImpl implements FeedRepository {
             try {
               final itemMap = item as Map<String, dynamic>;
 
-              // The response has a 'post' object containing the fully hydrated post view
+              // Response has 'post' object containing fully hydrated post view
               final postMap = itemMap['post'] as Map<String, dynamic>?;
               if (postMap == null) {
                 continue;
               }
-
-              // Parse the post view
               final postView = PostView.fromJson(postMap);
 
-              // Create a FeedViewPost.post variant (not a reply)
+              // Create FeedViewPost.post variant (not a reply)
               final feedViewPost = FeedViewPost.post(post: postView);
               feedPosts.add(feedViewPost);
             } catch (e, stackTrace) {
-              _logger.w('Failed to parse timeline feed item, skipping: $e', stackTrace: stackTrace);
+              _logger.w(
+                'Failed to parse timeline feed item, skipping: $e',
+                stackTrace: stackTrace,
+              );
             }
           }
 
@@ -341,10 +416,14 @@ class FeedRepositoryImpl implements FeedRepository {
             cursor: jsonMap['cursor'] as String?,
           );
         },
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
 
-      _logger.d('Timeline feed retrieved successfully: ${result.data.feed.length} posts');
+      _logger.d(
+        'Timeline feed retrieved successfully: '
+        '${result.data.feed.length} posts',
+      );
       return result.data;
     });
   }
@@ -369,7 +448,8 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final isBskyFeed = feedUri.collection == NSID.parse('app.bsky.feed.generator');
+      final isBskyFeed =
+          feedUri.collection == NSID.parse('app.bsky.feed.generator');
 
       final parameters = <String, dynamic>{
         'feed': feedUri.toString(),
@@ -379,13 +459,17 @@ class FeedRepositoryImpl implements FeedRepository {
         parameters['cursor'] = cursor;
       }
 
-      final headers = <String, String>{'atproto-proxy': isBskyFeed ? _client.bskyDid : _client.sprkDid};
+      final headers = <String, String>{
+        'atproto-proxy': isBskyFeed ? _client.bskyDid : _client.sprkDid,
+      };
       if (!isBskyFeed && labelerDids != null && labelerDids.isNotEmpty) {
         headers['atproto-accept-labelers'] = _formatLabelerHeader(labelerDids);
       }
 
       final result = await atproto.get(
-        isBskyFeed ? NSID.parse('app.bsky.feed.getFeed') : NSID.parse('so.sprk.feed.getFeed'),
+        isBskyFeed
+            ? NSID.parse('app.bsky.feed.getFeed')
+            : NSID.parse('so.sprk.feed.getFeed'),
         parameters: parameters,
         headers: headers,
         to: (jsonMap) {
@@ -421,7 +505,10 @@ class FeedRepositoryImpl implements FeedRepository {
                 final feedViewPost = FeedViewPost.post(post: postView);
                 feedPosts.add(feedViewPost);
               } catch (e, stackTrace) {
-                _logger.w('Failed to parse feed item, skipping: $e', stackTrace: stackTrace);
+                _logger.w(
+                  'Failed to parse feed item, skipping: $e',
+                  stackTrace: stackTrace,
+                );
               }
             }
           }
@@ -431,10 +518,13 @@ class FeedRepositoryImpl implements FeedRepository {
             cursor: jsonMap['cursor'] as String?,
           );
         },
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
 
-      _logger.d('Feed retrieved successfully: ${result.data.feed.length} posts');
+      _logger.d(
+        'Feed retrieved successfully: ${result.data.feed.length} posts',
+      );
       return result.data;
     });
   }
@@ -446,7 +536,8 @@ class FeedRepositoryImpl implements FeedRepository {
         _logger.w('Not authenticated');
         throw Exception('Not authenticated');
       }
-      final isBskyFeed = feed.collection == NSID.parse('app.bsky.feed.generator');
+      final isBskyFeed =
+          feed.collection == NSID.parse('app.bsky.feed.generator');
 
       final atproto = _client.authRepository.atproto;
       if (atproto == null) {
@@ -454,25 +545,36 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final headers = isBskyFeed ? {'atproto-proxy': _client.bskyDid} : {'atproto-proxy': _client.sprkDid};
+      final headers = isBskyFeed
+          ? {'atproto-proxy': _client.bskyDid}
+          : {'atproto-proxy': _client.sprkDid};
       final response = await atproto.get(
-        isBskyFeed ? NSID.parse('app.bsky.feed.getFeedGenerator') : NSID.parse('so.sprk.feed.getFeedGenerator'),
+        isBskyFeed
+            ? NSID.parse('app.bsky.feed.getFeedGenerator')
+            : NSID.parse('so.sprk.feed.getFeedGenerator'),
         parameters: {'feed': feed.toString()},
         headers: headers,
         to: (jsonMap) {
-          // Both Bluesky and Spark APIs return the generator view nested in a 'view' key
-          final generatorData = jsonMap.containsKey('view') ? jsonMap['view']! as Map<String, dynamic> : jsonMap;
+          final generatorData = jsonMap.containsKey('view')
+              ? jsonMap['view']! as Map<String, dynamic>
+              : jsonMap;
           return GeneratorView.fromJson(generatorData);
         },
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
       return response.data;
     });
   }
 
   @override
-  Future<List<GeneratorView>> getFeedGenerators(List<AtUri> feeds, {bool bluesky = false}) async {
-    _logger.d('Getting feed generators for ${feeds.length} feeds, bluesky: $bluesky');
+  Future<List<GeneratorView>> getFeedGenerators(
+    List<AtUri> feeds, {
+    bool bluesky = false,
+  }) async {
+    _logger.d(
+      'Getting feed generators for ${feeds.length} feeds, bluesky: $bluesky',
+    );
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
         _logger.w('Not authenticated');
@@ -485,10 +587,14 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final headers = bluesky ? {'atproto-proxy': _client.bskyDid} : {'atproto-proxy': _client.sprkDid};
+      final headers = bluesky
+          ? {'atproto-proxy': _client.bskyDid}
+          : {'atproto-proxy': _client.sprkDid};
       final feedStrings = feeds.map((feed) => feed.toString()).toList();
       final response = await atproto.get(
-        bluesky ? NSID.parse('app.bsky.feed.getFeedGenerators') : NSID.parse('so.sprk.feed.getFeedGenerators'),
+        bluesky
+            ? NSID.parse('app.bsky.feed.getFeedGenerators')
+            : NSID.parse('so.sprk.feed.getFeedGenerators'),
         parameters: {'feeds': feedStrings},
         headers: headers,
         to: (jsonMap) {
@@ -506,9 +612,13 @@ class FeedRepositoryImpl implements FeedRepository {
               .whereType<GeneratorView>()
               .toList();
         },
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
-      _logger.d('Feed generators retrieved successfully: ${response.data.length} generators');
+      _logger.d(
+        'Feed generators retrieved successfully: '
+        '${response.data.length} generators',
+      );
       return response.data;
     });
   }
@@ -528,9 +638,13 @@ class FeedRepositoryImpl implements FeedRepository {
         throw Exception('AtProto not initialized');
       }
 
-      final headers = bluesky ? {'atproto-proxy': _client.bskyDid} : {'atproto-proxy': _client.sprkDid};
+      final headers = bluesky
+          ? {'atproto-proxy': _client.bskyDid}
+          : {'atproto-proxy': _client.sprkDid};
       final response = await atproto.get(
-        bluesky ? NSID.parse('app.bsky.feed.getSuggestedFeeds') : NSID.parse('so.sprk.feed.getSuggestedFeeds'),
+        bluesky
+            ? NSID.parse('app.bsky.feed.getSuggestedFeeds')
+            : NSID.parse('so.sprk.feed.getSuggestedFeeds'),
         headers: headers,
         to: (jsonMap) {
           final feedsData = (jsonMap['feeds'] as List<dynamic>?) ?? [];
@@ -540,16 +654,22 @@ class FeedRepositoryImpl implements FeedRepository {
                   final feedMap = feedData as Map<String, dynamic>;
                   return GeneratorView.fromJson(feedMap);
                 } catch (e) {
-                  _logger.w('Failed to parse suggested feed generator, skipping: $e');
+                  _logger.w(
+                    'Failed to parse suggested feed generator, skipping: $e',
+                  );
                   return null;
                 }
               })
               .whereType<GeneratorView>()
               .toList();
         },
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
-      _logger.d('Suggested feeds retrieved successfully: ${response.data.length} generators');
+      _logger.d(
+        'Suggested feeds retrieved successfully: '
+        '${response.data.length} generators',
+      );
       return response.data;
     });
   }
@@ -600,7 +720,8 @@ class FeedRepositoryImpl implements FeedRepository {
       final sprkFeeds = <SavedFeed>[];
       for (final savedFeed in customFeeds) {
         final feedUri = AtUri(savedFeed.value);
-        final isBskyFeed = feedUri.collection == NSID.parse('app.bsky.feed.generator');
+        final isBskyFeed =
+            feedUri.collection == NSID.parse('app.bsky.feed.generator');
         if (isBskyFeed) {
           bskyFeeds.add(savedFeed);
         } else {
@@ -610,7 +731,9 @@ class FeedRepositoryImpl implements FeedRepository {
 
       // Fetch all Bluesky feed generators at once
       if (bskyFeeds.isNotEmpty) {
-        final bskyUris = bskyFeeds.map((savedFeed) => AtUri(savedFeed.value)).toList();
+        final bskyUris = bskyFeeds
+            .map((savedFeed) => AtUri(savedFeed.value))
+            .toList();
         final bskyViews = await getFeedGenerators(bskyUris, bluesky: true);
         final viewMap = {for (final view in bskyViews) view.uri: view};
         for (final savedFeed in bskyFeeds) {
@@ -619,7 +742,9 @@ class FeedRepositoryImpl implements FeedRepository {
           if (view != null) {
             feeds.add(Feed(type: 'feed', config: savedFeed, view: view));
           } else {
-            _logger.w('Feed generator view not found for Bluesky feed: $feedUri');
+            _logger.w(
+              'Feed generator view not found for Bluesky feed: $feedUri',
+            );
             // Fallback: create feed without view
             feeds.add(Feed(type: 'feed', config: savedFeed));
           }
@@ -628,7 +753,9 @@ class FeedRepositoryImpl implements FeedRepository {
 
       // Fetch all Spark feed generators at once
       if (sprkFeeds.isNotEmpty) {
-        final sprkUris = sprkFeeds.map((savedFeed) => AtUri(savedFeed.value)).toList();
+        final sprkUris = sprkFeeds
+            .map((savedFeed) => AtUri(savedFeed.value))
+            .toList();
         final sprkViews = await getFeedGenerators(sprkUris);
         final viewMap = {for (final view in sprkViews) view.uri: view};
         for (final savedFeed in sprkFeeds) {
@@ -653,10 +780,15 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Liking post with String: $postCid, URI: $postUri');
 
     // Determine if this is a Bluesky post or Spark post
-    final isBskyPost = postUri.collection.toString().startsWith('app.bsky.feed.post');
+    final isBskyPost = postUri.collection.toString().startsWith(
+      'app.bsky.feed.post',
+    );
     final likeType = isBskyPost ? 'app.bsky.feed.like' : 'so.sprk.feed.like';
 
-    _logger.d('Post type: ${isBskyPost ? 'Bluesky' : 'Spark'}, using collection: $likeType');
+    _logger.d(
+      'Post type: ${isBskyPost ? 'Bluesky' : 'Spark'}, using collection: '
+      '$likeType',
+    );
 
     final likeRecord = {
       r'$type': likeType,
@@ -664,7 +796,10 @@ class FeedRepositoryImpl implements FeedRepository {
       'createdAt': DateTime.now().toUtc().toIso8601String(),
     };
 
-    final result = await _client.repo.createRecord(collection: likeType, record: likeRecord);
+    final result = await _client.repo.createRecord(
+      collection: likeType,
+      record: likeRecord,
+    );
     _logger.i('Post liked successfully: ${result.uri}');
 
     return result;
@@ -673,7 +808,10 @@ class FeedRepositoryImpl implements FeedRepository {
   @override
   Future<void> unlikePost(AtUri likeUri) async {
     _logger.d('Unliking post with like URI: $likeUri');
-    await _client.repo.deleteRecord(uri: likeUri, skipBskyCrosspostCleanup: true);
+    await _client.repo.deleteRecord(
+      uri: likeUri,
+      skipBskyCrosspostCleanup: true,
+    );
     _logger.i('Post unliked successfully');
   }
 
@@ -682,10 +820,17 @@ class FeedRepositoryImpl implements FeedRepository {
     _logger.d('Reposting post with CID: $postCid, URI: $postUri');
 
     // Determine if this is a Bluesky post or Spark post
-    final isBskyPost = postUri.collection.toString().startsWith('app.bsky.feed.post');
-    final repostType = isBskyPost ? 'app.bsky.feed.repost' : 'so.sprk.feed.repost';
+    final isBskyPost = postUri.collection.toString().startsWith(
+      'app.bsky.feed.post',
+    );
+    final repostType = isBskyPost
+        ? 'app.bsky.feed.repost'
+        : 'so.sprk.feed.repost';
 
-    _logger.d('Post type: ${isBskyPost ? 'Bluesky' : 'Spark'}, using collection: $repostType');
+    _logger.d(
+      'Post type: ${isBskyPost ? 'Bluesky' : 'Spark'}, using collection: '
+      '$repostType',
+    );
 
     final repostRecord = {
       r'$type': repostType,
@@ -693,7 +838,10 @@ class FeedRepositoryImpl implements FeedRepository {
       'createdAt': DateTime.now().toUtc().toIso8601String(),
     };
 
-    final result = await _client.repo.createRecord(collection: repostType, record: repostRecord);
+    final result = await _client.repo.createRecord(
+      collection: repostType,
+      record: repostRecord,
+    );
     _logger.i('Post reposted successfully: ${result.uri}');
 
     return result;
@@ -702,7 +850,10 @@ class FeedRepositoryImpl implements FeedRepository {
   @override
   Future<void> unrepostPost(AtUri repostUri) async {
     _logger.d('Unreposting post with repost URI: $repostUri');
-    await _client.repo.deleteRecord(uri: repostUri, skipBskyCrosspostCleanup: true);
+    await _client.repo.deleteRecord(
+      uri: repostUri,
+      skipBskyCrosspostCleanup: true,
+    );
     _logger.i('Post unreposted successfully');
   }
 
@@ -738,9 +889,15 @@ class FeedRepositoryImpl implements FeedRepository {
       if (files.length > 1) {
         _logger.w('Replies only support single image, using first image only');
       }
-      final uploadedImageMaps = await uploadImages(imageFiles: [files.first], altTexts: altTexts);
+      final uploadedImageMaps = await uploadImages(
+        imageFiles: [files.first],
+        altTexts: altTexts,
+      );
       final firstImage = uploadedImageMaps.first;
-      mediaJson = Media.image(image: firstImage.image, alt: firstImage.alt).toJson();
+      mediaJson = Media.image(
+        image: firstImage.image,
+        alt: firstImage.alt,
+      ).toJson();
     }
 
     // Create the correct record JSON depending on the target platform.
@@ -780,7 +937,9 @@ class FeedRepositoryImpl implements FeedRepository {
         }
       }
 
-      final bskyMedia = mediaJson != null ? bskyFeedAdapter.convertJsonToBskyEmbed(mediaJson) : null;
+      final bskyMedia = mediaJson != null
+          ? bskyFeedAdapter.convertJsonToBskyEmbed(mediaJson)
+          : null;
 
       final bskyRecord = bskyFeedAdapter.createCommentRecord(
         text: text,
@@ -827,7 +986,10 @@ class FeedRepositoryImpl implements FeedRepository {
       throw Exception('AtProto not initialized');
     }
 
-    final uploadedImageMaps = await uploadImages(imageFiles: imageFiles, altTexts: altTexts);
+    final uploadedImageMaps = await uploadImages(
+      imageFiles: imageFiles,
+      altTexts: altTexts,
+    );
 
     // Create Sprk post
     final record = PostRecord(
@@ -856,9 +1018,11 @@ class FeedRepositoryImpl implements FeedRepository {
     return result;
   }
 
-  /// Helper to upload multiple images, stripping EXIF, and return a list of JSON maps for embedding
   @override
-  Future<List<Image>> uploadImages({required List<XFile> imageFiles, Map<String, String>? altTexts}) async {
+  Future<List<Image>> uploadImages({
+    required List<XFile> imageFiles,
+    Map<String, String>? altTexts,
+  }) async {
     _logger.d('Processing ${imageFiles.length} images for upload');
 
     final uploadedImageMaps = <Image>[];
@@ -875,7 +1039,9 @@ class FeedRepositoryImpl implements FeedRepository {
             throw Exception('Failed to decode image ${imageFile.name}');
           case final img.Image decodedImage:
             // Re-encode the image with reduced quality to optimize size
-            final processedBytes = Uint8List.fromList(img.encodeJpg(decodedImage, quality: 85));
+            final processedBytes = Uint8List.fromList(
+              img.encodeJpg(decodedImage, quality: 85),
+            );
 
             // Upload the processed image
             switch (_client.authRepository.atproto) {
@@ -883,25 +1049,42 @@ class FeedRepositoryImpl implements FeedRepository {
                 _logger.e('AtProto not initialized');
                 throw Exception('AtProto not initialized');
               case final atproto:
-                final response = await atproto.repo.uploadBlob(bytes: processedBytes);
+                final response = await atproto.repo.uploadBlob(
+                  bytes: processedBytes,
+                );
 
                 switch (response.status.code) {
                   case 200:
                     // Add the uploaded image to our result list
-                    uploadedImageMaps.add(Image(alt: altTexts?[imageFile.path] ?? '', image: response.data.blob));
+                    uploadedImageMaps.add(
+                      Image(
+                        alt: altTexts?[imageFile.path] ?? '',
+                        image: response.data.blob,
+                      ),
+                    );
                   default:
-                    _logger.e('Failed to upload image blob: ${response.status.code}');
-                    throw Exception('Blob upload failed for ${imageFile.name}: ${response.status.code}');
+                    _logger.e(
+                      'Failed to upload image blob: ${response.status.code}',
+                    );
+                    throw Exception(
+                      'Blob upload failed for ${imageFile.name}: '
+                      '${response.status.code}',
+                    );
                 }
             }
         }
       } catch (e) {
-        _logger.e('Error processing/uploading image ${imageFile.name}', error: e);
+        _logger.e(
+          'Error processing/uploading image ${imageFile.name}',
+          error: e,
+        );
         rethrow;
       }
     }
 
-    _logger.d('Successfully processed and uploaded ${uploadedImageMaps.length} images');
+    _logger.d(
+      'Successfully processed and uploaded ${uploadedImageMaps.length} images',
+    );
     return uploadedImageMaps;
   }
 
@@ -943,18 +1126,30 @@ class FeedRepositoryImpl implements FeedRepository {
       final serviceTokenRes = await authAtProto.server.getServiceAuth(
         aud: 'did:web:$pdsService',
         lxm: 'com.atproto.repo.uploadBlob',
-        exp: DateTime.now().toUtc().add(const Duration(minutes: 5)).millisecondsSinceEpoch ~/ 1000,
+        exp:
+            DateTime.now()
+                .toUtc()
+                .add(const Duration(minutes: 5))
+                .millisecondsSinceEpoch ~/
+            1000,
       );
 
       final serviceToken = serviceTokenRes.data.token;
       var response = await http.post(
-        Uri.parse('${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.uploadVideo'),
-        headers: {'Authorization': 'Bearer $serviceToken', 'Content-Type': _getContentType(cleanVideoPath)},
+        Uri.parse(
+          '${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.uploadVideo',
+        ),
+        headers: {
+          'Authorization': 'Bearer $serviceToken',
+          'Content-Type': _getContentType(cleanVideoPath),
+        },
         body: videoBytes,
       );
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to upload video: ${response.statusCode} ${response.body}');
+        throw Exception(
+          'Failed to upload video: ${response.statusCode} ${response.body}',
+        );
       }
 
       // Parse the response
@@ -965,7 +1160,8 @@ class FeedRepositoryImpl implements FeedRepository {
       var jobState = responseData['jobStatus']?['state'] as String?;
       var attempts = 0;
       const maxAttempts = 120; // ~4 minutes at 2s interval
-      while (jobState == 'JOB_STATE_QUEUED' || jobState == 'JOB_STATE_PROCESSING') {
+      while (jobState == 'JOB_STATE_QUEUED' ||
+          jobState == 'JOB_STATE_PROCESSING') {
         _logger.d('Video upload in progress, status: $jobState');
         // Small backoff to avoid hammering the service
         await Future.delayed(const Duration(seconds: 2));
@@ -976,28 +1172,41 @@ class FeedRepositoryImpl implements FeedRepository {
 
         try {
           response = await http.get(
-            Uri.parse('${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.getJobStatus').replace(
+            Uri.parse(
+              '${AppConfig.videoServiceUrl}/xrpc/so.sprk.video.getJobStatus',
+            ).replace(
               queryParameters: {
                 'jobId': responseData['jobStatus']?['jobId'],
               },
             ),
-            headers: {'Authorization': 'Bearer $serviceToken', 'Content-Type': _getContentType(cleanVideoPath)},
+            headers: {
+              'Authorization': 'Bearer $serviceToken',
+              'Content-Type': _getContentType(cleanVideoPath),
+            },
           );
           if (response.statusCode != 200) {
-            throw Exception('Failed to check video upload status: ${response.statusCode} ${response.body}');
+            throw Exception(
+              'Failed to check video upload status: ${response.statusCode} '
+              '${response.body}',
+            );
           }
           responseData = jsonDecode(response.body);
           _logger.d('Video upload status response: $responseData');
           jobState = responseData['jobStatus']?['state'] as String?;
         } catch (e) {
           // Network or parsing error during polling - log and rethrow
-          _logger.e('Error polling video upload status on attempt $attempts/$maxAttempts', error: e);
+          _logger.e(
+            'Error polling video upload status on attempt $attempts/$maxAttempts',
+            error: e,
+          );
           rethrow;
         }
       }
 
       if (responseData['jobStatus']?['state'] == 'JOB_STATE_FAILED') {
-        throw Exception('Video upload failed: ${responseData['jobStatus']?['status']}');
+        throw Exception(
+          'Video upload failed: ${responseData['jobStatus']?['status']}',
+        );
       }
 
       // Parse video blob
@@ -1021,7 +1230,9 @@ class FeedRepositoryImpl implements FeedRepository {
           _logger.d('Extracted audio blob: ${audioBlob.size} bytes');
         }
         if (audio['details'] != null) {
-          audioDetails = AudioDetails.fromJson(audio['details'] as Map<String, dynamic>);
+          audioDetails = AudioDetails.fromJson(
+            audio['details'] as Map<String, dynamic>,
+          );
         }
       }
 
@@ -1033,7 +1244,7 @@ class FeedRepositoryImpl implements FeedRepository {
     });
   }
 
-  /// Crosspost images to Bluesky using adapter to handle Bluesky-specific model logic
+  /// Crosspost images to Bluesky using adapter to handle Bluesky-specific model
   Future<void> _crosspostToBlueSky(
     String text,
     List<Image> sparkImages,
@@ -1158,7 +1369,12 @@ class FeedRepositoryImpl implements FeedRepository {
   }
 
   @override
-  Future<Thread> getThread(AtUri uri, {int depth = 2, int parentHeight = 0, bool bluesky = false}) async {
+  Future<Thread> getThread(
+    AtUri uri, {
+    int depth = 2,
+    int parentHeight = 0,
+    bool bluesky = false,
+  }) async {
     _logger.d('Getting thread for post: $uri');
 
     return _client.executeWithRetry(() async {
@@ -1175,15 +1391,28 @@ class FeedRepositoryImpl implements FeedRepository {
 
       // Get the post thread
       if (bluesky) {
-        final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
-        final response = await bluesky.feed.getPostThread(uri: uri, depth: depth, parentHeight: parentHeight);
+        final bluesky = bsky.Bluesky.fromSession(
+          _client.authRepository.session!,
+        );
+        final response = await bluesky.feed.getPostThread(
+          uri: uri,
+          depth: depth,
+          parentHeight: parentHeight,
+        );
         // Use adapter to convert Bluesky thread to Spark thread
-        return bskyFeedAdapter.convertBskyThreadToSparkThread(thread: response.data.thread, uri: uri);
+        return bskyFeedAdapter.convertBskyThreadToSparkThread(
+          thread: response.data.thread,
+          uri: uri,
+        );
       }
       const source = 'so.sprk.feed.getPostThread';
       final response = await atproto.get(
         NSID.parse(source),
-        parameters: {'anchor': uri.toString(), 'depth': depth, 'parentHeight': parentHeight},
+        parameters: {
+          'anchor': uri.toString(),
+          'depth': depth,
+          'parentHeight': parentHeight,
+        },
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) {
           final threadItems = jsonMap['thread']! as List<dynamic>;
@@ -1218,16 +1447,24 @@ class FeedRepositoryImpl implements FeedRepository {
 
       // Use modDid from repository as fallback if no sources provided
       final defaultLabelerDid = _client.modDid.split('#').first;
-      final labelers = sources?.isNotEmpty ?? true ? sources! : [defaultLabelerDid];
+      final labelers = sources?.isNotEmpty ?? true
+          ? sources!
+          : [defaultLabelerDid];
 
-      final parameters = {'uriPatterns': uris, 'sources': labelers, 'limit': limit, 'cursor': cursor};
+      final parameters = {
+        'uriPatterns': uris,
+        'sources': labelers,
+        'limit': limit,
+        'cursor': cursor,
+      };
 
       final response = await atproto.get(
         NSID.parse('com.atproto.label.queryLabels'),
         headers: {'atproto-proxy': _client.modDid},
         parameters: parameters,
         to: (jsonMap) => jsonMap,
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
       _logger
         ..d('parameters: $parameters')
@@ -1235,7 +1472,7 @@ class FeedRepositoryImpl implements FeedRepository {
 
       for (final label in response.data['labels']! as List<dynamic>) {
         final cleanLabel = label as Map<String, Object?>
-          ..remove('sig') // i am NOT going to convert that sig string into a UInt8List i am going to PASS OUT and DIE
+          ..remove('sig')
           ..putIfAbsent(
             'src',
             () => defaultLabelerDid,
@@ -1254,7 +1491,10 @@ class FeedRepositoryImpl implements FeedRepository {
     String sort = 'latest',
     String? cursor,
   }) async {
-    _logger.d('Searching posts with query: $query, limit: $limit, sort: $sort, cursor: $cursor');
+    _logger.d(
+      'Searching posts with query: $query, limit: $limit, sort: $sort, '
+      'cursor: $cursor',
+    );
 
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -1280,7 +1520,8 @@ class FeedRepositoryImpl implements FeedRepository {
         parameters: parameters,
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) => jsonMap,
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
 
       final posts = (response.data['posts']! as List<dynamic>)
@@ -1300,7 +1541,9 @@ class FeedRepositoryImpl implements FeedRepository {
     int limit = 50,
     String? cursor,
   }) async {
-    _logger.d('Getting actor reposts for actor: $actor, limit: $limit, cursor: $cursor');
+    _logger.d(
+      'Getting actor reposts for actor: $actor, limit: $limit, cursor: $cursor',
+    );
 
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -1338,9 +1581,13 @@ class FeedRepositoryImpl implements FeedRepository {
           );
           return (posts: feedPosts, cursor: jsonMap['cursor'] as String?);
         },
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
-      _logger.d('Actor reposts retrieved successfully: ${result.data.posts.length} posts');
+      _logger.d(
+        'Actor reposts retrieved successfully: '
+        '${result.data.posts.length} posts',
+      );
       return result.data;
     });
   }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/tags/feed_tag.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/tags/hashtag.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/tags/tag.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:spark/src/core/design_system/components/atoms/tags/feed_tag.dart';
+import 'package:spark/src/core/design_system/components/atoms/tags/hashtag.dart';
+import 'package:spark/src/core/design_system/components/atoms/tags/tag.dart';
 import 'package:widgetbook/widgetbook.dart';
 import 'package:widgetbook_annotation/widgetbook_annotation.dart';
 

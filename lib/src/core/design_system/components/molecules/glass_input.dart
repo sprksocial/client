@@ -1,8 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class GlassInput extends StatelessWidget {
   final TextEditingController? controller;
@@ -80,10 +80,14 @@ class GlassInput extends StatelessWidget {
         child: Container(
           height: 38,
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withAlpha(13) : Colors.black.withAlpha(13),
+            color: isDark
+                ? Colors.white.withAlpha(13)
+                : Colors.black.withAlpha(13),
             borderRadius: BorderRadius.circular(borderRadius),
             border: Border.all(
-              color: isDark ? Colors.white.withAlpha(37) : Colors.black.withAlpha(37),
+              color: isDark
+                  ? Colors.white.withAlpha(37)
+                  : Colors.black.withAlpha(37),
             ),
           ),
           child: Padding(
@@ -92,7 +96,8 @@ class GlassInput extends StatelessWidget {
               children: [
                 if (leadingWidgets != null) ...leadingWidgets!,
 
-                if (leadingWidgets != null && leadingWidgets!.isNotEmpty) const SizedBox(width: 8),
+                if (leadingWidgets != null && leadingWidgets!.isNotEmpty)
+                  const SizedBox(width: 8),
 
                 Expanded(
                   child: TextField(
@@ -107,12 +112,16 @@ class GlassInput extends StatelessWidget {
                       fillColor: Colors.transparent,
                       hoverColor: Colors.transparent,
                       isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 4,
+                      ),
                     ),
                   ),
                 ),
 
-                if (actionWidgets != null && actionWidgets!.isNotEmpty) const SizedBox(width: 8),
+                if (actionWidgets != null && actionWidgets!.isNotEmpty)
+                  const SizedBox(width: 8),
 
                 if (actionWidgets != null) ...actionWidgets!,
 
@@ -121,9 +130,15 @@ class GlassInput extends StatelessWidget {
                   IconButton(
                     visualDensity: VisualDensity.compact,
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    constraints: const BoxConstraints(
+                      minWidth: 32,
+                      minHeight: 32,
+                    ),
                     onPressed: onSendMessage,
-                    icon: AppIcons.send(size: 18, color: isDark ? Colors.white : Colors.black),
+                    icon: AppIcons.send(
+                      size: 18,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
                   ),
                 ],
               ],

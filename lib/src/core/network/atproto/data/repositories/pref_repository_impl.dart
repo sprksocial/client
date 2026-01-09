@@ -2,18 +2,20 @@ import 'dart:convert';
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 
-import 'package:sparksocial/src/core/network/atproto/data/models/pref_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/pref_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/pref_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 
 class PrefRepositoryImpl implements PrefRepository {
   PrefRepositoryImpl(this._client) {
     _logger.v('PrefRepository initialized');
   }
   final SprkRepository _client;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('PrefRepository');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'PrefRepository',
+  );
   @override
   Future<Preferences> getPreferences() async {
     _logger.d('Getting user preferences');
@@ -33,7 +35,8 @@ class PrefRepositoryImpl implements PrefRepository {
         NSID.parse('so.sprk.actor.getPreferences'),
         headers: {'atproto-proxy': _client.sprkDid},
         to: (jsonMap) => jsonMap,
-        adaptor: (uint8) => jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
+        adaptor: (uint8) =>
+            jsonDecode(utf8.decode(uint8 as List<int>)) as Map<String, dynamic>,
       );
 
       if (result.status != HttpStatus.ok) {

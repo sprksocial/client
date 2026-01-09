@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
 
 class ProfileInfo extends StatelessWidget {
   const ProfileInfo({
@@ -34,7 +34,9 @@ class ProfileInfo extends StatelessWidget {
           const SizedBox(height: 8),
           _ProfileDescriptionText(
             text: description!,
-            style: AppTypography.textSmallBold.copyWith(color: theme.colorScheme.onSurface),
+            style: AppTypography.textSmallBold.copyWith(
+              color: theme.colorScheme.onSurface,
+            ),
             onMentionTap: onMentionTap,
           ),
         ],
@@ -74,7 +76,9 @@ class _ProfileDescriptionText extends StatelessWidget {
 
     for (final match in usernameMatches) {
       if (match.start > lastEnd) {
-        spans.add(TextSpan(text: text.substring(lastEnd, match.start), style: style));
+        spans.add(
+          TextSpan(text: text.substring(lastEnd, match.start), style: style),
+        );
       }
 
       final username = match.group(0)!;
@@ -129,8 +133,6 @@ class _ProfileLinkItem extends StatelessWidget {
       padding: const EdgeInsets.only(top: 4, bottom: 2),
       child: Row(
         children: [
-          // const Icon(FluentIcons.link_24_regular, size: 16, color: linkColor),
-          // const SizedBox(width: 6),
           Expanded(
             child: Text(
               url,

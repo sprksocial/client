@@ -155,7 +155,10 @@ class AudioHelperService {
       if (audio.hasNetworkUrl) {
         return (await fetchVideoToFile(audio.networkUrl!, filePath)).path;
       } else if (audio.hasAssetPath) {
-        return (await writeAssetVideoToFile('assets/${audio.assetPath!}', filePath)).path;
+        return (await writeAssetVideoToFile(
+          'assets/${audio.assetPath!}',
+          filePath,
+        )).path;
       } else {
         return (await writeMemoryVideoToFile(audio.bytes!, filePath)).path;
       }

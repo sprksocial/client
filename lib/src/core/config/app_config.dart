@@ -2,25 +2,28 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// AppConfig manages application-wide configuration settings
 /// loaded from environment variables or .env files.
-/// Not to be confused with the settings feature, which is a separate feature that manages user settings.
 ///
 /// All app configuration should be accessed through this class
 /// to maintain a single source of truth for application settings.
 class AppConfig {
   /// Base URL for the video processing service.
-  static String get videoServiceUrl => _getStringValue('VIDEO_SERVICE_URL', 'http://localhost:3000');
+  static String get videoServiceUrl =>
+      _getStringValue('VIDEO_SERVICE_URL', 'http://localhost:3000');
 
   /// License key for the img.ly editor.
   static String get license => _getStringValue('SHOWCASES_LICENSE_FLUTTER', '');
 
   /// URL for the app view (web view display).
-  static String get appViewUrl => _getStringValue('SPRK_APPVIEW_URL', 'http://localhost:3000');
+  static String get appViewUrl =>
+      _getStringValue('SPRK_APPVIEW_URL', 'http://localhost:3000');
 
   /// Base URL for the messages service (chat service).
-  static String get messagesServiceUrl => _getStringValue('MESSAGES_SERVICE_URL', 'http://localhost:3000');
+  static String get messagesServiceUrl =>
+      _getStringValue('MESSAGES_SERVICE_URL', 'http://localhost:3000');
 
   /// Service DID for the chat service (used for service auth).
-  static String get chatServiceDid => _getStringValue('CHAT_SERVICE_DID', 'did:web:chat.sprk.so');
+  static String get chatServiceDid =>
+      _getStringValue('CHAT_SERVICE_DID', 'did:web:chat.sprk.so');
 
   /// Whether new user registrations are disabled.
   static bool get signupsDisabled => _getBoolValue('SIGNUPS_DISABLED', false);
@@ -29,10 +32,12 @@ class AppConfig {
   static int get apiTimeoutSeconds => _getIntValue('API_TIMEOUT_SECONDS', 30);
 
   /// Maximum upload file size in MB.
-  static double get maxUploadSizeMB => _getDoubleValue('MAX_UPLOAD_SIZE_MB', 100);
+  static double get maxUploadSizeMB =>
+      _getDoubleValue('MAX_UPLOAD_SIZE_MB', 100);
 
   /// The current application environment (development, production, etc.)
-  static String get environment => _getStringValue('ENVIRONMENT', 'development');
+  static String get environment =>
+      _getStringValue('ENVIRONMENT', 'development');
 
   /// Checks if the app is running in development mode.
   static bool get isDevelopment => environment == 'development';

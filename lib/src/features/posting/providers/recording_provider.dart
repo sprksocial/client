@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/features/posting/providers/recording_state.dart';
+import 'package:spark/src/core/utils/logging/logging.dart';
+import 'package:spark/src/features/posting/providers/recording_state.dart';
 
 part 'recording_provider.g.dart';
 
@@ -26,10 +26,15 @@ class Recording extends _$Recording {
     }
 
     _logger.d('Starting recording timer');
-    state = state.copyWith(isRecording: true, elapsedDuration: Duration.zero, error: null);
+    state = state.copyWith(
+      isRecording: true,
+      elapsedDuration: Duration.zero,
+      error: null,
+    );
 
     _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-      final newDuration = state.elapsedDuration + const Duration(milliseconds: 100);
+      final newDuration =
+          state.elapsedDuration + const Duration(milliseconds: 100);
 
       if (newDuration >= state.maxDuration) {
         _logger.i('Max duration reached, stopping timer');

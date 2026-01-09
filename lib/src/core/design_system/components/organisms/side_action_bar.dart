@@ -1,8 +1,8 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
 
 /// Curate popover item data
 class CurateDestination {
@@ -40,7 +40,8 @@ class SparkSideActionBar extends StatefulWidget {
   final VoidCallback? onLike;
   final VoidCallback? onComment;
   final VoidCallback? onRepost;
-  final VoidCallback? onCurate; // called after a feed selection (or when opening?)
+  final VoidCallback?
+  onCurate; // called after a feed selection (or when opening?)
   final VoidCallback? onShare;
   final VoidCallback? onSoundTap;
   final VoidCallback? onOptions;
@@ -83,13 +84,18 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
 
   void _showPopover() {
     if (!mounted) return;
-    final renderBox = _curateKey.currentContext?.findRenderObject() as RenderBox?;
-    final overlayBox = Overlay.of(context).context.findRenderObject() as RenderBox?;
+    final renderBox =
+        _curateKey.currentContext?.findRenderObject() as RenderBox?;
+    final overlayBox =
+        Overlay.of(context).context.findRenderObject() as RenderBox?;
     if (renderBox == null || overlayBox == null) return;
 
     final target = renderBox.localToGlobal(Offset.zero, ancestor: overlayBox);
     final size = renderBox.size;
-    final iconCenter = Offset(target.dx + size.width / 2, target.dy + size.height / 2);
+    final iconCenter = Offset(
+      target.dx + size.width / 2,
+      target.dy + size.height / 2,
+    );
 
     _overlay = OverlayEntry(
       builder: (ctx) {
@@ -99,7 +105,6 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
           child: Stack(
             children: [
               Positioned(
-                // Place so the connector circle (shiftX=30) centers behind icon; fine-tune offsets empirically.
                 top: iconCenter.dy - 48,
                 right: MediaQuery.of(context).size.width - target.dx + 16 - 30,
                 child: _CuratePopover(
@@ -116,7 +121,7 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
         );
       },
     );
-    // Add icon overlay above popover for correct z-order (bar bg -> popover -> actual icon)
+    // Icon overlay above popover for z-order (bar bg -> popover -> actual icon)
     _overlayIcon = OverlayEntry(
       builder: (ctx) => Positioned(
         left: target.dx,
@@ -149,7 +154,9 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
       _ActionItem(
         isActive: widget.isLiked,
         label: widget.likeCount,
-        icon: widget.isLiked ? AppIcons.likeFilled(size: 32) : AppIcons.like(size: 32),
+        icon: widget.isLiked
+            ? AppIcons.likeFilled(size: 32)
+            : AppIcons.like(size: 32),
         onTap: widget.onLike,
       ),
       const SizedBox(height: 13),
@@ -161,7 +168,10 @@ class _SparkSideActionBarState extends State<SparkSideActionBar> {
       const SizedBox(height: 13),
       _ActionItem(
         isActive: widget.isReposted,
-        icon: AppIcons.repost(size: 32, color: widget.isReposted ? AppColors.green : null),
+        icon: AppIcons.repost(
+          size: 32,
+          color: widget.isReposted ? AppColors.green : null,
+        ),
         label: widget.repostCount,
         onTap: widget.onRepost,
       ),
@@ -233,7 +243,8 @@ class _ActionItem extends StatefulWidget {
   State<_ActionItem> createState() => _ActionItemState();
 }
 
-class _ActionItemState extends State<_ActionItem> with SingleTickerProviderStateMixin {
+class _ActionItemState extends State<_ActionItem>
+    with SingleTickerProviderStateMixin {
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
 
@@ -244,11 +255,14 @@ class _ActionItemState extends State<_ActionItem> with SingleTickerProviderState
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
-    _bounceAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween(begin: 1, end: 1.3), weight: 40),
-      TweenSequenceItem(tween: Tween(begin: 1.3, end: 0.9), weight: 30),
-      TweenSequenceItem(tween: Tween(begin: 0.9, end: 1.05), weight: 30),
-    ]).animate(CurvedAnimation(parent: _bounceController, curve: Curves.easeOut));
+    _bounceAnimation =
+        TweenSequence<double>([
+          TweenSequenceItem(tween: Tween(begin: 1, end: 1.3), weight: 40),
+          TweenSequenceItem(tween: Tween(begin: 1.3, end: 0.9), weight: 30),
+          TweenSequenceItem(tween: Tween(begin: 0.9, end: 1.05), weight: 30),
+        ]).animate(
+          CurvedAnimation(parent: _bounceController, curve: Curves.easeOut),
+        );
   }
 
   @override
@@ -276,11 +290,17 @@ class _ActionItemState extends State<_ActionItem> with SingleTickerProviderState
             animation: _bounceAnimation,
             builder: (context, child) {
               return Transform.scale(
-                scale: _bounceController.isAnimating ? _bounceAnimation.value : (widget.isActive ? 1.05 : 1.0),
+                scale: _bounceController.isAnimating
+                    ? _bounceAnimation.value
+                    : (widget.isActive ? 1.05 : 1.0),
                 child: child,
               );
             },
-            child: SizedBox(width: 40, height: 40, child: Center(child: widget.icon)),
+            child: SizedBox(
+              width: 40,
+              height: 40,
+              child: Center(child: widget.icon),
+            ),
           ),
           if (widget.label != null && widget.label!.isNotEmpty)
             Text(
@@ -393,7 +413,6 @@ class _ConnectorPopover extends StatelessWidget {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
             child: Container(
-              // Increased vertical padding + larger right padding to account for bigger connector circle
               padding: const EdgeInsets.fromLTRB(20, 18, 60, 18),
               decoration: const BoxDecoration(),
               child: child,
@@ -429,14 +448,22 @@ class _ConnectorPopoverClipper extends CustomClipper<Path> {
   @override
   Path getClip(Size size) {
     // Main body excludes connector width minus overlap
-    final bodyWidth = size.width - (connectorRadius - connectorShiftX) + overlap;
-    final bodyRect = RRect.fromLTRBR(0, 0, bodyWidth, size.height, const Radius.circular(radius));
+    final bodyWidth =
+        size.width - (connectorRadius - connectorShiftX) + overlap;
+    final bodyRect = RRect.fromLTRBR(
+      0,
+      0,
+      bodyWidth,
+      size.height,
+      const Radius.circular(radius),
+    );
     final rectPath = Path()..addRRect(bodyRect);
     final circleCenter = Offset(
       bodyWidth - overlap + connectorShiftX,
       connectorRadius + connectorShiftDown,
     ); // shifted circle
-    final circlePath = Path()..addOval(Rect.fromCircle(center: circleCenter, radius: connectorRadius));
+    final circlePath = Path()
+      ..addOval(Rect.fromCircle(center: circleCenter, radius: connectorRadius));
     return Path.combine(PathOperation.union, rectPath, circlePath);
   }
 

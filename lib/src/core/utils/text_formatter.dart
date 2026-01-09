@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
-import 'package:sparksocial/src/core/ui/widgets/mentioned_text.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/ui/widgets/mentioned_text.dart';
 
 /// Utility class for text formatting and processing
 class TextFormatter {
@@ -19,10 +19,16 @@ class TextFormatter {
 
     if (numCount >= 1000000) {
       final value = numCount / 1000000;
-      return '${value.toStringAsFixed(value.truncateToDouble() == value ? 0 : 1)}M';
+      final formattedValue = value.toStringAsFixed(
+        value.truncateToDouble() == value ? 0 : 1,
+      );
+      return '${formattedValue}M';
     } else if (numCount >= 1000) {
       final value = numCount / 1000;
-      return '${value.toStringAsFixed(value.truncateToDouble() == value ? 0 : 1)}K';
+      final formattedValue = value.toStringAsFixed(
+        value.truncateToDouble() == value ? 0 : 1,
+      );
+      return '${formattedValue}K';
     } else {
       return numCount.toString();
     }
@@ -30,7 +36,10 @@ class TextFormatter {
 
   /// Finds username matches in a text string
   static List<Match> findUsernameMatches(String text) {
-    final usernameRegex = RegExp(r'@([a-zA-Z0-9_.-]+\.[a-zA-Z]{2,}|[a-zA-Z0-9_]+)', caseSensitive: false);
+    final usernameRegex = RegExp(
+      r'@([a-zA-Z0-9_.-]+\.[a-zA-Z]{2,}|[a-zA-Z0-9_]+)',
+      caseSensitive: false,
+    );
 
     return usernameRegex.allMatches(text).toList();
   }
@@ -50,10 +59,14 @@ class TextFormatter {
     }
 
     if (urls.isEmpty) {
-      final simpleRegex = RegExp(r'([a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?)', caseSensitive: false);
+      final simpleRegex = RegExp(
+        r'([a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?)',
+        caseSensitive: false,
+      );
       for (final Match match in simpleRegex.allMatches(text)) {
         final domain = match.group(0)!;
-        if (text.contains('@$domain') || text.contains('@${domain.split('.')[0]}')) {
+        if (text.contains('@$domain') ||
+            text.contains('@${domain.split('.')[0]}')) {
           continue;
         }
         if (!domain.contains('.com') &&
@@ -72,14 +85,25 @@ class TextFormatter {
   }
 
   /// Builds text with clickable @mentions using the MentionedText widget
-  static Widget buildTextWithMentions(BuildContext context, String text, bool expandDescription, Function(String) onUsernameTap) {
+  static Widget buildTextWithMentions(
+    BuildContext context,
+    String text,
+    bool expandDescription,
+    Function(String) onUsernameTap,
+  ) {
     return MentionedText(
       text: text,
       onUsernameTap: onUsernameTap,
       expandText: expandDescription,
       maxLines: expandDescription ? null : 2,
-      textStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface, fontSize: 14),
-      mentionStyle: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+      textStyle: TextStyle(
+        color: Theme.of(context).colorScheme.onSurface,
+        fontSize: 14,
+      ),
+      mentionStyle: const TextStyle(
+        color: AppColors.primary,
+        fontWeight: FontWeight.bold,
+      ),
     );
   }
 }

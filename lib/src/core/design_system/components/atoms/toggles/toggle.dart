@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/tokens/gradients.dart';
+import 'package:spark/src/core/design_system/tokens/gradients.dart';
 
 class Toggle extends StatelessWidget {
   const Toggle({

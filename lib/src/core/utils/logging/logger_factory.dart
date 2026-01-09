@@ -1,10 +1,10 @@
 import 'package:flutter/foundation.dart';
 
-import 'package:sparksocial/src/core/utils/logging/console_output.dart';
-import 'package:sparksocial/src/core/utils/logging/file_output.dart';
-import 'package:sparksocial/src/core/utils/logging/log_level.dart';
-import 'package:sparksocial/src/core/utils/logging/log_output.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/utils/logging/console_output.dart';
+import 'package:spark/src/core/utils/logging/file_output.dart';
+import 'package:spark/src/core/utils/logging/log_level.dart';
+import 'package:spark/src/core/utils/logging/log_output.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 
 /// Factory for creating logger instances
 class LoggerFactory {
@@ -12,7 +12,10 @@ class LoggerFactory {
   static LogLevel _globalMinLevel = kDebugMode ? LogLevel.debug : LogLevel.info;
 
   /// List of default outputs
-  static final List<LogOutput> _defaultOutputs = [ConsoleOutput(), if (!kIsWeb) FileOutput()];
+  static final List<LogOutput> _defaultOutputs = [
+    ConsoleOutput(),
+    if (!kIsWeb) FileOutput(),
+  ];
 
   /// Map of logger instances by name
   static final Map<String, SparkLogger> _loggers = {};
@@ -26,7 +29,11 @@ class LoggerFactory {
       return _loggers[name]!;
     }
 
-    final logger = SparkLogger(name: name, minLevel: _globalMinLevel, outputs: List.from(_defaultOutputs));
+    final logger = SparkLogger(
+      name: name,
+      minLevel: _globalMinLevel,
+      outputs: List.from(_defaultOutputs),
+    );
 
     _loggers[name] = logger;
     return logger;

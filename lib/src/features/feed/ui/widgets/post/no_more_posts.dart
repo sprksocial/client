@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
 
 class NoMorePosts extends StatelessWidget {
   const NoMorePosts({super.key});
@@ -9,7 +9,10 @@ class NoMorePosts extends StatelessWidget {
     return const DecoratedBox(
       decoration: BoxDecoration(color: AppColors.black),
       child: Center(
-        child: Text('No more posts in this feed.', style: TextStyle(color: AppColors.white)),
+        child: Text(
+          'No more posts in this feed.',
+          style: TextStyle(color: AppColors.white),
+        ),
       ),
     );
   }

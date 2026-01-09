@@ -1,4 +1,4 @@
-import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
+import 'package:spark/src/core/network/messages/data/models/message_models.dart';
 
 /// Interface for Messages-related API endpoints using XRPC
 abstract class MessagesRepository {
@@ -20,7 +20,8 @@ abstract class MessagesRepository {
 
   /// Get or create a conversation for specific members
   ///
-  /// [members] List of DIDs for conversation members (caller's DID is automatically included)
+  /// [members] List of DIDs for conversation members (caller's DID is
+  /// automatically included)
   /// Returns the conversation view with MongoDB convo id
   Future<ConvoView> getConvoForMembers(List<String> members);
 

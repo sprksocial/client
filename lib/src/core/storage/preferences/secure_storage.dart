@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:sparksocial/src/core/storage/preferences/local_storage_interface.dart';
+import 'package:spark/src/core/storage/preferences/local_storage_interface.dart';
 import 'package:synchronized/synchronized.dart';
 
 /// Implementation of LocalStorageInterface using FlutterSecureStorage
@@ -9,13 +9,15 @@ import 'package:synchronized/synchronized.dart';
 class SecureStorage implements LocalStorageInterface {
   /// Creates a new SecureStorage instance
   /// If no secureStorage is provided, a default one will be created
-  SecureStorage({FlutterSecureStorage? secureStorage}) : _secureStorage = secureStorage ?? const FlutterSecureStorage();
+  SecureStorage({FlutterSecureStorage? secureStorage})
+    : _secureStorage = secureStorage ?? const FlutterSecureStorage();
   final FlutterSecureStorage _secureStorage;
   final Lock _lock = Lock();
 
   @override
   Future<void> setString(String key, String value) async {
-    // Use synchronized to prevent concurrent writes that can cause OperationError on web
+    // Use synchronized to prevent concurrent writes that can cause
+    // OperationError on web
     await _lock.synchronized(() async {
       await _secureStorage.write(key: key, value: value);
     });

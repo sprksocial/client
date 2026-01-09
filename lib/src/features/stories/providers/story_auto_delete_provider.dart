@@ -1,12 +1,12 @@
 import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/storage/preferences/storage_constants.dart';
-import 'package:sparksocial/src/core/storage/preferences/storage_manager.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/stories/providers/story_manager_provider.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/storage/preferences/storage_constants.dart';
+import 'package:spark/src/core/storage/preferences/storage_manager.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/features/stories/providers/story_manager_provider.dart';
 
 part 'story_auto_delete_provider.g.dart';
 
@@ -39,7 +39,7 @@ class StoryAutoDeletePref extends _$StoryAutoDeletePref {
   }
 }
 
-/// Executes auto deletion (once) at startup if enabled. Exposed as a Future provider
+/// Executes auto deletion at startup if enabled. Exposed as Future provider
 /// so that splash / root widgets can await or just watch for side-effects.
 @riverpod
 Future<void> storyAutoDeleteExecutor(Ref ref) async {
@@ -92,10 +92,12 @@ Future<void> storyAutoDeleteExecutor(Ref ref) async {
     }
 
     // Refresh manager state if it's already loaded
-    // Refresh story manager provider (will instantiate if not yet) so UI reflects deletions
+    // Refresh story manager provider so UI reflects deletions
     final manager = ref.read(storyManagerProvider.notifier);
     await manager.refresh();
   } catch (e, s) {
-    GetIt.I<LogService>().getLogger('StoryAutoDeleteExec').e('Auto delete failed', error: e, stackTrace: s);
+    GetIt.I<LogService>()
+        .getLogger('StoryAutoDeleteExec')
+        .e('Auto delete failed', error: e, stackTrace: s);
   }
 }

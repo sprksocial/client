@@ -3,8 +3,8 @@ import 'dart:async';
 import 'package:camera/camera.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/features/posting/providers/camera_state.dart';
+import 'package:spark/src/core/utils/logging/logging.dart';
+import 'package:spark/src/features/posting/providers/camera_state.dart';
 
 part 'camera_provider.g.dart';
 
@@ -24,7 +24,11 @@ class Camera extends _$Camera {
     try {
       return await _initializeCamera();
     } catch (e, stackTrace) {
-      _logger.e('Failed to initialize camera on build', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Failed to initialize camera on build',
+        error: e,
+        stackTrace: stackTrace,
+      );
       return CameraState(error: e.toString());
     }
   }
@@ -43,17 +47,31 @@ class Camera extends _$Camera {
 
       final controller = await _createCameraController(cameras.first);
 
-      return CameraState(controller: controller, cameras: cameras, isInitialized: true);
+      return CameraState(
+        controller: controller,
+        cameras: cameras,
+        isInitialized: true,
+      );
     } catch (e, stackTrace) {
-      _logger.e('Camera initialization failed', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Camera initialization failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
       rethrow;
     }
   }
 
-  Future<CameraController> _createCameraController(CameraDescription camera) async {
+  Future<CameraController> _createCameraController(
+    CameraDescription camera,
+  ) async {
     _logger.d('Creating camera controller for: ${camera.name}');
 
-    final controller = CameraController(camera, ResolutionPreset.max, imageFormatGroup: ImageFormatGroup.jpeg);
+    final controller = CameraController(
+      camera,
+      ResolutionPreset.max,
+      imageFormatGroup: ImageFormatGroup.jpeg,
+    );
 
     await controller.initialize();
 
@@ -76,7 +94,11 @@ class Camera extends _$Camera {
       state = AsyncValue.data(newState);
       _logger.i('Camera reinitialized successfully');
     } catch (e, stackTrace) {
-      _logger.e('Camera reinitialization failed', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Camera reinitialization failed',
+        error: e,
+        stackTrace: stackTrace,
+      );
       state = AsyncValue.error(e, stackTrace);
     }
   }
@@ -96,7 +118,8 @@ class Camera extends _$Camera {
     _logger.d('Flipping camera');
 
     try {
-      final newIndex = (currentState.selectedCameraIndex + 1) % currentState.cameras.length;
+      final newIndex =
+          (currentState.selectedCameraIndex + 1) % currentState.cameras.length;
       final newCamera = currentState.cameras[newIndex];
 
       _logger.d('Switching to camera: ${newCamera.name}');
@@ -108,7 +131,12 @@ class Camera extends _$Camera {
       final newController = await _createCameraController(newCamera);
 
       state = AsyncValue.data(
-        currentState.copyWith(controller: newController, selectedCameraIndex: newIndex, isInitialized: true, error: null),
+        currentState.copyWith(
+          controller: newController,
+          selectedCameraIndex: newIndex,
+          isInitialized: true,
+          error: null,
+        ),
       );
 
       _logger.i('Camera flipped successfully to ${newCamera.name}');
@@ -150,8 +178,12 @@ class Camera extends _$Camera {
       return false;
     }
 
-    if (currentState.controller == null || !currentState.isInitialized || currentState.isRecording) {
-      _logger.w('Cannot start recording - camera not ready or already recording');
+    if (currentState.controller == null ||
+        !currentState.isInitialized ||
+        currentState.isRecording) {
+      _logger.w(
+        'Cannot start recording - camera not ready or already recording',
+      );
       return false;
     }
 
@@ -163,7 +195,11 @@ class Camera extends _$Camera {
       _logger.i('Video recording started successfully');
       return true;
     } catch (e, stackTrace) {
-      _logger.e('Error starting video recording', error: e, stackTrace: stackTrace);
+      _logger.e(
+        'Error starting video recording',
+        error: e,
+        stackTrace: stackTrace,
+      );
       state = AsyncValue.data(currentState.copyWith(error: e.toString()));
       return false;
     }
@@ -176,7 +212,9 @@ class Camera extends _$Camera {
       return null;
     }
 
-    if (currentState.controller == null || !currentState.isInitialized || !currentState.isRecording) {
+    if (currentState.controller == null ||
+        !currentState.isInitialized ||
+        !currentState.isRecording) {
       _logger.w('Cannot stop recording - not currently recording');
       return null;
     }
@@ -189,8 +227,14 @@ class Camera extends _$Camera {
       _logger.i('Video recording stopped successfully: ${file.path}');
       return file;
     } catch (e, stackTrace) {
-      _logger.e('Error stopping video recording', error: e, stackTrace: stackTrace);
-      state = AsyncValue.data(currentState.copyWith(isRecording: false, error: e.toString()));
+      _logger.e(
+        'Error stopping video recording',
+        error: e,
+        stackTrace: stackTrace,
+      );
+      state = AsyncValue.data(
+        currentState.copyWith(isRecording: false, error: e.toString()),
+      );
       return null;
     }
   }

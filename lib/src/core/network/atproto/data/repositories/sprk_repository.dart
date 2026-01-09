@@ -1,11 +1,11 @@
-import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/graph_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/labeler_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/story_repository.dart';
-import 'package:sparksocial/src/features/auth/auth.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/actor_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/graph_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/labeler_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/repo_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/story_repository.dart';
+import 'package:spark/src/features/auth/auth.dart';
 
 // All possible endpoints for the Sprk API should be in this contract
 // The implementation should be in each feature's repository

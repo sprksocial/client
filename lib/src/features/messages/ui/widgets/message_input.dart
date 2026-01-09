@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
-import 'package:sparksocial/src/core/ui/widgets/user_avatar.dart';
-import 'package:sparksocial/src/features/auth/providers/auth_providers.dart';
-import 'package:sparksocial/src/features/profile/providers/profile_provider.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/ui/widgets/user_avatar.dart';
+import 'package:spark/src/features/auth/providers/auth_providers.dart';
+import 'package:spark/src/features/profile/providers/profile_provider.dart';
 
 class MessageInput extends ConsumerWidget {
   const MessageInput({
@@ -31,7 +31,12 @@ class MessageInput extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        border: Border(top: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5)),
+        border: Border(
+          top: BorderSide(
+            color: Theme.of(context).colorScheme.outline,
+            width: 0.5,
+          ),
+        ),
       ),
       child: SafeArea(
         child: Column(
@@ -42,7 +47,8 @@ class MessageInput extends ConsumerWidget {
                   imageUrl: ref
                       .read(profileProvider(did: session?.did ?? ''))
                       .when(
-                        data: (profileData) => profileData.profile?.avatar?.toString() ?? '',
+                        data: (profileData) =>
+                            profileData.profile?.avatar?.toString() ?? '',
                         error: (error, stackTrace) => '',
                         loading: () => '',
                       ),
@@ -63,20 +69,33 @@ class MessageInput extends ConsumerWidget {
                     controller: controller,
                     decoration: InputDecoration(
                       hintText: 'Type a message...',
-                      hintStyle: TextStyle(color: Theme.of(context).colorScheme.onSurface),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(25), borderSide: BorderSide.none),
+                      hintStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(25),
+                        borderSide: BorderSide.none,
+                      ),
                       filled: true,
                       fillColor: Theme.of(context).colorScheme.surface,
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                        vertical: 10,
+                      ),
                     ),
-                    style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                     maxLines: null,
                     textCapitalization: TextCapitalization.sentences,
                   ),
                 ),
                 const SizedBox(width: 8),
                 Container(
-                  decoration: const BoxDecoration(color: AppColors.primary, shape: BoxShape.circle),
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
                   child: IconButton(
                     onPressed: isLoading
                         ? null
@@ -90,10 +109,15 @@ class MessageInput extends ConsumerWidget {
                             height: 16,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                             ),
                           )
-                        : const Icon(FluentIcons.send_24_filled, color: Colors.white),
+                        : const Icon(
+                            FluentIcons.send_24_filled,
+                            color: Colors.white,
+                          ),
                   ),
                 ),
               ],
@@ -101,7 +125,10 @@ class MessageInput extends ConsumerWidget {
             // if (state.selectedImages.isNotEmpty)
             //   Padding(
             //     padding: const EdgeInsets.only(top: 8.0),
-            //     child: _SelectedImagesPreview(state: state, notifier: notifier),
+            //     child: _SelectedImagesPreview(
+            //       state: state,
+            //       notifier: notifier,
+            //     ),
             //   ),
           ],
         ),
@@ -135,14 +162,23 @@ class MessageInput extends ConsumerWidget {
 //       visualDensity: VisualDensity.compact,
 //       constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
 //       onPressed: enabled ? () => notifier.pickMedia(context) : null,
-//       tooltip: enabled ? 'Add media (up to 4)' : (state.isPosting ? 'Posting...' : 'Maximum files reached'),
-//       icon: Icon(FluentIcons.image_24_regular, size: 24, color: Theme.of(context).colorScheme.primary),
+//       tooltip: enabled
+//           ? 'Add media (up to 4)'
+//           : (state.isPosting ? 'Posting...' : 'Maximum files reached'),
+//       icon: Icon(
+//         FluentIcons.image_24_regular,
+//         size: 24,
+//         color: Theme.of(context).colorScheme.primary,
+//       ),
 //     );
 //   }
 // }
 
 // class _SelectedImagesPreview extends StatelessWidget {
-//   const _SelectedImagesPreview({required this.state, required this.notifier});
+//   const _SelectedImagesPreview({
+//     required this.state,
+//     required this.notifier,
+//   });
 
 //   final EmbedInputState state;
 //   final EmbedInput notifier;
@@ -167,9 +203,21 @@ class MessageInput extends ConsumerWidget {
 //                   height: 72,
 //                   decoration: BoxDecoration(
 //                     borderRadius: BorderRadius.circular(12),
-//                     border: Border.all(color: Theme.of(context).colorScheme.outline, width: 0.5),
-//                     boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 26), blurRadius: 4, offset: const Offset(0, 2))],
-//                     image: DecorationImage(image: FileImage(File(imageFile.path)), fit: BoxFit.cover),
+//                     border: Border.all(
+//                       color: Theme.of(context).colorScheme.outline,
+//                       width: 0.5,
+//                     ),
+//                     boxShadow: [
+//                       BoxShadow(
+//                         color: Colors.black.withValues(alpha: 26),
+//                         blurRadius: 4,
+//                         offset: const Offset(0, 2),
+//                       ),
+//                     ],
+//                     image: DecorationImage(
+//                       image: FileImage(File(imageFile.path)),
+//                       fit: BoxFit.cover,
+//                     ),
 //                   ),
 //                 ),
 //                 // Remove Button (top right)
@@ -184,7 +232,11 @@ class MessageInput extends ConsumerWidget {
 //                       customBorder: const CircleBorder(),
 //                       child: Container(
 //                         padding: const EdgeInsets.all(2),
-//                         child: const Icon(FluentIcons.dismiss_16_filled, color: Colors.white, size: 12),
+//                         child: const Icon(
+//                           FluentIcons.dismiss_16_filled,
+//                           color: Colors.white,
+//                           size: 12,
+//                         ),
 //                       ),
 //                     ),
 //                   ),

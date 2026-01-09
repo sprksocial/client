@@ -1,10 +1,10 @@
 import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/known_interactions_bar.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/utils/label_utils.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
-import 'package:sparksocial/src/features/feed/ui/widgets/post/info_bar.dart';
+import 'package:spark/src/core/design_system/components/molecules/known_interactions_bar.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/utils/label_utils.dart';
+import 'package:spark/src/features/feed/ui/widgets/action_buttons/side_action_bar.dart';
+import 'package:spark/src/features/feed/ui/widgets/post/info_bar.dart';
 
 class PostOverlay extends StatelessWidget {
   const PostOverlay({
@@ -25,7 +25,7 @@ class PostOverlay extends StatelessWidget {
   final VoidCallback? onUsernameTap;
   final List<Label> labels;
 
-  /// Callback invoked after successfully blocking a user, typically to advance to the next post
+  /// Callback invoked after successfully blocking a user
   final VoidCallback? onBlockAndAdvance;
 
   @override
@@ -75,7 +75,8 @@ class PostOverlay extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // Known Interactions (reposts/likes from followed users)
-                        if (post.viewer?.knownInteractions != null && post.viewer!.knownInteractions!.isNotEmpty)
+                        if (post.viewer?.knownInteractions != null &&
+                            post.viewer!.knownInteractions!.isNotEmpty)
                           Padding(
                             padding: const EdgeInsets.only(bottom: 12),
                             child: KnownInteractionsBar(
@@ -89,7 +90,8 @@ class PostOverlay extends StatelessWidget {
                             final informLabels = snapshot.data ?? [];
                             return InfoBar(
                               username: post.author.handle,
-                              displayName: post.author.displayName ?? post.author.handle,
+                              displayName:
+                                  post.author.displayName ?? post.author.handle,
                               avatarUrl: post.author.avatar?.toString(),
                               description: post.displayText,
                               hashtags: post.record.hashtags,
@@ -115,7 +117,9 @@ class PostOverlay extends StatelessWidget {
                       shareCount: '${post.repostCount ?? 0}',
                       isLiked: isLiked,
                       profileImageUrl: post.author.avatar.toString(),
-                      isImage: post.media is MediaViewImages || post.media is MediaViewBskyImages,
+                      isImage:
+                          post.media is MediaViewImages ||
+                          post.media is MediaViewBskyImages,
                       onProfilePressed: onProfilePressed,
                       onBlockAndAdvance: onBlockAndAdvance,
                     ),

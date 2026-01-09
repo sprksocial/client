@@ -5,21 +5,25 @@ import 'package:atproto/core.dart';
 import 'package:bluesky/app_bsky_actor_profile.dart';
 import 'package:bluesky/bluesky.dart' as bs;
 import 'package:get_it/get_it.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
+import 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/graph_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/repo_repository.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
 
 class OnboardingRepositoryImpl implements OnboardingRepository {
-  OnboardingRepositoryImpl({required RepoRepository repoRepository, required AuthRepository authRepository})
-    : _repoRepository = repoRepository,
-      _authRepository = authRepository;
+  OnboardingRepositoryImpl({
+    required RepoRepository repoRepository,
+    required AuthRepository authRepository,
+  }) : _repoRepository = repoRepository,
+       _authRepository = authRepository;
   final RepoRepository _repoRepository;
   final AuthRepository _authRepository;
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('OnboardingRepository');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'OnboardingRepository',
+  );
 
   Session? get _session => _authRepository.session;
   ATProto? get _atproto => _authRepository.atproto;
@@ -36,7 +40,9 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     } catch (e) {
       // Treat 404 and 'Could not locate record' 400 errors as no profile
       final msg = e.toString().toLowerCase();
-      if (msg.contains('404') || msg.contains('could not locate record') || msg.contains('400')) {
+      if (msg.contains('404') ||
+          msg.contains('could not locate record') ||
+          msg.contains('400')) {
         return false;
       }
       _logger.e('Error checking Spark profile', error: e);
@@ -49,7 +55,9 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
     if (_session == null) return null;
 
     try {
-      final uri = AtUri.parse('at://${_session!.did}/app.bsky.actor.profile/self');
+      final uri = AtUri.parse(
+        'at://${_session!.did}/app.bsky.actor.profile/self',
+      );
       final response = await _repoRepository.getRecord(uri: uri);
       return ActorProfileRecord.fromJson(response.record.toJson());
     } catch (e) {
@@ -59,7 +67,11 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
   }
 
   @override
-  Future<void> createSparkProfile({required String displayName, required String description, dynamic avatar}) async {
+  Future<void> createSparkProfile({
+    required String displayName,
+    required String description,
+    dynamic avatar,
+  }) async {
     dynamic avatarField;
 
     // If the avatar is raw bytes, upload it as a blob first to avoid sending
@@ -75,7 +87,8 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
           rethrow;
         }
       } else {
-        // Avatar is already a blob (e.g., imported from Bluesky). Try to serialise if possible.
+        // Avatar is already a blob (e.g., imported from Bluesky).
+        // Try to serialise if possible.
         try {
           // Many blob classes expose toJson(). If not, fall back to raw value.
           final toJson = (avatar as dynamic).toJson;
@@ -108,7 +121,11 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
 
     final bsky = bs.Bluesky.fromSession(_session!);
     final did = _session!.did;
-    final response = await bsky.graph.getFollows(actor: did, limit: 100, cursor: cursor);
+    final response = await bsky.graph.getFollows(
+      actor: did,
+      limit: 100,
+      cursor: cursor,
+    );
 
     // Convert raw data to our structured model
     final rawData = response.data.toJson();
@@ -116,11 +133,15 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
 
     final follows = rawFollows
         .map(
-          (followData) => ProfileView.fromJson(followData as Map<String, dynamic>),
+          (followData) =>
+              ProfileView.fromJson(followData as Map<String, dynamic>),
         )
         .toList();
 
-    return FollowsResponse(follows: follows, cursor: rawData['cursor'] as String?);
+    return FollowsResponse(
+      follows: follows,
+      cursor: rawData['cursor'] as String?,
+    );
   }
 
   @override
@@ -131,7 +152,10 @@ class OnboardingRepositoryImpl implements OnboardingRepository {
       'createdAt': DateTime.now().toUtc().toIso8601String(),
     };
 
-    final response = await _repoRepository.createRecord(collection: 'so.sprk.graph.follow', record: record);
+    final response = await _repoRepository.createRecord(
+      collection: 'so.sprk.graph.follow',
+      record: record,
+    );
 
     if (response.uri.toString().isEmpty) {
       throw Exception('Failed to create Spark follow');

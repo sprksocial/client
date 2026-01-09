@@ -5,21 +5,26 @@ import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/onboarding_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:sparksocial/src/core/routing/pages.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/profile/ui/pages/user_list_page.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/auth/data/repositories/onboarding_repository.dart';
+import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/routing/pages.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/features/profile/ui/pages/user_list_page.dart';
 
 part 'app_router.gr.dart';
 
 class AuthGuard extends AutoRouteGuard {
-  final SparkLogger _logger = GetIt.instance<LogService>().getLogger('AuthGuard');
+  final SparkLogger _logger = GetIt.instance<LogService>().getLogger(
+    'AuthGuard',
+  );
 
   @override
-  Future<void> onNavigation(NavigationResolver resolver, StackRouter router) async {
+  Future<void> onNavigation(
+    NavigationResolver resolver,
+    StackRouter router,
+  ) async {
     final authRepository = GetIt.instance<AuthRepository>();
     final onboardingRepository = GetIt.instance<OnboardingRepository>();
 
@@ -88,7 +93,9 @@ class AppRouter extends RootStackRouter {
 
     // Modal bottom sheet routes
     CustomRoute(
-      page: CommentsRoute.page, // doesn't need to be a child of post route because it's a modal bottom sheet
+      page: CommentsRoute
+          .page, // doesn't need to be a child of post route because it's a
+      //modal bottom sheet
       path: '/comments/:postUri',
       customRouteBuilder: commmentsTrayBuilder,
       children: [
@@ -118,7 +125,10 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: UserListRoute.page, path: '/profile/:did/users'),
     AutoRoute(page: VideoReviewRoute.page, path: '/video-review'),
     AutoRoute(page: ImageReviewRoute.page, path: '/image-review'),
-    AutoRoute(page: VideoEditorGroundedRoute.page, path: '/video-editor-grounded'),
+    AutoRoute(
+      page: VideoEditorGroundedRoute.page,
+      path: '/video-editor-grounded',
+    ),
     AutoRoute(page: RecordingRoute.page, path: '/recording'),
 
     // Stories pages
@@ -148,7 +158,11 @@ class AppRouter extends RootStackRouter {
     AutoRoute(page: AuthPromptRoute.page, path: '/auth-prompt'),
   ];
 
-  Route<T> commmentsTrayBuilder<T>(BuildContext context, Widget child, AutoRoutePage<T> page) {
+  Route<T> commmentsTrayBuilder<T>(
+    BuildContext context,
+    Widget child,
+    AutoRoutePage<T> page,
+  ) {
     return ModalBottomSheetRoute(
       settings: page,
       builder: (context) => child,
@@ -158,7 +172,11 @@ class AppRouter extends RootStackRouter {
     );
   }
 
-  Route<T> feedSettingsBuilder<T>(BuildContext context, Widget child, AutoRoutePage<T> page) {
+  Route<T> feedSettingsBuilder<T>(
+    BuildContext context,
+    Widget child,
+    AutoRoutePage<T> page,
+  ) {
     return ModalBottomSheetRoute(
       settings: page,
       builder: (context) => Padding(

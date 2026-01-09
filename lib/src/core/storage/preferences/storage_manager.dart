@@ -1,8 +1,8 @@
-import 'package:sparksocial/src/core/storage/preferences/local_storage_interface.dart';
-import 'package:sparksocial/src/core/storage/preferences/secure_storage.dart';
-import 'package:sparksocial/src/core/storage/preferences/shared_prefs_storage.dart';
+import 'package:spark/src/core/storage/preferences/local_storage_interface.dart';
+import 'package:spark/src/core/storage/preferences/secure_storage.dart';
+import 'package:spark/src/core/storage/preferences/shared_prefs_storage.dart';
 
-/// Storage manager providing centralized access to different storage implementations
+/// Storage manager providing centralized access to different storage impls
 /// This is the one that should be used to store and retrieve data from the app
 class StorageManager {
   /// Private constructor

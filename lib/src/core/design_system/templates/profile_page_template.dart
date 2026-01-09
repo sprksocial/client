@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/icons.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/profile_action_buttons.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/profile_avatar.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/profile_info.dart';
-import 'package:sparksocial/src/core/design_system/components/molecules/profile_stats.dart';
-import 'package:sparksocial/src/core/design_system/components/organisms/sticky_profile_tab_bar.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/design_system/tokens/typography.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/app_leading_button.dart';
+import 'package:spark/src/core/design_system/components/atoms/icons.dart';
+import 'package:spark/src/core/design_system/components/molecules/profile_action_buttons.dart';
+import 'package:spark/src/core/design_system/components/molecules/profile_avatar.dart';
+import 'package:spark/src/core/design_system/components/molecules/profile_info.dart';
+import 'package:spark/src/core/design_system/components/molecules/profile_stats.dart';
+import 'package:spark/src/core/design_system/components/organisms/sticky_profile_tab_bar.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/typography.dart';
 
 class ProfilePageTemplate extends StatelessWidget {
   const ProfilePageTemplate({
@@ -143,7 +143,10 @@ class ProfilePageTemplate extends StatelessWidget {
                 pinned: true,
                 delegate: StickyProfileTabBar(child: tabsWidget),
               ),
-              if (contentSlivers != null) ...contentSlivers! else SliverFillRemaining(child: contentWidget),
+              if (contentSlivers != null)
+                ...contentSlivers!
+              else
+                SliverFillRemaining(child: contentWidget),
             ],
           ),
         ),
@@ -266,7 +269,11 @@ class _ProfileHeaderSection extends StatelessWidget {
                     Row(
                       children: [
                         Skeleton.keep(
-                          child: Text(displayName, overflow: TextOverflow.ellipsis, style: AppTypography.textLargeBold),
+                          child: Text(
+                            displayName,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppTypography.textLargeBold,
+                          ),
                         ),
                         if (isEarlySupporter)
                           GestureDetector(
@@ -295,7 +302,8 @@ class _ProfileHeaderSection extends StatelessWidget {
               ),
             ],
           ),
-          if ((description?.isNotEmpty ?? false) || (links?.isNotEmpty ?? false)) ...[
+          if ((description?.isNotEmpty ?? false) ||
+              (links?.isNotEmpty ?? false)) ...[
             const SizedBox(height: 12),
             ProfileInfo(
               displayName: displayName,

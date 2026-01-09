@@ -1,21 +1,29 @@
 import 'package:atproto_core/atproto_core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/stories/providers/story_auto_delete_provider.dart';
+import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/features/stories/providers/story_auto_delete_provider.dart';
 
 part 'story_manager_provider.g.dart';
 
 /// Simple state holder for the story manager
 class StoryManagerState {
-  StoryManagerState({required this.stories, this.isLoading = false, this.error});
+  StoryManagerState({
+    required this.stories,
+    this.isLoading = false,
+    this.error,
+  });
   final List<StoryView> stories; // hydrated story views
   final bool isLoading;
   final String? error;
 
-  StoryManagerState copyWith({List<StoryView>? stories, bool? isLoading, String? error}) {
+  StoryManagerState copyWith({
+    List<StoryView>? stories,
+    bool? isLoading,
+    String? error,
+  }) {
     return StoryManagerState(
       stories: stories ?? this.stories,
       isLoading: isLoading ?? this.isLoading,
@@ -45,10 +53,13 @@ class StoryManager extends _$StoryManager {
       if (did == null) {
         return StoryManagerState(stories: const [], error: 'Not authenticated');
       }
-      // Page through all story records directly via atproto to include expired ( >24h ) ones
+      // Page through all story records directly via atproto to include expired
       final atproto = _sprk.authRepository.atproto;
       if (atproto == null) {
-        return StoryManagerState(stories: const [], error: 'AtProto not initialized');
+        return StoryManagerState(
+          stories: const [],
+          error: 'AtProto not initialized',
+        );
       }
       const collection = 'so.sprk.story.post';
       String? cursor;
@@ -89,7 +100,8 @@ class StoryManager extends _$StoryManager {
     if (current == null) return;
     try {
       // Optimistic update
-      final updatedList = List<StoryView>.from(current.stories)..removeWhere((s) => s.uri == story.uri);
+      final updatedList = List<StoryView>.from(current.stories)
+        ..removeWhere((s) => s.uri == story.uri);
       state = AsyncData(current.copyWith(stories: updatedList));
       await _sprk.repo.deleteRecord(uri: story.uri);
     } catch (e, s) {

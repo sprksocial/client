@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/tags/feed_tag.dart';
+import 'package:spark/src/core/design_system/components/atoms/tags/feed_tag.dart';
 
 class FeedTagList extends StatefulWidget {
   const FeedTagList({

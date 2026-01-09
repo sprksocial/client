@@ -1,4 +1,4 @@
-/// Utility for converting technical exceptions into user-friendly error messages.
+/// Utility for converting exceptions into user-friendly error messages.
 /// This prevents exposing internal implementation details to users while still
 /// providing helpful feedback.
 class ErrorMessages {
@@ -42,7 +42,9 @@ class ErrorMessages {
     }
 
     // Rate limiting
-    if (errorStr.contains('rate limit') || errorStr.contains('429') || errorStr.contains('too many requests')) {
+    if (errorStr.contains('rate limit') ||
+        errorStr.contains('429') ||
+        errorStr.contains('too many requests')) {
       return 'Too many requests. Please wait a moment and try again';
     }
 

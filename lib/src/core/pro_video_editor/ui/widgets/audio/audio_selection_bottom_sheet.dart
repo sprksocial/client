@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/audio/audio_edit_controls_section.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/audio/audio_track_list_section.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_edit_controls_section.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_track_list_section.dart';
 
 /// A bottom sheet for selecting and editing audio tracks.
 ///
 /// This widget provides a two-state interface:
 /// 1. Track selection: Displays a list of available audio tracks
-/// 2. Edit controls: Shows balance slider, waveform selector, and action buttons
+/// 2. Edit controls: Shows balance slider, waveform selector, & action buttons
 class AudioSelectionBottomSheet extends StatefulWidget {
   /// Creates an [AudioSelectionBottomSheet].
   const AudioSelectionBottomSheet({
@@ -56,7 +56,8 @@ class AudioSelectionBottomSheet extends StatefulWidget {
   final Future<void> Function(AudioTrack track) onTrackStop;
 
   @override
-  State<AudioSelectionBottomSheet> createState() => _AudioSelectionBottomSheetState();
+  State<AudioSelectionBottomSheet> createState() =>
+      _AudioSelectionBottomSheetState();
 }
 
 class _AudioSelectionBottomSheetState extends State<AudioSelectionBottomSheet> {

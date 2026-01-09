@@ -1,7 +1,7 @@
-export 'package:sparksocial/src/core/network/atproto/data/models/actor_models.dart';
-export 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-export 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
-export 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
-export 'package:sparksocial/src/core/network/atproto/data/models/pref_models.dart';
-export 'package:sparksocial/src/core/network/atproto/data/models/record_models.dart';
-export 'package:sparksocial/src/core/network/atproto/data/models/sound_models.dart';
+export 'package:spark/src/core/network/atproto/data/models/actor_models.dart';
+export 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+export 'package:spark/src/core/network/atproto/data/models/graph_models.dart';
+export 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
+export 'package:spark/src/core/network/atproto/data/models/pref_models.dart';
+export 'package:spark/src/core/network/atproto/data/models/record_models.dart';
+export 'package:spark/src/core/network/atproto/data/models/sound_models.dart';

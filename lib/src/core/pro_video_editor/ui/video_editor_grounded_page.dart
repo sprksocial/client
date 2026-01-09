@@ -11,16 +11,16 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
 import 'package:pro_video_editor/pro_video_editor.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sound_repository.dart';
-import 'package:sparksocial/src/core/pro_video_editor/models/video_editor_result.dart';
-import 'package:sparksocial/src/core/pro_video_editor/services/audio_helper_service.dart';
-import 'package:sparksocial/src/core/pro_video_editor/services/audio_waveform_extractor.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/audio/audio_selection_bottom_sheet.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/video_editor_configs_builder.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/common/video_initializing_widget.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/player/video_fullscreen_preview_page.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/player/video_player_widget.dart';
-import 'package:sparksocial/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sound_repository.dart';
+import 'package:spark/src/core/pro_video_editor/models/video_editor_result.dart';
+import 'package:spark/src/core/pro_video_editor/services/audio_helper_service.dart';
+import 'package:spark/src/core/pro_video_editor/services/audio_waveform_extractor.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/audio/audio_selection_bottom_sheet.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/common/video_editor_configs_builder.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/common/video_initializing_widget.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/player/video_fullscreen_preview_page.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/player/video_player_widget.dart';
+import 'package:spark/src/core/pro_video_editor/ui/widgets/timeline/video_timeline_state.dart';
 import 'package:video_player/video_player.dart';
 
 @RoutePage()
@@ -34,12 +34,14 @@ class VideoEditorGroundedPage extends StatefulWidget {
   final EditorVideo video;
 
   @override
-  State<VideoEditorGroundedPage> createState() => _VideoEditorGroundedPageState();
+  State<VideoEditorGroundedPage> createState() =>
+      _VideoEditorGroundedPageState();
 }
 
 class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   final _editorKey = GlobalKey<ProImageEditorState>();
-  final bool _useMaterialDesign = platformDesignMode == ImageEditorDesignMode.material;
+  final bool _useMaterialDesign =
+      platformDesignMode == ImageEditorDesignMode.material;
 
   /// The target format for the exported video.
   final _outputFormat = VideoOutputFormat.mp4;
@@ -121,7 +123,10 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   /// Generates thumbnails for the given [_video].
   Future<void> _generateThumbnails({bool updateClipThumbnails = true}) async {
     if (!mounted) return;
-    final imageWidth = MediaQuery.sizeOf(context).width / _thumbnailCount * MediaQuery.devicePixelRatioOf(context);
+    final imageWidth =
+        MediaQuery.sizeOf(context).width /
+        _thumbnailCount *
+        MediaQuery.devicePixelRatioOf(context);
 
     var thumbnailList = <Uint8List>[];
 
@@ -138,18 +143,23 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       ),
     );
 
-    final List<ImageProvider> temporaryThumbnails = thumbnailList.map(MemoryImage.new).toList();
+    final List<ImageProvider> temporaryThumbnails = thumbnailList
+        .map(MemoryImage.new)
+        .toList();
 
     if (updateClipThumbnails) {
-      _configs.clipsEditor.clips.first = _configs.clipsEditor.clips.first.copyWith(
-        thumbnails: temporaryThumbnails,
-      );
+      _configs.clipsEditor.clips.first = _configs.clipsEditor.clips.first
+          .copyWith(
+            thumbnails: temporaryThumbnails,
+          );
     }
 
     if (!mounted) return;
 
     /// Optional precache every thumbnail
-    final cacheList = temporaryThumbnails.map((item) => precacheImage(item, context));
+    final cacheList = temporaryThumbnails.map(
+      (item) => precacheImage(item, context),
+    );
     await Future.wait(cacheList);
 
     if (!mounted) return;
@@ -197,9 +207,10 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     );
 
     // Update clip duration and thumbnails after first frame
-    _configs.clipsEditor.clips.first = _configs.clipsEditor.clips.first.copyWith(
-      duration: _videoMetadata.duration,
-    );
+    _configs.clipsEditor.clips.first = _configs.clipsEditor.clips.first
+        .copyWith(
+          duration: _videoMetadata.duration,
+        );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _generateThumbnails();
       _extractVideoWaveform();
@@ -209,7 +220,10 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
       _videoController.initialize(),
       _videoController.setLooping(false),
       _videoController.setVolume(_configs.videoEditor.initialMuted ? 0.0 : 1.0),
-      if (_configs.videoEditor.initialPlay) _videoController.play() else _videoController.pause(),
+      if (_configs.videoEditor.initialPlay)
+        _videoController.play()
+      else
+        _videoController.pause(),
     ]);
     if (!mounted) return;
 
@@ -218,7 +232,10 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     final convertedRotation = rotation % 360;
     final is90DegRotated = convertedRotation == 90 || convertedRotation == 270;
     final adjustedResolution = is90DegRotated
-        ? Size(_videoMetadata.resolution.height, _videoMetadata.resolution.width)
+        ? Size(
+            _videoMetadata.resolution.height,
+            _videoMetadata.resolution.width,
+          )
         : _videoMetadata.resolution;
 
     _proVideoController = ProVideoController(
@@ -419,7 +436,7 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
     );
   }
 
-  /// Shows the audio selection bottom sheet for choosing and editing audio tracks.
+  /// Shows audio selection bottom sheet for choosing & editing audio tracks.
   Future<void> _showAudioSelectionBottomSheet() async {
     await _videoController.pause();
     if (!mounted) return;
@@ -519,7 +536,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
               flipY: parameters.flipY,
             )
           : null,
-      customAudioPath: await _audioService.safeCustomAudioPath(customAudioTrack),
+      customAudioPath: await _audioService.safeCustomAudioPath(
+        customAudioTrack,
+      ),
       originalAudioVolume: originalVolume,
       customAudioVolume: overlayVolume,
     );
@@ -533,7 +552,8 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
 
   /// Closes the video editor and returns the edited video with audio metadata.
   ///
-  /// Returns [VideoEditorResult] if [_outputPath] is available, otherwise returns `null`.
+  /// Returns [VideoEditorResult] if [_outputPath] is available, otherwise
+  /// returns `null`.
   Future<void> onCloseEditor(EditorMode editorMode) async {
     if (editorMode != EditorMode.main) {
       Navigator.pop(context);
@@ -558,7 +578,9 @@ class _VideoEditorGroundedPageState extends State<VideoEditorGroundedPage> {
   Widget build(BuildContext context) {
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 220),
-      child: _proVideoController == null ? const VideoInitializingWidget() : _buildEditor(),
+      child: _proVideoController == null
+          ? const VideoInitializingWidget()
+          : _buildEditor(),
     );
   }
 

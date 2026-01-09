@@ -1,10 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
-import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
-import 'package:sparksocial/src/features/messages/providers/conversations._state.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/network/messages/data/models/message_models.dart';
+import 'package:spark/src/core/network/messages/data/repository/messages_repository.dart';
+import 'package:spark/src/features/messages/providers/conversations._state.dart';
 
 part 'conversations_provider.g.dart';
 
@@ -24,7 +24,10 @@ class Conversations extends _$Conversations {
     final meDid = GetIt.I<AuthRepository>().session?.did;
     final items = <(ProfileViewDetailed, ConvoView)>[];
     for (final convo in res.conversations) {
-      final otherDid = convo.members.firstWhere((d) => d != meDid, orElse: () => convo.members.first);
+      final otherDid = convo.members.firstWhere(
+        (d) => d != meDid,
+        orElse: () => convo.members.first,
+      );
       final profile = await sprk.actor.getProfile(otherDid);
       items.add((profile, convo));
     }

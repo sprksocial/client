@@ -5,15 +5,15 @@ import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/labeler_models.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/storage/cache/download_manager_interface.dart';
-import 'package:sparksocial/src/core/utils/logging/log_service.dart';
-import 'package:sparksocial/src/core/utils/logging/logger.dart';
-import 'package:sparksocial/src/features/feed/providers/feed_state.dart';
-import 'package:sparksocial/src/features/settings/providers/settings_provider.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/labeler_models.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/feed_repository.dart';
+import 'package:spark/src/core/network/atproto/data/repositories/sprk_repository.dart';
+import 'package:spark/src/core/storage/cache/download_manager_interface.dart';
+import 'package:spark/src/core/utils/logging/log_service.dart';
+import 'package:spark/src/core/utils/logging/logger.dart';
+import 'package:spark/src/features/feed/providers/feed_state.dart';
+import 'package:spark/src/features/settings/providers/settings_provider.dart';
 
 part 'feed_provider.g.dart';
 
@@ -42,9 +42,14 @@ class FeedNotifier extends _$FeedNotifier {
       _sprkRepository = GetIt.instance<SprkRepository>();
       _feedRepository = _sprkRepository.feed;
       _downloadManager = GetIt.instance<DownloadManagerInterface>();
-      _logger = GetIt.instance<LogService>().getLogger('FeedNotifier ${feed.config.id}');
+      _logger = GetIt.instance<LogService>().getLogger(
+        'FeedNotifier ${feed.config.id}',
+      );
     } else {
-      _logger.d('Build called again for ${feed.config.id}, hasBeenBuilt: $_hasBeenBuilt');
+      _logger.d(
+        'Build called again for ${feed.config.id}, '
+        'hasBeenBuilt: $_hasBeenBuilt',
+      );
     }
 
     listenSelf((previous, next) {
@@ -54,7 +59,6 @@ class FeedNotifier extends _$FeedNotifier {
 
     final isActive = ref.watch(settingsProvider).activeFeed == feed;
 
-    // If this notifier has been built before and we have preserved state, use it
     if (_hasBeenBuilt && _preservedState != null) {
       final restoredState = _preservedState!.copyWith(active: isActive);
       // Update preserved state with the new active status
@@ -98,7 +102,8 @@ class FeedNotifier extends _$FeedNotifier {
         return false;
       case Feed(type: 'feed'):
         if (_feed.view != null) {
-          return _feed.view!.uri.collection.toString() == 'app.bsky.feed.generator';
+          return _feed.view!.uri.collection.toString() ==
+              'app.bsky.feed.generator';
         }
       case _:
         throw ArgumentError('Invalid feed type: $_feed');
@@ -112,7 +117,8 @@ class FeedNotifier extends _$FeedNotifier {
       return;
     }
 
-    if (_lastErrorTime != null && DateTime.now().difference(_lastErrorTime!) < _errorCooldown) {
+    if (_lastErrorTime != null &&
+        DateTime.now().difference(_lastErrorTime!) < _errorCooldown) {
       _logger.w('In error cooldown, skipping load');
       return;
     }
@@ -126,7 +132,10 @@ class FeedNotifier extends _$FeedNotifier {
         cursor: null,
         isEndOfNetworkFeed: false,
       );
-      await _maybeFetchNextBatch(limit: FeedState.firstLoadLimit, replaceExisting: true);
+      await _maybeFetchNextBatch(
+        limit: FeedState.firstLoadLimit,
+        replaceExisting: true,
+      );
     } catch (e, stackTrace) {
       _logger.e('Error in loadAndUpdateFirstLoad: $e', stackTrace: stackTrace);
       _lastErrorTime = DateTime.now();
@@ -165,12 +174,17 @@ class FeedNotifier extends _$FeedNotifier {
         if (post.record.selfLabels != null) {
           for (final selfLabel in post.record.selfLabels!) {
             postLabels.add(
-              Label(uri: key, val: selfLabel.val, src: key, cts: post.indexedAt),
+              Label(
+                uri: key,
+                val: selfLabel.val,
+                src: key,
+                cts: post.indexedAt,
+              ),
             );
           }
         }
 
-        // Check if post has no labels from appview (after adding self-labels, check original)
+        // Check if post has no labels (after adding self-labels check original)
         if (post.labels == null || post.labels!.isEmpty) {
           postsWithoutLabels++;
         }
@@ -179,11 +193,16 @@ class FeedNotifier extends _$FeedNotifier {
         postsWithMergedLabels.add(post.copyWith(labels: postLabels));
       }
 
-      // Log warning if many posts are missing labels (might indicate header issue)
+      // Log warning if many posts missing labels (may indicate header issue)
       if (postsWithoutLabels > 0 && postsWithoutLabels == posts.length) {
-        _logger.w('All ${posts.length} posts are missing labels - check if atproto-accept-labelers header is being sent');
+        _logger.w(
+          'All ${posts.length} posts are missing labels - '
+          'check if labelers header is being sent',
+        );
       } else if (postsWithoutLabels > posts.length / 2) {
-        _logger.w('$postsWithoutLabels/${posts.length} posts are missing labels - some labels may not be included');
+        _logger.w(
+          '$postsWithoutLabels/${posts.length} posts are missing labels - some labels may not be included',
+        );
       }
 
       final extraInfo = LinkedHashMap<AtUri, ({List<Label> postLabels})>.from(
@@ -197,13 +216,19 @@ class FeedNotifier extends _$FeedNotifier {
           (value) {
             final existingLabels = value.postLabels;
 
-            // if the new label is already in the existing labels, check if it should replace the existing one
+            // if new label in existing labels,
+            //check if it should replace existing one
             if (existingLabels.any((label) => label.val == newLabel.val)) {
-              final existingLabel = existingLabels.firstWhere((label) => label.val == newLabel.val);
+              final existingLabel = existingLabels.firstWhere(
+                (label) => label.val == newLabel.val,
+              );
 
-              // if the new label says that the existing one is negated or expired, replace the existing one
-              if (((newLabel.ver ?? 0) > (existingLabel.ver ?? 0) && newLabel.isNeg) ||
-                  existingLabel.exp != null && existingLabel.exp!.isBefore(DateTime.now())) {
+              // if new label says that existing one is negated or expired,
+              // replace the existing one
+              if (((newLabel.ver ?? 0) > (existingLabel.ver ?? 0) &&
+                      newLabel.isNeg) ||
+                  existingLabel.exp != null &&
+                      existingLabel.exp!.isBefore(DateTime.now())) {
                 existingLabels.remove(existingLabel);
                 return (
                   postLabels: [...existingLabels, newLabel],
@@ -225,14 +250,23 @@ class FeedNotifier extends _$FeedNotifier {
         );
       }
 
-      final filteredPosts = await _filterHiddenPosts(postsWithMergedLabels, extraInfo);
+      final filteredPosts = await _filterHiddenPosts(
+        postsWithMergedLabels,
+        extraInfo,
+      );
 
       if (filteredPosts.isEmpty) {
-        state = state.copyWith(cursor: cursor, extraInfo: extraInfo, loadingFirstLoad: false);
+        state = state.copyWith(
+          cursor: cursor,
+          extraInfo: extraInfo,
+          loadingFirstLoad: false,
+        );
         return;
       }
 
-      final updatedPosts = replaceExisting ? filteredPosts : [...state.loadedPosts, ...filteredPosts];
+      final updatedPosts = replaceExisting
+          ? filteredPosts
+          : [...state.loadedPosts, ...filteredPosts];
       state = state.copyWith(
         loadedPosts: updatedPosts,
         cursor: cursor,
@@ -247,19 +281,27 @@ class FeedNotifier extends _$FeedNotifier {
             post: post,
             feed: _feed,
             onComplete: (task) => _logger.d('Media cached for ${task.uri}'),
-            onError: (task, error, stackTrace) =>
-                _logger.e('Error caching media for ${task.uri}: $error', error: error, stackTrace: stackTrace),
+            onError: (task, error, stackTrace) => _logger.e(
+              'Error caching media for ${task.uri}: $error',
+              error: error,
+              stackTrace: stackTrace,
+            ),
           ),
         );
       }
     } catch (e, stackTrace) {
-      _logger.e('Error while processing fetched posts: $e', stackTrace: stackTrace);
+      _logger.e(
+        'Error while processing fetched posts: $e',
+        stackTrace: stackTrace,
+      );
       // Ensure loadingFirstLoad is set to false even on error
       state = state.copyWith(loadingFirstLoad: false, error: true);
     }
   }
 
-  Future<({int count, List<PostView> posts, String? cursor})> fetch({int? limit}) async {
+  Future<({int count, List<PostView> posts, String? cursor})> fetch({
+    int? limit,
+  }) async {
     final pageLimit = limit ?? FeedState.fetchLimit;
 
     // Get labelers for the header
@@ -280,7 +322,12 @@ class FeedNotifier extends _$FeedNotifier {
       labelerDids = [modDid];
     }
 
-    final feedView = await _feedRepository.getFeed(_feed, limit: pageLimit, cursor: state.cursor, labelerDids: labelerDids);
+    final feedView = await _feedRepository.getFeed(
+      _feed,
+      limit: pageLimit,
+      cursor: state.cursor,
+      labelerDids: labelerDids,
+    );
 
     // Extract PostView from FeedViewPost items (they're already hydrated)
     final posts = <PostView>[];
@@ -294,7 +341,10 @@ class FeedNotifier extends _$FeedNotifier {
     return (count: feedView.feed.length, posts: posts, cursor: feedView.cursor);
   }
 
-  Future<void> _maybeFetchNextBatch({int? limit, bool replaceExisting = false}) async {
+  Future<void> _maybeFetchNextBatch({
+    int? limit,
+    bool replaceExisting = false,
+  }) async {
     if (_isFetching || state.isEndOfNetworkFeed) {
       return;
     }
@@ -313,14 +363,20 @@ class FeedNotifier extends _$FeedNotifier {
         if (fetchedPosts.isEmpty) {
           if (fetchedCount == 0 || cursor == null) {
             await endOfNetworkFeed();
-            state = state.copyWith(loadingFirstLoad: false, isEndOfNetworkFeed: true);
+            state = state.copyWith(
+              loadingFirstLoad: false,
+              isEndOfNetworkFeed: true,
+            );
             break;
           }
           if (fetchedCount > 0) {
             consecutiveEmptyResults++;
             if (consecutiveEmptyResults >= maxConsecutiveEmpty) {
               await endOfNetworkFeed();
-              state = state.copyWith(loadingFirstLoad: false, isEndOfNetworkFeed: true);
+              state = state.copyWith(
+                loadingFirstLoad: false,
+                isEndOfNetworkFeed: true,
+              );
               break;
             }
           }
@@ -334,14 +390,21 @@ class FeedNotifier extends _$FeedNotifier {
         if (newPosts.isEmpty) {
           if (fetchedCount == 0 || cursor == null) {
             await endOfNetworkFeed();
-            state = state.copyWith(loadingFirstLoad: false, isEndOfNetworkFeed: true);
+            state = state.copyWith(
+              loadingFirstLoad: false,
+              isEndOfNetworkFeed: true,
+            );
             break;
           }
           state = state.copyWith(cursor: cursor, loadingFirstLoad: false);
           continue;
         }
 
-        await _processFetchedPosts(newPosts, cursor: cursor, replaceExisting: replaceExisting);
+        await _processFetchedPosts(
+          newPosts,
+          cursor: cursor,
+          replaceExisting: replaceExisting,
+        );
         break;
       }
     } catch (e, stackTrace) {
@@ -365,8 +428,12 @@ class FeedNotifier extends _$FeedNotifier {
 
   Future<void> scrollDown() async {
     if (state.error) return;
-    if (_lastErrorTime != null && DateTime.now().difference(_lastErrorTime!) < _errorCooldown) return;
-    if (state.length - state.index < FeedState.loadLimit && !state.isEndOfNetworkFeed) {
+    if (_lastErrorTime != null &&
+        DateTime.now().difference(_lastErrorTime!) < _errorCooldown) {
+      return;
+    }
+    if (state.length - state.index < FeedState.loadLimit &&
+        !state.isEndOfNetworkFeed) {
       try {
         await _maybeFetchNextBatch();
       } catch (_) {
@@ -384,7 +451,9 @@ class FeedNotifier extends _$FeedNotifier {
 
   Future<void> refreshPost(AtUri uri) async {
     try {
-      final posts = await _feedRepository.getPosts([uri], bluesky: _shouldUseBlueskyAPI());
+      final posts = await _feedRepository.getPosts([
+        uri,
+      ], bluesky: _shouldUseBlueskyAPI());
       if (posts.isEmpty) return;
       replacePost(posts.first);
     } catch (e, stackTrace) {
@@ -393,7 +462,9 @@ class FeedNotifier extends _$FeedNotifier {
   }
 
   void replacePost(PostView updatedPost) {
-    final index = state.loadedPosts.indexWhere((post) => post.uri == updatedPost.uri);
+    final index = state.loadedPosts.indexWhere(
+      (post) => post.uri == updatedPost.uri,
+    );
     if (index == -1) {
       return;
     }
@@ -411,7 +482,9 @@ class FeedNotifier extends _$FeedNotifier {
     final updatedPosts = [...state.loadedPosts]..removeAt(index);
 
     // Clean up extraInfo for the removed post
-    final updatedExtraInfo = LinkedHashMap<AtUri, ({List<Label> postLabels})>.from(state.extraInfo)..remove(postToRemove.uri);
+    final updatedExtraInfo =
+        LinkedHashMap<AtUri, ({List<Label> postLabels})>.from(state.extraInfo)
+          ..remove(postToRemove.uri);
 
     // Adjust current index: if we removed a post before current position,
     // decrement index to stay on the same visual post
@@ -430,7 +503,8 @@ class FeedNotifier extends _$FeedNotifier {
     for (final label in postLabels) {
       try {
         final labelPreference = await settings.getLabelPreference(label.val);
-        if (labelPreference.setting == Setting.hide || labelPreference.adultOnly) {
+        if (labelPreference.setting == Setting.hide ||
+            labelPreference.adultOnly) {
           _logger.d('Hiding post $uri due to label: ${label.val}');
           return true;
         }
@@ -442,7 +516,7 @@ class FeedNotifier extends _$FeedNotifier {
     return false;
   }
 
-  /// Filters posts based on label preferences, removing posts that should be hidden
+  /// Filters based on label preferences, removing posts that should be hidden
   Future<List<PostView>> _filterHiddenPosts(
     List<PostView> posts,
     LinkedHashMap<AtUri, ({List<Label> postLabels})> extraInfo,
@@ -452,7 +526,10 @@ class FeedNotifier extends _$FeedNotifier {
     for (final post in posts) {
       final postExtraInfo = extraInfo[post.uri];
       if (postExtraInfo != null) {
-        final shouldHide = await _shouldHidePost(post.uri, postExtraInfo.postLabels);
+        final shouldHide = await _shouldHidePost(
+          post.uri,
+          postExtraInfo.postLabels,
+        );
         if (!shouldHide) {
           filteredPosts.add(post);
         }

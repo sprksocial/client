@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:pro_image_editor/pro_image_editor.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 class DemoBuildStickers extends StatefulWidget {
   const DemoBuildStickers({
@@ -60,7 +60,9 @@ class _DemoBuildStickersState extends State<DemoBuildStickers> {
           ),
           Flexible(
             child: AnimatedSlide(
-              offset: _isSwitchingCategory ? const Offset(0, 0.03) : Offset.zero,
+              offset: _isSwitchingCategory
+                  ? const Offset(0, 0.03)
+                  : Offset.zero,
               duration: const Duration(milliseconds: 160),
               curve: Curves.easeOut,
               child: AnimatedOpacity(
@@ -361,7 +363,9 @@ class _StickerContent extends StatelessWidget {
         loadingBuilder: (context, child, loadingProgress) {
           if (loadingProgress == null) return child;
           final expected = loadingProgress.expectedTotalBytes;
-          final progress = expected == null ? null : loadingProgress.cumulativeBytesLoaded / expected;
+          final progress = expected == null
+              ? null
+              : loadingProgress.cumulativeBytesLoaded / expected;
           return ColoredBox(
             color: AppColors.grey700,
             child: Center(
@@ -381,7 +385,11 @@ class _StickerContent extends StatelessWidget {
           return const ColoredBox(
             color: AppColors.grey700,
             child: Center(
-              child: Icon(Icons.broken_image_outlined, color: Colors.white70, size: 20),
+              child: Icon(
+                Icons.broken_image_outlined,
+                color: Colors.white70,
+                size: 20,
+              ),
             ),
           );
         },

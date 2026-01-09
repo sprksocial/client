@@ -2,10 +2,14 @@ import 'dart:io';
 
 import 'package:auto_route/auto_route.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
 
 class AltTextEditorDialog extends StatefulWidget {
-  const AltTextEditorDialog({required this.initialAltText, this.imageFile, super.key});
+  const AltTextEditorDialog({
+    required this.initialAltText,
+    this.imageFile,
+    super.key,
+  });
   final String? imageFile;
   final String initialAltText;
 
@@ -34,8 +38,12 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
     final isDarkMode = theme.brightness == Brightness.dark;
     final backgroundColor = isDarkMode ? AppColors.nearBlack : Colors.white;
     final textColor = isDarkMode ? AppColors.textLight : AppColors.textPrimary;
-    final inputBackgroundColor = isDarkMode ? Colors.grey.shade800 : Colors.grey.shade200;
-    final borderColor = isDarkMode ? AppColors.deepPurple : AppColors.lightLavender;
+    final inputBackgroundColor = isDarkMode
+        ? Colors.grey.shade800
+        : Colors.grey.shade200;
+    final borderColor = isDarkMode
+        ? AppColors.deepPurple
+        : AppColors.lightLavender;
     final textLength = _controller.text.runes.length;
 
     return Dialog(
@@ -52,7 +60,12 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
                 borderRadius: BorderRadius.circular(12),
                 child: widget.imageFile == null
                     ? const SizedBox.shrink()
-                    : Image.file(File(widget.imageFile!), width: 220, height: 220, fit: BoxFit.cover),
+                    : Image.file(
+                        File(widget.imageFile!),
+                        width: 220,
+                        height: 220,
+                        fit: BoxFit.cover,
+                      ),
               ),
               const SizedBox(height: 20),
               Container(
@@ -70,7 +83,10 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
                     hintText: 'Add alt text',
                     hintStyle: TextStyle(color: textColor.withAlpha(100)),
                     border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 12,
+                    ),
                     counterText: '',
                   ),
                   onChanged: (_) => setState(() {}),
@@ -79,20 +95,31 @@ class _AltTextEditorDialogState extends State<AltTextEditorDialog> {
               const SizedBox(height: 8),
               Align(
                 alignment: Alignment.centerRight,
-                child: Text('$textLength/1000', style: TextStyle(color: textColor.withAlpha(130), fontSize: 12)),
+                child: Text(
+                  '$textLength/1000',
+                  style: TextStyle(
+                    color: textColor.withAlpha(130),
+                    fontSize: 12,
+                  ),
+                ),
               ),
               const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(onPressed: () => context.router.maybePop(_controller.text), child: const Text('Cancel')),
+                  TextButton(
+                    onPressed: () => context.router.maybePop(_controller.text),
+                    child: const Text('Cancel'),
+                  ),
                   const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: () => context.router.maybePop(_controller.text),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: AppColors.primary,
                       foregroundColor: AppColors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
                     ),
                     child: const Text('Save'),
                   ),

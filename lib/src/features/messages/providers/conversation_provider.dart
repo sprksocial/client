@@ -1,10 +1,10 @@
 import 'package:get_it/get_it.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/network/atproto/atproto.dart';
-import 'package:sparksocial/src/core/network/messages/data/models/message_models.dart';
-import 'package:sparksocial/src/core/network/messages/data/repository/messages_repository.dart';
-import 'package:sparksocial/src/features/messages/providers/conversation_state.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/network/atproto/atproto.dart';
+import 'package:spark/src/core/network/messages/data/models/message_models.dart';
+import 'package:spark/src/core/network/messages/data/repository/messages_repository.dart';
+import 'package:spark/src/features/messages/providers/conversation_state.dart';
 
 part 'conversation_provider.g.dart';
 
@@ -20,16 +20,28 @@ class Conversation extends _$Conversation {
     // Load conversation and initial messages
     final convo = await repo.getConversation(convoId);
     final meDid = GetIt.I<AuthRepository>().session?.did;
-    final otherDid = convo.members.firstWhere((d) => d != meDid, orElse: () => convo.members.first);
+    final otherDid = convo.members.firstWhere(
+      (d) => d != meDid,
+      orElse: () => convo.members.first,
+    );
     final other = await sprk.actor.getProfile(otherDid);
 
     final result = await repo.getMessages(convoId, limit: 50);
     _oldestCursor = result.cursor;
 
-    return ConversationState(convo: convo, other: other, messages: result.messages, cursor: _oldestCursor);
+    return ConversationState(
+      convo: convo,
+      other: other,
+      messages: result.messages,
+      cursor: _oldestCursor,
+    );
   }
 
-  Future<MessageView> sendMessage(String convoId, String text, {String? embed}) async {
+  Future<MessageView> sendMessage(
+    String convoId,
+    String text, {
+    String? embed,
+  }) async {
     final repo = GetIt.I<MessagesRepository>();
     final current = state.value;
     if (current == null) throw StateError('Conversation not loaded');
@@ -50,9 +62,13 @@ class Conversation extends _$Conversation {
     final latest = await repo.getMessages(current.convo.id, limit: 50);
     // Merge by id
     final existingIds = {for (final m in current.messages) m.id};
-    final newOnes = latest.messages.where((m) => !existingIds.contains(m.id)).toList();
+    final newOnes = latest.messages
+        .where((m) => !existingIds.contains(m.id))
+        .toList();
     if (newOnes.isNotEmpty) {
-      state = AsyncValue.data(current.copyWith(messages: [...current.messages, ...newOnes]));
+      state = AsyncValue.data(
+        current.copyWith(messages: [...current.messages, ...newOnes]),
+      );
     }
   }
 

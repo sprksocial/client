@@ -1,5 +1,5 @@
 import 'package:atproto_core/atproto_core.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/graph_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/graph_models.dart';
 
 /// Interface for Graph-related API endpoints
 abstract class GraphRepository {
@@ -28,7 +28,7 @@ abstract class GraphRepository {
   /// Toggle follow status for a user
   ///
   /// [did] The DID of the user to toggle follow for
-  /// [currentFollowUri] The current follow URI if following, null if not following
+  /// [currentFollowUri] The follow URI if following, null if not
   /// Returns the follow URI if now following, null if unfollowed
   Future<String?> toggleFollow(String did, AtUri? currentFollowUri);
 

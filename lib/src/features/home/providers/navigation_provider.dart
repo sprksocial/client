@@ -1,5 +1,5 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:sparksocial/src/features/home/providers/navigation_state.dart';
+import 'package:spark/src/features/home/providers/navigation_state.dart';
 
 part 'navigation_provider.g.dart';
 

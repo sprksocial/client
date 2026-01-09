@@ -2,7 +2,7 @@ import 'package:auto_route/auto_route.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:sparksocial/src/core/network/atproto/data/models/feed_models.dart';
+import 'package:spark/src/core/network/atproto/data/models/feed_models.dart';
 import 'package:video_player/video_player.dart';
 
 @RoutePage()
@@ -20,7 +20,8 @@ class StoryPage extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _StoryPageState();
 }
 
-class _StoryPageState extends ConsumerState<StoryPage> with TickerProviderStateMixin {
+class _StoryPageState extends ConsumerState<StoryPage>
+    with TickerProviderStateMixin {
   VideoPlayerController? _videoController;
   bool _isVideoInitialized = false;
   bool _isImageLoaded = false;
@@ -39,7 +40,9 @@ class _StoryPageState extends ConsumerState<StoryPage> with TickerProviderStateM
   }
 
   void _updateLoadingState() {
-    final isLoading = _isVideoStory(widget.story) ? !_isVideoInitialized : !_isImageLoaded;
+    final isLoading = _isVideoStory(widget.story)
+        ? !_isVideoInitialized
+        : !_isImageLoaded;
 
     if (_isLoading != isLoading) {
       _isLoading = isLoading;
@@ -51,7 +54,9 @@ class _StoryPageState extends ConsumerState<StoryPage> with TickerProviderStateM
     if (_isVideoStory(widget.story)) {
       final videoUrl = _getVideoUrl(widget.story);
       if (videoUrl.isNotEmpty) {
-        _videoController = VideoPlayerController.networkUrl(Uri.parse(videoUrl));
+        _videoController = VideoPlayerController.networkUrl(
+          Uri.parse(videoUrl),
+        );
         try {
           await _videoController!.initialize();
           await _videoController!.setLooping(true);
@@ -132,7 +137,8 @@ class _StoryPageState extends ConsumerState<StoryPage> with TickerProviderStateM
       mediaContent = CachedNetworkImage(
         imageUrl: imageUrl,
         fit: BoxFit.cover,
-        progressIndicatorBuilder: (context, url, progress) => const Center(child: CircularProgressIndicator()),
+        progressIndicatorBuilder: (context, url, progress) =>
+            const Center(child: CircularProgressIndicator()),
         errorWidget: (context, url, error) {
           // Consider error state as "loaded" to avoid infinite loading
           WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:sparksocial/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
-import 'package:sparksocial/src/core/design_system/tokens/colors.dart';
+import 'package:spark/src/core/design_system/components/atoms/buttons/interactive_pressable.dart';
+import 'package:spark/src/core/design_system/tokens/colors.dart';
 
 class RecordingButton extends StatefulWidget {
   const RecordingButton({
@@ -17,7 +17,8 @@ class RecordingButton extends StatefulWidget {
   State<RecordingButton> createState() => _RecordingButtonState();
 }
 
-class _RecordingButtonState extends State<RecordingButton> with SingleTickerProviderStateMixin {
+class _RecordingButtonState extends State<RecordingButton>
+    with SingleTickerProviderStateMixin {
   late AnimationController _pulseController;
 
   @override
@@ -78,12 +79,15 @@ class _RecordingButtonState extends State<RecordingButton> with SingleTickerProv
               margin: EdgeInsets.all(widget.isRecording ? 8 : 4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: widget.isRecording ? AppColors.red500 : AppColors.greyWhite,
+                color: widget.isRecording
+                    ? AppColors.red500
+                    : AppColors.greyWhite,
                 boxShadow: widget.isRecording
                     ? [
                         BoxShadow(
                           color: AppColors.red500.withAlpha(
-                            (128 * (0.5 + 0.5 * _pulseController.value)).toInt(),
+                            (128 * (0.5 + 0.5 * _pulseController.value))
+                                .toInt(),
                           ),
                           blurRadius: 20,
                           spreadRadius: 4,

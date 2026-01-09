@@ -4,19 +4,22 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart' as riverpod;
 import 'package:fvp/fvp.dart' as fvp;
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository.dart';
-import 'package:sparksocial/src/core/auth/data/repositories/auth_repository_impl.dart';
-import 'package:sparksocial/src/core/di/service_locator.dart';
-import 'package:sparksocial/src/core/ui/theme/data/models/app_theme.dart';
-import 'package:sparksocial/src/core/utils/logging/logging.dart';
-import 'package:sparksocial/src/core/utils/logging/riverpod_logger.dart';
-import 'package:sparksocial/src/sprk_app.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository.dart';
+import 'package:spark/src/core/auth/data/repositories/auth_repository_impl.dart';
+import 'package:spark/src/core/di/service_locator.dart';
+import 'package:spark/src/core/ui/theme/data/models/app_theme.dart';
+import 'package:spark/src/core/utils/logging/logging.dart';
+import 'package:spark/src/core/utils/logging/riverpod_logger.dart';
+import 'package:spark/src/sprk_app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await dotenv.load();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
 
   // Force dark status bar and navigation bar
   SystemChrome.setSystemUIOverlayStyle(AppTheme.darkSystemUiStyle);
@@ -32,8 +35,15 @@ void main() async {
   await _initializeAuth();
 
   // Create a ProviderContainer with the Riverpod logger
-  final container = riverpod.ProviderContainer(observers: [SparkRiverpodLogger()]);
-  runApp(riverpod.UncontrolledProviderScope(container: container, child: const SprkApp()));
+  final container = riverpod.ProviderContainer(
+    observers: [SparkRiverpodLogger()],
+  );
+  runApp(
+    riverpod.UncontrolledProviderScope(
+      container: container,
+      child: const SprkApp(),
+    ),
+  );
 }
 
 /// Setup logging framework based on environment

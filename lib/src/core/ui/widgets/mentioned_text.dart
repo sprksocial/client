@@ -1,7 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:sparksocial/src/core/ui/foundation/colors.dart';
-import 'package:sparksocial/src/core/utils/text_formatter.dart';
+import 'package:spark/src/core/ui/foundation/colors.dart';
+import 'package:spark/src/core/utils/text_formatter.dart';
 
 /// A widget that displays text with clickable @mentions
 class MentionedText extends StatelessWidget {
@@ -43,10 +43,15 @@ class MentionedText extends StatelessWidget {
     final usernameMatches = TextFormatter.findUsernameMatches(text);
     final theme = Theme.of(context);
 
-    final defaultTextStyle = TextStyle(color: theme.colorScheme.onSurface, fontSize: 14);
+    final defaultTextStyle = TextStyle(
+      color: theme.colorScheme.onSurface,
+      fontSize: 14,
+    );
 
     final baseStyle = textStyle ?? defaultTextStyle;
-    final effectiveMentionStyle = mentionStyle ?? const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold);
+    final effectiveMentionStyle =
+        mentionStyle ??
+        const TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold);
 
     // Build text spans for mentions
     final spans = <InlineSpan>[];
@@ -56,7 +61,12 @@ class MentionedText extends StatelessWidget {
 
     for (final match in usernameMatches) {
       if (match.start > lastEnd) {
-        spans.add(TextSpan(text: text.substring(lastEnd, match.start), style: baseStyle));
+        spans.add(
+          TextSpan(
+            text: text.substring(lastEnd, match.start),
+            style: baseStyle,
+          ),
+        );
       }
 
       final username = match.group(0)!;
@@ -64,7 +74,8 @@ class MentionedText extends StatelessWidget {
         TextSpan(
           text: username,
           style: effectiveMentionStyle,
-          recognizer: TapGestureRecognizer()..onTap = () => onUsernameTap(username),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () => onUsernameTap(username),
         ),
       );
 
