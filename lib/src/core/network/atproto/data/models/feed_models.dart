@@ -1,12 +1,10 @@
 import 'package:atproto/com_atproto_label_defs.dart';
 import 'package:atproto_core/atproto_core.dart';
-import 'package:bluesky/app_bsky_feed_defs.dart' as bsky_defs;
 import 'package:bluesky/app_bsky_feed_getpostthread.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:sparksocial/src/core/network/atproto/data/adapters/bsky/feed_adapter.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
-import 'package:sparksocial/src/core/utils/json_utils.dart';
 import 'package:sparksocial/src/core/utils/uri_converter.dart';
 
 part 'feed_models.freezed.dart';
@@ -592,7 +590,17 @@ sealed class EmbedViewRecord with _$EmbedViewRecord {
     required BlockedAuthor author,
   }) = EmbedViewRecord_Blocked;
 
-  factory EmbedViewRecord.fromJson(Map<String, dynamic> json) => _$EmbedViewRecordFromJson(json);
+  factory EmbedViewRecord.fromJson(Map<String, dynamic> json) {
+    // Handle unsupported record embed types by returning notFound (uses adapter's list)
+    final type = json[r'$type'] as String?;
+    if (BskyFeedAdapter.isUnsupportedEmbedType(type)) {
+      return EmbedViewRecord.notFound(
+        uri: AtUri.parse(json['uri'] as String? ?? 'at://unknown'),
+        notFound: true,
+      );
+    }
+    return _$EmbedViewRecordFromJson(json);
+  }
 }
 
 @freezed
@@ -832,212 +840,12 @@ sealed class Thread with _$Thread {
 
   factory Thread.fromJson(Map<String, dynamic> json) => _$ThreadFromJson(json);
 
-  static Thread? _convertParentToThread(bsky_defs.UThreadViewPostParent parent, AtUri uri) {
-    switch (parent) {
-      case bsky_defs.UThreadViewPostParentThreadViewPost(:final data):
-        return Thread.fromBsky(
-          thread: UFeedGetPostThreadThread.threadViewPost(data: data),
-          uri: uri,
-        );
-      case bsky_defs.UThreadViewPostParentNotFoundPost(:final data):
-        return Thread.notFoundPost(uri: data.uri, notFound: true);
-      case bsky_defs.UThreadViewPostParentBlockedPost(:final data):
-        return Thread.blockedPost(uri: data.uri, blocked: true, author: BlockedAuthor.fromJson(data.author.toJson()));
-      case bsky_defs.UThreadViewPostParentUnknown():
-        return null;
-    }
-  }
-
+  /// Convert a Bluesky thread to Spark Thread format
+  ///
+  /// Delegates to [bskyFeedAdapter.convertBskyThreadToSparkThread] which handles
+  /// all Bluesky-specific conversion logic.
   factory Thread.fromBsky({required UFeedGetPostThreadThread thread, required AtUri uri}) {
-    switch (thread) {
-      case UFeedGetPostThreadThreadThreadViewPost(:final data):
-        try {
-          var embed = data.post.embed;
-          if (data.post.embed is bsky_defs.UPostViewEmbedEmbedExternalView) {
-            embed = null;
-          }
-          final postJson = data.post.copyWith(embed: embed);
-
-          // Create PostView with deep copy - required because we modify nested structures like embeds
-          final postViewJson = deepCopyJson(postJson.toJson());
-
-          // Ensure required fields are not null
-          if (postViewJson['cid'] == null) {
-            throw Exception('Post cid is null');
-          }
-          if (postViewJson['uri'] == null) {
-            throw Exception('Post uri is null');
-          }
-          if (postViewJson['author'] == null) {
-            throw Exception('Post author is null');
-          }
-          if (postViewJson['record'] == null) {
-            throw Exception('Post record is null');
-          }
-          if (postViewJson['indexedAt'] == null) {
-            throw Exception('Post indexedAt is null');
-          }
-
-          // Ensure author required fields are not null
-          final authorJson = postViewJson['author'] as Map<String, dynamic>;
-          if (authorJson['did'] == null) {
-            throw Exception('Author did is null');
-          }
-          if (authorJson['handle'] == null) {
-            throw Exception('Author handle is null');
-          }
-
-          // Check embed data if present - this is where the error is occurring
-          if (postViewJson['embed'] != null) {
-            final embedJson = postViewJson['embed'] as Map<String, dynamic>;
-
-            // Check for external embed without required cid
-            if (embedJson[r'$type'] == 'app.bsky.embed.external#view') {
-              if (embedJson['cid'] == null) {
-                postViewJson.remove('embed');
-              }
-            }
-
-            // If it's a record embed, check the record data
-            if (embedJson[r'$type'] == 'app.bsky.embed.record#view' && embedJson['record'] != null) {
-              final recordJson = embedJson['record'] as Map<String, dynamic>;
-
-              // Check required fields for EmbedViewBskyRecordViewRecord
-              if (recordJson[r'$type'] == 'app.bsky.embed.record#viewRecord') {
-                if (recordJson['cid'] == null) {
-                  postViewJson.remove('embed');
-                }
-                if (recordJson['uri'] == null) {
-                  postViewJson.remove('embed');
-                }
-                if (recordJson['author'] == null) {
-                  postViewJson.remove('embed');
-                }
-                if (recordJson['value'] == null) {
-                  postViewJson.remove('embed');
-                }
-                if (recordJson['indexedAt'] == null) {
-                  postViewJson.remove('embed');
-                }
-
-                // Check nested embeds array in the record value
-                if (recordJson['embeds'] != null && recordJson['embeds'] is List) {
-                  final embedsList = recordJson['embeds'] as List;
-                  var shouldRemoveEmbed = false;
-
-                  for (final nestedEmbed in embedsList) {
-                    if (nestedEmbed is Map<String, dynamic>) {
-                      // Check external embeds in the nested embeds
-                      if (nestedEmbed[r'$type'] == 'app.bsky.embed.external#view' && nestedEmbed['cid'] == null) {
-                        shouldRemoveEmbed = true;
-                        break;
-                      }
-                    }
-                  }
-
-                  if (shouldRemoveEmbed) {
-                    postViewJson.remove('embed');
-                  }
-                }
-              }
-            }
-
-            // Enhanced check for recordWithMedia embeds
-            if (embedJson[r'$type'] == 'app.bsky.embed.recordWithMedia#view') {
-              // Check the record part
-              if (embedJson['record'] != null) {
-                final recordEmbedJson = embedJson['record'] as Map<String, dynamic>;
-                if (recordEmbedJson['record'] != null) {
-                  final recordJson = recordEmbedJson['record'] as Map<String, dynamic>;
-
-                  // Check if it's a viewRecord and has required fields
-                  if (recordJson[r'$type'] == 'app.bsky.embed.record#viewRecord') {
-                    if (recordJson['uri'] == null ||
-                        recordJson['cid'] == null ||
-                        recordJson['author'] == null ||
-                        recordJson['value'] == null ||
-                        recordJson['indexedAt'] == null) {
-                      postViewJson.remove('embed');
-                    }
-                  }
-                }
-              }
-            }
-
-            // Additional safety check - if we have any embed that might contain a record view, validate it
-            void validateRecordViewInEmbed(Map<String, dynamic> embedData, String path) {
-              if (embedData[r'$type'] == 'app.bsky.embed.record#viewRecord') {
-                if (embedData['uri'] == null ||
-                    embedData['cid'] == null ||
-                    embedData['author'] == null ||
-                    embedData['value'] == null ||
-                    embedData['indexedAt'] == null) {
-                  postViewJson.remove('embed');
-                  return;
-                }
-              }
-
-              // Recursively check nested structures
-              embedData.forEach((key, value) {
-                if (value is Map<String, dynamic>) {
-                  validateRecordViewInEmbed(value, '$path.$key');
-                } else if (value is List) {
-                  for (var i = 0; i < value.length; i++) {
-                    if (value[i] is Map<String, dynamic>) {
-                      validateRecordViewInEmbed(value[i] as Map<String, dynamic>, '$path.$key[$i]');
-                    }
-                  }
-                }
-              });
-            }
-
-            // Run the validation on the entire embed structure
-            if (postViewJson['embed'] != null) {
-              validateRecordViewInEmbed(postViewJson['embed'] as Map<String, dynamic>, 'embed');
-            }
-          }
-
-          // Convert from Bluesky format to Spark format
-          bskyFeedAdapter.convertPostViewJson(postViewJson);
-
-          final thread = Thread.threadViewPost(
-            post: ThreadPost.post(post: PostView.fromJson(postViewJson)),
-            parent: data.parent != null ? _convertParentToThread(data.parent!, uri) : null,
-            replies: data.replies
-                ?.map((reply) {
-                  switch (reply) {
-                    case bsky_defs.UThreadViewPostRepliesThreadViewPost(:final data):
-                      return Thread.fromBsky(
-                        thread: UFeedGetPostThreadThread.threadViewPost(data: data),
-                        uri: data.post.uri,
-                      );
-                    case bsky_defs.UThreadViewPostRepliesNotFoundPost(:final data):
-                      return Thread.notFoundPost(uri: data.uri, notFound: true);
-                    case bsky_defs.UThreadViewPostRepliesBlockedPost(:final data):
-                      return Thread.blockedPost(
-                        uri: data.uri,
-                        blocked: true,
-                        author: BlockedAuthor.fromJson(data.author.toJson()),
-                      );
-                    case bsky_defs.UThreadViewPostRepliesUnknown():
-                      // Skip unknown reply types by returning null
-                      return null;
-                  }
-                })
-                .whereType<Thread>()
-                .toList(),
-          );
-          return thread;
-        } catch (e) {
-          rethrow;
-        }
-      case UFeedGetPostThreadThreadNotFoundPost(:final data):
-        return Thread.notFoundPost(uri: data.uri, notFound: true);
-      case UFeedGetPostThreadThreadBlockedPost(:final data):
-        return Thread.blockedPost(uri: data.uri, blocked: true, author: BlockedAuthor.fromJson(data.author.toJson()));
-      default:
-        throw Exception('Unsupported thread type: ${thread.runtimeType}');
-    }
+    return bskyFeedAdapter.convertBskyThreadToSparkThread(thread: thread, uri: uri);
   }
 
   factory Thread.fromSparkFlatList({required List<dynamic> threadItems}) {

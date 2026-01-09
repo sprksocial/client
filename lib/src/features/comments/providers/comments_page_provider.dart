@@ -10,15 +10,20 @@ part 'comments_page_provider.g.dart';
 
 @riverpod
 class CommentsPage extends _$CommentsPage {
-  late final FeedRepository feedRepository;
+  FeedRepository get feedRepository => GetIt.instance<SprkRepository>().feed;
 
   @override
   Future<CommentsPageState> build({required AtUri postUri}) async {
-    feedRepository = GetIt.instance<SprkRepository>().feed;
     final isBlueskyPost = postUri.collection.toString().startsWith('app.bsky.feed.post');
+    const timeoutDuration = Duration(seconds: 30);
 
+    // First attempt to get the thread directly with timeout
     try {
-      final thread = await feedRepository.getThread(postUri, bluesky: isBlueskyPost, depth: 1);
+      final thread = await feedRepository
+          .getThread(postUri, bluesky: isBlueskyPost, depth: 1)
+          .timeout(timeoutDuration, onTimeout: () {
+        throw Exception('Request timed out while loading thread for $postUri');
+      });
       switch (thread) {
         case ThreadViewPost():
           return CommentsPageState(thread: thread);
@@ -27,20 +32,35 @@ class CommentsPage extends _$CommentsPage {
         case BlockedPost():
           throw Exception('Post is blocked');
       }
-    } catch (e) {
-      final networkPost = await feedRepository.getPosts([postUri], bluesky: isBlueskyPost, filter: false);
-      if (networkPost.isEmpty) {
-        throw Exception('No posts found at $postUri');
-      }
+    } catch (firstError) {
+      // If getThread fails, verify the post exists and retry once with timeout
+      try {
+        final networkPost = await feedRepository
+            .getPosts([postUri], bluesky: isBlueskyPost, filter: false)
+            .timeout(timeoutDuration, onTimeout: () {
+          throw Exception('Request timed out while verifying post exists');
+        });
+        if (networkPost.isEmpty) {
+          throw Exception('No posts found at $postUri');
+        }
 
-      final thread = await feedRepository.getThread(postUri, bluesky: isBlueskyPost, depth: 1);
-      switch (thread) {
-        case ThreadViewPost():
-          return CommentsPageState(thread: thread);
-        case NotFoundPost():
-          throw Exception('Post not found');
-        case BlockedPost():
-          throw Exception('Post is blocked');
+        // Retry getThread once after confirming post exists
+        final thread = await feedRepository
+            .getThread(postUri, bluesky: isBlueskyPost, depth: 1)
+            .timeout(timeoutDuration, onTimeout: () {
+          throw Exception('Request timed out while retrying thread load for $postUri');
+        });
+        switch (thread) {
+          case ThreadViewPost():
+            return CommentsPageState(thread: thread);
+          case NotFoundPost():
+            throw Exception('Post not found');
+          case BlockedPost():
+            throw Exception('Post is blocked');
+        }
+      } catch (_) {
+        // Re-throw the original error to prevent infinite retry loops
+        throw firstError;
       }
     }
   }
@@ -54,7 +74,6 @@ class CommentsPage extends _$CommentsPage {
     List<XFile>? imageFiles,
     Map<String, String>? altTexts,
   }) async {
-    final feedRepository = GetIt.instance<SprkRepository>().feed;
 
     // We need the current state to determine if the post is a sprk or bsky post.
     // If the state is not loaded, we cannot proceed.

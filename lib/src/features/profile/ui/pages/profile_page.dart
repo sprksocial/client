@@ -93,11 +93,9 @@ class _ProfilePageState extends ConsumerState<ProfilePage> {
       case 0:
         // First tab - default profile grid content (not a route)
         tabWidget = ProfileGridTab(profileUri: profileUri);
-        break;
       case 1:
         // Second tab - reposts
         tabWidget = ProfileRepostsTab(profileUri: profileUri);
-        break;
       default:
         // Fallback to first tab
         tabWidget = ProfileGridTab(profileUri: profileUri);

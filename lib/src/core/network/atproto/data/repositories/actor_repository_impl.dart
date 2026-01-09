@@ -4,6 +4,7 @@ import 'package:atproto/core.dart';
 import 'package:bluesky/bluesky.dart' as bsky;
 import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
+import 'package:sparksocial/src/core/network/atproto/data/adapters/bsky/actor_adapter.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/actor_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
@@ -46,9 +47,9 @@ class ActorRepositoryImpl implements ActorRepository {
           ..e('Failed to retrieve profile for DID: $did', error: e)
           ..i('Trying to get profile from bluesky');
         final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
-        final profile = await bluesky.actor.getProfile(actor: did);
+        final profile = await bskyActorAdapter.getProfileFromBluesky(bluesky, did);
         _logger.d('Profile retrieved successfully from bluesky');
-        return ProfileViewDetailed.fromJson(profile.toJson());
+        return profile;
       }
     });
   }
@@ -167,9 +168,9 @@ class ActorRepositoryImpl implements ActorRepository {
           ..e('Failed to retrieve profile for DIDs: $dids', error: e)
           ..i('Trying to get profiles from bluesky');
         final bluesky = bsky.Bluesky.fromSession(_client.authRepository.session!);
-        final profiles = await bluesky.actor.getProfiles(actors: dids);
+        final profiles = await bskyActorAdapter.getProfilesFromBluesky(bluesky, dids);
         _logger.d('Profiles retrieved successfully from bluesky');
-        return profiles.data.profiles.map((p) => ProfileViewDetailed.fromJson(p.toJson())).toList();
+        return profiles;
       }
     });
   }

@@ -5,6 +5,7 @@ import 'package:atproto/com_atproto_repo_strongref.dart';
 import 'package:atproto/com_atproto_services.dart';
 import 'package:atproto/core.dart';
 import 'package:get_it/get_it.dart';
+import 'package:sparksocial/src/core/network/atproto/data/adapters/bsky/repo_adapter.dart';
 import 'package:sparksocial/src/core/network/atproto/data/models/record_models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/repo_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository_impl.dart';
@@ -108,27 +109,19 @@ class RepoRepositoryImpl implements RepoRepository {
 
       // Delete cross-posted Bluesky counterpart if it exists (only for posts)
       if (!skipBskyCrosspostCleanup) {
-        try {
-          final did = uri.hostname;
-          final rkey = uri.rkey;
-          final blueskyUri = AtUri.parse('at://$did/app.bsky.feed.post/$rkey');
+        final blueskyUri = bskyRepoAdapter.buildBlueskyCounterpartUri(uri);
+        _logger.d('Attempting to delete Bluesky counterpart post: $blueskyUri');
 
-          _logger.d('Attempting to delete Bluesky counterpart post: $blueskyUri');
+        final deleted = await bskyRepoAdapter.deleteBlueskyCounterpart(
+          ({required repo, required collection, required rkey}) =>
+              atproto.repo.deleteRecord(repo: repo, collection: collection, rkey: rkey),
+          uri,
+        );
 
-          try {
-            await atproto.repo.deleteRecord(
-              repo: blueskyUri.hostname,
-              collection: blueskyUri.collection.toString(),
-              rkey: blueskyUri.rkey,
-            );
-            _logger.d('Bluesky counterpart post deleted successfully');
-          } catch (e) {
-            // Ignore errors like 404 – it simply means the counterpart does not exist.
-            _logger.w('Bluesky counterpart post not found or deletion failed', error: e);
-          }
-        } catch (e) {
-          // Best-effort only – do not fail original deletion.
-          _logger.w('Failed during Bluesky cross-post deletion cleanup', error: e);
+        if (deleted) {
+          _logger.d('Bluesky counterpart post deleted successfully');
+        } else {
+          _logger.w('Bluesky counterpart post not found or deletion failed');
         }
       }
     });
