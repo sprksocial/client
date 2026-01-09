@@ -21,9 +21,12 @@ class CommentsPage extends _$CommentsPage {
     try {
       final thread = await feedRepository
           .getThread(postUri, bluesky: isBlueskyPost, depth: 1)
-          .timeout(timeoutDuration, onTimeout: () {
-        throw Exception('Request timed out while loading thread for $postUri');
-      });
+          .timeout(
+            timeoutDuration,
+            onTimeout: () {
+              throw Exception('Request timed out while loading thread for $postUri');
+            },
+          );
       switch (thread) {
         case ThreadViewPost():
           return CommentsPageState(thread: thread);
@@ -37,9 +40,12 @@ class CommentsPage extends _$CommentsPage {
       try {
         final networkPost = await feedRepository
             .getPosts([postUri], bluesky: isBlueskyPost, filter: false)
-            .timeout(timeoutDuration, onTimeout: () {
-          throw Exception('Request timed out while verifying post exists');
-        });
+            .timeout(
+              timeoutDuration,
+              onTimeout: () {
+                throw Exception('Request timed out while verifying post exists');
+              },
+            );
         if (networkPost.isEmpty) {
           throw Exception('No posts found at $postUri');
         }
@@ -47,9 +53,12 @@ class CommentsPage extends _$CommentsPage {
         // Retry getThread once after confirming post exists
         final thread = await feedRepository
             .getThread(postUri, bluesky: isBlueskyPost, depth: 1)
-            .timeout(timeoutDuration, onTimeout: () {
-          throw Exception('Request timed out while retrying thread load for $postUri');
-        });
+            .timeout(
+              timeoutDuration,
+              onTimeout: () {
+                throw Exception('Request timed out while retrying thread load for $postUri');
+              },
+            );
         switch (thread) {
           case ThreadViewPost():
             return CommentsPageState(thread: thread);
@@ -74,7 +83,6 @@ class CommentsPage extends _$CommentsPage {
     List<XFile>? imageFiles,
     Map<String, String>? altTexts,
   }) async {
-
     // We need the current state to determine if the post is a sprk or bsky post.
     // If the state is not loaded, we cannot proceed.
     final currentState = state.value;

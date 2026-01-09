@@ -1,11 +1,12 @@
 import 'package:atproto_core/atproto_core.dart';
 
 /// Callback type for deleting a record
-typedef DeleteRecordCallback = Future<void> Function({
-  required String repo,
-  required String collection,
-  required String rkey,
-});
+typedef DeleteRecordCallback =
+    Future<void> Function({
+      required String repo,
+      required String collection,
+      required String rkey,
+    });
 
 /// Adapter for Bluesky repository operations
 ///
