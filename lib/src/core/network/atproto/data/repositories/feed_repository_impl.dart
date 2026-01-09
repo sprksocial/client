@@ -18,7 +18,6 @@ import 'package:sparksocial/src/core/network/atproto/data/adapters/bsky/feed_ada
 import 'package:sparksocial/src/core/network/atproto/data/models/models.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/feed_repository.dart';
 import 'package:sparksocial/src/core/network/atproto/data/repositories/sprk_repository.dart';
-import 'package:sparksocial/src/core/utils/json_utils.dart';
 import 'package:sparksocial/src/core/utils/logging/log_service.dart';
 import 'package:sparksocial/src/core/utils/logging/logger.dart';
 
@@ -43,13 +42,6 @@ class FeedRepositoryImpl implements FeedRepository {
     return feedViewPost.map(
       post: (p) => p.post.hasSupportedMedia,
       reply: (r) => r.reply.media != null,
-    );
-  }
-
-  bool _feedViewPostIsReply(FeedViewPost feedViewPost) {
-    return feedViewPost.map(
-      post: (p) => p.reply != null, // If post has reply field, it's a reply
-      reply: (r) => true, // Reply variant is always a reply
     );
   }
 
@@ -125,19 +117,11 @@ class FeedRepositoryImpl implements FeedRepository {
       final blueskyClient = bsky.Bluesky.fromSession(_client.authRepository.session!);
       final posts = await blueskyClient.feed.getPosts(uris: uris);
 
-      // Convert Bluesky posts using adapter
-      // Create mutable copies to avoid "Cannot modify unmodifiable map" errors
-      final rawPosts = posts.data.posts.map((post) {
-        final json = post.toJson();
-        return deepCopyJson(json);
-      }).toList();
-
-      rawPosts.forEach(bskyFeedAdapter.convertPostViewJson);
-
-      final parsedPosts = rawPosts.map(PostView.fromJson).toList();
-      final sparkPosts = parsedPosts.map((post) => post.toSparkPostView()).toList();
-      final filteredPosts = filter ? sparkPosts.where(_postViewHasMedia).toList() : sparkPosts;
-      return filteredPosts;
+      // Use adapter to process Bluesky posts
+      return bskyFeedAdapter.processBskyPosts(
+        rawPosts: posts.data.posts,
+        filterByMedia: filter,
+      );
     }
     return _client.executeWithRetry(() async {
       if (!_client.authRepository.isAuthenticated) {
@@ -274,34 +258,12 @@ class FeedRepositoryImpl implements FeedRepository {
           filter: FeedGetAuthorFeedFilter.valueOf(videosOnly ? 'posts_with_video' : 'posts_with_media'),
         );
 
-        // Create mutable copies of the JSON maps since toJson() returns unmodifiable maps
-        final rawFeed = resultBsky.data.feed.map((feedView) {
-          final json = feedView.toJson();
-          // Deep copy to make it mutable
-          return deepCopyJson(json);
-        }).toList();
-
-        // Use adapter to convert Bluesky JSON to Spark structure
-        final feedPosts = <FeedViewPost>[];
-        for (var i = 0; i < rawFeed.length; i++) {
-          try {
-            final rawPost = rawFeed[i];
-            bskyFeedAdapter.convertFeedViewPostJson(rawPost);
-
-            if (!rawPost.containsKey(r'$type')) {
-              continue;
-            }
-
-            final parsedPost = FeedViewPost.fromJson(rawPost);
-            feedPosts.add(parsedPost);
-          } catch (e, stackTrace) {
-            _logger.e('Failed to parse bsky feed view #$i', error: e, stackTrace: stackTrace);
-          }
-        }
-        final convertedPosts = feedPosts.map((post) => post.toSparkFeedViewPost()).toList();
-        // Filter out replies for Bluesky feeds (Spark posts can't be replies)
-        final filteredPosts = convertedPosts.where((post) => !_feedViewPostIsReply(post)).where(_feedViewPostHasMedia).toList();
-        return (posts: filteredPosts, cursor: resultBsky.data.cursor);
+        // Use adapter to process Bluesky author feed
+        return bskyFeedAdapter.processBskyAuthorFeed(
+          rawFeed: resultBsky.data.feed,
+          cursor: resultBsky.data.cursor,
+          onError: (message, {error, stackTrace}) => _logger.e(message, error: error, stackTrace: stackTrace),
+        );
       } catch (e) {
         _logger.e('Error getting author feed from Bsky', error: e);
         rethrow;
@@ -436,54 +398,36 @@ class FeedRepositoryImpl implements FeedRepository {
             return const FeedView(feed: []);
           }
 
-          final feedPosts = <FeedViewPost>[];
-          for (final item in feedData) {
-            try {
-              final itemMap = item as Map<String, dynamic>;
+          List<FeedViewPost> feedPosts;
 
-              // For Bluesky feeds, convert the JSON to Spark format using adapter
-              if (isBskyFeed) {
-                bskyFeedAdapter.convertFeedViewPostJson(itemMap);
-
-                // Ensure $type is set for FeedViewPost union type
-                if (!itemMap.containsKey(r'$type')) {
-                  if (itemMap.containsKey('post')) {
-                    itemMap[r'$type'] = 'so.sprk.feed.defs#feedPostView';
-                  } else if (itemMap.containsKey('reply')) {
-                    itemMap[r'$type'] = 'so.sprk.feed.defs#feedReplyView';
-                  }
-                }
-
-                // Parse the FeedViewPost
-                final feedViewPost = FeedViewPost.fromJson(itemMap);
-                final convertedPost = feedViewPost.toSparkFeedViewPost();
-                feedPosts.add(convertedPost);
-              } else {
-                // Spark feeds: The response has a 'post' object containing the fully hydrated post view
+          if (isBskyFeed) {
+            // Use adapter to process Bluesky feed items
+            feedPosts = bskyFeedAdapter.processBskyFeedItems(
+              feedData: feedData,
+              onWarning: _logger.w,
+            );
+          } else {
+            // Spark feeds: parse directly
+            feedPosts = <FeedViewPost>[];
+            for (final item in feedData) {
+              try {
+                final itemMap = item as Map<String, dynamic>;
                 final postMap = itemMap['post'] as Map<String, dynamic>?;
                 if (postMap == null) {
                   continue;
                 }
 
-                // Parse the post view
                 final postView = PostView.fromJson(postMap);
-
-                // Create a FeedViewPost.post variant (not a reply)
                 final feedViewPost = FeedViewPost.post(post: postView);
                 feedPosts.add(feedViewPost);
+              } catch (e, stackTrace) {
+                _logger.w('Failed to parse feed item, skipping: $e', stackTrace: stackTrace);
               }
-            } catch (e, stackTrace) {
-              _logger.w('Failed to parse feed item, skipping: $e', stackTrace: stackTrace);
             }
           }
 
-          // Filter out replies for Bluesky feeds (Spark posts can't be replies)
-          final filteredPosts = isBskyFeed
-              ? feedPosts.where((post) => !_feedViewPostIsReply(post)).where(_feedViewPostHasMedia).toList()
-              : feedPosts;
-
           return FeedView(
-            feed: filteredPosts,
+            feed: feedPosts,
             cursor: jsonMap['cursor'] as String?,
           );
         },
